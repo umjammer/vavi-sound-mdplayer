@@ -5,15 +5,15 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
 import mdplayer.PlayList;
-import mdplayer.driver.Vgm;
 import mdplayer.driver.mgsdrv.MgsDriver;
 import mdplayer.plugin.MGSPlugin;
 import mdplayer.plugin.Plugin;
+import musicDriverInterface.MetaData;
+import musicDriverInterface.MetaData.Tag;
 import vavi.sound.SoundUtil;
 import vavi.sound.sampled.md.MdEncoding;
 import vavi.sound.sampled.md.MdFileFormatType;
@@ -37,11 +37,12 @@ public class MGSFileFormat extends BaseFileFormat {
     @Override
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
         PlayList.Music music = new PlayList.Music();
+
         music.format = this;
         int index = 8;
-        Vgm.Gd3 gd3 = (new MgsDriver()).getGD3Info(buf, index);
-        music.title = gd3.trackName;
-        music.titleJ = gd3.trackNameJ;
+        MetaData metaData = new MgsDriver().getMetaData(buf, index);
+        music.title = metaData.getFirst(Tag.Title);
+        music.titleJ = metaData.getFirst(Tag.TitleJ);
         music.game = "";
         music.gameJ = "";
         music.composer = "";
@@ -50,6 +51,7 @@ public class MGSFileFormat extends BaseFileFormat {
 
         music.converted = "";
         music.notes = "";
+
         return Collections.singletonList(music);
     }
 
@@ -59,9 +61,9 @@ public class MGSFileFormat extends BaseFileFormat {
 
         music.format = this;
         int index = 8;
-        Vgm.Gd3 gd3 = (new MgsDriver()).getGD3Info(buf, index);
-        music.title = gd3.trackName;
-        music.titleJ = gd3.trackNameJ;
+        MetaData metaData = new MgsDriver().getMetaData(buf, index);
+        music.title = metaData.getFirst(Tag.Title);
+        music.titleJ = metaData.getFirst(Tag.TitleJ);
         music.game = "";
         music.gameJ = "";
         music.composer = "";

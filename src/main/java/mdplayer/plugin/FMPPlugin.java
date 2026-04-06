@@ -54,7 +54,7 @@ public class FMPPlugin extends BasePlugin<FmpDriver> {
                         playingFileName,
                         ext.equals(".mpi") ? ".opi" : (ext.equals(".mvi") ? ".ovi" : ".ozi"));
                 vgmBuf = ft.readTemp(playingFileName);
-                //vgmBuf = File.readAllBytes(PlayingFileName);
+                //dataBuf = File.readAllBytes(PlayingFileName);
             }
         }
 
@@ -136,12 +136,10 @@ public class FMPPlugin extends BasePlugin<FmpDriver> {
         }
 
         driverVirtual.init(vgmBuf, this, EnmModel.VirtualModel,
-                new Class[] { Ym2608Chip.class },
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         if (driverReal != null) {
             driverReal.init(vgmBuf, this, EnmModel.RealModel,
-                    new Class[] {Ym2608Chip.class},
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         }

@@ -3,15 +3,15 @@ package mdplayer.driver.musica;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
-import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.Ay8910Chip;
 import mdplayer.chips.K051649Chip;
 import mdplayer.chips.Ym2413Chip;
 import mdplayer.driver.BaseDriver;
-import mdplayer.driver.Vgm;
 import mdplayer.plugin.BasePlugin;
+import musicDriverInterface.MetaData;
+import musicDriverInterface.MetaData.Tag;
 
 import static java.lang.System.getLogger;
 
@@ -37,8 +37,8 @@ public class MusicaDriver extends BaseDriver {
     }
 
     @Override
-    public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
-        Vgm.Gd3 ret = new Vgm.Gd3();
+    public MetaData getMetaData(byte[] buf, Object... args) {
+        MetaData md = new MetaData();
         if (buf != null && buf.length > 8) {
             try {
                 musica.run(buf);
@@ -46,22 +46,22 @@ public class MusicaDriver extends BaseDriver {
                 logger.log(Level.ERROR, ex.getMessage(), ex);
                 return null;
             }
-            ret.trackName = gd3.trackName;
-            ret.trackNameJ = gd3.trackNameJ;
-            ret.notes = gd3.notes;
+            md.set(Tag.Title, metaData.getFirst(Tag.Title)); // TODO check
+            md.set(Tag.TitleJ, metaData.getFirst(Tag.TitleJ));
+            md.set(Tag.Note, metaData.getFirst(Tag.Note));
         }
 
-        return ret;
+        return md;
     }
 
     @Override
     public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     Class<? extends Chip>[] useChip, int latency, int waitTime, Object... args) {
+                     int latency, int waitTime, Object... args) {
         this.plugin = plugin;
         loopCounter = 0;
-        vgmCurLoop = 0;
+        curLoop = 0;
         this.model = model;
-        vgmFrameCounter = -latency - waitTime;
+        frameCounter = -latency - waitTime;
 
         try {
             musica.run(vgmBuf);
@@ -73,13 +73,13 @@ public class MusicaDriver extends BaseDriver {
     @Override
     public void processOneFrame() {
         try {
-            vgmSpeedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * vgmSpeed;
-            while (vgmSpeedCounter >= 1.0) {
-                vgmSpeedCounter -= 1.0;
-                if (vgmFrameCounter > -1) {
+            speedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * speed;
+            while (speedCounter >= 1.0) {
+                speedCounter -= 1.0;
+                if (frameCounter > -1) {
                     oneFrameMain();
                 } else {
-                    vgmFrameCounter++;
+                    frameCounter++;
                 }
             }
             //stopped = !isPlaying();
@@ -91,12 +91,12 @@ public class MusicaDriver extends BaseDriver {
     private void oneFrameMain() {
         try {
             counter++;
-            vgmFrameCounter++;
+            frameCounter++;
 
-            if (vgmFrameCounter % (Common.VGMProcSampleRate / 60) == 0) {
+            if (frameCounter % (Common.VGMProcSampleRate / 60) == 0) {
                 int playFg = musica.interrupt();
                 if (playFg == 0) stopped = true;
-                vgmCurLoop = musica.getHL();
+                curLoop = musica.getHL();
             }
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
@@ -104,12 +104,12 @@ public class MusicaDriver extends BaseDriver {
     }
 
     private void updateTrackName(String value) {
-        gd3.trackName = value;
-        gd3.trackNameJ = gd3.trackName;
+        metaData.set(Tag.Title, value);
+        metaData.set(Tag.TitleJ, metaData.getFirst(Tag.Title));
     }
 
     private void updateNote(String value) {
-        gd3.notes = value;
-logger.log(Level.INFO, gd3);
+        metaData.set(Tag.Note, value);
+logger.log(Level.INFO, metaData);
     }
 }

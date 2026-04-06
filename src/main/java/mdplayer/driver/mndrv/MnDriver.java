@@ -6,16 +6,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import dotnet4j.util.compat.Tuple;
-import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.MPcmChip;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.chips.Ym2608Chip;
 import mdplayer.driver.BaseDriver;
-import mdplayer.driver.Vgm.Gd3;
 import mdplayer.driver.zms.Zms.MPcmInterface;
 import mdplayer.plugin.BasePlugin;
+import musicDriverInterface.MetaData;
+import musicDriverInterface.MetaData.Tag;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
@@ -96,22 +96,21 @@ public class MnDriver extends BaseDriver {
 
     @Override
     public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     Class<? extends Chip>[] useChip, int latency, int waitTime, Object... args) {
-        this.vgmBuf = vgmBuf;
+                     int latency, int waitTime, Object... args) {
+        this.dataBuf = vgmBuf;
         this.plugin = plugin;
         this.model = model;
-        this.useChip = useChip;
         this.latency = latency;
         this.waitTime = waitTime;
 
-        gd3 = getGD3Info(vgmBuf);
+        metaData = getMetaData(vgmBuf);
         counter = 0;
         totalCounter = 0;
         loopCounter = 0;
-        vgmCurLoop = 0;
+        curLoop = 0;
         stopped = false;
-        vgmFrameCounter = -latency - waitTime;
-        vgmSpeed = 1;
+        frameCounter = -latency - waitTime;
+        speed = 1;
 
         plugin.chipRegister.chip(Ym2151Chip.class).setYm2151Hosei(model, 4000000);
 
@@ -128,27 +127,27 @@ public class MnDriver extends BaseDriver {
         }
 
         try {
-            vgmSpeedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * vgmSpeed;
-            while (vgmSpeedCounter >= 1.0) {
-                vgmSpeedCounter -= 1.0;
+            speedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * speed;
+            while (speedCounter >= 1.0) {
+                speedCounter -= 1.0;
 
                 mndrv.clock();
                 counter++;
-                vgmFrameCounter++;
+                frameCounter++;
             }
 
             if ((mndrv.mm.readByte(mndrv.reg.a6 + Dw.DRV_STATUS) & 0x20) != 0) {
                 stopped = true;
             }
-            vgmCurLoop = mndrv.mm.readShort(mndrv.reg.a6 + Dw.LOOP_COUNTER) & 0xffff;
+            curLoop = mndrv.mm.readShort(mndrv.reg.a6 + Dw.LOOP_COUNTER) & 0xffff;
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
         }
     }
 
     @Override
-    public Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
-        Gd3 gd3 = new Gd3();
+    public MetaData getMetaData(byte[] buf, Object... args) {
+        MetaData md = new MetaData();
 
         int i = (buf[6] & 0xff) * 0x100 + (buf[7] & 0xff);
         List<Byte> lst = new ArrayList<>();
@@ -157,10 +156,10 @@ public class MnDriver extends BaseDriver {
             i++;
         }
         String n = new String(ByteUtil.toByteArray(lst), charset);
-        gd3.trackName = n;
-        gd3.trackNameJ = n;
+        md.set(Tag.Title, n);
+        md.set(Tag.TitleJ, n);
 
-        return gd3;
+        return md;
     }
 
     @Override

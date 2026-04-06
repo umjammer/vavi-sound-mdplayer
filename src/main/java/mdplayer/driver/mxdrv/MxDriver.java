@@ -8,17 +8,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import dotnet4j.util.compat.Tuple;
-import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.Pcm8Chip;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.driver.BaseDriver;
-import mdplayer.driver.Vgm;
-import mdplayer.driver.Vgm.Gd3;
 import mdplayer.driver.mxdrv.MXDRV.MdxPcmInterface;
 import mdplayer.driver.mxdrv.MXDRV.Pcm8Interface;
 import mdplayer.plugin.BasePlugin;
+import musicDriverInterface.MetaData;
+import musicDriverInterface.MetaData.Tag;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
@@ -40,7 +39,7 @@ public class MxDriver extends BaseDriver {
     public MxDriver() {
         this.mxdrv = new MXDRV();
         // called the same timing as mdxPcm.getPcm
-        mxdrv.ym2151Write = (a, d) -> plugin.chipRegister.chip(Ym2151Chip.class).write(0, 0, a, d, model, plugin.chipRegister.chip(Ym2151Chip.class).ym2151Hosei[0], vgmFrameCounter);
+        mxdrv.ym2151Write = (a, d) -> plugin.chipRegister.chip(Ym2151Chip.class).write(0, 0, a, d, model, plugin.chipRegister.chip(Ym2151Chip.class).ym2151Hosei[0], frameCounter);
         mxdrv.isFromDF = Pcm8Chip::isFromDF;
         mxdrv.isFromPTM = Pcm8Chip::isFromPTM;
         mxdrv.mdxPCM = new MdxPcmInterface() {
@@ -132,8 +131,8 @@ public class MxDriver extends BaseDriver {
     }
 
     @Override
-    public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
-        Gd3 gd3 = new Gd3();
+    public MetaData getMetaData(byte[] buf, Object... args) {
+        MetaData md = new MetaData();
 
         List<Byte> lst = new ArrayList<>();
         int i = 0;
@@ -142,14 +141,14 @@ public class MxDriver extends BaseDriver {
             i++;
         }
         String n = new String(ByteUtil.toByteArray(lst), Common.charset);
-        gd3.trackName = n;
-        gd3.trackNameJ = n;
+        md.set(Tag.Title, n);
+        md.set(Tag.TitleJ, n);
         byte[][] mdx = new byte[1][];
         int[] mdxSize = new int[1];
         String[] pdxFileName = new String[1];
         makeMdxBuf(buf, mdx, mdxSize, pdxFileName);
 
-        return gd3;
+        return md;
     }
 
     /**
@@ -259,22 +258,21 @@ public class MxDriver extends BaseDriver {
     }
 
     @Override
-    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime, Object... args) {
-        this.vgmBuf = vgmBuf;
+    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model, int latency, int waitTime, Object... args) {
+        this.dataBuf = vgmBuf;
         this.plugin = plugin;
         this.model = model;
-        this.useChip = useChip;
         this.latency = latency;
         this.waitTime = waitTime;
 
-        gd3 = getGD3Info(vgmBuf);
+        metaData = getMetaData(vgmBuf);
         counter = 0;
         totalCounter = 0;
         loopCounter = 0;
-        vgmCurLoop = 0;
+        curLoop = 0;
         stopped = false;
-        vgmFrameCounter = -latency - waitTime;
-        vgmSpeed = 1;
+        frameCounter = -latency - waitTime;
+        speed = 1;
 
         plugin.chipRegister.chip(Ym2151Chip.class).setYm2151Hosei(model, 4000000);
 
@@ -320,23 +318,23 @@ logger.log(Level.TRACE, "MXDRV_Start: " + ret);
 
     public void clock(Runnable timer, boolean firstFlg) {
         try {
-            vgmSpeedCounter += vgmSpeed;
-            while (vgmSpeedCounter >= 1.0) {
-                vgmSpeedCounter -= 1.0;
-                if (vgmFrameCounter > -1) {
+            speedCounter += speed;
+            while (speedCounter >= 1.0) {
+                speedCounter -= 1.0;
+                if (frameCounter > -1) {
                     timer.run();
                     if (firstFlg) {
                         counter++;
-                        vgmFrameCounter++;
+                        frameCounter++;
                     }
                 } else {
                     if (firstFlg)
-                        vgmFrameCounter++;
+                        frameCounter++;
                 }
             }
 
             mxdrv.MXDRV_MeasurePlayTime_OPMINT();
-            vgmCurLoop = mxdrv.loopCount;
+            curLoop = mxdrv.loopCount;
             if (mxdrv.terminatePlay) {
                 stopped = true;
             }

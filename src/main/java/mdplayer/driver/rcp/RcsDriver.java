@@ -6,16 +6,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import dotnet4j.util.compat.Tuple;
-import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.MidiOutInfo;
 import mdplayer.chips.MidiPlugin;
+import mdplayer.chips.VstPlugin;
 import mdplayer.chips.Ym2612Chip;
 import mdplayer.driver.BaseDriver;
-import mdplayer.driver.Vgm;
-import mdplayer.driver.Vgm.Gd3;
 import mdplayer.plugin.BasePlugin;
+import musicDriverInterface.MetaData;
+import musicDriverInterface.MetaData.Tag;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
@@ -35,9 +35,10 @@ public class RcsDriver extends BaseDriver {
     public RcsDriver() {
         this.rcs = new RCS();
         rcs.isVirtualModel = model == EnmModel.VirtualModel;
+        int vstDelta = plugin.chipRegister.plugin(VstPlugin.class).vstDelta;
         rcs.midiSend = (l, d) -> plugin.chipRegister.plugin(MidiPlugin.class).send(model, l, d, vstDelta);
         rcs.lyric = l -> plugin.chipRegister.plugin(MidiPlugin.class).params[0].Lyric = l;
-        rcs.counter = () -> vgmFrameCounter = -latency - waitTime;
+        rcs.counter = () -> frameCounter = -latency - waitTime;
         rcs.midiCount = () -> plugin.chipRegister.plugin(MidiPlugin.class).getCount();
         rcs.stop = () -> stopped = true;
     }
@@ -51,7 +52,7 @@ public class RcsDriver extends BaseDriver {
     }
 
     @Override
-    public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
+    public MetaData getMetaData(byte[] buf, Object... args) {
         String[] rcpFilename = new String[1];
         byte[][] rcpBuf = new byte[1][];
         if (rcs.extendFiles != null) {
@@ -63,15 +64,15 @@ public class RcsDriver extends BaseDriver {
             }
         }
         Boolean ret = RCS.getRCSInfo(rcs.filename, rcs.supportFileName, buf, /* out */ rcs.pcmInfos, /* out */ rcs.pcmData, /* out */ rcpFilename, /* ref */ rcpBuf);
-        if (ret == false) return null;
+        if (!ret) return null;
 
-        Gd3 gd3 = new Gd3();
+        MetaData md = new MetaData();
 
-        if (rcpBuf == null) {
+        if (rcpBuf[0] == null) {
             String err = ".RCP File not found !";
-            gd3.trackName = err;
-            gd3.trackNameJ = err;
-            return gd3;
+            md.set(Tag.Title, err);
+            md.set(Tag.TitleJ, err);
+            return md;
         }
 
         // Get the song information in the RCP file from here
@@ -89,8 +90,8 @@ public class RcsDriver extends BaseDriver {
         }
         str = new StringBuilder((new String(ByteUtil.toByteArray(title))).trim());
         ptr += 64;
-        gd3.trackName = str.toString();
-        gd3.trackNameJ = str.toString();
+        md.set(Tag.Title, str.toString());
+        md.set(Tag.TitleJ, str.toString());
 
         if (IsG36) {
             ptr += 64;
@@ -101,33 +102,32 @@ public class RcsDriver extends BaseDriver {
                 str.append("%s\n".formatted((new String(rcpBuf[0], ptr + i * 28, 28)).replace("\0", "")));
             }
         }
-        gd3.notes = str.toString();
+        md.set(Tag.Note, str.toString());
 
-        return gd3;
+        return md;
     }
 
     @Override
     public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     Class<? extends Chip>[] useChip, int latency, int waitTime, Object... args) {
-        this.vgmBuf = vgmBuf;
+                     int latency, int waitTime, Object... args) {
+        this.dataBuf = vgmBuf;
         this.plugin = plugin;
         this.model = model;
-        this.useChip = useChip;
         this.latency = latency;
         this.waitTime = waitTime;
 
         counter = 0;
         totalCounter = 0;
         loopCounter = 0;
-        vgmCurLoop = 0;
+        curLoop = 0;
         stopped = false;
         // Set 0 here to wait after sending control.
-        //vgmFrameCounter = -latency - waitTime;
-        vgmFrameCounter = 0;
-        vgmSpeed = 1;
-        vgmSpeedCounter = 0;
+        //frameCounter = -latency - waitTime;
+        frameCounter = 0;
+        speed = 1;
+        speedCounter = 0;
 
-        gd3 = getGD3Info(vgmBuf, 0);
+        metaData = getMetaData(vgmBuf, 0);
         //if (GD3 == null) return false;
 
         if (!rcs.getInformationHeader()) throw new IllegalArgumentException("Invalid header");
@@ -187,17 +187,17 @@ public class RcsDriver extends BaseDriver {
     @Override
     public void processOneFrame() {
         try {
-            vstDelta++;
-            vgmSpeedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * vgmSpeed;
-            while (vgmSpeedCounter >= 1.0 && !stopped) {
-                vgmSpeedCounter -= 1.0;
-                if (vgmFrameCounter > -1) {
+            plugin.chipRegister.plugin(VstPlugin.class).vstDelta++;
+            speedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * speed;
+            while (speedCounter >= 1.0 && !stopped) {
+                speedCounter -= 1.0;
+                if (frameCounter > -1) {
                     counter++;
-                    vgmFrameCounter++;
+                    frameCounter++;
 
                     rcs.oneFrameMain();
                 } else {
-                    vgmFrameCounter++;
+                    frameCounter++;
                 }
             }
             //stopped = !isPlaying();

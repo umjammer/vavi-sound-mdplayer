@@ -3,14 +3,14 @@ package mdplayer.driver.musica;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
-import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.Ay8910Chip;
 import mdplayer.chips.K051649Chip;
 import mdplayer.chips.Ym2413Chip;
 import mdplayer.driver.BaseDriver;
-import mdplayer.driver.Vgm;
 import mdplayer.plugin.BasePlugin;
+import musicDriverInterface.MetaData;
+import musicDriverInterface.MetaData.Tag;
 import vavi.util.StringUtil;
 
 import static java.lang.System.getLogger;
@@ -39,12 +39,12 @@ public class MusicaK4Driver extends BaseDriver {
     }
 
     @Override
-    public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
+    public MetaData getMetaData(byte[] buf, Object... args) {
         throw new UnsupportedOperationException();
     }
 
-    public Vgm.Gd3 getGD3Info(byte[] buf, byte[] vcdBuf) {
-        Vgm.Gd3 ret = new Vgm.Gd3();
+    public MetaData getMetaData(byte[] buf, byte[] vcdBuf) {
+        MetaData ret = new MetaData();
         if (buf != null && buf.length > 8) {
             try {
                 musicaK4.run(buf, vcdBuf);
@@ -53,10 +53,10 @@ public class MusicaK4Driver extends BaseDriver {
                 return null;
             }
             if (musicaK4.getBgmBin() == null) return null;
-            Vgm.Gd3 gd3 = (new MusicaDriver()).getGD3Info(musicaK4.getBgmBin(), null);
-            ret.trackName = gd3.trackName;
-            ret.trackNameJ = gd3.trackNameJ;
-            ret.notes = gd3.notes;
+            MetaData md = (new MusicaDriver()).getMetaData(musicaK4.getBgmBin());
+            ret.set(Tag.Title, md.getFirst(Tag.Title));
+            ret.set(Tag.TitleJ, md.getFirst(Tag.TitleJ));
+            ret.set(Tag.Note, md.getFirst(Tag.Note));
         }
 
         return ret;
@@ -73,7 +73,7 @@ public class MusicaK4Driver extends BaseDriver {
 
     @Override
     public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     Class<? extends Chip>[] useChip, int latency, int waitTime, Object... args) {
+                     int latency, int waitTime, Object... args) {
         this.plugin = plugin;
     }
 

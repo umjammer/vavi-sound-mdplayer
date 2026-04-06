@@ -74,13 +74,11 @@ public class AyPlugin extends BasePlugin<AyDriver> {
         mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, flatten());
 
         driverVirtual.init(vgmBuf, this, EnmModel.VirtualModel,
-                new Class[] {Ay8910Chip.class},
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000,
                 songNo);
         if (driverReal != null) {
             driverReal.init(vgmBuf, this, EnmModel.RealModel,
-                    new Class[] {Ay8910Chip.class},
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000,
                     songNo);

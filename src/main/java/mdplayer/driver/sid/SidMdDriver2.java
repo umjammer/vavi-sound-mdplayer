@@ -11,13 +11,13 @@ import java.lang.System.Logger.Level;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.SidChip;
 import mdplayer.driver.BaseDriver;
-import mdplayer.driver.Vgm;
 import mdplayer.plugin.BasePlugin;
+import musicDriverInterface.MetaData;
+import musicDriverInterface.MetaData.Tag;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
@@ -40,7 +40,7 @@ public class SidMdDriver2 extends BaseDriver implements SidDriver {
     }
 
     @Override
-    public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
+    public MetaData getMetaData(byte[] buf, Object... args) {
         if (buf == null) return null;
 
         if (ByteUtil.readLeInt(buf, 0) != Sid2.FCC_PSID && ByteUtil.readLeInt(buf, 0) != Sid2.FCC_RSID) {
@@ -49,42 +49,42 @@ public class SidMdDriver2 extends BaseDriver implements SidDriver {
 
         sid.songs = Common.getBE16(buf, 0x0e);
 
-        Vgm.Gd3 gd3 = new Vgm.Gd3();
+        MetaData md = new MetaData();
         try {
-            gd3.trackName = new String(buf, 0x16, 32, StandardCharsets.US_ASCII).trim();
+            md.set(Tag.Title, new String(buf, 0x16, 32, StandardCharsets.US_ASCII).trim());
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
         }
         try {
-            int idx = gd3.trackName.indexOf((char) 0);
-            if (idx != -1) gd3.trackName = gd3.trackName.substring(0, idx);
+            int idx = md.getFirst(Tag.Title).indexOf((char) 0);
+            if (idx != -1) md.set(Tag.Title, md.getFirst(Tag.Title).substring(0, idx));
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
         }
         try {
-            gd3.composer = new String(buf, 0x36, 32, StandardCharsets.US_ASCII).trim();
+            md.set(Tag.Composer, new String(buf, 0x36, 32, StandardCharsets.US_ASCII).trim());
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
         }
         try {
-            int idx = gd3.composer.indexOf((char) 0);
-            if (idx != -1) gd3.composer = gd3.composer.substring(0, idx);
+            int idx = md.getFirst(Tag.Composer).indexOf((char) 0);
+            if (idx != -1) md.set(Tag.Composer, md.getFirst(Tag.Composer).substring(0, idx));
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
         }
         try {
-            gd3.notes = new String(buf, 0x56, 32, StandardCharsets.US_ASCII).trim();
+            md.set(Tag.Note, new String(buf, 0x56, 32, StandardCharsets.US_ASCII).trim());
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
         }
         try {
-            int idx = gd3.notes.indexOf((char) 0);
-            if (idx != -1) gd3.notes = gd3.notes.substring(0, idx);
+            int idx = md.getFirst(Tag.Note).indexOf((char) 0);
+            if (idx != -1) md.set(Tag.Note, md.getFirst(Tag.Note).substring(0, idx));
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
         }
 
-        return gd3;
+        return md;
     }
 
     /**
@@ -92,30 +92,29 @@ public class SidMdDriver2 extends BaseDriver implements SidDriver {
      */
     @Override
     public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     Class<? extends Chip>[] useChip, int latency, int waitTime, Object... args) {
-        this.vgmBuf = vgmBuf;
+                     int latency, int waitTime, Object... args) {
+        this.dataBuf = vgmBuf;
         this.plugin = plugin;
         this.model = model;
-        this.useChip = useChip;
         this.latency = latency;
         this.waitTime = waitTime;
 
         if (model == EnmModel.RealModel) {
             stopped = true;
-            vgmCurLoop = 9999;
+            curLoop = 9999;
             return;
         }
 
         counter = 0;
         totalCounter = 0;
         loopCounter = 0;
-        vgmCurLoop = 0;
+        curLoop = 0;
         stopped = false;
-        vgmFrameCounter = -latency - waitTime;
-        vgmSpeed = 1;
-        vgmSpeedCounter = 0;
+        frameCounter = -latency - waitTime;
+        speed = 1;
+        speedCounter = 0;
 
-        gd3 = getGD3Info(vgmBuf);
+        metaData = getMetaData(vgmBuf);
 
         sid.song = (int) args[0];
         sid.init(vgmBuf, setting);
@@ -127,13 +126,13 @@ public class SidMdDriver2 extends BaseDriver implements SidDriver {
     public void processOneFrame() {
         if (model == EnmModel.RealModel) return;
         try {
-            vgmSpeedCounter += vgmSpeed;
-            while (vgmSpeedCounter >= 1.0 && !stopped) {
-                vgmSpeedCounter -= 1.0;
-                if (vgmFrameCounter > -1) {
+            speedCounter += speed;
+            while (speedCounter >= 1.0 && !stopped) {
+                speedCounter -= 1.0;
+                if (frameCounter > -1) {
                     counter++;
                 } else {
-                    vgmFrameCounter++;
+                    frameCounter++;
                 }
             }
             //Stopped = !isPlaying();
@@ -162,8 +161,8 @@ static final int INTERVAL = 1024;
 
     @Override
     public int render(short[] buffer, int offset, int sampleCount) {
-        if (vgmFrameCounter < 0) {
-            vgmFrameCounter += sampleCount / 2;
+        if (frameCounter < 0) {
+            frameCounter += sampleCount / 2;
             return sampleCount;
         }
 

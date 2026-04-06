@@ -238,20 +238,20 @@ logger.log(Level.INFO, "stop enter: " + this.stopped);
     public void ff() {
         if (driverVirtual == null) return;
         vgmSpeed = (vgmSpeed == 1) ? 4 : 1;
-        driverVirtual.vgmSpeed = vgmSpeed;
-        if (driverReal != null) driverReal.vgmSpeed = vgmSpeed;
+        driverVirtual.speed = vgmSpeed;
+        if (driverReal != null) driverReal.speed = vgmSpeed;
     }
 
     public void slow() {
         vgmSpeed = (vgmSpeed == 1) ? 0.25 : 1;
-        driverVirtual.vgmSpeed = vgmSpeed;
-        if (driverReal != null) driverReal.vgmSpeed = vgmSpeed;
+        driverVirtual.speed = vgmSpeed;
+        if (driverReal != null) driverReal.speed = vgmSpeed;
     }
 
     public void resetSlow() {
         vgmSpeed = 1;
-        driverVirtual.vgmSpeed = vgmSpeed;
-        if (driverReal != null) driverReal.vgmSpeed = vgmSpeed;
+        driverVirtual.speed = vgmSpeed;
+        if (driverReal != null) driverReal.speed = vgmSpeed;
     }
 
     public boolean isStopped() {
@@ -320,10 +320,10 @@ logger.log(Level.INFO, "close enter");
         int cnt = 0;
 
         if (driverVirtual != null) {
-            cnt = driverVirtual.vgmCurLoop;
+            cnt = driverVirtual.curLoop;
         }
         if (driverReal != null) {
-            cnt = Math.min(driverReal.vgmCurLoop, cnt);
+            cnt = Math.min(driverReal.curLoop, cnt);
         }
 
         return cnt;
@@ -351,12 +351,12 @@ logger.log(Level.INFO, "close enter");
 
     public long getVirtualFrameCounter() {
         if (driverVirtual == null) return -1;
-        return driverVirtual.vgmFrameCounter;
+        return driverVirtual.frameCounter;
     }
 
     public long getRealFrameCounter() {
         if (driverReal == null) return -1;
-        return driverReal.vgmFrameCounter;
+        return driverReal.frameCounter;
     }
 
     @Override

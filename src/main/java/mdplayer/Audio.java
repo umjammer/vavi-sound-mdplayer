@@ -367,7 +367,7 @@ logger.log(Level.INFO, "close enter");
                 }
 
                 if (plugin.hiyorimiNecessary) {
-//                    long v = driverReal.vgmFrameCounter - audio.driverVirtual.vgmFrameCounter;
+//                    long v = driverReal.frameCounter - audio.driverVirtual.frameCounter;
 //                    long d = setting.getoutputDevice().getSampleRate() * (setting.LatencySCCI - setting.getoutputDevice().getSampleRate() * setting.LatencyEmulation) / 1000;
 //                    long l = getLatency() / 4;
 //                    int m = 0;
@@ -382,11 +382,11 @@ logger.log(Level.INFO, "close enter");
 
                     double dEMU = setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000.0;
                     double dSCCI = setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000.0;
-                    double abs = Math.abs((plugin.driverReal.vgmFrameCounter - dSCCI) - (plugin.driverVirtual.vgmFrameCounter - dEMU));
+                    double abs = Math.abs((plugin.driverReal.frameCounter - dSCCI) - (plugin.driverVirtual.frameCounter - dEMU));
                     int m = 0;
                     long l = plugin.getLatency() / 10;
                     if (abs >= l) {
-                        m = ((plugin.driverReal.vgmFrameCounter - dSCCI) > (plugin.driverVirtual.vgmFrameCounter - dEMU)) ? 1 : 2;
+                        m = ((plugin.driverReal.frameCounter - dSCCI) > (plugin.driverVirtual.frameCounter - dEMU)) ? 1 : 2;
                     }
 
                     switch (m) {

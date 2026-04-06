@@ -2,7 +2,6 @@ package mdplayer.plugin;
 
 import java.lang.System.Logger;
 
-import mdplayer.Chip.Unused;
 import mdplayer.Common;
 import mdplayer.chips.HuC6280Chip;
 import mdplayer.driver.hes.HesDriver;
@@ -52,12 +51,12 @@ public class HESPlugin extends BasePlugin<HesDriver> {
 
         mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, flatten());
 
-        driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel, new Class[] {Unused.class},
+        driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel,
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000,
                 songNo);
         if (driverReal != null) {
-            driverReal.init(vgmBuf, this, Common.EnmModel.RealModel, new Class[] {Unused.class},
+            driverReal.init(vgmBuf, this, Common.EnmModel.RealModel,
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000,
                     songNo);

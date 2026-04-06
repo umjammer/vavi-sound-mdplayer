@@ -5,7 +5,6 @@ import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.StringJoiner;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.IntSupplier;
@@ -18,13 +17,14 @@ import dotnet4j.io.FileAccess;
 import dotnet4j.io.FileMode;
 import dotnet4j.io.FileStream;
 import dotnet4j.io.Path;
-import dotnet4j.util.compat.Tuple3;
 import mdplayer.ChipRegister;
 import mdplayer.Common.EnmModel;
 import mdplayer.DacControl;
 import mdplayer.Setting;
 import mdplayer.chips.*;
 import mdsound.chips.C140;
+import musicDriverInterface.MetaData;
+import musicDriverInterface.MetaData.Tag;
 import org.apache.commons.lang3.function.BooleanConsumer;
 import vavi.util.ByteUtil;
 
@@ -170,8 +170,8 @@ public class Vgm {
     LongSupplier getTotalCounter;
     LongConsumer setTotalCounter;
     LongConsumer setLoopCounter;
-    Gd3 gd3;
-    BiFunction<byte[], Integer, Gd3> getGD3Info;
+    MetaData metaData;
+    BiFunction<byte[], Integer, MetaData> getMetaData;
     IntSupplier loop;
     Consumer<String> setUsedChips;
     Supplier<String> getUsedChips;
@@ -433,22 +433,22 @@ public class Vgm {
     }
 
     private void vcDummy1Ope() {
-        //logger.log(Level.TRACE, "(%02X:%02X)".formatted(vgmBuf[vgmAdr], vgmBuf[vgmAdr + 1]));
+        //logger.log(Level.TRACE, "(%02X:%02X)".formatted(dataBuf[vgmAdr], dataBuf[vgmAdr + 1]));
         vgmAdr += 2;
     }
 
     private void vcDummy2Ope() {
-        //logger.log(Level.TRACE, "(%02X:%02X:%02X)".formatted(vgmBuf[vgmAdr], vgmBuf[vgmAdr + 1], vgmBuf[vgmAdr + 2]));
+        //logger.log(Level.TRACE, "(%02X:%02X:%02X)".formatted(dataBuf[vgmAdr], dataBuf[vgmAdr + 1], dataBuf[vgmAdr + 2]));
         vgmAdr += 3;
     }
 
     private void vcDummy3Ope() {
-        //logger.log(Level.TRACE, "(%02X:%02X:%02X:%02X)".formatted(vgmBuf[vgmAdr], vgmBuf[vgmAdr + 1], vgmBuf[vgmAdr + 2], vgmBuf[vgmAdr + 3]));
+        //logger.log(Level.TRACE, "(%02X:%02X:%02X:%02X)".formatted(dataBuf[vgmAdr], dataBuf[vgmAdr + 1], dataBuf[vgmAdr + 2], dataBuf[vgmAdr + 3]));
         vgmAdr += 4;
     }
 
     private void vcDummy4Ope() {
-        //logger.log(Level.TRACE, "unknown command:Adr:%x(%02X:%02X:%02X:%02X:%02X)".formatted(vgmAdr, vgmBuf[vgmAdr], vgmBuf[vgmAdr + 1], vgmBuf[vgmAdr + 2], vgmBuf[vgmAdr + 3], vgmBuf[vgmAdr + 4]));
+        //logger.log(Level.TRACE, "unknown command:Adr:%x(%02X:%02X:%02X:%02X:%02X)".formatted(vgmAdr, dataBuf[vgmAdr], dataBuf[vgmAdr + 1], dataBuf[vgmAdr + 2], dataBuf[vgmAdr + 3], dataBuf[vgmAdr + 4]));
         vgmAdr += 5;
     }
 
@@ -483,7 +483,7 @@ public class Vgm {
     }
 
     private void vcuPD7759() {
-        //if(model== EnmModel.VirtualModel) logger.log(Level.TRACE, "adr:%d data:%02x".formatted(vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2]));
+        //if(model== EnmModel.VirtualModel) logger.log(Level.TRACE, "adr:%d data:%02x".formatted(dataBuf[vgmAdr + 1] & 0x7f, dataBuf[vgmAdr + 2]));
         chipRegister.chip(Upd7759Chip.class).write((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
@@ -616,7 +616,7 @@ public class Vgm {
                 vgmBuf[vgmAdr + 2] & 0xff,
                 vgmBuf[vgmAdr + 3] & 0xff,
                 model);
-//logger.log(Level.TRACE, "fm:%02x:%02x:%02x:".formatted(vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2], vgmBuf[vgmAdr + 3]));
+//logger.log(Level.TRACE, "fm:%02x:%02x:%02x:".formatted(dataBuf[vgmAdr + 1] & 0x7f, dataBuf[vgmAdr + 2], dataBuf[vgmAdr + 3]));
         vgmAdr += 4;
     }
 
@@ -656,7 +656,7 @@ public class Vgm {
     }
 
     private void vcSEGAPCM() {
-//logger.log(Level.TRACE, "%4X %4X".formatted(vgmBuf[vgmAdr + 0x01], vgmBuf[vgmAdr + 0x02]));
+//logger.log(Level.TRACE, "%4X %4X".formatted(dataBuf[vgmAdr + 0x01], dataBuf[vgmAdr + 0x02]));
         chipRegister.chip(SegaPcmChip.class).write(0, (vgmBuf[vgmAdr + 0x01] & 0xff) | ((vgmBuf[vgmAdr + 0x02] & 0xff) << 8), vgmBuf[vgmAdr + 0x03] & 0xff, model);
         vgmAdr += 4;
     }
@@ -759,7 +759,7 @@ public class Vgm {
 //                chipRegister.setYM2608Register(0x1, 0x0d, 0xff, model);
 
 //                for (int cnt = 0; cnt < bLen - 8; cnt++) {
-//                    chipRegister.getChip(Ym2608Chip.class).setYM2608Register(0x1, 0x08, vgmBuf[vgmAdr + 15 + cnt], model);
+//                    chipRegister.getChip(Ym2608Chip.class).setYM2608Register(0x1, 0x08, dataBuf[vgmAdr + 15 + cnt], model);
 //                    chipRegister.getChip(Ym2608Chip.class).setYM2608Register(0x1, 0x10, 0x1b, model);
 //                    chipRegister.getChip(Ym2608Chip.class).setYM2608Register(0x1, 0x10, 0x13, model);
 //                }
@@ -974,7 +974,7 @@ public class Vgm {
 
         try {
 
-            String fn = Path.combine(setting.getOther().getDumpPath(), "%2$s_%3$s_%1$03d.bin".formatted(dumpCounter++, chipName, gd3.trackName.replace("*", "").replace("?", "").replace(" ", "").replace("\"", "").replace("/", "")));
+            String fn = Path.combine(setting.getOther().getDumpPath(), "%2$s_%3$s_%1$03d.bin".formatted(dumpCounter++, chipName, metaData.getFirst(Tag.Title).replace("*", "").replace("?", "").replace(" ", "").replace("\"", "").replace("/", "")));
             try (FileStream fs = new FileStream(fn, FileMode.OpenOrCreate, FileAccess.Write)) {
                 fs.write(vgmBuf, adr, len);
             }
@@ -990,7 +990,7 @@ public class Vgm {
         if (!setting.getOther().getDumpSwitch()) return;
 
         try {
-            String dFn = Path.combine(setting.getOther().getDumpPath(), "%2$s_%3$s_%1$03d.wav".formatted(dumpCounter++, chipName, gd3.trackName.replace("*", "").replace("?", "").replace(" ", "").replace("\"", "")));
+            String dFn = Path.combine(setting.getOther().getDumpPath(), "%2$s_%3$s_%1$03d.wav".formatted(dumpCounter++, chipName, metaData.getFirst(Tag.Title).replace("*", "").replace("?", "").replace(" ", "").replace("\"", "")));
             List<Byte> des = new ArrayList<>();
 
             // 'RIFF'
@@ -1071,7 +1071,7 @@ public class Vgm {
         isPcmRAMWrite = true;
 
         int bType = vgmBuf[vgmAdr + 2] & 0x7f;
-        //CurrentChip = (vgmBuf[vgmAdr + 2] & 0x80)>>7;
+        //CurrentChip = (dataBuf[vgmAdr + 2] & 0x80)>>7;
         int bReadOffset = ByteUtil.readLe24(vgmBuf, vgmAdr + 3);
         int bWriteOffset = ByteUtil.readLe24(vgmBuf, vgmAdr + 6);
         int bSize = ByteUtil.readLe24(vgmBuf, vgmAdr + 9);
@@ -1092,7 +1092,7 @@ public class Vgm {
     }
 
     private void vcWaitN1Samples() {
-//logger.log(Level.DEBUG, vgmAdr + ": " + (vgmBuf[vgmAdr] & 0xff) + ", " + ((vgmBuf[vgmAdr] & 0xff) - 0x6f));
+//logger.log(Level.DEBUG, vgmAdr + ": " + (dataBuf[vgmAdr] & 0xff) + ", " + ((dataBuf[vgmAdr] & 0xff) - 0x6f));
         vgmWait += (vgmBuf[vgmAdr] & 0xff) - 0x6f;
         vgmAdr++;
     }
@@ -2200,7 +2200,7 @@ logger.log(Level.INFO, "usedChips: " + getUsedChips.get());
         if (vgmGd3 != 0) {
             int vgmGd3Id = ByteUtil.readLeInt(vgmBuf, vgmGd3 + 0x14);
             if (vgmGd3Id != FCC_GD3) return false;
-            gd3 = getGD3Info.apply(vgmBuf, vgmGd3);
+            metaData = getMetaData.apply(vgmBuf, vgmGd3);
         }
 
         return true;
@@ -2282,43 +2282,5 @@ logger.log(Level.INFO, "usedChips: " + getUsedChips.get());
         public int bitCmp;
         public int entryCount;
         public byte[] entries;
-    }
-
-    // TODO musicDriverInterface.GD3Tag -> Tag???
-    public static class Gd3 {
-        public String trackName = "";
-        public String trackNameJ = "";
-        public String gameName = "";
-        public String gameNameJ = "";
-        public String systemName = "";
-        public String systemNameJ = "";
-        public String composer = "";
-        public String composerJ = "";
-        public String converted = "";
-        public String notes = "";
-        public String vgmBy = "";
-        public String version = "";
-        public String usedChips = "";
-
-        public List<Tuple3<Integer, Integer, String>> lyrics = null;
-
-        @Override public String toString() {
-            return new StringJoiner(", ", Gd3.class.getSimpleName() + "[", "]")
-                    .add("trackName='" + trackName + "'")
-                    .add("trackNameJ='" + trackNameJ + "'")
-                    .add("gameName='" + gameName + "'")
-                    .add("gameNameJ='" + gameNameJ + "'")
-                    .add("systemName='" + systemName + "'")
-                    .add("systemNameJ='" + systemNameJ + "'")
-                    .add("composer='" + composer + "'")
-                    .add("composerJ='" + composerJ + "'")
-                    .add("converted='" + converted + "'")
-                    .add("notes='" + notes + "'")
-                    .add("vgmBy='" + vgmBy + "'")
-                    .add("version='" + version + "'")
-                    .add("usedChips='" + usedChips + "'")
-                    .add("lyrics=" + lyrics)
-                    .toString();
-        }
     }
 }

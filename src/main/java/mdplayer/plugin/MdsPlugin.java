@@ -90,12 +90,10 @@ public class MdsPlugin extends BasePlugin<MdsDriver> {
         setVolume(MAIN_TAG, Sn76489Chip.class, true, setting.getBalance().getVolume(MAIN_TAG, Sn76489Chip.class));
 
         driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel,
-                new Class[] {Ym2612Chip.class, Sn76489Chip.class},
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         if (driverReal != null) {
             driverReal.init(vgmBuf, this, Common.EnmModel.RealModel,
-                    new Class[] {Ym2612Chip.class, Sn76489Chip.class},
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         }

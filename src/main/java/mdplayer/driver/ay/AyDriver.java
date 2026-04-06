@@ -3,14 +3,14 @@ package mdplayer.driver.ay;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
-import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.Ay8910Chip;
 import mdplayer.chips.ZxBeepChip;
 import mdplayer.driver.BaseDriver;
-import mdplayer.driver.Vgm;
 import mdplayer.plugin.BasePlugin;
+import musicDriverInterface.MetaData;
+import musicDriverInterface.MetaData.Tag;
 
 import static java.lang.System.getLogger;
 
@@ -28,12 +28,12 @@ public class AyDriver extends BaseDriver {
 
     @Override
     public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     Class<? extends Chip>[] useChip, int latency, int waitTime, Object... args) {
+                     int latency, int waitTime, Object... args) {
         this.plugin = plugin;
         loopCounter = 0;
-        vgmCurLoop = 0;
+        curLoop = 0;
         this.model = model;
-        vgmFrameCounter = -latency - waitTime;
+        frameCounter = -latency - waitTime;
 
         int songNo = (int) args[0];
 
@@ -55,14 +55,14 @@ public class AyDriver extends BaseDriver {
     @Override
     public void processOneFrame() {
         try {
-            vgmSpeedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * vgmSpeed;
-            while (vgmSpeedCounter >= 1.0 && !stopped) {
-                vgmSpeedCounter -= 1.0;
-                if (vgmFrameCounter > -1) {
+            speedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * speed;
+            while (speedCounter >= 1.0 && !stopped) {
+                speedCounter -= 1.0;
+                if (frameCounter > -1) {
                     ay.oneFrame();
                     counter++;
                 } else {
-                    vgmFrameCounter++;
+                    frameCounter++;
                 }
             }
         } catch (Exception ex) {
@@ -71,11 +71,11 @@ public class AyDriver extends BaseDriver {
     }
 
     @Override
-    public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
+    public MetaData getMetaData(byte[] buf, Object... args) {
         ay.getInformation(buf);
-        Vgm.Gd3 ret = new Vgm.Gd3();
-        ret.trackName = ay.information.songsStructures.getFirst().pSongName;
-        ret.trackNameJ = ay.information.songsStructures.getFirst().pSongName;
-        return ret;
+        MetaData md = new MetaData();
+        md.set(Tag.Title, ay.information.songsStructures.getFirst().pSongName);
+        md.set(Tag.TitleJ, ay.information.songsStructures.getFirst().pSongName);
+        return md;
     }
 }

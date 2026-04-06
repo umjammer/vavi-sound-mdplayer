@@ -3,14 +3,14 @@ package mdplayer.driver;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
-import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.chips.Ym2608Chip;
 import mdplayer.chips.Ym2612Chip;
-import mdplayer.driver.Vgm.Gd3;
 import mdplayer.plugin.BasePlugin;
+import musicDriverInterface.MetaData;
+import musicDriverInterface.MetaData.Tag;
 
 import static java.lang.System.getLogger;
 
@@ -28,34 +28,33 @@ public class VgmDriver extends BaseDriver {
 
     public VgmDriver() {
         this.vgm = new Vgm();
-        vgm.frameCounter = () -> vgmFrameCounter;
+        vgm.frameCounter = () -> frameCounter;
         vgm.dataBlock = b -> isDataBlock = b;
         vgm.getTotalCounter = () -> totalCounter;
         vgm.setTotalCounter = v -> totalCounter = v;
         vgm.setLoopCounter = v -> loopCounter = v;
-        vgm.loop = () -> vgmCurLoop;
+        vgm.loop = () -> curLoop;
         vgm.setUsedChips = s -> usedChips = s;
         vgm.getUsedChips = () -> usedChips;
         vgm.setVersion = s -> version = s;
         vgm.getVersion = () -> version;
-        vgm.getGD3Info = this::getGD3Info;
+        vgm.getMetaData = this::getMetaData;
     }
 
     @Override
     public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     Class<? extends Chip>[] useChip, int latency, int waitTime, Object... args) {
-        this.vgmBuf = vgmBuf;
+                     int latency, int waitTime, Object... args) {
+        this.dataBuf = vgmBuf;
         this.plugin = plugin;
         this.model = model;
-        this.useChip = useChip;
         this.latency = latency;
         this.waitTime = waitTime;
 
         counter = 0;
-        vgmFrameCounter = -latency - waitTime;
-        vgmCurLoop = 0;
-        vgmSpeed = 1;
-        vgmSpeedCounter = 0;
+        frameCounter = -latency - waitTime;
+        curLoop = 0;
+        speed = 1;
+        speedCounter = 0;
 
         stopped = false;
         isDataBlock = false;
@@ -69,25 +68,21 @@ public class VgmDriver extends BaseDriver {
         vgm.init();
 
         vgm.useChipYM2612Ch6 = false;
-        for (Class<? extends Chip> uc : useChip) {
-            if (uc == Ym2612Chip.class && false) { // TODO Ym2612Ch6
-                vgm.useChipYM2612Ch6 = true;
-                break;
-            }
+        if (plugin.chipRegister.contains(Ym2612Chip.class) && false) { // TODO Ym2612Ch6
+            vgm.useChipYM2612Ch6 = true;
         }
-
     }
 
     @Override
     public void processOneFrame() {
         try {
-            vgmSpeedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * vgmSpeed;
-            while (vgmSpeedCounter >= 1.0) {
-                vgmSpeedCounter -= 1.0;
-                if (vgmFrameCounter > -1) {
+            speedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * speed;
+            while (speedCounter >= 1.0) {
+                speedCounter -= 1.0;
+                if (frameCounter > -1) {
                     oneFrameVGMMain();
                 } else {
-                    vgmFrameCounter++;
+                    frameCounter++;
                 }
             }
         } catch (Exception ex) {
@@ -101,8 +96,8 @@ public class VgmDriver extends BaseDriver {
             vgm.oneFrameVGMStream();
             vgm.vgmWait--;
             counter++;
-            vgmFrameCounter++;
-//logger.log(Level.TRACE, "ret: wait: " + vgmWait + ".formatted(fc: " + vgmFrameCounter));
+            frameCounter++;
+//logger.log(Level.TRACE, "ret: wait: " + vgmWait + ".formatted(fc: " + frameCounter));
             return;
         }
 
@@ -118,10 +113,10 @@ public class VgmDriver extends BaseDriver {
 
         int countNum = 0;
         while (vgm.vgmWait <= 0) {
-            if (vgm.vgmAdr >= vgmBuf.length || (vgm.vgmEof != 0 && vgm.vgmAdr >= vgm.vgmEof)) {
+            if (vgm.vgmAdr >= dataBuf.length || (vgm.vgmEof != 0 && vgm.vgmAdr >= vgm.vgmEof)) {
                 if (loopCounter != 0) {
                     vgm.vgmAdr = vgm.vgmLoopOffset + 0x1c;
-                    vgmCurLoop++;
+                    curLoop++;
                     counter = 0;
                 } else {
                     vgm.vgmAnalyze = false;
@@ -130,16 +125,16 @@ public class VgmDriver extends BaseDriver {
                 }
             }
 
-            int cmd = vgmBuf[vgm.vgmAdr] & 0xff;
+            int cmd = dataBuf[vgm.vgmAdr] & 0xff;
 //if (!List.of(0xc0).contains(cmd)) {
             logger.log(Level.DEBUG, "[%s]: adr: 0x%x, cmd: 0x%x".formatted(model, vgm.vgmAdr, cmd)); // ok
 //}
             if (vgm.vgmCmdTbl[cmd] != null) {
-                //if (model == EnmModel.VirtualModel) logger.log(Level.DEBUG, "%05x : %02x ".formatted(vgmAdr, vgmBuf[vgmAdr]));
+                //if (model == EnmModel.VirtualModel) logger.log(Level.DEBUG, "%05x : %02x ".formatted(vgmAdr, dataBuf[vgmAdr]));
                 vgm.vgmCmdTbl[cmd].run();
             } else {
                 // Unknown command
-                logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(model, vgm.vgmAdr, vgmBuf[vgm.vgmAdr]));
+                logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(model, vgm.vgmAdr, dataBuf[vgm.vgmAdr]));
                 vgm.vgmAdr++;
             }
             countNum++;
@@ -167,13 +162,13 @@ public class VgmDriver extends BaseDriver {
 
         // Send wait
         if (model == EnmModel.RealModel) {
-            if (vgmSpeed == 1) { // Apply weight only when speed is constant
+            if (speed == 1) { // Apply weight only when speed is constant
                 if (vgm.useChipYM2612Ch6)
                     plugin.chipRegister.chip(Ym2612Chip.class).setSyncWait(0, vgm.vgmWait);
 //                if ((useChip & enmUseChip.SN76489) == enmUseChip.SN76489)
-//                    plugin.audio.chipRegister.setSN76489SyncWait(vgmWait);
-//                plugin.audio.chipRegister.setYM2608SyncWait(vgmWait);
-//                plugin.audio.chipRegister.setYM2151SyncWait(vgmWait);
+//                    plugin.chipRegister.setSN76489SyncWait(vgmWait);
+//                plugin.chipRegister.setYM2608SyncWait(vgmWait);
+//                plugin.chipRegister.setYM2151SyncWait(vgmWait);
             }
         }
 
@@ -182,22 +177,26 @@ public class VgmDriver extends BaseDriver {
 
         vgm.vgmWait--;
         counter++;
-        vgmFrameCounter++;
+        frameCounter++;
     }
 
+    /**
+     * @param args 0: vgmGd3
+     */
     @Override
-    public Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
+    public MetaData getMetaData(byte[] buf, Object... args) {
+        int vgmGd3 = (int) args[0];
 
-        int adr = vgmGd3[0] + 12 + 0x14;
-        gd3 = Common.getGD3Info(buf, adr);
-        gd3.usedChips = usedChips;
+        int adr = vgmGd3 + 12 + 0x14;
+        metaData = Common.getMetaData(buf, adr);
+        metaData.set(Tag.Chip, usedChips);
 
-        return gd3;
+        return metaData;
     }
 
     @Override
     public long getDriverCounter() {
-        return vgmFrameCounter;
+        return frameCounter;
     }
 
     @Override

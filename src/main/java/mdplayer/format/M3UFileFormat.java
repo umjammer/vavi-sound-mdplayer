@@ -59,7 +59,7 @@ public class M3UFileFormat extends BaseFileFormat {
     }
 
     @Override
-    public List<PlayList.Music> addFileLoop(int index, PlayList.Music mc, Archive archive, Entry entry/* = null*/) {
+    public List<PlayList.Music> addFileLoop(int index, PlayList.Music mc, Archive archive, Entry entry /* = null */) {
 
         String rootPath = Path.getDirectoryName(mc.fileName);
         PlayList pl;

@@ -3,15 +3,15 @@ package mdplayer.driver.fmp;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
-import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.Ppz8Chip;
 import mdplayer.chips.Ym2608Chip;
 import mdplayer.driver.BaseDriver;
-import mdplayer.driver.Vgm;
 import mdplayer.driver.fmp.nise98.FileTemp;
 import mdplayer.plugin.BasePlugin;
+import musicDriverInterface.MetaData;
+import musicDriverInterface.MetaData.Tag;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
@@ -63,35 +63,34 @@ public class FmpDriver extends BaseDriver {
     }
 
     @Override
-    public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
-        Vgm.Gd3 ret = new Vgm.Gd3();
+    public MetaData getMetaData(byte[] buf, Object... args) {
+        MetaData md = new MetaData();
 
         try {
             if (buf != null && buf.length > 2) {
                 int[] ptr = new int[] {(ByteUtil.readLeShort(buf, 0) & 0xffff) + 4}; // 4 'FMC'+version(1byte)
                 String comment = Common.getNRDString(buf, /* ref */ ptr);
-                ret.trackName = comment;
-                ret.trackNameJ = ret.trackName;
+                md.set(Tag.Title, comment);
+                md.set(Tag.TitleJ, md.getFirst(Tag.Title));
 
             }
         } catch (Exception e) {
-            ret.trackName = "";
-            ret.trackNameJ = "";
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
 
-        return ret;
+        return md;
     }
 
     @Override
     public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     Class<? extends Chip>[] useChip, int latency, int waitTime, Object... args) {
+                     int latency, int waitTime, Object... args) {
 
-        Vgm.Gd3 gd3 = getGD3Info(vgmBuf, 0);
+        MetaData _ = getMetaData(vgmBuf, 0);
         this.plugin = plugin;
         loopCounter = 0;
-        vgmCurLoop = 0;
+        curLoop = 0;
         this.model = model;
-        vgmFrameCounter = -latency - waitTime;
+        frameCounter = -latency - waitTime;
 
         try {
             fmp.run(vgmBuf);
@@ -103,21 +102,21 @@ public class FmpDriver extends BaseDriver {
     @Override
     public void processOneFrame() {
         try {
-            vgmSpeedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * vgmSpeed;
-            while (vgmSpeedCounter >= 1.0) {
-                vgmSpeedCounter -= 1.0;
+            speedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * speed;
+            while (speedCounter >= 1.0) {
+                speedCounter -= 1.0;
 
-                if (vgmFrameCounter > -1) {
+                if (frameCounter > -1) {
                     counter++;
 
                     fmp.nise98.runTimer();
                     if (!fmp.nise98.intTimer()) continue;
-                    vgmCurLoop = fmp.processOneFrame(() -> stopped = true);
+                    curLoop = fmp.processOneFrame(() -> stopped = true);
                 }
-                vgmFrameCounter++;
+                frameCounter++;
             }
 
-            //vgmCurLoop = mm.ReadUInt16(reg.a6 + dw.LOOP_COUNTER);
+            //curLoop = mm.ReadUInt16(reg.a6 + dw.LOOP_COUNTER);
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
         }

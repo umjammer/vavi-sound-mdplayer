@@ -407,7 +407,7 @@ int CC;
 
         if (getCounter.getAsInt() < 0) {
             incCounter.accept(length);
-//logger.log(Level.DEBUG, "vgmFrameCounter: " + vgmFrameCounter);
+//logger.log(Level.DEBUG, "frameCounter: " + frameCounter);
             return length;
         }
 

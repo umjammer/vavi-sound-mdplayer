@@ -15,7 +15,6 @@ import java.io.UncheckedIOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -30,13 +29,13 @@ import dotnet4j.io.FileMode;
 import dotnet4j.io.FileShare;
 import dotnet4j.io.FileStream;
 import dotnet4j.io.Stream;
-import dotnet4j.util.compat.Tuple3;
-import mdplayer.driver.Vgm;
-import mdplayer.driver.Vgm.Gd3;
+import musicDriverInterface.MetaData;
+import musicDriverInterface.MetaData.Tag;
 import vavi.awt.dnd.BasicDTListener;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.function.Predicate.not;
 
 
@@ -115,40 +114,25 @@ public class Common {
         return ByteUtil.toByteArray(ary);
     }
 
-    public static Vgm.Gd3 getGD3Info(byte[] buf, int adr) {
-        Gd3 gd3 = new Vgm.Gd3();
-
-        gd3.trackName = "";
-        gd3.trackNameJ = "";
-        gd3.gameName = "";
-        gd3.gameNameJ = "";
-        gd3.systemName = "";
-        gd3.systemNameJ = "";
-        gd3.composer = "";
-        gd3.composerJ = "";
-        gd3.converted = "";
-        gd3.notes = "";
-        gd3.vgmBy = "";
-        gd3.version = "";
-        gd3.usedChips = "";
+    public static MetaData getMetaData(byte[] buf, int adr) {
+        MetaData metaData = new MetaData();
 
         try {
             int[] adr_ = new int[] {adr};
-            try { gd3.trackName = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8); } catch (Exception e) { gd3.trackName = null; }
-            try { gd3.trackNameJ = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8); } catch (Exception e) { gd3.trackNameJ = null; }
-            try { gd3.gameName = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8); } catch (Exception e) { gd3.gameName = null; }
-            try { gd3.gameNameJ = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8); } catch (Exception e) { gd3.gameNameJ = null; }
-            try { gd3.systemName = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8); } catch (Exception e) { gd3.systemName = null; }
-            try { gd3.systemNameJ = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8); } catch (Exception e) { gd3.systemNameJ = null; }
-            try { gd3.composer = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8); } catch (Exception e) { gd3.composer = null; }
-            try { gd3.composerJ = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8); } catch (Exception e) { gd3.composerJ = null; }
-            try { gd3.converted = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8); } catch (Exception e) { gd3.converted = null; }
-            try { gd3.vgmBy = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8); } catch (Exception e) { gd3.vgmBy = null; }
-            try { gd3.notes = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8); } catch (Exception e) { gd3.notes = null; }
+            try { metaData.set(Tag.Title, new String(Common.getByteArray(buf, adr_), UTF_8)); } catch (Exception _) {}
+            try { metaData.set(Tag.TitleJ, new String(Common.getByteArray(buf, adr_), UTF_8)); } catch (Exception _) {}
+            try { metaData.set(Tag.GameTitle, new String(Common.getByteArray(buf, adr_), UTF_8)); } catch (Exception _) {}
+            try { metaData.set(Tag.GameTitleJ, new String(Common.getByteArray(buf, adr_), UTF_8)); } catch (Exception _) {}
+            try { metaData.set(Tag.GameSystem, new String(Common.getByteArray(buf, adr_), UTF_8)); } catch (Exception _) {}
+            try { metaData.set(Tag.GameSystemJ, new String(Common.getByteArray(buf, adr_), UTF_8)); } catch (Exception _) {}
+            try { metaData.set(Tag.Composer, new String(Common.getByteArray(buf, adr_), UTF_8)); } catch (Exception _) {}
+            try { metaData.set(Tag.ComposerJ, new String(Common.getByteArray(buf, adr_), UTF_8)); } catch (Exception _) {}
+            try { metaData.set(Tag.Converter, new String(Common.getByteArray(buf, adr_), UTF_8)); } catch (Exception _) {}
+            try { metaData.set(Tag.Maker, new String(Common.getByteArray(buf, adr_), UTF_8)); } catch (Exception _) {}
+            try { metaData.set(Tag.Note, new String(Common.getByteArray(buf, adr_), UTF_8)); } catch (Exception _) {}
             // Lyric(Custom extensions)
             byte[] bLyric = Common.getByteArray(buf, adr_);
             if (bLyric != null) {
-                gd3.lyrics = new ArrayList<>();
                 int i = 0;
                 int st = 0;
                 while (i < bLyric.length) {
@@ -156,25 +140,22 @@ public class Common {
                     int l = bLyric[i + 1] & 0xff;
                     if ((h == 0x5b && l == 0x00 && i != 0) || i >= bLyric.length - 2) {
                         if ((i >= bLyric.length - 2) || (bLyric[i + 2] != 0x5b || bLyric[i + 3] != 0x00)) {
-                            String m = new String(bLyric, st, i - st + ((i >= bLyric.length - 2) ? 2 : 0), StandardCharsets.UTF_8);
+                            String m = new String(bLyric, st, i - st + ((i >= bLyric.length - 2) ? 2 : 0), UTF_8);
                             st = i;
 
                             int cnt = Integer.parseInt(m.substring(1, m.indexOf("]") - 1));
                             m = m.substring(m.indexOf("]") + 1);
-                            gd3.lyrics.add(new Tuple3<>(cnt, cnt, m));
+                            metaData.add(Tag.Lyric, cnt + "," + cnt + "." + m);
                         }
                     }
                     i += 2;
                 }
-            } else {
-                gd3.lyrics = null;
             }
-
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
         }
 
-        return gd3;
+        return metaData;
     }
 
     public static String getNRDString(byte[] buf, /* ref */ int[] index) {

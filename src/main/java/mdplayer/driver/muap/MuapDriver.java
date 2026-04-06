@@ -20,14 +20,12 @@ import dotnet4j.io.Path;
 import dotnet4j.io.Stream;
 import dotnet4j.util.compat.TriConsumer;
 import dotnet4j.util.compat.Tuple;
-import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.Cs4231Chip;
 import mdplayer.chips.Ym2608Chip;
 import mdplayer.chips.Ym2612Chip;
 import mdplayer.driver.BaseDriver;
-import mdplayer.driver.Vgm.Gd3;
 import mdplayer.driver.mucom.MucomDriver;
 import mdplayer.plugin.BasePlugin;
 import muap.driver.Ems.EMS_AllocMemory;
@@ -39,6 +37,7 @@ import musicDriverInterface.ChipDatum;
 import musicDriverInterface.CompilerInfo;
 import musicDriverInterface.ICompiler;
 import musicDriverInterface.IDriver;
+import musicDriverInterface.MetaData;
 import musicDriverInterface.MmlDatum;
 import vavi.util.ByteUtil;
 
@@ -65,37 +64,31 @@ public class MuapDriver extends BaseDriver {
     }
 
     @Override
-    public Gd3 getGD3Info(byte[] buf, int vgmGd3) {
+    public MetaData getMetaData(byte[] buf, Object... args) {
         // muap basically has no tag information
         // (There is data that uses the lyrics function to display the title.)
-        Gd3 gt = new Gd3();
-        return gt;
-    }
-
-    @Override
-    public Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
-        throw new UnsupportedOperationException();
+        MetaData md = new MetaData();
+        return md;
     }
 
     @Override
     public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     Class<? extends Chip>[] useChip, int latency, int waitTime, Object... args) {
-        gd3 = getGD3Info(vgmBuf, 0);
+                     int latency, int waitTime, Object... args) {
+        metaData = getMetaData(vgmBuf);
 
-        this.vgmBuf = vgmBuf;
+        this.dataBuf = vgmBuf;
         this.plugin = plugin;
         this.model = model;
-        this.useChip = useChip;
         this.latency = latency;
         this.waitTime = waitTime;
 
         counter = 0;
         totalCounter = 0;
         loopCounter = 0;
-        vgmCurLoop = 0;
+        curLoop = 0;
         stopped = false;
-        vgmFrameCounter = -latency - waitTime;
-        vgmSpeed = 1;
+        frameCounter = -latency - waitTime;
+        speed = 1;
 
 //#if DEBUG
         // Skip processing for real chip thread (for debugging)
@@ -117,19 +110,19 @@ public class MuapDriver extends BaseDriver {
         if (stopped) return;
 
         try {
-            vgmSpeedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * vgmSpeed;
-            while (vgmSpeedCounter >= 1.0) {
-                vgmSpeedCounter -= 1.0;
+            speedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * speed;
+            while (speedCounter >= 1.0) {
+                speedCounter -= 1.0;
 
                 muapDriver.render();
 
                 counter++;
-                vgmFrameCounter++;
+                frameCounter++;
             }
 
             int lp = muapDriver.getNowLoopCounter();
             lp = lp < 0 ? 0 : lp;
-            vgmCurLoop = lp;
+            curLoop = lp;
 
             if (muapDriver.getStatus() < 1) {
                 //if (mucomDriver.GetStatus() == 0 && !Stopped) {
@@ -218,7 +211,7 @@ public class MuapDriver extends BaseDriver {
         if (muapDriver == null) muapDriver = IDriver.factory("muap.driver.Driver");
 
         List<MmlDatum> buf = new ArrayList<>();
-        for (byte b : vgmBuf) buf.add(new MmlDatum(b & 0xff));
+        for (byte b : dataBuf) buf.add(new MmlDatum(b & 0xff));
 
         List<ChipAction> lca = new ArrayList<>();
         MuapChipAction ca;
@@ -316,7 +309,7 @@ public class MuapDriver extends BaseDriver {
         if (dat.port == -1) return;
         //logger.log(Level.TRACE, "Out ChipA:%d Port:%d Adr:[%02x] val[%02x]".formatted(chipId, dat.port, dat.address, dat.data));
 
-        plugin.chipRegister.chip(Ym2608Chip.class).write(chipId, dat.port, dat.address, dat.data, model /*, vgmFrameCounter */);
+        plugin.chipRegister.chip(Ym2608Chip.class).write(chipId, dat.port, dat.address, dat.data, model /*, frameCounter */);
     }
 
     void OPN2Write(int chipId, ChipDatum dat) {
@@ -330,7 +323,7 @@ public class MuapDriver extends BaseDriver {
         if (dat.port == -1) return;
         //Debug.WriteLine(string.Format("Out ChipA:%d Port:%d Adr:[{%02x] val[%02x]", chipId, dat.port, dat.address, dat.data));
 
-        plugin.chipRegister.chip(Ym2612Chip.class).write(chipId, dat.port, dat.address, dat.data, model, vgmFrameCounter);
+        plugin.chipRegister.chip(Ym2612Chip.class).write(chipId, dat.port, dat.address, dat.data, model, frameCounter);
     }
 
     void CS4231Write(ChipDatum dat) {

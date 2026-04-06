@@ -6,8 +6,8 @@
 
 package mdplayer.driver.nsf;
 
-import mdplayer.driver.Vgm.Gd3;
 import mdsound.MDSound.Chip;
+import musicDriverInterface.MetaData;
 
 
 /**
@@ -48,7 +48,7 @@ public interface NsfDriver {
 
     void setFme7(Chip chip);
 
-    Gd3 getGD3Info(byte[] buf, int[] vgmGd3);
+    MetaData getMetaData(byte[] buf, Object... args);
 
     int getSongs();
 }

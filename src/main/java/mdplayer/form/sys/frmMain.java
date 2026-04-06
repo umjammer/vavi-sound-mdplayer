@@ -129,8 +129,6 @@ import mdplayer.chips.YmF262Chip;
 import mdplayer.chips.YmF278BChip;
 import mdplayer.chips.YmZ280BChip;
 import mdplayer.driver.BaseDriver;
-import mdplayer.driver.Vgm;
-import mdplayer.driver.Vgm.Gd3;
 import mdplayer.form.kb.driver.frmPPZ8;
 import mdplayer.form.kb.frmMIDI;
 import mdplayer.form.kb.frmRegTest;
@@ -178,6 +176,8 @@ import mdplayer.properties.Resources;
 import mdsound.chips.K051649;
 import mdsound.chips.OotakeHuC6280;
 import mdsound.np.chip.NesN106;
+import musicDriverInterface.MetaData;
+import musicDriverInterface.MetaData.Tag;
 
 import static java.lang.System.getLogger;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
@@ -4001,10 +4001,10 @@ public class frmMain extends JFrame {
         audio.plugin.updateVol();
 
         String newInfo;
-        Gd3 gd3 = (audio.plugin.driverVirtual != null) ? audio.plugin.driverVirtual.gd3 : null;
-        if (gd3 != null) {
-            String title = gd3.trackName;
-            String usedChips = gd3.usedChips;
+        MetaData metaData = (audio.plugin.driverVirtual != null) ? audio.plugin.driverVirtual.metaData : null;
+        if (metaData != null) {
+            String title = metaData.getFirst(Tag.Title);
+            String usedChips = metaData.getFirst(Tag.Chip);
             newInfo = "MDPlayer - [%s] %s".formatted(usedChips, title);
         } else {
             newInfo = "MDPlayer";
@@ -5826,11 +5826,11 @@ public class frmMain extends JFrame {
         buf.append("\n");
         int alg = 0, fb = 0, ams = 0, pms = 0;
 
-        Vgm.Gd3 gd3 = (audio.plugin.driverVirtual != null) ? audio.plugin.driverVirtual.gd3 : null;
+        MetaData metaData = (audio.plugin.driverVirtual != null) ? audio.plugin.driverVirtual.metaData : null;
         String patch_Name = "MDPlayer_%d";
-        if (gd3 != null) {
-            String pn = gd3.trackName;
-            if (pn == null || !pn.isEmpty()) pn = gd3.trackNameJ;
+        if (metaData != null) {
+            String pn = metaData.getFirst(Tag.Title);
+            if (pn == null || !pn.isEmpty()) pn = metaData.getFirst(Tag.TitleJ);
             if (pn != null && pn.isEmpty()) {
                 patch_Name = pn + "_%d";
             }

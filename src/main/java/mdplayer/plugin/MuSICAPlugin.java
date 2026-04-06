@@ -46,7 +46,7 @@ public class MuSICAPlugin extends BasePlugin<MusicaDriver> {
             }
 
             MusicaK4Driver driverVirtual = new MusicaK4Driver();
-            driverVirtual.init(vgmBuf, this, null, null, -1, -1);
+            driverVirtual.init(vgmBuf, this, null, -1, -1);
             driverVirtual.compile(vgmBuf, vcdBuf);
 
             vgmBuf = driverVirtual.getBgmBin();
@@ -135,12 +135,10 @@ logger.log(Level.INFO, "MuSICA: AY: %b, SCC: %b, OPLL: %b".formatted(useAY, useS
         }
 
         driverVirtual.init(vgmBuf, this, EnmModel.VirtualModel,
-                new Class[] {Ay8910Chip.class, Ym2413Chip.class, K051649Chip.class},
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         if (driverReal != null) {
             driverReal.init(vgmBuf, this, EnmModel.RealModel,
-                    new Class[] {Ay8910Chip.class},
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         }

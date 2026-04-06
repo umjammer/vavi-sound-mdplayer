@@ -115,13 +115,11 @@ public class PMDPlugin extends BasePlugin<PmdDriver> {
         chipRegister.chip(Ym2608Chip.class).setSsgVolume(1, setting.getBalance().getGimicOPNAVolume(), Common.EnmModel.RealModel);
 
         driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel,
-                new Class[] {Ym2608Chip.class},
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000,
                 fileFormat);
         if (driverReal != null) {
             driverReal.init(vgmBuf, this, Common.EnmModel.RealModel,
-                    new Class[] {Ym2608Chip.class},
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000,
                     fileFormat);

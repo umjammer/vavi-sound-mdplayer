@@ -147,7 +147,7 @@ public class Xgm2 {
     }
 
     void clock(boolean stopped) {
-        pcmSpeedCounter++; //= (double) Common.VGMProcSampleRate / setting.outputDevice.SampleRate * vgmSpeed;
+        pcmSpeedCounter++; //= (double) Common.VGMProcSampleRate / setting.outputDevice.SampleRate * speed;
         while (pcmSpeedCounter >= 1.0 && !stopped) {
             pcmSpeedCounter -= 1.0;
             onePCMFrameMain();

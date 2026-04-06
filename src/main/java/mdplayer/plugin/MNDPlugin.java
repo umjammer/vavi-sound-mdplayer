@@ -167,12 +167,10 @@ public class MNDPlugin extends BasePlugin<MnDriver> {
             chipRegister.chip(Ym2203Chip.class).setSsgVolume((byte) 1, setting.getBalance().getGimicOPNVolume(), EnmModel.RealModel);
 
         driverVirtual.init(vgmBuf, this, EnmModel.VirtualModel,
-                new Class[] {Ym2151Chip.class, Ym2608Chip.class},
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         if (driverReal != null) {
             driverReal.init(vgmBuf, this, EnmModel.RealModel,
-                    new Class[] {Ym2151Chip.class, Ym2608Chip.class},
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         }

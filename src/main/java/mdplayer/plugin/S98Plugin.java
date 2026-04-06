@@ -55,12 +55,10 @@ public class S98Plugin extends BasePlugin<S98Driver> {
     @Override
     protected void initChips() {
         driverVirtual.init(vgmBuf, this, EnmModel.VirtualModel,
-                new Class[] {Ym2203Chip.class},
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         if (driverReal != null) {
             driverReal.init(vgmBuf, this, EnmModel.RealModel,
-                    new Class[] {Ym2203Chip.class},
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         }

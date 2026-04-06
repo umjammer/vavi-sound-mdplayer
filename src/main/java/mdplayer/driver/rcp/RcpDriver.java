@@ -6,15 +6,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import dotnet4j.util.compat.Tuple;
-import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.MidiOutInfo;
 import mdplayer.chips.MidiPlugin;
+import mdplayer.chips.VstPlugin;
 import mdplayer.chips.Ym2612Chip;
 import mdplayer.driver.BaseDriver;
-import mdplayer.driver.Vgm.Gd3;
 import mdplayer.plugin.BasePlugin;
+import musicDriverInterface.MetaData;
+import musicDriverInterface.MetaData.Tag;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
@@ -34,9 +35,10 @@ public class RcpDriver extends BaseDriver {
 
     public RcpDriver() {
         this.rcp = new RCP();
+        int vstDelta = plugin.chipRegister.plugin(VstPlugin.class).vstDelta;
         rcp.midiSend = (l, d) -> plugin.chipRegister.plugin(MidiPlugin.class).send(model, l, d, vstDelta);
         rcp.lyric = l -> plugin.chipRegister.plugin(MidiPlugin.class).params[0].Lyric = l;
-        rcp.counter = () -> vgmFrameCounter = -latency - waitTime;
+        rcp.counter = () -> frameCounter = -latency - waitTime;
         rcp.midiCount = () -> plugin.chipRegister.plugin(MidiPlugin.class).getCount();
         rcp.stop = () -> stopped = true;
     }
@@ -46,13 +48,13 @@ public class RcpDriver extends BaseDriver {
     }
 
     @Override
-    public Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
+    public MetaData getMetaData(byte[] buf, Object... args) {
         if (buf == null) return null;
         Boolean ret = RCP.checkHeadString(buf);
         if (ret == null) return null;
         boolean isG36 = ret;
 
-        Gd3 gd3 = new Gd3();
+        MetaData md = new MetaData();
         int ptr = 32;
         StringBuilder str;
 
@@ -63,8 +65,8 @@ public class RcpDriver extends BaseDriver {
         }
         str = new StringBuilder(new String(ByteUtil.toByteArray(title), charset).trim());
         ptr += 64;
-        gd3.trackName = str.toString();
-        gd3.trackNameJ = str.toString();
+        md.set(Tag.Title, str.toString());
+        md.set(Tag.TitleJ, str.toString());
 
         if (isG36) {
             ptr += 64;
@@ -75,33 +77,32 @@ public class RcpDriver extends BaseDriver {
                 str.append("%s\n".formatted(new String(buf, ptr + i * 28, 28, charset).replace("\0", "")));
             }
         }
-        gd3.notes = str.toString();
+        md.set(Tag.Note, str.toString());
 
-        return gd3;
+        return md;
     }
 
     @Override
     public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     Class<? extends Chip>[] useChip, int latency, int waitTime, Object... args) {
-        this.vgmBuf = vgmBuf;
+                     int latency, int waitTime, Object... args) {
+        this.dataBuf = vgmBuf;
         this.plugin = plugin;
         this.model = model;
-        this.useChip = useChip;
         this.latency = latency;
         this.waitTime = waitTime;
 
         counter = 0;
         totalCounter = 0;
         loopCounter = 0;
-        vgmCurLoop = 0;
+        curLoop = 0;
         stopped = false;
         // Set 0 here to wait after sending control.
-        //vgmFrameCounter = -latency - waitTime;
-        vgmFrameCounter = 0;
-        vgmSpeed = 1;
-        vgmSpeedCounter = 0;
+        //frameCounter = -latency - waitTime;
+        frameCounter = 0;
+        speed = 1;
+        speedCounter = 0;
 
-        gd3 = getGD3Info(vgmBuf);
+        metaData = getMetaData(vgmBuf);
         //if (Gd3 == null) return false;
 
         if (!rcp.getInformationHeader()) {
@@ -124,17 +125,17 @@ public class RcpDriver extends BaseDriver {
     @Override
     public void processOneFrame() {
         try {
-            vstDelta++;
-            vgmSpeedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * vgmSpeed;
-            while (vgmSpeedCounter >= 1.0 && !stopped) {
-                vgmSpeedCounter -= 1.0;
-                if (vgmFrameCounter > -1) {
+            plugin.chipRegister.plugin(VstPlugin.class).vstDelta++;
+            speedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * speed;
+            while (speedCounter >= 1.0 && !stopped) {
+                speedCounter -= 1.0;
+                if (frameCounter > -1) {
                     counter++;
-                    vgmFrameCounter++;
+                    frameCounter++;
 
                     rcp.oneFrameMain();
                 } else {
-                    vgmFrameCounter++;
+                    frameCounter++;
                 }
             }
             //stopped = !isPlaying();

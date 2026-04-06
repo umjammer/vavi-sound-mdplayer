@@ -3,16 +3,15 @@ package mdplayer.driver.ndp;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
-import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.Ay8910Chip;
 import mdplayer.chips.K051649Chip;
 import mdplayer.chips.Ym2413Chip;
 import mdplayer.driver.BaseDriver;
-import mdplayer.driver.Vgm;
-import mdplayer.driver.Vgm.Gd3;
 import mdplayer.plugin.BasePlugin;
+import musicDriverInterface.MetaData;
+import musicDriverInterface.MetaData.Tag;
 
 import static java.lang.System.getLogger;
 
@@ -36,42 +35,35 @@ public class NdpDriver extends BaseDriver {
     }
 
     @Override
-    public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
-        Gd3 ret = new Gd3();
+    public MetaData getMetaData(byte[] buf, Object... args) {
+        MetaData md = new MetaData();
         if (buf != null && buf.length > 8) {
             if (buf.length > 7 + 0x0b && (buf[7 + 0x0b] & 2) != 0) {
                 int[] index = new int[] {7 + 0xe};
                 String TITLE = Common.getNRDString(buf, /* ref */ index, (byte) 0xff);
-                gd3.trackName = gd3.trackNameJ = TITLE;
+                md.set(Tag.Title, TITLE); md.set(Tag.TitleJ, TITLE);
                 String COMPOSER = Common.getNRDString(buf, /* ref */ index, (byte) 0xff);
-                gd3.composer = gd3.composerJ = COMPOSER;
+                md.set(Tag.Composer, COMPOSER); md.set(Tag.ComposerJ, COMPOSER);
                 String ARRANGER = Common.getNRDString(buf, /* ref */ index, (byte) 0xff);
-                gd3.systemName = ARRANGER;
+                md.set(Tag.GameSystem, ARRANGER);
                 String PROGRAMMER = Common.getNRDString(buf, /* ref */ index, (byte) 0xff);
-                gd3.converted = PROGRAMMER;
+                md.set(Tag.Converter, PROGRAMMER);
                 String MEMO = Common.getNRDString(buf, /* ref */ index, (byte) 0xff);
-                gd3.notes = MEMO;
+                md.set(Tag.Note, MEMO);
             }
-            ret.trackName = gd3.trackName;
-            ret.trackNameJ = gd3.trackNameJ;
-            ret.composer = gd3.composer;
-            ret.composerJ = gd3.composerJ;
-            ret.systemName = gd3.systemName;
-            ret.converted = gd3.converted;
-            ret.notes = gd3.notes;
         }
 
-        return ret;
+        return md;
     }
 
     @Override
     public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     Class<? extends Chip>[] useChip, int latency, int waitTime, Object... args) {
+                     int latency, int waitTime, Object... args) {
         this.plugin = plugin;
         loopCounter = 0;
-        vgmCurLoop = 0;
+        curLoop = 0;
         this.model = model;
-        vgmFrameCounter = -latency - waitTime;
+        frameCounter = -latency - waitTime;
 
         try {
             ndp.run(vgmBuf);
@@ -83,13 +75,13 @@ public class NdpDriver extends BaseDriver {
     @Override
     public void processOneFrame() {
         try {
-            vgmSpeedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * vgmSpeed;
-            while (vgmSpeedCounter >= 1.0) {
-                vgmSpeedCounter -= 1.0;
-                if (vgmFrameCounter > -1) {
+            speedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * speed;
+            while (speedCounter >= 1.0) {
+                speedCounter -= 1.0;
+                if (frameCounter > -1) {
                     oneFrameMain();
                 } else {
-                    vgmFrameCounter++;
+                    frameCounter++;
                 }
             }
             //stopped = !isPlaying();
@@ -101,10 +93,10 @@ public class NdpDriver extends BaseDriver {
     private void oneFrameMain() {
         try {
             counter++;
-            vgmFrameCounter++;
+            frameCounter++;
 
-            if (vgmFrameCounter % (Common.VGMProcSampleRate / 60) == 0) {
-                vgmCurLoop = ndp.interrupt(() -> stopped = true);
+            if (frameCounter % (Common.VGMProcSampleRate / 60) == 0) {
+                curLoop = ndp.interrupt(() -> stopped = true);
             }
         } catch (Exception ex) {
             logger.log(Level.ERROR, "Exception in interrupt: " + ex.getMessage(), ex);

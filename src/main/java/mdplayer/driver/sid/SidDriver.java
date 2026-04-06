@@ -8,7 +8,7 @@ package mdplayer.driver.sid;
 
 import java.util.Map;
 
-import mdplayer.driver.Vgm;
+import musicDriverInterface.MetaData;
 
 
 /**
@@ -23,7 +23,7 @@ public interface SidDriver {
 
     Map<String, Object> getInfo();
 
-    Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3);
+    MetaData getMetaData(byte[] buf, Object... args);
 
     int getSongs();
 }

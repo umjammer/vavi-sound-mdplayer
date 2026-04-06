@@ -5,7 +5,6 @@ import java.lang.System.Logger.Level;
 import java.util.List;
 
 import dotnet4j.util.compat.Tuple;
-import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.MPcmChip;
@@ -13,11 +12,11 @@ import mdplayer.chips.MidiPlugin;
 import mdplayer.chips.Pcm8Chip;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.driver.BaseDriver;
-import mdplayer.driver.Vgm;
-import mdplayer.driver.Vgm.Gd3;
 import mdplayer.driver.mxdrv.MXDRV.Pcm8Interface;
 import mdplayer.driver.zms.Zms.MPcmInterface;
 import mdplayer.plugin.BasePlugin;
+import musicDriverInterface.MetaData;
+import musicDriverInterface.MetaData.Tag;
 
 import static java.lang.System.getLogger;
 import static mdplayer.Common.charset;
@@ -44,9 +43,9 @@ public class ZmsDriver extends BaseDriver {
 
     public ZmsDriver() {
         this.zms = new Zms();
-        zms.ym2151Write = (a, d) -> plugin.chipRegister.chip(Ym2151Chip.class).write(0, 0, a, d, model, plugin.chipRegister.chip(Ym2151Chip.class).hosei[0], vgmFrameCounter);
+        zms.ym2151Write = (a, d) -> plugin.chipRegister.chip(Ym2151Chip.class).write(0, 0, a, d, model, plugin.chipRegister.chip(Ym2151Chip.class).hosei[0], frameCounter);
         zms.midiSend = (l, d) -> plugin.chipRegister.plugin(MidiPlugin.class).send(model, l, d, 0);
-        zms.loop = l -> vgmCurLoop = l;
+        zms.loop = l -> curLoop = l;
         zms.stop = () -> stopped = true;
         zms.wait = () -> (int) (setting.getOutputDevice().getSampleRate() * (double) setting.getZMusic().waitNextPlay / 1000.0);
         zms.pcm8 = new Pcm8Interface() {
@@ -160,17 +159,17 @@ public class ZmsDriver extends BaseDriver {
     }
 
     @Override
-    public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
+    public MetaData getMetaData(byte[] buf, Object... args) {
         if (zms.playingFileName.toUpperCase().endsWith(".ZMS")) {
-            return getGD3InfoZMS(buf);
+            return getMetaDataZMS(buf);
         } else if (zms.playingFileName.toUpperCase().endsWith(".ZMD")) {
-            return getGD3InfoZMD(buf);
+            return getMetaDataZMD(buf);
         } else {
-            return new Gd3();
+            return new MetaData();
         }
     }
 
-    private static Gd3 getGD3InfoZMS(byte[] buf) {
+    private static MetaData getMetaDataZMS(byte[] buf) {
         String text = new String(buf, charset);
         String[] texts = text.split("\r\n");
         String cmt = "";
@@ -180,16 +179,16 @@ public class ZmsDriver extends BaseDriver {
             cmt = s.trim().substring(s.toUpperCase().trim().indexOf(comment) + comment.length()).trim();
             break;
         }
-        Gd3 gd3 = new Gd3();
+        MetaData md = new MetaData();
         if (cmt != null && !cmt.isEmpty()) {
-            gd3.trackName = cmt;
-            gd3.trackNameJ = cmt;
+            md.set(Tag.Title, cmt);
+            md.set(Tag.TitleJ, cmt);
         }
-        return gd3;
+        return md;
     }
 
-    private Gd3 getGD3InfoZMD(byte[] buf) {
-        Gd3 gd3 = new Gd3();
+    private MetaData getMetaDataZMD(byte[] buf) {
+        MetaData md = new MetaData();
 
         if (buf.length < 8) {
             throw new IllegalArgumentException("Unknown zmd file");
@@ -224,22 +223,22 @@ public class ZmsDriver extends BaseDriver {
         }
 
         if (cmt != null && !cmt.isEmpty()) {
-            gd3.trackName = cmt;
-            gd3.trackNameJ = cmt;
+            md.set(Tag.Title, cmt);
+            md.set(Tag.TitleJ, cmt);
         }
-        return gd3;
+        return md;
     }
 
     @Override
     public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     Class<? extends Chip>[] useChip, int latency, int waitTime, Object... args) {
-        gd3 = getGD3Info(vgmBuf, 0);
+                     int latency, int waitTime, Object... args) {
+        metaData = getMetaData(vgmBuf, 0);
         this.plugin = plugin;
         loopCounter = 0;
-        vgmCurLoop = 0;
+        curLoop = 0;
         this.model = model;
-        vgmFrameCounter = -latency - waitTime;
-        vgmSpeed = 1;
+        frameCounter = -latency - waitTime;
+        speed = 1;
         zms.setZPDSearchPath();
 
         try {
@@ -255,21 +254,21 @@ public class ZmsDriver extends BaseDriver {
         try {
             if (zms.waitNextPlay-- > 0) return;
 
-            vgmSpeedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * vgmSpeed;
-            while (vgmSpeedCounter >= 1.0) {
-                vgmSpeedCounter -= 1.0;
+            speedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * speed;
+            while (speedCounter >= 1.0) {
+                speedCounter -= 1.0;
 
-                if (vgmFrameCounter > -1) {
+                if (frameCounter > -1) {
                     counter++;
 
                     zms.trap();
                 }
-                vgmFrameCounter++;
+                frameCounter++;
             }
 
 //            if (SkipSwitchPianoRoll) return;
             zms.clock();
-            //vgmCurLoop = mm.readShort(reg.a6 + dw.LOOP_COUNTER);
+            //curLoop = mm.readShort(reg.a6 + dw.LOOP_COUNTER);
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
         }

@@ -5,16 +5,16 @@ import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.List;
 
-import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.MidiOutInfo;
 import mdplayer.chips.MidiPlugin;
+import mdplayer.chips.VstPlugin;
 import mdplayer.chips.Ym2612Chip;
 import mdplayer.driver.BaseDriver;
-import mdplayer.driver.Vgm;
-import mdplayer.driver.Vgm.Gd3;
 import mdplayer.plugin.BasePlugin;
+import musicDriverInterface.MetaData;
+import musicDriverInterface.MetaData.Tag;
 import vavi.util.ByteUtil;
 
 import static mdplayer.Common.charset;
@@ -31,21 +31,21 @@ public class MidiDriver extends BaseDriver {
 
     public MidiDriver() {
         this.midi = new MID();
+        int vstDelta = plugin.chipRegister.plugin(VstPlugin.class).vstDelta;
         midi.send0 = (n, d) -> plugin.chipRegister.plugin(MidiPlugin.class).send(model, n, d, vstDelta);
         midi.send2 = (n, d1, d2) -> plugin.chipRegister.plugin(MidiPlugin.class).send(model, n, d1, d2, vstDelta);
         midi.send3 = (n, d1, d2, d) -> plugin.chipRegister.plugin(MidiPlugin.class).send(model, n, d1, d2, d, vstDelta);
         midi.lyric = (n, l) -> plugin.chipRegister.plugin(MidiPlugin.class).params[n].Lyric = l;
         midi.stop = () -> stopped = true;
-        midi.counter = () -> vgmFrameCounter = -latency - waitTime;
+        midi.counter = () -> frameCounter = -latency - waitTime;
     }
 
     @Override
-    public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
+    public MetaData getMetaData(byte[] buf, Object... args) {
         if (buf == null) return null;
 
-        Vgm.Gd3 gd3 = new Gd3();
+        MetaData md = new MetaData();
         String T01TrackName = "";
-
 
         try {
             if (ByteUtil.readLeInt(buf, 0) != MID.FCC_MID) return null;
@@ -87,10 +87,10 @@ public class MidiDriver extends BaseDriver {
                                     }
                                     break;
                                 case 0x03:
-                                    if (gd3.trackName.isEmpty()) {
+                                    if (md.getFirst(Tag.Title).isEmpty()) {
                                         if (format == 0 || (format == 1 && i == 0)) {
-                                            gd3.trackName = new String(ByteUtil.toByteArray(eventData), charset).trim();
-                                            gd3.trackNameJ = new String(ByteUtil.toByteArray(eventData), charset).trim();
+                                            md.set(Tag.Title, new String(ByteUtil.toByteArray(eventData), charset).trim());
+                                            md.set(Tag.TitleJ, new String(ByteUtil.toByteArray(eventData), charset).trim());
                                         }
                                     }
                                     break;
@@ -121,44 +121,42 @@ public class MidiDriver extends BaseDriver {
                             }
                         }
                     }
-
                 }
             }
 
             // If no title was found
-            if (gd3.trackName.isEmpty() && gd3.trackNameJ.isEmpty() && !T01TrackName.isEmpty()) {
-                gd3.trackName = T01TrackName;
-                gd3.trackNameJ = T01TrackName;
+            if (md.getFirst(Tag.Title).isEmpty() && md.getFirst(Tag.TitleJ).isEmpty() && !T01TrackName.isEmpty()) {
+                md.set(Tag.Title, T01TrackName);
+                md.set(Tag.TitleJ, T01TrackName);
             }
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
         }
 
-        return gd3;
+        return md;
     }
 
     @Override
     public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     Class<? extends Chip>[] useChip, int latency, int waitTime, Object... args) {
-        this.vgmBuf = vgmBuf;
+                     int latency, int waitTime, Object... args) {
+        this.dataBuf = vgmBuf;
         this.plugin = plugin;
         this.model = model;
-        this.useChip = useChip;
         this.latency = latency;
         this.waitTime = waitTime;
 
         counter = 0;
         totalCounter = 0;
         loopCounter = 0;
-        vgmCurLoop = 0;
+        curLoop = 0;
         stopped = false;
         // Set 0 here to wait after sending control.
-        //vgmFrameCounter = -latency - waitTime;
-        vgmFrameCounter = 0;
-        vgmSpeed = 1;
-        vgmSpeedCounter = 0;
+        //frameCounter = -latency - waitTime;
+        frameCounter = 0;
+        speed = 1;
+        speedCounter = 0;
 
-        gd3 = getGD3Info(vgmBuf);
+        metaData = getMetaData(vgmBuf);
         //if (Gd3 == null) return false;
 
         midi.getInformationHeader(vgmBuf);
@@ -175,16 +173,16 @@ public class MidiDriver extends BaseDriver {
     @Override
     public void processOneFrame() {
         try {
-            vstDelta++;
-            vgmSpeedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * vgmSpeed;
-            while (vgmSpeedCounter >= 1.0 && !stopped) {
-                vgmSpeedCounter -= 1.0;
-                if (vgmFrameCounter > -1) {
+            plugin.chipRegister.plugin(VstPlugin.class).vstDelta++;
+            speedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * speed;
+            while (speedCounter >= 1.0 && !stopped) {
+                speedCounter -= 1.0;
+                if (frameCounter > -1) {
                     counter++;
-                    vgmFrameCounter++;
-                    midi.oneFrameMain(vgmBuf);
+                    frameCounter++;
+                    midi.oneFrameMain(dataBuf);
                 } else {
-                    vgmFrameCounter++;
+                    frameCounter++;
                 }
             }
             //Stopped = !IsPlaying();

@@ -28,6 +28,7 @@ import mdsound.instrument.Ym2610Inst;
 import mdsound.instrument.Ym2612Inst;
 import mdsound.instrument.Ym3438Inst;
 import mdsound.instrument.YmF262Inst;
+import musicDriverInterface.MetaData.Tag;
 
 import static java.lang.System.getLogger;
 import static mdsound.MDSound.Chip.MAIN_TAG;
@@ -63,14 +64,12 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
     @Override
     protected void initChips() {
         driverVirtual.init(vgmBuf, this, EnmModel.VirtualModel,
-                new Class[] {Ym2203Chip.class},
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
 
         if (driverReal != null)
             driverReal.init(vgmBuf, this, EnmModel.RealModel,
-                new Class[] {Ym2203Chip.class},
-                setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
+                    setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
 
         int hiyorimiDeviceFlag = 0;
@@ -968,18 +967,18 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
 
         int SSGVolumeFromTAG = -1;
         if (driverReal != null) {
-            if (driverReal.gd3.systemNameJ.indexOf("9801") > 0) SSGVolumeFromTAG = 31;
-            if (driverReal.gd3.systemNameJ.indexOf("8801") > 0) SSGVolumeFromTAG = 63;
-            if (driverReal.gd3.systemNameJ.indexOf("pc-88") > 0) SSGVolumeFromTAG = 63;
-            if (driverReal.gd3.systemNameJ.indexOf("PC88") > 0) SSGVolumeFromTAG = 63;
-            if (driverReal.gd3.systemNameJ.indexOf("pc-98") > 0) SSGVolumeFromTAG = 31;
-            if (driverReal.gd3.systemNameJ.indexOf("PC98") > 0) SSGVolumeFromTAG = 31;
-            if (driverReal.gd3.systemName.indexOf("9801") > 0) SSGVolumeFromTAG = 31;
-            if (driverReal.gd3.systemName.indexOf("8801") > 0) SSGVolumeFromTAG = 63;
-            if (driverReal.gd3.systemName.indexOf("pc-88") > 0) SSGVolumeFromTAG = 63;
-            if (driverReal.gd3.systemName.indexOf("PC88") > 0) SSGVolumeFromTAG = 63;
-            if (driverReal.gd3.systemName.indexOf("pc-98") > 0) SSGVolumeFromTAG = 31;
-            if (driverReal.gd3.systemName.indexOf("PC98") > 0) SSGVolumeFromTAG = 31;
+            if (driverReal.metaData.getFirst(Tag.GameSystemJ).contains("9801")) SSGVolumeFromTAG = 31;
+            if (driverReal.metaData.getFirst(Tag.GameSystemJ).contains("8801")) SSGVolumeFromTAG = 63;
+            if (driverReal.metaData.getFirst(Tag.GameSystemJ).contains("pc-88")) SSGVolumeFromTAG = 63;
+            if (driverReal.metaData.getFirst(Tag.GameSystemJ).contains("PC88")) SSGVolumeFromTAG = 63;
+            if (driverReal.metaData.getFirst(Tag.GameSystemJ).contains("pc-98")) SSGVolumeFromTAG = 31;
+            if (driverReal.metaData.getFirst(Tag.GameSystemJ).contains("PC98")) SSGVolumeFromTAG = 31;
+            if (driverReal.metaData.getFirst(Tag.GameSystem).contains("9801")) SSGVolumeFromTAG = 31;
+            if (driverReal.metaData.getFirst(Tag.GameSystem).contains("8801")) SSGVolumeFromTAG = 63;
+            if (driverReal.metaData.getFirst(Tag.GameSystem).contains("pc-88")) SSGVolumeFromTAG = 63;
+            if (driverReal.metaData.getFirst(Tag.GameSystem).contains("PC88")) SSGVolumeFromTAG = 63;
+            if (driverReal.metaData.getFirst(Tag.GameSystem).contains("pc-98")) SSGVolumeFromTAG = 31;
+            if (driverReal.metaData.getFirst(Tag.GameSystem).contains("PC98")) SSGVolumeFromTAG = 31;
         }
 
         if (SSGVolumeFromTAG == -1) {

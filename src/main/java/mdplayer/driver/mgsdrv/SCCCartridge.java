@@ -32,7 +32,7 @@ public class SCCCartridge implements Cartridge {
 
         if ((address & 0xff00) == 0x9800) {
             if (address >= 0x9800 && address < 0x9880) {
-                int scc1Port = 0; // vgmBuf[vgmAdr + 1] & 0x7f;
+                int scc1Port = 0; // dataBuf[vgmAdr + 1] & 0x7f;
                 byte scc1Offset = (byte) address;
                 byte rDat = data;
                 int scc1ChipId = 0;

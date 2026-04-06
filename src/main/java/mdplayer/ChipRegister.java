@@ -6,6 +6,7 @@ import java.lang.System.Logger.Level;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.Set;
 
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.MidiPlugin;
@@ -17,7 +18,7 @@ import mdplayer.plugin.BasePlugin;
 import static java.lang.System.getLogger;
 
 
-// TODO could be merged into Audio
+//
 public class ChipRegister {
 
     private static final Logger logger = getLogger(ChipRegister.class.getName());
@@ -31,6 +32,14 @@ public class ChipRegister {
     /** @return nullable */
     public <T extends Chip> T chip(Class<T> clazz) {
         return clazz.cast(chips.getOrDefault(clazz, null));
+    }
+
+    public <T extends Chip> boolean contains(Class<T> clazz) {
+        return chips.containsKey(clazz);
+    }
+
+    public Set<Class<? extends Chip>> chips() {
+        return chips.keySet();
     }
 
     /** @return nullable */

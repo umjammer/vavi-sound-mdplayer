@@ -4,7 +4,6 @@ import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.util.function.BiConsumer;
 
-import mdplayer.Chip.Unused;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.Pcm8Chip;
@@ -122,12 +121,10 @@ logger.log(Level.INFO, "pcm8Type: " + setting.getMxDrv().pcm8Type + ", " + chip.
 //        chipRegister.chip(Ym2203Chip.class).setSsgVolume(1, setting.getBalance().getGimicOPNAVolume(), EnmModel.RealModel);
 
         driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel,
-                new Class[] {Unused.class},
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         if (driverReal != null) {
             driverReal.init(vgmBuf, this, Common.EnmModel.RealModel,
-                    new Class[] {Unused.class},
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         }

@@ -3,13 +3,12 @@ package mdplayer.driver.hes;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
-import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.driver.BaseDriver;
-import mdplayer.driver.Vgm;
 import mdplayer.driver.hes.Hes.HESDetector;
 import mdplayer.plugin.BasePlugin;
+import musicDriverInterface.MetaData;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
@@ -31,7 +30,7 @@ public class HesDriver extends BaseDriver {
     }
 
     @Override
-    public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
+    public MetaData getMetaData(byte[] buf, Object... args) {
         if (ByteUtil.readLeInt(buf, 0) != Hes.FCC_HES) {
             return null;
         }
@@ -55,12 +54,11 @@ public class HesDriver extends BaseDriver {
      */
     @Override
     public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     Class<? extends Chip>[] useChip, int latency, int waitTime, Object... args) {
+                     int latency, int waitTime, Object... args) {
 
-        this.vgmBuf = vgmBuf;
+        this.dataBuf = vgmBuf;
         this.plugin = plugin;
         this.model = model;
-        this.useChip = useChip;
         this.latency = latency;
         this.waitTime = waitTime;
 
@@ -68,18 +66,18 @@ public class HesDriver extends BaseDriver {
 
         if (model == EnmModel.RealModel) {
             stopped = true;
-            vgmCurLoop = 9999;
+            curLoop = 9999;
             return;
         }
 
         counter = 0;
         totalCounter = 0;
         loopCounter = 0;
-        vgmCurLoop = 0;
+        curLoop = 0;
         stopped = false;
-        vgmFrameCounter = -latency - waitTime;
-        vgmSpeed = 1;
-        vgmSpeedCounter = 0;
+        frameCounter = -latency - waitTime;
+        speed = 1;
+        speedCounter = 0;
 
         hes.silent_length = 0;
         hes.playtime_detected = false;
@@ -87,7 +85,7 @@ public class HesDriver extends BaseDriver {
         hes.ld = new HESDetector();
         hes.ld.reset();
 
-        gd3 = getGD3Info(vgmBuf);
+        metaData = getMetaData(vgmBuf);
 
         hes.nez_play = new M_Hes.NEZ_PLAY();
         if (hes.nez_play.HESLoad(vgmBuf, vgmBuf.length) != 0)
@@ -101,14 +99,14 @@ public class HesDriver extends BaseDriver {
     @Override
     public void processOneFrame() {
         try {
-            vgmSpeedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * vgmSpeed;
-            while (vgmSpeedCounter >= 1.0 && !stopped) {
-                vgmSpeedCounter -= 1.0;
-                if (vgmFrameCounter > -1) {
+            speedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * speed;
+            while (speedCounter >= 1.0 && !stopped) {
+                speedCounter -= 1.0;
+                if (frameCounter > -1) {
                     hes.nez_play.ExecuteHES();
                     counter++;
                 } else {
-                    vgmFrameCounter++;
+                    frameCounter++;
                 }
             }
             //Stopped = !IsPlaying();
@@ -125,7 +123,7 @@ public class HesDriver extends BaseDriver {
             for (int i = 0; i < length; i++) {
 
                 int m = buffer[0][i] + buffer[1][i];
-                if (m == hes.last_out && vgmFrameCounter >= 0) hes.silent_length++;
+                if (m == hes.last_out && frameCounter >= 0) hes.silent_length++;
                 else hes.silent_length = 0;
                 hes.last_out = m;
 
@@ -144,7 +142,7 @@ public class HesDriver extends BaseDriver {
                 stopped = true;
             }
 
-            hes.time_in_ms += (1000 * length / (double) setting.getOutputDevice().getSampleRate() * vgmSpeed);// ((* config)["MULT_SPEED"].GetInt()) / 256);
+            hes.time_in_ms += (1000 * length / (double) setting.getOutputDevice().getSampleRate() * speed);// ((* config)["MULT_SPEED"].GetInt()) / 256);
             if (!hes.playtime_detected && hes.ld.isLooped((int) hes.time_in_ms, 30000, 5000)) {
                 hes.playtime_detected = true;
                 totalCounter = (long) hes.ld.getLoopEnd() * (long) setting.getOutputDevice().getSampleRate() / 1000L;
@@ -152,9 +150,9 @@ public class HesDriver extends BaseDriver {
                 loopCounter = ((long) hes.ld.getLoopEnd() - (long) hes.ld.getLoopStart()) * (long) setting.getOutputDevice().getSampleRate() / 1000L;
             }
 
-            if (!hes.playtime_detected) vgmCurLoop = 0;
+            if (!hes.playtime_detected) curLoop = 0;
             else {
-                if (totalCounter != 0) vgmCurLoop = (int) (counter / totalCounter);
+                if (totalCounter != 0) curLoop = (int) (counter / totalCounter);
                 else stopped = true;
             }
         } catch (Exception ex) {

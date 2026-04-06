@@ -2,7 +2,6 @@ package mdplayer.plugin;
 
 import java.lang.System.Logger;
 
-import mdplayer.Chip.Unused;
 import mdplayer.Common;
 import mdplayer.chips.MidiPlugin;
 import mdplayer.driver.rcp.RcpDriver;
@@ -44,11 +43,11 @@ public class RCPPlugin extends BasePlugin<RcpDriver> {
         chipRegister.plugin(MidiPlugin.class).make(setting, midiMode);
 //        chipRegister.plugin(MidiPlugin.class).set(setting.getMidiOut().getMidiOutInfos().get(midiMode));
 
-        driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel, new Class[] {Unused.class},
+        driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel,
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         if (driverReal != null) {
-            driverReal.init(vgmBuf, this, Common.EnmModel.RealModel, new Class[] {Unused.class},
+            driverReal.init(vgmBuf, this, Common.EnmModel.RealModel,
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         }

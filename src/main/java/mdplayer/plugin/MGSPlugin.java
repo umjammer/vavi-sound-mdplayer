@@ -109,12 +109,10 @@ logger.log(Level.INFO, "MGSDRV: AY: %b, SCC: %b, OPLL: %b".formatted(useAY, useS
         mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, flatten());
 
         driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel,
-                new Class[] {Ay8910Chip.class, Ym2413Chip.class, K051649Chip.class},
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         if (driverReal != null) {
             driverReal.init(vgmBuf, this, Common.EnmModel.RealModel,
-                    new Class[] {Ay8910Chip.class},
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         }

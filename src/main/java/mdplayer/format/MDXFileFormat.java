@@ -16,11 +16,12 @@ import dotnet4j.util.compat.Tuple;
 import mdplayer.Common;
 import mdplayer.PlayList;
 import mdplayer.Setting;
-import mdplayer.driver.Vgm;
 import mdplayer.driver.mxdrv.MxDriver;
 import mdplayer.plugin.MDXPlugin;
 import mdplayer.plugin.Plugin;
 import mdplayer.properties.Resources;
+import musicDriverInterface.MetaData;
+import musicDriverInterface.MetaData.Tag;
 import vavi.sound.SoundUtil;
 import vavi.sound.sampled.md.MdEncoding;
 import vavi.sound.sampled.md.MdFileFormatType;
@@ -46,18 +47,20 @@ public class MDXFileFormat extends BaseFileFormat {
     @Override
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
         PlayList.Music music = new PlayList.Music();
-        music.format = this;
-        Vgm.Gd3 gd3 = (new MxDriver()).getGD3Info(buf);
-        music.title = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackName;
-        music.titleJ = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackNameJ;
-        music.game = gd3.gameName;
-        music.gameJ = gd3.gameNameJ;
-        music.composer = gd3.composer;
-        music.composerJ = gd3.composerJ;
-        music.vgmby = gd3.vgmBy;
 
-        music.converted = gd3.converted;
-        music.notes = gd3.notes;
+        music.format = this;
+        MetaData metaData = new MxDriver().getMetaData(buf);
+        music.title = metaData.getFirst(Tag.Title).isEmpty() ? Path.getFileName(file) : metaData.getFirst(Tag.Title);
+        music.titleJ = metaData.getFirst(Tag.TitleJ).isEmpty() ? Path.getFileName(file) : metaData.getFirst(Tag.TitleJ);
+        music.game = metaData.getFirst(Tag.GameTitle);
+        music.gameJ = metaData.getFirst(Tag.GameTitleJ);
+        music.composer = metaData.getFirst(Tag.Composer);
+        music.composerJ = metaData.getFirst(Tag.ComposerJ);
+        music.vgmby = metaData.getFirst(Tag.Maker);
+
+        music.converted = metaData.getFirst(Tag.Converter);
+        music.notes = metaData.getFirst(Tag.Note);
+
         return Collections.singletonList(music);
     }
 

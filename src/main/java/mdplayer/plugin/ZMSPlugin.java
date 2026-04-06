@@ -11,7 +11,6 @@ import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.MPcmChip;
 import mdplayer.chips.MidiPlugin;
-import mdplayer.chips.OkiM6258Chip;
 import mdplayer.chips.Pcm8Chip;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.driver.zms.ZmsDriver;
@@ -191,7 +190,7 @@ public class ZMSPlugin extends BasePlugin<ZmsDriver> {
                     if (driverVirtual.compile(vgmBuf, playingFileName)) {
                         setVgmBufV3();
                         chipLED.put("PriMPCMX68k", 1);
-                        //logger.log("c:\\temp\\ge.zmd", vgmBuf);
+                        //logger.log("c:\\temp\\ge.zmd", dataBuf);
                     } else {
                         // compile error
                         throw new IllegalArgumentException("Compile Error.Check console log.");
@@ -209,7 +208,7 @@ public class ZMSPlugin extends BasePlugin<ZmsDriver> {
                     break;
             }
         } else {
-            driverVirtual.getGD3Info(vgmBuf, 0);
+            driverVirtual.getMetaData(vgmBuf, 0);
         }
 
         if (driverVirtual.getVersion() != 2) {
@@ -231,12 +230,10 @@ public class ZMSPlugin extends BasePlugin<ZmsDriver> {
         }
 
         driverVirtual.init(vgmBuf, this, EnmModel.VirtualModel,
-                new Class[] {Ym2151Chip.class, OkiM6258Chip.class},
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         if (driverReal != null) {
             driverReal.init(vgmBuf, this, EnmModel.RealModel,
-                    new Class[] {Ym2151Chip.class, OkiM6258Chip.class},
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         }
@@ -245,7 +242,7 @@ public class ZMSPlugin extends BasePlugin<ZmsDriver> {
     private void setVgmBufV3() {
         vgmBuf = driverVirtual.getCompiledData();
         if (driverReal != null) driverReal.setCompiledData(vgmBuf);
-//        if (driverPianoRoll != null) (driverPianoRoll).compiledData = vgmBuf;
+//        if (driverPianoRoll != null) (driverPianoRoll).compiledData = dataBuf;
     }
 
     private void setVgmBufV2() {
@@ -256,7 +253,7 @@ public class ZMSPlugin extends BasePlugin<ZmsDriver> {
             driverReal.setVersion(2);
         }
 //        if (driverPianoRoll != null) {
-//            driverPianoRoll.compiledData = vgmBuf;
+//            driverPianoRoll.compiledData = dataBuf;
 //            driverPianoRoll.setVersion(2);
 //        }
     }

@@ -20,7 +20,6 @@ import dotnet4j.io.MemoryStream;
 import dotnet4j.io.Path;
 import dotnet4j.io.Stream;
 import dotnet4j.util.compat.Tuple;
-import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.P86Chip;
@@ -28,18 +27,15 @@ import mdplayer.chips.PpsChip;
 import mdplayer.chips.Ppz8Chip;
 import mdplayer.chips.Ym2608Chip;
 import mdplayer.driver.BaseDriver;
-import mdplayer.driver.Vgm;
-import mdplayer.driver.Vgm.Gd3;
 import mdplayer.format.FileFormat;
 import mdplayer.format.MMLFileFormat;
 import mdplayer.plugin.BasePlugin;
 import musicDriverInterface.ChipAction;
 import musicDriverInterface.ChipDatum;
 import musicDriverInterface.CompilerInfo;
-import musicDriverInterface.MetaData;
 import musicDriverInterface.ICompiler;
 import musicDriverInterface.IDriver;
-import musicDriverInterface.MetaData.Tag;
+import musicDriverInterface.MetaData;
 import musicDriverInterface.MmlDatum;
 
 import static java.lang.System.getLogger;
@@ -87,7 +83,7 @@ public class PmdDriver extends BaseDriver {
     public PmdDriver() {
     }
 
-    public Gd3 getGD3Info(byte[] buf, int vgmGd3, PMDFileType mtype) {
+    public MetaData getMetaData(byte[] buf, int vgmGd3, PMDFileType mtype) {
         MetaData metaData;
 
         if (mtype == PMDFileType.MML) {
@@ -99,22 +95,14 @@ public class PmdDriver extends BaseDriver {
 
             pmdCompiler = ICompiler.factory("pmd.compiler.Compiler");
             pmdCompiler.setCompileSwitch((Function<String, Stream>) this::appendFileReaderCallback);
-            metaData = pmdCompiler.getGD3TagInfo(buf);
+            metaData = pmdCompiler.getMetaData(buf);
         } else {
             pmdDriver = IDriver.factory("pmd.driver.Driver");
             // pmdDriver.SetDriverSwitch((Func<String, Stream>)appendFileReaderCallback);
-            metaData = pmdDriver.getGD3TagInfo(buf);
+            metaData = pmdDriver.getMetaData(buf);
         }
 
-        Vgm.Gd3 g = new Gd3();
-        g.trackName = metaData.getFirst(Tag.Title);
-        g.trackNameJ = metaData.getFirst(Tag.TitleJ);
-        g.composer = metaData.getFirst(Tag.Composer);
-        g.composerJ = metaData.getFirst(Tag.ComposerJ);
-        g.vgmBy = metaData.getFirst(Tag.Artist);
-        g.converted = metaData.getFirst(Tag.ReleaseDate);
-
-        return g;
+        return metaData;
     }
 
     /**
@@ -122,26 +110,25 @@ public class PmdDriver extends BaseDriver {
      */
     @Override
     public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     Class<? extends Chip>[] useChip, int latency, int waitTime, Object... args) {
+                     int latency, int waitTime, Object... args) {
 
         FileFormat fileFormat = (FileFormat) args[0];
         mtype = fileFormat instanceof MMLFileFormat ? PMDFileType.MML : PMDFileType.M;
-        gd3 = getGD3Info(vgmBuf, 0, mtype);
+        metaData = getMetaData(vgmBuf, 0, mtype);
 
-        this.vgmBuf = vgmBuf;
+        this.dataBuf = vgmBuf;
         this.plugin = plugin;
         this.model = model;
-        this.useChip = useChip;
         this.latency = latency;
         this.waitTime = waitTime;
 
         counter = 0;
         totalCounter = 0;
         loopCounter = 0;
-        vgmCurLoop = 0;
+        curLoop = 0;
         stopped = false;
-        vgmFrameCounter = -latency - waitTime;
-        vgmSpeed = 1;
+        frameCounter = -latency - waitTime;
+        speed = 1;
 
 //#if DEBUG
         // The actual chip thread skips processing (for debugging)
@@ -167,19 +154,19 @@ public class PmdDriver extends BaseDriver {
 //#endif
 
         try {
-            vgmSpeedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * vgmSpeed;
-            while (vgmSpeedCounter >= 1.0) {
-                vgmSpeedCounter -= 1.0;
+            speedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * speed;
+            while (speedCounter >= 1.0) {
+                speedCounter -= 1.0;
 
                 pmdDriver.render();
 
                 counter++;
-                vgmFrameCounter++;
+                frameCounter++;
             }
 
             int lp = pmdDriver.getNowLoopCounter();
             lp = Math.max(lp, 0);
-            vgmCurLoop = lp;
+            curLoop = lp;
 
             if (pmdDriver.getStatus() < 1) {
                 if (pmdDriver.getStatus() == 0) {
@@ -221,7 +208,7 @@ public class PmdDriver extends BaseDriver {
         try {
             pmdCompiler.setCompileSwitch("PmdOption=%s \"%s\"".formatted(
                     setting.getPmd().compilerArguments, playingFileName));
-            try (MemoryStream sourceMML = new MemoryStream(vgmBuf)) {
+            try (MemoryStream sourceMML = new MemoryStream(dataBuf)) {
                 ret = pmdCompiler.compile(sourceMML, this::appendFileReaderCallback);// wrkMUCFullPath, disp);
             }
 
@@ -361,7 +348,7 @@ public class PmdDriver extends BaseDriver {
         boolean isLoadADPCM = true;
         boolean loadADPCMOnly = false;
         List<MmlDatum> buf = new ArrayList<>();
-        for (byte b : vgmBuf)
+        for (byte b : dataBuf)
             buf.add(new MmlDatum(b & 0xff));
 
         isNRM = setting.getPmd().soundBoard == 0;
@@ -505,7 +492,7 @@ logger.log(Level.DEBUG, "found pmd additional file: " + fileName.replace("\\", j
     }
 
     @Override
-    public Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
+    public MetaData getMetaData(byte[] buf, Object... args) {
         throw new UnsupportedOperationException();
     }
 

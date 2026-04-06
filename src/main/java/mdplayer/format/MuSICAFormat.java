@@ -10,18 +10,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
-
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
 import dotnet4j.io.File;
 import dotnet4j.io.Path;
 import mdplayer.PlayList.Music;
-import mdplayer.driver.Vgm;
 import mdplayer.driver.musica.MusicaDriver;
 import mdplayer.driver.musica.MusicaK4Driver;
 import mdplayer.plugin.MuSICAPlugin;
 import mdplayer.plugin.Plugin;
+import musicDriverInterface.MetaData;
+import musicDriverInterface.MetaData.Tag;
 import vavi.sound.SoundUtil;
 import vavi.sound.sampled.md.MdEncoding;
 import vavi.sound.sampled.md.MdFileFormatType;
@@ -45,19 +45,20 @@ public class MuSICAFormat extends BaseFileFormat implements FileFormat.SampledFi
     @Override
     public List<Music> getMusic(String file, byte[] buf, String zipFile, Archive archive, Entry entry) {
         Music music = new Music();
+
         String ext = file.substring(file.lastIndexOf('.'));
         if (ext.equalsIgnoreCase(".bgm")) {
             music.format = this;
-            Vgm.Gd3 gd3 = (new MusicaDriver()).getGD3Info(buf, null);
-            music.title = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackName;
-            music.titleJ = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackNameJ;
+            MetaData metaData = (new MusicaDriver()).getMetaData(buf);
+            music.title = metaData.getFirst(Tag.Title).isEmpty() ? Path.getFileName(file) : metaData.getFirst(Tag.Title);
+            music.titleJ = metaData.getFirst(Tag.TitleJ).isEmpty() ? Path.getFileName(file) : metaData.getFirst(Tag.TitleJ);
             music.game = "";
             music.gameJ = "";
             music.composer = "";
             music.composerJ = "";
             music.vgmby = "";
             music.converted = "";
-            music.notes = gd3.notes.isEmpty() ? "" : gd3.notes;
+            music.notes = metaData.getFirst(Tag.Note);
 
         } else if (ext.equalsIgnoreCase(".msd")) {
             music.format = this;
@@ -66,16 +67,16 @@ public class MuSICAFormat extends BaseFileFormat implements FileFormat.SampledFi
             if (File.exists(vcd)) {
                 vcdBuf = File.readAllBytes(vcd);
             }
-            Vgm.Gd3 gd3 = (new MusicaK4Driver()).getGD3Info(buf, vcdBuf);
-            if (gd3 == null) {
+            MetaData metaData = (new MusicaK4Driver()).getMetaData(buf, vcdBuf);
+            if (metaData == null) {
                 //logger.log(Level.WARNING, ".MSD compilation failed", "PlayList", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 music.title = Path.getFileName(file);
                 music.titleJ = Path.getFileName(file);
                 music.notes = "";
             } else {
-                music.title = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackName;
-                music.titleJ = gd3.trackNameJ.isEmpty() ? Path.getFileName(file) : gd3.trackNameJ;
-                music.notes = gd3.notes.isEmpty() ? "" : gd3.notes;
+                music.title = metaData.getFirst(Tag.Title).isEmpty() ? Path.getFileName(file) : metaData.getFirst(Tag.Title);
+                music.titleJ = metaData.getFirst(Tag.TitleJ).isEmpty() ? Path.getFileName(file) : metaData.getFirst(Tag.TitleJ);
+                music.notes = metaData.getFirst(Tag.Note);
             }
             music.game = "";
             music.gameJ = "";
@@ -84,6 +85,7 @@ public class MuSICAFormat extends BaseFileFormat implements FileFormat.SampledFi
             music.vgmby = "";
             music.converted = "";
         }
+
         return List.of(music);
     }
 

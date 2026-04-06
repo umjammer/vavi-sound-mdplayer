@@ -1,19 +1,20 @@
 
 package mdplayer.driver;
 
-import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.Setting;
+import mdplayer.chips.VstPlugin;
 import mdplayer.plugin.BasePlugin;
+import musicDriverInterface.MetaData;
 
 
 public abstract class BaseDriver {
 
     protected static final Setting setting = Setting.getInstance();
 
-    public double vgmSpeed = 1;
+    public double speed = 1;
 
-    protected double vgmSpeedCounter;
+    protected double speedCounter;
 
     public long counter = 0;
 
@@ -21,32 +22,25 @@ public abstract class BaseDriver {
 
     public long loopCounter = 0;
 
-    public int vgmCurLoop = 0;
+    public int curLoop = 0;
 
     public boolean stopped = false;
 
-    public int vgmFrameCounter;
+    public int frameCounter;
 
-    // TODO generalize, e.g. MusicTag
-    public Vgm.Gd3 gd3 = new Vgm.Gd3();
+    public MetaData metaData = new MetaData();
 
     protected String version = "";
 
     protected String usedChips = "";
 
-    protected int vstDelta = 0;
-
     public boolean isDataBlock = false;
 
-    protected byte[] vgmBuf = null;
+    protected byte[] dataBuf = null;
 
     protected BasePlugin<? extends BaseDriver> plugin;
 
     protected EnmModel model = EnmModel.VirtualModel;
-
-    protected Class<? extends Chip>[] useChip = new Class[] {
-        null,
-    };
 
     protected int latency = 1000;
 
@@ -55,22 +49,13 @@ public abstract class BaseDriver {
     public abstract void init(byte[] vgmBuf,
                               BasePlugin<? extends BaseDriver> plugin,
                               EnmModel model,
-                              Class<? extends Chip>[] useChip,
                               int latency,
                               int waitTime,
                               Object... args);
 
     public abstract void processOneFrame();
 
-    public Vgm.Gd3 getGD3Info(byte[] buf) {
-        return getGD3Info(buf, new int[1]);
-    }
-
-    public Vgm.Gd3 getGD3Info(byte[] buf, int vgmGd3) {
-        return getGD3Info(buf, new int[] {vgmGd3});
-    }
-
-    public abstract Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3);
+    public abstract MetaData getMetaData(byte[] buf, Object... args);
 
     public int render(short[] buffer, int offset, int sampleCount) {
         if (plugin.hiyorimiNecessary && plugin.driverReal != null && plugin.driverReal.isDataBlock)
@@ -85,7 +70,7 @@ public abstract class BaseDriver {
             }
         }
 
-//        driverVirtual.vstDelta = 0;
+        plugin.chipRegister.plugin(VstPlugin.class).vstDelta = 0;
 //logger.log(Level.TRACE, "driver: " + driverVirtual.getClass().getSimpleName());
         int cnt = plugin.mds.update(buffer, offset, sampleCount, plugin.driverVirtual::processOneFrame);
         plugin.procTimePer1Frame = (int) ((double) System.currentTimeMillis() / (sampleCount + 1) * 1000000.0);

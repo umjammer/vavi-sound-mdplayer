@@ -22,6 +22,8 @@ import mdplayer.PlayList;
 import mdplayer.Setting;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.VgmDriver;
+import musicDriverInterface.MetaData;
+import musicDriverInterface.MetaData.Tag;
 import vavi.util.ByteUtil;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Archives;
@@ -51,33 +53,33 @@ public abstract class BaseFileFormat implements FileFormat {
 
         music.format = this;
         int version = ByteUtil.readLeInt(buf, 0x08);
-        String _version = "%d.%d%d".formatted((version & 0xf00) / 0x100, (version & 0xf0) / 0x10, (version & 0xf));
+        String _ = "%d.%d%d".formatted((version & 0xf00) / 0x100, (version & 0xf0) / 0x10, (version & 0xf));
 
         int vgmGd3 = ByteUtil.readLeInt(buf, 0x14);
-        Vgm.Gd3 gd3 = new Vgm.Gd3();
+        MetaData md = new MetaData();
         if (vgmGd3 != 0) {
             int vgmGd3Id = ByteUtil.readLeInt(buf, vgmGd3 + 0x14);
             if (vgmGd3Id != Vgm.FCC_GD3) {
                 musics.add(music);
                 return musics;
             }
-            gd3 = (new VgmDriver()).getGD3Info(buf, vgmGd3);
+            md = (new VgmDriver()).getMetaData(buf, vgmGd3);
         }
 
         int totalCounter = ByteUtil.readLeInt(buf, 0x18);
         int vgmLoopOffset = ByteUtil.readLeInt(buf, 0x1c);
         int loopCounter = ByteUtil.readLeInt(buf, 0x20);
 
-        music.title = gd3.trackName;
-        music.titleJ = gd3.trackNameJ;
-        music.game = gd3.gameName;
-        music.gameJ = gd3.gameNameJ;
-        music.composer = gd3.composer;
-        music.composerJ = gd3.composerJ;
-        music.vgmby = gd3.vgmBy;
+        music.title = md.getFirst(Tag.Title);
+        music.titleJ = md.getFirst(Tag.TitleJ);
+        music.game = md.getFirst(Tag.GameTitle);
+        music.gameJ = md.getFirst(Tag.GameTitleJ);
+        music.composer = md.getFirst(Tag.Composer);
+        music.composerJ = md.getFirst(Tag.ComposerJ);
+        music.vgmby = md.getFirst(Tag.Maker);
 
-        music.converted = gd3.converted;
-        music.notes = gd3.notes;
+        music.converted = md.getFirst(Tag.Converter);
+        music.notes = md.getFirst(Tag.Note);
 
         double sec = (double) totalCounter / (double) Setting.getInstance().getOutputDevice().getSampleRate();
         int tcMminutes = (int) (sec / 60);

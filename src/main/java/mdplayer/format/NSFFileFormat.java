@@ -5,18 +5,17 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.sound.sampled.AudioFileFormat.Type;
-
 import dotnet4j.io.File;
 import dotnet4j.io.Path;
 import mdplayer.Common.EnmArcType;
 import mdplayer.PlayList;
-import mdplayer.driver.Vgm;
 import mdplayer.driver.nsf.NsfDriver;
 import mdplayer.driver.nsf.NsfMdDriver2;
 import mdplayer.plugin.NSFPlugin;
 import mdplayer.plugin.Plugin;
 import mdplayer.properties.Resources;
+import musicDriverInterface.MetaData;
+import musicDriverInterface.MetaData.Tag;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 
@@ -38,10 +37,11 @@ public class NSFFileFormat extends BaseFileFormat {
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
         List<PlayList.Music> musics = new ArrayList<>();
         PlayList.Music music = new PlayList.Music();
-        NsfDriver nsf = new NsfMdDriver2();
-        Vgm.Gd3 gd3 = nsf.getGD3Info(buf, null);
 
-        if (gd3 != null) {
+        NsfDriver nsf = new NsfMdDriver2();
+        MetaData md = nsf.getMetaData(buf);
+
+        if (md != null) {
             for (int s = 0; s < nsf.getSongs(); s++) {
                 music = new PlayList.Music();
                 music.format = this;
@@ -50,15 +50,15 @@ public class NSFFileFormat extends BaseFileFormat {
                 music.arcType = EnmArcType.unknown;
                 if (zipFile != null && zipFile.isEmpty())
                     music.arcType = zipFile.toLowerCase().lastIndexOf(".zip") != -1 ? EnmArcType.ZIP : EnmArcType.LZH;
-                music.title = "%s - Trk %d".formatted(gd3.gameName, s + 1);
-                music.titleJ = "%s - Trk %d".formatted(gd3.gameNameJ, s + 1);
-                music.game = gd3.gameName;
-                music.gameJ = gd3.gameNameJ;
-                music.composer = gd3.composer;
-                music.composerJ = gd3.composerJ;
-                music.vgmby = gd3.vgmBy;
-                music.converted = gd3.converted;
-                music.notes = gd3.notes;
+                music.title = "%s - Trk %d".formatted(md.getFirst(Tag.Title), s + 1);
+                music.titleJ = "%s - Trk %d".formatted(md.getFirst(Tag.TitleJ), s + 1);
+                music.game = md.getFirst(Tag.GameTitle);
+                music.gameJ = md.getFirst(Tag.GameTitleJ);
+                music.composer = md.getFirst(Tag.Composer);
+                music.composerJ = md.getFirst(Tag.ComposerJ);
+                music.vgmby = md.getFirst(Tag.Maker);
+                music.converted = md.getFirst(Tag.Converter);
+                music.notes = md.getFirst(Tag.Note);
                 music.songNo = s;
 
                 musics.add(music);
@@ -80,25 +80,26 @@ public class NSFFileFormat extends BaseFileFormat {
     public List<PlayList.Music> getMusic(PlayList.Music ms, byte[] buf, String zipFile /* = null */) {
         List<PlayList.Music> musics = new ArrayList<>();
         PlayList.Music music = new PlayList.Music();
-        NsfDriver nsf = new NsfMdDriver2();
-        Vgm.Gd3 gd3 = nsf.getGD3Info(buf, null);
 
-        if (gd3 != null) {
+        NsfDriver nsf = new NsfMdDriver2();
+        MetaData md = nsf.getMetaData(buf);
+
+        if (md != null) {
             if (ms.songNo == -1) {
                 for (int s = 0; s < nsf.getSongs(); s++) {
                     music = new PlayList.Music();
                     music.format = this;
                     music.fileName = ms.fileName;
                     music.arcFileName = zipFile;
-                    music.title = "%s - Trk %d".formatted(gd3.gameName, s);
-                    music.titleJ = "%s - Trk %d".formatted(gd3.gameNameJ, s);
-                    music.game = gd3.gameName;
-                    music.gameJ = gd3.gameNameJ;
-                    music.composer = gd3.composer;
-                    music.composerJ = gd3.composerJ;
-                    music.vgmby = gd3.vgmBy;
-                    music.converted = gd3.converted;
-                    music.notes = gd3.notes;
+                    music.title = "%s - Trk %d".formatted(md.getFirst(Tag.GameTitle), s);
+                    music.titleJ = "%s - Trk %d".formatted(md.getFirst(Tag.GameTitleJ), s);
+                    music.game = md.getFirst(Tag.GameTitle);
+                    music.gameJ = md.getFirst(Tag.GameTitleJ);
+                    music.composer = md.getFirst(Tag.Composer);
+                    music.composerJ = md.getFirst(Tag.ComposerJ);
+                    music.vgmby = md.getFirst(Tag.Maker);
+                    music.converted = md.getFirst(Tag.Converter);
+                    music.notes = md.getFirst(Tag.Note);
                     music.songNo = s;
 
                     musics.add(music);
@@ -112,13 +113,13 @@ public class NSFFileFormat extends BaseFileFormat {
                 music.arcFileName = zipFile;
                 music.title = ms.title;
                 music.titleJ = ms.titleJ;
-                music.game = gd3.gameName;
-                music.gameJ = gd3.gameNameJ;
-                music.composer = gd3.composer;
-                music.composerJ = gd3.composerJ;
-                music.vgmby = gd3.vgmBy;
-                music.converted = gd3.converted;
-                music.notes = gd3.notes;
+                music.game = md.getFirst(Tag.GameTitle);
+                music.gameJ = md.getFirst(Tag.GameTitleJ);
+                music.composer = md.getFirst(Tag.Composer);
+                music.composerJ = md.getFirst(Tag.ComposerJ);
+                music.vgmby = md.getFirst(Tag.Maker);
+                music.converted = md.getFirst(Tag.Converter);
+                music.notes = md.getFirst(Tag.Note);
                 music.songNo = ms.songNo;
             }
         } else {

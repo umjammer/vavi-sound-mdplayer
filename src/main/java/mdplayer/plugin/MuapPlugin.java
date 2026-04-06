@@ -162,16 +162,16 @@ public class MuapPlugin extends BasePlugin<MuapDriver> {
         chipRegister.chip(Ym2608Chip.class).setSsgVolume(0, setting.getBalance().getGimicOPNAVolume(), EnmModel.RealModel);
         chipRegister.chip(Ym2608Chip.class).setSsgVolume(1, setting.getBalance().getGimicOPNAVolume(), EnmModel.RealModel);
 
-        driverVirtual.init(vgmBuf, this, EnmModel.VirtualModel, new Class[] {Ym2608Chip.class},
+        driverVirtual.init(vgmBuf, this, EnmModel.VirtualModel,
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         if (driverReal != null) {
-            driverReal.init(vgmBuf, this, EnmModel.RealModel, new Class[] {Ym2608Chip.class},
+            driverReal.init(vgmBuf, this, EnmModel.RealModel,
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         }
 //        if (driverPianoRoll != null) {
-//            driverPianoRoll.init(vgmBuf, this, EnmModel.PianoRollModel, new Class[] {Ym2608Chip.class},
+//            driverPianoRoll.init(dataBuf, this, EnmModel.PianoRollModel, new Class[] {Ym2608Chip.class},
 //                    (int) (setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000),
 //                    (int) (setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000));
 //        }

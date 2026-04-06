@@ -36,9 +36,11 @@ public class AyFileFormat extends BaseFileFormat implements FileFormat.SampledFi
     @Override
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
         PlayList.Music music = new PlayList.Music();
+
         music.format = this;
         music.arcFileName = zipFile;
         music.arcType = EnmArcType.unknown;
+
         return List.of(music);
     }
 

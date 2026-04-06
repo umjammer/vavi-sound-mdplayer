@@ -66,17 +66,11 @@ public class VGMFileFormat extends BaseFileFormat {
         int num;
         buf = new byte[1024]; // Process 1Kbytes at a time
 
-        try (FileStream inStream // Input Stream
-                     = new FileStream(filename, FileMode.Open, FileAccess.Read);
-
-             GZipStream decompStream // Decompressed Stream
-                     = new GZipStream(
+        try (FileStream inStream = new FileStream(filename, FileMode.Open, FileAccess.Read); // Input Stream
+             GZipStream decompStream = new GZipStream( // Decompressed Stream
                      inStream, // Specify the input source stream
                      CompressionMode.Decompress); // Specify decompression (uncompression)
-
-             MemoryStream outStream // Output Stream
-                     = new MemoryStream()
-
+             MemoryStream outStream = new MemoryStream() // Output Stream
         ) {
             while ((num = decompStream.read(buf, 0, buf.length)) > 0) {
                 outStream.write(buf, 0, num);

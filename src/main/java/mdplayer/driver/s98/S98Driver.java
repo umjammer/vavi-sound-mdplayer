@@ -6,7 +6,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.Ay8910Chip;
 import mdplayer.chips.Sn76489Chip;
@@ -19,10 +18,11 @@ import mdplayer.chips.Ym3526Chip;
 import mdplayer.chips.Ym3812Chip;
 import mdplayer.chips.YmF262Chip;
 import mdplayer.driver.BaseDriver;
-import mdplayer.driver.Vgm.Gd3;
 import mdplayer.driver.s98.S98.S98DevInfo;
 import mdplayer.driver.s98.S98.S98Info;
 import mdplayer.plugin.BasePlugin;
+import musicDriverInterface.MetaData;
+import musicDriverInterface.MetaData.Tag;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
@@ -47,7 +47,7 @@ public class S98Driver extends BaseDriver {
         s98.sampleRate = setting.getOutputDevice().getSampleRate();
         s98.dataBlock = b -> isDataBlock = b;
         s98.stop = () -> stopped = true;
-        s98.loop = () -> vgmCurLoop++;
+        s98.loop = () -> curLoop++;
         s98.writeYM2203 = (chipId, adr, data) -> plugin.chipRegister.chip(Ym2203Chip.class).write(chipId, adr, data, model);
         s98.writeYM2612 = (chipId, port, adr, data) -> plugin.chipRegister.chip(Ym2612Chip.class).write(chipId, port, adr, data, model, 0);
         s98.writeYM2608 = (chipId, port, adr, data) -> plugin.chipRegister.chip(Ym2608Chip.class).write(chipId, port, adr, data, model);
@@ -69,10 +69,10 @@ public class S98Driver extends BaseDriver {
     }
 
     @Override
-    public Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
+    public MetaData getMetaData(byte[] buf, Object... args) {
         if (buf == null) return null;
 
-        Gd3 gd3 = new Gd3();
+        MetaData md = new MetaData();
         s98.s98Info = new S98Info();
         s98.chips = new ArrayList<>();
 
@@ -87,8 +87,8 @@ public class S98Driver extends BaseDriver {
                     strLst.add(buf[tagAdr++]);
                 }
                 str = new String(ByteUtil.toByteArray(strLst), charset);
-                gd3.trackName = str;
-                gd3.trackNameJ = str;
+                md.set(Tag.Title, str);
+                md.set(Tag.TitleJ, str);
             } else if (format == 3) {
                 if (tagAdr != 0) {
                     if (buf[tagAdr++] != 0x5b) return null;
@@ -117,8 +117,8 @@ public class S98Driver extends BaseDriver {
 
                         if (str.toLowerCase().contains("artist=")) {
                             try {
-                                gd3.composer = str.substring(str.indexOf("=") + 1);
-                                gd3.composerJ = str.substring(str.indexOf("=") + 1);
+                                md.set(Tag.Composer, str.substring(str.indexOf("=") + 1));
+                                md.set(Tag.ComposerJ, str.substring(str.indexOf("=") + 1));
                             } catch (Exception e) {
                                 logger.log(Level.ERROR, e.getMessage(), e);
 
@@ -126,15 +126,15 @@ public class S98Driver extends BaseDriver {
                         }
                         if (str.toLowerCase().contains("s98by=")) {
                             try {
-                                gd3.vgmBy = str.substring(str.indexOf("=") + 1);
+                                md.set(Tag.Maker, str.substring(str.indexOf("=") + 1));
                             } catch (Exception e) {
                                 logger.log(Level.ERROR, e.getMessage(), e);
                             }
                         }
                         if (str.toLowerCase().contains("game=")) {
                             try {
-                                gd3.gameName = str.substring(str.indexOf("=") + 1);
-                                gd3.gameNameJ = str.substring(str.indexOf("=") + 1);
+                                md.set(Tag.GameTitle, str.substring(str.indexOf("=") + 1));
+                                md.set(Tag.GameTitleJ, str.substring(str.indexOf("=") + 1));
                             } catch (Exception e) {
                                 logger.log(Level.ERROR, e.getMessage(), e);
                             }
@@ -142,26 +142,26 @@ public class S98Driver extends BaseDriver {
                         s98.SSGVolumeFromTAG = -1;
                         if (str.toLowerCase().contains("system=")) {
                             try {
-                                gd3.systemName = str.substring(str.indexOf("=") + 1);
-                                gd3.systemNameJ = str.substring(str.indexOf("=") + 1);
+                                md.set(Tag.GameSystem, str.substring(str.indexOf("=") + 1));
+                                md.set(Tag.GameSystemJ, str.substring(str.indexOf("=") + 1));
 
-                                if (gd3.systemName.indexOf("8801") > 0) s98.SSGVolumeFromTAG = 63;
-                                else if (gd3.systemName.indexOf("9801") > 0) s98.SSGVolumeFromTAG = 31;
+                                if (md.getFirst(Tag.GameSystem).indexOf("8801") > 0) s98.SSGVolumeFromTAG = 63;
+                                else if (md.getFirst(Tag.GameSystem).indexOf("9801") > 0) s98.SSGVolumeFromTAG = 31;
                             } catch (Exception e) {
                                 logger.log(Level.ERROR, e.getMessage(), e);
                             }
                         }
                         if (str.toLowerCase().contains("title=")) {
                             try {
-                                gd3.trackName = str.substring(str.indexOf("=") + 1);
-                                gd3.trackNameJ = str.substring(str.indexOf("=") + 1);
+                                md.set(Tag.Title, str.substring(str.indexOf("=") + 1));
+                                md.set(Tag.TitleJ, str.substring(str.indexOf("=") + 1));
                             } catch (Exception e) {
                                 logger.log(Level.ERROR, e.getMessage(), e);
                             }
                         }
                         if (str.toLowerCase().contains("year=")) {
                             try {
-                                gd3.converted = str.substring(str.indexOf("=") + 1);
+                                md.set(Tag.Converter, str.substring(str.indexOf("=") + 1));
                             } catch (Exception e) {
                                 logger.log(Level.ERROR, e.getMessage(), e);
                             }
@@ -170,10 +170,10 @@ public class S98Driver extends BaseDriver {
                 }
             }
 
-            this.vgmBuf = buf;
-            s98.getInformationHeader(vgmBuf);
+            this.dataBuf = buf;
+            s98.getInformationHeader(dataBuf);
             if (!s98.chips.isEmpty()) {
-                gd3.usedChips = String.join(",", s98.chips);
+                md.set(Tag.Chip,  String.join(",", s98.chips));
             }
 
         } catch (Exception e) {
@@ -181,29 +181,28 @@ public class S98Driver extends BaseDriver {
             return null;
         }
 
-        return gd3;
+        return md;
     }
 
     @Override
     public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     Class<? extends Chip>[] useChip, int latency, int waitTime, Object... args) {
-        this.vgmBuf = vgmBuf;
+                     int latency, int waitTime, Object... args) {
+        this.dataBuf = vgmBuf;
         this.plugin = plugin;
         this.model = model;
-        this.useChip = useChip;
         this.latency = latency;
         this.waitTime = waitTime;
 
         counter = 0;
         totalCounter = 0;
         loopCounter = 0;
-        vgmCurLoop = 0;
+        curLoop = 0;
         stopped = false;
-        vgmFrameCounter = -latency - waitTime;
-        vgmSpeed = 1;
-        vgmSpeedCounter = 0;
+        frameCounter = -latency - waitTime;
+        speed = 1;
+        speedCounter = 0;
 
-        gd3 = getGD3Info(vgmBuf);
+        metaData = getMetaData(vgmBuf);
         //if (Gd3 == null) return false;
 
         if (!s98.getInformationHeader(vgmBuf)) throw new IllegalArgumentException("not valid header");
@@ -217,16 +216,16 @@ public class S98Driver extends BaseDriver {
     @Override
     public void processOneFrame() {
         try {
-            vgmSpeedCounter += vgmSpeed;
-            while (vgmSpeedCounter >= 1.0 && !stopped) {
-                vgmSpeedCounter -= 1.0;
-                if (vgmFrameCounter > -1) {
+            speedCounter += speed;
+            while (speedCounter >= 1.0 && !stopped) {
+                speedCounter -= 1.0;
+                if (frameCounter > -1) {
                     counter++;
-                    vgmFrameCounter++;
+                    frameCounter++;
 
-                    s98.oneFrameMain(vgmBuf);
+                    s98.oneFrameMain(dataBuf);
                 } else {
-                    vgmFrameCounter++;
+                    frameCounter++;
                 }
             }
             //stopped = !isPlaying();

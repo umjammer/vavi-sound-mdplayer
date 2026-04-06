@@ -134,8 +134,8 @@ public class Ndp {
         //z80.continue_();
         //if (z80.getRegisters().getCF().intValue() == 0) {
         //    index = z80.getRegisters().getHL() & 0xffff;
-        //    gd3.trackName = Common.getNRDString(z80.getMemory(), /* ref */ index);
-        //    gd3.trackNameJ = gd3.trackName;
+        //    metaData.trackName = Common.getNRDString(z80.getMemory(), /* ref */ index);
+        //    metaData.trackNameJ = metaData.trackName;
         //}
 
         ////logger.log(Level.TRACE, "_GETPAR(6047H)");
@@ -146,7 +146,7 @@ public class Ndp {
         //z80.continue_();
         //if (z80.getRegisters().getCF().intValue() == 0) {
         //    index = z80.getRegisters().getHL() & 0xffff;
-        //    gd3.notes = Common.getNRDString(z80.getMemory(), /* ref */ index);
+        //    metaData.notes = Common.getNRDString(z80.getMemory(), /* ref */ index);
         //}
     }
 

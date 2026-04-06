@@ -99,14 +99,12 @@ logger.log(Level.DEBUG, "used chip: %02x".formatted(r));
 //            chipRegister.chip(Ym2608Chip.class).setSsgVolume(1, setting.getBalance().getGimicOPNAVolume(), EnmModel.RealModel);
 
         driverVirtual.init(vgmBuf, this, EnmModel.VirtualModel,
-                new Class[] {Ym2151Chip.class, Ay8910Chip.class},
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         driverVirtual.call(0); //
 
         if (driverReal != null) {
             driverReal.init(vgmBuf, this, EnmModel.RealModel,
-                    new Class[] {Ym2151Chip.class, Ay8910Chip.class},
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
             driverReal.call(0); //

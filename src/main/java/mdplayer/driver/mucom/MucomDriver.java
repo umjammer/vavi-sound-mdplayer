@@ -27,7 +27,6 @@ import mdplayer.chips.Ym2151Chip;
 import mdplayer.chips.Ym2608Chip;
 import mdplayer.chips.Ym2610Chip;
 import mdplayer.driver.BaseDriver;
-import mdplayer.driver.Vgm;
 import mdplayer.plugin.BasePlugin;
 import musicDriverInterface.ChipAction;
 import musicDriverInterface.ChipDatum;
@@ -35,7 +34,6 @@ import musicDriverInterface.CompilerInfo;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.ICompiler;
 import musicDriverInterface.IDriver;
-import musicDriverInterface.MetaData.Tag;
 import musicDriverInterface.MmlDatum;
 import vavi.util.ByteUtil;
 import vavi.util.StringUtil;
@@ -69,27 +67,19 @@ public class MucomDriver extends BaseDriver {
     private MUCOMFileType mType;
 
     @Override
-    public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
+    public MetaData getMetaData(byte[] buf, Object... args) {
         mType = checkFileType(buf);
         MetaData metaData;
 
         if (mType == MUCOMFileType.MUC) {
             mucomCompiler = ICompiler.factory("mucom88.compiler.Compiler");
-            metaData = mucomCompiler.getGD3TagInfo(buf);
+            metaData = mucomCompiler.getMetaData(buf);
         } else {
             mucomDriver = IDriver.factory("mucom88.driver.Driver");
-            metaData = mucomDriver.getGD3TagInfo(buf);
+            metaData = mucomDriver.getMetaData(buf);
         }
 
-        Vgm.Gd3 g = new Vgm.Gd3();
-        g.trackName = metaData.getFirst(Tag.Title);
-        g.trackNameJ = metaData.getFirst(Tag.TitleJ);
-        g.composer = metaData.getFirst(Tag.Composer);
-        g.composerJ = metaData.getFirst(Tag.ComposerJ);
-        g.vgmBy = metaData.getFirst(Tag.Artist);
-        g.converted = metaData.getFirst(Tag.ReleaseDate);
-
-        return g;
+        return metaData;
     }
 
     public static Class<? extends Chip>[] useChipsFromMub(byte[] buf) {
@@ -216,23 +206,22 @@ public class MucomDriver extends BaseDriver {
 
     @Override
     public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     Class<? extends Chip>[] useChip, int latency, int waitTime, Object... args) {
-        gd3 = getGD3Info(vgmBuf);
+                     int latency, int waitTime, Object... args) {
+        metaData = getMetaData(vgmBuf);
 
-        this.vgmBuf = vgmBuf;
+        this.dataBuf = vgmBuf;
         this.plugin = plugin;
         this.model = model;
-        this.useChip = useChip;
         this.latency = latency;
         this.waitTime = waitTime;
 
         counter = 0;
         totalCounter = 0;
         loopCounter = 0;
-        vgmCurLoop = 0;
+        curLoop = 0;
         stopped = false;
-        vgmFrameCounter = -latency - waitTime;
-        vgmSpeed = 1;
+        frameCounter = -latency - waitTime;
+        speed = 1;
 
 //#if DEBUG
         // The actual chip thread skips processing (for debugging)
@@ -255,19 +244,19 @@ public class MucomDriver extends BaseDriver {
 //#endif
 
         try {
-            vgmSpeedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * vgmSpeed;
-            while (vgmSpeedCounter >= 1.0) {
-                vgmSpeedCounter -= 1.0;
+            speedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * speed;
+            while (speedCounter >= 1.0) {
+                speedCounter -= 1.0;
 
                 mucomDriver.render();
 
                 counter++;
-                vgmFrameCounter++;
+                frameCounter++;
             }
 
             int lp = mucomDriver.getNowLoopCounter();
             lp = Math.max(lp, 0);
-            vgmCurLoop = lp;
+            curLoop = lp;
 
             if (mucomDriver.getStatus() < 1) {
                 if (mucomDriver.getStatus() == 0) {
@@ -354,7 +343,7 @@ public class MucomDriver extends BaseDriver {
         MmlDatum[] ret;
         CompilerInfo info;
         try {
-            try (MemoryStream sourceMML = new MemoryStream(vgmBuf)) {
+            try (MemoryStream sourceMML = new MemoryStream(dataBuf)) {
                 ret = mucomCompiler.compile(sourceMML, this::appendFileReaderCallback);
             }
 
@@ -405,7 +394,7 @@ public class MucomDriver extends BaseDriver {
         boolean isLoadADPCM = true;
         boolean loadADPCMOnly = false;
         List<MmlDatum> buf = new ArrayList<>();
-        for (byte b : vgmBuf) buf.add(new MmlDatum(b & 0xff));
+        for (byte b : dataBuf) buf.add(new MmlDatum(b & 0xff));
 
         List<ChipAction> actions = new ArrayList<>();
         MucomChipAction action;

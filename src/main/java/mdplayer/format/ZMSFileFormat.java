@@ -5,16 +5,16 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
 import dotnet4j.io.Path;
 import mdplayer.PlayList;
-import mdplayer.driver.Vgm;
 import mdplayer.driver.zms.ZmsDriver;
 import mdplayer.plugin.Plugin;
 import mdplayer.plugin.ZMSPlugin;
+import musicDriverInterface.MetaData;
+import musicDriverInterface.MetaData.Tag;
 import vavi.sound.SoundUtil;
 import vavi.sound.sampled.md.MdEncoding;
 import vavi.sound.sampled.md.MdFileFormatType;
@@ -38,19 +38,21 @@ public class ZMSFileFormat extends BaseFileFormat {
     @Override
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
         PlayList.Music music = new PlayList.Music();
+
         music.format = this;
         int index = 8;
-        Vgm.Gd3 gd3 = (new ZmsDriver()).getGD3Info(buf, index);
-        music.title = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackName;
-        music.titleJ = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackNameJ;
-        music.game = gd3.gameName;
-        music.gameJ = gd3.gameNameJ;
-        music.composer = gd3.composer;
-        music.composerJ = gd3.composerJ;
-        music.vgmby = gd3.vgmBy;
+        MetaData metaData = new ZmsDriver().getMetaData(buf, index);
+        music.title = metaData.getFirst(Tag.Title).isEmpty() ? Path.getFileName(file) : metaData.getFirst(Tag.Title);
+        music.titleJ = metaData.getFirst(Tag.TitleJ).isEmpty() ? Path.getFileName(file) : metaData.getFirst(Tag.TitleJ);
+        music.game = metaData.getFirst(Tag.GameTitle);
+        music.gameJ = metaData.getFirst(Tag.GameTitleJ);
+        music.composer = metaData.getFirst(Tag.Composer);
+        music.composerJ = metaData.getFirst(Tag.ComposerJ);
+        music.vgmby = metaData.getFirst(Tag.Maker);
 
-        music.converted = gd3.converted;
-        music.notes = gd3.notes;
+        music.converted = metaData.getFirst(Tag.Converter);
+        music.notes = metaData.getFirst(Tag.Note);
+
         return Collections.singletonList(music);
     }
 
@@ -60,17 +62,17 @@ public class ZMSFileFormat extends BaseFileFormat {
 
         music.format = this;
         int index = 8;
-        Vgm.Gd3 gd3 = (new ZmsDriver()).getGD3Info(buf, index);
-        music.title = gd3.trackName.isEmpty() ? Path.getFileName(zipFile) : gd3.trackName;
-        music.titleJ = gd3.trackName.isEmpty() ? Path.getFileName(zipFile) : gd3.trackNameJ;
-        music.game = gd3.gameName;
-        music.gameJ = gd3.gameNameJ;
-        music.composer = gd3.composer;
-        music.composerJ = gd3.composerJ;
-        music.vgmby = gd3.vgmBy;
+        MetaData metaData = new ZmsDriver().getMetaData(buf, index);
+        music.title = metaData.getFirst(Tag.Title).isEmpty() ? Path.getFileName(zipFile) : metaData.getFirst(Tag.Title);
+        music.titleJ = metaData.getFirst(Tag.TitleJ).isEmpty() ? Path.getFileName(zipFile) : metaData.getFirst(Tag.TitleJ);
+        music.game = metaData.getFirst(Tag.GameTitle);
+        music.gameJ = metaData.getFirst(Tag.GameTitleJ);
+        music.composer = metaData.getFirst(Tag.Composer);
+        music.composerJ = metaData.getFirst(Tag.ComposerJ);
+        music.vgmby = metaData.getFirst(Tag.Maker);
 
-        music.converted = gd3.converted;
-        music.notes = gd3.notes;
+        music.converted = metaData.getFirst(Tag.Converter);
+        music.notes = metaData.getFirst(Tag.Note);
 
         return Collections.singletonList(music);
     }

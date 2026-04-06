@@ -3,13 +3,14 @@ package mdplayer.driver;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
-import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.Sn76489Chip;
 import mdplayer.chips.Ym2612Chip;
 import mdplayer.driver.Xgm.XgmPcm;
 import mdplayer.plugin.BasePlugin;
+import musicDriverInterface.MetaData;
+import musicDriverInterface.MetaData.Tag;
 
 import static java.lang.System.getLogger;
 
@@ -29,9 +30,9 @@ public class XgmDriver extends BaseDriver {
         this.xgm = new Xgm();
         xgm.pcmStep = setting.getOutputDevice().getSampleRate() / 14000.0;
         xgm.stop = () -> stopped = true;
-        xgm.loop = () -> vgmCurLoop++;
-        xgm.tag = () -> gd3 = getGD3Info(vgmBuf);
-        xgm.ym2612Write = (p, a, d) -> plugin.chipRegister.chip(Ym2612Chip.class).write(0, p, a, d, model, vgmFrameCounter);
+        xgm.loop = () -> curLoop++;
+        xgm.tag = () -> metaData = getMetaData(dataBuf);
+        xgm.ym2612Write = (p, a, d) -> plugin.chipRegister.chip(Ym2612Chip.class).write(0, p, a, d, model, frameCounter);
         xgm.sn76489Write = v -> plugin.chipRegister.chip(Sn76489Chip.class).write(0, v, model);
     }
 
@@ -41,24 +42,23 @@ public class XgmDriver extends BaseDriver {
 
     @Override
     public void init(byte[] xgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     Class<? extends Chip>[] useChip, int latency, int waitTime, Object... args) {
-        this.vgmBuf = xgmBuf;
+                     int latency, int waitTime, Object... args) {
+        this.dataBuf = xgmBuf;
         this.plugin = plugin;
         this.model = model;
-        this.useChip = useChip;
         this.latency = latency;
         this.waitTime = waitTime;
 
         counter = 0;
         totalCounter = 0;
         loopCounter = 0;
-        vgmCurLoop = 0;
+        curLoop = 0;
         stopped = false;
-        vgmFrameCounter = -latency - waitTime;
-        vgmSpeed = 1;
-        vgmSpeedCounter = 0;
+        frameCounter = -latency - waitTime;
+        speed = 1;
+        speedCounter = 0;
 
-        xgm.getXGMInfo(vgmBuf);
+        xgm.getXGMInfo(dataBuf);
 
         if (model == EnmModel.RealModel) {
             plugin.chipRegister.chip(Ym2612Chip.class).setSyncWait((byte) 0, 1);
@@ -68,22 +68,22 @@ public class XgmDriver extends BaseDriver {
         // Initializing the Driver
         xgm.init();
 
-        xgm.vgmBuf = vgmBuf;
+        xgm.vgmBuf = dataBuf;
     }
 
     @Override
     public void processOneFrame() {
         try {
-            vgmSpeedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * vgmSpeed;
-            while (vgmSpeedCounter >= 1.0 && !stopped) {
-                vgmSpeedCounter -= 1.0;
-                if (vgmFrameCounter > -1) {
+            speedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * speed;
+            while (speedCounter >= 1.0 && !stopped) {
+                speedCounter -= 1.0;
+                if (frameCounter > -1) {
                     counter++;
-                    vgmFrameCounter++;
+                    frameCounter++;
 
                     xgm.oneFrameMain();
                 } else {
-                    vgmFrameCounter++;
+                    frameCounter++;
                 }
             }
 
@@ -95,19 +95,18 @@ public class XgmDriver extends BaseDriver {
     }
 
     @Override
-    public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
+    public MetaData getMetaData(byte[] buf, Object... args) {
         xgm.getXGMInfo(buf);
-        return gd3;
+        return metaData;
     }
 
-    @Override
-    public Vgm.Gd3 getGD3Info(byte[] vgmBuf) {
+    private MetaData getMetaData(byte[] vgmBuf) {
 
-        if (!xgm.existGD3) return new Vgm.Gd3();
+        if (!xgm.existGD3) return new MetaData();
 
-        Vgm.Gd3 gd3 = Common.getGD3Info(vgmBuf, xgm.gd3InfoStartAddr + 12);
-        gd3.usedChips = usedChips;
+        MetaData md = Common.getMetaData(vgmBuf, xgm.gd3InfoStartAddr + 12);
+        md.set(Tag.Chip, usedChips);
 
-        return gd3;
+        return md;
     }
 }

@@ -4,14 +4,14 @@ import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
 import dotnet4j.util.compat.Tuple;
-import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.YmF262Chip;
 import mdplayer.chips.YmF278BChip;
 import mdplayer.driver.BaseDriver;
-import mdplayer.driver.Vgm.Gd3;
 import mdplayer.plugin.BasePlugin;
+import musicDriverInterface.MetaData;
+import musicDriverInterface.MetaData.Tag;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
@@ -23,49 +23,48 @@ public class BuiltInMoonDriver extends BaseDriver {
     private static final Logger logger = getLogger(BuiltInMoonDriver.class.getName());
 
     @Override
-    public Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
+    public MetaData getMetaData(byte[] buf, Object... args) {
 
-        Gd3 gd3 = new Gd3();
+        MetaData md = new MetaData();
 
         int[] adrTag = new int[1];
         adrTag[0] = ByteUtil.readLeShort(buf, 0x2e);
         if (adrTag[0] != 0) {
             adrTag[0] -= 0x8000;
-            gd3.trackName = Common.getNRDString(buf, adrTag);
-            gd3.trackNameJ = Common.getNRDString(buf, adrTag);
-            gd3.gameName = Common.getNRDString(buf, adrTag);
-            gd3.gameNameJ = Common.getNRDString(buf, adrTag);
-            gd3.systemName = Common.getNRDString(buf, adrTag);
-            gd3.systemNameJ = Common.getNRDString(buf, adrTag);
-            gd3.composer = Common.getNRDString(buf, adrTag); // Track author
-            gd3.composerJ = Common.getNRDString(buf, adrTag); // Track author(jp)
-            gd3.version = Common.getNRDString(buf, adrTag); // Release date
-            gd3.converted = Common.getNRDString(buf, adrTag); // Programmer
-            gd3.notes = Common.getNRDString(buf, adrTag); // Notes
+            md.set(Tag.Title, Common.getNRDString(buf, adrTag));
+            md.set(Tag.TitleJ, Common.getNRDString(buf, adrTag));
+            md.set(Tag.GameTitle, Common.getNRDString(buf, adrTag));
+            md.set(Tag.GameTitleJ, Common.getNRDString(buf, adrTag));
+            md.set(Tag.GameSystem, Common.getNRDString(buf, adrTag));
+            md.set(Tag.GameSystemJ, Common.getNRDString(buf, adrTag));
+            md.set(Tag.Composer, Common.getNRDString(buf, adrTag)); // Track author
+            md.set(Tag.ComposerJ, Common.getNRDString(buf, adrTag)); // Track author(jp)
+            md.set(Tag.SongObjVersion, Common.getNRDString(buf, adrTag)); // Release date
+            md.set(Tag.Converter, Common.getNRDString(buf, adrTag)); // Programmer
+            md.set(Tag.Note, Common.getNRDString(buf, adrTag)); // Notes
         }
 
-        return gd3;
+        return md;
     }
 
     @Override
     public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     Class<? extends Chip>[] useChip, int latency, int waitTime, Object... args) {
+                     int latency, int waitTime, Object... args) {
 
-        this.vgmBuf = vgmBuf;
+        this.dataBuf = vgmBuf;
         this.plugin = plugin;
         this.model = model;
-        this.useChip = useChip;
         this.latency = latency;
         this.waitTime = waitTime;
 
-        gd3 = getGD3Info(vgmBuf);
+        metaData = getMetaData(vgmBuf);
         counter = 0;
         totalCounter = 0;
         loopCounter = 0;
-        vgmCurLoop = 0;
+        curLoop = 0;
         stopped = false;
-        vgmFrameCounter = -latency - waitTime;
-        vgmSpeed = 1;
+        frameCounter = -latency - waitTime;
+        speed = 1;
 
         try {
             a = 0;
@@ -136,18 +135,18 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
     public void processOneFrame() {
 //        if (model == EnmModel.RealModel) {
 //            stopped = true;
-//            vgmCurLoop = Integer.MAX_VALUE;
+//            curLoop = Integer.MAX_VALUE;
 //            return;
 //        }
 
         try {
-            vgmSpeedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * vgmSpeed;
-            while (vgmSpeedCounter >= 1.0) {
-                vgmSpeedCounter -= 1.0;
-                if (vgmFrameCounter > -1) {
+            speedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * speed;
+            while (speedCounter >= 1.0) {
+                speedCounter -= 1.0;
+                if (frameCounter > -1) {
                     oneFrameMain();
                 } else {
-                    vgmFrameCounter++;
+                    frameCounter++;
                 }
             }
         } catch (Exception ex) {
@@ -216,7 +215,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
     private void oneFrameMain() {
         try {
             counter++;
-            vgmFrameCounter++;
+            frameCounter++;
             ntscCounter--;
             if (ntscCounter <= 0) {
                 entryPoints(0x4003);
@@ -1134,7 +1133,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
                 stopped = true;
             }
 
-            vgmCurLoop = loop;
+            curLoop = loop;
 
             //proc_tracks_end:
             a = (byte) work.seq_jump_flag;

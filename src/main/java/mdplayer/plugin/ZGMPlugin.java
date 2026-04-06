@@ -3,7 +3,6 @@ package mdplayer.plugin;
 import java.lang.System.Logger;
 
 import mdplayer.Common;
-import mdplayer.chips.Ym2203Chip;
 import mdplayer.driver.zgm.Zgm;
 
 import static java.lang.System.getLogger;
@@ -38,13 +37,12 @@ public class ZGMPlugin extends BasePlugin<Zgm> {
 //        startTrdVgmReal();
 
         driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel,
-                new Class[] {Ym2203Chip.class},
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
 
         // Sealed until MIDI is supported
 //            if (driverReal != null)
-//                 driverReal.init(vgmBuf, this, EnmModel.RealModel,
+//                 driverReal.init(dataBuf, this, EnmModel.RealModel,
 //                    new EnmChip[] {EnmChip.YM2203},
 //                    (int) (setting.getoutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000),
 //                    (int) (setting.getoutputDevice().getSampleRate() * setting.getoutputDevice().getWaitTime() / 1000));

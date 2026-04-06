@@ -26,6 +26,8 @@ public class VstPlugin implements Plugin {
 
     private static final Logger logger = getLogger(VstPlugin.class.getName());
 
+    public int vstDelta = 0;
+
     private final VstMng vstMng = new VstMng();
 
     public List<VstInfo2> getVSTInfos() {

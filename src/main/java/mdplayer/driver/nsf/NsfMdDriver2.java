@@ -9,13 +9,13 @@ package mdplayer.driver.nsf;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
-import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.NesChip;
 import mdplayer.driver.BaseDriver;
-import mdplayer.driver.Vgm.Gd3;
 import mdplayer.plugin.BasePlugin;
 import mdsound.MDSound;
+import musicDriverInterface.MetaData;
+import musicDriverInterface.MetaData.Tag;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
@@ -44,7 +44,7 @@ public class NsfMdDriver2 extends BaseDriver implements NsfDriver {
     }
 
     @Override
-    public Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
+    public MetaData getMetaData(byte[] buf, Object... args) {
         if (ByteUtil.readLeInt(buf, 0) != Nsf2.FCC_NSF) {
             // NSFe is not supported for now
             logger.log(Level.WARNING, "NSFe not supported.");
@@ -56,26 +56,25 @@ public class NsfMdDriver2 extends BaseDriver implements NsfDriver {
             return null;
         }
 
-        Gd3 gd3 = new Gd3();
-        gd3.gameName = nsf.title;
-        gd3.gameNameJ = nsf.title;
-        gd3.composer = nsf.artist;
-        gd3.composerJ = nsf.artist;
-        gd3.trackName = nsf.title;
-        gd3.trackNameJ = nsf.title;
-        gd3.systemName = nsf.copyright;
-        gd3.systemNameJ = nsf.copyright;
+        MetaData md = new MetaData();
+        md.set(Tag.GameTitle, nsf.title);
+        md.set(Tag.GameTitleJ, nsf.title);
+        md.set(Tag.Composer, nsf.artist);
+        md.set(Tag.ComposerJ, nsf.artist);
+        md.set(Tag.Title, nsf.title);
+        md.set(Tag.TitleJ, nsf.title);
+        md.set(Tag.GameSystem, nsf.copyright);
+        md.set(Tag.GameSystemJ, nsf.copyright);
 
-        return gd3;
+        return md;
     }
 
     @Override
     public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     Class<? extends Chip>[] useChip, int latency, int waitTime, Object... args) {
-        this.vgmBuf = vgmBuf;
+                     int latency, int waitTime, Object... args) {
+        this.dataBuf = vgmBuf;
         this.plugin = plugin;
         this.model = model;
-        this.useChip = useChip;
         this.latency = latency;
         this.waitTime = waitTime;
 
@@ -83,20 +82,20 @@ public class NsfMdDriver2 extends BaseDriver implements NsfDriver {
 
         if (model == EnmModel.RealModel) {
             stopped = true;
-            vgmCurLoop = 9999;
+            curLoop = 9999;
             return;
         }
 
         counter = 0;
         totalCounter = 0;
         loopCounter = 0;
-        vgmCurLoop = 0;
+        curLoop = 0;
         stopped = false;
-        vgmFrameCounter = -latency - waitTime;
-        vgmSpeed = 1;
-        vgmSpeedCounter = 0;
+        frameCounter = -latency - waitTime;
+        speed = 1;
+        speedCounter = 0;
 
-        gd3 = getGD3Info(vgmBuf);
+        metaData = getMetaData(vgmBuf);
 
         nsf.init(vgmBuf);
     }

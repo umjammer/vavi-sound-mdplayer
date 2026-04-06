@@ -213,14 +213,14 @@ public class Zms {
         nise68.init(envZPDs, version == 2, fileMng);
 
         fileMng.setVFile(Path.getFileName(fnZMD), data);
-        //nise68.hmn.fb.add(fnZMD, vgmBuf);
-        //if (format == EnmFileFormat.ZMD) nise68.hmn.fb.add(fnZMD, vgmBuf);
+        //nise68.hmn.fb.add(fnZMD, dataBuf);
+        //if (format == EnmFileFormat.ZMD) nise68.hmn.fb.add(fnZMD, dataBuf);
         //else {
         //    // compile
-        //    if (model != EnmModel.RealModel || compiledData == null) compile(vgmBuf);
+        //    if (model != EnmModel.RealModel || compiledData == null) compile(dataBuf);
         //    else {
         //        // Real receives the compilation result of virtual
-        //        nise68.hmn.fb.add(fnZMS, vgmBuf);
+        //        nise68.hmn.fb.add(fnZMS, dataBuf);
         //        nise68.hmn.fb.add(fnZMD, compiledData);
         //    }
         //}
@@ -433,7 +433,7 @@ public class Zms {
         nise68.init(null, false, fileMng);
 
         // compile
-        //nise68.hmn.fb.add(fnZMS, vgmBuf);
+        //nise68.hmn.fb.add(fnZMS, dataBuf);
         fileMng.setVFile(fnZMS, vgmBuf);
         //if (nise68.LoadRun(zmc, Path.GetFileName(fnZMS), Path.GetDirectoryName(fnZMS), 0x00012000,
         // true, true, true
@@ -477,7 +477,7 @@ public class Zms {
         nise68.init(null, false, fileMng);
 
         // compile
-        //nise68.hmn.fb.add(fnZMS, vgmBuf);
+        //nise68.hmn.fb.add(fnZMS, dataBuf);
         fileMng.setVFile(fnZMS, vgmBuf);
         //if (nise68.loadRun(zmusic, "-C " + Path.getFileName(fnZMS), Path.getDirectoryName(fnZMS), 0x00012000,
         // true, true, true

@@ -2,7 +2,6 @@ package mdplayer.plugin;
 
 import java.lang.System.Logger;
 
-import mdplayer.Chip.Unused;
 import mdplayer.Common;
 import mdplayer.chips.MidiPlugin;
 import mdplayer.chips.NesChip;
@@ -61,12 +60,12 @@ public class NSFPlugin extends BasePlugin<NsfMdDriver2> {
         chipLED.put("PriDMC", 1);
 
         driverVirtual.setSong(songNo);
-        driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel, new Class[] {Unused.class},
+        driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel,
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         if (driverReal != null) {
             driverReal.setSong(songNo);
-            driverReal.init(vgmBuf, this, Common.EnmModel.RealModel, new Class[] {Unused.class},
+            driverReal.init(vgmBuf, this, Common.EnmModel.RealModel,
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         }

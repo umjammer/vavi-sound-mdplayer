@@ -15,19 +15,16 @@ import java.util.function.Consumer;
 
 import dotnet4j.util.compat.TriConsumer;
 import dotnet4j.util.compat.Tuple;
-import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.Sn76489Chip;
 import mdplayer.chips.Ym2612Chip;
 import mdplayer.driver.BaseDriver;
-import mdplayer.driver.Vgm;
 import mdplayer.plugin.BasePlugin;
 import musicDriverInterface.ChipAction;
 import musicDriverInterface.ChipDatum;
-import musicDriverInterface.MetaData;
 import musicDriverInterface.IDriver;
-import musicDriverInterface.MetaData.Tag;
+import musicDriverInterface.MetaData;
 import musicDriverInterface.MmlDatum;
 
 import static java.lang.System.getLogger;
@@ -58,42 +55,33 @@ public class MdsDriver extends BaseDriver {
     public static final int opmBaseClock = 3579545;
 
     @Override
-    public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
+    public MetaData getMetaData(byte[] buf, Object... args) {
         MetaData metaData;
 
         mdsDriver = IDriver.factory("vavi.sound.mdsdrv.driver.MdsDriver");
-        metaData = mdsDriver.getGD3TagInfo(buf);
+        metaData = mdsDriver.getMetaData(buf);
 
-        Vgm.Gd3 g = new Vgm.Gd3();
-        g.trackName = metaData.getFirst(Tag.Title);
-        g.trackNameJ = metaData.getFirst(Tag.TitleJ);
-        g.composer = metaData.getFirst(Tag.Composer);
-        g.composerJ = metaData.getFirst(Tag.ComposerJ);
-        g.vgmBy = metaData.getFirst(Tag.Artist);
-        g.converted = metaData.getFirst(Tag.ReleaseDate);
-
-        return g;
+        return metaData;
     }
 
     @Override
     public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     Class<? extends Chip>[] useChip, int latency, int waitTime, Object... args) {
-        gd3 = getGD3Info(vgmBuf);
+                     int latency, int waitTime, Object... args) {
+        metaData = getMetaData(vgmBuf);
 
-        this.vgmBuf = vgmBuf;
+        this.dataBuf = vgmBuf;
         this.plugin = plugin;
         this.model = model;
-        this.useChip = useChip;
         this.latency = latency;
         this.waitTime = waitTime;
 
         counter = 0;
         totalCounter = 0;
         loopCounter = 0;
-        vgmCurLoop = 0;
+        curLoop = 0;
         stopped = false;
-        vgmFrameCounter = -latency - waitTime;
-        vgmSpeed = 1;
+        frameCounter = -latency - waitTime;
+        speed = 1;
 
         initMds();
     }
@@ -102,19 +90,19 @@ public class MdsDriver extends BaseDriver {
     public void processOneFrame() {
 
         try {
-            vgmSpeedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * vgmSpeed;
-            while (vgmSpeedCounter >= 1.0) {
-                vgmSpeedCounter -= 1.0;
+            speedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * speed;
+            while (speedCounter >= 1.0) {
+                speedCounter -= 1.0;
 
                 mdsDriver.render();
 
                 counter++;
-                vgmFrameCounter++;
+                frameCounter++;
             }
 
             int lp = mdsDriver.getNowLoopCounter();
             lp = Math.max(lp, 0);
-            vgmCurLoop = lp;
+            curLoop = lp;
 
             if (mdsDriver.getStatus() < 1) {
                 if (mdsDriver.getStatus() == 0) {
@@ -131,7 +119,7 @@ public class MdsDriver extends BaseDriver {
         if (mdsDriver == null) mdsDriver = new mucom88.driver.Driver();
 
         List<MmlDatum> buf = new ArrayList<>();
-        for (byte b : vgmBuf) buf.add(new MmlDatum(b & 0xff));
+        for (byte b : dataBuf) buf.add(new MmlDatum(b & 0xff));
 
         List<ChipAction> actions = new ArrayList<>();
         ChipAction action = new MdsChipAction(this::writeOPM1, null, null);

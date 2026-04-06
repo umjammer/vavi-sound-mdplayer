@@ -2,18 +2,16 @@ package mdplayer.driver.nrtdrv;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
-import java.util.ArrayList;
 import java.util.Arrays;
 
-import dotnet4j.util.compat.Tuple3;
-import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.Ay8910Chip;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.driver.BaseDriver;
-import mdplayer.driver.Vgm;
 import mdplayer.plugin.BasePlugin;
+import musicDriverInterface.MetaData;
+import musicDriverInterface.MetaData.Tag;
 
 import static java.lang.System.getLogger;
 
@@ -36,7 +34,7 @@ public class NrtDriver extends BaseDriver {
         nrtdrv.ym2151WriteV = (i, a, d) -> plugin.chipRegister.chip(Ym2151Chip.class).write(i, 0, a, d, EnmModel.VirtualModel, 0, 0);
         nrtdrv.ym2151WriteR = (i, a, d) -> plugin.chipRegister.chip(Ym2151Chip.class).write(i, 0, a, d, EnmModel.RealModel, plugin.chipRegister.chip(Ym2151Chip.class).ym2151Hosei[0], 0);
         nrtdrv.ay8910WriteV = (a, d) -> plugin.chipRegister.chip(Ay8910Chip.class).write(0, a, d, EnmModel.VirtualModel);
-        nrtdrv.loop = l -> vgmCurLoop = l;
+        nrtdrv.loop = l -> curLoop = l;
         nrtdrv.isRealModel = model == EnmModel.RealModel;
     }
 
@@ -50,28 +48,27 @@ public class NrtDriver extends BaseDriver {
 
     @Override
     public void init(byte[] nrdFileData, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     Class<? extends Chip>[] useChip, int latency, int waitTime, Object... args) {
-        this.vgmBuf = nrdFileData;
+                     int latency, int waitTime, Object... args) {
+        this.dataBuf = nrdFileData;
         this.plugin = plugin;
         this.model = model;
-        this.useChip = useChip;
         this.latency = latency;
         this.waitTime = waitTime;
 
-        gd3 = getGD3Info(nrdFileData, 42);
+        metaData = getMetaData(nrdFileData, 42);
         counter = 0;
         totalCounter = 0;
         loopCounter = 0;
-        vgmCurLoop = 0;
+        curLoop = 0;
         stopped = false;
-        vgmFrameCounter = -latency - waitTime;
-        vgmSpeed = 1;
+        frameCounter = -latency - waitTime;
+        speed = 1;
 
         try {
             nrtdrv.ram = new byte[65536];
             Arrays.fill(nrtdrv.ram, (byte) 0);
 
-            System.arraycopy(vgmBuf, 0, nrtdrv.ram, 0x4000, Math.min(vgmBuf.length, 0xfeff - 0x4000));
+            System.arraycopy(dataBuf, 0, nrtdrv.ram, 0x4000, Math.min(dataBuf.length, 0xfeff - 0x4000));
         } catch (Exception ex) {
             throw new IllegalStateException("Driver initialization failed.", ex);
         }
@@ -89,73 +86,76 @@ public class NrtDriver extends BaseDriver {
         }
     }
 
+    /**
+     * @param args 0: index
+     */
     @Override
-    public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
-        Vgm.Gd3 gd3 = new Vgm.Gd3();
-        gd3.trackName = Common.getNRDString(buf, vgmGd3);
-        gd3.trackNameJ = Common.getNRDString(buf, vgmGd3);
-        gd3.composer = Common.getNRDString(buf, vgmGd3);
-        gd3.composerJ = gd3.composer;
-        gd3.vgmBy = Common.getNRDString(buf, vgmGd3);
-        gd3.notes = Common.getNRDString(buf, vgmGd3);
+    public MetaData getMetaData(byte[] buf, Object... args) {
+        int[] index = {(int) args[0]};
+
+        MetaData md = new MetaData();
+        md.set(Tag.Title, Common.getNRDString(buf, index));
+        md.set(Tag.TitleJ, Common.getNRDString(buf, index));
+        md.set(Tag.Composer, Common.getNRDString(buf, index));
+        md.set(Tag.ComposerJ, md.getFirst(Tag.Composer));
+        md.set(Tag.Maker, Common.getNRDString(buf, index));
+        md.set(Tag.Note, Common.getNRDString(buf, index));
 
         if ((buf[2] & 0x08) != 0) {
-            gd3.lyrics = new ArrayList<>();
-            int adr = vgmGd3[0];
+            int adr = index[0];
             while (buf[adr] != (byte) 0xff || buf[adr + 1] != (byte) 0xff) {
                 int cnt = (buf[adr] & 0xff) + (buf[adr + 1] & 0xff) * 0x100;
                 int[] sAdr = new int[] {(buf[adr + 2] & 0xff) + (buf[adr + 3] & 0xff) * 0x100};
                 String msg = Common.getNRDString(buf, sAdr);
-                gd3.lyrics.add(new Tuple3<>(cnt, sAdr[0], msg));
+                md.set(Tag.Lyric, cnt + "," + sAdr[0] + "," + msg);
                 adr += 4;
             }
         }
 
         if ((((buf[2] & (byte) 0x80) != 0) && buf[41] != 2) || (buf[2] & 0x80) == 0) {
-            gd3.notes = "!!Warning!! This data version instanceof older/newer.";
+            md.set(Tag.Note, "!!Warning!! This data version instanceof older/newer.");
         }
 
         int r = nrtdrv.checkUseChip(buf);
 
         switch (r) {
             case 0:
-                gd3.usedChips = "";
                 break;
             case 1:
             case 2:
-                gd3.usedChips = "YM2151";
+                md.set(Tag.Chip, "YM2151");
                 break;
             case 3:
-                gd3.usedChips = "YM2151x2";
+                md.set(Tag.Chip, "YM2151x2");
                 break;
             case 4:
-                gd3.usedChips = "AY8910";
+                md.set(Tag.Chip, "AY8910");
                 break;
             case 5:
             case 6:
-                gd3.usedChips = "YM2151 , AY8910";
+                md.set(Tag.Chip, "YM2151, AY8910");
                 break;
             case 7:
-                gd3.usedChips = "YM2151x2 , AY8910";
+                md.set(Tag.Chip, "YM2151x2, AY8910");
                 break;
         }
 
-        return gd3;
+        return md;
     }
 
     @Override
     public void processOneFrame() {
         try {
-            vgmSpeedCounter += vgmSpeed;
-            while (vgmSpeedCounter >= 1.0) {
-                vgmSpeedCounter -= 1.0;
-                if (vgmFrameCounter > -1) {
+            speedCounter += speed;
+            while (speedCounter >= 1.0) {
+                speedCounter -= 1.0;
+                if (frameCounter > -1) {
                     counter++;
-                    vgmFrameCounter++;
+                    frameCounter++;
 
                     nrtdrv.oneFrameMain();
                 } else {
-                    vgmFrameCounter++;
+                    frameCounter++;
                 }
             }
             stopped = !nrtdrv.isPlaying();

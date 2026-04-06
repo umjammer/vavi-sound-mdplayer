@@ -45,25 +45,25 @@ public class YM2609 extends ZgmChip {
 
     private static void sendPort0(byte od, int vgmAdr) {
         // chipRegister.YM2609SetRegister(od, Audio.DriverSeqCounter, Index, 0,
-        // vgmBuf[vgmAdr + 1], vgmBuf[vgmAdr + 2]);
+        // dataBuf[vgmAdr + 1], dataBuf[vgmAdr + 2]);
         vgmAdr += 3;
     }
 
     private static void sendPort1(byte od, int vgmAdr) {
         // chipRegister.YM2609SetRegister(od, Audio.DriverSeqCounter, Index, 1,
-        // vgmBuf[vgmAdr + 1], vgmBuf[vgmAdr + 2]);
+        // dataBuf[vgmAdr + 1], dataBuf[vgmAdr + 2]);
         vgmAdr += 3;
     }
 
     private static void sendPort2(byte od, int vgmAdr) {
         // chipRegister.YM2609SetRegister(od, Audio.DriverSeqCounter, Index, 2,
-        // vgmBuf[vgmAdr + 1], vgmBuf[vgmAdr + 2]);
+        // dataBuf[vgmAdr + 1], dataBuf[vgmAdr + 2]);
         vgmAdr += 3;
     }
 
     private static void sendPort3(byte od, int vgmAdr) {
         // chipRegister.YM2609SetRegister(od, Audio.DriverSeqCounter, Index, 3,
-        // vgmBuf[vgmAdr + 1], vgmBuf[vgmAdr + 2]);
+        // dataBuf[vgmAdr + 1], dataBuf[vgmAdr + 2]);
         vgmAdr += 3;
     }
 }

@@ -56,7 +56,7 @@ public class Xgm {
     }
 
     void clock(boolean stopped) {
-        pcmSpeedCounter++; // = (double)Common.VGMProcSampleRate / setting.getoutputDevice().SampleRate * vgmSpeed;
+        pcmSpeedCounter++; // = (double)Common.VGMProcSampleRate / setting.getoutputDevice().SampleRate * speed;
         while (pcmSpeedCounter >= 1.0 && !stopped) {
             pcmSpeedCounter -= 1.0;
             onePCMFrameMain();

@@ -3,7 +3,6 @@ package mdplayer.driver.moonDriver;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -18,21 +17,18 @@ import dotnet4j.io.MemoryStream;
 import dotnet4j.io.Path;
 import dotnet4j.io.Stream;
 import dotnet4j.util.compat.Tuple;
-import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.YmF262Chip;
 import mdplayer.chips.YmF278BChip;
 import mdplayer.driver.BaseDriver;
-import mdplayer.driver.Vgm;
 import mdplayer.plugin.BasePlugin;
 import musicDriverInterface.ChipAction;
 import musicDriverInterface.ChipDatum;
 import musicDriverInterface.CompilerInfo;
-import musicDriverInterface.MetaData;
 import musicDriverInterface.ICompiler;
 import musicDriverInterface.IDriver;
-import musicDriverInterface.MetaData.Tag;
+import musicDriverInterface.MetaData;
 import musicDriverInterface.MmlDatum;
 import vavi.util.ByteUtil;
 
@@ -57,49 +53,40 @@ public class MoonDriver extends BaseDriver {
     }
 
     @Override
-    public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
+    public MetaData getMetaData(byte[] buf, Object... args) {
         mtype = checkFileType(buf);
 logger.log(Level.DEBUG, "type: " + mtype);
         MetaData metaData;
 
         if (mtype == MoonDriverFileType.MDL) {
             moonDriverCompiler = ICompiler.factory("moonDriver.compiler.Compiler");
-            metaData = moonDriverCompiler.getGD3TagInfo(buf);
+            metaData = moonDriverCompiler.getMetaData(buf);
         } else {
             moonDriverDriver = IDriver.factory("moonDriver.driver.Driver");
-            metaData = moonDriverDriver.getGD3TagInfo(buf);
+            metaData = moonDriverDriver.getMetaData(buf);
         }
 
-        Vgm.Gd3 g = new Vgm.Gd3();
-        g.trackName = metaData.getFirst(Tag.Title);
-        g.trackNameJ = metaData.getFirst(Tag.TitleJ);
-        g.composer = metaData.getFirst(Tag.Composer);
-        g.composerJ = metaData.getFirst(Tag.ComposerJ);
-        g.vgmBy = metaData.getFirst(Tag.Artist);
-        g.converted = metaData.getFirst(Tag.ReleaseDate);
-
-        return g;
+        return metaData;
     }
 
     @Override
     public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     Class<? extends Chip>[] useChip, int latency, int waitTime, Object... args) {
-        gd3 = getGD3Info(vgmBuf, 0);
+                     int latency, int waitTime, Object... args) {
+        metaData = getMetaData(vgmBuf, 0);
 
-        this.vgmBuf = vgmBuf;
+        this.dataBuf = vgmBuf;
         this.plugin = plugin;
         this.model = model;
-        this.useChip = useChip;
         this.latency = latency;
         this.waitTime = waitTime;
 
         counter = 0;
         totalCounter = 0;
         loopCounter = 0;
-        vgmCurLoop = 0;
+        curLoop = 0;
         stopped = false;
-        vgmFrameCounter = -latency - waitTime;
-        vgmSpeed = 1;
+        frameCounter = -latency - waitTime;
+        speed = 1;
 
 //#if DEBUG
 //        // The actual chip thread skips processing (for debugging)
@@ -122,19 +109,19 @@ logger.log(Level.DEBUG, "type: " + mtype);
         if (stopped) return;
 
         try {
-            vgmSpeedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * vgmSpeed;
-            while (vgmSpeedCounter >= 1.0) {
-                vgmSpeedCounter -= 1.0;
+            speedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * speed;
+            while (speedCounter >= 1.0) {
+                speedCounter -= 1.0;
 
                 moonDriverDriver.render();
 
                 counter++;
-                vgmFrameCounter++;
+                frameCounter++;
             }
 
             int lp = moonDriverDriver.getNowLoopCounter();
             lp = Math.max(lp, 0);
-            vgmCurLoop = lp;
+            curLoop = lp;
 
             if (moonDriverDriver.getStatus() < 1) {
 //                if (moonDriverDriver.getStatus() == 0) {
@@ -213,7 +200,7 @@ logger.log(Level.DEBUG, "type: " + mtype);
         MmlDatum[] ret;
         CompilerInfo info;
         try {
-            try (MemoryStream sourceMML = new MemoryStream(vgmBuf)) {
+            try (MemoryStream sourceMML = new MemoryStream(dataBuf)) {
                 ret = moonDriverCompiler.compile(sourceMML, this::appendFileReaderCallback);
             }
 
@@ -268,12 +255,12 @@ logger.log(Level.DEBUG, "type: " + mtype);
         if (moonDriverDriver == null) moonDriverDriver = IDriver.factory("moonDriver.driver.Driver");
 
         List<MmlDatum> buf = new ArrayList<>();
-        for (byte b : vgmBuf) buf.add(new MmlDatum(b & 0xff));
+        for (byte b : dataBuf) buf.add(new MmlDatum(b & 0xff));
 
         List<ChipAction> lca = new ArrayList<>();
         ChipAction ca;
-logger.log(Level.INFO, "useChip: " + Arrays.toString(useChip));
-        if (useChip[0] == YmF278BChip.class) {
+logger.log(Level.INFO, "useChip: " + plugin.chipRegister.chips());
+        if (plugin.chipRegister.contains(YmF278BChip.class)) {
             ca = new MoonDriverChipAction(this::opl4Write, this::opl4WaitSend);
         } else {
             ca = new MoonDriverChipAction(this::opl3Write, this::opl3WaitSend);
