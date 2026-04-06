@@ -1,13 +1,9 @@
 package mdplayer.plugin;
 
-import java.lang.System.Logger;
-
 import mdplayer.Chip.Unused;
 import mdplayer.Common;
 import mdplayer.chips.MidiPlugin;
 import mdplayer.driver.mid.MidiDriver;
-
-import static java.lang.System.getLogger;
 
 
 /**
@@ -17,8 +13,6 @@ import static java.lang.System.getLogger;
  * @version 0.00 2022-07-08 nsano initial version <br>
  */
 public class MIDPlugin extends BasePlugin<MidiDriver> {
-
-    private static final Logger logger = getLogger(MIDPlugin.class.getName());
 
     @Override
     public void prepare() {
@@ -35,8 +29,6 @@ public class MIDPlugin extends BasePlugin<MidiDriver> {
 
     @Override
     protected void initChips() {
-        startTrdVgmReal();
-
         chipLED.put("PriMID", 1);
         chipLED.put("SecMID", 1);
 

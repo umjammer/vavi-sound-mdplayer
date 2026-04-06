@@ -46,8 +46,6 @@ public class MNDPlugin extends BasePlugin<MnDriver> {
 
     @Override
     protected void initChips() {
-        startTrdVgmReal();
-
         int hiyorimiDeviceFlag = 3;
 
         MDSound.Chip chip = new MDSound.Chip();
@@ -132,8 +130,6 @@ public class MNDPlugin extends BasePlugin<MnDriver> {
             setVolume("RHYTHM", Ym2608Chip.class, true, setting.getBalance().getVolume("RHYTHM", Ym2608Chip.class));
             setVolume("ADPCM", Ym2608Chip.class, true, setting.getBalance().getVolume("ADPCM", Ym2608Chip.class));
         }
-
-        sleep(500);
 
         if (contains(Ym2608Chip.class, 0)) {
             chipRegister.chip(Ym2608Chip.class).write(0, 0, 0x2d, 0x00, EnmModel.VirtualModel);

@@ -47,8 +47,6 @@ public class XGMPlugin extends BasePlugin<XgmDriver> {
 
     @Override
     protected void initChips() {
-        startTrdVgmReal();
-
         MDSound.Chip chip = new MDSound.Chip();
         chip.id = 0;
         chip.instrument = Instrument.getInstrument(chipRegister.chip(Ym2612Chip.class).inst(0));

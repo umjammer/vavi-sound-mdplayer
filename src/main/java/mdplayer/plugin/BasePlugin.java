@@ -10,35 +10,18 @@ import java.util.List;
 import java.util.Map;
 
 import dotnet4j.util.compat.Tuple;
-import mdplayer.Audio;
 import mdplayer.ChipLEDs;
 import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Setting;
-import mdplayer.WaveWriter;
-import mdplayer.chips.Ay8910Chip;
 import mdplayer.chips.MidiPlugin;
-import mdplayer.chips.Sn76489Chip;
-import mdplayer.chips.Ym2151Chip;
-import mdplayer.chips.Ym2203Chip;
-import mdplayer.chips.Ym2413Chip;
-import mdplayer.chips.Ym2608Chip;
-import mdplayer.chips.Ym2610Chip;
-import mdplayer.chips.Ym2612Chip;
-import mdplayer.chips.Ym3526Chip;
-import mdplayer.chips.Ym3812Chip;
-import mdplayer.chips.YmF262Chip;
+import mdplayer.chips.RealChipPlugin;
 import mdplayer.driver.BaseDriver;
-import mdplayer.driver.VgmDriver;
-import mdplayer.format.AIFFFileFormat;
 import mdplayer.format.FileFormat;
-import mdplayer.format.MP3FileFormat;
-import mdplayer.format.WAVFileFormat;
 import mdsound.MDSound;
 import mdsound.MDSound.Chip;
 
 import static java.lang.System.getLogger;
-import static mdplayer.chips.RealChipPlugin.realChipClose;
 
 
 /**
@@ -52,8 +35,6 @@ public abstract class BasePlugin<T extends BaseDriver> implements Plugin {
     private static final Logger logger = getLogger(BasePlugin.class.getName());
 
     protected final Setting setting = Setting.getInstance();
-
-    public final Audio audio = Audio.getInstance();
 
     public final MDSound mds;
 
@@ -70,29 +51,35 @@ public abstract class BasePlugin<T extends BaseDriver> implements Plugin {
     protected byte[] vgmBuf = null;
     protected double vgmSpeed;
 
-    protected boolean oneTimeReset = false;
+    public boolean oneTimeReset = false;
 
     protected FileFormat fileFormat;
-    protected String playingFileName;
-    protected String playingArcFileName;
+    public FileFormat playingFileFormat;
+
+    public int procTimePer1Frame = 0;
+    public int stepCounter = 0;
+
+    public String playingFileName;
+    public String playingArcFileName;
     protected int midiMode = 0;
     protected int songNo = 0;
     protected List<Tuple<String, byte[]>> extendFiles = null;
 
     public boolean flgReinit = false;
+    public boolean stopped = false;
+    public boolean paused = false;
 
+    public boolean vgmFadeout;
+    public double vgmFadeoutCounter;
+    public double vgmFadeoutCounterV;
     protected int vgmRealFadeoutVol = 0;
     protected int vgmRealFadeoutVolWait = 4;
 
-    protected int hiyorimiEven = 0;
+    public int hiyorimiEven = 0;
     public boolean hiyorimiNecessary = false;
 
     // TODO variable?
     public static final int BUFFER_SIZE = 1024;
-
-    protected static void sleep(int i) {
-        try { Thread.sleep(i); } catch (InterruptedException ignore) {}
-    }
 
     /** used chips */
     protected final Map<Class<? extends mdplayer.Chip>, List<Chip>> chips = new HashMap<>();
@@ -117,10 +104,6 @@ public abstract class BasePlugin<T extends BaseDriver> implements Plugin {
         return chips.values().stream().flatMap(Collection::stream).toList();
     }
 
-    public boolean getEmuOnly() {
-        return false;
-    }
-
     protected BasePlugin() {
         mds = new MDSound(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, null);
 
@@ -132,147 +115,35 @@ public abstract class BasePlugin<T extends BaseDriver> implements Plugin {
 
     @Override
     public void init() {
-        audio.plugin = this;
-        audio.waveWriter = new WaveWriter();
-
-        audio.paused = false;
-        audio.stopped = true;
-logger.log(Level.TRACE, "stop: " + audio.stopped + ", " + audio.hashCode());
-//        audio._fatalError = false;
         oneTimeReset = false;
 
         // midi out released
         chipRegister.plugin(MidiPlugin.class).releaseAll();
 
-        audio.naudioWrap.start();
+        this.paused = false;
+        this.stopped = true;
+logger.log(Level.TRACE, "stop: " + this.stopped + ", " + this.hashCode());
     }
 
-    protected void trdVgmRealFunction() {
+    public void fadeOut() {
+        if (vgmRealFadeoutVol != 1000) vgmRealFadeoutVolWait--;
+        if (vgmRealFadeoutVolWait == 0) {
+            chips.keySet().forEach(c -> chipRegister.chip(c).setFadeout(0, vgmRealFadeoutVol));
+            chips.keySet().forEach(c -> chipRegister.chip(c).setFadeout(1, vgmRealFadeoutVol));
 
-        if (driverReal == null) { // first time, driverReal must be null
-            audio.trdClosed = true;
-            audio.setTrdStopped(true);
-            return;
-        }
+            vgmRealFadeoutVol++;
 
-        double o = System.currentTimeMillis() / Audio.swFreq;
-        double step = 1 / (double) setting.getOutputDevice().getSampleRate();
-        audio.setTrdStopped(false);
-        try {
-            while (!audio.trdClosed) {
-                Thread.sleep(0);
-
-                double el1 = System.currentTimeMillis() / Audio.swFreq;
-                if (el1 - o < step) continue;
-                if (el1 - o >= step * setting.getOutputDevice().getSampleRate() / 100.0) { // Threshold 10ms
-                    do {
-                        o += step;
-                    } while (el1 - o >= step);
-                } else {
-                    o += step;
-                }
-
-                if (audio.stopped || audio.paused) {
-//                    if (SoundChip.realChip != null && !oneTimeReset) {
-//                        softReset(EnmModel.RealModel);
-//                        oneTimeReset = true;
-//                        chipRegister.resetAllMIDIout();
-//                    }
-                    continue;
-                }
-                if (hiyorimiNecessary && driverVirtual.isDataBlock) {
-                    continue;
-                }
-
-                if (audio.vgmFadeout) {
-                    if (vgmRealFadeoutVol != 1000) vgmRealFadeoutVolWait--;
-                    if (vgmRealFadeoutVolWait == 0) {
-                        if (contains(Ym2151Chip.class, 0)) chipRegister.chip(Ym2151Chip.class).setFadeout(0, vgmRealFadeoutVol);
-                        if (contains(Ym2203Chip.class, 0)) chipRegister.chip(Ym2203Chip.class).setFadeout(0, vgmRealFadeoutVol);
-                        if (contains(Ay8910Chip.class, 0)) chipRegister.chip(Ay8910Chip.class).setFadeout(0, vgmRealFadeoutVol);
-                        if (contains(Ym2413Chip.class, 0)) chipRegister.chip(Ym2413Chip.class).setFadeout(0, vgmRealFadeoutVol);
-                        if (contains(Ym2608Chip.class, 0)) chipRegister.chip(Ym2608Chip.class).setFadeout(0, vgmRealFadeoutVol);
-                        if (contains(Ym2610Chip.class, 0)) chipRegister.chip(Ym2610Chip.class).setFadeout(0, vgmRealFadeoutVol);
-                        if (contains(Ym2612Chip.class, 0)) chipRegister.chip(Ym2612Chip.class).setFadeout(0, vgmRealFadeoutVol);
-                        if (contains(Ym3526Chip.class, 0)) chipRegister.chip(Ym3526Chip.class).setFadeout(0, vgmRealFadeoutVol);
-                        if (contains(Ym3812Chip.class, 0)) chipRegister.chip(Ym3812Chip.class).setFadeout(0, vgmRealFadeoutVol);
-                        if (contains(Sn76489Chip.class, 0)) chipRegister.chip(Sn76489Chip.class).setFadeout(0, vgmRealFadeoutVol);
-                        if (contains(YmF262Chip.class, 0)) chipRegister.chip(YmF262Chip.class).setFadeout(0, vgmRealFadeoutVol);
-
-                        if (contains(Ym2151Chip.class, 1)) chipRegister.chip(Ym2151Chip.class).setFadeout(1, vgmRealFadeoutVol);
-                        if (contains(Ym2203Chip.class, 1)) chipRegister.chip(Ym2203Chip.class).setFadeout(1, vgmRealFadeoutVol);
-                        if (contains(Ay8910Chip.class, 1)) chipRegister.chip(Ay8910Chip.class).setFadeout(1, vgmRealFadeoutVol);
-                        if (contains(Ym2413Chip.class, 1)) chipRegister.chip(Ym2413Chip.class).setFadeout(1, vgmRealFadeoutVol);
-                        if (contains(Ym2608Chip.class, 1)) chipRegister.chip(Ym2608Chip.class).setFadeout(1, vgmRealFadeoutVol);
-                        if (contains(Ym2610Chip.class, 1)) chipRegister.chip(Ym2610Chip.class).setFadeout(1, vgmRealFadeoutVol);
-                        if (contains(Ym2612Chip.class, 1)) chipRegister.chip(Ym2612Chip.class).setFadeout(1, vgmRealFadeoutVol);
-                        if (contains(Ym3526Chip.class, 1)) chipRegister.chip(Ym3526Chip.class).setFadeout(1, vgmRealFadeoutVol);
-                        if (contains(Ym3812Chip.class, 1)) chipRegister.chip(Ym3812Chip.class).setFadeout(1, vgmRealFadeoutVol);
-                        if (contains(Sn76489Chip.class, 1)) chipRegister.chip(Sn76489Chip.class).setFadeout(1, vgmRealFadeoutVol);
-                        if (contains(YmF262Chip.class, 1)) chipRegister.chip(YmF262Chip.class).setFadeout(1, vgmRealFadeoutVol);
-
-                        vgmRealFadeoutVol++;
-
-                        vgmRealFadeoutVol = Math.min(127, vgmRealFadeoutVol);
-                        if (vgmRealFadeoutVol == 127) {
-//                            if (SoundChip.realChip != null) {
-//                                softReset(EnmModel.RealModel);
-//                            }
-                            vgmRealFadeoutVolWait = 1000;
-                            chipRegister.plugin(MidiPlugin.class).resetAll();
-                        } else {
-                            vgmRealFadeoutVolWait = 700 - vgmRealFadeoutVol * 2;
-                        }
-                    }
-                }
-
-                if (hiyorimiNecessary) {
-//                    long v = driverReal.vgmFrameCounter - audio.driverVirtual.vgmFrameCounter;
-//                    long d = setting.getoutputDevice().getSampleRate() * (setting.LatencySCCI - setting.getoutputDevice().getSampleRate() * setting.LatencyEmulation) / 1000;
-//                    long l = getLatency() / 4;
-//                    int m = 0;
-//                    if (d >= 0) {
-//                        if (v >= d - l && v <= d + l) m = 0;
-//                        else m = (v + d > l) ? 1 : 2;
-//                    } else {
-//                        d = Math.abs(setting.getoutputDevice().getSampleRate() * ((int) setting.LatencyEmulation - (int) setting.LatencySCCI) / 1000);
-//                        if (v >= d - l && v <= d + l) m = 0;
-//                        else m = (v - d > l) ? 1 : 2;
-//                    }
-
-                    double dEMU = setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000.0;
-                    double dSCCI = setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000.0;
-                    double abs = Math.abs((driverReal.vgmFrameCounter - dSCCI) - (driverVirtual.vgmFrameCounter - dEMU));
-                    int m = 0;
-                    long l = getLatency() / 10;
-                    if (abs >= l) {
-                        m = ((driverReal.vgmFrameCounter - dSCCI) > (driverVirtual.vgmFrameCounter - dEMU)) ? 1 : 2;
-                    }
-
-                    switch (m) {
-                    case 0: // x1
-                        driverReal.processOneFrame();
-                        break;
-                    case 1: // x1/2
-                        hiyorimiEven++;
-                        if (hiyorimiEven > 1) {
-                            driverReal.processOneFrame();
-                            hiyorimiEven = 0;
-                        }
-                        break;
-                    case 2: // x2
-                        driverReal.processOneFrame();
-                        driverReal.processOneFrame();
-                        break;
-                    }
-                } else {
-                    driverReal.processOneFrame();
-                }
+            vgmRealFadeoutVol = Math.min(127, vgmRealFadeoutVol);
+            if (vgmRealFadeoutVol == 127) {
+//                if (SoundChip.realChip != null) {
+//                    softReset(EnmModel.RealModel);
+//                }
+                vgmRealFadeoutVolWait = 1000;
+                chipRegister.plugin(MidiPlugin.class).resetAll();
+            } else {
+                vgmRealFadeoutVolWait = 700 - vgmRealFadeoutVol * 2;
             }
-        } catch (Exception e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
         }
-        audio.setTrdStopped(true);
     }
 
     public int getLatency() {
@@ -283,15 +154,15 @@ logger.log(Level.TRACE, "stop: " + audio.stopped + ", " + audio.hashCode());
     }
 
     public void prepare() {
-        audio.vgmFadeout = false;
-        audio.vgmFadeoutCounter = 1.0;
-        audio.vgmFadeoutCounterV = 0.00001;
-        vgmSpeed = 1;
-        vgmRealFadeoutVol = 0;
-        vgmRealFadeoutVolWait = 4;
+        this.vgmFadeout = false;
+        this.vgmFadeoutCounter = 1.0;
+        this.vgmFadeoutCounterV = 0.00001;
+        this.vgmSpeed = 1;
+        this.vgmRealFadeoutVol = 0;
+        this.vgmRealFadeoutVolWait = 4;
 
         chips.clear();
-        hiyorimiNecessary = setting.getHiyorimiMode();
+        this.hiyorimiNecessary = setting.getHiyorimiMode();
         resetFadeOutParam();
 
         chipRegister.reset();
@@ -300,104 +171,44 @@ logger.log(Level.TRACE, "stop: " + audio.stopped + ", " + audio.hashCode());
         masterVolume = setting.getBalance().getMasterVolume();
     }
 
-    /** */
-    public boolean play() {
-        prepare();
-//logger.log(Level.TRACE, "play: " + audio.stopped + ", " + audio.hashCode());
-        audio.errMsg = "";
-
-        stop();
-
-        sleep(500);
-
-        audio.paused = false;
-        audio.stopped = false;
-
-        oneTimeReset = false;
-
-//        if (trd == null) {
-//            trd = new Thread(this::trdIF);
-//            trd.setPriority(Thread.NORM_PRIORITY);
-//            trd.start();
-//        }
-
-        go();
-
-        try {
-            audio.waveWriter.open(playingFileName);
-        } catch (Exception e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-            audio.errMsg = "wave file open error.";
-            return false;
-        }
-
-logger.log(Level.DEBUG, "driver: " + driverVirtual.getClass().getSimpleName());
-        while (true) {
-//logger.log(Level.TRACE, "loop HERE");
-            short[] buffer = new short[4];
-
-            int r = audio.update(buffer, 0, buffer.length);
-            if (r == -1) break;
-            audio.naudioWrap.write(buffer, 0, buffer.length);
-            Thread.yield();
-        }
-
-        return false;
-    }
-
-    public void startTrdVgmReal() {
-        if (setting.getOutputDevice().getDeviceType() == Common.DEV_Null) {
-logger.log(Level.INFO, "dev null: " + getClass().getName());
-            return;
-        }
-
-        audio.trdClosed = false;
-        audio.trdMain = new Thread(this::trdVgmRealFunction);
-        audio.trdMain.setPriority(Thread.MAX_PRIORITY);
-        audio.trdMain.setDaemon(true);
-        audio.trdMain.setName("trdVgmReal");
-        audio.trdMain.start();
-    }
-
     public void changeChipSampleRate(MDSound.Chip chip, int newSmplRate) {
-        MDSound.Chip caa = chip;
 
-        if (caa.samplingRate == newSmplRate)
+        if (chip.samplingRate == newSmplRate)
             return;
 
         // quick and dirty hack to make sample rate changes work
-        caa.samplingRate = newSmplRate;
-        if (caa.samplingRate < setting.getOutputDevice().getSampleRate())
-            caa.resampler = 0x01;
-        else if (caa.samplingRate == setting.getOutputDevice().getSampleRate())
-            caa.resampler = 0x02;
-        else if (caa.samplingRate > setting.getOutputDevice().getSampleRate())
-            caa.resampler = 0x03;
-        caa.smpP = 1;
-        caa.smpNext -= caa.smpLast;
-        caa.smpLast = 0x00;
+        chip.samplingRate = newSmplRate;
+        if (chip.samplingRate < setting.getOutputDevice().getSampleRate())
+            chip.resampler = 0x01;
+        else if (chip.samplingRate == setting.getOutputDevice().getSampleRate())
+            chip.resampler = 0x02;
+        else if (chip.samplingRate > setting.getOutputDevice().getSampleRate())
+            chip.resampler = 0x03;
+        chip.smpP = 1;
+        chip.smpNext -= chip.smpLast;
+        chip.smpLast = 0x00;
     }
 
     public void go() {
-        audio.stopped = false;
+        this.stopped = false;
 //logger.log(Level.TRACE, "stopped: " + audio.stopped + ", " + audio.hashCode());
     }
 
     @Override
     public void stop() {
-logger.log(Level.INFO, "stop enter: " + audio.stopped);
-        if (!audio.stopped) {
-            audio.stop();
+logger.log(Level.INFO, "stop enter: " + this.stopped);
+        if (!this.stopped) {
+            this.stopped = true;
         }
     }
 
     protected void resetFadeOutParam() {
-        audio.vgmFadeout = false;
-        audio.vgmFadeoutCounter = 1.0;
-        audio.vgmFadeoutCounterV = 0.00001;
-        vgmSpeed = 1;
-        vgmRealFadeoutVol = 0;
-        vgmRealFadeoutVolWait = 4;
+        this.vgmFadeout = false;
+        this.vgmFadeoutCounter = 1.0;
+        this.vgmFadeoutCounterV = 0.00001;
+        this.vgmSpeed = 1;
+        this.vgmRealFadeoutVol = 0;
+        this.vgmRealFadeoutVolWait = 4;
 
         chipRegister.clearFadeoutVolume();
 
@@ -406,14 +217,14 @@ logger.log(Level.INFO, "stop enter: " + audio.stopped);
 
     public void seqDie() {
         close();
-        realChipClose();
+        chipRegister.plugin(RealChipPlugin.class).realChipClose();
     }
 
     public void setBuffer(FileFormat format, byte[] srcBuf, String playingFileName, String playingArcFileName, int midiMode, int songNo, List<Tuple<String, byte[]>> extFile) {
         //stop();
         this.fileFormat = format;
-        audio.playingFileFormat = format;
-        vgmBuf = srcBuf;
+        this.playingFileFormat = format;
+        this.vgmBuf = srcBuf;
         this.playingFileName = playingFileName; // for WaveWriter
         this.playingArcFileName = playingArcFileName;
         this.midiMode = midiMode;
@@ -421,16 +232,6 @@ logger.log(Level.INFO, "stop enter: " + audio.stopped);
         chipRegister.plugin(MidiPlugin.class).setFileName(playingFileName); // for ExportMIDI
         extendFiles = extFile; // Additional files
         Common.playingFilePath = Path.of(playingFileName).getParent();
-
-        if (audio.naudioFileReader != null) {
-            audio.nAudioStop();
-        }
-
-        if (format instanceof WAVFileFormat || format instanceof MP3FileFormat || format instanceof AIFFFileFormat) {
-            audio.naudioFileName = playingFileName;
-        } else {
-            audio.naudioFileName = null;
-        }
     }
 
     @Override
@@ -454,11 +255,11 @@ logger.log(Level.INFO, "stop enter: " + audio.stopped);
     }
 
     public boolean isStopped() {
-        return audio.stopped;
+        return this.stopped;
     }
 
     public boolean isFadeOut() {
-        return audio.vgmFadeout;
+        return this.vgmFadeout;
     }
 
     public boolean isSlow() {
@@ -469,19 +270,10 @@ logger.log(Level.INFO, "stop enter: " + audio.stopped);
         return !isStopped() && (vgmSpeed > 1.0);
     }
 
-    public void stepPlay(int Step) {
-        audio.stepCounter = Step;
-    }
-
-    public void closeWaveWriter() {
-        audio.waveWriter.close();
-    }
-
     @Override
     public void close() {
 logger.log(Level.INFO, "close enter");
         stop();
-        audio.close();
     }
 
     public void resetTimeCounter() {
@@ -546,7 +338,7 @@ logger.log(Level.INFO, "close enter");
         return v && r;
     }
 
-    public boolean getIsDataBlock(Common.EnmModel model) {
+    public boolean isDataBlock(Common.EnmModel model) {
 
         if (model == Common.EnmModel.VirtualModel) {
             if (driverVirtual == null) return false;
@@ -554,18 +346,6 @@ logger.log(Level.INFO, "close enter");
         } else {
             if (driverReal == null) return false;
             return driverReal.isDataBlock;
-        }
-    }
-
-    public boolean getIsPcmRAMWrite(Common.EnmModel model) {
-        if (model == Common.EnmModel.VirtualModel) {
-            if (driverVirtual == null) return false;
-            if (!(driverVirtual instanceof VgmDriver)) return false;
-            return ((VgmDriver) driverVirtual).isPcmRAMWrite();
-        } else {
-            if (driverReal == null) return false;
-            if (!(driverReal instanceof VgmDriver)) return false;
-            return ((VgmDriver) driverReal).isPcmRAMWrite();
         }
     }
 

@@ -72,4 +72,7 @@ public interface Chip {
     default Instrument instrument(int chipId) {
         return Instrument.getInstrument(inst(chipId));
     }
+
+    default void setFadeout(int chipId, int v) {
+    }
 }

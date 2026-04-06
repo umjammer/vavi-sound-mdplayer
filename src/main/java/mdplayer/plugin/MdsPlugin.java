@@ -49,8 +49,6 @@ public class MdsPlugin extends BasePlugin<MdsDriver> {
 
     @Override
     protected void initChips() {
-        startTrdVgmReal();
-
         MDSound.Chip chip = new MDSound.Chip();
         chip.instrument = Instrument.getInstrument(chipRegister.chip(Ym2612Chip.class).inst(0));
         chip.id = 0;

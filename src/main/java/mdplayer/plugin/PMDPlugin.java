@@ -44,8 +44,6 @@ public class PMDPlugin extends BasePlugin<PmdDriver> {
 
     @Override
     protected void initChips() {
-        startTrdVgmReal();
-
         MDSound.Chip chip = new MDSound.Chip();
         chip.id = 0;
         chip.instrument = chipRegister.chip(Ym2608Chip.class).instrument(0);

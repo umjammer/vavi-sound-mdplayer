@@ -45,8 +45,6 @@ public class RCSPlugin extends BasePlugin<RcsDriver> {
 
     @Override
     protected void initChips() {
-        startTrdVgmReal();
-
         if (setting.getRcs().pcm8type == 0) {
             X68kYm2151Inst opmPCM = Instrument.getInstrument(X68kYm2151Inst.class);
             opmPCM.soundIocs[0] = new SoundIocs(opmPCM.chips[0]);

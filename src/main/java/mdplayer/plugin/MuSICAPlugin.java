@@ -78,8 +78,6 @@ public class MuSICAPlugin extends BasePlugin<MusicaDriver> {
         ) != 0);
 logger.log(Level.INFO, "MuSICA: AY: %b, SCC: %b, OPLL: %b".formatted(useAY, useSCC, useOPLL));
 
-        startTrdVgmReal();
-
         if (useAY) {
             MDSound.Chip chip = new MDSound.Chip();
             chip.id = 0;

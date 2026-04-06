@@ -58,6 +58,7 @@ import mdplayer.Common.EnmArcType;
 import mdplayer.MDChipParams;
 import mdplayer.PlayList;
 import mdplayer.Setting;
+import mdplayer.form.sys.frmTPPut.cols;
 import mdplayer.format.FileFormat;
 import mdplayer.properties.Resources;
 import vavi.awt.dnd.BasicDTListener;
@@ -306,8 +307,10 @@ public class frmPlayList extends JFrame {
             if (m < 0 || m > 9) m = 0;
         }
 
-        frmMain.loadAndPlay(m, songNo, fn, zfn);
-        if (!Audio.getInstance().errMsg.isEmpty()) {
+        try {
+            frmMain.loadAndPlay(m, songNo, fn, zfn);
+        } catch (Exception e) {
+            logger.log(Level.ERROR, e.getMessage(), e);
             playing = false;
             return;
         }
@@ -962,21 +965,15 @@ loopEx:
         if (!playing) return;
         if (setting == null) return;
 
-        String[] fn = {""};
-        String[] arcFn = {""};
-
-        Audio.getInstance().getPlayingFileName(fn, arcFn);
-
-        if (fn[0].equals(ofn) && arcFn[0].equals(oafn)) return;
-        ofn = fn[0];
-        oafn = arcFn[0];
+        ofn = Audio.getInstance().plugin.playingFileName;;
+        oafn = Audio.getInstance().plugin.playingArcFileName;
 
         exts[0] = setting.getOther().getTextExt().split(";");
         exts[1] = setting.getOther().getMMLExt().split(";");
         exts[2] = setting.getOther().getImageExt().split(";");
 
-        String bfn = Path.combine(Path.getDirectoryName(fn[0]), Path.getFileNameWithoutExtension(fn[0]));
-        String bfnFld = Path.combine(Path.getDirectoryName(fn[0]), Path.getFileName(Path.getDirectoryName(fn[0])));
+        String bfn = Path.combine(Path.getDirectoryName(ofn), Path.getFileNameWithoutExtension(ofn));
+        String bfnFld = Path.combine(Path.getDirectoryName(ofn), Path.getFileName(Path.getDirectoryName(ofn)));
 
         text = "";
         for (String ext : exts[0]) {

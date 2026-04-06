@@ -76,11 +76,11 @@ public class MndrvWavTestProgram {
         // Instead of plugin.play(), we run our own loop to ensure we can stop it.
         // MNDPlugin.play() would call super.play() which has an infinite loop.
 
-        audio.stopped = false;
-        audio.paused = false;
-        audio.vgmFadeout = false;
-        audio.vgmFadeoutCounter = 1.0;
-        audio.vgmFadeoutCounterV = 0.00001;
+        plugin.stopped = false;
+        plugin.paused = false;
+        plugin.vgmFadeout = false;
+        plugin.vgmFadeoutCounter = 1.0;
+        plugin.vgmFadeoutCounterV = 0.00001;
         audio.plugin.masterVolume = setting.getBalance().getMasterVolume();
 
         audio.waveWriter.open(filename);
@@ -88,7 +88,7 @@ public class MndrvWavTestProgram {
         long start = System.currentTimeMillis();
         long timeout = (long) (RENDER_DURATION * 1000) + 10000; // duration + 10s buffer
 
-        while (!audio.stopped) {
+        while (!plugin.stopped) {
             short[] buffer = new short[BUFFER_SIZE];
             int ret = audio.update(buffer, 0, buffer.length);
             if (ret == -1) break;
@@ -112,7 +112,7 @@ public class MndrvWavTestProgram {
         }
 
         // Finalize rendering
-        audio.stopped = true;
+        plugin.stopped = true;
         audio.waveWriter.close();
         plugin.stop();
         plugin.close();

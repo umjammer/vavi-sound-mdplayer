@@ -62,8 +62,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
 
     @Override
     protected void initChips() {
-        startTrdVgmReal();
-
         driverVirtual.init(vgmBuf, this, EnmModel.VirtualModel,
                 new Class[] {Ym2203Chip.class},
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,

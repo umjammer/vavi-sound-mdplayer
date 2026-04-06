@@ -39,8 +39,6 @@ logger.log(Level.DEBUG, "used chip: %02x".formatted(r));
         chipRegister.chip(Ym2151Chip.class).setFadeout(0, 0);
         chipRegister.chip(Ym2151Chip.class).setFadeout(1, 0);
 
-        startTrdVgmReal();
-
         int hiyorimiDeviceFlag = 0;
 
         for (int i = 0; i < 2; i++) {

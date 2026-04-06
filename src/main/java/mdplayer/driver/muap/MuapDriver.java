@@ -228,10 +228,10 @@ public class MuapDriver extends BaseDriver {
         lca.add(ca);
         ca = new MuapChipAction(this::CS4231Write, null, null);
         lca.add(ca);
-        String[] pfn = new String[1], x = new String[1];
-        plugin.audio.getPlayingFileName(pfn, x);
-        if (pfn[0] != null && !pfn[0].isEmpty()) {
-            pfn[0] = Path.getDirectoryName(Path.getFullPath(pfn[0]));
+        String pfn = plugin.playingFileName;
+        String _ = plugin.playingArcFileName;
+        if (pfn != null && !pfn.isEmpty()) {
+            pfn = Path.getDirectoryName(Path.getFullPath(pfn));
         }
         muapDriver.init(
                 lca,
@@ -247,7 +247,7 @@ public class MuapDriver extends BaseDriver {
                 toneBuff,
                 setting.getMuapJava().soundDeviceMode,
                 labelAdr,
-                pfn[0]
+                pfn
         );
 
         muapDriver.startRendering(Common.VGMProcSampleRate, new Tuple<>("YM2608", MucomDriver.opnaBaseClock));

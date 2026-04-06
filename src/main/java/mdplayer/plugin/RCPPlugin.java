@@ -37,8 +37,6 @@ public class RCPPlugin extends BasePlugin<RcpDriver> {
 
     @Override
     protected void initChips() {
-        startTrdVgmReal();
-
         chipLED.put("PriMID", 1);
         chipLED.put("SecMID", 1);
 

@@ -57,8 +57,6 @@ public class NSFPlugin extends BasePlugin<NsfMdDriver2> {
 
     @Override
     protected void initChips() {
-        startTrdVgmReal();
-
         chipLED.put("PriNES", 1);
         chipLED.put("PriDMC", 1);
 

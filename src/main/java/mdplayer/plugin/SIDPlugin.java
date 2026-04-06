@@ -34,8 +34,6 @@ public class SIDPlugin extends BasePlugin<SidMdDriver2> {
 
     @Override
     protected void initChips() {
-        startTrdVgmReal();
-
         chipLED.put("priSID", 1);
 
         driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel, new Class[] {Unused.class},

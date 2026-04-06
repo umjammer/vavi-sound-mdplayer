@@ -6,6 +6,7 @@ import javax.sound.sampled.SourceDataLine;
 
 import mdplayer.Audio;
 import mdplayer.Setting;
+import mdplayer.driver.BaseDriver;
 import mdplayer.format.FileFormat;
 import mdplayer.plugin.BasePlugin;
 
@@ -41,10 +42,10 @@ public class MndrvTestProgram {
 
         FileFormat format = FileFormat.getFileFormat(filename);
         var r = format.load((String) null, filename);
-        BasePlugin plugin = (BasePlugin) format.getPlugin();
+        BasePlugin<? extends BaseDriver> plugin = (BasePlugin<? extends BaseDriver>) format.getPlugin();
         plugin.setBuffer(format, r.getItem1(), filename, null, 0, 0, r.getItem2());
-        
-        plugin.play();
+        audio.init(plugin);
+        audio.play();
 
         audioOutput = AudioSystem.getSourceDataLine(new AudioFormat(samplingRate, 16, 2, true, false));
         audioOutput.open();

@@ -43,13 +43,13 @@ public class RealChipPlugin implements Plugin {
 //                , SoundChip.scK051649
     }
 
-    public static void realChipClose() {
+    public void realChipClose() {
 //        if (SoundChip.realChip != null) {
 //            SoundChip.realChip.close();
 //        }
     }
 
-    public static List<Setting.ChipType2> getRealChipList(Common.EnmRealChipType scciType) {
+    public List<Setting.ChipType2> getRealChipList(Common.EnmRealChipType scciType) {
 //        if (SoundChip.realChip == null) return null;
 //        return SoundChip.realChip.GetRealChipList(scciType);
         return null;

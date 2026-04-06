@@ -49,8 +49,6 @@ public class MDLPlugin extends BasePlugin<MoonDriver> {
         chipRegister.chip(Ym2151Chip.class).setFadeout(0, 0);
         chipRegister.chip(Ym2151Chip.class).setFadeout(1, 0);
 
-        startTrdVgmReal();
-
         hiyorimiNecessary = setting.getHiyorimiMode();
         int hiyorimiDeviceFlag = 0;
 

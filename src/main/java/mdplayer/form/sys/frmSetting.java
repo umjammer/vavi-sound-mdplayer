@@ -57,6 +57,7 @@ import javax.swing.table.TableColumn;
 
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import dotnet4j.io.Directory;
+import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.Common.EnmInstFormat;
 import mdplayer.Common.EnmRealChipType;
@@ -847,7 +848,7 @@ public class frmSetting extends JDialog {
         if (rbS != null) rbS.setEnabled(false);
         cmbS.setEnabled(false);
 
-        List<ChipType2> lstChip = RealChipPlugin.getRealChipList(realType);
+        List<ChipType2> lstChip = Audio.getInstance().plugin.chipRegister.plugin(RealChipPlugin.class).getRealChipList(realType);
         if (lstChip == null || lstChip.isEmpty()) return;
 
         for (ChipType2 ct : lstChip) {

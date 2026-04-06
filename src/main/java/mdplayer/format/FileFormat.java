@@ -56,9 +56,7 @@ public interface FileFormat {
 
     interface SampledFileFormat {}
 
-    default boolean isSampled() {
-        return this instanceof SampledFileFormat;
-    }
+    interface StreamFileFormat {}
 
     /** for SPI */
     Tuple<byte[], List<Tuple<String, byte[]>>> load(InputStream is, String fn) throws IOException;

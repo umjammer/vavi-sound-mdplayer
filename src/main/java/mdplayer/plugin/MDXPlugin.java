@@ -53,8 +53,6 @@ public class MDXPlugin extends BasePlugin<MxDriver> {
             throw new IllegalStateException("supported sample rate is only 44100: " + setting.getOutputDevice().getSampleRate());
         }
 
-        startTrdVgmReal();
-
         int hiyorimiDeviceFlag = 3;
 
         boolean isFirstOpmX68 = false;

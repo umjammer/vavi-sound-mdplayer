@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import com.github.kwhat.jnativehook.GlobalScreen;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
+import mdplayer.Audio;
 import mdplayer.PlayList.Music;
 import mdplayer.driver.BaseDriver;
 import mdplayer.format.FileFormat;
@@ -117,7 +118,9 @@ Debug.println("format: " + format.getClass().getSimpleName());
         plugin = (BasePlugin) format.getPlugin();
         plugin.setBuffer(format, r.getItem1(), file, null, 0, 0, r.getItem2());
 Debug.println("plugin: " +plugin.getClass().getSimpleName());
-        plugin.play();
+        Audio audio = Audio.getInstance();
+        audio.init(plugin);
+        audio.play();
     }
 
     @Test

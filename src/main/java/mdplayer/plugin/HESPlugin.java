@@ -37,8 +37,6 @@ public class HESPlugin extends BasePlugin<HesDriver> {
 
     @Override
     protected void initChips() {
-        startTrdVgmReal();
-
         chipLED.put("PriHuC", 1);
 
         MDSound.Chip chip = new MDSound.Chip();

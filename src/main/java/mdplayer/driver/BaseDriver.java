@@ -76,24 +76,23 @@ public abstract class BaseDriver {
         if (plugin.hiyorimiNecessary && plugin.driverReal != null && plugin.driverReal.isDataBlock)
             return plugin.mds.update(buffer, offset, sampleCount, null);
 
-        if (plugin.audio.stepCounter > 0) {
-            plugin.audio.stepCounter -= sampleCount;
-            if (plugin.audio.stepCounter <= 0) {
-                plugin.audio.paused = true;
-                plugin.audio.stepCounter = 0;
+        if (plugin.stepCounter > 0) {
+            plugin.stepCounter -= sampleCount;
+            if (plugin.stepCounter <= 0) {
+                plugin.paused = true;
+                plugin.stepCounter = 0;
                 return plugin.mds.update(buffer, offset, sampleCount, null);
             }
         }
 
 //        driverVirtual.vstDelta = 0;
-//        stwh.reset();
-//        stwh.start();
 //logger.log(Level.TRACE, "driver: " + driverVirtual.getClass().getSimpleName());
         int cnt = plugin.mds.update(buffer, offset, sampleCount, plugin.driverVirtual::processOneFrame);
-        plugin.audio.procTimePer1Frame = (int) ((double) System.currentTimeMillis() / (sampleCount + 1) * 1000000.0);
+        plugin.procTimePer1Frame = (int) ((double) System.currentTimeMillis() / (sampleCount + 1) * 1000000.0);
         return cnt;
     }
 
+    // default
     public long getDriverCounter() {
         return 0;
     }
@@ -102,6 +101,7 @@ public abstract class BaseDriver {
         plugin.mds.visWaveBuffer.copy(dest);
     }
 
+    // default
     public long whichCounter(long real, long virtual) {
         return 0;
     }

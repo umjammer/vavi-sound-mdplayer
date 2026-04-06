@@ -48,8 +48,6 @@ public class NDPPlugin extends BasePlugin<NdpDriver> {
         boolean useSCC = false;
         boolean useOPLL = false;
 
-        startTrdVgmReal();
-
         if (useAY) {
             MDSound.Chip chip = new MDSound.Chip();
             chip.id = 0;

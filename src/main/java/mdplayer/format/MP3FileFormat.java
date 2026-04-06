@@ -7,6 +7,7 @@ import java.util.List;
 
 import dotnet4j.io.Path;
 import mdplayer.PlayList;
+import mdplayer.format.FileFormat.StreamFileFormat;
 import mdplayer.plugin.Plugin;
 import mdplayer.plugin.SampledPlugin;
 import vavi.util.archive.Archive;
@@ -19,7 +20,7 @@ import vavi.util.archive.Entry;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-07 nsano initial version <br>
  */
-public class MP3FileFormat extends BaseFileFormat implements FileFormat.SampledFileFormat {
+public class MP3FileFormat extends BaseFileFormat implements FileFormat.SampledFileFormat, StreamFileFormat {
 
     @Override
     public String[] getExtensions() {

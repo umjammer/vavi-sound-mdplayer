@@ -10,8 +10,6 @@ public interface Plugin {
 
     void init();
 
-    boolean play();
-
     void ff();
 
     void stop();

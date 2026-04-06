@@ -54,8 +54,6 @@ public class S98Plugin extends BasePlugin<S98Driver> {
 
     @Override
     protected void initChips() {
-        startTrdVgmReal();
-
         driverVirtual.init(vgmBuf, this, EnmModel.VirtualModel,
                 new Class[] {Ym2203Chip.class},
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,

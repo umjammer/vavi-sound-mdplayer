@@ -67,8 +67,6 @@ public class MuapPlugin extends BasePlugin<MuapDriver> {
 //        driverReal.labelAdr = labelAdr;
 //        driverPianoRoll.labelAdr = labelAdr;
 
-        startTrdVgmReal();
-
         MDSound.Chip chip = new MDSound.Chip();
         chip.id = 0;
         chip.instrument = Instrument.getInstrument(Ym2608Inst.class);
