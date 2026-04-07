@@ -4,25 +4,19 @@ import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
 
-import mdplayer.Chip;
+import dotnet4j.util.compat.QuadConsumer;
+import dotnet4j.util.compat.TriConsumer;
 import mdplayer.Common;
-import mdplayer.Common.EnmModel;
-import mdplayer.MidiOutInfo;
-import mdplayer.chips.MidiPlugin;
-import mdplayer.chips.Ym2612Chip;
-import mdplayer.driver.BaseDriver;
-import mdplayer.driver.Vgm;
-import mdplayer.driver.Vgm.Gd3;
 import mdplayer.driver.rcp.RCP;
-import mdplayer.plugin.BasePlugin;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
 import static mdplayer.Common.charset;
 
 
-public class MID extends BaseDriver {
+public class MID {
 
     private static final Logger logger = getLogger(MID.class.getName());
 
@@ -40,9 +34,9 @@ public class MID extends BaseDriver {
     private double musicStep;
     private double musicDownCounter = 0.0;
 
-    private List<RCP.CtlSysex>[] beforeSend = null;
-    private int[] sendControlDelta = null;
-    private int[] sendControlIndex = null;
+    List<RCP.CtlSysex>[] beforeSend = null;
+    int[] sendControlDelta = null;
+    int[] sendControlIndex = null;
 
     private List<Integer> musicPtr = null;
     private List<Integer> trkEndAdr = null;
@@ -63,148 +57,20 @@ public class MID extends BaseDriver {
     private String eventLyric = "";
     private String eventMarker = "";
 
+    QuadConsumer<Integer, Byte, Byte, Byte> send3;
+    TriConsumer<Integer, Byte, Byte> send2;
+    BiConsumer<Integer, byte[]> send0;
+    BiConsumer<Integer, String> lyric;
+    Runnable stop;
+    Runnable counter;
 
-    @Override
-    public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
-        if (buf == null) return null;
+    void getInformationHeader(byte[] data) {
+        if (data == null) throw new IllegalArgumentException("null buffer");
+        if (ByteUtil.readLeInt(data, 0) != FCC_MID) throw new IllegalArgumentException("invalid midi data");
 
-        Vgm.Gd3 gd3 = new Gd3();
-        String T01TrackName = "";
-
-
-        try {
-            if (ByteUtil.readLeInt(buf, 0) != FCC_MID) return null;
-            int format = (buf[8] & 0xff) * 0x100 + (buf[9] & 0xff);
-            int trkCount = (buf[10] & 0xff) * 0x100 + (buf[11] & 0xff);
-            int adr = 14;
-            byte midiEventBackup = 0;
-
-            for (int i = 0; i < trkCount; i++) {
-                if (buf.length <= adr) break;
-
-                if (ByteUtil.readLeInt(buf, adr) != FCC_TRK) return null;
-                int len = (buf[adr + 4] & 0xff) * 0x1000000 + (buf[adr + 5] & 0xff) * 0x10000 + (buf[adr + 6] & 0xff) * 0x100 + (buf[adr + 7] & 0xff);
-                adr += 8;
-                int trkEndadr = adr + len;
-
-                while (adr < trkEndadr && adr < buf.length) {
-                    int delta = Common.getDelta(adr, buf);
-                    byte cmd = buf[adr++];
-                    if ((cmd & 0xff) == 0xf0 || (cmd & 0xff) == 0xf7) {
-                        int bAdr = adr - 1;
-                        int datalen = Common.getDelta(adr, buf);
-                        adr = adr + datalen;
-                    } else if ((cmd & 0xff) == 0xff) {
-                        byte eventType = buf[adr++];
-                        int eventLen = Common.getDelta(adr, buf);
-                        List<Byte> eventData = new ArrayList<>();
-                        for (int j = 0; j < eventLen; j++) {
-                            if (buf[adr + j] == 0) break;
-                            eventData.add(buf[adr + j]);
-                        }
-                        adr = adr + eventLen;
-                        if (!eventData.isEmpty()) {
-                            switch (eventType) {
-                            case 0x01:
-                                //case 0x02:
-                                if (T01TrackName.isEmpty()) {
-                                    T01TrackName = new String(ByteUtil.toByteArray(eventData), charset).trim();
-                                }
-                                break;
-                            case 0x03:
-                                if (gd3.trackName.isEmpty()) {
-                                    if (format == 0 || (format == 1 && i == 0)) {
-                                        gd3.trackName = new String(ByteUtil.toByteArray(eventData), charset).trim();
-                                        gd3.trackNameJ = new String(ByteUtil.toByteArray(eventData), charset).trim();
-                                    }
-                                }
-                                break;
-                            case 0x05:
-                                //case 0x04:
-                                //case 0x06:
-                                //case 0x07:
-                                break;
-                            }
-                        }
-                    } else {
-                        if ((cmd & 0x80) != 0) {
-                            midiEventBackup = (byte) (cmd & 0xff);
-                            midiEvent = midiEventBackup;
-
-                            if ((cmd & 0xf0) != 0xC0 && (cmd & 0xf0) != 0xD0) {
-                                adr += 2;
-                            } else {
-                                adr++;
-                            }
-                        } else {
-                            // Running status activated
-                            midiEvent = midiEventBackup;
-                            midiEventCh = midiEventChBackup;
-
-                            if ((cmd & 0xf0) != 0xC0 && (cmd & 0xf0) != 0xD0) {
-                                adr++;
-                            }
-                        }
-                    }
-
-                }
-            }
-
-            // If no title was found
-            if (gd3.trackName.isEmpty() && gd3.trackNameJ.isEmpty() && !T01TrackName.isEmpty()) {
-                gd3.trackName = T01TrackName;
-                gd3.trackNameJ = T01TrackName;
-            }
-        } catch (Exception e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-        }
-
-        return gd3;
-    }
-
-    @Override
-    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
-        this.vgmBuf = vgmBuf;
-        this.plugin = plugin;
-        this.model = model;
-        this.useChip = useChip;
-        this.latency = latency;
-        this.waitTime = waitTime;
-
-        counter = 0;
-        totalCounter = 0;
-        loopCounter = 0;
-        vgmCurLoop = 0;
-        stopped = false;
-        // Set 0 here to wait after sending control.
-        //vgmFrameCounter = -latency - waitTime;
-        vgmFrameCounter = 0;
-        vgmSpeed = 1;
-        vgmSpeedCounter = 0;
-
-        gd3 = getGD3Info(vgmBuf);
-        //if (Gd3 == null) return false;
-
-        if (!getInformationHeader()) return false;
-
-        // Create a command to send in advance for each port
-        if (!makeBeforeSendCommand()) return false;
-
-        if (model == EnmModel.RealModel) {
-            plugin.audio.chipRegister.chip(Ym2612Chip.class).setSyncWait(0, 1);
-            plugin.audio.chipRegister.chip(Ym2612Chip.class).setSyncWait(1, 1);
-        }
-
-        return true;
-    }
-
-    private boolean getInformationHeader() {
-        if (vgmBuf == null) return false;
-        if (ByteUtil.readLeInt(vgmBuf, 0) != FCC_MID) return false;
-
-        format = (vgmBuf[8] & 0xff) * 0x100 + (vgmBuf[9] & 0xff);
-        trkCount = (vgmBuf[10] & 0xff) * 0x100 + (vgmBuf[11] & 0xff);
-        reso = (vgmBuf[12] & 0xff) * 0x100 + (vgmBuf[13] & 0xff);
+        format = (data[8] & 0xff) * 0x100 + (data[9] & 0xff);
+        trkCount = (data[10] & 0xff) * 0x100 + (data[11] & 0xff);
+        reso = (data[12] & 0xff) * 0x100 + (data[13] & 0xff);
 
         musicPtr = new ArrayList<>();
         midWaitCounter = new ArrayList<>();
@@ -220,8 +86,8 @@ public class MID extends BaseDriver {
             isEnd.add(false);
             isDelta.add(true);
 
-            if (ByteUtil.readLeInt(vgmBuf, adr) != FCC_TRK) return false;
-            int len = (vgmBuf[adr + 4] & 0xff) * 0x100_0000 + (vgmBuf[adr + 5] & 0xff) * 0x1_0000 + (vgmBuf[adr + 6] & 0xff) * 0x100 + (vgmBuf[adr + 7] & 0xff);
+            if (ByteUtil.readLeInt(data, adr) != FCC_TRK) throw new IllegalArgumentException("invalid track data");
+            int len = (data[adr + 4] & 0xff) * 0x100_0000 + (data[adr + 5] & 0xff) * 0x1_0000 + (data[adr + 6] & 0xff) * 0x100 + (data[adr + 7] & 0xff);
             adr += 8;
             musicPtr.add(adr);
             adr += len;
@@ -229,42 +95,17 @@ public class MID extends BaseDriver {
             trkPort.add(0);
             midiEventBackup.add((byte) 0);
         }
-
-        return true;
     }
 
-    @Override
-    public void processOneFrame() {
+    void oneFrameMain(byte[] data) {
         try {
-            vstDelta++;
-            vgmSpeedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * vgmSpeed;
-            while (vgmSpeedCounter >= 1.0 && !stopped) {
-                vgmSpeedCounter -= 1.0;
-                if (vgmFrameCounter > -1) {
-                    oneFrameMain();
-                } else {
-                    vgmFrameCounter++;
-                }
-            }
-            //Stopped = !IsPlaying();
-        } catch (Exception ex) {
-            logger.log(Level.ERROR, ex.getMessage(), ex);
-        }
-    }
-
-    private void oneFrameMain() {
-        try {
-
-            counter++;
-            vgmFrameCounter++;
-
             musicStep = Common.VGMProcSampleRate * oneSyncTime;
 
             if (musicDownCounter <= 0.0) {
                 if (beforeSend != null) {
                     sendControl();
                 } else {
-                    oneFrameMID();
+                    oneFrameMID(data);
                 }
                 musicDownCounter += musicStep;
             }
@@ -275,9 +116,9 @@ public class MID extends BaseDriver {
         }
     }
 
-    private void oneFrameMID() {
+    private void oneFrameMID(byte[] data) {
 //#if DEBUG
-        if (model == EnmModel.VirtualModel) return;
+//        if (model == EnmModel.VirtualModel) return;
 //#endif
         boolean trksEnd = true;
         for (int trk = 0; trk < trkCount; trk++) {
@@ -295,40 +136,40 @@ public class MID extends BaseDriver {
                 logger.log(Level.TRACE, "ptr:[%08x] trk:[%2d] ".formatted(ptr, trk));
 
                 if (isDelta.get(trk)) {
-                    delta = Common.getDelta(ptr, vgmBuf);
+                    delta = Common.getDelta(ptr, data);
                     midWaitCounter.set(trk, delta);
 
                     logger.log(Level.TRACE, "delta:%10d ".formatted(delta));
                 } else {
-                    byte cmd = vgmBuf[ptr++];
+                    byte cmd = data[ptr++];
 
                     //logger.log(Level.TRACE, "cmd:%2x ".formatted(delta, cmd));
 
                     if ((cmd & 0xff) == 0xf0 || (cmd & 0xff) == 0xf7) {
-                        int eventLen = Common.getDelta(ptr, vgmBuf);
+                        int eventLen = Common.getDelta(ptr, data);
                         //logger.log(Level.TRACE, "evntLen:%10D ".formatted(eventLen));
                         logger.log(Level.TRACE, "%2x ".formatted(cmd));
                         List<Byte> eventData = new ArrayList<>();
                         eventData.add(cmd);
                         for (int j = 0; j < eventLen; j++) {
-                            eventData.add(vgmBuf[ptr + j]);
-                            logger.log(Level.TRACE, "%2x ".formatted(vgmBuf[ptr + j]));
+                            eventData.add(data[ptr + j]);
+                            logger.log(Level.TRACE, "%2x ".formatted(data[ptr + j]));
                         }
 
-                        plugin.audio.chipRegister.plugin(MidiPlugin.class).send(model, trkPort.get(trk), ByteUtil.toByteArray(eventData), vstDelta);
+                        send0.accept(trkPort.get(trk), ByteUtil.toByteArray(eventData));
 
                         ptr = ptr + eventLen;
 
                     } else if ((cmd & 0xff) == 0xff) {
-                        byte eventType = vgmBuf[ptr++];
-                        int eventLen = Common.getDelta(ptr, vgmBuf);
+                        byte eventType = data[ptr++];
+                        int eventLen = Common.getDelta(ptr, data);
 
                         logger.log(Level.TRACE, "evntTyp:%2x evntLen:%10d ".formatted(eventType, eventLen));
 
                         List<Byte> eventData = new ArrayList<>();
                         for (int j = 0; j < eventLen; j++) {
-                            eventData.add(vgmBuf[ptr + j]);
-                            logger.log(Level.TRACE, "%2x ".formatted(vgmBuf[ptr + j]));
+                            eventData.add(data[ptr + j]);
+                            logger.log(Level.TRACE, "%2x ".formatted(data[ptr + j]));
                         }
                         ptr = ptr + eventLen;
                         if (!eventData.isEmpty()) {
@@ -361,7 +202,7 @@ public class MID extends BaseDriver {
                             case 0x05:
                                 eventLyric = new String(ByteUtil.toByteArray(eventData), charset);
                                 logger.log(Level.TRACE, "eventLyric:%s".formatted(eventLyric));
-                                plugin.audio.chipRegister.plugin(MidiPlugin.class).params[trkPort.get(trk)].Lyric = eventLyric;
+                                lyric.accept(trkPort.get(trk), eventLyric);
                                 break;
                             case 0x06:
                                 eventMarker = new String(ByteUtil.toByteArray(eventData), charset);
@@ -372,7 +213,7 @@ public class MID extends BaseDriver {
                                 logger.log(Level.TRACE, "eventText:%s".formatted(eventText));
                                 break;
                             case 0x21:
-                                trkPort.set(trk, eventData.get(0) & 0xff);
+                                trkPort.set(trk, eventData.getFirst() & 0xff);
                                 logger.log(Level.TRACE, "PortPrefix:%s".formatted(trkPort.get(trk)));
                                 break;
                             case 0x2f:
@@ -411,14 +252,14 @@ public class MID extends BaseDriver {
                             midiEventCh = midiEventChBackup;
 
                             if ((cmd & 0xf0) != 0xC0 && (cmd & 0xf0) != 0xD0) {
-                                plugin.audio.chipRegister.plugin(MidiPlugin.class).send(model, trkPort.get(trk), cmd, vgmBuf[ptr], vgmBuf[ptr + 1], vstDelta);
-                                //logger.log(Level.TRACE, "V1:%2x V2:%2X ".formatted(vgmBuf[ptr], vgmBuf[ptr + 1]));
-                                logger.log(Level.TRACE, "%2x %2x %2x".formatted(cmd, vgmBuf[ptr], vgmBuf[ptr + 1]));
+                                send3.accept(trkPort.get(trk), cmd, data[ptr], data[ptr + 1]);
+                                //logger.log(Level.TRACE, "V1:%2x V2:%2X ".formatted(data[ptr], data[ptr + 1]));
+                                logger.log(Level.TRACE, "%2x %2x %2x".formatted(cmd, data[ptr], data[ptr + 1]));
                                 ptr += 2;
                             } else {
-                                plugin.audio.chipRegister.plugin(MidiPlugin.class).send(model, trkPort.get(trk), cmd, vgmBuf[ptr], vstDelta);
-                                //logger.log(Level.TRACE, "V1:%2X V2:-- ".formatted(vgmBuf[ptr]));
-                                logger.log(Level.TRACE, "%2x %2x".formatted(cmd, vgmBuf[ptr]));
+                                send2.accept(trkPort.get(trk), cmd, data[ptr]);
+                                //logger.log(Level.TRACE, "V1:%2X V2:-- ".formatted(data[ptr]));
+                                logger.log(Level.TRACE, "%2x %2x".formatted(cmd, data[ptr]));
                                 ptr++;
                             }
                         } else {
@@ -427,12 +268,12 @@ public class MID extends BaseDriver {
                             midiEventCh = midiEventChBackup;
 
                             if ((midiEvent & 0xf0) != 0xC0 && (midiEvent & 0xf0) != 0xD0) {
-                                plugin.audio.chipRegister.plugin(MidiPlugin.class).send(model, trkPort.get(trk), midiEvent, cmd, vgmBuf[ptr], vstDelta);
-                                //logger.log(Level.TRACE, "RunSta V1:%2X V2:%2X ".formatted(cmd, vgmBuf[ptr]));
-                                logger.log(Level.TRACE, "%2x %2x %2x".formatted(midiEvent, cmd, vgmBuf[ptr]));
+                                send3.accept(trkPort.get(trk), midiEvent, cmd, data[ptr]);
+                                //logger.log(Level.TRACE, "RunSta V1:%2X V2:%2X ".formatted(cmd, data[ptr]));
+                                logger.log(Level.TRACE, "%2x %2x %2x".formatted(midiEvent, cmd, data[ptr]));
                                 ptr++;
                             } else {
-                                plugin.audio.chipRegister.plugin(MidiPlugin.class).send(model, trkPort.get(trk), midiEvent, cmd, vstDelta);
+                                send2.accept(trkPort.get(trk), midiEvent, cmd);
                                 //logger.log(Level.TRACE, "RunSta V1:%2X V2:-- ".formatted(cmd));
                                 logger.log(Level.TRACE, "%2x %2x ".formatted(midiEvent, cmd));
                             }
@@ -451,7 +292,7 @@ public class MID extends BaseDriver {
         }
 
         if (trksEnd) {
-            stopped = true;
+            stop.run();
         }
     }
 
@@ -475,7 +316,7 @@ public class MID extends BaseDriver {
 
                 RCP.CtlSysex csx = beforeSend[i].get(sendControlIndex[i]);
                 sendControlDelta[i] = csx.delta;
-                plugin.audio.chipRegister.plugin(MidiPlugin.class).send(model, 0, csx.data, vstDelta);
+                send0.accept(0, csx.data);
 
                 sendControlIndex[i]++;
             } else {
@@ -486,50 +327,11 @@ public class MID extends BaseDriver {
 
         if (endFlg == beforeSend.length) {
             beforeSend = null;
-            vgmFrameCounter = -latency - waitTime;
+            counter.run();
         }
     }
 
-    private boolean makeBeforeSendCommand() {
-        try {
-            MidiOutInfo[] infos = plugin.audio.chipRegister.plugin(MidiPlugin.class).get();
-            if (infos == null || infos.length < 1) return true;
-
-            beforeSend = new List[infos.length];
-            sendControlIndex = new int[infos.length];
-            sendControlDelta = new int[infos.length];
-
-            for (int i = 0; i < beforeSend.length; i++) {
-                beforeSend[i] = new ArrayList<>();
-
-                // Generate Reset
-                switch (infos[i].beforeSendType) {
-                case 0: // None
-                    break;
-                case 1: // GM Reset
-                    getCtlSysexFromText(beforeSend[i], setting.getMidiOut().getGMReset());
-                    break;
-                case 2: // XG Reset
-                    getCtlSysexFromText(beforeSend[i], setting.getMidiOut().getXGReset());
-                    break;
-                case 3: // GS Reset
-                    getCtlSysexFromText(beforeSend[i], setting.getMidiOut().getGSReset());
-                    break;
-                case 4: // Custom
-                    getCtlSysexFromText(beforeSend[i], setting.getMidiOut().getCustom());
-                    break;
-                }
-
-            }
-
-            return true;
-        } catch (Exception e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-            return false;
-        }
-    }
-
-    private void getCtlSysexFromText(List<RCP.CtlSysex> buf, String text) {
+    void getCtlSysexFromText(List<RCP.CtlSysex> buf, String text) {
         if (text == null || text.isEmpty()) return;
 
         String[] cmds = text.split(";");
@@ -544,10 +346,5 @@ public class MID extends BaseDriver {
             }
             buf.add(new RCP.CtlSysex(delay, dat));
         }
-    }
-
-    @Override
-    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
-        throw new UnsupportedOperationException("This driver does not require this method");
     }
 }

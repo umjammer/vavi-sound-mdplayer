@@ -1,5 +1,7 @@
 package mdplayer.format;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -57,7 +59,7 @@ public class M3UFileFormat extends BaseFileFormat {
     }
 
     @Override
-    public List<PlayList.Music> addFileLoop(int index, PlayList.Music mc, Archive archive, Entry entry/* = null*/) {
+    public List<PlayList.Music> addFileLoop(int index, PlayList.Music mc, Archive archive, Entry entry /* = null */) {
 
         String rootPath = Path.getDirectoryName(mc.fileName);
         PlayList pl;
@@ -69,5 +71,17 @@ public class M3UFileFormat extends BaseFileFormat {
         List<PlayList.Music> musics = new ArrayList<>();
         for (PlayList.Music m : pl.getMusics()) musics.addAll(addFileLoop(index, m, archive, entry));
         return musics;
+    }
+
+    @Override
+    public int getMarkSize() {
+        return 0;
+    }
+
+    @Override
+    public boolean isSupported(InputStream is) throws IOException {
+//        if (isCompressedStream(is)) return false;
+//        return Arrays.stream(getExtensions()).anyMatch(e -> java.nio.file.Path.of(SoundUtil.getSource(is)).toString().toLowerCase().endsWith(e));
+        return false;
     }
 }

@@ -9,86 +9,30 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
 
+import dotnet4j.util.compat.TriConsumer;
 import konamiman.z80.Z80Processor;
 import konamiman.z80.Z80ProcessorImpl;
 import konamiman.z80.events.BeforeInstructionFetchEvent;
-import mdplayer.Chip;
-import mdplayer.Common.EnmModel;
-import mdplayer.driver.BaseDriver;
-import mdplayer.driver.Vgm;
 import mdplayer.driver.mgsdrv.Mapper;
 import mdplayer.driver.mgsdrv.MapperRamCartridge;
 import mdplayer.driver.mgsdrv.MsxMemory;
 import mdplayer.driver.mgsdrv.MsxPort;
 import mdplayer.driver.mgsdrv.MsxVdp;
-import mdplayer.plugin.BasePlugin;
 import vavi.util.ByteUtil;
-import vavi.util.StringUtil;
 
 import static java.lang.System.getLogger;
 
 
-// MSD
-public class MuSICA_K4 extends BaseDriver {
+/**
+ * MuSICA MSD (MML)
+ *
+ * @author kumatan
+ */
+public class MuSICA_K4 {
 
     private static final Logger logger = getLogger(MuSICA_K4.class.getName());
-
-    @Override
-    public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
-        throw new UnsupportedOperationException();
-    }
-
-    public Vgm.Gd3 getGD3Info(byte[] buf, byte[] vcdBuf) {
-        Vgm.Gd3 ret = new Vgm.Gd3();
-        if (buf != null && buf.length > 8) {
-            try {
-            run(buf, vcdBuf);
-            } catch (Exception e) {
-                logger.log(Level.ERROR, e.getMessage(), e);
-                return null;
-            }
-            if (bgmBin == null) return null;
-            Vgm.Gd3 gd3 = (new MuSICA()).getGD3Info(bgmBin, null);
-            ret.trackName = gd3.trackName;
-            ret.trackNameJ = gd3.trackNameJ;
-            ret.notes = gd3.notes;
-        }
-
-        return ret;
-    }
-
-    public boolean compile(byte[] vgmBuf, byte[] vcdBuf) {
-logger.log(Level.INFO, "\n" + StringUtil.getDump(vgmBuf, 128));
-        try {
-            run(vgmBuf, vcdBuf);
-            if (bgmBin == null) {
-logger.log(Level.WARNING, "bgmBin is null");
-                return false;
-            }
-            //Files.writeAllBytes(Path.of("/Users/kuma/Desktop/test.bgm", bgmBin));
-            return true;
-        } catch (Exception e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-            return false;
-        }
-    }
-
-    @Override
-    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
-        this.plugin = plugin;
-        return true;
-    }
-
-    @Override
-    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void processOneFrame() {
-        throw new UnsupportedOperationException();
-    }
 
     private static byte[] kinrou4 = null;
     private static final byte DollarCode = '$';
@@ -102,7 +46,11 @@ logger.log(Level.WARNING, "bgmBin is null");
     private byte[] bgmBin = null;
     private static final List<Byte> consoleBuf = new ArrayList<>();
 
-    private void run(byte[] msdBin, byte[] vcdBin) throws IOException, URISyntaxException {
+    TriConsumer<Integer, Integer, Integer> k051649Write;
+    BiConsumer<Integer, Integer> ay8910Write;
+    BiConsumer<Integer, Integer> ym2413Write;
+
+    void run(byte[] msdBin, byte[] vcdBin) throws IOException, URISyntaxException {
         this.msdBin = msdBin;
         this.vcdBin = vcdBin;
         this.bgmBin = null;
@@ -113,8 +61,8 @@ logger.log(Level.WARNING, "bgmBin is null");
         z80 = new Z80ProcessorImpl();
         z80.setClockSynchronizer(null);
         z80.setAutoStopOnRetWithStackEmpty(true);
-        z80.setMemory(new MsxMemory(plugin.audio.chipRegister, model));
-        z80.setPortsSpace(new MsxPort(((MsxMemory) z80.getMemory()).slot, plugin.audio.chipRegister, vdp, model));
+        z80.setMemory(new MsxMemory(k051649Write));
+        z80.setPortsSpace(new MsxPort(((MsxMemory) z80.getMemory()).slot, vdp, ay8910Write, ym2413Write));
         z80.beforeInstructionFetch().addListener(this::Z80OnBeforeInstructionFetch);
         mapper = new Mapper((MapperRamCartridge) ((MsxMemory) z80.getMemory()).slot.slots[3][1], (MsxMemory) z80.getMemory());
         z80.reset();
@@ -148,18 +96,11 @@ logger.log(Level.WARNING, "bgmBin is null");
         conFlash();
 
         if (bgmBin == null) {
-            logger.log(Level.TRACE, "Compile Fail");
-            return;
+            throw new IllegalStateException("Compile Fail");
         }
 
         logger.log(Level.TRACE, "Compile Success. Length = %04x", bgmBin.length);
     }
-
-//    private String playingFileName;
-//
-//    public void setPlayingFileName(String playingFileName) {
-//        this.playingFileName = playingFileName;
-//    }
 
     private void Z80OnBeforeInstructionFetch(BeforeInstructionFetchEvent args) {
         //Absolutely minimum implementation of CP/M for ZEXALL and ZEXDOC to work
@@ -324,9 +265,9 @@ logger.log(Level.WARNING, "bgmBin is null");
                 logger.log(Level.TRACE, "Write random block: FCB Adr(DE):%04x Write Record(HL):%04x".formatted(z80.getRegisters().getDE() & 0xffff, z80.getRegisters().getHL() & 0xffff));
                 z80.getRegisters().setA((byte) 0x00); // success
                 FCBAddress = z80.getRegisters().getDE();
-                var dummy1 = (short) ((z80.getMemory().get((FCBAddress & 0xffff) + 12) & 0xff) + (z80.getMemory().get((FCBAddress & 0xffff) + 13) & 0xff) * 0x100); // currentBlock
+                var _ = (short) ((z80.getMemory().get((FCBAddress & 0xffff) + 12) & 0xff) + (z80.getMemory().get((FCBAddress & 0xffff) + 13) & 0xff) * 0x100); // currentBlock
                 short recordSize = (short) ((z80.getMemory().get((FCBAddress & 0xffff) + 14) & 0xff) + (z80.getMemory().get((FCBAddress & 0xffff) + 15) & 0xff) * 0x100);
-                var dummy2 = (short) ((z80.getMemory().get((FCBAddress & 0xffff) + 16) & 0xff) +
+                var _ = (short) ((z80.getMemory().get((FCBAddress & 0xffff) + 16) & 0xff) +
                         (z80.getMemory().get((FCBAddress & 0xffff) + 17) & 0xff) * 0x100 +
                         (z80.getMemory().get((FCBAddress & 0xffff) + 18) & 0xff) * 0x1_0000 +
                         (z80.getMemory().get((FCBAddress & 0xffff) + 19) & 0xff) * 0x100_0000
@@ -369,7 +310,7 @@ logger.log(Level.WARNING, "bgmBin is null");
                 break;
             case 0x6c:
                 logger.log(Level.TRACE, "Call BDOS(0x0005) Reg.C=%02x", z80.getRegisters().getC() & 0xff);
-                //_SENV
+                // _SENV
                 //logger.log(Level.TRACE, "_SENV HL:%04x DE:%04x".formatted(z80.getRegisters().getHL() & 0xffff, z80.getRegisters().getDE() & 0xffff));
                 //msg = getAsciiz(z80, (short) z80.getRegisters().getHL() & 0xffff);
                 //logger.log(Level.TRACE, "(HL)=%s".formatted(msg));
@@ -380,7 +321,7 @@ logger.log(Level.WARNING, "bgmBin is null");
                 break;
             case 0x6f:
                 logger.log(Level.TRACE, "Call BDOS(0x0005) Reg.C=%02x", z80.getRegisters().getC() & 0xff);
-                //_DOSVER
+                // _DOSVER
                 z80.getRegisters().setBC((short) 0x0231); // ROM version
                 z80.getRegisters().setDE((short) 0x0210); // DISK version
                 //logger.log(Level.TRACE, "_DOSVER ret BC(ROMVer):%04x DE(DISKVer):%04x".formatted(z80.getRegisters().getBC(), z80.getRegisters().getDE()));

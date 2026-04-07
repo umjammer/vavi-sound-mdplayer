@@ -6,11 +6,12 @@
 
 package mdplayer.chips;
 
-import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
+import mdplayer.driver.BaseDriver;
+import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.instrument.MameYm3812Inst;
 import mdsound.instrument.Ym3812Inst;
@@ -18,7 +19,10 @@ import mdsound.instrument.Ym3812Inst;
 
 /**
  * Ym3812Chip.
- *
+ * <p>
+ * system property
+ * <li>{@code mdplayer.variant.ym3812} ... active chip index</li>
+ * </p>
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
@@ -39,7 +43,7 @@ public class Ym3812Chip implements Chip {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false}
     };
 
-    private Audio context;
+    private BasePlugin<? extends BaseDriver> context;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -53,7 +57,7 @@ public class Ym3812Chip implements Chip {
     }
 
     @Override
-    public void init(Audio context) {
+    public void init(BasePlugin<? extends BaseDriver> context) {
         this.context = context;
         for (int chipId = 0; chipId < 2; chipId++) {
             register[chipId] = new int[0x100];

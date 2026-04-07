@@ -15,6 +15,7 @@ import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.JFrame;
@@ -26,8 +27,9 @@ import javax.swing.Timer;
 import dotnet4j.util.compat.Tuple3;
 import mdplayer.Audio;
 import mdplayer.Setting;
-import mdplayer.driver.Vgm;
 import mdplayer.properties.Resources;
+import musicDriverInterface.MetaData;
+import musicDriverInterface.MetaData.Tag;
 
 import static java.lang.System.getLogger;
 
@@ -39,13 +41,13 @@ public class frmInfo extends JFrame {
     public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
-    public frmMain parent;
+    public final frmMain parent;
     public Setting setting = null;
     public List<Tuple3<Integer, Integer, String>> lyrics = null;
     public int lyricsIndex = 0;
     private Color culColor = new Color(192, 192, 255);
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmInfo.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmInfo.class);
 
     public frmInfo(frmMain frm) {
         parent = frm;
@@ -79,27 +81,32 @@ public class frmInfo extends JFrame {
         rtbLyrics.setText(null);
 
         Audio audio = Audio.getInstance();
-        Vgm.Gd3 gd3 = (audio.driverVirtual != null) ? audio.driverVirtual.gd3 : null;
-        if (gd3 == null) return;
+        MetaData metaData = (audio.plugin.driverVirtual != null) ? audio.plugin.driverVirtual.metaData : null;
+        if (metaData == null) return;
 
-        lblTitle.setText(gd3.trackName);
-        lblTitleJ.setText(gd3.trackNameJ);
-        lblGame.setText(gd3.gameName);
-        lblGameJ.setText(gd3.gameNameJ);
-        lblSystem.setText(gd3.systemName);
-        lblSystemJ.setText(gd3.systemNameJ);
-        lblComposer.setText(gd3.composer);
-        lblComposerJ.setText(gd3.composerJ);
-        lblRelease.setText(gd3.converted);
-        lblVGMBy.setText(gd3.vgmBy);
-        lblNotes.setText(gd3.notes);
-        lblVersion.setText(gd3.version);
-        lblUsedChips.setText(gd3.usedChips);
+        lblTitle.setText(metaData.getFirst(Tag.Title));
+        lblTitleJ.setText(metaData.getFirst(Tag.TitleJ));
+        lblGame.setText(metaData.getFirst(Tag.GameTitle));
+        lblGameJ.setText(metaData.getFirst(Tag.GameTitleJ));
+        lblSystem.setText(metaData.getFirst(Tag.GameSystem));
+        lblSystemJ.setText(metaData.getFirst(Tag.GameSystemJ));
+        lblComposer.setText(metaData.getFirst(Tag.Composer));
+        lblComposerJ.setText(metaData.getFirst(Tag.ComposerJ));
+        lblRelease.setText(metaData.getFirst(Tag.Converter));
+        lblVGMBy.setText(metaData.getFirst(Tag.Maker));
+        lblNotes.setText(metaData.getFirst(Tag.Note));
+        lblVersion.setText(metaData.getFirst(Tag.SongObjVersion));
+        lblUsedChips.setText(metaData.getFirst(Tag.Chip));
 
-        if (gd3.lyrics == null) {
+        if (metaData.getFirst(Tag.Lyric) == null) {
             timer.stop();
         } else {
-            lyrics = gd3.lyrics;
+            lyrics = new ArrayList<>();
+            List<String> tmp = metaData.getAll(Tag.Lyric);
+            for (String s : tmp) {
+                String[] p = s.split(",");
+                lyrics.add(new Tuple3<>(Integer.parseInt(p[0]), Integer.parseInt(p[1]), p[2]));
+            }
             timer.start();
         }
     }
@@ -144,7 +151,7 @@ public class frmInfo extends JFrame {
     private void timer_Tick(ActionEvent ev) {
         if (lyrics == null || lyrics.isEmpty()) return;
 
-        long cnt = Audio.getInstance().getDriverCounter();
+        long cnt = Audio.getInstance().plugin.getDriverCounter();
 
         try {
             if (cnt >= lyrics.get(lyricsIndex).getItem1()) {

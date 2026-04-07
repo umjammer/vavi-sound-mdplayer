@@ -59,7 +59,7 @@ public class frmYM2612MIDI extends frmBase {
     private final MDChipParams.YM2612MIDI oldParam = new MDChipParams.YM2612MIDI();
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmYM2612MIDI.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmYM2612MIDI.class);
 
     public frmYM2612MIDI(frmMain frm, int zoom, MDChipParams.YM2612MIDI newParam) {
         super(frm);
@@ -124,7 +124,7 @@ public class frmYM2612MIDI extends frmBase {
     };
 
     public void screenChangeParams() {
-        int[][] fmRegister = audio.chipRegister.plugin(MidiPlugin.class).readYM2612();
+        int[][] fmRegister = audio.plugin.chipRegister.plugin(MidiPlugin.class).readYM2612();
         //int[] fmKey = audio.GetFMKeyOn();
 
         newParam.IsMONO = parent.setting.getMidiKbd().isMono();
@@ -484,24 +484,13 @@ public class frmYM2612MIDI extends frmBase {
 
             if (py < 8) {
                 row = 0;
-                switch (col) {
-                case 10:
-                case 11:
-                    n = 44;
-                    break;
-                case 14:
-                case 15:
-                    n = 45;
-                    break;
-                case 19:
-                case 20:
-                    n = 46;
-                    break;
-                case 24:
-                case 25:
-                    n = 47;
-                    break;
-                }
+                n = switch (col) {
+                    case 10, 11 -> 44;
+                    case 14, 15 -> 45;
+                    case 19, 20 -> 46;
+                    case 24, 25 -> 47;
+                    default -> n;
+                };
             } else if (py < 16) {
                 return;
             } else if (py < 48) {

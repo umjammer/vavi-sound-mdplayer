@@ -65,7 +65,7 @@ public class frmMixer2 extends JFrame {
     public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
-    public frmMain parent;
+    public final frmMain parent;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
     private final int zoom;
@@ -75,8 +75,8 @@ public class frmMixer2 extends JFrame {
     private final MDChipParams.Mixer oldParam = new MDChipParams.Mixer();
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmHuC6280.class);
-    Audio audio = Audio.getInstance();
+    static final Preferences prefs = Preferences.userNodeForPackage(frmHuC6280.class);
+    final Audio audio = Audio.getInstance();
 
     public frmMixer2(frmMain frm, int zoom, MDChipParams.Mixer newParam) {
         parent = frm;
@@ -104,14 +104,14 @@ public class frmMixer2 extends JFrame {
 
     private void setVolume(int i, boolean isAbs, int delta) {
         if (i == 0) {
-            audio.setMasterVolume(isAbs, delta);
+            audio.plugin.setMasterVolume(isAbs, delta);
         } else if (i == setVolume.length) {
-            audio.chipRegister.plugin(RealChipPlugin.class).setGimicOPNVolume(false, delta);
+            audio.plugin.chipRegister.plugin(RealChipPlugin.class).setGimicOPNVolume(false, delta);
         } else if (i == setVolume.length + 1) {
-            audio.chipRegister.plugin(RealChipPlugin.class).setGimicOPNAVolume(false, delta);
+            audio.plugin.chipRegister.plugin(RealChipPlugin.class).setGimicOPNAVolume(false, delta);
         } else if (i > 0 && i < setVolume.length) {
             var t = setVolume[chipn];
-            audio.setVolume(t.getItem1(), t.getItem2(), isAbs, delta);
+            audio.plugin.setVolume(t.getItem1(), t.getItem2(), isAbs, delta);
         }
     }
 

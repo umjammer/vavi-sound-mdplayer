@@ -5,13 +5,13 @@ import java.util.function.Consumer;
 
 
 public class Request {
-    public enmRequest request;
+    public final enmRequest request;
 
-    public Object[] args;
+    public final Object[] args;
 
     public Object[] results;
 
-    public Consumer<Object> callBack;
+    public final Consumer<Object> callBack;
 
     private final Object objlock = new Object();
 

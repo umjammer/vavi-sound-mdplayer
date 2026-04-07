@@ -32,7 +32,7 @@ import java.util.Arrays;
 public class SystemRAMBank implements IBank {
 
     // C64 RAM area
-    public byte[] ram = new byte[0x10000];
+    public final byte[] ram = new byte[0x10000];
 
     /**
      //Initialize RAM with powerup pattern.

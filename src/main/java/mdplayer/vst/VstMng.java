@@ -9,16 +9,12 @@ import java.util.List;
 import java.util.Map;
 
 import dotnet4j.util.compat.EventHandler;
-import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.MIDIParam;
 import mdplayer.Setting;
 import mdplayer.MidiOutInfo;
-import net.sf.saxon.functions.Count;
 import org.urish.jnavst.AEffect;
-import org.urish.jnavst.VstConst;
 import org.urish.jnavst.VstPlugin;
-import org.urish.jnavst.VstTimeInfo;
 
 import static java.lang.System.getLogger;
 
@@ -33,43 +29,43 @@ public class VstMng {
 
     private final List<VstInfo2> vstPlugins = new ArrayList<>();
     private final List<VstInfo2> vstPluginsInst = new ArrayList<>();
-    public List<VstInfo2> vstMidiOuts = new ArrayList<>();
-    public List<Integer> vstMidiOutsType = new ArrayList<>();
+    public final List<VstInfo2> vstMidiOuts = new ArrayList<>();
+    public final List<Integer> vstMidiOutsType = new ArrayList<>();
 
 
     public void vstparse() {
         while (!vstPluginsInst.isEmpty()) {
-            if (vstPluginsInst.get(0) != null) {
-                if (vstPluginsInst.get(0).vstPlugins != null)
-                    vstPluginsInst.get(0).vstPlugins.editClose();
-                vstPluginsInst.get(0).vstPluginsForm.timer1.stop();
-                vstPluginsInst.get(0).location = vstPluginsInst.get(0).vstPluginsForm.getLocation();
-                vstPluginsInst.get(0).vstPluginsForm.setVisible(false);
-                if (vstPluginsInst.get(0).vstPlugins != null)
-                    vstPluginsInst.get(0).vstPlugins.close();
+            if (vstPluginsInst.getFirst() != null) {
+                if (vstPluginsInst.getFirst().vstPlugins != null)
+                    vstPluginsInst.getFirst().vstPlugins.editClose();
+                vstPluginsInst.getFirst().vstPluginsForm.timer1.stop();
+                vstPluginsInst.getFirst().location = vstPluginsInst.getFirst().vstPluginsForm.getLocation();
+                vstPluginsInst.getFirst().vstPluginsForm.setVisible(false);
+                if (vstPluginsInst.getFirst().vstPlugins != null)
+                    vstPluginsInst.getFirst().vstPlugins.close();
 //                if (vstPluginsInst.get(0).vstPlugins != null)
 //                    vstPluginsInst.get(0).vstPlugins.MainsChanged(false);
-                vstPluginsInst.get(0).vstPlugins.close();
+                vstPluginsInst.getFirst().vstPlugins.close();
             }
 
-            vstPluginsInst.remove(0);
+            vstPluginsInst.removeFirst();
         }
 
         while (!vstPlugins.isEmpty()) {
-            if (vstPlugins.get(0) != null) {
-                if (vstPlugins.get(0).vstPlugins != null)
-                    vstPlugins.get(0).vstPlugins.editClose();
-                vstPlugins.get(0).vstPluginsForm.timer1.stop();
-                vstPlugins.get(0).location = vstPlugins.get(0).vstPluginsForm.getLocation();
-                vstPlugins.get(0).vstPluginsForm.setVisible(false);
-                if (vstPlugins.get(0).vstPlugins != null)
-                    vstPlugins.get(0).vstPlugins.close();
+            if (vstPlugins.getFirst() != null) {
+                if (vstPlugins.getFirst().vstPlugins != null)
+                    vstPlugins.getFirst().vstPlugins.editClose();
+                vstPlugins.getFirst().vstPluginsForm.timer1.stop();
+                vstPlugins.getFirst().location = vstPlugins.getFirst().vstPluginsForm.getLocation();
+                vstPlugins.getFirst().vstPluginsForm.setVisible(false);
+                if (vstPlugins.getFirst().vstPlugins != null)
+                    vstPlugins.getFirst().vstPlugins.close();
 //                if (vstPlugins.get(0).vstPlugins != null)
 //                    vstPlugins.get(0).vstPlugins.MainsChanged(false);
-                vstPlugins.get(0).vstPlugins.close();
+                vstPlugins.getFirst().vstPlugins.close();
             }
 
-            vstPlugins.remove(0);
+            vstPlugins.removeFirst();
         }
     }
 
@@ -844,7 +840,7 @@ public class VstMng {
 
         // It doesn't matter if it's actually a VSTi or not.
         public boolean isInstrument = false;
-        public List<AEffect> lstEvent = new ArrayList<>();
+        public final List<AEffect> lstEvent = new ArrayList<>();
 
         public void AddMidiEvent(AEffect evt) {
             lstEvent.add(evt);

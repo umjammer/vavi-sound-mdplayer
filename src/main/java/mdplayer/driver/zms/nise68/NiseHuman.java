@@ -2,16 +2,15 @@ package mdplayer.driver.zms.nise68;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import dotnet4j.io.File;
 import dotnet4j.io.MemoryStream;
 import dotnet4j.io.Path;
 import dotnet4j.io.SeekOrigin;
 import vavi.util.ByteUtil;
-import vavi.util.StringUtil;
 
 import static java.lang.System.getLogger;
 import static mdplayer.Common.charset;
@@ -21,7 +20,7 @@ public class NiseHuman {
 
     private static final Logger logger = getLogger(NiseHuman.class.getName());
 
-    public static int mpcmPtr = 0xfe_9000; // MPCM permanent location (tentative)
+    public static final int mpcmPtr = 0xfe_9000; // MPCM permanent location (tentative)
 
     private final Memory68 mem;
     private final Register68 reg;
@@ -32,9 +31,9 @@ public class NiseHuman {
     private int ctrlCAbortAddress = 0;
     private int errorAbortAddress = 0;
     private int cmdLineAddress = 0;
-    private int pspSize = 16 + 240;
-    public int defUSP = 0xfe_0000;
-    public int defSSP = 0xff_0000;
+    private static final int pspSize = 16 + 240;
+    public static final int defUSP = 0xfe_0000;
+    public static final int defSSP = 0xff_0000;
     private Runnable[] tblFunc = new Runnable[256];
     private Runnable[] tblFEFunc = new Runnable[256];
 
@@ -616,9 +615,7 @@ public class NiseHuman {
             //    fb.add(physicalFn, dat);
             //}
             dat = fileMng.vReadAllBytes(fn);
-            if (dat == null)
-                fi[i].memoryStream = new MemoryStream(new byte[0]);
-            else fi[i].memoryStream = new MemoryStream(dat);
+            fi[i].memoryStream = new MemoryStream(Objects.requireNonNullElseGet(dat, () -> new byte[0]));
             break;
         }
         if (fileHandle < 0) return;
@@ -790,7 +787,7 @@ logger.log(Level.INFO, "file not found: %s".formatted(fn));
             System.arraycopy(ByteUtil.toByteArray(data), 0, nf, fi[fileNo].ptr, data.size());
             fileMng.setVFile(fn, nf); // File.writeAllBytes(physicalFn, nf);
 
-            reg.getD()[0] = (int) i;
+            reg.getD()[0] = i;
         }
     }
 
@@ -816,7 +813,7 @@ logger.log(Level.INFO, "file not found: %s".formatted(fn));
     private void seek() {
         logger.log(Level.TRACE, "<NiseHuman>dos call $FF42 seek");
         int fileNo = mem.peekW(reg.getA().get(7) + 0) & 0xffff;
-        int offset = (int) mem.peekL(reg.getA().get(7) + 2);
+        int offset = mem.peekL(reg.getA().get(7) + 2);
         short mode = mem.peekW(reg.getA().get(7) + 6);
 
         reg.getD()[0] = -1;
@@ -850,8 +847,8 @@ logger.log(Level.INFO, "file not found: %s".formatted(fn));
         int ptr = memMng.malloc(byteSize + 16);
 
         if (ptr < 0) {
-            reg.getD()[0] = 0x8100_0000 + byteSize + 16; // Unable to secure
-            reg.getD()[0] = 0x8200_0000; // Not at all secure
+            reg.getD()[0] = 0x8100_0000 + byteSize + 16; // Unable to allocate
+            reg.getD()[0] = 0x8200_0000; // allocated not at all
             return;
         }
 
@@ -874,12 +871,12 @@ logger.log(Level.INFO, "file not found: %s".formatted(fn));
         boolean ret = memMng.Change(newPtr, newLen);
 
         if (!ret) {
-            reg.getD()[0] = 0x8100_0000 + newLen; // Unable to secure
-            reg.getD()[0] = 0x8200_0000; // Not at all secure
+            reg.getD()[0] = 0x8100_0000 + newLen; // Unable to  allocate
+            reg.getD()[0] = 0x8200_0000; //  allocate not at all
             return;
         }
 
-        reg.getD()[0] = 0x0000_0000;// + newlen;
+        reg.getD()[0] = 0x0000_0000; // + newlen;
     }
 
     private void exec() {
@@ -892,7 +889,7 @@ logger.log(Level.INFO, "file not found: %s".formatted(fn));
         List<Byte> msg = new ArrayList<>();
         int cnt = 0;
         do {
-            byte b = mem.peekB((int) (fil + cnt));
+            byte b = mem.peekB(fil + cnt);
             if ((char) b == '\0') break;
             msg.add(b);
             cnt++;
@@ -901,7 +898,7 @@ logger.log(Level.INFO, "file not found: %s".formatted(fn));
         msg = new ArrayList<>();
         cnt = 0;
         do {
-            byte b = mem.peekB((int) (p1 + cnt));
+            byte b = mem.peekB(p1 + cnt);
             if ((char) b == '\0') break;
             msg.add(b);
             cnt++;
@@ -1047,7 +1044,7 @@ logger.log(Level.INFO, "file not found: %s".formatted(fn));
         List<Byte> msg = new ArrayList<>();
         int cnt = 0;
         do {
-            byte b = mem.peekB((int) (namePtr + cnt));
+            byte b = mem.peekB(namePtr + cnt);
             if ((char) b == '\0') break;
             if ((char) b == '?') {
                 b = (byte) '0';

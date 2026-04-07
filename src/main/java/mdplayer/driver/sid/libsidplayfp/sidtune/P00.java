@@ -37,7 +37,7 @@ public class P00 extends SidTuneBase {
     private P00(P00 p) {
     }
 
-    private P00 opeEquel(P00 p) {
+    private static P00 opeEquel(P00 p) {
         return null;
     }
 
@@ -60,9 +60,9 @@ public class P00 extends SidTuneBase {
 
     private static class X00Header {
         // 'C64File' (ASCII)
-        public byte[] id = new byte[X00_ID_LEN];
+        public final byte[] id = new byte[X00_ID_LEN];
         // C64 name (PETSCII)
-        public byte[] name = new byte[X00_NAME_LEN];
+        public final byte[] name = new byte[X00_NAME_LEN];
         // Rel files only (Bytes/Record),
         public byte length;
         // should be 0 for all other types

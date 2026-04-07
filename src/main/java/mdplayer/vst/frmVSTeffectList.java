@@ -34,6 +34,7 @@ import dotnet4j.io.Directory;
 import dotnet4j.io.Path;
 import mdplayer.Audio;
 import mdplayer.Setting;
+import mdplayer.chips.RealChipPlugin;
 import mdplayer.chips.VstPlugin;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
@@ -43,11 +44,11 @@ public class frmVSTeffectList extends JFrame {
 
     private final frmMain parent;
     public boolean isClosed = false;
-    public Setting setting;
-    private final boolean isInitialOpenFolder = true;
-    Audio audio = Audio.getInstance();
+    public final Setting setting;
+    private static final boolean isInitialOpenFolder = true;
+    final Audio audio = Audio.getInstance();
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmVSTeffectList.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmVSTeffectList.class);
 
     public frmVSTeffectList(frmMain parent, Setting setting) {
         initializeComponent();
@@ -86,10 +87,10 @@ public class frmVSTeffectList extends JFrame {
 
         setting.getVst().setDefaultPath(Path.getDirectoryName(ofd.getSelectedFile().getName()));
         parent.stop();
-        while (!audio.getTrdStopped()) {
+        while (!audio.plugin.chipRegister.plugin(RealChipPlugin.class).isThreadStopped()) {
             Thread.yield();
         }
-        audio.chipRegister.plugin(VstPlugin.class).addVSTeffect(ofd.getSelectedFile().getName());
+        audio.plugin.chipRegister.plugin(VstPlugin.class).addVSTeffect(ofd.getSelectedFile().getName());
         dispPluginList();
 
     }
@@ -124,7 +125,7 @@ public class frmVSTeffectList extends JFrame {
     public void dispPluginList() {
         model.setRowCount(0);
 
-        vstInfos = audio.chipRegister.plugin(VstPlugin.class).getVSTInfos();
+        vstInfos = audio.plugin.chipRegister.plugin(VstPlugin.class).getVSTInfos();
 
         int i = 0;
         for (VstMng.VstInfo2 vi : vstInfos) {
@@ -138,11 +139,11 @@ public class frmVSTeffectList extends JFrame {
         if (dgvList.getSelectedRowCount() < 0) return;
 
         parent.stop();
-        while (!audio.getTrdStopped()) {
+        while (!audio.plugin.chipRegister.plugin(RealChipPlugin.class).isThreadStopped()) {
             Thread.yield();
         }
         int row = dgvList.getSelectionModel().getSelectedIndices()[0];
-        audio.chipRegister.plugin(VstPlugin.class).delVSTeffect((String) model.getValueAt(row, 1 /* clmKey */));
+        audio.plugin.chipRegister.plugin(VstPlugin.class).delVSTeffect((String) model.getValueAt(row, 1 /* clmKey */));
         dispPluginList();
     }
 
@@ -152,14 +153,14 @@ public class frmVSTeffectList extends JFrame {
 
         parent.stop();
         //while (!Audio.trdStopped) { Thread.sleep(1); }
-        while (!audio.trdClosed) {
+        while (!audio.plugin.chipRegister.plugin(RealChipPlugin.class).trdClosed) {
             Thread.yield();
         }
-        audio.chipRegister.plugin(VstPlugin.class).delVSTeffect("");
+        audio.plugin.chipRegister.plugin(VstPlugin.class).delVSTeffect("");
         dispPluginList();
     }
 
-    private MouseAdapter dgvList_CellMouseClick = new MouseAdapter() {
+    private final MouseAdapter dgvList_CellMouseClick = new MouseAdapter() {
         @Override
         public void mouseClicked(MouseEvent e) {
             int row = dgvList.rowAtPoint(e.getPoint());

@@ -40,7 +40,7 @@ public class frmMMC5 extends frmBase {
     private final MDChipParams.MMC5 oldParam = new MDChipParams.MMC5();
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmMMC5.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmMMC5.class);
 
     public frmMMC5(frmMain frm, int chipId, int zoom, MDChipParams.MMC5 newParam) {
         super(frm);
@@ -110,7 +110,7 @@ public class frmMMC5 extends frmBase {
         final double LOG_2 = 0.69314718055994530941723212145818;
         final int NOTE_440HZ = 12 * 4 + 9;
 
-        byte[] reg = audio.chipRegister.chip(NesChip.Mmc5Chip.class).readMmc5(chipId);
+        byte[] reg = audio.plugin.chipRegister.chip(NesChip.Mmc5Chip.class).readMmc5(chipId);
         int freq;
         int vol;
         int note;

@@ -51,7 +51,7 @@ public class PSid extends SidTuneBase {
     PSid(PSid p) {
     }
 
-    private PSid opeEquel(PSid p) {
+    private static PSid opeEquel(PSid p) {
         return null;
     }
 
@@ -88,11 +88,11 @@ public class PSid extends SidTuneBase {
         public int speed;
         // bit: 0=50 Hz, 1=CIA 1 Timer a (default: 60 Hz)
         // ASCII Strings, 31 characters long and
-        public byte[] name = new byte[PSID_MAXSTRLEN];
+        public final byte[] name = new byte[PSID_MAXSTRLEN];
         // terminated by a trailing zero
-        public byte[] author = new byte[PSID_MAXSTRLEN];
+        public final byte[] author = new byte[PSID_MAXSTRLEN];
         //
-        public byte[] released = new byte[PSID_MAXSTRLEN];
+        public final byte[] released = new byte[PSID_MAXSTRLEN];
 
         // only version >= 2
         public short flags;
@@ -171,7 +171,7 @@ public class PSid extends SidTuneBase {
     /**
      * Check if extra Sid addres instanceof valid for PSid specs.
      */
-    private boolean validateAddress(byte address) {
+    private static boolean validateAddress(byte address) {
         // Only even values are valid.
         if ((address & 1) != 0)
             return false;

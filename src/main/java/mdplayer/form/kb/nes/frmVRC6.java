@@ -39,7 +39,7 @@ public class frmVRC6 extends frmBase {
     private final MDChipParams.VRC6 newParam;
     private final MDChipParams.VRC6 oldParam;
     private final FrameBuffer frameBuffer = new FrameBuffer();
-    static Preferences prefs = Preferences.userNodeForPackage(frmVRC6.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmVRC6.class);
 
     public frmVRC6(frmMain frm, int chipId, int zoom, MDChipParams.VRC6 newParam, MDChipParams.VRC6 oldParam) {
         super(frm);
@@ -157,7 +157,7 @@ public class frmVRC6 extends frmBase {
     }
 
     public void screenChangeParams() {
-        BasicTrackInfo[] info = (BasicTrackInfo[]) audio.chipRegister.chip(NesChip.Vrc6Chip.class).readVrc6(0);
+        BasicTrackInfo[] info = (BasicTrackInfo[]) audio.plugin.chipRegister.chip(NesChip.Vrc6Chip.class).readVrc6(0);
         if (info == null) return;
 
         MDChipParams.Channel nyc;

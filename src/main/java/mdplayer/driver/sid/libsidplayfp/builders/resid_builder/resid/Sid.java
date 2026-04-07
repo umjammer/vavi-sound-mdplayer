@@ -38,7 +38,7 @@ public class Sid {
      */
     public static class State {
 
-        public byte[] sidRegister = new byte[0x20];
+        public final byte[] sidRegister = new byte[0x20];
 
         public int busValue;
         public int busValueTtl;
@@ -119,7 +119,7 @@ public class Sid {
             }
         }
 
-        SubState[] subStates = new SubState[3];
+        final SubState[] subStates = new SubState[3];
 
         /**
          * Constructor.
@@ -142,11 +142,11 @@ public class Sid {
     }
 
     protected SidDefs.ChipModel sidModel;
-    protected Voice[] voice = new Voice[] {new Voice(), new Voice(), new Voice()};
-    protected Filter filter = new Filter();
-    protected ExternalFilter extfilt = new ExternalFilter();
-    protected Potentiometer potx = new Potentiometer();
-    protected Potentiometer poty = new Potentiometer();
+    protected final Voice[] voice = new Voice[] {new Voice(), new Voice(), new Voice()};
+    protected final Filter filter = new Filter();
+    protected final ExternalFilter extfilt = new ExternalFilter();
+    protected final Potentiometer potx = new Potentiometer();
+    protected final Potentiometer poty = new Potentiometer();
 
     protected int busValue;
     protected int busValueTtl;
@@ -834,31 +834,21 @@ public class Sid {
      * }
      */
     public int clock(int deltaT, short[] buf, int n, int interleave/* = 1*/) {
-        switch (sampling) {
-        default:
-        case FAST:
-            return clockFast(deltaT, buf, n, interleave);
-        case INTERPOLATE:
-            return clockInterpolate(deltaT, buf, n, interleave);
-        case RESAMPLE:
-            return clockResample(deltaT, buf, n, interleave);
-        case RESAMPLE_FASTMEM:
-            return clockResampleFastMem(deltaT, buf, n, interleave);
-        }
+        return switch (sampling) {
+            default -> clockFast(deltaT, buf, n, interleave);
+            case INTERPOLATE -> clockInterpolate(deltaT, buf, n, interleave);
+            case RESAMPLE -> clockResample(deltaT, buf, n, interleave);
+            case RESAMPLE_FASTMEM -> clockResampleFastMem(deltaT, buf, n, interleave);
+        };
     }
 
     public int clock(int deltaT, short[] buf, int ptrBuf, int n, int interleave /*= 1*/) {
-        switch (sampling) {
-        default:
-        case FAST:
-            return clockFast(deltaT, buf, ptrBuf, n, interleave);
-        case INTERPOLATE:
-            return clockInterpolate(deltaT, buf, ptrBuf, n, interleave);
-        case RESAMPLE:
-            return clockResample(deltaT, buf, ptrBuf, n, interleave);
-        case RESAMPLE_FASTMEM:
-            return clockResampleFastMem(deltaT, buf, ptrBuf, n, interleave);
-        }
+        return switch (sampling) {
+            default -> clockFast(deltaT, buf, ptrBuf, n, interleave);
+            case INTERPOLATE -> clockInterpolate(deltaT, buf, ptrBuf, n, interleave);
+            case RESAMPLE -> clockResample(deltaT, buf, ptrBuf, n, interleave);
+            case RESAMPLE_FASTMEM -> clockResampleFastMem(deltaT, buf, ptrBuf, n, interleave);
+        };
     }
 
     /**

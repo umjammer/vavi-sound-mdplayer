@@ -34,7 +34,7 @@ public class KmEvent {
 
     public static class Event {
         // Direct access to members prohibited
-        public Item[] item = new Item[KMEVENT_ITEM_MAX + 1];
+        public final Item[] item = new Item[KMEVENT_ITEM_MAX + 1];
     }
 
     private enum Flag {
@@ -48,7 +48,7 @@ public class KmEvent {
         }
     }
 
-    private void reset(Event kme) {
+    private static void reset(Event kme) {
         kme.item[0].count = 0;
         for (int id = 0; id <= KMEVENT_ITEM_MAX; id++) {
             kme.item[id].sysflag &= ~Flag.ALLOCED.v;
@@ -78,7 +78,7 @@ public class KmEvent {
     }
 
     /** Remove from list */
-    private void unlistItem(Event kme, int curid) {
+    private static void unlistItem(Event kme, int curid) {
         Item cur, next, prev;
         cur = kme.item[curid];
         next = kme.item[cur.next];
@@ -88,7 +88,7 @@ public class KmEvent {
     }
 
     /** Insert just before the specified position (baseid) in the list */
-    private void listItem(Event kme, int curid, int baseid) {
+    private static void listItem(Event kme, int curid, int baseid) {
         Item cur, next, prev;
         cur = kme.item[curid];
         next = kme.item[baseid];
@@ -100,7 +100,7 @@ public class KmEvent {
     }
 
     /** Insert into sorted list */
-    private void insertItem(Event kme, int curid) {
+    private static void insertItem(Event kme, int curid) {
         int baseid;
         for (baseid = kme.item[0].next; baseid != 0; baseid = kme.item[baseid].next) {
             if (kme.item[baseid].count != 0) {

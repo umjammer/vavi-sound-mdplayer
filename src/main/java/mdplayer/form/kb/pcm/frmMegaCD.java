@@ -40,7 +40,7 @@ public class frmMegaCD extends frmBase {
     private final MDChipParams.RF5C164 oldParam;
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmMegaCD.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmMegaCD.class);
 
     public frmMegaCD(frmMain frm, int chipId, int zoom, MDChipParams.RF5C164 newParam, MDChipParams.RF5C164 oldParam) {
         super(frm);
@@ -107,13 +107,13 @@ public class frmMegaCD extends frmBase {
     };
 
     public void screenChangeParams() {
-        ScdPcm rf5c164Register = audio.chipRegister.chip(Rf5C164Chip.class).read(chipId);
+        ScdPcm rf5c164Register = audio.plugin.chipRegister.chip(Rf5C164Chip.class).read(chipId);
         if (rf5c164Register != null) {
             for (int ch = 0; ch < 8; ch++) {
                 if (rf5c164Register.getChannel(ch).enable != 0) {
                     newParam.channels[ch].note = searchRf5c164Note(rf5c164Register.getChannel(ch).stepB);
-                    newParam.channels[ch].volumeL = Math.min(Math.max(rf5c164Register.getChannel(ch).mulL / 3, 0), 19);
-                    newParam.channels[ch].volumeR = Math.min(Math.max(rf5c164Register.getChannel(ch).mulR / 3, 0), 19);
+                    newParam.channels[ch].volumeL = Math.clamp(rf5c164Register.getChannel(ch).mulL / 3, 0, 19);
+                    newParam.channels[ch].volumeR = Math.clamp(rf5c164Register.getChannel(ch).mulR / 3, 0, 19);
                 } else {
                     newParam.channels[ch].note = -1;
                     newParam.channels[ch].volumeL = 0;
@@ -170,7 +170,7 @@ public class frmMegaCD extends frmBase {
         }
     };
 
-    private int searchRf5c164Note(int freq) {
+    private static int searchRf5c164Note(int freq) {
         double m = Double.MAX_VALUE;
         int n = 0;
         for (int i = 0; i < 12 * 8; i++) {

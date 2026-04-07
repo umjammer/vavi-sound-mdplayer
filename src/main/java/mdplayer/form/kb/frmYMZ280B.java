@@ -37,7 +37,7 @@ public class frmYMZ280B extends frmBase {
     private MDChipParams.YMZ280B oldParam = new MDChipParams.YMZ280B();
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmYMZ280B.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmYMZ280B.class);
 
     public frmYMZ280B(frmMain frm, int chipId, int zoom, MDChipParams.YMZ280B newParam, MDChipParams.YMZ280B oldParam) {
         super(frm);
@@ -142,7 +142,7 @@ public class frmYMZ280B extends frmBase {
     }
 
     public void screenChangeParams() {
-        int[] reg = audio.chipRegister.chip(YmZ280BChip.class).read(chipId);
+        int[] reg = audio.plugin.chipRegister.chip(YmZ280BChip.class).read(chipId);
         if (reg == null) return;
 
         for (int ch = 0; ch < 8; ch++) {

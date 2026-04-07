@@ -2,14 +2,12 @@ package mdplayer.driver;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.IntConsumer;
 
-import mdplayer.Chip;
-import mdplayer.Common.EnmModel;
-import mdplayer.chips.Sn76489Chip;
-import mdplayer.chips.Ym2612Chip;
-import mdplayer.driver.Vgm.Gd3;
+import dotnet4j.util.compat.TriConsumer;
 import mdplayer.driver.Xgm.XGMSampleID;
-import mdplayer.plugin.BasePlugin;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
@@ -18,7 +16,7 @@ import static java.lang.System.getLogger;
 /**
  * MegaDrive SGDK XGM2
  */
-public class Xgm2 extends BaseDriver {
+public class Xgm2 {
 
     private static final Logger logger = getLogger(Xgm2.class.getName());
 
@@ -26,7 +24,7 @@ public class Xgm2 extends BaseDriver {
     public static final int FCC_GD3 = 0x20336447;  // "Gd3 "
 
     private double musicStep = 1; // setting.outputDevice.SampleRate / 60.0;
-    private double pcmStep = 1; // setting.outputDevice.SampleRate / 14000.0;
+    double pcmStep = 1; // setting.outputDevice.SampleRate / 14000.0;
     private double musicDownCounter = 0.0;
     private double pcmDownCounter = 0.0;
     private int fmMusicPtr = 0;
@@ -66,7 +64,7 @@ public class Xgm2 extends BaseDriver {
             {new byte[4], new byte[4], new byte[4]},
             {new byte[4], new byte[4], new byte[4]}
     };
-    private byte[][][] fmSLRR = {
+    private final byte[][][] fmSLRR = {
             {new byte[4], new byte[4], new byte[4]},
             {new byte[4], new byte[4], new byte[4]}
     };
@@ -110,44 +108,17 @@ public class Xgm2 extends BaseDriver {
 
     public Xgm2() {
         musicStep = mdplayer.Common.VGMProcSampleRate / 60.0; // setting.outputDevice.SampleRate / 60.0;
-        pcmStep = setting.getOutputDevice().getSampleRate() / 13300.0;
     }
 
-    @Override
-    public Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
-        getXGM2Info(buf);
-        return gd3;
-    }
+    byte[] vgmBuf;
+    Consumer<String> version;
+    BiConsumer<Boolean, Integer> tag;
+    Runnable stop;
+    IntConsumer loop;
+    TriConsumer<Integer, Integer, Integer> ym2612Write;
+    IntConsumer sn76489Write;
 
-    @Override
-    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
-        this.vgmBuf = vgmBuf;
-        this.plugin = plugin;
-        this.model = model;
-        this.useChip = useChip;
-        this.latency = latency;
-        this.waitTime = waitTime;
-
-        counter = 0;
-        totalCounter = 0;
-        loopCounter = 0;
-        vgmCurLoop = 0;
-        stopped = false;
-        vgmFrameCounter = -latency - waitTime;
-        vgmSpeed = 1;
-        vgmSpeedCounter = 0;
-
-        if (!getXGM2Info(vgmBuf)) {
-logger.log(Level.WARNING, "getXGM2Info");
-            return false;
-        }
-
-        if (model == EnmModel.RealModel) {
-            plugin.audio.chipRegister.chip(Ym2612Chip.class).setSyncWait(0, 1);
-            plugin.audio.chipRegister.chip(Ym2612Chip.class).setSyncWait(1, 1);
-        }
-
-        // initialize Driver
+    void init() {
         fmMusicPtr = fmDataBlockAddr;
         psgMusicPtr = psgDataBlockAddr;
         xgm2pcm = new XGM2PCM[] {new XGM2PCM(), new XGM2PCM(), new XGM2PCM(), new XGM2PCM()};
@@ -160,60 +131,36 @@ logger.log(Level.WARNING, "getXGM2Info");
         psgWaitCnt = 0;
         psgLoopCnt = 0;
         pendingFrame = 0;
-        endFm = false;
-        if (fmDataBlockSize == 0) endFm = true;
-        endPsg = false;
-        if (psgDataBlockSize == 0) endPsg = true;
+        endFm = fmDataBlockSize == 0;
+        endPsg = psgDataBlockSize == 0;
         vi = true;
-
-        return true;
     }
 
-    @Override
-    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
-        throw new UnsupportedOperationException("This driver does not require this method");
-    }
-
-    @Override
-    public void processOneFrame() {
-        try {
-            if (vi) {
-                writeYM2612P0(0x2b, 0x80);
-                writeYM2612P0(0x2a, 0x80);
-                writeYM2612P0(0x2b, 0x00);
-                writeYM2612P0(0x27, 0x05);
-                vi = false;
-            }
-
-            vgmSpeedCounter += (double) mdplayer.Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * vgmSpeed;
-            while (vgmSpeedCounter >= 1.0 && !stopped) {
-                vgmSpeedCounter -= 1.0;
-                if (vgmFrameCounter > -1) {
-                    oneFrameMain();
-                } else {
-                    vgmFrameCounter++;
-                }
-            }
-
-            pcmSpeedCounter++; //= (double) Common.VGMProcSampleRate / setting.outputDevice.SampleRate * vgmSpeed;
-            while (pcmSpeedCounter >= 1.0 && !stopped) {
-                pcmSpeedCounter -= 1.0;
-                onePCMFrameMain();
-            }
-
-            //stopped = !isPlaying();
-        } catch (Exception ex) {
-            logger.log(Level.ERROR, ex.getMessage(), ex);
+    void clockVi() {
+        if (vi) {
+            writeYM2612P0(0x2b, 0x80);
+            writeYM2612P0(0x2a, 0x80);
+            writeYM2612P0(0x2b, 0x00);
+            writeYM2612P0(0x27, 0x05);
+            vi = false;
         }
     }
 
-    private boolean getXGM2Info(byte[] vgmBuf) {
-        if (vgmBuf == null) return false;
+    void clock(boolean stopped) {
+        pcmSpeedCounter++; //= (double) Common.VGMProcSampleRate / setting.outputDevice.SampleRate * speed;
+        while (pcmSpeedCounter >= 1.0 && !stopped) {
+            pcmSpeedCounter -= 1.0;
+            onePCMFrameMain();
+        }
+    }
+
+    void getXGM2Info(byte[] vgmBuf) {
+        if (vgmBuf == null) throw new IllegalArgumentException("null buffer");
 
         try {
-            if (ByteUtil.readLeInt(vgmBuf, 0x0000) != FCC_XGM2) return false;
+            if (ByteUtil.readLeInt(vgmBuf, 0x0000) != FCC_XGM2) throw new IllegalArgumentException("data is not xgm2");
 
-            version = "%d".formatted(vgmBuf[0x0004] & 0xff);
+            version.accept("%d".formatted(vgmBuf[0x0004] & 0xff));
             byte formatDesc = vgmBuf[0x0005];
             isNTSC = (formatDesc & 0x1) == 0;
             multiTrack = (formatDesc & 0x2) != 0;
@@ -271,26 +218,16 @@ logger.log(Level.WARNING, "getXGM2Info");
             }
             gd3DataBlockAddr = ptr;
 
-            if (!existGD3) gd3 = new Gd3();
-            else {
-                gd3 = mdplayer.Common.getGD3Info(vgmBuf, gd3DataBlockAddr + 12);
-                gd3.usedChips = usedChips;
-            }
+            tag.accept(existGD3, gd3DataBlockAddr);
 
         } catch (Exception e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-            return false;
+            throw new IllegalStateException(e);
         }
-
-        return true;
     }
 
-    private void oneFrameMain() {
+    void oneFrameMain() {
         try {
             //if (model == EnmModel.RealModel) return;
-
-            counter++;
-            vgmFrameCounter++;
 
             musicStep = mdplayer.Common.VGMProcSampleRate / (isNTSC ? 60.0 : 50.0);
 
@@ -303,7 +240,7 @@ logger.log(Level.WARNING, "getXGM2Info");
 
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
-            stopped = true;
+            stop.run();
         }
     }
 
@@ -347,17 +284,17 @@ logger.log(Level.WARNING, "getXGM2Info");
                 xgm2pcm[i].data = 0;
             }
         }
-        o = (short) Math.min(Math.max(o, Byte.MIN_VALUE + 1), Byte.MAX_VALUE);
+        o = (short) Math.clamp(o, Byte.MIN_VALUE + 1, Byte.MAX_VALUE);
         o += 0x80;
 
-        plugin.audio.chipRegister.chip(Ym2612Chip.class).write(0, 0, 0x2a, o, model, vgmFrameCounter);
+        ym2612Write.accept(0, 0x2a, o);
     }
 
     private void oneFrameXGM() {
         if (!endFm) oneFrameFM();
         if (!endPsg) oneFramePsg();
-        if (endFm && endPsg) stopped = true;
-        vgmCurLoop = Math.min(fmLoopCnt, psgLoopCnt);
+        if (endFm && endPsg) stop.run();
+        loop.accept(Math.min(fmLoopCnt, psgLoopCnt));
     }
 
     private void oneFrameFM() {
@@ -577,55 +514,55 @@ logger.log(Level.WARNING, "getXGM2Info");
 
     private void sendInst(int cs, int port, byte[] vd) {
         // ml/dt
-        plugin.audio.chipRegister.chip(Ym2612Chip.class).write(0, port, 0x30 + cs, vd[0] & 0xff, model, vgmFrameCounter);
-        plugin.audio.chipRegister.chip(Ym2612Chip.class).write(0, port, 0x34 + cs, vd[1] & 0xff, model, vgmFrameCounter);
-        plugin.audio.chipRegister.chip(Ym2612Chip.class).write(0, port, 0x38 + cs, vd[2] & 0xff, model, vgmFrameCounter);
-        plugin.audio.chipRegister.chip(Ym2612Chip.class).write(0, port, 0x3c + cs, vd[3] & 0xff, model, vgmFrameCounter);
+        ym2612Write.accept(port, 0x30 + cs, vd[0] & 0xff);
+        ym2612Write.accept(port, 0x34 + cs, vd[1] & 0xff);
+        ym2612Write.accept(port, 0x38 + cs, vd[2] & 0xff);
+        ym2612Write.accept(port, 0x3c + cs, vd[3] & 0xff);
         // tl
         fmTL[port][cs][0] = vd[4];
         fmTL[port][cs][1] = vd[5];
         fmTL[port][cs][2] = vd[6];
         fmTL[port][cs][3] = vd[7];
         // AR/SR
-        plugin.audio.chipRegister.chip(Ym2612Chip.class).write(0, port, 0x50 + cs, vd[8] & 0xff, model, vgmFrameCounter);
-        plugin.audio.chipRegister.chip(Ym2612Chip.class).write(0, port, 0x54 + cs, vd[9] & 0xff, model, vgmFrameCounter);
-        plugin.audio.chipRegister.chip(Ym2612Chip.class).write(0, port, 0x58 + cs, vd[10] & 0xff, model, vgmFrameCounter);
-        plugin.audio.chipRegister.chip(Ym2612Chip.class).write(0, port, 0x5c + cs, vd[11] & 0xff, model, vgmFrameCounter);
+        ym2612Write.accept(port, 0x50 + cs, vd[8] & 0xff);
+        ym2612Write.accept(port, 0x54 + cs, vd[9] & 0xff);
+        ym2612Write.accept(port, 0x58 + cs, vd[10] & 0xff);
+        ym2612Write.accept(port, 0x5c + cs, vd[11] & 0xff);
         // DR/AM
-        plugin.audio.chipRegister.chip(Ym2612Chip.class).write(0, port, 0x60 + cs, vd[12] & 0xff, model, vgmFrameCounter);
-        plugin.audio.chipRegister.chip(Ym2612Chip.class).write(0, port, 0x64 + cs, vd[13] & 0xff, model, vgmFrameCounter);
-        plugin.audio.chipRegister.chip(Ym2612Chip.class).write(0, port, 0x68 + cs, vd[14] & 0xff, model, vgmFrameCounter);
-        plugin.audio.chipRegister.chip(Ym2612Chip.class).write(0, port, 0x6c + cs, vd[15] & 0xff, model, vgmFrameCounter);
+        ym2612Write.accept(port, 0x60 + cs, vd[12] & 0xff);
+        ym2612Write.accept(port, 0x64 + cs, vd[13] & 0xff);
+        ym2612Write.accept(port, 0x68 + cs, vd[14] & 0xff);
+        ym2612Write.accept(port, 0x6c + cs, vd[15] & 0xff);
         // SR
-        plugin.audio.chipRegister.chip(Ym2612Chip.class).write(0, port, 0x70 + cs, vd[16] & 0xff, model, vgmFrameCounter);
-        plugin.audio.chipRegister.chip(Ym2612Chip.class).write(0, port, 0x74 + cs, vd[17] & 0xff, model, vgmFrameCounter);
-        plugin.audio.chipRegister.chip(Ym2612Chip.class).write(0, port, 0x78 + cs, vd[18] & 0xff, model, vgmFrameCounter);
-        plugin.audio.chipRegister.chip(Ym2612Chip.class).write(0, port, 0x7c + cs, vd[19] & 0xff, model, vgmFrameCounter);
+        ym2612Write.accept(port, 0x70 + cs, vd[16] & 0xff);
+        ym2612Write.accept(port, 0x74 + cs, vd[17] & 0xff);
+        ym2612Write.accept(port, 0x78 + cs, vd[18] & 0xff);
+        ym2612Write.accept(port, 0x7c + cs, vd[19] & 0xff);
         // SL/RR
         fmSLRR[port][cs][0] = vd[20];
         fmSLRR[port][cs][1] = vd[21];
         fmSLRR[port][cs][2] = vd[22];
         fmSLRR[port][cs][3] = vd[23];
         // SSGEG
-        plugin.audio.chipRegister.chip(Ym2612Chip.class).write(0, port, 0x90 + cs, vd[24] & 0xff, model, vgmFrameCounter);
-        plugin.audio.chipRegister.chip(Ym2612Chip.class).write(0, port, 0x94 + cs, vd[25] & 0xff, model, vgmFrameCounter);
-        plugin.audio.chipRegister.chip(Ym2612Chip.class).write(0, port, 0x98 + cs, vd[26] & 0xff, model, vgmFrameCounter);
-        plugin.audio.chipRegister.chip(Ym2612Chip.class).write(0, port, 0x9c + cs, vd[27] & 0xff, model, vgmFrameCounter);
+        ym2612Write.accept(port, 0x90 + cs, vd[24] & 0xff);
+        ym2612Write.accept(port, 0x94 + cs, vd[25] & 0xff);
+        ym2612Write.accept(port, 0x98 + cs, vd[26] & 0xff);
+        ym2612Write.accept(port, 0x9c + cs, vd[27] & 0xff);
         // FB/ALG
-        plugin.audio.chipRegister.chip(Ym2612Chip.class).write(0, port, 0xb0 + cs, vd[28], model, vgmFrameCounter);
+        ym2612Write.accept(port, 0xb0 + cs, vd[28] & 0xff);
         fmALG[port][cs] = (byte) (vd[28] & 0xf);
 
-        plugin.audio.chipRegister.chip(Ym2612Chip.class).write(0, port, 0x40 + cs, vd[4] & 0xff, model, vgmFrameCounter);
-        plugin.audio.chipRegister.chip(Ym2612Chip.class).write(0, port, 0x44 + cs, vd[5] & 0xff, model, vgmFrameCounter);
-        plugin.audio.chipRegister.chip(Ym2612Chip.class).write(0, port, 0x48 + cs, vd[6] & 0xff, model, vgmFrameCounter);
-        plugin.audio.chipRegister.chip(Ym2612Chip.class).write(0, port, 0x4c + cs, vd[7] & 0xff, model, vgmFrameCounter);
-        plugin.audio.chipRegister.chip(Ym2612Chip.class).write(0, port, 0x80 + cs, vd[20] & 0xff, model, vgmFrameCounter);
-        plugin.audio.chipRegister.chip(Ym2612Chip.class).write(0, port, 0x84 + cs, vd[21] & 0xff, model, vgmFrameCounter);
-        plugin.audio.chipRegister.chip(Ym2612Chip.class).write(0, port, 0x88 + cs, vd[22] & 0xff, model, vgmFrameCounter);
-        plugin.audio.chipRegister.chip(Ym2612Chip.class).write(0, port, 0x8c + cs, vd[23] & 0xff, model, vgmFrameCounter);
+        ym2612Write.accept(port, 0x40 + cs, vd[4] & 0xff);
+        ym2612Write.accept(port, 0x44 + cs, vd[5] & 0xff);
+        ym2612Write.accept(port, 0x48 + cs, vd[6] & 0xff);
+        ym2612Write.accept(port, 0x4c + cs, vd[7] & 0xff);
+        ym2612Write.accept(port, 0x80 + cs, vd[20] & 0xff);
+        ym2612Write.accept(port, 0x84 + cs, vd[21] & 0xff);
+        ym2612Write.accept(port, 0x88 + cs, vd[22] & 0xff);
+        ym2612Write.accept(port, 0x8c + cs, vd[23] & 0xff);
 
         // pan/ams/pms
-        plugin.audio.chipRegister.chip(Ym2612Chip.class).write(0, port, 0xb4 + cs, vd[29] & 0xff, model, vgmFrameCounter);
+        ym2612Write.accept(port, 0xb4 + cs, vd[29] & 0xff);
         fmPanAmsPms[port][cs] = vd[29];
     }
 
@@ -659,7 +596,7 @@ logger.log(Level.WARNING, "getXGM2Info");
                 case 0x10: // PSG freq/tone low update + end of frame
                     eof = (val & 1) != 0;
                     dat = vgmBuf[psgMusicPtr++];
-                    writePSG(dat & 0xff);
+                    sn76489Write.accept(dat & 0xff);
                     ch = (dat & 0x60) >> 5;
                     psgFreq[ch] = (psgFreq[ch] & 0x3f0) | (dat & 0xf);
                     if (eof) return;
@@ -669,16 +606,16 @@ logger.log(Level.WARNING, "getXGM2Info");
                     ch = (val & 0xc) >> 2;
                     dat = vgmBuf[psgMusicPtr++];
                     psgFreq[ch] = (dat & 0xff) | (td << 8);
-                    writePSG((0x80 | (ch << 5) | (psgFreq[ch] & 0xf)) & 0xff);
-                    writePSG(((psgFreq[ch] & 0x3f0) >> 4) & 0xff);
+                    sn76489Write.accept((0x80 | (ch << 5) | (psgFreq[ch] & 0xf)) & 0xff);
+                    sn76489Write.accept(((psgFreq[ch] & 0x3f0) >> 4) & 0xff);
                     break;
                 case 0x30: // PSG freq/tone update + end of frame
                     td = val & 3;
                     ch = (val & 0xc) >> 2;
                     dat = vgmBuf[psgMusicPtr++];
                     psgFreq[ch] = (dat & 0xff) | (td << 8);
-                    writePSG((0x80 |  (ch << 5) | (psgFreq[ch] & 0xf)) & 0xff);
-                    writePSG(((psgFreq[ch] & 0x3f0) >> 4) & 0xff);
+                    sn76489Write.accept((0x80 |  (ch << 5) | (psgFreq[ch] & 0xf)) & 0xff);
+                    sn76489Write.accept(((psgFreq[ch] & 0x3f0) >> 4) & 0xff);
                     return;
                 case 0x40:
                     delta = (val & 3) + 1;
@@ -686,8 +623,8 @@ logger.log(Level.WARNING, "getXGM2Info");
                     eof = (val & 8) != 0;
                     ch = 0;
                     psgFreq[ch] = psgFreq[ch] + (addOrSub ? -1 : 1) * delta;
-                    writePSG((0x80 | (ch << 5) | (psgFreq[ch] & 0xf)) & 0xff);
-                    writePSG(((psgFreq[ch] & 0x3f0) >> 4) & 0xff);
+                    sn76489Write.accept((0x80 | (ch << 5) | (psgFreq[ch] & 0xf)) & 0xff);
+                    sn76489Write.accept(((psgFreq[ch] & 0x3f0) >> 4) & 0xff);
                     if (eof) return;
                     break;
                 case 0x50:
@@ -696,8 +633,8 @@ logger.log(Level.WARNING, "getXGM2Info");
                     eof = (val & 8) != 0;
                     ch = 1;
                     psgFreq[ch] = psgFreq[ch] + (addOrSub ? -1 : 1) * delta;
-                    writePSG((0x80 | (ch << 5) | (psgFreq[ch] & 0xf)) & 0xff);
-                    writePSG(((psgFreq[ch] & 0x3f0) >> 4) & 0xff);
+                    sn76489Write.accept((0x80 | (ch << 5) | (psgFreq[ch] & 0xf)) & 0xff);
+                    sn76489Write.accept(((psgFreq[ch] & 0x3f0) >> 4) & 0xff);
                     if (eof) return;
                     break;
                 case 0x60:
@@ -706,8 +643,8 @@ logger.log(Level.WARNING, "getXGM2Info");
                     eof = (val & 8) != 0;
                     ch = 2;
                     psgFreq[ch] = psgFreq[ch] + (addOrSub ? -1 : 1) * delta;
-                    writePSG((0x80 | (ch << 5) | (psgFreq[ch] & 0xf)) & 0xff);
-                    writePSG(((psgFreq[ch] & 0x3f0) >> 4) & 0xff);
+                    sn76489Write.accept((0x80 | (ch << 5) | (psgFreq[ch] & 0xf)) & 0xff);
+                    sn76489Write.accept(((psgFreq[ch] & 0x3f0) >> 4) & 0xff);
                     if (eof) return;
                     break;
                 case 0x70:
@@ -716,33 +653,33 @@ logger.log(Level.WARNING, "getXGM2Info");
                     eof = (val & 8) != 0;
                     ch = 3;
                     psgFreq[ch] = psgFreq[ch] + (addOrSub ? -1 : 1) * delta;
-                    writePSG((0x80 | (ch << 5) | (psgFreq[ch] & 0xf)) & 0xff);
-                    writePSG(((psgFreq[ch] & 0x3f0) >> 4) & 0xff);
+                    sn76489Write.accept((0x80 | (ch << 5) | (psgFreq[ch] & 0xf)) & 0xff);
+                    sn76489Write.accept(((psgFreq[ch] & 0x3f0) >> 4) & 0xff);
                     if (eof) return;
                     break;
                 case 0x80: // PSG ch0 vol/env update
                     env = val & 0xff;
                     ch = 0;
                     psgVol[ch] = env;
-                    writePSG((0x90 | (ch << 5) | (psgVol[ch] & 0xf)) & 0xff);
+                    sn76489Write.accept((0x90 | (ch << 5) | (psgVol[ch] & 0xf)) & 0xff);
                     break;
                 case 0x90:
                     env = val & 0xff;
                     ch = 1;
                     psgVol[ch] = env;
-                    writePSG((0x90 | (ch << 5) | (psgVol[ch] & 0xf)) & 0xff);
+                    sn76489Write.accept((0x90 | (ch << 5) | (psgVol[ch] & 0xf)) & 0xff);
                     break;
                 case 0xa0:
                     env = val & 0xff;
                     ch = 2;
                     psgVol[ch] = env;
-                    writePSG((0x90 | (ch << 5) | (psgVol[ch] & 0xf)) & 0xff);
+                    sn76489Write.accept((0x90 | (ch << 5) | (psgVol[ch] & 0xf)) & 0xff);
                     break;
                 case 0xb0:
                     env = val & 0xff;
                     ch = 3;
                     psgVol[ch] = env;
-                    writePSG((0x90 | (ch << 5) |  (psgVol[ch] & 0xf)) & 0xff);
+                    sn76489Write.accept((0x90 | (ch << 5) |  (psgVol[ch] & 0xf)) & 0xff);
                     break;
                 case 0xc0:
                     delta = (val & 3) + 1;
@@ -750,7 +687,7 @@ logger.log(Level.WARNING, "getXGM2Info");
                     eof = (val & 8) != 0;
                     ch = 0;
                     psgVol[ch] = psgVol[ch] + (addOrSub ? -1 : 1) * delta;
-                    writePSG((0x90 | (ch << 5) | (psgVol[ch] & 0xf)) & 0xff);
+                    sn76489Write.accept((0x90 | (ch << 5) | (psgVol[ch] & 0xf)) & 0xff);
                     if (eof) return;
                     break;
                 case 0xd0:
@@ -759,7 +696,7 @@ logger.log(Level.WARNING, "getXGM2Info");
                     eof = (val & 8) != 0;
                     ch = 1;
                     psgVol[ch] = psgVol[ch] + (addOrSub ? -1 : 1) * delta;
-                    writePSG((0x90 | (ch << 5) | psgVol[ch] & 0xf) & 0xff);
+                    sn76489Write.accept((0x90 | (ch << 5) | psgVol[ch] & 0xf) & 0xff);
                     if (eof) return;
                     break;
                 case 0xe0:
@@ -768,7 +705,7 @@ logger.log(Level.WARNING, "getXGM2Info");
                     eof = (val & 8) != 0;
                     ch = 2;
                     psgVol[ch] = psgVol[ch] + (addOrSub ? -1 : 1) * delta;
-                    writePSG((0x90 | (ch << 5) | (psgVol[ch] & 0xf)) & 0xff);
+                    sn76489Write.accept((0x90 | (ch << 5) | (psgVol[ch] & 0xf)) & 0xff);
                     if (eof) return;
                     break;
                 case 0xf0:
@@ -777,15 +714,11 @@ logger.log(Level.WARNING, "getXGM2Info");
                     eof = (val & 8) != 0;
                     ch = 3;
                     psgVol[ch] = psgVol[ch] + (addOrSub ? -1 : 1) * delta;
-                    writePSG((0x90 | (ch << 5) | (psgVol[ch] & 0xf)) & 0xff);
+                    sn76489Write.accept((0x90 | (ch << 5) | (psgVol[ch] & 0xf)) & 0xff);
                     if (eof) return;
                     break;
             }
         }
-    }
-
-    private void writePSG(int val) {
-        plugin.audio.chipRegister.chip(Sn76489Chip.class).write(0, val, model /*, vgmFrameCounter */);
     }
 
     private void writeYM2612(boolean isP0, int adr, int val) {
@@ -803,11 +736,11 @@ logger.log(Level.WARNING, "getXGM2Info");
         if (adr == 0x2b) dacEnable = (byte) (val & 0x80);
         else if (adr == 0x27) ch3spEnable = ((val & 0x40) != 0);
 
-        plugin.audio.chipRegister.chip(Ym2612Chip.class).write(0, 0, adr, val, model, vgmFrameCounter);
+        ym2612Write.accept(0, adr, val);
     }
 
     private void writeYM2612P1(int adr, int val) {
-        plugin.audio.chipRegister.chip(Ym2612Chip.class).write(0, 1, adr, val, model, vgmFrameCounter);
+        ym2612Write.accept(1, adr, val);
     }
 
     private void playPCM(byte x, int id) {

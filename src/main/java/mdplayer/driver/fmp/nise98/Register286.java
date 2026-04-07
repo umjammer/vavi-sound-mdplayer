@@ -15,8 +15,8 @@ public class Register286 {
     // 5 ... BP
     // 6 ... SI
     // 7 ... DI
-    public short[] eRegs = new short[8];
-    public short[] sRegs = new short[4];
+    public final short[] eRegs = new short[8];
+    public final short[] sRegs = new short[4];
     public short ip = 0;
     public short flag = (short) 0x8000;
 

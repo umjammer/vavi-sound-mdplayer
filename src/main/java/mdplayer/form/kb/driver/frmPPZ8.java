@@ -40,7 +40,7 @@ public class frmPPZ8 extends frmBase {
     private MDChipParams.PPZ8 newParam = null;
     private MDChipParams.PPZ8 oldParam = new MDChipParams.PPZ8();
     private final FrameBuffer frameBuffer = new FrameBuffer();
-    static Preferences prefs = Preferences.userNodeForPackage(frmPPZ8.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmPPZ8.class);
 
     public frmPPZ8(frmMain frm, int chipId, int zoom, MDChipParams.PPZ8 newParam, MDChipParams.PPZ8 oldParam) {
         super(frm);
@@ -129,7 +129,7 @@ public class frmPPZ8 extends frmBase {
     private int searchPPZ8Note(int freq) {
         double m = Double.MAX_VALUE;
 
-        int clock = audio.mds.getChipInfo(Ppz8Inst.class).clock;
+        int clock = audio.plugin.mds.getChipInfo(Ppz8Inst.class).clock;
         if (clock >= 1000000)
             clock = clock / 384;
 
@@ -171,7 +171,7 @@ public class frmPPZ8 extends frmBase {
     }
 
     public void screenChangeParams() {
-        PPZ8.Channel[] ppz8State = audio.chipRegister.chip(Ppz8Chip.class).read(chipId);
+        PPZ8.Channel[] ppz8State = audio.plugin.chipRegister.chip(Ppz8Chip.class).read(chipId);
         if (ppz8State == null) return;
 
         for (int ch = 0; ch < 8; ch++) {

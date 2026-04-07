@@ -39,7 +39,7 @@ public class frmFDS extends frmBase {
     private final MDChipParams.FDS oldParam = new MDChipParams.FDS();
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmFDS.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmFDS.class);
 
     public frmFDS(frmMain frm, int chipId, int zoom, MDChipParams.FDS newParam) {
         super(frm);
@@ -108,7 +108,7 @@ public class frmFDS extends frmBase {
         final double LOG_2 = 0.69314718055994530941723212145818;
         final int NOTE_440HZ = 12 * 4 + 9;
 
-        mdsound.np.NpNesFds reg = audio.chipRegister.chip(NesChip.FdsChip.class).readFds(chipId);
+        mdsound.np.NpNesFds reg = audio.plugin.chipRegister.chip(NesChip.FdsChip.class).readFds(chipId);
         int freq;
         int vol;
         int note;

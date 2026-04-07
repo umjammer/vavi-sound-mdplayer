@@ -46,7 +46,7 @@ public class MUS extends SidTuneBase {
     private MUS(MUS m) {
     }
 
-    private MUS opeEquel(MUS m) {
+    private static MUS opeEquel(MUS m) {
         return null;
     }
 
@@ -890,7 +890,7 @@ public class MUS extends SidTuneBase {
     private final int player1Size = sidPlayer1.length - o65HeaderSize;
     private final int player2Size = sidPlayer2.length - o65HeaderSize;
 
-    private boolean detect(byte[] buffer, int[] voice3Index) {
+    private static boolean detect(byte[] buffer, int[] voice3Index) {
         if (buffer == null) return false;
 
         // Skip load address and 3x length entry.
@@ -907,7 +907,7 @@ public class MUS extends SidTuneBase {
                 && (toBig16(ByteBuffer.wrap(buffer, voice3Index[0] - 2, 2)) == SIDTUNE_MUS_HLT_CMD));
     }
 
-    private boolean detect(ByteBuffer buffer, int[] voice3Index) {
+    private static boolean detect(ByteBuffer buffer, int[] voice3Index) {
         if (buffer == null) return false;
 
         // Skip load address and 3x length entry.
@@ -975,7 +975,7 @@ public class MUS extends SidTuneBase {
     /**
      * Replace useless Sid reads with NOPs.
      */
-    private void removeReads(SidMemory mem, short dest) {
+    private static void removeReads(SidMemory mem, short dest) {
         int sid_read_offset = 0x424 - o65HeaderSize - 2;
         mem.fillRam((short) (dest + sid_read_offset), (byte) 0xea, 12);
     }
@@ -1102,7 +1102,7 @@ public class MUS extends SidTuneBase {
         {
             for (int line = lines - 1; line >= 0; line--) {
                 if (info.commentString.get(line).isEmpty())
-                    info.commentString.remove(info.commentString.size() - 1);
+                    info.commentString.removeLast();
                 else
                     break;
             }

@@ -6,12 +6,13 @@
 
 package mdplayer.chips;
 
-import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
+import mdplayer.driver.BaseDriver;
 import mdplayer.instruments.Vrc7Inst;
+import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.instrument.Emu2413Inst;
 import mdsound.instrument.Ym2413Inst;
@@ -19,7 +20,10 @@ import mdsound.instrument.Ym2413Inst;
 
 /**
  * Ym2413Chip.
- *
+ * <p>
+ * system property
+ * <li>{@code mdplayer.variant.ym2413} ... active chip index</li>
+ * </p>
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
@@ -30,7 +34,7 @@ public class Ym2413Chip implements Chip {
     private final RSoundChip[] realChips = {null, null};
 
     public final int[][] register = {null, null};
-//    private final int[] registerRhythmB = {0, 0};
+    //    private final int[] registerRhythmB = {0, 0};
 //    private final int[] registerRhythm = {0, 0};
     private final ChipKeyInfo[] keyInfo = {new ChipKeyInfo(14), new ChipKeyInfo(14)};
     private final int[] fadeout = {0, 0};
@@ -42,7 +46,7 @@ public class Ym2413Chip implements Chip {
 
     public int clock;
 
-    private Audio context;
+    private BasePlugin<? extends BaseDriver> context;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -56,7 +60,7 @@ public class Ym2413Chip implements Chip {
     }
 
     @Override
-    public void init(Audio context) {
+    public void init(BasePlugin<? extends BaseDriver> context) {
         this.context = context;
 
         for (int chipId = 0; chipId < 2; chipId++) {

@@ -3,13 +3,12 @@ package mdplayer.plugin;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
-import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.chips.Ay8910Chip;
 import mdplayer.chips.K051649Chip;
 import mdplayer.chips.Ym2413Chip;
+import mdplayer.driver.mgsdrv.MgsDriver;
 import mdplayer.driver.mgsdrv.MgsDrv;
-import mdplayer.format.FileFormat;
 import mdsound.MDSound;
 import mdsound.instrument.MameAy8910Inst;
 
@@ -23,30 +22,27 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-08 nsano initial version <br>
  */
-public class MGSPlugin extends BasePlugin {
+public class MGSPlugin extends BasePlugin<MgsDriver> {
 
     private static final Logger logger = getLogger(MGSPlugin.class.getName());
 
     @Override
-    public boolean play(String playingFileName, FileFormat format) {
-        audio.driverVirtual = new MgsDrv();
-        ((MgsDrv) audio.driverVirtual).setPlayingFileName(playingFileName);
-        audio.driverReal = null;
+    public void prepare() {
+        driverVirtual = new MgsDriver();
+        driverVirtual.setPlayingFileName(playingFileName);
+
+        driverReal = null;
         if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
-            audio.driverReal = new MgsDrv();
-            ((MgsDrv) audio.driverReal).setPlayingFileName(playingFileName);
+            driverReal = new MgsDriver();
+            driverReal.setPlayingFileName(playingFileName);
         }
-        boolean r = _play();
-        if (!r) {
-logger.log(Level.WARNING, "cannot start: " + this);
-            return false;
-        }
-        super.play();
-        return true;
+
+        super.prepare();
+        initChips();
     }
 
-    /** */
-    private boolean _play() {
+    @Override
+    protected void initChips() {
         int i = 0;
         while (vgmBuf.length > 1 && i < vgmBuf.length - 1 && (vgmBuf[i] != 0x1a || vgmBuf[i + 1] != 0x00)) {
             i++;
@@ -63,14 +59,13 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 trkOffsets[14] + trkOffsets[15] + trkOffsets[16] +
                 trkOffsets[17]
                 != 0);
-
-        startTrdVgmReal();
+logger.log(Level.INFO, "MGSDRV: AY: %b, SCC: %b, OPLL: %b".formatted(useAY, useSCC, useOPLL));
 
         if (useAY) {
             MDSound.Chip chip = new MDSound.Chip();
             chip.id = 0;
-            audio.chipLED.put("PriAY10", 1);
-            chip.instrument = audio.chipRegister.chip(Ay8910Chip.class).instrument(0);
+            chipLED.put("PriAY10", 1);
+            chip.instrument = chipRegister.chip(Ay8910Chip.class).instrument(0);
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ay8910Chip.class);
             chip.clock = MgsDrv.baseClockAY8910 / 2;
@@ -82,50 +77,44 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 };
             }
             put(Ay8910Chip.class, chip);
-            audio.chipRegister.chip(Ay8910Chip.class).clock = MgsDrv.baseClockAY8910;
+            chipRegister.chip(Ay8910Chip.class).clock = MgsDrv.baseClockAY8910;
         }
 
         if (useOPLL) {
             MDSound.Chip chip = new MDSound.Chip();
             chip.id = 0;
-            audio.chipLED.put("PriOPLL", 1);
-            chip.instrument = audio.chipRegister.chip(Ym2413Chip.class).instrument(0);
+            chipLED.put("PriOPLL", 1);
+            chip.instrument = chipRegister.chip(Ym2413Chip.class).instrument(0);
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2413Chip.class);
             chip.clock = MgsDrv.baseClockYM2413;
             chip.option = null;
             put(Ym2413Chip.class, chip);
-            audio.chipRegister.chip(Ym2413Chip.class).clock = MgsDrv.baseClockYM2413;
+            chipRegister.chip(Ym2413Chip.class).clock = MgsDrv.baseClockYM2413;
         }
 
         if (useSCC) {
             MDSound.Chip chip = new MDSound.Chip();
             chip.id = 0;
-            audio.chipLED.put("PriK051649", 1);
-            chip.instrument = audio.chipRegister.chip(K051649Chip.class).instrument(0);
+            chipLED.put("PriK051649", 1);
+            chip.instrument = chipRegister.chip(K051649Chip.class).instrument(0);
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, K051649Chip.class);
             chip.clock = MgsDrv.baseClockK051649;
             chip.option = null;
             put(K051649Chip.class, chip);
-            audio.chipRegister.chip(K051649Chip.class).clock = MgsDrv.baseClockK051649;
+            chipRegister.chip(K051649Chip.class).clock = MgsDrv.baseClockK051649;
         }
 
-        audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, flatten());
+        mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, flatten());
 
-        if (!audio.driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel,
-                new Class[] {Ay8910Chip.class, Ym2413Chip.class, K051649Chip.class},
+        driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel,
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
-                setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
-            return false;
-        if (audio.driverReal != null) {
-            if (!audio.driverReal.init(vgmBuf, this, Common.EnmModel.RealModel,
-                    new Class[] {Ay8910Chip.class},
+                setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
+        if (driverReal != null) {
+            driverReal.init(vgmBuf, this, Common.EnmModel.RealModel,
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
-                    setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
-                return false;
+                    setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         }
-
-        return true;
     }
 }

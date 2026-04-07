@@ -4,18 +4,27 @@
  * Programmed by Naohide Sano
  */
 
+import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.github.kwhat.jnativehook.GlobalScreen;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
+import mdplayer.Audio;
 import mdplayer.PlayList.Music;
+import mdplayer.driver.BaseDriver;
 import mdplayer.format.FileFormat;
 import mdplayer.plugin.BasePlugin;
 import vavi.util.Debug;
@@ -73,20 +82,21 @@ public class TestCase {
     void setup() throws Exception {
         if (localPropertiesExists()) {
             PropsEntity.Util.bind(this);
+
+            // fmp
+            System.setProperty("mdplayer.fmp.dir", fmpDir);
+            System.setProperty("mdplayer.fmp.pvi", fmpPvi);
+            // zms
+            System.setProperty("mdplayer.zms.dir", zmsDir);
+            // muap
+            System.setProperty("muap.dir.dta", muapDirDta);
+            System.setProperty("muap.dir.pcm", muapDirPcm);
+//            System.setProperty("muap.dir.udp", muapDirUdp);
+//            System.setProperty("muap.dir.sud", muapDirSud);
         }
 
-        // fmp
-        System.setProperty("mdplayer.fmp.dir", fmpDir);
-        System.setProperty("mdplayer.fmp.pvi", fmpPvi);
-        // zms
-        System.setProperty("mdplayer.zms.dir", zmsDir);
-        // muap
-        System.setProperty("muap.dir.dta", muapDirDta);
-        System.setProperty("muap.dir.pcm", muapDirPcm);
-//        System.setProperty("muap.dir.udp", muapDirUdp);
-//        System.setProperty("muap.dir.sud", muapDirSud);
+        System.setProperty("mdplayer.variant.pcm8", "0");
 
-        System.setProperty("mdplayer.zms.dir", zmsDir);
         System.setProperty("mdplayer.volume", "%4.2f".formatted(volume));
 Debug.println("volume: " + volume + ", player.volume: " + System.getProperty("mdplayer.volume") + ", cwd: " + System.getProperty("user.dir") + ", time: " + time);
 Debug.println("mdplayer.fmp.dir: " + System.getProperty("mdplayer.fmp.dir"));
@@ -97,18 +107,20 @@ Debug.println("muap.dir.pcm: " + System.getProperty("muap.dir.pcm"));
 Debug.println("mdplayer.variant.ymf262: " + System.getProperty("mdplayer.variant.ymf262"));
     }
 
-    private BasePlugin plugin;
+    private BasePlugin<? extends BaseDriver> plugin;
 
     /** */
     void play() throws Exception {
 Debug.println("filename: " + file);
         FileFormat format = FileFormat.getFileFormat(file);
 Debug.println("format: " + format.getClass().getSimpleName());
-        var r = format.load(null, file);
+        var r = format.load((String) null, file);
         plugin = (BasePlugin) format.getPlugin();
-        plugin.setVGMBuffer(format, r.getItem1(), file, null, 0, 0, r.getItem2());
+        plugin.setBuffer(format, r.getItem1(), file, null, 0, 0, r.getItem2());
 Debug.println("plugin: " +plugin.getClass().getSimpleName());
-        plugin.play(file, format);
+        Audio audio = Audio.getInstance();
+        audio.init(plugin);
+        audio.play();
     }
 
     @Test
@@ -126,6 +138,7 @@ Debug.println("not on ide");
 }
     }
 
+    // ^N to next song
     @Test
     @DisplayName("play random one in local.properties")
     @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
@@ -134,34 +147,52 @@ Debug.println("not on ide");
         Files.readAllLines(Paths.get("local.properties")).forEach(line -> {
             if (line.matches("^#?file\\s*?=.*$")) {
                 String file = line.substring(line.indexOf("=") + 1);
-System.err.println(file);
+//System.err.println(file);
                 Path path = Path.of(file);
                 if (Files.exists(path) && !Files.isDirectory(path))
                     files.add(file);
             }
         });
 
+        playMulti(files);
+    }
+
+    /** */
+    void playMulti(List<String> files) throws Exception {
+        AtomicReference<CountDownLatch> cdl = new AtomicReference<>();
         Random random = new Random(System.currentTimeMillis());
 
         GlobalScreen.registerNativeHook();
         GlobalScreen.addNativeKeyListener(new NativeKeyListener() {
-            @Override public void nativeKeyReleased(NativeKeyEvent event) {
+            @Override
+            public void nativeKeyReleased(NativeKeyEvent event) {
                 int keyCode = event.getKeyCode();
-Debug.println("keyTyped: " + keyCode);
+//Debug.println("keyTyped: " + keyCode + ", " + ((event.getModifiers() & NativeKeyEvent.CTRL_MASK) != 0));
                 if ((event.getModifiers() & NativeKeyEvent.CTRL_MASK) != 0 && keyCode == NativeKeyEvent.VC_N) {
-                    plugin.stop();
-                    plugin.close(); // TODO doesn't work well
+Debug.print("countdown");
+                    cdl.get().countDown();
                 }
             }
         });
 
         while (true) {
             this.file = files.get(random.nextInt(files.size()));
-            play();
+            cdl.set(new CountDownLatch(1));
+Debug.print("play: " + file + " ---------------------------------------------------------------------");
+            ExecutorService es = Executors.newSingleThreadExecutor();
+            es.submit(() -> { try { play(); } catch (Exception e) { Debug.printStackTrace(e); }});
+Debug.print("await");
+            cdl.get().await();
+Debug.println("await: broke");
+            es.shutdownNow();
+Debug.println("stop");
+            plugin.stop();
+            plugin.close(); // TODO doesn't work well
         }
     }
 
     @Test
+    @DisplayName("show meta data in the dir filtered by ext")
     @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
     void test3() throws Exception {
         List<Path> paths = Files.walk(Paths.get(dir))
@@ -171,12 +202,28 @@ Debug.println("keyTyped: " + keyCode);
             try {
                 FileFormat format = FileFormat.getFileFormat(p.toString());
 Debug.println(p);
-                var r = format.load(null, p.toString());
-                Music music = format.getMusic(null, r.getItem1(), null, null, null).get(0);
+                var r = format.load((String) null, p.toString());
+                Music music = format.getMusic(null, r.getItem1(), null, null, null).getFirst();
 Debug.println(music);
             } catch (Exception e) {
             }
         });
+    }
+
+    @Test
+    @DisplayName("play random one in the dir filtered by ext")
+    @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
+    void test4() throws Exception {
+        List<String> paths = Arrays.stream(dir.split(File.pathSeparator)).flatMap(d -> {
+            try {
+                return Files.walk(Paths.get(d))
+                            .filter(p -> Arrays.stream(ext.split(",")).anyMatch(e -> p.getFileName().toString().toUpperCase().endsWith(e)))
+                            .map(Path::toString);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        }).toList();
+        playMulti(paths);
     }
 
     /**

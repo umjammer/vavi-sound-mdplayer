@@ -152,7 +152,7 @@ public class RealChip implements Closeable {
 //        }
     }
 
-    public void WaitOPNADPCMData(boolean isGIMIC) {
+    public void waitOpnAdpcmData(boolean isGIMIC) {
 //        if (nScci != null)
 //            NScci.NSoundInterfaceManager().sendData();
 //        if (nc86ctl != null && isGIMIC) {
@@ -417,9 +417,9 @@ public class RealChip implements Closeable {
     }
 
     public static abstract class RSoundChip {
-        protected int soundLocation;
-        protected int busID;
-        protected int soundChip;
+        protected final int soundLocation;
+        protected final int busID;
+        protected final int soundChip;
 
         public int dClock = 3579545;
 

@@ -6,16 +6,17 @@
 
 package mdplayer.chips;
 
-import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
+import mdplayer.driver.BaseDriver;
+import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.chips.PPZ8;
 import mdsound.instrument.Ppz8Inst;
 
 
 /**
- * Ppz8Chip.
+ * FMP.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
@@ -27,7 +28,7 @@ public class Ppz8Chip implements Chip {
             {false, false, false, false, false, false, false, false}
     };
 
-    private Audio context;
+    private BasePlugin<? extends BaseDriver> context;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -36,7 +37,7 @@ public class Ppz8Chip implements Chip {
     }
 
     @Override
-    public void init(Audio context) {
+    public void init(BasePlugin<? extends BaseDriver> context) {
         this.context = context;
     }
 

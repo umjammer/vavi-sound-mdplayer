@@ -6,8 +6,8 @@ package mdplayer.driver.sid.libsidplayfp.utils.md5;
 public class KimMD5 {
 
     byte[] M;
-    long[] T = new long[64];
-    long[] X = new long[16];
+    final long[] T = new long[64];
+    final long[] X = new long[16];
     static long A = 0x6745_2301;
     static long B = 0xefcd_ab89L;
     static long C = 0x98ba_dcfeL;

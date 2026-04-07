@@ -31,39 +31,39 @@ public class YM2609 extends ZgmChip {
         super.setUp(chipIndex, dataPos, cmdTable);
 
         cmdTable.remove(defineInfo.commandNo);
-        cmdTable.put(defineInfo.commandNo, this::sendPort0);
+        cmdTable.put(defineInfo.commandNo, YM2609::sendPort0);
 
         cmdTable.remove(defineInfo.commandNo + 1);
-        cmdTable.put(defineInfo.commandNo + 1, this::sendPort1);
+        cmdTable.put(defineInfo.commandNo + 1, YM2609::sendPort1);
 
         cmdTable.remove(defineInfo.commandNo + 2);
-        cmdTable.put(defineInfo.commandNo + 2, this::sendPort2);
+        cmdTable.put(defineInfo.commandNo + 2, YM2609::sendPort2);
 
         cmdTable.remove(defineInfo.commandNo + 3);
-        cmdTable.put(defineInfo.commandNo + 3, this::sendPort3);
+        cmdTable.put(defineInfo.commandNo + 3, YM2609::sendPort3);
     }
 
-    private void sendPort0(byte od, int vgmAdr) {
+    private static void sendPort0(byte od, int vgmAdr) {
         // chipRegister.YM2609SetRegister(od, Audio.DriverSeqCounter, Index, 0,
-        // vgmBuf[vgmAdr + 1], vgmBuf[vgmAdr + 2]);
+        // dataBuf[vgmAdr + 1], dataBuf[vgmAdr + 2]);
         vgmAdr += 3;
     }
 
-    private void sendPort1(byte od, int vgmAdr) {
+    private static void sendPort1(byte od, int vgmAdr) {
         // chipRegister.YM2609SetRegister(od, Audio.DriverSeqCounter, Index, 1,
-        // vgmBuf[vgmAdr + 1], vgmBuf[vgmAdr + 2]);
+        // dataBuf[vgmAdr + 1], dataBuf[vgmAdr + 2]);
         vgmAdr += 3;
     }
 
-    private void sendPort2(byte od, int vgmAdr) {
+    private static void sendPort2(byte od, int vgmAdr) {
         // chipRegister.YM2609SetRegister(od, Audio.DriverSeqCounter, Index, 2,
-        // vgmBuf[vgmAdr + 1], vgmBuf[vgmAdr + 2]);
+        // dataBuf[vgmAdr + 1], dataBuf[vgmAdr + 2]);
         vgmAdr += 3;
     }
 
-    private void sendPort3(byte od, int vgmAdr) {
+    private static void sendPort3(byte od, int vgmAdr) {
         // chipRegister.YM2609SetRegister(od, Audio.DriverSeqCounter, Index, 3,
-        // vgmBuf[vgmAdr + 1], vgmBuf[vgmAdr + 2]);
+        // dataBuf[vgmAdr + 1], dataBuf[vgmAdr + 2]);
         vgmAdr += 3;
     }
 }

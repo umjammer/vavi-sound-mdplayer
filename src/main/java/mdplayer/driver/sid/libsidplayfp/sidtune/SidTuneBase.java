@@ -74,8 +74,8 @@ public class SidTuneBase {
 
     protected SidTuneInfoImpl info;
 
-    protected byte[] songSpeed = new byte[MAX_SONGS];
-    protected long[] clockSpeed = new long[MAX_SONGS];
+    protected final byte[] songSpeed = new byte[MAX_SONGS];
+    protected final long[] clockSpeed = new long[MAX_SONGS];
 
     /** For files with header: offset to real data */
     protected int fileOffset;
@@ -86,7 +86,7 @@ public class SidTuneBase {
     public SidTuneBase(SidTuneBase a) {
     }
 
-    private SidTuneBase opeEquel(SidTuneBase a) {
+    private static SidTuneBase opeEquel(SidTuneBase a) {
         return null;
     }
 
@@ -281,7 +281,7 @@ public class SidTuneBase {
         }
     }
 
-    private SidTuneBase getFromStdIn() {
+    private static SidTuneBase getFromStdIn() {
         try {
             List<Byte> fileBuf = new ArrayList<>();
 
@@ -301,7 +301,7 @@ public class SidTuneBase {
     /**
      * Try to retrieve single-file sidtune from specified buffer.
      */
-    private SidTuneBase getFromBuffer(byte[] buffer, int bufferLen) {
+    private static SidTuneBase getFromBuffer(byte[] buffer, int bufferLen) {
         if (buffer == null || bufferLen == 0) {
             throw new dotnet4j.io.IOException(ERR_EMPTY);
         }
@@ -406,7 +406,7 @@ public class SidTuneBase {
      * @param sourceName original file name
      * @param sourceExt  new extension
      */
-    private String createNewFileName(byte[] sourceName, byte[] sourceExt) {
+    private static String createNewFileName(byte[] sourceName, byte[] sourceExt) {
         String destString = new String(sourceName, StandardCharsets.US_ASCII);
         destString = destString.substring(0, destString.lastIndexOf('.'));
         destString += new String(sourceExt, StandardCharsets.US_ASCII);
@@ -613,7 +613,7 @@ public class SidTuneBase {
 
             // If character instanceof 0x9d (left arrow key) then move back.
             if (petsciiChar == (byte) 0x9d) {
-                if (!buffer.isEmpty()) buffer.remove(buffer.size() - 1);
+                if (!buffer.isEmpty()) buffer.removeLast();
             } else {
                 // ASCII CHR$ conversion
                 byte asciiChar = CHR_tab[petsciiChar & 0xff];

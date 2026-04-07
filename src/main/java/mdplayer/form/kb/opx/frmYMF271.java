@@ -41,7 +41,7 @@ public class frmYMF271 extends frmBase {
     private final MDChipParams.YMF271 oldParam;
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmYMF271.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmYMF271.class);
 
     private static final int[] slotTbl = new int[] {
             0, 24, 12, 36,
@@ -145,15 +145,15 @@ public class frmYMF271 extends frmBase {
     }
 
     public void screenChangeParams() {
-        YmF271 reg = audio.chipRegister.chip(YmF271Chip.class).read(chipId);
+        YmF271 reg = audio.plugin.chipRegister.chip(YmF271Chip.class).read(chipId);
         if (reg != null) {
             for (int i = 0; i < 48; i++) {
                 int slot = slotTbl[i];
 
                 MDChipParams.Channel nrc = newParam.channels[slot];
                 YmF271.Slot slt = reg.getSlot(slot);
-                nrc.volumeL = Math.min(Math.max((slt.volume * slt.ch0Level) >> 23, 0), 19);
-                nrc.volumeR = Math.min(Math.max((slt.volume * slt.ch1Level) >> 23, 0), 19);
+                nrc.volumeL = Math.clamp((slt.volume * slt.ch0Level) >> 23, 0, 19);
+                nrc.volumeR = Math.clamp((slt.volume * slt.ch1Level) >> 23, 0, 19);
                 nrc.pan = (slt.ch1Level << 4) | (slt.ch0Level & 0xf);
                 nrc.pantp = (slt.ch3Level & 0xf0) | ((slt.ch2Level >> 4) & 0xf);
                 nrc.inst[0] = slt.ar;
@@ -189,8 +189,8 @@ public class frmYMF271 extends frmBase {
 
                 //note
                 if (slt.active != 0) {
-                    nrc.volumeL = Math.min(Math.max((slt.volume * slt.ch0Level) >> 23, 0), 19);
-                    nrc.volumeR = Math.min(Math.max((slt.volume * slt.ch1Level) >> 23, 0), 19);
+                    nrc.volumeL = Math.clamp((slt.volume * slt.ch0Level) >> 23, 0, 19);
+                    nrc.volumeR = Math.clamp((slt.volume * slt.ch1Level) >> 23, 0, 19);
                     nrc.note = Common.searchSSGNote(nrc.inst[14]) + (((nrc.inst[13] + 8) & 0xf) - 11) * 12 - 7;
                 } else {
                     nrc.volumeL += nrc.volumeL > 0 ? -1 : 0;

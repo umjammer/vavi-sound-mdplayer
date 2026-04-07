@@ -6,12 +6,13 @@
 
 package mdplayer.chips;
 
-import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
+import mdplayer.driver.BaseDriver;
+import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.Instrument.PannableInstrument;
 import mdsound.instrument.Sn76489Inst;
@@ -41,7 +42,7 @@ public class Sn76489Chip implements Chip {
 
     public final int[] fadeout = {0, 0};
 
-    public boolean[][] mask = {
+    public final boolean[][] mask = {
             {false, false, false, false},
             {false, false, false, false}
     };
@@ -56,7 +57,7 @@ public class Sn76489Chip implements Chip {
 
     public int clock;
 
-    private Audio context;
+    private BasePlugin<? extends BaseDriver> context;
 
     @SuppressWarnings("unchecked")
     private Class<? extends PannableInstrument> _inst(int chipId) {
@@ -75,7 +76,7 @@ public class Sn76489Chip implements Chip {
     }
 
     @Override
-    public void init(Audio context) {
+    public void init(BasePlugin<? extends BaseDriver> context) {
         this.context = context;
 
         for (int chipId = 0; chipId < 2; chipId++) {
@@ -172,7 +173,7 @@ public class Sn76489Chip implements Chip {
             if ((latchedRegister[chipId] % 2) == 0 && (latchedRegister[chipId] < 5))
                 // Tone register
                 register[chipId][latchedRegister[chipId]] = (register[chipId][latchedRegister[chipId]] &
-                        0x00f)|  // zero high 6 bits
+                        0x00f) |  // zero high 6 bits
                         ((data & 0x3f) << 4); // and replace with data
             else
                 // Other register
@@ -237,7 +238,7 @@ public class Sn76489Chip implements Chip {
 
     @Override
     public void clearFadeout() {
-        setFadeout( 0, 0);
-        setFadeout( 1, 0);
+        setFadeout(0, 0);
+        setFadeout(1, 0);
     }
 }

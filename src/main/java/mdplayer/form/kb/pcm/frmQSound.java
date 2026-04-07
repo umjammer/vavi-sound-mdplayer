@@ -39,7 +39,7 @@ public class frmQSound extends frmBase {
     private final MDChipParams.QSound oldParam;
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmQSound.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmQSound.class);
 
     public frmQSound(frmMain frm, int chipId, int zoom, MDChipParams.QSound newParam, MDChipParams.QSound oldParam) {
         super(frm);
@@ -150,7 +150,7 @@ public class frmQSound extends frmBase {
     }
 
     public void screenChangeParams() {
-        int[] QSoundRegister = audio.chipRegister.chip(QSoundChip.class).read(chipId);
+        int[] QSoundRegister = audio.plugin.chipRegister.chip(QSoundChip.class).read(chipId);
 
         //PCM 16ch
         for (int ch = 0; ch < 16; ch++) {
@@ -167,10 +167,10 @@ public class frmQSound extends frmBase {
             int panL = (int) (15.0 / 16.0 * (pan > 16 ? (16 - (33 - pan)) : 16));
             int panR = (int) (15.0 / 16.0 * (pan < 16 ? (16 - pan) : 16));
             newParam.channels[ch].pan = (panR << 4) | panL;
-            newParam.channels[ch].volumeL = Math.min(Math.max(vol * panL / 256 / 16, 0), 19);
-            newParam.channels[ch].volumeR = Math.min(Math.max(vol * panR / 256 / 16, 0), 19);
+            newParam.channels[ch].volumeL = Math.clamp(vol * panL / 256 / 16, 0, 19);
+            newParam.channels[ch].volumeR = Math.clamp(vol * panR / 256 / 16, 0, 19);
 
-            newParam.channels[ch].note = Math.max(Math.min(Common.searchSegaPCMNote(newParam.channels[ch].freq / 16.0 / 166.0), 7 * 12), 0);
+            newParam.channels[ch].note = Math.clamp(Common.searchSegaPCMNote(newParam.channels[ch].freq / 16.0 / 166.0), 0, 7 * 12);
             if (vol == 0) newParam.channels[ch].note = -1;
         }
         //ADPCM 3ch
@@ -184,8 +184,8 @@ public class frmQSound extends frmBase {
             int panL = (int) (15.0 / 16.0 * (pan > 16 ? (16 - (33 - pan)) : 16));
             int panR = (int) (15.0 / 16.0 * (pan < 16 ? (16 - pan) : 16));
             newParam.channels[ch + 16].pan = (panR << 4) | panL;
-            newParam.channels[ch + 16].volumeL = Math.min(Math.max(vol * panL / 10, 0), 19);
-            newParam.channels[ch + 16].volumeR = Math.min(Math.max(vol * panR / 10, 0), 19);
+            newParam.channels[ch + 16].volumeL = Math.clamp(vol * panL / 10, 0, 19);
+            newParam.channels[ch + 16].volumeR = Math.clamp(vol * panR / 10, 0, 19);
         }
 
         //echo

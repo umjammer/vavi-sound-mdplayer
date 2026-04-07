@@ -15,12 +15,12 @@ public class FileMng {
 
     private static final Logger logger = getLogger(FileMng.class.getName());
 
-    public String VCurrentPath;
+    public final String VCurrentPath;
     private final String pDir;
     private final String vDir;
     //private String crntDir;
 
-    public Map<String, vFileInfo> vDrive = new HashMap<>();
+    public final Map<String, vFileInfo> vDrive = new HashMap<>();
 
     /**
      * Constructor

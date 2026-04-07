@@ -9,13 +9,10 @@ package mdplayer.driver.zms.nise68;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import mdplayer.Common;
 import vavi.util.Debug;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 /**
@@ -26,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 public class Nise68Test {
 
-    String testSuite = "Test_Suite.bin";
+    static final String testSuite = "Test_Suite.bin";
 
     @Test
     @Disabled

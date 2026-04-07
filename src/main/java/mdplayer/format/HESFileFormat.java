@@ -3,17 +3,25 @@ package mdplayer.format;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
+import javax.sound.sampled.AudioFileFormat.Type;
+import javax.sound.sampled.AudioFormat.Encoding;
 
 import dotnet4j.io.File;
 import dotnet4j.io.Path;
 import mdplayer.Common.EnmArcType;
 import mdplayer.PlayList;
 import mdplayer.driver.Vgm;
-import mdplayer.driver.hes.Hes;
+import mdplayer.driver.hes.HesDriver;
 import mdplayer.plugin.HESPlugin;
 import mdplayer.plugin.Plugin;
 import mdplayer.properties.Resources;
+import musicDriverInterface.MetaData;
+import vavi.sound.SoundUtil;
+import vavi.sound.sampled.md.MdEncoding;
+import vavi.sound.sampled.md.MdFileFormatType;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 
@@ -34,8 +42,7 @@ public class HESFileFormat extends BaseFileFormat {
     @Override
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
         List<PlayList.Music> musics = new ArrayList<>();
-        Hes hes = new Hes();
-        Vgm.Gd3 gd3 = hes.getGD3Info(buf);
+        MetaData _ = new HesDriver().getMetaData(buf);
 
         for (int s = 0; s < 256; s++) {
             PlayList.Music music = new PlayList.Music();
@@ -58,11 +65,12 @@ public class HESFileFormat extends BaseFileFormat {
 
             musics.add(music);
         }
+
         return musics;
     }
 
     @Override
-    public List<PlayList.Music> getMusic(PlayList.Music ms, byte[] buf, String zipFile/* = null*/) {
+    public List<PlayList.Music> getMusic(PlayList.Music ms, byte[] buf, String zipFile /* = null */) {
         return getMusicCommon(ms, buf, zipFile);
     }
 
@@ -97,7 +105,7 @@ public class HESFileFormat extends BaseFileFormat {
         if (mc.songNo != -1) {
             PlayList.Music music;
             if (!musics.isEmpty()) {
-                music = musics.get(0);
+                music = musics.getFirst();
                 music.songNo = mc.songNo;
                 music.title = mc.title;
                 music.titleJ = mc.titleJ;
@@ -130,7 +138,7 @@ public class HESFileFormat extends BaseFileFormat {
         if (mc.songNo != -1) {
             PlayList.Music music;
             if (!musics.isEmpty()) {
-                music = musics.get(0);
+                music = musics.getFirst();
                 music.songNo = mc.songNo;
                 music.title = mc.title;
                 music.titleJ = mc.titleJ;
@@ -143,5 +151,26 @@ public class HESFileFormat extends BaseFileFormat {
         }
 
         return musics;
+    }
+
+    @Override
+    public Encoding getEncoding() {
+        return new MdEncoding("HES", "hes");
+    }
+
+    @Override
+    public Type getType() {
+        return new MdFileFormatType("HES", "hes");
+    }
+
+    @Override
+    public int getMarkSize() {
+        return 0;
+    }
+
+    @Override
+    public boolean isSupported(InputStream is) throws IOException {
+        if (isCompressedStream(is)) return false;
+        return Arrays.stream(getExtensions()).anyMatch(e -> java.nio.file.Path.of(SoundUtil.getSource(is)).toString().toLowerCase().endsWith(e));
     }
 }

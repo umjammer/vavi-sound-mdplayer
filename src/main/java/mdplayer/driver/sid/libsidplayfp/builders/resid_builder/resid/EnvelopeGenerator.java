@@ -233,7 +233,7 @@ public class EnvelopeGenerator {
     /**
      * DAC lookup tables.
      */
-    protected static short[][] modelDac = new short[][] {new short[1 << 8], new short[1 << 8]};
+    protected static final short[][] modelDac = new short[][] {new short[1 << 8], new short[1 << 8]};
 
     /*
      * Inline functions.

@@ -1,25 +1,29 @@
 package mdplayer.format;
 
 import java.io.BufferedInputStream;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import javax.sound.sampled.AudioFileFormat.Type;
+import javax.sound.sampled.AudioFormat.Encoding;
 
 import dotnet4j.io.File;
 import dotnet4j.io.Path;
 import dotnet4j.util.compat.Tuple;
 import mdplayer.PlayList;
 import mdplayer.Setting;
-import mdplayer.driver.Vgm;
+import musicDriverInterface.MetaData;
+import musicDriverInterface.MetaData.Tag;
 import vavi.util.ByteUtil;
 import vavi.util.archive.Archive;
-import vavi.util.archive.Archives;
 import vavi.util.archive.Entry;
 import vavi.util.archive.zip.JdkZipEntry;
 
@@ -39,40 +43,40 @@ public abstract class BaseFileFormat implements FileFormat {
             musics.add(music);
             return musics;
         }
-        if (ByteUtil.readLeInt(buf, 0x00) != Vgm.FCC_VGM) {
+        if (!isMatchFcc(ByteUtil.readLeInt(buf, 0x00))) {
             musics.add(music);
             return musics;
         }
 
         music.format = this;
         int version = ByteUtil.readLeInt(buf, 0x08);
-        String _version = "%d.%d%d".formatted((version & 0xf00) / 0x100, (version & 0xf0) / 0x10, (version & 0xf));
+        String _ = "%d.%d%d".formatted((version & 0xf00) / 0x100, (version & 0xf0) / 0x10, (version & 0xf));
 
         int vgmGd3 = ByteUtil.readLeInt(buf, 0x14);
-        Vgm.Gd3 gd3 = new Vgm.Gd3();
+        MetaData md = new MetaData();
         if (vgmGd3 != 0) {
             int vgmGd3Id = ByteUtil.readLeInt(buf, vgmGd3 + 0x14);
-            if (vgmGd3Id != Vgm.FCC_GD3) {
+            if (!isMatchMetaData(vgmGd3Id)) {
                 musics.add(music);
                 return musics;
             }
-            gd3 = (new Vgm()).getGD3Info(buf, vgmGd3);
+            md = getMetaData(buf, vgmGd3);
         }
 
         int totalCounter = ByteUtil.readLeInt(buf, 0x18);
         int vgmLoopOffset = ByteUtil.readLeInt(buf, 0x1c);
         int loopCounter = ByteUtil.readLeInt(buf, 0x20);
 
-        music.title = gd3.trackName;
-        music.titleJ = gd3.trackNameJ;
-        music.game = gd3.gameName;
-        music.gameJ = gd3.gameNameJ;
-        music.composer = gd3.composer;
-        music.composerJ = gd3.composerJ;
-        music.vgmby = gd3.vgmBy;
+        music.title = md.getFirst(Tag.Title);
+        music.titleJ = md.getFirst(Tag.TitleJ);
+        music.game = md.getFirst(Tag.GameTitle);
+        music.gameJ = md.getFirst(Tag.GameTitleJ);
+        music.composer = md.getFirst(Tag.Composer);
+        music.composerJ = md.getFirst(Tag.ComposerJ);
+        music.vgmby = md.getFirst(Tag.Maker);
 
-        music.converted = gd3.converted;
-        music.notes = gd3.notes;
+        music.converted = md.getFirst(Tag.Converter);
+        music.notes = md.getFirst(Tag.Note);
 
         double sec = (double) totalCounter / (double) Setting.getInstance().getOutputDevice().getSampleRate();
         int tcMminutes = (int) (sec / 60);
@@ -84,6 +88,21 @@ public abstract class BaseFileFormat implements FileFormat {
 
         musics.add(music);
         return musics;
+    }
+
+    // default
+    protected boolean isMatchFcc(int fcc) {
+        return false;
+    }
+
+    // default
+    protected boolean isMatchMetaData(int fcc) {
+        return false;
+    }
+
+    // default
+    protected MetaData getMetaData(byte[] buf, int vgmGd3) {
+        return null;
     }
 
     @Override
@@ -99,6 +118,7 @@ public abstract class BaseFileFormat implements FileFormat {
     protected byte[] getExtendFileAllBytes(String srcFn, String extFn, Archive archive, Entry entry) {
         try {
             if (entry == null) {
+logger.log(Level.DEBUG, "try: " + extFn);
                 return BaseFileFormat.getFileSearchPathList(srcFn).stream()
                         .map(dirPath -> dirPath.resolve(extFn))
                         .filter(Files::exists).findFirst()
@@ -129,6 +149,7 @@ public abstract class BaseFileFormat implements FileFormat {
                 .filter(path -> path != null && !path.isEmpty())
                 .map(java.nio.file.Path::of)
                 .forEach(result::add);
+logger.log(Level.DEBUG, result);
         return result;
     }
 
@@ -148,24 +169,14 @@ public abstract class BaseFileFormat implements FileFormat {
             throw new UncheckedIOException(e);
         }
 
-        if (FileFormat.getFileFormat(entry.getName()) instanceof VGMFileFormat) {
-            try {
-                int vgm = ByteUtil.readLeInt(buf);
-                if (vgm != VGMFileFormat.FCC_VGM) {
-
-                    try (InputStream inStream = archive.getInputStream(entry);
-                         InputStream decompStream = Archives.getInputStream(new BufferedInputStream(inStream))
-                    ) {
-                        buf = decompStream.readAllBytes();
-                    }
-                }
-            } catch (Exception ex) {
-                logger.log(Level.ERROR, ex.getMessage(), ex);
-                buf = null;
-            }
-        }
+        buf = ((BaseFileFormat) FileFormat.getFileFormat(entry.getName())).getBytesFromZipFileInternal(archive, entry, buf);
 
         return buf;
+    }
+
+    // default
+    protected byte[] getBytesFromZipFileInternal(Archive archive, Entry entry, byte[] buf) {
+        return null;
     }
 
     @Override
@@ -177,7 +188,7 @@ public abstract class BaseFileFormat implements FileFormat {
      * General purpose
      */
     @Override
-    public List<PlayList.Music> addFileLoop(PlayList.Music mc, Archive archive, Entry entry/*=null*/) throws IOException {
+    public List<PlayList.Music> addFileLoop(PlayList.Music mc, Archive archive, Entry entry /* = null */) throws IOException {
         byte[] buf;
         if (entry == null) {
             try {
@@ -186,18 +197,8 @@ public abstract class BaseFileFormat implements FileFormat {
                 logger.log(Level.ERROR, ex.getMessage(), ex);
                 buf = null;
             }
-            if (buf == null && mc.format instanceof VGMFileFormat) {
-                if (Path.getExtension(mc.fileName).equalsIgnoreCase(".vgm")) {
-                    mc.fileName = Path.changeExtension(mc.fileName, ".vgz");
-                } else {
-                    mc.fileName = Path.changeExtension(mc.fileName, ".Vgm");
-                }
-                try {
-                    buf = File.readAllBytes(mc.fileName);
-                } catch (Exception ex) {
-                    logger.log(Level.ERROR, ex.getMessage(), ex);
-                    buf = null;
-                }
+            if (buf == null) {
+                buf = addFileLoopInternal(mc);
             }
         } else {
             try (InputStream reader = archive.getInputStream(entry)) {
@@ -218,7 +219,7 @@ public abstract class BaseFileFormat implements FileFormat {
     }
 
     @Override
-    public List<PlayList.Music> addFileLoop(int index, PlayList.Music mc, Archive archive, Entry entry/* = null*/) throws IOException {
+    public List<PlayList.Music> addFileLoop(int index, PlayList.Music mc, Archive archive, Entry entry /* = null */) throws IOException {
         byte[] buf;
         if (entry == null) {
             try {
@@ -227,18 +228,8 @@ public abstract class BaseFileFormat implements FileFormat {
                 logger.log(Level.ERROR, ex.getMessage(), ex);
                 buf = null;
             }
-            if (buf == null && mc.format instanceof VGMFileFormat) {
-                if (Path.getExtension(mc.fileName).equalsIgnoreCase(".vgm")) {
-                    mc.fileName = Path.changeExtension(mc.fileName, ".vgz");
-                } else {
-                    mc.fileName = Path.changeExtension(mc.fileName, ".Vgm");
-                }
-                try {
-                    buf = File.readAllBytes(mc.fileName);
-                } catch (Exception ex) {
-                    logger.log(Level.ERROR, ex.getMessage(), ex);
-                    buf = null;
-                }
+            if (buf == null) {
+                buf = addFileLoopInternal(mc);
             }
 
             List<PlayList.Music> musics;
@@ -254,9 +245,56 @@ public abstract class BaseFileFormat implements FileFormat {
         }
     }
 
+    // default
+    protected byte[] addFileLoopInternal(PlayList.Music mc) {
+        return null;
+    }
+
     @Override
     public Tuple<byte[], List<Tuple<String, byte[]>>> load(String archive, String fn) throws IOException {
         byte[] srcBuf = getAllBytes(fn);
         return new Tuple<>(srcBuf, getExtendFile(fn, srcBuf, null, null));
+    }
+
+    @Override
+    public Tuple<byte[], List<Tuple<String, byte[]>>> load(InputStream is, String fn) throws IOException {
+        byte[] srcBuf = is.readAllBytes();
+        return new Tuple<>(srcBuf, getExtendFile(fn, srcBuf, null, null));
+    }
+
+    @Override
+    public Encoding getEncoding() {
+        return null;
+    }
+
+    @Override
+    public Type getType() {
+        return null;
+    }
+
+    /** for SPI */
+    protected static boolean isCompressedStream(Object object) {
+        Class<?> c = object.getClass();
+        try {
+            do {
+                if (object instanceof BufferedInputStream) {
+                    Field pathField = FilterInputStream.class.getDeclaredField("in");
+                    pathField.setAccessible(true);
+                    object = pathField.get(object);
+                }
+                if (object instanceof java.util.zip.GZIPInputStream) {
+                    return true;
+                }
+                if (object.getClass().getName().equals("sun.nio.ch.ChannelInputStream")) { // because it's package private
+                    Field pathField = object.getClass().getDeclaredField("ch");
+                    pathField.setAccessible(true);
+                    object = pathField.get(object);
+                }
+                c = c.getSuperclass();
+            } while (c.getSuperclass() != null);
+        } catch (Exception e) {
+            logger.log(Level.WARNING, e.getMessage(), e);
+        }
+        return false;
     }
 }

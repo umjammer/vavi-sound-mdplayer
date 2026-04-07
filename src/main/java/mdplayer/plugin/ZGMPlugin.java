@@ -1,13 +1,9 @@
 package mdplayer.plugin;
 
 import java.lang.System.Logger;
-import java.lang.System.Logger.Level;
 
-import mdplayer.Audio;
 import mdplayer.Common;
-import mdplayer.chips.Ym2203Chip;
 import mdplayer.driver.zgm.Zgm;
-import mdplayer.format.FileFormat;
 
 import static java.lang.System.getLogger;
 
@@ -18,44 +14,38 @@ import static java.lang.System.getLogger;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-08 nsano initial version <br>
  */
-public class ZGMPlugin extends BasePlugin {
+public class ZGMPlugin extends BasePlugin<Zgm> {
 
     private static final Logger logger = getLogger(ZGMPlugin.class.getName());
 
     @Override
-    public boolean play(String playingFileName, FileFormat format) {
-        audio.driverVirtual = new Zgm();
-        audio.driverReal = null;
+    public void prepare() {
+        driverVirtual = new Zgm();
+
+        driverReal = null;
         if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
-            audio.driverReal = new Zgm();
+            driverReal = new Zgm();
         }
 
-        boolean r = _play();
-        if (!r) {
-logger.log(Level.WARNING, "cannot start: " + this);
-            return false;
-        }
-        super.play();
-        return true;
+        super.prepare();
+        initChips();
     }
 
-    /** */
-    private boolean _play() {
+    @Override
+    protected void initChips() {
         // Sealed until MIDI is supported
 //        startTrdVgmReal();
 
-        if (!audio.driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel,
-                new Class[] {Ym2203Chip.class},
+        driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel,
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
-                setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
-            return false;
+                setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
 
         // Sealed until MIDI is supported
-//            if (driverReal != null && !driverReal.init(vgmBuf, this, EnmModel.RealModel,
+//            if (driverReal != null)
+//                 driverReal.init(dataBuf, this, EnmModel.RealModel,
 //                    new EnmChip[] {EnmChip.YM2203},
 //                    (int) (setting.getoutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000),
-//                    (int) (setting.getoutputDevice().getSampleRate() * setting.getoutputDevice().getWaitTime() / 1000)))
-//                return false;
+//                    (int) (setting.getoutputDevice().getSampleRate() * setting.getoutputDevice().getWaitTime() / 1000));
 
         int hiyorimiDeviceFlag = 0;
 
@@ -65,8 +55,6 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
         hiyorimiNecessary = hiyorimiDeviceFlag == 0x3 && hiyorimiNecessary;
 
-        audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, flatten());
-
-        return true;
+        mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, flatten());
     }
 }

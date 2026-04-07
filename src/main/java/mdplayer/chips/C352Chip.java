@@ -6,9 +6,10 @@
 
 package mdplayer.chips;
 
-import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
+import mdplayer.driver.BaseDriver;
+import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.instrument.C352Inst;
 
@@ -21,9 +22,9 @@ import mdsound.instrument.C352Inst;
  */
 public class C352Chip implements Chip {
 
-    public int[][] register = {null, null};
+    public final int[][] register = {null, null};
 
-    public int[][] keyOn = {null, null};
+    public final int[][] keyOn = {null, null};
 
     private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
@@ -34,7 +35,7 @@ public class C352Chip implements Chip {
 
     public int clock;
 
-    private Audio context;
+    private BasePlugin<? extends BaseDriver> context;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -43,7 +44,7 @@ public class C352Chip implements Chip {
     }
 
     @Override
-    public void init(Audio context) {
+    public void init(BasePlugin<? extends BaseDriver> context) {
         this.context = context;
 
         for (int chipId = 0; chipId < 2; chipId++) {

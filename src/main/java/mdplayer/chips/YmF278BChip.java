@@ -6,11 +6,12 @@
 
 package mdplayer.chips;
 
-import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
+import mdplayer.driver.BaseDriver;
+import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.instrument.YmF278BInst;
 
@@ -27,7 +28,7 @@ public class YmF278BChip implements Chip {
 
     private final RSoundChip[] realChips = {null, null};
 
-    public int[][][] register = {
+    public final int[][][] register = {
             {null, null},
             {null, null}
     };
@@ -56,7 +57,7 @@ public class YmF278BChip implements Chip {
             32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46
     };
 
-    private Audio context;
+    private BasePlugin<? extends BaseDriver> context;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -65,7 +66,7 @@ public class YmF278BChip implements Chip {
     }
 
     @Override
-    public void init(Audio context) {
+    public void init(BasePlugin<? extends BaseDriver> context) {
         this.context = context;
 
         for (int chipId = 0; chipId < 2; chipId++) {

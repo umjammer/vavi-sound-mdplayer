@@ -40,7 +40,7 @@ public class frmYM2203 extends frmBase {
     private final MDChipParams.YM2203 oldParam;
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmYM2203.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmYM2203.class);
 
     public frmYM2203(frmMain frm, int chipId, int zoom, MDChipParams.YM2203 newParam, MDChipParams.YM2203 oldParam) {
         super(frm);
@@ -127,10 +127,10 @@ public class frmYM2203 extends frmBase {
 
     public void screenChangeParams() {
         boolean isFmEx;
-        int[] ym2203Register = audio.chipRegister.chip(Ym2203Chip.class).read(chipId);
-        int[] fmKeyYM2203 = audio.chipRegister.chip(Ym2203Chip.class).getKeyOn(chipId);
-        int[] ym2203Vol = audio.chipRegister.chip(Ym2203Chip.class).getVolume(chipId);
-        int[] ym2203Ch3SlotVol = audio.chipRegister.chip(Ym2203Chip.class).getCh3SlotVolume(chipId);
+        int[] ym2203Register = audio.plugin.chipRegister.chip(Ym2203Chip.class).read(chipId);
+        int[] fmKeyYM2203 = audio.plugin.chipRegister.chip(Ym2203Chip.class).getKeyOn(chipId);
+        int[] ym2203Vol = audio.plugin.chipRegister.chip(Ym2203Chip.class).getVolume(chipId);
+        int[] ym2203Ch3SlotVol = audio.plugin.chipRegister.chip(Ym2203Chip.class).getCh3SlotVolume(chipId);
 
         isFmEx = (ym2203Register[0x27] & 0x40) > 0;
         newParam.channels[2].ex = isFmEx;
@@ -138,9 +138,9 @@ public class frmYM2203 extends frmBase {
         int defaultMasterClock = 7987200 / 2;
         float ssgMul = 1.0f;
         int masterClock = defaultMasterClock;
-        if (audio.mds.getChipInfo(YmFmYm2203Inst.class).clock != 0) {
-            ssgMul = audio.mds.getChipInfo(YmFmYm2203Inst.class).clock / (float) defaultMasterClock;
-            masterClock = audio.mds.getChipInfo(YmFmYm2203Inst.class).clock;
+        if (audio.plugin.mds.getChipInfo(YmFmYm2203Inst.class).clock != 0) {
+            ssgMul = audio.plugin.mds.getChipInfo(YmFmYm2203Inst.class).clock / (float) defaultMasterClock;
+            masterClock = audio.plugin.mds.getChipInfo(YmFmYm2203Inst.class).clock;
         }
 
         int divInd = ym2203Register[0x2d];
@@ -182,7 +182,7 @@ public class frmYM2203 extends frmBase {
                 ff /= 1038f;
 
                 if ((fmKeyYM2203[ch] & 1) != 0)
-                    n = Math.min(Math.max(Common.searchYM2608Adpcm(ff) - 1, 0), 95);
+                    n = Math.clamp(Common.searchYM2608Adpcm(ff) - 1, 0, 95);
 
                 byte con = (byte) (fmKeyYM2203[ch]);
                 int v = 127;
@@ -195,7 +195,7 @@ public class frmYM2203 extends frmBase {
                 v = (((con & 0x40) != 0) && ((m & 0x40) != 0) && v > (ym2203Register[0x48 + c] & 0x7f)) ? (ym2203Register[0x48 + c] & 0x7f) : v;
                 //OP4
                 v = (((con & 0x80) != 0) && ((m & 0x80) != 0) && v > (ym2203Register[0x4c + c] & 0x7f)) ? (ym2203Register[0x4c + c] & 0x7f) : v;
-                newParam.channels[ch].volumeL = Math.min(Math.max((int) ((127 - v) / 127.0 * ym2203Vol[ch] / 80.0), 0), 19);
+                newParam.channels[ch].volumeL = Math.clamp((int) ((127 - v) / 127.0 * ym2203Vol[ch] / 80.0), 0, 19);
             } else {
                 int m = md[ym2203Register[0xb0 + 2] & 7];
                 if (parent.setting.getOther().getExAll()) m = 0xf0;
@@ -205,10 +205,10 @@ public class frmYM2203 extends frmBase {
                 ff /= 1038f;
 
                 if ((fmKeyYM2203[2] & 0x10) != 0 && ((m & 0x10) != 0))
-                    n = Math.min(Math.max(Common.searchYM2608Adpcm(ff) - 1, 0), 95);
+                    n = Math.clamp(Common.searchYM2608Adpcm(ff) - 1, 0, 95);
 
                 int v = ((m & 0x10) != 0) ? ym2203Register[0x40 + c] : 127;
-                newParam.channels[2].volumeL = Math.min(Math.max((int) ((127 - v) / 127.0 * ym2203Ch3SlotVol[0] / 80.0), 0), 19);
+                newParam.channels[2].volumeL = Math.clamp((int) ((127 - v) / 127.0 * ym2203Ch3SlotVol[0] / 80.0), 0, 19);
             }
             newParam.channels[ch].note = n;
 
@@ -234,12 +234,12 @@ public class frmYM2203 extends frmBase {
                 if ((fmKeyYM2203[2] & (0x20 << (ch - 3))) != 0 && ((m & (0x10 << op)) != 0)) {
                     float ff = freq / ((2 << 20) / (masterClock / (12 * fmDiv))) * (2 << (octav + 2));
                     ff /= 1038f;
-                    n = Math.min(Math.max(Common.searchYM2608Adpcm(ff) - 1, 0), 95);
+                    n = Math.clamp(Common.searchYM2608Adpcm(ff) - 1, 0, 95);
                 }
                 newParam.channels[ch].note = n;
 
                 int v = ((m & (0x10 << op)) != 0) ? ym2203Register[0x42 + op * 4] : 127;
-                newParam.channels[ch].volumeL = Math.min(Math.max((int) ((127 - v) / 127.0 * ym2203Ch3SlotVol[ch - 2] / 80.0), 0), 19);
+                newParam.channels[ch].volumeL = Math.clamp((int) ((127 - v) / 127.0 * ym2203Ch3SlotVol[ch - 2] / 80.0), 0, 19);
             } else {
                 newParam.channels[ch].note = -1;
                 newParam.channels[ch].volumeL = 0;

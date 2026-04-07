@@ -68,8 +68,8 @@ class M68kHarteTest {
     };
 
     static class NameResult {
-        public int ptr;
-        public String name;
+        public final int ptr;
+        public final String name;
 
         public NameResult(int ptr, String name) {
             this.ptr = ptr;
@@ -78,9 +78,9 @@ class M68kHarteTest {
     }
 
     static class TransactionResult {
-        public int ptr;
-        public List<Object> transactions;
-        public int numCycles;
+        public final int ptr;
+        public final List<Object> transactions;
+        public final int numCycles;
 
         public TransactionResult(int ptr, List<Object> transactions, int numCycles) {
             this.ptr = ptr;
@@ -90,8 +90,8 @@ class M68kHarteTest {
     }
 
     static class StateResult {
-        public int ptr;
-        public Map<String, Object> state;
+        public final int ptr;
+        public final Map<String, Object> state;
 
         public StateResult(int ptr, Map<String, Object> state) {
             this.ptr = ptr;
@@ -100,8 +100,8 @@ class M68kHarteTest {
     }
 
     static class TestResult {
-        public int ptr;
-        public Map<String, Object> test;
+        public final int ptr;
+        public final Map<String, Object> test;
 
         public TestResult(int ptr, Map<String, Object> test) {
             this.ptr = ptr;
@@ -177,26 +177,19 @@ class M68kHarteTest {
             int bw = UDS + LDS;
             ptr += 20;
 
-            String tws;
-            switch (tw) {
-                case 1: // write
-                    tws = "w";
-                    break;
-                case 2: // read
-                    tws = "r";
-                    break;
-                case 3: // TAS cycle
-                    tws = "t";
-                    break;
-                case 4: // read address error (no AS assert)
-                    tws = "re";
-                    break;
-                case 5: // write address error (no AS assert)
-                    tws = "we";
-                    break;
-                default:
-                    throw new RuntimeException("BAD KIND");
-            }
+            String tws = switch (tw) {
+                case 1 -> // write
+                        "w";
+                case 2 -> // read
+                        "r";
+                case 3 -> // TAS cycle
+                        "t";
+                case 4 -> // read address error (no AS assert)
+                        "re";
+                case 5 -> // write address error (no AS assert)
+                        "we";
+                default -> throw new RuntimeException("BAD KIND");
+            };
 
             transactions.add(Arrays.asList(
                     tws, cycles, fc, addrBus,

@@ -39,17 +39,17 @@ public class SidBuilder {
 
     protected String errorBuffer;
 
-    protected List<SidEmu> sidobjs = new ArrayList<>();
+    protected final List<SidEmu> sidobjs = new ArrayList<>();
 
     protected boolean status;
 
     protected static class applyParameter_LibsidplayfpReSID_bool {
-        protected boolean m_param;
+        protected final boolean m_param;
 
         public interface dlgM_method extends Consumer<Boolean> {
         }
 
-        public dlgM_method m_method;
+        public final dlgM_method m_method;
 
         public applyParameter_LibsidplayfpReSID_bool(dlgM_method method, boolean param) {
             m_param = param;
@@ -62,12 +62,12 @@ public class SidBuilder {
     }
 
     protected static class applyParameter_LibsidplayfpReSID_double {
-        protected double m_param;
+        protected final double m_param;
 
         public interface dlgM_method extends Consumer<Double> {
         }
 
-        public dlgM_method m_method;
+        public final dlgM_method m_method;
 
         public applyParameter_LibsidplayfpReSID_double(dlgM_method method, double param) {
             m_param = param;

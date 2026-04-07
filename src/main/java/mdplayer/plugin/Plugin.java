@@ -3,14 +3,12 @@ package mdplayer.plugin;
 import java.util.NoSuchElementException;
 import java.util.ServiceLoader;
 
-import mdplayer.format.FileFormat;
+import mdplayer.driver.BaseDriver;
 
 
 public interface Plugin {
 
     void init();
-
-    boolean play(String playingFileName, FileFormat format);
 
     void ff();
 
@@ -28,4 +26,10 @@ public interface Plugin {
         }
         throw new NoSuchElementException(clazz.getName());
     }
+
+    /** for SPI */
+    BaseDriver getDriver();
+
+    /** prepare to play */
+    void prepare();
 }

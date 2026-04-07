@@ -421,8 +421,8 @@ public class Setting implements Serializable, Cloneable {
 
     public static class ZMusic implements Serializable, Cloneable {
         public int compilePriority = 0;
-        public int pcm8Type = 1;
-        public int mpcmType = 1;
+        public int pcm8Type = Integer.getInteger("mdplayer.variant.pcm8", 1);
+        public int mpcmType = Integer.getInteger("mdplayer.variant.mpcm", 1);
         public int waitNextPlay = 1000;
         public int pcm8ppsOption = -1;
 
@@ -441,7 +441,7 @@ public class Setting implements Serializable, Cloneable {
 
     public static class MxDrv implements Serializable, Cloneable {
 
-        public int pcm8Type = 1;
+        public int pcm8Type = Integer.getInteger("mdplayer.variant.pcm8", 1);
         public int pcm8ppsOption = -1;
 
         @Override
@@ -455,7 +455,7 @@ public class Setting implements Serializable, Cloneable {
     }
 
     public static class Mndrv implements Serializable, Cloneable {
-        public int mpcmType = 1;
+        public int mpcmType = Integer.getInteger("mdplayer.variant.mpcm", 1);
 
         @Override
         public Mndrv clone() {
@@ -467,7 +467,7 @@ public class Setting implements Serializable, Cloneable {
     }
 
     public static class Rcs implements Serializable, Cloneable {
-        public int pcm8type = 1; // PCM8PP is the default
+        public int pcm8type = Integer.getInteger("mdplayer.variant.pcm8", 1); // PCM8PP is the default
 
         @Override
         public Rcs clone() {
@@ -1595,15 +1595,15 @@ public class Setting implements Serializable, Cloneable {
 
     private MxDrv mxDrv = new MxDrv();
 
-    public MxDrv getMxDrv() { return mxDrv; };
+    public MxDrv getMxDrv() { return mxDrv; }
 
-    public void setMxDrv(MxDrv value) { mxDrv = value; };
+    public void setMxDrv(MxDrv value) { mxDrv = value; }
 
     private Mndrv mnDrv = new Mndrv();
 
-    public Mndrv getMnDrv() { return mnDrv; };
+    public Mndrv getMnDrv() { return mnDrv; }
 
-    public void setMnDrv(Mndrv value) { mnDrv = value; };
+    public void setMnDrv(Mndrv value) { mnDrv = value; }
 
     private Rcs rcs = new Rcs();
 
@@ -2152,8 +2152,9 @@ public class Setting implements Serializable, Cloneable {
         }
 
         private boolean saveCompiledFile = false;
-        public boolean getSaveCompiledFile() { return saveCompiledFile; };
-        public void setSaveCompiledFile(boolean value) { saveCompiledFile = value; };
+        public boolean getSaveCompiledFile() { return saveCompiledFile; }
+
+        public void setSaveCompiledFile(boolean value) { saveCompiledFile = value; }
 
         @Override
         public Other clone() {

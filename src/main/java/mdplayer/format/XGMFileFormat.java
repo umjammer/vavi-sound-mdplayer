@@ -1,23 +1,33 @@
 package mdplayer.format;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import javax.sound.sampled.AudioFileFormat.Type;
+import javax.sound.sampled.AudioFormat.Encoding;
 
 import dotnet4j.io.Path;
 import mdplayer.PlayList;
-import mdplayer.driver.Vgm;
-import mdplayer.driver.Xgm;
 import mdplayer.driver.Xgm2;
+import mdplayer.driver.Xgm2Driver;
+import mdplayer.driver.XgmDriver;
 import mdplayer.plugin.Plugin;
 import mdplayer.plugin.XGMPlugin;
 import mdplayer.properties.Resources;
+import musicDriverInterface.MetaData;
+import musicDriverInterface.MetaData.Tag;
+import vavi.sound.SoundUtil;
+import vavi.sound.sampled.md.MdEncoding;
+import vavi.sound.sampled.md.MdFileFormatType;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 
 
 /**
- * XGMFileFormat.
+ * Mega Drive XGM.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-07 nsano initial version <br>
@@ -25,32 +35,36 @@ import vavi.util.archive.Entry;
 public class XGMFileFormat extends BaseFileFormat {
 
     @Override
-    public String[] getExtensions() { return new String[] {".xgm"}; }
+    public String[] getExtensions() {
+        return new String[] {".xgm"};
+    }
 
     @Override
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
         PlayList.Music music = new PlayList.Music();
-        music.format = this;
-        Vgm.Gd3 gd3;
-        if (!Xgm2.checkXGM2(buf)) {
-            gd3 = new Xgm().getGD3Info(buf, 0);
-        } else {
-            gd3 = new Xgm2().getGD3Info(buf, 0);
-        }
-        music.title = gd3.trackName;
-        music.titleJ = gd3.trackNameJ;
-        music.game = gd3.gameName;
-        music.gameJ = gd3.gameNameJ;
-        music.composer = gd3.composer;
-        music.composerJ = gd3.composerJ;
-        music.vgmby = gd3.vgmBy;
 
-        music.converted = gd3.converted;
-        music.notes = gd3.notes;
+        music.format = this;
+        MetaData metaData;
+        if (!Xgm2.checkXGM2(buf)) {
+            metaData = new XgmDriver().getMetaData(buf);
+        } else {
+            metaData = new Xgm2Driver().getMetaData(buf);
+        }
+        music.title = metaData.getFirst(Tag.Title);
+        music.titleJ = metaData.getFirst(Tag.TitleJ);
+        music.game = metaData.getFirst(Tag.GameTitle);
+        music.gameJ = metaData.getFirst(Tag.GameTitleJ);
+        music.composer = metaData.getFirst(Tag.Composer);
+        music.composerJ = metaData.getFirst(Tag.ComposerJ);
+        music.vgmby = metaData.getFirst(Tag.Maker);
+
+        music.converted = metaData.getFirst(Tag.Converter);
+        music.notes = metaData.getFirst(Tag.Note);
 
         if (music.title.isEmpty() && music.titleJ.isEmpty() && music.game.isEmpty() && music.gameJ.isEmpty() && music.composer.isEmpty() && music.composerJ.isEmpty()) {
             music.title = "(%s)".formatted(Path.getFileName(file));
         }
+
         return Collections.singletonList(music);
     }
 
@@ -60,22 +74,22 @@ public class XGMFileFormat extends BaseFileFormat {
         PlayList.Music music = new PlayList.Music();
 
         music.format = this;
-        Vgm.Gd3 gd3;
+        MetaData metaData;
         if (!Xgm2.checkXGM2(buf)) {
-            gd3 = new Xgm().getGD3Info(buf, 0);
+            metaData = new XgmDriver().getMetaData(buf, 0);
         } else {
-            gd3 = new Xgm2().getGD3Info(buf, 0);
+            metaData = new Xgm2Driver().getMetaData(buf, 0);
         }
-        music.title = gd3.trackName;
-        music.titleJ = gd3.trackNameJ;
-        music.game = gd3.gameName;
-        music.gameJ = gd3.gameNameJ;
-        music.composer = gd3.composer;
-        music.composerJ = gd3.composerJ;
-        music.vgmby = gd3.vgmBy;
+        music.title = metaData.getFirst(Tag.Title);
+        music.titleJ = metaData.getFirst(Tag.TitleJ);
+        music.game = metaData.getFirst(Tag.GameTitle);
+        music.gameJ = metaData.getFirst(Tag.GameTitleJ);
+        music.composer = metaData.getFirst(Tag.Composer);
+        music.composerJ = metaData.getFirst(Tag.ComposerJ);
+        music.vgmby = metaData.getFirst(Tag.Maker);
 
-        music.converted = gd3.converted;
-        music.notes = gd3.notes;
+        music.converted = metaData.getFirst(Tag.Converter);
+        music.notes = metaData.getFirst(Tag.Note);
 
         if (music.title.isEmpty() && music.titleJ.isEmpty() && music.game.isEmpty() && music.gameJ.isEmpty() && music.composer.isEmpty() && music.composerJ.isEmpty()) {
             music.title = "(%s)".formatted(Path.getFileName(ms.fileName));
@@ -96,5 +110,26 @@ public class XGMFileFormat extends BaseFileFormat {
     @Override
     public Plugin getPlugin() {
         return Plugin.getPlugin(XGMPlugin.class);
+    }
+
+    @Override
+    public Encoding getEncoding() {
+        return new MdEncoding("XGM", "xgm,xgm2");
+    }
+
+    @Override
+    public Type getType() {
+        return new MdFileFormatType("XGM", "xgm, xgm2");
+    }
+
+    @Override
+    public int getMarkSize() {
+        return 0;
+    }
+
+    @Override
+    public boolean isSupported(InputStream is) throws IOException {
+        if (isCompressedStream(is)) return false;
+        return Arrays.stream(getExtensions()).anyMatch(e -> java.nio.file.Path.of(SoundUtil.getSource(is)).toString().toLowerCase().endsWith(e));
     }
 }

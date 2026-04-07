@@ -69,7 +69,7 @@ public class Nise68 {
         }
 
         mem.hookList.add(new MemHook(0xe8_8001, 0xe8_8001, this::hkVsync, null)); // vsync?
-        mem.hookList.add(new MemHook(0xe9_0001, 0xe9_0003, this::hkOPMr, this::hkOPMw)); // opm
+        mem.hookList.add(new MemHook(0xe9_0001, 0xe9_0003, Nise68::hkOPMr, this::hkOPMw)); // opm
         mem.hookList.add(new MemHook(0xea_fa00, 0xea_fa1f, this::hkCZ6BM1fr, this::hkCZ6BM1fw)); // 1st/2nd CZ-6BM1(MIDI)
         //mem.hookList.add(new memhook(0xe9a001, 0xe9a001, hkDummy, null)); // for midiwait
         mem.hookList.add(new MemHook(0xe9_8005, 0xe9_8007, this::hkSCC_Ar, this::hkSCC_Aw)); // SCC(Serial Communication Controller) ChA(RS-232C)
@@ -175,7 +175,6 @@ public class Nise68 {
             //}
 
             if (run > 0 && (reg.pc == 0x0002_e9fe)) {
-                ;
             }
 
             //// For command-by-command debugging
@@ -307,7 +306,7 @@ public class Nise68 {
         reg.setSSP(reg.getSSP() + 4);
     }
 
-    private void dispRegs(Register68 regs) {
+    private static void dispRegs(Register68 regs) {
         logger.log(Level.TRACE, regs);
     }
 
@@ -316,7 +315,7 @@ public class Nise68 {
         return hkVsyncVal & 0xff;
     }
 
-    private int hkOPMr(int ptr) {
+    private static int hkOPMr(int ptr) {
         if (ptr == 0x00e9_0003) {
             return 0;
         }

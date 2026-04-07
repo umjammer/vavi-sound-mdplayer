@@ -88,7 +88,7 @@ public class NisePpz8 {
         regs[0].setCL((byte) 0x00); // TASK_ASIN
         nise98.callRunFunctionCall((byte) 0xd2, true, true, true, 10_000_000_000L, 0_000);
 
-        logger.log(Level.INFO, "set the fake PPZ8 to the FMP task.");
+        logger.log(Level.TRACE, "set the fake PPZ8 to the FMP task.");
     }
 
     public void int7F() {
@@ -180,19 +180,18 @@ public class NisePpz8 {
     public boolean hook() {
         if (regs.getCS() != ppz8EntryAddressSeg) return false;
 
-        boolean cancel = false;
-        switch (regs.ip) {
-            case ppz8ReleaseOfs:
+        boolean cancel = switch (regs.ip) {
+            case ppz8ReleaseOfs -> {
                 regs.setDX(ppz8ReleaseMessageOfs);
-                cancel = true;
-                break;
-            case ppz8FIFOAddressOfs:
+                yield true;
+            }
+            case ppz8FIFOAddressOfs ->
                 // FIFO Processing
                 // The original uses EMS/XMS data transfer processing.
                 // TBD
-                cancel = true;
-                break;
-        }
+                    true;
+            default -> false;
+        };
 
         if (cancel) {
             regs.ip = mem.peekW(regs.getSS_SP());

@@ -60,7 +60,7 @@ class TestMd5 {
             "57edf4a22be3c955ac49da2e2107b67a"
     };
 
-    static byte[][] test = new byte[7][];
+    static final byte[][] test = new byte[7][];
 
     static {
         for (int i = 0; i < 7; i++)

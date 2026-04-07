@@ -6,24 +6,29 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
-import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.driver.BaseDriver;
-import mdplayer.driver.Vgm.Gd3;
 import mdplayer.driver.zgm.zgmChip.ChipFactory;
 import mdplayer.driver.zgm.zgmChip.ZgmChip;
 import mdplayer.plugin.BasePlugin;
+import musicDriverInterface.MetaData;
+import musicDriverInterface.MetaData.Tag;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
 
 
+/**
+ * ZGM
+ *
+ * @author kumatan
+ */
 public class Zgm extends BaseDriver {
 
     private static final Logger logger = getLogger(Zgm.class.getName());
 
-    public static final int FCC_ZGM = 0x204D475A;    // "ZGM "
+    public static final int FCC_ZGM = 0x204D475A;  // "ZGM "
     public static final int FCC_GD3 = 0x20336447;  // "Gd3 "
     public static final int FCC_DEF = 0x666544;  // "Def"
     public static final int FCC_TRK = 0x6b7254;  // "Trk"
@@ -39,35 +44,30 @@ public class Zgm extends BaseDriver {
     private final Map<Integer, RefRunnable<Byte, Integer>> vgmCmdTbl = new HashMap<>();
 
     @Override
-    public Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
+    public MetaData getMetaData(byte[] buf, Object... args) {
         getZGMGD3Info(buf);
-        return gd3;
+        return metaData;
     }
 
     @Override
-    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
-        this.vgmBuf = vgmBuf;
+    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
+                     int latency, int waitTime, Object... args) {
+        this.dataBuf = vgmBuf;
         this.plugin = plugin;
         this.model = model;
-        this.useChip = useChip;
         this.latency = latency;
         this.waitTime = waitTime;
 
         counter = 0;
         totalCounter = 0;
         loopCounter = 0;
-        vgmCurLoop = 0;
+        curLoop = 0;
         stopped = false;
-        vgmFrameCounter = -latency - waitTime;
-        vgmSpeed = 1;
-        vgmSpeedCounter = 0;
+        frameCounter = -latency - waitTime;
+        speed = 1;
+        speedCounter = 0;
 
-        return getZGMInfo(vgmBuf);
-    }
-
-    @Override
-    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
-        throw new UnsupportedOperationException("This driver does not require this method");
+        getZGMInfo(vgmBuf);
     }
 
     @Override
@@ -75,42 +75,42 @@ public class Zgm extends BaseDriver {
         throw new UnsupportedOperationException();
     }
 
-    private boolean getZGMGD3Info(byte[] buf) {
-        if (buf == null) return false;
+    private void getZGMGD3Info(byte[] buf) {
+        if (buf == null) throw new IllegalArgumentException("null buffer");
 
         int vgmGd3 = ByteUtil.readLeInt(buf, (byte) 0x18);
-        if (vgmGd3 == 0) return false;
+        if (vgmGd3 == 0) throw new IllegalArgumentException("invalid cgm gd3 value");
         int vgmGd3Id = ByteUtil.readLeInt(buf, vgmGd3);
-        if (vgmGd3Id != FCC_GD3) throw new IndexOutOfBoundsException();
+        if (vgmGd3Id != FCC_GD3) throw new IllegalArgumentException("data is not gd3");
 
-        vgmEof = ByteUtil.readLeInt(vgmBuf, (byte) 0x04);
+        vgmEof = ByteUtil.readLeInt(dataBuf, (byte) 0x04);
 
-        int version = ByteUtil.readLeInt(vgmBuf, 0x08);
+        int version = ByteUtil.readLeInt(dataBuf, 0x08);
         // Version Check
-        if (version < 10) return false;
+        if (version < 10) throw new IllegalArgumentException("invalid version");
         this.version = "%d.%d%d".formatted((version & 0xf00) / 0x100, (version & 0xf0) / 0x10, (version & 0xf));
 
-        totalCounter = ByteUtil.readLeInt(vgmBuf, 0x0c);
-        if (totalCounter < 0) return false;
-        vgmLoopOffset = ByteUtil.readLeInt(vgmBuf, 0x14);
-        loopCounter = ByteUtil.readLeInt(vgmBuf, 0x10);
+        totalCounter = ByteUtil.readLeInt(dataBuf, 0x0c);
+        if (totalCounter < 0) throw new IllegalArgumentException("invalid total counter");
+        vgmLoopOffset = ByteUtil.readLeInt(dataBuf, 0x14);
+        loopCounter = ByteUtil.readLeInt(dataBuf, 0x10);
 
-        int defineAddress = ByteUtil.readLeInt(vgmBuf, 0x1c);
-        int defineCount = ByteUtil.readLeShort(vgmBuf, 0x24);
+        int defineAddress = ByteUtil.readLeInt(dataBuf, 0x1c);
+        int defineCount = ByteUtil.readLeShort(dataBuf, 0x24);
         // Check number of sound source definitions
-        if (defineCount < 1) return false;
+        if (defineCount < 1) throw new IllegalArgumentException("invalid define count");
 
         chipCommandSize = (defineCount > 128) ? 2 : 1;
 
-        int trackAddress = ByteUtil.readLeInt(vgmBuf, 0x20);
-        int trackCounter = ByteUtil.readLeShort(vgmBuf, 0x26);
+        int trackAddress = ByteUtil.readLeInt(dataBuf, 0x20);
+        int trackCounter = ByteUtil.readLeShort(dataBuf, 0x26);
         vgmDataOffset = trackAddress + 11;
         // Track Count Check
-        if (trackCounter != 1) return false;
-        int fcc = ByteUtil.readLe24(vgmBuf, trackAddress);
-        if (fcc != FCC_TRK) return false;
-        int trackLength = ByteUtil.readLeInt(vgmBuf, trackAddress + 3);
-        vgmLoopOffset = ByteUtil.readLeInt(vgmBuf, trackAddress + 7);
+        if (trackCounter != 1) throw new IllegalArgumentException("invalid track counter");
+        int fcc = ByteUtil.readLe24(dataBuf, trackAddress);
+        if (fcc != FCC_TRK) throw new IllegalArgumentException("invalid fcc track value");
+        int trackLength = ByteUtil.readLeInt(dataBuf, trackAddress + 3);
+        vgmLoopOffset = ByteUtil.readLeInt(dataBuf, trackAddress + 7);
         if (vgmLoopOffset != 0) loopCounter = 1;
         vgmEof = trackAddress + trackLength;
 
@@ -118,13 +118,12 @@ public class Zgm extends BaseDriver {
 
         Map<String, Integer> chipCount = new HashMap<>();
         for (int i = 0; i < defineCount; i++) {
-            fcc = ByteUtil.readLe24(vgmBuf, pos);
-            if (fcc != FCC_DEF) return false;
-            int chipNum = ByteUtil.readLeInt(vgmBuf, pos + 0x4);
-            ZgmChip chip = (new ChipFactory()).create(chipNum, plugin.audio.chipRegister, setting, vgmBuf);
+            fcc = ByteUtil.readLe24(dataBuf, pos);
+            if (fcc != FCC_DEF) throw new IllegalArgumentException("invalid fcc def value");
+            int chipNum = ByteUtil.readLeInt(dataBuf, pos + 0x4);
+            ZgmChip chip = (new ChipFactory()).create(chipNum, plugin.chipRegister, setting, dataBuf);
             if (chip == null) {
-logger.log(Level.WARNING, "not supported chip: " + chipNum);
-                return false; // non support
+                throw new IllegalArgumentException("not supported chip: " + chipNum);
             }
 
             if (!chipCount.containsKey(chip.name)) chipCount.put(chip.name, -1);
@@ -137,25 +136,21 @@ logger.log(Level.WARNING, "not supported chip: " + chipNum);
         //usedChips = getUsedChipsString(chips);
 
         vgmGd3 += 12; // + 0x14;
-        gd3 = Common.getGD3Info(buf, vgmGd3);
-        gd3.usedChips = usedChips;
-
-        return true;
+        metaData = Common.getMetaData(buf, vgmGd3);
+        metaData.set(Tag.Chip, usedChips);
     }
 
-    private boolean getZGMInfo(byte[] vgmBuf) {
-        if (vgmBuf == null) return false;
+    private void getZGMInfo(byte[] vgmBuf) {
+        if (vgmBuf == null) throw new IllegalArgumentException("null buffer");
 
         try {
-            if (ByteUtil.readLeInt(vgmBuf, 0) != FCC_ZGM) return false;
+            if (ByteUtil.readLeInt(vgmBuf, 0) != FCC_ZGM) throw new IllegalArgumentException("buffer is not zgm");
 
-            if (!getZGMGD3Info(vgmBuf)) return false;
+            getZGMGD3Info(vgmBuf);
         } catch (Exception e) {
-            logger.log(Level.ERROR, "An exception occurred while getting XGM information. Message=[%s]".formatted(e.getMessage()), e);
-            return false;
+logger.log(Level.ERROR, "An exception occurred while getting XGM information. Message=[%s]".formatted(e.getMessage()), e);
+            throw e;
         }
-
-        return true;
     }
 
     static class TrackInfo {
@@ -173,5 +168,3 @@ logger.log(Level.WARNING, "not supported chip: " + chipNum);
         public int offset = 0;
     }
 }
-
-

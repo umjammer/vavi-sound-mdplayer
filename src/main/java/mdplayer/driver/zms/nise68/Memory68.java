@@ -8,8 +8,8 @@ import java.util.function.Function;
 
 public class Memory68 {
 
-    public byte[] mem;
-    public List<MemHook> hookList;
+    public final byte[] mem;
+    public final List<MemHook> hookList;
 
     public Memory68(int size /* = 16 * 1024 * 1024 */) {
         mem = new byte[size];

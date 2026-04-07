@@ -41,7 +41,7 @@ public class frmYM2413 extends frmBase {
     private final MDChipParams.YM2413 oldParam;
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmYM2413.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmYM2413.class);
 
     public frmYM2413(frmMain frm, int chipId, int zoom, MDChipParams.YM2413 newParam, MDChipParams.YM2413 oldParam) {
         super(frm);
@@ -115,9 +115,9 @@ public class frmYM2413 extends frmBase {
     };
 
     public void screenChangeParams() {
-        int[] ym2413Register = audio.chipRegister.chip(Ym2413Chip.class).read(chipId);
+        int[] ym2413Register = audio.plugin.chipRegister.chip(Ym2413Chip.class).read(chipId);
         MDChipParams.Channel nyc;
-        ChipKeyInfo ki = audio.chipRegister.chip(Ym2413Chip.class).getKeyInfo(chipId);
+        ChipKeyInfo ki = audio.plugin.chipRegister.chip(Ym2413Chip.class).getKeyInfo(chipId);
 
         for (int ch = 0; ch < 9; ch++) {
             nyc = newParam.channels[ch];

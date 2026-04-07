@@ -21,7 +21,7 @@ import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.chips.YmF278BChip;
-import mdplayer.driver.moonDriver.MoonDriver;
+import mdplayer.driver.moonDriver.BuiltInMoonDriver;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
@@ -40,7 +40,7 @@ public class frmYMF278B extends frmBase {
     private final MDChipParams.YMF278B oldParam = new MDChipParams.YMF278B();
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmYMF278B.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmYMF278B.class);
 
     public frmYMF278B(frmMain frm, int chipId, int zoom, MDChipParams.YMF278B newParam) {
         super(frm);
@@ -121,7 +121,7 @@ public class frmYMF278B extends frmBase {
     }
 
     public void screenChangeParams() {
-        int[][] ymf278bRegister = audio.chipRegister.chip(YmF278BChip.class).read(chipId);
+        int[][] ymf278bRegister = audio.plugin.chipRegister.chip(YmF278BChip.class).read(chipId);
         MDChipParams.Channel nyc;
         int slot;
         int slotP;
@@ -214,7 +214,7 @@ public class frmYMF278B extends frmBase {
             }
         }
 
-        int ko = audio.chipRegister.chip(YmF278BChip.class).getFmKeyOn(chipId);
+        int ko = audio.plugin.chipRegister.chip(YmF278BChip.class).getFmKeyOn(chipId);
 
         for (int c = 0; c < 18; c++) {
             nyc = newParam.channels[c];
@@ -269,17 +269,12 @@ public class frmYMF278B extends frmBase {
                         int tl = tl4;
 
                         int cnt = (n << 1) + cnt2;
-                        switch (cnt) {
-                        case 1:
-                            tl = Math.min(tl2, tl4);
-                            break;
-                        case 2:
-                            tl = Math.min(tl1, tl4);
-                            break;
-                        case 3:
-                            tl = Math.min(tl1, Math.min(tl3, tl4));
-                            break;
-                        }
+                        tl = switch (cnt) {
+                            case 1 -> Math.min(tl2, tl4);
+                            case 2 -> Math.min(tl1, tl4);
+                            case 3 -> Math.min(tl1, Math.min(tl3, tl4));
+                            default -> tl;
+                        };
 
                         nyc.volumeL = (nyc.inst[36] & 2) != 0 ? (19 * (64 - tl) / 64) : 0;
                         nyc.volumeR = (nyc.inst[36] & 1) != 0 ? (19 * (64 - tl) / 64) : 0;
@@ -316,7 +311,7 @@ public class frmYMF278B extends frmBase {
 
         // Audio.resetYMF278BFMKeyON(chipId);
 
-        int r = audio.chipRegister.chip(YmF278BChip.class).getRhythmKeyOn(chipId);
+        int r = audio.plugin.chipRegister.chip(YmF278BChip.class).getRhythmKeyOn(chipId);
 
         // slot14 TL 0x51 HH
         // slot15 TL 0x52 TOM
@@ -364,11 +359,11 @@ public class frmYMF278B extends frmBase {
             if (newParam.channels[22].volume < 0) newParam.channels[22].volume = 0;
         }
 
-        audio.chipRegister.chip(YmF278BChip.class).resetRhythmKeyOn(chipId);
+        audio.plugin.chipRegister.chip(YmF278BChip.class).resetRhythmKeyOn(chipId);
 
         // PCM
-        int[] pcmKey = audio.chipRegister.chip(YmF278BChip.class).getPcmKeyOn(chipId);
-        int[] mdPCMKey = (audio.driverVirtual instanceof MoonDriver moonDriver) ? moonDriver.getPCMKeyOn() : null;
+        int[] pcmKey = audio.plugin.chipRegister.chip(YmF278BChip.class).getPcmKeyOn(chipId);
+        int[] mdPCMKey = (audio.plugin.driverVirtual instanceof BuiltInMoonDriver moonDriver) ? moonDriver.getPCMKeyOn() : null;
         for (int c = 23; c < 23 + 24; c++) {
             nyc = newParam.channels[c];
             // Pan
@@ -442,7 +437,7 @@ public class frmYMF278B extends frmBase {
             // Wav
             nyc.inst[12] = (ymf278bRegister[2][0x08 + (c - 23)]) + ((ymf278bRegister[2][0x20 + (c - 23)] & 0x1) << 8);
         }
-        audio.chipRegister.chip(YmF278BChip.class).resetPcmKeyOn(chipId);
+        audio.plugin.chipRegister.chip(YmF278BChip.class).resetPcmKeyOn(chipId);
     }
 
     public void screenDrawParams() {

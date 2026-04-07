@@ -184,7 +184,7 @@ public class Km6280 {
 
         public int KI_READWORD(int adr) {
             int ret = readK(adr);
-            int i = (ret + (readK((adr + 1) & 0xffff) << 8)) & 0xffff;;
+            int i = (ret + (readK((adr + 1) & 0xffff) << 8)) & 0xffff;
             return i;
         }
 
@@ -2003,7 +2003,7 @@ public class Km6280 {
              BRK(#$00)  +7 by Interrupt
 
             */
-        public byte[] cl_table = new byte[] {
+        public final byte[] cl_table = {
                 /* L 0  1  2  3  4  5  6  7  8  9  a  B  C  D  E  F     H */
                 1, 7, 3, 4, 6, 4, 6, 7, 3, 2, 2, -0, 7, 5, 7, 6, /* 0 */
                 2, 7, 7, 4, 6, 4, 6, 7, 2, 5, 2, -0, 7, 5, 7, 6, /* 1 */

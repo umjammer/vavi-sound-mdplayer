@@ -20,15 +20,13 @@ import dotnet4j.io.Path;
 import dotnet4j.io.Stream;
 import dotnet4j.util.compat.TriConsumer;
 import dotnet4j.util.compat.Tuple;
-import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.Cs4231Chip;
 import mdplayer.chips.Ym2608Chip;
 import mdplayer.chips.Ym2612Chip;
 import mdplayer.driver.BaseDriver;
-import mdplayer.driver.Vgm.Gd3;
-import mdplayer.driver.mucom.MucomJava;
+import mdplayer.driver.mucom.MucomDriver;
 import mdplayer.plugin.BasePlugin;
 import muap.driver.Ems.EMS_AllocMemory;
 import muap.driver.Ems.EMS_GetHandleName;
@@ -39,13 +37,17 @@ import musicDriverInterface.ChipDatum;
 import musicDriverInterface.CompilerInfo;
 import musicDriverInterface.ICompiler;
 import musicDriverInterface.IDriver;
+import musicDriverInterface.MetaData;
 import musicDriverInterface.MmlDatum;
 import vavi.util.ByteUtil;
 
 
-public class MuapJava extends BaseDriver {
+/**
+ * @author kumatan
+ */
+public class MuapDriver extends BaseDriver {
 
-    private static final Logger logger = System.getLogger(MuapJava.class.getName());
+    private static final Logger logger = System.getLogger(MuapDriver.class.getName());
 
     private ICompiler muapCompiler = null;
     private IDriver muapDriver = null;
@@ -58,52 +60,42 @@ public class MuapJava extends BaseDriver {
         return playingFileName;
     }
 
-    public MuapJava() {
+    public MuapDriver() {
     }
 
     @Override
-    public Gd3 getGD3Info(byte[] buf, int vgmGd3) {
+    public MetaData getMetaData(byte[] buf, Object... args) {
         // muap basically has no tag information
         // (There is data that uses the lyrics function to display the title.)
-        Gd3 gt = new Gd3();
-        return gt;
+        MetaData md = new MetaData();
+        return md;
     }
 
     @Override
-    public Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
-        throw new UnsupportedOperationException();
-    }
+    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
+                     int latency, int waitTime, Object... args) {
+        metaData = getMetaData(vgmBuf);
 
-    @Override
-    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
-        gd3 = getGD3Info(vgmBuf, 0);
-
-        this.vgmBuf = vgmBuf;
+        this.dataBuf = vgmBuf;
         this.plugin = plugin;
         this.model = model;
-        this.useChip = useChip;
         this.latency = latency;
         this.waitTime = waitTime;
 
         counter = 0;
         totalCounter = 0;
         loopCounter = 0;
-        vgmCurLoop = 0;
+        curLoop = 0;
         stopped = false;
-        vgmFrameCounter = -latency - waitTime;
-        vgmSpeed = 1;
+        frameCounter = -latency - waitTime;
+        speed = 1;
 
 //#if DEBUG
         // Skip processing for real chip thread (for debugging)
         //if (model == EnmModel.RealModel) return true;
 //#endif
 
-        return initO();
-    }
-
-    @Override
-    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
-        throw new UnsupportedOperationException();
+        initO();
     }
 
     @Override
@@ -118,19 +110,19 @@ public class MuapJava extends BaseDriver {
         if (stopped) return;
 
         try {
-            vgmSpeedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * vgmSpeed;
-            while (vgmSpeedCounter >= 1.0) {
-                vgmSpeedCounter -= 1.0;
+            speedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * speed;
+            while (speedCounter >= 1.0) {
+                speedCounter -= 1.0;
 
                 muapDriver.render();
 
                 counter++;
-                vgmFrameCounter++;
+                frameCounter++;
             }
 
             int lp = muapDriver.getNowLoopCounter();
             lp = lp < 0 ? 0 : lp;
-            vgmCurLoop = (int) lp;
+            curLoop = lp;
 
             if (muapDriver.getStatus() < 1) {
                 //if (mucomDriver.GetStatus() == 0 && !Stopped) {
@@ -162,7 +154,7 @@ public class MuapJava extends BaseDriver {
         }
 
         if (ret == null && info == null) return null;
-        if (info != null && info.errorList.size() > 0) {
+        if (info != null && !info.errorList.isEmpty()) {
             for (var error : info.errorList) {
                 logger.log(Level.ERROR, error.getItem3());
             }
@@ -215,11 +207,11 @@ public class MuapJava extends BaseDriver {
         return strm;
     }
 
-    private boolean initO() {
+    private void initO() {
         if (muapDriver == null) muapDriver = IDriver.factory("muap.driver.Driver");
 
         List<MmlDatum> buf = new ArrayList<>();
-        for (byte b : vgmBuf) buf.add(new MmlDatum(b & 0xff));
+        for (byte b : dataBuf) buf.add(new MmlDatum(b & 0xff));
 
         List<ChipAction> lca = new ArrayList<>();
         MuapChipAction ca;
@@ -229,10 +221,10 @@ public class MuapJava extends BaseDriver {
         lca.add(ca);
         ca = new MuapChipAction(this::CS4231Write, null, null);
         lca.add(ca);
-        String[] pfn = new String[1], x = new String[1];
-        plugin.audio.getPlayingFileName(pfn, x);
-        if (pfn[0] != null && !pfn[0].isEmpty()) {
-            pfn[0] = Path.getDirectoryName(Path.getFullPath(pfn[0]));
+        String pfn = plugin.playingFileName;
+        String _ = plugin.playingArcFileName;
+        if (pfn != null && !pfn.isEmpty()) {
+            pfn = Path.getDirectoryName(Path.getFullPath(pfn));
         }
         muapDriver.init(
                 lca,
@@ -248,18 +240,14 @@ public class MuapJava extends BaseDriver {
                 toneBuff,
                 setting.getMuapJava().soundDeviceMode,
                 labelAdr,
-                pfn[0]
+                pfn
         );
 
-        muapDriver.startRendering(Common.VGMProcSampleRate, new Tuple<>("YM2608", MucomJava.opnaBaseClock)
-
-        );
+        muapDriver.startRendering(Common.VGMProcSampleRate, new Tuple<>("YM2608", MucomDriver.opnaBaseClock));
         muapDriver.startMusic(0);
         Object[] work = (Object[]) muapDriver.getWork();
-        plugin.audio.chipRegister.chip(Cs4231Chip.class).setFifoBuf(0, (byte[]) work[0]);
+        plugin.chipRegister.chip(Cs4231Chip.class).setFifoBuf(0, (byte[]) work[0]);
         //chipRegister.setCS4231Int0bEnt(0, (Action)work[1], model);
-
-        return true;
     }
 
     private static class MuapChipAction implements ChipAction {
@@ -321,7 +309,7 @@ public class MuapJava extends BaseDriver {
         if (dat.port == -1) return;
         //logger.log(Level.TRACE, "Out ChipA:%d Port:%d Adr:[%02x] val[%02x]".formatted(chipId, dat.port, dat.address, dat.data));
 
-        plugin.audio.chipRegister.chip(Ym2608Chip.class).write(chipId, dat.port, dat.address, dat.data, model /*, vgmFrameCounter */);
+        plugin.chipRegister.chip(Ym2608Chip.class).write(chipId, dat.port, dat.address, dat.data, model /*, frameCounter */);
     }
 
     void OPN2Write(int chipId, ChipDatum dat) {
@@ -335,7 +323,7 @@ public class MuapJava extends BaseDriver {
         if (dat.port == -1) return;
         //Debug.WriteLine(string.Format("Out ChipA:%d Port:%d Adr:[{%02x] val[%02x]", chipId, dat.port, dat.address, dat.data));
 
-        plugin.audio.chipRegister.chip(Ym2612Chip.class).write(chipId, dat.port, dat.address, dat.data, model, vgmFrameCounter);
+        plugin.chipRegister.chip(Ym2612Chip.class).write(chipId, dat.port, dat.address, dat.data, model, frameCounter);
     }
 
     void CS4231Write(ChipDatum dat) {
@@ -349,39 +337,39 @@ public class MuapJava extends BaseDriver {
         if (dat.port == -1) return;
         //logger.log(Level.TRACE, "Out ChipA:%d Port:%d} Adr:[%02x] val[%02x]".formatted(chipId, dat.port, dat.address, dat.data));
 
-        plugin.audio.chipRegister.chip(Cs4231Chip.class).write(0, dat.port, dat.address, dat.data);
+        plugin.chipRegister.chip(Cs4231Chip.class).write(0, dat.port, dat.address, dat.data);
     }
 
     byte CS4231Read(byte adr) {
-        return (byte) plugin.audio.chipRegister.chip(Cs4231Chip.class).read(0, adr & 0xff);
+        return (byte) plugin.chipRegister.chip(Cs4231Chip.class).read(0, adr & 0xff);
     }
 
     byte[] CS4231EMS_GetCurrentMapBuf() {
-        return plugin.audio.chipRegister.chip(Cs4231Chip.class).EMS_GetCurrentMapBuf(0, 0);
+        return plugin.chipRegister.chip(Cs4231Chip.class).EMS_GetCurrentMapBuf(0, 0);
     }
 
     void CS4231EMS_Map(int al, byte[] ah, int bx, int dx) {
-        plugin.audio.chipRegister.chip(Cs4231Chip.class).EMS_Map(0, 0, al, ah, bx, dx);
+        plugin.chipRegister.chip(Cs4231Chip.class).EMS_Map(0, 0, al, ah, bx, dx);
     }
 
     int CS4231EMS_GetPageMap() {
-        return plugin.audio.chipRegister.chip(Cs4231Chip.class).EMS_GetPageMap(0, 0);
+        return plugin.chipRegister.chip(Cs4231Chip.class).EMS_GetPageMap(0, 0);
     }
 
     void CS4231EMS_GetHandleName(byte[] ah, int dx, String[] buf) {
-        plugin.audio.chipRegister.chip(Cs4231Chip.class).EMS_GetHandleName(0, ah, dx, buf);
+        plugin.chipRegister.chip(Cs4231Chip.class).EMS_GetHandleName(0, ah, dx, buf);
     }
 
     void CS4231EMS_SetHandleName(byte[] ah, int dx, String emsName2) {
-        plugin.audio.chipRegister.chip(Cs4231Chip.class).EMS_SetHandleName(0, ah, dx, emsName2);
+        plugin.chipRegister.chip(Cs4231Chip.class).EMS_SetHandleName(0, ah, dx, emsName2);
     }
 
     void CS4231EMS_AllocMemory(byte[] ah, int[] dx, int bx) {
-        plugin.audio.chipRegister.chip(Cs4231Chip.class).EMS_AllocMemory(0, ah, dx, bx);
+        plugin.chipRegister.chip(Cs4231Chip.class).EMS_AllocMemory(0, ah, dx, bx);
     }
 
     public List<Tuple<String, String>> getTags() {
-        if (plugin.audio.chipRegister == null) return null;
+        if (plugin.chipRegister == null) return null;
         return muapDriver.getTags();
     }
 }

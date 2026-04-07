@@ -9,24 +9,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.IntSupplier;
 
 import dotnet4j.io.File;
 import dotnet4j.io.Path;
 import dotnet4j.util.compat.Tuple;
-import mdplayer.Chip;
 import mdplayer.Common;
-import mdplayer.Common.EnmModel;
-import mdplayer.MidiOutInfo;
-import mdplayer.chips.MidiPlugin;
-import mdplayer.chips.Ym2612Chip;
-import mdplayer.driver.BaseDriver;
-import mdplayer.driver.Vgm;
-import mdplayer.driver.Vgm.Gd3;
 import mdplayer.driver.mxdrv.MXDRV.Pcm8St;
 import mdplayer.driver.rcp.MIDIEvent.MIDIEventType;
 import mdplayer.driver.rcp.MIDIEvent.MIDISpEventType;
 import mdplayer.driver.zms.Zms.MPCMSt;
-import mdplayer.plugin.BasePlugin;
 import mdsound.instrument.Pcm8PPInst;
 import mdsound.instrument.X68kYm2151Inst;
 import vavi.util.ByteUtil;
@@ -35,7 +28,7 @@ import static java.lang.System.getLogger;
 import static mdplayer.Common.charset;
 
 
-public class RCS extends BaseDriver {
+public class RCS {
 
     private static final Logger logger = getLogger(RCS.class.getName());
 
@@ -47,9 +40,9 @@ public class RCS extends BaseDriver {
     private double musicStep = 1; // setting.outputDevice.SampleRate / 60.0;
     private double musicDownCounter = 0.0;
 
-    private List<CtlSysex>[] beforeSend = null;
-    private int[] sendControlDelta = null;
-    private int[] sendControlIndex = null;
+    List<CtlSysex>[] beforeSend = null;
+    int[] sendControlDelta = null;
+    int[] sendControlIndex = null;
     public String filename = "";
 
     public static class MIDIRythm {
@@ -100,7 +93,7 @@ public class RCS extends BaseDriver {
 
         Boolean ret = checkHeadString(rcpBuf[0]);
         if (ret == null) return;
-        boolean IsG36 = (boolean) ret;
+        boolean IsG36 = ret;
         int ptr = 96;
         if (IsG36) {
             ptr += 568;
@@ -131,8 +124,8 @@ public class RCS extends BaseDriver {
         public int pan = 3;
     }
 
-    private final PcmInfo[][] pcmInfos = new PcmInfo[1][127];
-    private final byte[][] pcmData = new byte[1][];
+    final PcmInfo[][] pcmInfos = new PcmInfo[1][127];
+    final byte[][] pcmData = new byte[1][];
     public X68kYm2151Inst opmPCM;
     public Pcm8PPInst pcm8pp;
     public int pcm8type = 1;
@@ -140,7 +133,7 @@ public class RCS extends BaseDriver {
     private int rcsControlNoteNumber = 0;
     private int rcsControlMode = 0;
     private int rcsPolyphonicMode = 3;
-    public Pcm8St[] pcm8St = new Pcm8St[] {
+    public final Pcm8St[] pcm8St = new Pcm8St[] {
             new Pcm8St(), new Pcm8St(), new Pcm8St(), new Pcm8St(),
             new Pcm8St(), new Pcm8St(), new Pcm8St(), new Pcm8St(),
             new Pcm8St(), new Pcm8St(), new Pcm8St(), new Pcm8St(),
@@ -154,63 +147,7 @@ public class RCS extends BaseDriver {
     };
     public String supportFileName = null;
 
-    @Override
-    public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
-        String[] rcpFilename = new String[1];
-        byte[][] rcpBuf = new byte[1][];
-        if (extendFiles != null) {
-            for (Tuple<String, byte[]> n : extendFiles) {
-                if (n.getItem1().equals(".RCP")) {
-                    rcpBuf[0] = n.getItem2();
-                    break;
-                }
-            }
-        }
-        Boolean ret = getRCSInfo(filename, supportFileName, buf, /* out */ pcmInfos, /* out */ pcmData, /* out */ rcpFilename, /* ref */ rcpBuf);
-        if (ret == false) return null;
-
-        Gd3 gd3 = new Gd3();
-
-        if (rcpBuf == null) {
-            String err = ".RCP File not found !";
-            gd3.trackName = err;
-            gd3.trackNameJ = err;
-            return gd3;
-        }
-
-        // Get the song information in the RCP file from here
-        ret = checkHeadString(rcpBuf[0]);
-        if (ret == null) return null;
-        boolean IsG36 = ret;
-
-        int ptr = 32;
-        String str;
-
-        List<Byte> title = new ArrayList<>();
-        for (int i = 0; i < 64; i++) {
-            if (rcpBuf[0][ptr + i] == 0) break;
-            title.add(rcpBuf[0][ptr + i]);
-        }
-        str = (new String(ByteUtil.toByteArray(title))).trim();
-        ptr += 64;
-        gd3.trackName = str;
-        gd3.trackNameJ = str;
-
-        if (IsG36) {
-            ptr += 64;
-            str = "%s\n".formatted((new String(rcpBuf[0], ptr, 360)).replace("\0", ""));
-        } else {
-            str = "";
-            for (int i = 0; i < 12; i++) {
-                str += "%s\n".formatted((new String(rcpBuf[0], ptr + i * 28, 28)).replace("\0", ""));
-            }
-        }
-        gd3.notes = str;
-
-        return gd3;
-    }
-
-    private static boolean getRCSInfo(String filename, String supportfile, byte[] buf, /* out */ PcmInfo[][] pcmInfos, /* out */ byte[][] pcmData, /* out */ String[] rcpFilename, /* ref */ byte[][] rcpBuf) {
+    static boolean getRCSInfo(String filename, String supportfile, byte[] buf, /* out */ PcmInfo[][] pcmInfos, /* out */ byte[][] pcmData, /* out */ String[] rcpFilename, /* ref */ byte[][] rcpBuf) {
         pcmInfos[0] = null;
         pcmData[0] = null;
         rcpFilename[0] = "";
@@ -255,41 +192,11 @@ public class RCS extends BaseDriver {
         return true;
     }
 
-    @Override
-    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
-        this.vgmBuf = vgmBuf;
-        this.plugin = plugin;
-        this.model = model;
-        this.useChip = useChip;
-        this.latency = latency;
-        this.waitTime = waitTime;
-
-        counter = 0;
-        totalCounter = 0;
-        loopCounter = 0;
-        vgmCurLoop = 0;
-        stopped = false;
-        // Set 0 here to wait after sending control.
-        //vgmFrameCounter = -latency - waitTime;
-        vgmFrameCounter = 0;
-        vgmSpeed = 1;
-        vgmSpeedCounter = 0;
-
-        gd3 = getGD3Info(vgmBuf, 0);
-        //if (GD3 == null) return false;
-
-        if (!getInformationHeader()) return false;
-
-        // Create a command to send in advance for each port
-        if (!makeBeforeSendCommand()) return false;
-
-        if (model == EnmModel.RealModel) {
-            plugin.audio.chipRegister.chip(Ym2612Chip.class).setSyncWait(0, 1);
-            plugin.audio.chipRegister.chip(Ym2612Chip.class).setSyncWait(1, 1);
-        }
-
-        return true;
-    }
+    BiConsumer<Integer, byte[]> midiSend;
+    Consumer<String> lyric;
+    Runnable counter;
+    IntSupplier midiCount;
+    Runnable stop;
 
     private void rcsControl(MIDITrack trk, MIDIEvent eve) {
         if (eve == null || eve.getMIDIMessage() == null) return;
@@ -354,7 +261,7 @@ public class RCS extends BaseDriver {
                 putMIDIMessage(trk.getOutDeviceNumber(), msgBuf, 3);
             }
         }
-        if (trk.getNumber() == rcsTrackNumber && model == EnmModel.VirtualModel) {
+        if (trk.getNumber() == rcsTrackNumber && isVirtualModel) {
             boolean flg = false;
             // key Off
             //if (trk.getNoteGateTime()[okey] <= trk.getNextEventTick() + trk.getNowPart.StartTick())
@@ -377,12 +284,12 @@ public class RCS extends BaseDriver {
                     int length = pcmInfos[key].length;
                     if (rcsPolyphonicMode == 0) length = (int) (length * Math.min(eve.getGate(), 100) * 0.01);
                     if (pcm8type == 0) if (opmPCM != null)
-                        opmPCM.chips[0].pcm8Out(ch, null, (int) pcmInfos[0][key].ptr, mode, length); // Start of specified channel sound
+                        opmPCM.chips[0].pcm8Out(ch, null, pcmInfos[0][key].ptr, mode, length); // Start of specified channel sound
                     else if (pcm8pp != null)
-                        pcm8pp.keyOn(0, ch, (int) pcmInfos[0][key].ptr, mode, length); // Start of specified channel sound
-                    pcm8St[ch].tablePtr = (int) pcmInfos[0][key].ptr;
-                    pcm8St[ch].mode = (int) mode;
-                    pcm8St[ch].length = (int) pcmInfos[key].length;
+                        pcm8pp.keyOn(0, ch, pcmInfos[0][key].ptr, mode, length); // Start of specified channel sound
+                    pcm8St[ch].tablePtr = pcmInfos[0][key].ptr;
+                    pcm8St[ch].mode = mode;
+                    pcm8St[ch].length = pcmInfos[key].length;
                     pcm8St[ch].Keyon = true;
                 }
             }
@@ -414,8 +321,8 @@ public class RCS extends BaseDriver {
         int ch;
         if (!freeCh.isEmpty()) {
             // If the channel is free
-            ch = freeCh.get(0);
-            freeCh.remove(0);
+            ch = freeCh.getFirst();
+            freeCh.removeFirst();
             useCh.add(new Tuple<>(ch, key));
             return ch;
         }
@@ -423,41 +330,19 @@ public class RCS extends BaseDriver {
         // If the channel is not available
         // (TBD For now, the pronunciations are cancelled out in order of most recent.)
         keyoff[0] = true;
-        ch = useCh.get(0).getItem1();//item1 = ch
-        useCh.remove(0);
+        ch = useCh.getFirst().getItem1();//item1 = ch
+        useCh.removeFirst();
         useCh.add(new Tuple<>(ch, key));
         return ch;
     }
 
     private void keyOffPCM8(int key) {
-        for (int i = 0; i < useCh.size(); i++) {
-            if (useCh.get(i).getItem2() != key) continue;
-            freeCh.add(useCh.get(i).getItem1());
-            useCh.remove(i);
-        }
-    }
-
-    @Override
-    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
-        throw new UnsupportedOperationException("This driver does not require this method");
-    }
-
-    @Override
-    public void processOneFrame() {
-        try {
-            vstDelta++;
-            vgmSpeedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * vgmSpeed;
-            while (vgmSpeedCounter >= 1.0 && !stopped) {
-                vgmSpeedCounter -= 1.0;
-                if (vgmFrameCounter > -1) {
-                    oneFrameMain();
-                } else {
-                    vgmFrameCounter++;
-                }
-            }
-            //stopped = !isPlaying();
-        } catch (Exception ex) {
-            logger.log(Level.ERROR, ex.getMessage(), ex);
+        var i = useCh.iterator();
+        while (i.hasNext()) {
+            var u = i.next();
+            if (u.getItem2() != key) continue;
+            freeCh.add(u.getItem1());
+            i.remove();
         }
     }
 
@@ -490,19 +375,22 @@ public class RCS extends BaseDriver {
     private int skipPtr = 4;
     private byte[] msgBuf2 = new byte[2];
     private byte[] msgBuf3 = new byte[3];
-    private byte[] msgBuf = new byte[256];
+    private final byte[] msgBuf = new byte[256];
+
+    byte[] vgmBuf;
+    boolean isVirtualModel;
 
     interface efd extends BiConsumer<MIDITrack, MIDIEvent> {
 
     }
 
-    private efd[] EventFunc = new efd[256];
-    private efd[] SpecialEventFunc = new efd[256];
+    private final efd[] EventFunc = new efd[256];
+    private final efd[] SpecialEventFunc = new efd[256];
     private int RelativeTempoChangeTargetTempo;
     private double RelativeTempoChangeTickSlice;
     private boolean RelativeTempoChangeSW = false;
 
-    private static Boolean checkHeadString(byte[] buf) {
+    static Boolean checkHeadString(byte[] buf) {
         if (buf == null || buf.length < 32) return null;
 
         String str = new String(buf, 0, 32);
@@ -514,7 +402,7 @@ public class RCS extends BaseDriver {
         return false;
     }
 
-    private boolean getInformationHeader() {
+    boolean getInformationHeader() {
         byte[] rcpBuf = null;
         if (extendFiles != null) {
             for (Tuple<String, byte[]> n : extendFiles) {
@@ -528,7 +416,7 @@ public class RCS extends BaseDriver {
             if (File.exists(supportFileName)) rcpBuf = File.readAllBytes(supportFileName);
         }
 
-        if (model == EnmModel.VirtualModel) {
+        if (isVirtualModel) {
             if (pcm8type == 0) if (opmPCM != null) opmPCM.chips[0].mountMemory(pcmData[0]);
             else if (pcm8pp != null) pcm8pp.writePcm(0, pcmData[0], 0,pcmData[0].length);
         }
@@ -538,7 +426,7 @@ public class RCS extends BaseDriver {
         vgmBuf = rcpBuf;
         Boolean ret = checkHeadString(vgmBuf);
         if (ret == null) return false;
-        isG36 = (boolean) ret;
+        isG36 = ret;
 
         ptr = 32;
         ptr += 64;
@@ -798,14 +686,14 @@ public class RCS extends BaseDriver {
                 ptr++;
             } else {
                 trkNumber = i;
-                ptr++; // vgmBuf[ptr++] - 1;
+                ptr++; // data[ptr++] - 1;
                 if (trkNumber < 0)
                     trkNumber = i;
             }
             trk[trkNumber].setRythmMode((vgmBuf[ptr++] & 0xff) == 0x80);
             int ch = vgmBuf[ptr++] & 0xff;
             if (ch != 255) {
-                int mc = plugin.audio.chipRegister.plugin(MidiPlugin.class).getCount();
+                int mc = midiCount.getAsInt();
                 if (mc == 0) mc = 1;
                 int n = (stDevNum + (ch / 16)) % mc;
                 trk[trkNumber].setOutDeviceName("dummy"); // config.MIDIOutDeviceList[n].DevName;
@@ -852,7 +740,7 @@ public class RCS extends BaseDriver {
     }
 
     private void extractSame(MIDITrack trk) {
-        MIDIEvent evt = trk.getPart().get(0).getStartEvent();
+        MIDIEvent evt = trk.getPart().getFirst().getStartEvent();
         while (evt != null) {
             if (evt.getEventType() == MIDIEventType.MetaSequencerSpecific && evt.getMIDIMessage()[0] == (byte) MIDISpEventType.SameMeasure.v) {
 
@@ -867,12 +755,12 @@ public class RCS extends BaseDriver {
                 }
                 int Mea = 0;
                 int MeaS = 0;
-                MIDIEvent mEvt = trk.getPart().get(0).getStartEvent();
+                MIDIEvent mEvt = trk.getPart().getFirst().getStartEvent();
                 if (ofsMea != 0) {
                     while (mEvt != null) {
                         MeaS = 0;
                         if (mEvt.getEventType() == MIDIEventType.MetaSequencerSpecific) {
-                            MIDIEvent nEvt = trk.getPart().get(0).getNextEvent(mEvt);
+                            MIDIEvent nEvt = trk.getPart().getFirst().getNextEvent(mEvt);
                             int s = 0;
                             if (nEvt.getEventType() == MIDIEventType.MetaSequencerSpecific
                                     && nEvt.getMIDIMessage()[0] == (byte) MIDISpEventType.SameMeasure.v) {
@@ -889,7 +777,7 @@ public class RCS extends BaseDriver {
                                 MeaS = s;
                             }
                         }
-                        mEvt = trk.getPart().get(0).getNextEvent(mEvt);
+                        mEvt = trk.getPart().getFirst().getNextEvent(mEvt);
                         Mea += MeaS;
                         if (ofsMea == Mea) break;
                     }
@@ -900,7 +788,7 @@ public class RCS extends BaseDriver {
                 }
             }
 
-            evt = trk.getPart().get(0).getNextEvent(evt);
+            evt = trk.getPart().getFirst().getNextEvent(evt);
         }
     }
 
@@ -1263,12 +1151,8 @@ public class RCS extends BaseDriver {
         //MIDIClock.Start();
     }
 
-    private void oneFrameMain() {
+    void oneFrameMain() {
         try {
-
-            counter++;
-            vgmFrameCounter++;
-
             musicStep = Common.VGMProcSampleRate * oneSyncTime;
 
             if (musicDownCounter <= 0.0) {
@@ -1318,7 +1202,7 @@ public class RCS extends BaseDriver {
         //}
 
         if (endMark) {
-            stopped = true;
+            stop.run();
         }
     }
 
@@ -1376,7 +1260,7 @@ public class RCS extends BaseDriver {
                     else if (key > 127) key = 127;
                     if (trk.getOutChannel() != null) {
                         if (rcsTrackNumber != trk.getNumber()) {
-                            msgBuf[0] = (byte) ((int) MIDIEventType.NoteOff.v + trk.getOutChannel());
+                            msgBuf[0] = (byte) (MIDIEventType.NoteOff.v + trk.getOutChannel());
                             msgBuf[1] = (byte) key;
                             msgBuf[2] = 127;
                             putMIDIMessage(trk.getOutDeviceNumber(), msgBuf, 3);
@@ -1393,7 +1277,7 @@ public class RCS extends BaseDriver {
         return flg;
     }
 
-    private byte[] vv = new byte[1];
+    private final byte[] vv = new byte[1];
 
     private void putMIDIMessage(Integer n, byte[] pMIDIMessage, int len) {
         if (n == null) return;
@@ -1402,7 +1286,7 @@ public class RCS extends BaseDriver {
             dat.add(pMIDIMessage[i]);
             //plugin.audio.chipRegister.plugin(MidiPlugin.class).send(model, n, vv, vstDelta);
         }
-        plugin.audio.chipRegister.plugin(MidiPlugin.class).send(model, (int) n, ByteUtil.toByteArray(dat), vstDelta);
+        midiSend.accept(n, ByteUtil.toByteArray(dat));
     }
 
     /**
@@ -1641,24 +1525,17 @@ public class RCS extends BaseDriver {
 
         while (j < eve.getMIDIMessages()[0].length - 2) {
             Byte n = eve.getMIDIMessages()[0][j];
-            switch (n & 0xff) {
-                case 0x80:
-                    n = eve.getMIDIMessages()[0][eve.getMIDIMessages()[0].length - 2];
-                    break;
-                case 0x81:
-                    n = eve.getMIDIMessages()[0][eve.getMIDIMessages()[0].length - 1];
-                    break;
-                case 0x82:
-                    n = (byte) (int) trk.getOutChannel();
-                    break;
-                case 0x83:
+            n = switch (n & 0xff) {
+                case 0x80 -> eve.getMIDIMessages()[0][eve.getMIDIMessages()[0].length - 2];
+                case 0x81 -> eve.getMIDIMessages()[0][eve.getMIDIMessages()[0].length - 1];
+                case 0x82 -> (byte) (int) trk.getOutChannel();
+                case 0x83 -> {
                     chksum = 0;
-                    n = null;
-                    break;
-                case 0x84:
-                    n = (byte) (128 - (chksum % 128));
-                    break;
-            }
+                    yield null;
+                }
+                case 0x84 -> (byte) (128 - (chksum % 128));
+                default -> n;
+            };
             if (n != null) {
                 msgBuf[i] = n;
                 chksum += n & 0xff;
@@ -1715,8 +1592,8 @@ public class RCS extends BaseDriver {
             oneSyncTime = 60.0 / nowTempo / timeBase;
         } else {
             // Ritardando
-            int Tempo = (int) ((double) this.Tempo * mul);
-            double s = (double) (Tempo - this.Tempo) * 256.0 / ((256.0 - (eve.getMIDIMessages()[0][1] & 0xff)) * timeBase);
+            int Tempo = (int) (this.Tempo * mul);
+            double s = (Tempo - this.Tempo) * 256.0 / ((256.0 - (eve.getMIDIMessages()[0][1] & 0xff)) * timeBase);
             RelativeTempoChangeTargetTempo = Tempo;
             RelativeTempoChangeTickSlice = (nowTempo < Tempo) ? s : -s;
             RelativeTempoChangeSW = true;
@@ -1808,7 +1685,7 @@ public class RCS extends BaseDriver {
 
     void sefCommentStart(MIDITrack trk, MIDIEvent eve) {
         trk.setComment(new String(eve.getMIDIMessages()[0]).replace("\0", ""));
-        plugin.audio.chipRegister.plugin(MidiPlugin.class).params[0].Lyric = trk.getComment();
+        lyric.accept(trk.getComment());
     }
 
     void sefLoopEnd(MIDITrack trk, MIDIEvent eve) {
@@ -1911,27 +1788,20 @@ public class RCS extends BaseDriver {
 
         while (j < userExclusives.get(num).exclusive.length) {
             Byte n = userExclusives.get(num).exclusive[j];
-            switch (n & 0xff) {
-                case 0x80:
-                    n = eve.getMIDIMessages()[0][0];
-                    break;
-                case 0x81:
-                    n = eve.getMIDIMessages()[0][1];
-                    break;
-                case 0x82:
-                    n = (byte) (int) trk.getOutChannel();
-                    break;
-                case 0x83:
+            n = switch (n & 0xff) {
+                case 0x80 -> eve.getMIDIMessages()[0][0];
+                case 0x81 -> eve.getMIDIMessages()[0][1];
+                case 0x82 -> (byte) (int) trk.getOutChannel();
+                case 0x83 -> {
                     chksum = 0;
-                    n = null;
-                    break;
-                case 0x84:
-                    n = (byte) ((128 - (chksum % 128)) & 0x7f);
-                    break;
-            }
+                    yield null;
+                }
+                case 0x84 -> (byte) ((128 - (chksum % 128)) & 0x7f);
+                default -> n;
+            };
             if (n != null) {
-                msgBuf[i] = (byte) n;
-                chksum += (byte) n;
+                msgBuf[i] = n;
+                chksum += n;
                 i++;
             }
             j++;
@@ -1961,23 +1831,22 @@ public class RCS extends BaseDriver {
 
         ret.add((byte) 0xf0);
 
-        for (int i = 0; i < buf.length; i++) {
-            Byte n = buf[i];
-            switch (n & 0xff) {
+        for (Byte b : buf) {
+            Byte n = b;
+            n = switch (n & 0xff) {
                 //case 0x82:
                 //  n = (byte)trk.OutChannel;
                 //break;
-                case 0x83:
+                case 0x83 -> {
                     chksum = 0;
-                    n = null;
-                    break;
-                case 0x84:
-                    n = (byte) ((128 - (chksum % 128)) & 0x7f);
-                    break;
-            }
+                    yield null;
+                }
+                case 0x84 -> (byte) ((128 - (chksum % 128)) & 0x7f);
+                default -> n;
+            };
             if (n != null) {
-                ret.add((byte) n);
-                chksum += (byte) n;
+                ret.add(n);
+                chksum += n;
             }
         }
 
@@ -2030,7 +1899,7 @@ public class RCS extends BaseDriver {
         }
 
         // Master Pan
-        DBuf.add(new CtlSysex(1, getSysEx((byte) 0x41, (byte) 0x10, (byte) (byte) 0x42, (byte) 0x12, (byte) 0x83, (byte) 0x40, (byte) 0x00, (byte) 0x06, buf[0x26], (byte) 0x84)));
+        DBuf.add(new CtlSysex(1, getSysEx((byte) 0x41, (byte) 0x10, (byte) 0x42, (byte) 0x12, (byte) 0x83, (byte) 0x40, (byte) 0x00, (byte) 0x06, buf[0x26], (byte) 0x84)));
         // Master Balance
         DBuf.add(new CtlSysex(1, getSysEx((byte) 0x7f, (byte) 0x7f, (byte) 0x04, (byte) 0x02, (byte) ((buf[0x26] * 0x80) & 0x7F), (byte) (((buf[0x26] * 0x80) >> 7) & 0x7f))));
 
@@ -2408,7 +2277,7 @@ public class RCS extends BaseDriver {
 
                 CtlSysex csx = beforeSend[i].get(sendControlIndex[i]);
                 sendControlDelta[i] = csx.delta;
-                plugin.audio.chipRegister.plugin(MidiPlugin.class).send(model, 0, csx.data, vstDelta);
+                midiSend.accept(0, csx.data);
 
                 sendControlIndex[i]++;
             } else {
@@ -2419,53 +2288,12 @@ public class RCS extends BaseDriver {
         if (endFlg == beforeSend.length) {
             beforeSend = null;
             oneSyncTime = 60.0 / nowTempo / timeBase;
-            vgmFrameCounter = -latency - waitTime;
+            counter.run();
             return;
         }
     }
 
-    private boolean makeBeforeSendCommand() {
-        try {
-            MidiOutInfo[] infos = plugin.audio.chipRegister.plugin(MidiPlugin.class).get();
-            if (infos == null || infos.length < 1) return true;
-
-            beforeSend = new ArrayList[infos.length];
-            sendControlIndex = new int[infos.length];
-            sendControlDelta = new int[infos.length];
-            for (int i = 0; i < beforeSend.length; i++) {
-                beforeSend[i] = new ArrayList<>();
-
-                // Generate Reset
-                switch (infos[i].beforeSendType) {
-                    case 0: // None
-                        break;
-                    case 1: // GM Reset
-                        getCtlSysexFromText(beforeSend[i], setting.getMidiOut().getGMReset());
-                        break;
-                    case 2: // XG Reset
-                        getCtlSysexFromText(beforeSend[i], setting.getMidiOut().getXGReset());
-                        break;
-                    case 3: // GS Reset
-                        getCtlSysexFromText(beforeSend[i], setting.getMidiOut().getGSReset());
-                        break;
-                    case 4: // Custom
-                        getCtlSysexFromText(beforeSend[i], setting.getMidiOut().getCustom());
-                        break;
-                }
-
-                // If the file path is set, the control file is read.
-                if (extendFiles != null) {
-                    getControlFile(beforeSend[i], infos[i].type);
-                }
-            }
-
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    private void getCtlSysexFromText(List<CtlSysex> buf, String text) {
+    void getCtlSysexFromText(List<CtlSysex> buf, String text) {
         if (text == null || text.isEmpty()) return;
 
         String[] cmds = text.split(";");
@@ -2482,7 +2310,7 @@ public class RCS extends BaseDriver {
         }
     }
 
-    private void getControlFile(List<CtlSysex> buf, int instType) {
+    void getControlFile(List<CtlSysex> buf, int instType) {
 
         // GM / XG / GS / LA / GS(SC - 55_1) / GS(SC - 55_2)
         switch (instType) {

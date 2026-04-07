@@ -4,16 +4,15 @@ import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.DoubleSupplier;
+import java.util.function.IntConsumer;
+import java.util.function.IntSupplier;
+import java.util.function.LongConsumer;
 
-import mdplayer.Chip;
 import mdplayer.Common;
-import mdplayer.Common.EnmModel;
+import mdplayer.Setting;
 import mdplayer.chips.NesChip;
-import mdplayer.driver.BaseDriver;
-import mdplayer.driver.Vgm;
-import mdplayer.driver.Vgm.Gd3;
-import mdplayer.plugin.BasePlugin;
-import mdsound.MDSound;
 import mdsound.np.DCFilter;
 import mdsound.np.Device;
 import mdsound.np.Filter;
@@ -31,33 +30,113 @@ import mdsound.np.chip.NesVrc7;
 import mdsound.np.cpu.Km6502;
 import mdsound.np.memory.NesBank;
 import mdsound.np.memory.NesMem;
+import org.apache.commons.lang3.function.BooleanConsumer;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
 import static mdplayer.Common.charset;
 
 
-public class Nsf extends BaseDriver implements NsfDriver {
+public class Nsf {
 
     private static final Logger logger = getLogger(Nsf.class.getName());
 
-    public Nsf() {
-        sampleRate = setting.getOutputDevice().getSampleRate();
+    static final int FCC_NSF = 0x4d53454e; // "NESM"
+
+    private int version;
+    public int songs;
+    private int start;
+    private int load_address;
+    private int initAddress;
+    private int playAddress;
+    private String filename;
+    // margin 64 chars.
+    private String printTitle;
+    private String title_nsf;
+    private String artist_nsf;
+    private String copyrightNsf;
+    String title;
+    String artist;
+    String copyright;
+    // NSFe only
+    private String ripper;
+    // NSFe only
+    private String text;
+    // NSFe only
+    private int text_len;
+    private int speedNtsc;
+    private final byte[] bankSwitch = new byte[8];
+    private int speedPal;
+    private int palNtsc;
+    private int soundChip;
+    public boolean useVrc7;
+    public boolean useVrc6;
+    public boolean useFds;
+    public boolean useFme7;
+    public boolean useMmc5;
+    public boolean useN106;
+    private final byte[] extra = new byte[4];
+    private byte[] body;
+    private int bodySize;
+    private byte[] nsfeImage;
+    public int[] nsfePlst;
+    public int nsfePlstSize;
+    private static final int NSFE_ENTRIES = 256;
+
+    public static class NsfeEntry {
+
+        public int[] tlbl;
+        public int time;
+        public int fade;
     }
 
-    @Override
-    public Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
-        if (ByteUtil.readLeInt(buf, 0) != FCC_NSF) {
-            // NSFe is not supported for now
-logger.log(Level.WARNING, "NSFe not supported.");
-            return null;
-        }
+    public NsfeEntry[] nsfeEntry = new NsfeEntry[NSFE_ENTRIES];
 
-        if (buf.length < 0x80) { // no header?
-logger.log(Level.WARNING, "no header?");
-            return null;
-        }
+    /**
+     * Currently selected track number
+     */
+    public int song;
 
+    private Device.Bus apuBus;
+
+    private Device.Bus stack;
+    private Device.Layer layer;
+    /** DC filter applied to the final output stage */
+    private mdsound.np.DCFilter dcf;
+    /** Low-pass filter applied to the final output */
+    private mdsound.np.Filter lpf;
+
+    mdsound.MDSound.Chip cAPU = null;
+    mdsound.MDSound.Chip cDMC = null;
+    mdsound.MDSound.Chip cFDS = null;
+    mdsound.MDSound.Chip cMMC5 = null;
+    mdsound.MDSound.Chip cN160 = null;
+    mdsound.MDSound.Chip cVRC6 = null;
+    mdsound.MDSound.Chip cVRC7 = null;
+    mdsound.MDSound.Chip cFME7 = null;
+
+    private LoopDetector.NESDetector ld = null;
+//    private NESDetectorEx ld = null;
+
+    NesChip chip;
+
+    int sampleRate;
+    private double cpu_clock_rest;
+    private double apu_clock_rest;
+    private int time_in_ms;
+    private long silent_length = 0;
+    private int last_out = 0;
+
+    boolean isRealModel;
+    BooleanConsumer updateAtTrail;
+    Runnable updateAtMiddle;
+    BiConsumer<Long, Long> updateAtDetectLoop;
+    LongConsumer updateAtDetectSilent;
+    DoubleSupplier speed;
+    IntSupplier getCounter;
+    IntConsumer incCounter;
+
+    void init(byte[] buf) {
         version = buf[0x05] & 0xff;
         songs = buf[0x06] & 0xff;
         start = buf[0x07] & 0xff;
@@ -115,7 +194,7 @@ logger.log(Level.WARNING, "no header?");
         useMmc5 = (soundChip & 8) != 0;
         useN106 = (soundChip & 16) != 0;
         useFme7 = (soundChip & 32) != 0;
-logger.log(Level.INFO, "%s%s%s%s%s%s".formatted(useVrc6 ? "6" : "_", useVrc7 ? "7" : "_", useFds ? "F" : "_", useMmc5 ? "M" : "_", useN106 ? "N" : "_", useFme7 ? "F" : "_"));
+        logger.log(Level.INFO, "%s%s%s%s%s%s".formatted(useVrc6 ? "6" : "_", useVrc7 ? "7" : "_", useFds ? "F" : "_", useMmc5 ? "M" : "_", useN106 ? "N" : "_", useFme7 ? "F" : "_"));
 
         System.arraycopy(buf, 124, extra, 0, 4);
 
@@ -127,220 +206,9 @@ logger.log(Level.INFO, "%s%s%s%s%s%s".formatted(useVrc6 ? "6" : "_", useVrc7 ? "
         bodySize = buf.length - 0x80;
 
         //song = start - 1;
-
-        Vgm.Gd3 gd3 = new Vgm.Gd3();
-        gd3.gameName = title;
-        gd3.gameNameJ = title;
-        gd3.composer = artist;
-        gd3.composerJ = artist;
-        gd3.trackName = title;
-        gd3.trackNameJ = title;
-        gd3.systemName = copyright;
-        gd3.systemNameJ = copyright;
-
-        return gd3;
     }
 
-    @Override
-    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
-        this.vgmBuf = vgmBuf;
-        this.plugin = plugin;
-        this.model = model;
-        this.useChip = useChip;
-        this.latency = latency;
-        this.waitTime = waitTime;
-
-        this.chip = plugin.audio.chipRegister.chip(NesChip.class);
-
-        if (model == EnmModel.RealModel) {
-            stopped = true;
-            vgmCurLoop = 9999;
-            return true;
-        }
-
-        counter = 0;
-        totalCounter = 0;
-        loopCounter = 0;
-        vgmCurLoop = 0;
-        stopped = false;
-        vgmFrameCounter = -latency - waitTime;
-        vgmSpeed = 1;
-        vgmSpeedCounter = 0;
-
-        gd3 = getGD3Info(vgmBuf);
-
-        _init();
-
-        return true;
-    }
-
-    @Override
-    public void processOneFrame() {
-        if (model == EnmModel.RealModel) return;
-
-        try {
-            vgmSpeedCounter += vgmSpeed;
-            while (vgmSpeedCounter >= 1.0 && !stopped) {
-                vgmSpeedCounter -= 1.0;
-                if (vgmFrameCounter > -1) {
-                    //oneFrameMain();
-                } else {
-                    vgmFrameCounter++;
-                }
-            }
-            //Stopped = !IsPlaying();
-        } catch (Exception ex) {
-            logger.log(Level.ERROR, ex.getMessage(), ex);
-        }
-    }
-
-    private static final int FCC_NSF = 0x4d53454e; // "NESM"
-
-    private int version;
-    public int songs;
-    private int start;
-    private int load_address;
-    private int initAddress;
-    private int playAddress;
-    private String filename;
-    // margin 64 chars.
-    private String printTitle;
-    private String title_nsf;
-    private String artist_nsf;
-    private String copyrightNsf;
-    private String title;
-    private String artist;
-    private String copyright;
-    // NSFe only
-    private String ripper;
-    // NSFe only
-    private String text;
-    // NSFe only
-    private int text_len;
-    private int speedNtsc;
-    private byte[] bankSwitch = new byte[8];
-    private int speedPal;
-    private int palNtsc;
-    private int soundChip;
-    public boolean useVrc7;
-    public boolean useVrc6;
-    public boolean useFds;
-    public boolean useFme7;
-    public boolean useMmc5;
-    public boolean useN106;
-    private byte[] extra = new byte[4];
-    private byte[] body;
-    private int bodySize;
-    private byte[] nsfeImage;
-    public int[] nsfePlst;
-    public int nsfePlstSize;
-    private static final int NSFE_ENTRIES = 256;
-
-    @Override public void setSong(int songNo) {
-        song = songNo;
-    }
-
-    @Override public boolean useFds() {
-        return useFds;
-    }
-
-    @Override public boolean useFme7() {
-        return useFme7;
-    }
-
-    @Override public boolean useMmc5() {
-        return useMmc5;
-    }
-
-    @Override public boolean useN106() {
-        return useN106;
-    }
-
-    @Override public boolean useVrc6() {
-        return useVrc6;
-    }
-
-    @Override public boolean useVrc7() {
-        return useVrc7;
-    }
-
-    @Override public void setApu(MDSound.Chip chip) {
-        cAPU = chip;
-    }
-
-    @Override public void setDmc(MDSound.Chip chip) {
-        cDMC = chip;
-    }
-
-    @Override public void setFds(MDSound.Chip chip) {
-        cFDS = chip;
-    }
-
-    @Override public void setMmc5(MDSound.Chip chip) {
-        cMMC5 = chip;
-    }
-
-    @Override public void setN160(MDSound.Chip chip) {
-        cN160 = chip;
-    }
-
-    @Override public void setVrc6(MDSound.Chip chip) {
-        cVRC6 = chip;
-    }
-
-    @Override public void setVrc7(MDSound.Chip chip) {
-        cVRC7 = chip;
-    }
-
-    @Override public void setFme7(MDSound.Chip chip) {
-        cFME7 = chip;
-    }
-
-    public static class NsfeEntry {
-
-        public int[] tlbl;
-        public int time;
-        public int fade;
-    }
-
-    public NsfeEntry[] nsfeEntry = new NsfeEntry[NSFE_ENTRIES];
-
-    /**
-     * Currently selected track number
-     */
-    public int song;
-
-    private Device.Bus apuBus;
-
-    private Device.Bus stack;
-    private Device.Layer layer;
-    /** DC filter applied to the final output stage */
-    private mdsound.np.DCFilter dcf;
-    /** Low-pass filter applied to the final output */
-    private mdsound.np.Filter lpf;
-
-    private mdsound.MDSound.Chip cAPU = null;
-    private mdsound.MDSound.Chip cDMC = null;
-    private mdsound.MDSound.Chip cFDS = null;
-    private mdsound.MDSound.Chip cMMC5 = null;
-    private mdsound.MDSound.Chip cN160 = null;
-    private mdsound.MDSound.Chip cVRC6 = null;
-    private mdsound.MDSound.Chip cVRC7 = null;
-    private mdsound.MDSound.Chip cFME7 = null;
-
-    private LoopDetector.NESDetector ld = null;
-//    private NESDetectorEx ld = null;
-
-    private NesChip chip;
-
-    private final int sampleRate;
-    private double cpu_clock_rest;
-    private double apu_clock_rest;
-    private int time_in_ms;
-    private long silent_length = 0;
-    private int last_out = 0;
-
-    private void _init() {
+    void init(Setting setting) {
         chip.bank = new NesBank();
         chip.mem = new NesMem();
         chip.cpu = new Km6502(true);
@@ -530,17 +398,16 @@ logger.log(Level.INFO, "%s%s%s%s%s%s".formatted(useVrc6 ? "6" : "_", useVrc7 ? "
     }
 
 int CC;
-    public int render_(short[] b, int length) {
-        return render_(b, length, 0);
+    public int render(short[] b, int length) {
+        return render(b, length, 0);
     }
 
-    public int render_(short[] b, int length, int offset) {
-        assert model != EnmModel.RealModel;
-        assert plugin.audio.chipRegister != null;
+    public int render(short[] b, int length, int offset) {
+        assert isRealModel;
 
-        if (vgmFrameCounter < 0) {
-            vgmFrameCounter += length;
-//logger.log(Level.DEBUG, "vgmFrameCounter: " + vgmFrameCounter);
+        if (getCounter.getAsInt() < 0) {
+            incCounter.accept(length);
+//logger.log(Level.DEBUG, "frameCounter: " + frameCounter);
             return length;
         }
 
@@ -550,13 +417,11 @@ int CC;
         int master_volume = 0x80;
 
         double apu_clock_per_sample = chip.cpu.NES_BASECYCLES / sampleRate;
-        double cpu_clock_per_sample = apu_clock_per_sample * vgmSpeed;
+        double cpu_clock_per_sample = apu_clock_per_sample * speed.getAsDouble();
 
         for (int i = 0; i < length; i++) {
             //total_render++;
-            vgmSpeedCounter += vgmSpeed;
-            counter = (int) vgmSpeedCounter;
-            vgmFrameCounter++;
+            updateAtMiddle.run();
 
             // tick CPU
             cpu_clock_rest += cpu_clock_per_sample;
@@ -676,16 +541,12 @@ int CC;
 //            b += nch;
         }
 
-        time_in_ms += (int) (1000 * length / sampleRate * vgmSpeed);
+        time_in_ms += (int) (1000. * length / sampleRate * speed.getAsDouble());
 
         //checkTerminal();
         detectLoop();
         detectSilent();
-        if (!playtime_detected) vgmCurLoop = 0;
-        else {
-            if (totalCounter != 0) vgmCurLoop = (int) (counter / totalCounter);
-            else stopped = true;
-        }
+        updateAtTrail.accept(playtime_detected);
 
 if (CC++ % INTERVAL == 0) { logger.log(Level.DEBUG, "NSF: %d, %d, pc: %04x".formatted(out[0], out[1], chip.cpu.p)); }
         return length;
@@ -703,42 +564,17 @@ static final int INTERVAL = 1024;
     public void detectLoop() {
         if (ld.isLooped(time_in_ms, 30000, 5000) && !playtime_detected) {
             playtime_detected = true;
-            totalCounter = (long) ld.getLoopEnd() * this.sampleRate / 1000;
-            if (totalCounter == 0) totalCounter = counter;
-            loopCounter = (long) (ld.getLoopEnd() - ld.getLoopStart()) * this.sampleRate / 1000;
+            updateAtDetectLoop.accept(
+                    (long) ld.getLoopEnd() * this.sampleRate / 1000,
+                    (long) (ld.getLoopEnd() - ld.getLoopStart()) * this.sampleRate / 1000
+            );
         }
     }
 
     public void detectSilent() {
         if (silent_length > sampleRate * 3L && !playtime_detected) {
             playtime_detected = true;
-            totalCounter = (long) ld.getLoopEnd() * this.sampleRate / 1000;
-            if (totalCounter == 0) totalCounter = counter;
-            loopCounter = 0;
-            stopped = true;
+            updateAtDetectSilent.accept((long) ld.getLoopEnd() * this.sampleRate / 1000);
         }
-    }
-
-    // TODO separate from implementation
-
-    @Override
-    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
-        throw new UnsupportedOperationException("This driver does not require this method");
-    }
-
-    @Override
-    public int render(short[] buffer, int offset, int sampleCount) {
-//        vstDelta = 0;
-        return render_(buffer, sampleCount / 2, offset) * 2;
-    }
-
-    @Override
-    public void copyWaveBuffer(short[][] dest) {
-        visWaveBufferCopy(dest);
-    }
-
-    @Override
-    public boolean isNotRenderingOnPause() {
-        return true;
     }
 }

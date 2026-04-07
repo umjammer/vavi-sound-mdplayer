@@ -6,9 +6,10 @@
 
 package mdplayer.chips;
 
-import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
+import mdplayer.driver.BaseDriver;
+import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.chips.GbSound;
 import mdsound.instrument.DmgInst;
@@ -22,12 +23,12 @@ import mdsound.instrument.DmgInst;
  */
 public class DmgChip implements Chip {
 
-    public boolean[][] mask = {
+    public final boolean[][] mask = {
             {false, false, false, false},
             {false, false, false, false}
     };
 
-    private Audio context;
+    private BasePlugin<? extends BaseDriver> context;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -36,7 +37,7 @@ public class DmgChip implements Chip {
     }
 
     @Override
-    public void init(Audio context) {
+    public void init(BasePlugin<? extends BaseDriver> context) {
         this.context = context;
     }
 

@@ -71,11 +71,11 @@ public class O65Relocator {
      * @param buffer
      * @param idx
      */
-    private int getWord(byte[] buffer, int idx) {
+    private static int getWord(byte[] buffer, int idx) {
         return (buffer[idx] & 0xff) | ((buffer[idx + 1] & 0xff) << 8);
     }
 
-    private int getWord(ByteBuffer buffer, int idx) {
+    private static int getWord(ByteBuffer buffer, int idx) {
         int pos = buffer.position();
         return (buffer.get(pos + idx) & 0xff) | ((buffer.get(pos + idx + 1) & 0xff) << 8);
     }
@@ -87,12 +87,12 @@ public class O65Relocator {
      * @param idx
      * @param value
      */
-    private void setWord(byte[] buffer, int idx, int value) {
+    private static void setWord(byte[] buffer, int idx, int value) {
         buffer[idx] = (byte) value;
         buffer[idx + 1] = (byte) (value >> 8);
     }
 
-    private void setWord(ByteBuffer buffer, int idx, int value) {
+    private static void setWord(ByteBuffer buffer, int idx, int value) {
         int pos = buffer.position();
         buffer.put(pos + idx, (byte) value);
         buffer.put(pos + idx + 1, (byte) (value >> 8));
@@ -103,7 +103,7 @@ public class O65Relocator {
      *
      * @param buf
      */
-    private int readOptions(byte[] buf, int ptr) {
+    private static int readOptions(byte[] buf, int ptr) {
         int l = 0;
 
         int c = buf[0 + ptr] & 0xff;
@@ -119,7 +119,7 @@ public class O65Relocator {
      *
      * @param buf
      */
-    private int readUndef(ByteBuffer buf) {
+    private static int readUndef(ByteBuffer buf) {
         int l = 2;
         int pos = buf.position();
 

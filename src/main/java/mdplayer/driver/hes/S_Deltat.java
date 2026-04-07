@@ -53,8 +53,8 @@ public class S_Deltat extends KMIF_SOUND_DEVICE {
         }
 
         public static dlgRelease release;
-        public int[] lineartbl = new int[(1 << LIN_BITS) + 1];
-        public int[] logtbl = new int[1 << LOG_BITS];
+        public final int[] lineartbl = new int[(1 << LIN_BITS) + 1];
+        public final int[] logtbl = new int[1 << LOG_BITS];
 
         public static final Object log_tables_mutex = new Object();
         public static int log_tables_refcount = 0;
@@ -116,7 +116,7 @@ public class S_Deltat extends KMIF_SOUND_DEVICE {
 
     public static class YMDELTATPCMSOUND_ {
 
-        public byte[] chMask = {
+        public final byte[] chMask = {
                 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -199,7 +199,7 @@ public class S_Deltat extends KMIF_SOUND_DEVICE {
             DEV_MAX,
         }
 
-        private int DivFix(int p1, int p2, int fix) {
+        private static int DivFix(int p1, int p2, int fix) {
             int ret;
             ret = p1 / p2;
             p1 = p1 % p2;// p1 = p1 - p2 * ret;
@@ -238,7 +238,7 @@ public class S_Deltat extends KMIF_SOUND_DEVICE {
             public int level;
             public int granuality;
             public int pad4_3;
-            public byte[] regs = new byte[0x10];
+            public final byte[] regs = new byte[0x10];
         }
 
         public YMDELTATPCMSOUND_COMMON_TAG common = new YMDELTATPCMSOUND_COMMON_TAG();
@@ -535,20 +535,15 @@ public class S_Deltat extends KMIF_SOUND_DEVICE {
     private KMIF_SOUND_DEVICE YMDELTATPCMSoundAlloc(int ymDeltaTPcmType, byte[] pcmBuf) {
         int ramSize;
         YMDELTATPCMSOUND_ sndp;
-        switch (ymDeltaTPcmType) {
-        case 0: // YMDELTATPCM_TYPE_Y8950:
-            ramSize = 32 * 1024;
-            break;
-        case 1: // YMDELTATPCM_TYPE_YM2608:
-            ramSize = 256 * 1024;
-            break;
-        case 3: // MSM5205:
-            ramSize = 256 * 256;
-            break;
-        default:
-            ramSize = 0;
-            break;
-        }
+        ramSize = switch (ymDeltaTPcmType) {
+            case 0 -> // YMDELTATPCM_TYPE_Y8950:
+                    32 * 1024;
+            case 1 -> // YMDELTATPCM_TYPE_YM2608:
+                    256 * 1024;
+            case 3 -> // MSM5205:
+                    256 * 256;
+            default -> 0;
+        };
         sndp = new YMDELTATPCMSOUND_();
         sndp.rambuf = new byte[ramSize];
         if (sndp == null) return null;

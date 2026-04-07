@@ -2,22 +2,31 @@ package mdplayer;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
-import javax.sound.sampled.AudioInputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.ShortBuffer;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.LineEvent;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.SourceDataLine;
 
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.MidiPlugin;
 import mdplayer.chips.RealChipPlugin;
 import mdplayer.chips.VstPlugin;
 import mdplayer.driver.BaseDriver;
-import mdplayer.format.FileFormat;
-import mdsound.MDSound;
-import vavi.util.ByteUtil;
+import mdplayer.plugin.BasePlugin;
+import mdplayer.plugin.SampledPlugin;
+import vavi.util.event.GenericSupport;
 
 import static java.lang.System.getLogger;
+import static mdplayer.plugin.BasePlugin.BUFFER_SIZE;
+import static vavi.sound.SoundUtil.volume;
 
 
-public class Audio {
+/** virtual device player */
+public final class Audio {
 
     private static final Logger logger = getLogger(Audio.class.getName());
 
@@ -25,147 +34,266 @@ public class Audio {
 
     private static final Audio instance = new Audio();
 
-    // TODO driver should be one, instruments should be separated virtual and real
-    public BaseDriver driverVirtual = null;
-
-    public final MDSound mds;
-
-    public ChipRegister chipRegister;
-
-    // view
-    public final ChipLEDs chipLED = new ChipLEDs();
+    public BasePlugin<? extends BaseDriver> plugin;
 
     public final VisVolume visVolume = new VisVolume();
 
-    // TODO variable?
-    public static final int BUFFER_SIZE = 1024;
+    private final GenericSupport genericSupport = new GenericSupport();
 
-    public String errMsg = "";
+    private SourceDataLine line;
 
-    public FileFormat playingFileFormat;
-
-    public String naudioFileName = null;
-    public AudioInputStream naudioFileReader = null;
-//    protected NWave.SampleProviders.SampleToWaveProvider16 naudioWs = null;
-    protected byte[] naudioSrcbuffer = null;
-    public int procTimePer1Frame = 0;
-    public int stepCounter = 0;
-    public double vgmFadeoutCounter;
-    public double vgmFadeoutCounterV;
-
-    private static byte[] ensure(byte[] buffer, int bytesRequired) {
-        if (buffer == null || buffer.length < bytesRequired) {
-            buffer = new byte[bytesRequired];
-        }
-        return buffer;
+    private Audio() {
     }
 
-    protected static void convert2ByteToShort(short[] destBuffer, int offset, byte[] source, int shortCount) {
-        int samplesRead = shortCount;
-        for (int n = 0; n < samplesRead; n++) {
-            destBuffer[n] = ByteUtil.readLeShort(source, offset + n * Short.BYTES); // volume;
-        }
+    /** */
+    public static Audio getInstance() {
+        return instance;
     }
 
-    public int nAudioRead(short[] buffer, int offset, int count) {
+    /** */
+    public void init(BasePlugin<? extends BaseDriver> plugin) {
+        this.plugin = plugin;
+
         try {
-            naudioSrcbuffer = ensure(naudioSrcbuffer, count * 2);
-//            naudioWs.read(naudioSrcbuffer, 0, count * 2);
-            convert2ByteToShort(buffer, offset, naudioSrcbuffer, count);
-        } catch (Exception e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
+            int sampleRate = setting.getOutputDevice().getSampleRate();
+            AudioFormat format = new AudioFormat(sampleRate, 16, 2, true, false);
+            line = AudioSystem.getSourceDataLine(format);
+logger.log(Level.DEBUG, format);
+            line.addLineListener(Audio::lineListener);
+            line.open();
+            volume(line, Double.parseDouble(System.getProperty("mdplayer.volume", "0.2")));
+            line.start();
+        } catch (LineUnavailableException e) {
+            throw new IllegalStateException(e);
         }
-
-        return count;
     }
 
-    public int update(short[] buffer, int offset, int sampleCount) {
-//logger.log(Level.TRACE, ": " + sampleCount);
-        //return nAaudioRead(buffer, offset, sampleCount);
+    private static void lineListener(LineEvent e) {
+logger.log(Level.DEBUG, "line: " + e.getType());
+    }
 
-        if (naudioFileReader != null) {
-            if (trdClosed) {
-                _trdStopped = true;
-                //vgmFadeout = false;
-                //Stopped = true;
+    /** */
+    public boolean play() {
+        plugin.chipRegister.plugin(RealChipPlugin.class).startThread();
+
+        plugin.prepare();
+//logger.log(Level.TRACE, "play: " + audio.stopped + ", " + audio.hashCode());
+
+        stop();
+
+        try { Thread.sleep(500); } catch (InterruptedException ignore) {}
+
+        plugin.paused = false;
+        plugin.stopped = false;
+
+        plugin.oneTimeReset = false;
+
+//        if (trd == null) {
+//            trd = new Thread(this::trdIF);
+//            trd.setPriority(Thread.NORM_PRIORITY);
+//            trd.start();
+//        }
+
+        plugin.resume();
+
+        if (plugin instanceof SampledPlugin sampledPlugin) {
+            if (sampledPlugin.naudioFileReader != null) {
+                sampledPlugin.nAudioStop();
             }
-            return nAudioRead(buffer, offset, sampleCount);
         }
 
-        int cnt = trdVgmVirtualMainFunction(buffer, offset, sampleCount);
-
-        if (setting.getMidiKbd().getUseMIDIKeyboard()) {
-            chipRegister.plugin(MidiPlugin.class).keyboard(buffer, offset, sampleCount);
+        if (plugin instanceof SampledPlugin sampledPlugin) {
+            sampledPlugin.naudioFileName = plugin.playingFileName;
         }
 
-        return cnt;
+        logger.log(Level.DEBUG, "driver: " + plugin.driverVirtual.getClass().getSimpleName());
+
+        while (true) {
+//logger.log(Level.TRACE, "loop HERE");
+            short[] buffer = new short[4];
+
+            int r;
+            if (plugin instanceof SampledPlugin sampledPlugin) {
+                r = sampledPlugin.read(buffer, 0, buffer.length);
+            } else {
+                r = render(buffer, 0, buffer.length);
+                if (setting.getMidiKbd().getUseMIDIKeyboard()) {
+                    plugin.chipRegister.plugin(MidiPlugin.class).keyboard(buffer, 0, buffer.length);
+                }
+            }
+            if (r == -1) break;
+
+            this.write(buffer, 0, buffer.length);
+            Thread.yield();
+        }
+
+        return false;
     }
 
-    private static int limit(int v, int max, int min) {
-        return Math.min(max, Math.max(v, min));
+    private int write(short[] buffer, int offset, int count) {
+        ByteBuffer bb = ByteBuffer.allocate(count * Short.BYTES).order(ByteOrder.LITTLE_ENDIAN);
+        ShortBuffer sb = bb.asShortBuffer();
+        sb.put(buffer, offset, count);
+        sb.rewind();
+        return line.write(bb.array(), 0, count * Short.BYTES);
     }
 
-//int CC;
-    protected int trdVgmVirtualMainFunction(short[] buffer, int offset, int sampleCount) {
-        if (buffer == null || buffer.length < 1 || sampleCount == 0) return 0;
-        if (driverVirtual == null) return sampleCount;
+    public void stop() {
+        logger.log(Level.INFO, "stop enter");
+        try {
+            if (plugin.paused) pause();
+
+            if (plugin.stopped) {
+                plugin.chipRegister.plugin(RealChipPlugin.class).trdClosed = true;
+                while (!plugin.chipRegister.plugin(RealChipPlugin.class).isThreadStopped()) { // TODO if realChip is not null, _trdStopped is false
+                    Thread.sleep(1);
+                }
+
+                if (plugin instanceof SampledPlugin sampledPlugin) {
+                    if (sampledPlugin.naudioFileReader != null) {
+                        sampledPlugin.nAudioStop();
+                    }
+                }
+
+                return;
+            }
+
+            if (!plugin.paused) {
+                if (!line.isRunning()) {
+                    plugin.fadeoutCounterV = 0.1;
+                    plugin.fadeout = true;
+                    int cnt = 0;
+                    while (!plugin.stopped && cnt < 100) {
+                        Thread.yield();
+                        cnt++;
+                    }
+                }
+            }
+            plugin.chipRegister.plugin(RealChipPlugin.class).trdClosed = true;
+
+            if (plugin instanceof SampledPlugin sampledPlugin) {
+                if (sampledPlugin.naudioFileReader != null) {
+                    return;
+                }
+            }
+
+            try {
+                plugin.chipRegister.softReset(EnmModel.VirtualModel);
+                plugin.chipRegister.softReset(EnmModel.RealModel);
+            } catch (Exception e) {
+                logger.log(Level.ERROR, e.toString()); // usually chip 1 is null
+            }
+
+            int timeout = 5000;
+            while (!plugin.chipRegister.plugin(RealChipPlugin.class).isThreadStopped()) {
+                Thread.yield();
+                timeout--;
+                if (timeout < 1) break;
+            }
+            while (!plugin.stopped) {
+                Thread.yield();
+                timeout--;
+                if (timeout < 1) break;
+            }
+            plugin.stopped = true;
+//logger.log(Level.DEBUG, "stop: " + stopped + ", " + hashCode());
+
+            try {
+                plugin.chipRegister.softReset(EnmModel.VirtualModel);
+                plugin.chipRegister.softReset(EnmModel.RealModel);
+            } catch (Exception e) {
+                logger.log(Level.ERROR, e.toString()); // usually chip 1 is null
+            }
+
+            //plugin.chipRegister.plugin(MidiPlugin.class).close();
+
+            // DEBUG
+            //plugin.chipRegister.plugin(VstPlugin.class).parse();
+        } catch (Exception ex) {
+            logger.log(Level.ERROR, ex.getMessage(), ex);
+        }
+    }
+
+    /** */
+    public void close() {
+        logger.log(Level.INFO, "close enter");
+        plugin.close();
 
         try {
-            //stwh.Reset(); stwh.Start();
+            plugin.chipRegister.plugin(MidiPlugin.class).midiClose();
+            plugin.chipRegister.plugin(RealChipPlugin.class).close();
 
-//if (CC++ > 100) { System.exit(1); }
+//            line.drain(); // TODO this blocks to stop
+            line.stop();
+            line.close();
+
+        } catch (Exception ex) {
+            logger.log(Level.ERROR, ex.getMessage(), ex);
+        }
+    }
+
+    /** */
+    public void stepPlay(int step) {
+        plugin.stepCounter = step;
+    }
+
+    private int render(short[] buffer, int offset, int sampleCount) {
+        if (buffer == null || buffer.length < 1 || sampleCount == 0) return 0;
+        if (plugin.driverVirtual == null) return sampleCount;
+
+        try {
+            //stwh.reset(); stwh.Start();
+
 //logger.log(Level.TRACE, "stop: " + stopped + ", " + hashCode());
-            if (stopped || paused) {
-                if (driverVirtual.isNotRenderingOnPause()) {
+            if (plugin.stopped || plugin.paused) {
+                if (plugin.driverVirtual.isNotRenderingOnPause()) {
                     for (int d = offset; d < offset + sampleCount; d++) buffer[d] = 0;
                     return sampleCount;
                 } else {
-                    int ret = mds.update(buffer, offset, sampleCount, null);
+                    int ret = plugin.mds.update(buffer, offset, sampleCount, null);
                     return ret;
                 }
             }
 
-            int cnt = driverVirtual.render(buffer, offset, sampleCount);
+//            stwh.reset();
+//            stwh.start();
+            int cnt = plugin.driverVirtual.render(buffer, offset, sampleCount);
 //logger.log(Level.TRACE, "sampleCount: " + sampleCount);
 
             // VST
-            chipRegister.plugin(VstPlugin.class).update(buffer, offset, sampleCount);
+            plugin.chipRegister.plugin(VstPlugin.class).update(buffer, offset, sampleCount);
 
             for (int i = 0; i < sampleCount; i++) {
-                int mul = (int) (16384.0 * Math.pow(10.0, masterVolume / 40.0));
-                buffer[offset + i] = (short) limit((buffer[offset + i] * mul) >> 13, 0x7fff, -0x8000);
+                int mul = (int) (16384.0 * Math.pow(10.0, plugin.masterVolume / 40.0));
+                buffer[offset + i] = (short) Math.clamp((buffer[offset + i] * mul) >> 13, -0x8000, 0x7fff);
 
-                if (!vgmFadeout) continue;
+                if (!plugin.fadeout) continue;
 
                 // Fade-out Processing
-                buffer[offset + i] = (short) (buffer[offset + i] * vgmFadeoutCounter);
+                buffer[offset + i] = (short) (buffer[offset + i] * plugin.fadeoutCounter);
 
-                vgmFadeoutCounter -= vgmFadeoutCounterV;
-                if (vgmFadeoutCounterV >= 0.004 && vgmFadeoutCounterV != 0.1) {
-                    vgmFadeoutCounterV = 0.004;
+                plugin.fadeoutCounter -= plugin.fadeoutCounterV;
+                if (plugin.fadeoutCounterV >= 0.004 && plugin.fadeoutCounterV != 0.1) {
+                    plugin.fadeoutCounterV = 0.004;
                 }
 
-                if (vgmFadeoutCounter < 0.0) {
-                    vgmFadeoutCounter = 0.0;
+                if (plugin.fadeoutCounter < 0.0) {
+                    plugin.fadeoutCounter = 0.0;
                 }
 
                 // After the fade out is complete, the music stops playing completely.
-                if (vgmFadeoutCounter == 0.0) {
-                    chipRegister.softReset(EnmModel.VirtualModel);
-                    chipRegister.softReset(EnmModel.RealModel);
+                if (plugin.fadeoutCounter == 0.0) {
+                    plugin.chipRegister.softReset(EnmModel.VirtualModel);
+                    plugin.chipRegister.softReset(EnmModel.RealModel);
 
-                    waveWriter.write(buffer, offset, i + 1);
+                    plugin.mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, null);
 
-                    waveWriter.close();
-
-                    mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, null);
-
-                    chipRegister.close();
+                    plugin.chipRegister.close();
 
                     //Thread.sleep(500); // Noise countermeasures
 
-                    stopped = true;
-logger.log(Level.DEBUG, "stop: " + stopped);
+                    plugin.stopped = true;
+logger.log(Level.DEBUG, "stop: " + plugin.stopped);
 
                     // Processing time per frame
 //                    procTimePer1Frame = (int) ((double) stwh.ElapsedMilliseconds / (i + 1) * 1000000.0);
@@ -177,243 +305,65 @@ logger.log(Level.DEBUG, "stop: " + stopped);
                 updateVisualVolume(buffer, offset);
             }
 
-            waveWriter.write(buffer, offset, sampleCount);
-
             // Processing time per frame
 //            procTimePer1Frame = (int) ((double) stwh.ElapsedMilliseconds / sampleCount * 1000000.0);
             return cnt;
 
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
-//            _fatalError = true;
-            stopped = true;
+            plugin.stopped = true;
         }
 
         return -1;
     }
 
-    protected void naudioWrapPlaybackStopped(LineEvent e) {
-//        if (e.getException != null) {
-//            JOptionPane.showMessageDialog(null,
-//                    "The device has stopped for some reason.\nMessage:\n%s\nStack trace:\n%s".formatted(
-//                            e.Exception.Message, e.Exception.StackTrace)
-//                    , "Error"
-//                    , JOptionPane.ERROR_MESSAGE);
-//            flgReinit = true;
-//
-//            try {
-//                naudioWrap.Stop();
-//            } catch (Exception ex) {
-//                Log.forcedWrite(ex);
-//            }
-//
-//        } else {
-        try {
-            stop();
-        } catch (Exception ex) {
-            logger.log(Level.ERROR, ex.getMessage(), ex);
-        }
-//        }
-    }
-
-    public void stop() {
-
-        try {
-            if (paused) pause();
-
-            if (stopped) {
-                trdClosed = true;
-                while (!_trdStopped) { // TODO if realChip is not null, _trdStopped is false
-                    Thread.sleep(1);
-                }
-
-                if (playingFileFormat != null && !playingFileFormat.isSampled()
-                        && naudioFileReader != null) {
-                    nAudioStop();
-                }
-
-                return;
-            }
-
-            if (!paused) {
-                LineEvent.Type ps = naudioWrap.getPlaybackState();
-                if (ps != null && ps != LineEvent.Type.STOP) {
-                    vgmFadeoutCounterV = 0.1;
-                    vgmFadeout = true;
-                    int cnt = 0;
-                    while (!stopped && cnt < 100) {
-                        Thread.yield();
-                        cnt++;
-                    }
-                }
-            }
-            trdClosed = true;
-
-            if (naudioFileReader != null) {
-                nAudioStop();
-                return;
-            }
-
-            chipRegister.softReset(EnmModel.VirtualModel);
-            chipRegister.softReset(EnmModel.RealModel);
-
-            int timeout = 5000;
-            while (!_trdStopped) {
-                Thread.yield();
-                timeout--;
-                if (timeout < 1) break;
-            }
-            while (!stopped) {
-                Thread.yield();
-                timeout--;
-                if (timeout < 1) break;
-            }
-            stopped = true;
-//new Exception().printStackTrace();
-//logger.log(Level.DEBUG, "stop: " + stopped + ", " + hashCode());
-
-            chipRegister.softReset(EnmModel.VirtualModel);
-            chipRegister.softReset(EnmModel.RealModel);
-
-            //chipRegister.outMIDIData_Close();
-            if (setting.getOther().getWavSwitch()) {
-                Thread.sleep(500);
-                waveWriter.close();
-            }
-
-            // DEBUG
-            //vstparse();
-        } catch (Exception ex) {
-            logger.log(Level.ERROR, ex.getMessage(), ex);
-        }
-    }
-
-    public void nAudioStop() {
-        try {
-            AudioInputStream dmy = naudioFileReader;
-            naudioFileReader = null;
-            dmy.close();
-        } catch (Exception e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-        }
-    }
-
-    private Audio() {
-        logger.log(Level.DEBUG, "Audio:Init:STEP 01");
-
-        naudioWrap = new NAudioWrap(setting.getOutputDevice().getSampleRate());
-        naudioWrap.playbackStopped = this::naudioWrapPlaybackStopped;
-
-        mds = new MDSound(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, null);
-
-        chipRegister = new ChipRegister();
-        chipRegister.init(this);
-    }
-
-    public static Audio getInstance() {
-        return instance;
-    }
-
-//    public frmMain frmMain = null;
-
-    public NAudioWrap naudioWrap;
-    public WaveWriter waveWriter = null;
-
-    public void close() {
-        try {
-            chipRegister.plugin(MidiPlugin.class).midiClose();
-            chipRegister.plugin(RealChipPlugin.class).close();
-
-            naudioWrap.stop();
-
-        } catch (Exception ex) {
-            logger.log(Level.ERROR, ex.getMessage(), ex);
-        }
-    }
-
-    public Thread trdMain = null;
-    public boolean trdClosed = false;
-    private boolean _trdStopped = true;
-
-    public synchronized boolean getTrdStopped() {
-        return _trdStopped;
-    }
-
-    public synchronized void setTrdStopped(boolean value) {
-//new Exception("value: " + value).printStackTrace(System.err);
-        _trdStopped = value;
-    }
-
     private void updateVisualVolume(short[] buffer, int offset) {
         visVolume.master = buffer[offset];
 
-        for (var i : mds.getFirstInstruments()) {
+        for (var i : plugin.mds.getFirstInstruments()) {
             var vs = i.getView("volume", null);
         }
     }
 
-    public BaseDriver driverReal = null;
-
 //    protected long sw = System.currentTimeMillis();
     public static final double swFreq = 1000d / 44100;
-
-    public boolean stopped = false;
-
-    public void setVolume(String tag, Class<? extends Chip> c, boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getVolume(tag, c)) + volume, -192, 20);
-            mds.setVolume(tag, Audio.getInstance().chipRegister.chip(c).inst(0), v); // TODO vavi
-            setting.getBalance().setVolume(tag, c, v);
-        } catch (Exception e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-        }
-    }
-
-    public int masterVolume = 0;
-
-    public void setMasterVolume(boolean isAbs, int volume) {
-        masterVolume = Common.range((isAbs ? 0 : setting.getBalance().getMasterVolume()) + volume, -192, 20);
-        setting.getBalance().setMasterVolume(masterVolume);
-    }
-
-    public void getPlayingFileName(String[] playingFileName, String[] playingArcFileName) {
-        playingFileName[0] = null; // TODO
-        playingArcFileName[0] = null;
-    }
-
-    public long getDriverCounter() {
-        if (driverVirtual == null && driverReal == null) return -1;
-
-        if (driverVirtual == null) {
-            return driverReal.getDriverCounter();
-        }
-        if (driverReal == null) {
-            return driverVirtual.getDriverCounter();
-        }
-
-        return driverVirtual.whichCounter(driverReal.getDriverCounter(), driverVirtual.getDriverCounter());
-    }
-
-    public boolean paused = false;
-    public boolean vgmFadeout;
 
     public void fadeout() {
         if (isPaused()) {
             pause();
         }
 
-        vgmFadeout = true;
+        plugin.fadeout = true;
     }
 
     public void pause() {
-        try {
-            paused = !paused;
-        } catch (Exception ex) {
-            logger.log(Level.ERROR, ex.getMessage(), ex);
-        }
+        plugin.paused = !plugin.paused;
     }
 
     public boolean isPaused() {
-        return paused;
+        return plugin.paused;
+    }
+
+    // for gui
+    public void processRequest() {
+        while (true) {
+            Request req = OpeManager.getRequestToAudio();
+            if (req == null) {
+                Thread.yield(); // TODO this should not be a thread, use event system or blocking queue
+                continue;
+            }
+
+            switch (req.request) {
+                case Die: // Please kill yourself
+                    plugin.seqDie();
+                    req.setEnd(true);
+                    return;
+                case Stop:
+                    stop();
+                    req.setEnd(true);
+                    OpeManager.completeRequestToAudio(req);
+                    break;
+            }
+        }
     }
 }

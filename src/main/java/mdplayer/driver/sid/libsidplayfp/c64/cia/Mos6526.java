@@ -232,32 +232,35 @@ public class Mos6526 {
     }
 
     // Event context.
-    protected EventScheduler eventScheduler;
+    protected final EventScheduler eventScheduler;
 
     // Ports
-    protected byte pra, prb, ddra, ddrb;
+    protected final byte pra;
+    protected final byte prb;
+    protected final byte ddra;
+    protected final byte ddrb;
 
     // These are all CIA registers.
-    protected byte[] regs = new byte[0x10];
+    protected final byte[] regs = new byte[0x10];
 
     // Timers a and B.
-    protected TimerA timerA;
-    protected TimerB timerB;
+    protected final TimerA timerA;
+    protected final TimerB timerB;
 
     // Interrupt Source
-    protected InterruptSource interruptSource;
+    protected final InterruptSource interruptSource;
 
     // TOD
-    protected Tod tod;
+    protected final Tod tod;
 
     // Serial data Registers
-    protected SerialPort serialPort;
+    protected final SerialPort serialPort;
 
     // Have we already scheduled CIA->CPU Interrupt transition?
     protected boolean triggerScheduled;
 
     // Events
-    protected EventCallback<Mos6526> bTickEvent;
+    protected final EventCallback<Mos6526> bTickEvent;
 
     /**
      * Trigger an Interrupt from TOD.

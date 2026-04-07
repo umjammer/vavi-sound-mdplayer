@@ -41,7 +41,7 @@ public class frmYM2610 extends frmBase {
     private MDChipParams.YM2610 oldParam = null;
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmYM2610.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmYM2610.class);
 
     public frmYM2610(frmMain frm, int chipId, int zoom, MDChipParams.YM2610 newParam, MDChipParams.YM2610 oldParam) {
         super(frm);
@@ -233,12 +233,12 @@ public class frmYM2610 extends frmBase {
         int delta;
         float frq;
 
-        int[][] YM2610Register = audio.chipRegister.chip(Ym2610Chip.class).read(chipId);
-        int[] fmKeyYM2610 = audio.chipRegister.chip(Ym2610Chip.class).getKeyOn(chipId);
-        int[] YM2610Vol = audio.chipRegister.chip(Ym2610Chip.class).getVolume(chipId);
-        int[] YM2610Ch3SlotVol = audio.chipRegister.chip(Ym2610Chip.class).getCh3SlotVolume(chipId);
-        int[][] YM2610Rhythm = audio.chipRegister.chip(Ym2610Chip.class).getRhythmVolume(chipId);
-        int[] YM2610AdpcmVol = audio.chipRegister.chip(Ym2610Chip.class).getAdpcmVolume(chipId);
+        int[][] YM2610Register = audio.plugin.chipRegister.chip(Ym2610Chip.class).read(chipId);
+        int[] fmKeyYM2610 = audio.plugin.chipRegister.chip(Ym2610Chip.class).getKeyOn(chipId);
+        int[] YM2610Vol = audio.plugin.chipRegister.chip(Ym2610Chip.class).getVolume(chipId);
+        int[] YM2610Ch3SlotVol = audio.plugin.chipRegister.chip(Ym2610Chip.class).getCh3SlotVolume(chipId);
+        int[][] YM2610Rhythm = audio.plugin.chipRegister.chip(Ym2610Chip.class).getRhythmVolume(chipId);
+        int[] YM2610AdpcmVol = audio.plugin.chipRegister.chip(Ym2610Chip.class).getAdpcmVolume(chipId);
 
         boolean isFmEx = (YM2610Register[chipId][0x27] & 0x40) > 0;
         newParam.channels[2].ex = isFmEx;
@@ -246,7 +246,7 @@ public class frmYM2610 extends frmBase {
         int defaultMasterClock = 8000000;
         float ssgMul = 1.0f;
         int masterClock = defaultMasterClock;
-        int clock = audio.mds.getChipInfo(Ym2610Inst.class).clock;
+        int clock = audio.plugin.mds.getChipInfo(Ym2610Inst.class).clock;
         if (clock != 0) {
             ssgMul = clock / (float) defaultMasterClock;
             masterClock = clock;
@@ -301,7 +301,7 @@ public class frmYM2610 extends frmBase {
                 ff /= 1038f;
 
                 if ((fmKeyYM2610[ch] & 1) != 0)
-                    n = Math.min(Math.max(Common.searchYM2608Adpcm(ff) - 1, 0), 95);
+                    n = Math.clamp(Common.searchYM2608Adpcm(ff) - 1, 0, 95);
 
                 byte con = (byte) (fmKeyYM2610[ch]);
                 int v = 127;
@@ -314,8 +314,8 @@ public class frmYM2610 extends frmBase {
                 v = (((con & 0x40) != 0) && ((m & 0x40) != 0) && v > (YM2610Register[p][0x48 + c] & 0x7f)) ? (YM2610Register[p][0x48 + c] & 0x7f) : v;
                 //OP4
                 v = (((con & 0x80) != 0) && ((m & 0x80) != 0) && v > (YM2610Register[p][0x4c + c] & 0x7f)) ? (YM2610Register[p][0x4c + c] & 0x7f) : v;
-                newParam.channels[ch].volumeL = Math.min(Math.max((int) ((127 - v) / 127.0 * ((YM2610Register[p][0xb4 + c] & 0x80) != 0 ? 1 : 0) * YM2610Vol[ch] / 80.0), 0), 19);
-                newParam.channels[ch].volumeR = Math.min(Math.max((int) ((127 - v) / 127.0 * ((YM2610Register[p][0xb4 + c] & 0x40) != 0 ? 1 : 0) * YM2610Vol[ch] / 80.0), 0), 19);
+                newParam.channels[ch].volumeL = Math.clamp((int) ((127 - v) / 127.0 * ((YM2610Register[p][0xb4 + c] & 0x80) != 0 ? 1 : 0) * YM2610Vol[ch] / 80.0), 0, 19);
+                newParam.channels[ch].volumeR = Math.clamp((int) ((127 - v) / 127.0 * ((YM2610Register[p][0xb4 + c] & 0x40) != 0 ? 1 : 0) * YM2610Vol[ch] / 80.0), 0, 19);
             } else {
                 int m = md[YM2610Register[0][0xb0 + 2] & 7];
                 if (parent.setting.getOther().getExAll()) m = 0xf0;
@@ -325,11 +325,11 @@ public class frmYM2610 extends frmBase {
                 ff /= 1038f;
 
                 if ((fmKeyYM2610[2] & 0x10) != 0 && ((m & 0x10) != 0))
-                    n = Math.min(Math.max(Common.searchYM2608Adpcm(ff) - 1, 0), 95);
+                    n = Math.clamp(Common.searchYM2608Adpcm(ff) - 1, 0, 95);
 
                 int v = ((m & 0x10) != 0) ? YM2610Register[p][0x40 + c] : 127;
-                newParam.channels[2].volumeL = Math.min(Math.max((int) ((127 - v) / 127.0 * ((YM2610Register[0][0xb4 + 2] & 0x80) != 0 ? 1 : 0) * YM2610Ch3SlotVol[0] / 80.0), 0), 19);
-                newParam.channels[2].volumeR = Math.min(Math.max((int) ((127 - v) / 127.0 * ((YM2610Register[0][0xb4 + 2] & 0x40) != 0 ? 1 : 0) * YM2610Ch3SlotVol[0] / 80.0), 0), 19);
+                newParam.channels[2].volumeL = Math.clamp((int) ((127 - v) / 127.0 * ((YM2610Register[0][0xb4 + 2] & 0x80) != 0 ? 1 : 0) * YM2610Ch3SlotVol[0] / 80.0), 0, 19);
+                newParam.channels[2].volumeR = Math.clamp((int) ((127 - v) / 127.0 * ((YM2610Register[0][0xb4 + 2] & 0x40) != 0 ? 1 : 0) * YM2610Ch3SlotVol[0] / 80.0), 0, 19);
             }
             newParam.channels[ch].note = n;
 
@@ -355,12 +355,12 @@ public class frmYM2610 extends frmBase {
                 if ((fmKeyYM2610[2] & (0x10 << (ch - 5))) != 0 && ((m & (0x10 << op)) != 0)) {
                     float ff = freq / ((2 << 20) / (masterClock / (24 * fmDiv))) * (2 << (octav + 2));
                     ff /= 1038f;
-                    n = Math.min(Math.max(Common.searchYM2608Adpcm(ff) - 1, 0), 95);
+                    n = Math.clamp(Common.searchYM2608Adpcm(ff) - 1, 0, 95);
                 }
                 newParam.channels[ch].note = n;
 
                 int v = ((m & (0x10 << op)) != 0) ? YM2610Register[0][0x42 + op * 4] : 127;
-                newParam.channels[ch].volumeL = Math.min(Math.max((int) ((127 - v) / 127.0 * YM2610Ch3SlotVol[ch - 5] / 80.0), 0), 19);
+                newParam.channels[ch].volumeL = Math.clamp((int) ((127 - v) / 127.0 * YM2610Ch3SlotVol[ch - 5] / 80.0), 0, 19);
             } else {
                 newParam.channels[ch].note = -1;
                 newParam.channels[ch].volumeL = 0;
@@ -404,12 +404,12 @@ public class frmYM2610 extends frmBase {
         //ADPCM B
         newParam.channels[12].pan = (YM2610Register[0][0x11] & 0xc0) >> 6;
         if (YM2610AdpcmVol[0] != 0) {
-            newParam.channels[12].volumeL = Math.min(Math.max(YM2610AdpcmVol[0] * YM2610Register[0][0x1b], 0), 19);
+            newParam.channels[12].volumeL = Math.clamp(YM2610AdpcmVol[0] * YM2610Register[0][0x1b], 0, 19);
         } else {
             if (newParam.channels[12].volumeL > 0) newParam.channels[12].volumeL--;
         }
         if (YM2610AdpcmVol[1] != 0) {
-            newParam.channels[12].volumeR = Math.min(Math.max(YM2610AdpcmVol[1] * YM2610Register[0][0x1b], 0), 19);
+            newParam.channels[12].volumeR = Math.clamp(YM2610AdpcmVol[1] * YM2610Register[0][0x1b], 0, 19);
         } else {
             if (newParam.channels[12].volumeR > 0) newParam.channels[12].volumeR--;
         }
@@ -430,13 +430,13 @@ public class frmYM2610 extends frmBase {
             int il = YM2610Register[1][0x08 + ch - 13] & 0x1f;
 
             if (YM2610Rhythm[ch - 13][0] != 0) {
-                newParam.channels[ch].volumeL = Math.min(Math.max(YM2610Rhythm[ch - 13][0] * tl * il / 128, 0), 19);
+                newParam.channels[ch].volumeL = Math.clamp(YM2610Rhythm[ch - 13][0] * tl * il / 128, 0, 19);
                 //newParam.channels[12].volumeR = Math.min(Math.max(YM2610AdpcmVol[1] * YM2610Register[0][0x1b], 0), 19);
             } else {
                 if (newParam.channels[ch].volumeL > 0) newParam.channels[ch].volumeL--;
             }
             if (YM2610Rhythm[ch - 13][1] != 0) {
-                newParam.channels[ch].volumeR = Math.min(Math.max(YM2610Rhythm[ch - 13][1] * tl * il / 128, 0), 19);
+                newParam.channels[ch].volumeR = Math.clamp(YM2610Rhythm[ch - 13][1] * tl * il / 128, 0, 19);
                 //newParam.channels[12].volumeR = Math.min(Math.max(YM2610AdpcmVol[1] * YM2610Register[0][0x1b], 0), 19);
             } else {
                 if (newParam.channels[ch].volumeR > 0) newParam.channels[ch].volumeR--;

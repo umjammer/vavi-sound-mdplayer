@@ -22,7 +22,6 @@
 
 package mdplayer.driver.sid.libsidplayfp.sidplayfp;
 
-import mdplayer.Setting;
 import mdplayer.driver.sid.libsidplayfp.Mixer;
 
 
@@ -111,8 +110,8 @@ public class SidConfig {
      * Extra Sid chips addresses.
      */
     //@{
-    public short secondSidAddress;
-    public short thirdSidAddress;
+    public final short secondSidAddress;
+    public final short thirdSidAddress;
     //@}
 
     /**
@@ -124,12 +123,12 @@ public class SidConfig {
     /**
      * Left channel volume.
      */
-    public int leftVolume;
+    public final int leftVolume;
 
     /**
      * Right channel volume.
      */
-    public int rightVolume;
+    public final int rightVolume;
 
     /**
      * Sampling method.

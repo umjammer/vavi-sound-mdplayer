@@ -39,7 +39,7 @@ public class frmOKIM6258 extends frmBase {
     private final MDChipParams.OKIM6258 oldParam = new MDChipParams.OKIM6258();
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmOKIM6258.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmOKIM6258.class);
 
     public frmOKIM6258(frmMain frm, int chipId, int zoom, MDChipParams.OKIM6258 newParam) {
         super(frm);
@@ -105,7 +105,7 @@ public class frmOKIM6258 extends frmBase {
     };
 
     public void screenChangeParams() {
-        OkiM6258 okim6258State = audio.chipRegister.chip(OkiM6258Chip.class).read(chipId);
+        OkiM6258 okim6258State = audio.plugin.chipRegister.chip(OkiM6258Chip.class).read(chipId);
         if (okim6258State == null) return;
 
         switch (okim6258State.getPan() & 0x3) {

@@ -40,7 +40,7 @@ public class frmVRC7 extends frmBase {
     private final MDChipParams.VRC7 oldParam = new MDChipParams.VRC7();
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmVRC7.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmVRC7.class);
 
     public frmVRC7(frmMain frm, int chipId, int zoom, MDChipParams.VRC7 newParam) {
         super(frm);
@@ -107,11 +107,11 @@ public class frmVRC7 extends frmBase {
     };
 
     public void screenChangeParams() {
-        int[] vrc7Register = audio.chipRegister.chip(NesChip.Vrc7Chip.class).readVrc7(chipId);
+        int[] vrc7Register = audio.plugin.chipRegister.chip(NesChip.Vrc7Chip.class).readVrc7(chipId);
         if (vrc7Register == null) return;
 
         // Get whether there was a key-on (one-shot)
-        ChipKeyInfo ki = audio.chipRegister.chip(NesChip.Vrc7Chip.class).getVRC7KeyInfo(chipId);
+        ChipKeyInfo ki = audio.plugin.chipRegister.chip(NesChip.Vrc7Chip.class).getVRC7KeyInfo(chipId);
 
         for (int ch = 0; ch < 6; ch++) {
             MDChipParams.Channel nyc = newParam.channels[ch];

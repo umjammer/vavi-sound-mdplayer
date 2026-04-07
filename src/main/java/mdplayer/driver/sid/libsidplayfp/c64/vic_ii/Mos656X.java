@@ -60,9 +60,9 @@ public class Mos656X extends Event {
     }
 
     private static class data {
-        public int rasterLines;
-        public int cyclesPerLine;
-        public ClockFunc clock;
+        public final int rasterLines;
+        public final int cyclesPerLine;
+        public final ClockFunc clock;
 
         public data(int rasterLines, int cyclesPerLine, ClockFunc clock) {
             this.rasterLines = rasterLines;

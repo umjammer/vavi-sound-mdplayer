@@ -41,7 +41,7 @@ public class frmYM3526 extends frmBase {
     private MDChipParams.YM3526 oldParam = null;
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmYM3526.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmYM3526.class);
 
     public frmYM3526(frmMain frm, int chipId, int zoom, MDChipParams.YM3526 newParam, MDChipParams.YM3526 oldParam) {
         super(frm);
@@ -124,12 +124,12 @@ public class frmYM3526 extends frmBase {
     private static final byte[] rhythmAdr = new byte[] {0x53, 0x54, 0x52, 0x55, 0x51};
 
     public void screenChangeParams() {
-        int[] ym3526Register = audio.chipRegister.chip(Ym3526Chip.class).read(chipId);
+        int[] ym3526Register = audio.plugin.chipRegister.chip(Ym3526Chip.class).read(chipId);
         MDChipParams.Channel nyc;
         int slot = 0;
-        ChipKeyInfo ki = audio.chipRegister.chip(Ym3526Chip.class).getKeyInfo(chipId);
+        ChipKeyInfo ki = audio.plugin.chipRegister.chip(Ym3526Chip.class).getKeyInfo(chipId);
 
-        mdsound.MDSound.Chip chipInfo = audio.mds.getChipInfo(Ym3526Inst.class);
+        mdsound.MDSound.Chip chipInfo = audio.plugin.mds.getChipInfo(Ym3526Inst.class);
         int masterClock = chipInfo == null ? 3579545 : chipInfo.clock; //3579545 -> Default master clock
 
         //FM

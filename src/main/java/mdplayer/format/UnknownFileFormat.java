@@ -2,17 +2,22 @@ package mdplayer.format;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.List;
 
+import dotnet4j.io.Path;
 import mdplayer.Common.EnmArcType;
 import mdplayer.PlayList;
 import mdplayer.Setting;
 import mdplayer.driver.Vgm;
+import mdplayer.driver.VgmDriver;
 import mdplayer.plugin.Plugin;
+import musicDriverInterface.MetaData;
+import musicDriverInterface.MetaData.Tag;
 import vavi.util.ByteUtil;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Archives;
@@ -41,6 +46,7 @@ public class UnknownFileFormat extends BaseFileFormat {
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
         List<PlayList.Music> musics = new ArrayList<>();
         PlayList.Music music = new PlayList.Music();
+
         music.format = this;
         music.fileName = file;
         music.arcFileName = zipFile;
@@ -96,30 +102,30 @@ public class UnknownFileFormat extends BaseFileFormat {
         String _version = "%d.%d%d".formatted((version & 0xf00) / 0x100, (version & 0xf0) / 0x10, (version & 0xf));
 
         int vgmGd3 = ByteUtil.readLeInt(buf, 0x14);
-        Vgm.Gd3 gd3 = new Vgm.Gd3();
+        MetaData metaData = new MetaData();
         if (vgmGd3 != 0) {
             int vgmGd3Id = ByteUtil.readLeInt(buf, vgmGd3 + 0x14);
             if (vgmGd3Id != Vgm.FCC_GD3) {
                 musics.add(music);
                 return musics;
             }
-            gd3 = (new Vgm()).getGD3Info(buf, vgmGd3);
+            metaData = (new VgmDriver()).getMetaData(buf, vgmGd3);
         }
 
         int TotalCounter = ByteUtil.readLeInt(buf, 0x18);
         int vgmLoopOffset = ByteUtil.readLeInt(buf, 0x1c);
         int loopCounter = ByteUtil.readLeInt(buf, 0x20);
 
-        music.title = gd3.trackName;
-        music.titleJ = gd3.trackNameJ;
-        music.game = gd3.gameName;
-        music.gameJ = gd3.gameNameJ;
-        music.composer = gd3.composer;
-        music.composerJ = gd3.composerJ;
-        music.vgmby = gd3.vgmBy;
+        music.title = metaData.getFirst(Tag.Title);
+        music.titleJ = metaData.getFirst(Tag.TitleJ);
+        music.game = metaData.getFirst(Tag.GameTitle);
+        music.gameJ = metaData.getFirst(Tag.GameTitleJ);
+        music.composer = metaData.getFirst(Tag.Composer);
+        music.composerJ = metaData.getFirst(Tag.ComposerJ);
+        music.vgmby = metaData.getFirst(Tag.Maker);
 
-        music.converted = gd3.converted;
-        music.notes = gd3.notes;
+        music.converted = metaData.getFirst(Tag.Converter);
+        music.notes = metaData.getFirst(Tag.Note);
 
         double sec = (double) TotalCounter / (double) Setting.getInstance().getOutputDevice().getSampleRate();
         int TCminutes = (int) (sec / 60);
@@ -161,5 +167,15 @@ public class UnknownFileFormat extends BaseFileFormat {
     @Override
     public List<PlayList.Music> addFileLoop(int index, PlayList.Music mc, Archive archive, Entry entry) {
         return null;
+    }
+
+    @Override
+    public boolean isSupported(InputStream is) throws IOException {
+        return false;
+    }
+
+    @Override
+    public int getMarkSize() {
+        return 0;
     }
 }

@@ -1,15 +1,29 @@
-
 package mdplayer.driver.mxdrv;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+
+
 public class XMemory {
+
+    private static final Logger logger = System.getLogger(XMemory.class.getName());
+
     public byte[] mm;
+    private int mask;
+
+    private void updateMask(int size) {
+        int len = Integer.toHexString(size).length();
+        mask = Integer.parseInt("f".repeat(len), 16);
+    }
 
     public void alloc(int size) {
         mm = new byte[size];
+        updateMask(size);
     }
 
     public void realloc(int size) {
         byte[] m = new byte[size];
+        updateMask(size);
         if (mm != null && mm.length > 0) {
             int s = (Math.min(mm.length, size));
             System.arraycopy(mm, 0, m, 0, s);
@@ -18,8 +32,12 @@ public class XMemory {
     }
 
     public void write(int v1, byte v2) {
-//logger.log(Level.TRACE, "%08x:%02x".formatted(v1, v2));
-        mm[v1] = v2;
+//logger.log(Level.DEBUG, "%08x:%02x".formatted(v1, v2));
+if ((v1 & mask) >= mm.length) {
+ logger.log(Level.WARNING, "index is out of bounds: %d, %d".formatted(v1 & mask, mm.length));
+ return;
+}
+        mm[v1 & mask] = v2;
     }
 
     public void write(int v1, short v2) {
@@ -35,14 +53,21 @@ public class XMemory {
     }
 
     public byte readByte(int v1) {
-        return mm[v1];
+if ((v1 & mask) >= mm.length) {
+ logger.log(Level.WARNING, "index is out of bounds: %d, %d".formatted(v1 & mask, mm.length));
+ return 0;
+}
+        return mm[v1 & mask];
     }
 
     public short readShort(int v1) {
-        return (short) (((mm[v1] & 0xff) << 8) + ((mm[v1 + 1] & 0xff) << 0));
+        return (short) (((readByte(v1) & 0xff) << 8) + ((readByte(v1 + 1) & 0xff) << 0));
     }
 
     public int readInt(int v1) {
-        return ((mm[v1] & 0xff) << 24) + ((mm[v1 + 1] & 0xff) << 16) + ((mm[v1 + 2] & 0xff) << 8) + ((mm[v1 + 3] & 0xff) << 0);
+        return ((readByte(v1) & 0xff) << 24) +
+                ((readByte(v1 + 1) & 0xff) << 16) +
+                ((readByte(v1 + 2) & 0xff) << 8) +
+                ((readByte(v1 + 3) & 0xff) << 0);
     }
 }

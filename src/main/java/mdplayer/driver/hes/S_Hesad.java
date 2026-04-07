@@ -17,11 +17,11 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
             public int pt;
         }
 
-        public common_ common = new common_();
+        public final common_ common = new common_();
 
         public byte[] pcmbuf = new byte[0x10000];
         public byte[] port = new byte[0x10];
-        public byte[] regs = new byte[0x18];
+        public final byte[] regs = new byte[0x18];
         public int outfreq;
         public int freq;
         public int addr;
@@ -201,27 +201,24 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
 
     private int sndread(int a) {
         HESADPCM sndp = (HESADPCM) ctx;
-        switch (a & 15) {
-        case 0xa:
-            return sndp.pcmbuf[sndp.readptr++];
-        case 0xb:
-            return sndp.port[0xb] & ~1;
-        case 0xc:
-            if (sndp.playflag == 0) {
-                sndp.port[0xc] |= 1;
-                sndp.port[0xc] &= 0xf7;// ~8;
-            } else {
-                sndp.port[0xc] &= 0xfe;// ~1;
-                sndp.port[0xc] |= 8;
+        return switch (a & 15) {
+            case 0xa -> sndp.pcmbuf[sndp.readptr++];
+            case 0xb -> sndp.port[0xb] & ~1;
+            case 0xc -> {
+                if (sndp.playflag == 0) {
+                    sndp.port[0xc] |= 1;
+                    sndp.port[0xc] &= 0xf7;// ~8;
+                } else {
+                    sndp.port[0xc] &= 0xfe;// ~1;
+                    sndp.port[0xc] |= 8;
+                }
+                yield sndp.port[0xc];
             }
-            return sndp.port[0xc];
-        case 0xd:
-            return 0;
+            case 0xd -> 0;
 //        case 0xe:
 //            return sndp -> volume;
-        default:
-            return 0xff;
-        }
+            default -> 0xff;
+        };
     }
 
     private static final int LOG_BITS = 12;
@@ -284,20 +281,15 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
     private KMIF_SOUND_DEVICE YMDELTATPCMSoundAlloc(int ymdeltatpcm_type, byte[] pcmbuf) {
         int ram_size;
         S_Deltat.YMDELTATPCMSOUND_ sndp;
-        switch (ymdeltatpcm_type) {
-        case 0: // YMDELTATPCM_TYPE_Y8950:
-            ram_size = 32 * 1024;
-            break;
-        case 1: // YMDELTATPCM_TYPE_YM2608:
-            ram_size = 256 * 1024;
-            break;
-        case 3: // MSM5205:
-            ram_size = 256 * 256;
-            break;
-        default:
-            ram_size = 0;
-            break;
-        }
+        ram_size = switch (ymdeltatpcm_type) {
+            case 0 -> // YMDELTATPCM_TYPE_Y8950:
+                    32 * 1024;
+            case 1 -> // YMDELTATPCM_TYPE_YM2608:
+                    256 * 1024;
+            case 3 -> // MSM5205:
+                    256 * 256;
+            default -> 0;
+        };
         //sndp = XMALLOC(sizeof(YMDELTATPCMSOUND) + ram_size);
         sndp = new S_Deltat.YMDELTATPCMSOUND_();
         if (sndp == null) return null;

@@ -2,12 +2,9 @@ package mdplayer.driver.mgsdrv;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.util.function.BiConsumer;
 
 import konamiman.z80.interfaces.Memory;
-import mdplayer.ChipRegister;
-import mdplayer.Common;
-import mdplayer.chips.Ay8910Chip;
-import mdplayer.chips.Ym2413Chip;
 
 import static java.lang.System.getLogger;
 
@@ -17,17 +14,17 @@ public class MsxPort implements Memory {
     private static final Logger logger = getLogger(MsxPort.class.getName());
 
     private final MsxSlot slot;
-    private final ChipRegister chipRegister;
+    private final BiConsumer<Integer, Integer> ay8910Write;
+    private final BiConsumer<Integer, Integer> ym2413Write;
     private final MsxVdp vdp;
-    private final Common.EnmModel model;
     private byte opllAdr;
     private byte ay8910Adr;
 
-    public MsxPort(MsxSlot slot, ChipRegister chipRegister, MsxVdp vdp, Common.EnmModel model) {
+    public MsxPort(MsxSlot slot, MsxVdp vdp, BiConsumer<Integer, Integer> ay8910Write, BiConsumer<Integer, Integer> ym2413Write) {
         this.slot = slot;
-        this.chipRegister = chipRegister;
         this.vdp = vdp;
-        this.model = model;
+        this.ay8910Write = ay8910Write;
+        this.ym2413Write = ym2413Write;
     }
 
     @Override
@@ -68,7 +65,7 @@ public class MsxPort implements Memory {
             ay8910Adr = value;
             break;
         case 0xa1:
-            chipRegister.chip(Ay8910Chip.class).write(0, ay8910Adr & 0xff, value & 0xff, model);
+            ay8910Write.accept(ay8910Adr & 0xff, value & 0xff);
             break;
         case 0xa2:
             //logger.log(Level.TRACE, "Psg Port adr:%04x Dat:%02x".formatted(address, value));
@@ -77,7 +74,7 @@ public class MsxPort implements Memory {
             opllAdr = value;
             break;
         case 0x7d:
-            chipRegister.chip(Ym2413Chip.class).write(0, opllAdr & 0xff, value & 0xff, model);
+            ym2413Write.accept(opllAdr & 0xff, value & 0xff);
             //logger.log(Level.TRACE, "Ym2413 Port adr:%04x Dat:%02x".formatted(address, value));
             break;
         case 0xa8:

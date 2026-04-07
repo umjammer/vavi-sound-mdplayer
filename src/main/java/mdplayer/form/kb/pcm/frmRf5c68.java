@@ -40,7 +40,7 @@ public class frmRf5c68 extends frmBase {
     private final MDChipParams.RF5C68 oldParam;
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmRf5c68.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmRf5c68.class);
 
     public frmRf5c68(frmMain frm, int chipId, int zoom, MDChipParams.RF5C68 newParam, MDChipParams.RF5C68 oldParam) {
         super(frm);
@@ -106,7 +106,7 @@ public class frmRf5c68 extends frmBase {
     };
 
     public void screenChangeParams() {
-        Rf5C68 rf5c68Register = audio.chipRegister.chip(Rf5C68Chip.class).read(chipId);
+        Rf5C68 rf5c68Register = audio.plugin.chipRegister.chip(Rf5C68Chip.class).read(chipId);
         if (rf5c68Register != null) {
             //int[][] rf5c164Vol = audio.GetRf5c164Volume(chipId);
             for (int ch = 0; ch < 8; ch++) {
@@ -120,8 +120,8 @@ public class frmRf5c68 extends frmBase {
                     }
                     int MUL_L = (newParam.channels[ch].volume * (rf5c68Register.getChannel(ch).pan & 0x0F)) >> 5;
                     int MUL_R = (newParam.channels[ch].volume * (rf5c68Register.getChannel(ch).pan >> 4)) >> 5;
-                    newParam.channels[ch].volumeL = Math.min(Math.max(MUL_L / 3, 0), 19);
-                    newParam.channels[ch].volumeR = Math.min(Math.max(MUL_R / 3, 0), 19);
+                    newParam.channels[ch].volumeL = Math.clamp(MUL_L / 3, 0, 19);
+                    newParam.channels[ch].volumeR = Math.clamp(MUL_R / 3, 0, 19);
                 } else {
                     newParam.channels[ch].volume = 0;
                     newParam.channels[ch].volumeL = 0;
@@ -187,7 +187,7 @@ public class frmRf5c68 extends frmBase {
         }
     };
 
-    private int searchRf5c68Note(int freq) {
+    private static int searchRf5c68Note(int freq) {
         double m = Double.MAX_VALUE;
         int n = 0;
         for (int i = 0; i < 12 * 8; i++) {

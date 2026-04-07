@@ -17,19 +17,20 @@ import javax.sound.midi.MidiUnavailableException;
 import javax.sound.midi.Receiver;
 import javax.sound.midi.ShortMessage;
 
-import mdplayer.Audio;
 import mdplayer.Common.EnmModel;
 import mdplayer.MIDIExport;
 import mdplayer.MIDIParam;
 import mdplayer.MidiOutInfo;
 import mdplayer.Setting;
+import mdplayer.driver.BaseDriver;
+import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.MDSound;
 import mdsound.instrument.Sn76489Inst;
 import mdsound.instrument.Ym2612Inst;
 
 import static java.lang.System.getLogger;
-import static mdplayer.Audio.BUFFER_SIZE;
+import static mdplayer.plugin.BasePlugin.BUFFER_SIZE;
 import static mdsound.MDSound.Chip.MAIN_TAG;
 
 
@@ -43,7 +44,7 @@ public class MidiPlugin implements Plugin {
 
     private static final Logger logger = getLogger(MidiPlugin.class.getName());
 
-    public MIDIParam[] params = {null, null};
+    public final MIDIParam[] params = {null, null};
 
     public MIDIExport export;
 
@@ -56,14 +57,14 @@ public class MidiPlugin implements Plugin {
 
     protected short[] bufVirtualFunction_MIDIKeyboard = null;
 
-    private Audio context;
+    private BasePlugin<? extends BaseDriver> context;
 
     public MidiPlugin() {
         mds = new MDSound(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, null);
     }
 
     @Override
-    public void init(Audio context) {
+    public void init(BasePlugin<? extends BaseDriver> context) {
         this.context = context;
 
         mdsInit();

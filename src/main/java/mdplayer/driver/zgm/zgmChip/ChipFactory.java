@@ -8,15 +8,15 @@ public class ChipFactory {
 
     public ZgmChip create(int chipIdentNo, ChipRegister chipRegister, Setting setting, byte[] vgmBuf) {
         return switch (chipIdentNo) {
-            case 0x0000_000C -> null; // new SN76489(chipRegister, setting, vgmBuf);
-            case 0x0000_0010 -> null; // new YM2413(chipRegister, setting, vgmBuf);
-            case 0x0000_002c -> null; // new Ym2612Inst(chipRegister, setting, vgmBuf);
-            case 0x0000_0030 -> null; // new YM2151(chipRegister, setting, vgmBuf);
-            case 0x0000_0038 -> null; // new SEGAPCM(chipRegister, setting, vgmBuf);
+            case 0x0000_000C -> null; // new SN76489(chipRegister, setting, dataBuf);
+            case 0x0000_0010 -> null; // new YM2413(chipRegister, setting, dataBuf);
+            case 0x0000_002c -> null; // new Ym2612Inst(chipRegister, setting, dataBuf);
+            case 0x0000_0030 -> null; // new YM2151(chipRegister, setting, dataBuf);
+            case 0x0000_0038 -> null; // new SEGAPCM(chipRegister, setting, dataBuf);
             case 0x0000_0040 -> null; // RF5C68
-            case 0x0000_0044 -> null; // new YM2203(chipRegister, setting, vgmBuf);
-            case 0x0000_0048 -> null; // new YM2608(chipRegister, setting, vgmBuf);
-            case 0x0000_004C -> null; // new YM2610(chipRegister, setting, vgmBuf);
+            case 0x0000_0044 -> null; // new YM2203(chipRegister, setting, dataBuf);
+            case 0x0000_0048 -> null; // new YM2608(chipRegister, setting, dataBuf);
+            case 0x0000_004C -> null; // new YM2610(chipRegister, setting, dataBuf);
             case 0x0000_0050 -> null; // YM3812
             case 0x0000_0054 -> null; // YM3526
             case 0x0000_0058 -> null; // Y8950Inst
@@ -24,7 +24,7 @@ public class ChipFactory {
             case 0x0000_0060 -> null; // YMF278B
             case 0x0000_0064 -> null; // YMF271
             case 0x0000_0068 -> null; // YMZ280B
-            case 0x0000_006C -> null; // new RF5C164(chipRegister, setting, vgmBuf);
+            case 0x0000_006C -> null; // new RF5C164(chipRegister, setting, dataBuf);
             case 0x0000_0070 -> null; // PWM
             case 0x0000_0074 -> null; // AY8910
             case 0x0000_0080 -> null; // GameBoy DMG
@@ -33,13 +33,13 @@ public class ChipFactory {
             case 0x0000_008C -> null; // uPD7759
             case 0x0000_0090 -> null; // OKIM6258
             case 0x0000_0098 -> null; // OKIM6295
-            case 0x0000_009C -> null; // new K051649Inst(chipRegister, setting, vgmBuf);
+            case 0x0000_009C -> null; // new K051649Inst(chipRegister, setting, dataBuf);
             case 0x0000_00A0 -> null; // K054539Inst
-            case 0x0000_00A4 -> null; // new OotakeHuC6280(chipRegister, setting, vgmBuf);
-            case 0x0000_00A8 -> null; // new C140Inst(chipRegister, setting, vgmBuf);
-            case 0x0000_00AC -> null; // new K053260Inst(chipRegister, setting, vgmBuf);
+            case 0x0000_00A4 -> null; // new OotakeHuC6280(chipRegister, setting, dataBuf);
+            case 0x0000_00A8 -> null; // new C140Inst(chipRegister, setting, dataBuf);
+            case 0x0000_00AC -> null; // new K053260Inst(chipRegister, setting, dataBuf);
             case 0x0000_00B0 -> null; // PokeyInst
-            case 0x0000_00B4 -> null; // new QSoundInst(chipRegister, setting, vgmBuf);
+            case 0x0000_00B4 -> null; // new QSoundInst(chipRegister, setting, dataBuf);
             case 0x0000_00B8 -> null; // SCSP
             case 0x0000_00C0 -> null; // WonderSwan
             case 0x0000_00C4 -> null; // Virtual Boy VSU
@@ -68,7 +68,7 @@ public class ChipFactory {
             case 0x0004_0007 -> null; // GS SC-8850
             case 0x0004_0008 -> null; // GS SD-90
             case 0x0004_0009 -> null; // GS Integra-7
-            case 0x0005_0000 -> null; // new MidiGM(chipRegister, setting, vgmBuf);
+            case 0x0005_0000 -> null; // new MidiGM(chipRegister, setting, dataBuf);
             case 0x0006_0000 -> null; // CSTi General
             case 0x0007_0000 -> null; // Wave General
             default -> throw new IllegalArgumentException();

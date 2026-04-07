@@ -58,6 +58,7 @@ import mdplayer.Common.EnmArcType;
 import mdplayer.MDChipParams;
 import mdplayer.PlayList;
 import mdplayer.Setting;
+import mdplayer.form.sys.frmTPPut.cols;
 import mdplayer.format.FileFormat;
 import mdplayer.properties.Resources;
 import vavi.awt.dnd.BasicDTListener;
@@ -90,7 +91,7 @@ public class frmPlayList extends JFrame {
     private final Random rand = new Random();
     private boolean IsInitialOpenFolder = true;
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmPlayList.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmPlayList.class);
 
     private static final String[] sext = ".vgm;.vgz;.zip;.lzh;.nrd;.xgm;.zgm;.s98;.nsf;.hes;.sid;.mnd;.mgs;.mdr;.mdx;.mub;.muc;.m;.m2;.mz;.mml;.mid;.rcp;.wav;.mp3;.aiff;.m3u".split(";");
 
@@ -157,7 +158,7 @@ public class frmPlayList extends JFrame {
         return true;
     }
 
-    public List<Tuple<String, String>> randomStack = new ArrayList<>();
+    public final List<Tuple<String, String>> randomStack = new ArrayList<>();
 
 //    @Override
 //    protected void WndProc(Message m) {
@@ -306,8 +307,10 @@ public class frmPlayList extends JFrame {
             if (m < 0 || m > 9) m = 0;
         }
 
-        frmMain.loadAndPlay(m, songNo, fn, zfn);
-        if (!Audio.getInstance().errMsg.isEmpty()) {
+        try {
+            frmMain.loadAndPlay(m, songNo, fn, zfn);
+        } catch (Exception e) {
+            logger.log(Level.ERROR, e.getMessage(), e);
             playing = false;
             return;
         }
@@ -344,7 +347,7 @@ public class frmPlayList extends JFrame {
 
                 randomStack.add(new Tuple<>(fn, zfn));
                 while (randomStack.size() > 1000)
-                    randomStack.remove(0);
+                    randomStack.removeFirst();
             }
 
             pi = rand.nextInt(dgvList.getRowCount());
@@ -405,9 +408,9 @@ public class frmPlayList extends JFrame {
 loopEx:
             if (!randomStack.isEmpty()) {
                 while (true) {
-                    String hfn = randomStack.get(randomStack.size() - 1).getItem1();
-                    String hzfn = randomStack.get(randomStack.size() - 1).getItem2();
-                    randomStack.remove(randomStack.size() - 1);
+                    String hfn = randomStack.getLast().getItem1();
+                    String hzfn = randomStack.getLast().getItem2();
+                    randomStack.removeLast();
 
                     for (; pi < dgvList.getRowCount(); pi++) {
                         fn = (String) dgvList.getValueAt(pi, cols.clmFileName.ordinal());
@@ -921,7 +924,7 @@ loopEx:
         }
     };
 
-    private void getTrueFileNameList(List<String> res, List<String> files) {
+    private static void getTrueFileNameList(List<String> res, List<String> files) {
         for (String f : files) {
             if (File.exists(f)) {
                 if (!res.contains(f)) {
@@ -953,7 +956,7 @@ loopEx:
 
     String ofn = "";
     String oafn = "";
-    String[][] exts = new String[3][];
+    final String[][] exts = new String[3][];
     String text = "";
     String mml = "";
     String img = "";
@@ -962,21 +965,15 @@ loopEx:
         if (!playing) return;
         if (setting == null) return;
 
-        String[] fn = {""};
-        String[] arcFn = {""};
-
-        Audio.getInstance().getPlayingFileName(fn, arcFn);
-
-        if (fn.equals(ofn) && arcFn.equals(oafn)) return;
-        ofn = fn[0];
-        oafn = arcFn[0];
+        ofn = Audio.getInstance().plugin.playingFileName;;
+        oafn = Audio.getInstance().plugin.playingArcFileName;
 
         exts[0] = setting.getOther().getTextExt().split(";");
         exts[1] = setting.getOther().getMMLExt().split(";");
         exts[2] = setting.getOther().getImageExt().split(";");
 
-        String bfn = Path.combine(Path.getDirectoryName(fn[0]), Path.getFileNameWithoutExtension(fn[0]));
-        String bfnFld = Path.combine(Path.getDirectoryName(fn[0]), Path.getFileName(Path.getDirectoryName(fn[0])));
+        String bfn = Path.combine(Path.getDirectoryName(ofn), Path.getFileNameWithoutExtension(ofn));
+        String bfnFld = Path.combine(Path.getDirectoryName(ofn), Path.getFileName(Path.getDirectoryName(ofn)));
 
         text = "";
         for (String ext : exts[0]) {

@@ -6,11 +6,12 @@
 
 package mdplayer.chips;
 
-import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
+import mdplayer.driver.BaseDriver;
+import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.instrument.MameYm2612Inst;
 import mdsound.instrument.SimpleYm3438Inst;
@@ -21,7 +22,10 @@ import mdsound.instrument.Ym3438Inst;
 
 /**
  * Ym2612Chip.
- *
+ * <p>
+ * system property
+ * <li>{@code mdplayer.variant.ym2612} ... active chip index</li>
+ * </p>
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
@@ -49,7 +53,7 @@ public class Ym2612Chip implements Chip {
 
     public int clock;
 
-    private Audio context;
+    private BasePlugin<? extends BaseDriver> context;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -63,7 +67,7 @@ public class Ym2612Chip implements Chip {
     }
 
     @Override
-    public void init(Audio context) {
+    public void init(BasePlugin<? extends BaseDriver> context) {
         this.context = context;
 
         for (int chipId = 0; chipId < 2; chipId++) {

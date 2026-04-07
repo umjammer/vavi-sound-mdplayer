@@ -7,6 +7,7 @@
 package mdplayer.driver.nsf;
 
 import mdsound.MDSound.Chip;
+import musicDriverInterface.MetaData;
 
 
 /**
@@ -46,4 +47,8 @@ public interface NsfDriver {
     void setVrc7(Chip chip);
 
     void setFme7(Chip chip);
+
+    MetaData getMetaData(byte[] buf, Object... args);
+
+    int getSongs();
 }

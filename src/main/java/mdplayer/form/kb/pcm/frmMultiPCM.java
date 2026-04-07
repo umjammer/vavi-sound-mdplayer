@@ -39,7 +39,7 @@ public class frmMultiPCM extends frmBase {
     private MDChipParams.MultiPCM oldParam = new MDChipParams.MultiPCM();
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmMultiPCM.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmMultiPCM.class);
 
     public frmMultiPCM(frmMain frm, int chipId, int zoom, MDChipParams.MultiPCM newParam, MDChipParams.MultiPCM oldParam) {
         super(frm);
@@ -157,7 +157,7 @@ public class frmMultiPCM extends frmBase {
         }
     }
 
-    private int searchMultiPCMNote(int freq) {
+    private static int searchMultiPCMNote(int freq) {
         //double m = Double.MAX_VALUE;
 
         //int clock = audio.clockMultiPCM;
@@ -181,7 +181,7 @@ public class frmMultiPCM extends frmBase {
     }
 
     public void screenChangeParams() {
-        MultiPCM multiPCMRegister = audio.chipRegister.chip(MultiPcmChip.class).getChip(chipId);
+        MultiPCM multiPCMRegister = audio.plugin.chipRegister.chip(MultiPcmChip.class).getChip(chipId);
         if (multiPCMRegister == null) return;
 
         for (int ch = 0; ch < 28; ch++) {
@@ -190,7 +190,7 @@ public class frmMultiPCM extends frmBase {
             oct = oct + 4; // The fundamental tone is o5.
             int pitch = ((multiPCMRegister.getSlot(ch).regs[3] & 0xf) << 6) | (multiPCMRegister.getSlot(ch).regs[2] >> 2);
 
-            int nt = Math.max(Math.min(oct * 12 + pitch / 85, 7 * 12), 0);
+            int nt = Math.clamp(oct * 12 + pitch / 85, 0, 7 * 12);
             newParam.channels[ch].note = nt;
 
             int d = multiPCMRegister.getSlot(ch).pan;

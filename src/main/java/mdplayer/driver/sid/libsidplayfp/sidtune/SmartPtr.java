@@ -141,8 +141,8 @@ class SmartPtrBase<T> {
     protected ByteBuffer pBufCurrent;
     protected long bufLen;
     protected boolean status;
-    protected boolean doFree;
-    protected ByteBuffer dummy;
+    protected final boolean doFree;
+    protected final ByteBuffer dummy;
 
     public static class SmartPtr<T> extends SmartPtrBase {
         public SmartPtr(byte[] buffer,

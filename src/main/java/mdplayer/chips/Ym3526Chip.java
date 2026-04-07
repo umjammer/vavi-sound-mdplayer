@@ -6,11 +6,12 @@
 
 package mdplayer.chips;
 
-import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
+import mdplayer.driver.BaseDriver;
+import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.instrument.Ym3526Inst;
 
@@ -40,7 +41,7 @@ public class Ym3526Chip implements Chip {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false}
     };
 
-    private Audio context;
+    private BasePlugin<? extends BaseDriver> context;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -49,7 +50,7 @@ public class Ym3526Chip implements Chip {
     }
 
     @Override
-    public void init(Audio context) {
+    public void init(BasePlugin<? extends BaseDriver> context) {
         this.context = context;
 
         for (int chipId = 0; chipId < 2; chipId++) {
@@ -107,7 +108,8 @@ public class Ym3526Chip implements Chip {
             }
         }
 
-        /* if (model == EnmModel.VirtualModel) */ {
+        /* if (model == EnmModel.VirtualModel) */
+        {
             if (addr >= 0xb0 && addr <= 0xb8) {
                 int ch = addr - 0xb0;
                 int k = (data >> 5) & 1;

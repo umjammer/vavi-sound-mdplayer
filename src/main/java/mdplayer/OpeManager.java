@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
+// for gui
 public class OpeManager {
 
     private static final List<Request> reqToAudio = new ArrayList<>();
@@ -28,7 +29,7 @@ public class OpeManager {
             if (reqToAudio.isEmpty())
                 return null;
 
-            Request req = reqToAudio.get(reqToAudio.size() - 1);
+            Request req = reqToAudio.getLast();
             reqToAudio.remove(req); // .clear();
 
             return req;

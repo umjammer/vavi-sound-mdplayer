@@ -9,10 +9,11 @@ package mdplayer.chips;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
-import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
+import mdplayer.driver.BaseDriver;
+import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.instrument.NesInst;
 import mdsound.np.NpNesFds;
@@ -364,7 +365,7 @@ public class NesChip implements Chip {
     public NesFme7 fme7 = null;
     public NesVrc7 vrc7 = null;
 
-    protected Audio context;
+    protected BasePlugin<? extends BaseDriver> context;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -373,7 +374,7 @@ public class NesChip implements Chip {
     }
 
     @Override
-    public void init(Audio context) {
+    public void init(BasePlugin<? extends BaseDriver> context) {
         this.context = context;
     }
 

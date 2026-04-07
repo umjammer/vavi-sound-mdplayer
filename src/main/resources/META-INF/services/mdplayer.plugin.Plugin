@@ -1,6 +1,6 @@
 mdplayer.plugin.HESPlugin
 mdplayer.plugin.MDLPlugin
-mdplayer.plugin.MDRPlugin
+mdplayer.plugin.MDLPlugin
 mdplayer.plugin.MDXPlugin
 mdplayer.plugin.MGSPlugin
 mdplayer.plugin.MIDPlugin

@@ -21,7 +21,7 @@ import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.chips.Ym2612Chip;
-import mdplayer.driver.Xgm;
+import mdplayer.driver.XgmDriver;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.format.XGMFileFormat;
@@ -42,7 +42,7 @@ public class frmYM2612 extends frmBase {
     private MDChipParams.YM2612 oldParam = null;
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmYM2612.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmYM2612.class);
 
     public frmYM2612(frmMain frm, int chipId, int zoom, MDChipParams.YM2612 newParam, MDChipParams.YM2612 oldParam) {
         super(frm);
@@ -128,10 +128,10 @@ public class frmYM2612 extends frmBase {
             };
 
     public void screenChangeParams() {
-        int[][] fmRegister = audio.chipRegister.chip(Ym2612Chip.class).read(chipId);
-        int[] fmVol = audio.chipRegister.chip(Ym2612Chip.class).getVolume(chipId);
-        int[] fmCh3SlotVol = audio.chipRegister.chip(Ym2612Chip.class).getCh3SlotVolume(chipId);
-        int[] fmKey = audio.chipRegister.chip(Ym2612Chip.class).getKeyOn(chipId);
+        int[][] fmRegister = audio.plugin.chipRegister.chip(Ym2612Chip.class).read(chipId);
+        int[] fmVol = audio.plugin.chipRegister.chip(Ym2612Chip.class).getVolume(chipId);
+        int[] fmCh3SlotVol = audio.plugin.chipRegister.chip(Ym2612Chip.class).getCh3SlotVolume(chipId);
+        int[] fmKey = audio.plugin.chipRegister.chip(Ym2612Chip.class).getKeyOn(chipId);
 
         boolean isFmEx = (fmRegister[0][0x27] & 0x40) != 0;
         newParam.channels[2].ex = isFmEx;
@@ -150,7 +150,7 @@ public class frmYM2612 extends frmBase {
         int defaultMasterClock = 8000000;
         float ssgMul = 1.0f;
         int masterClock = defaultMasterClock;
-        int clock = audio.mds.getChipInfo(Ym2610Inst.class).clock;
+        int clock = audio.plugin.mds.getChipInfo(Ym2610Inst.class).clock;
         if (clock != 0) {
             ssgMul = clock / (float) defaultMasterClock;
             masterClock = clock;
@@ -196,7 +196,7 @@ public class frmYM2612 extends frmBase {
                 ff /= 1038f;
 
                 if ((fmKey[ch] & 1) != 0) {
-                    n = Math.min(Math.max(Common.searchYM2608Adpcm(ff) - 1, 0), 95);
+                    n = Math.clamp(Common.searchYM2608Adpcm(ff) - 1, 0, 95);
                     //if (ch == 0)
                     //{
                     //    logger.log(Level.TRACE, "freq:%d  masterClock:%d  fmDiv:%d  octav:%d ff:%d  n:%d".formatted(freq, masterClock, fmDiv, octav,ff,n));
@@ -215,8 +215,8 @@ public class frmYM2612 extends frmBase {
                 v = (((con & 0x40) != 0) && ((m & 0x40) != 0) && v > (fmRegister[p][0x48 + c] & 0x7f)) ? (fmRegister[p][0x48 + c] & 0x7f) : v;
                 //OP4
                 v = (((con & 0x80) != 0) && ((m & 0x80) != 0) && v > (fmRegister[p][0x4c + c] & 0x7f)) ? (fmRegister[p][0x4c + c] & 0x7f) : v;
-                newParam.channels[ch].volumeL = Math.min(Math.max((int) ((127 - v) / 127.0 * ((fmRegister[p][0xb4 + c] & 0x80) != 0 ? 1 : 0) * fmVol[ch] / 80.0), 0), 19);
-                newParam.channels[ch].volumeR = Math.min(Math.max((int) ((127 - v) / 127.0 * ((fmRegister[p][0xb4 + c] & 0x40) != 0 ? 1 : 0) * fmVol[ch] / 80.0), 0), 19);
+                newParam.channels[ch].volumeL = Math.clamp((int) ((127 - v) / 127.0 * ((fmRegister[p][0xb4 + c] & 0x80) != 0 ? 1 : 0) * fmVol[ch] / 80.0), 0, 19);
+                newParam.channels[ch].volumeR = Math.clamp((int) ((127 - v) / 127.0 * ((fmRegister[p][0xb4 + c] & 0x40) != 0 ? 1 : 0) * fmVol[ch] / 80.0), 0, 19);
             } else {
                 int m = md[fmRegister[0][0xb0 + 2] & 7];
                 if (parent.setting.getOther().getExAll()) m = 0xf0;
@@ -227,11 +227,11 @@ public class frmYM2612 extends frmBase {
                 ff /= 1038f;
 
                 if ((fmKey[2] & 0x10) != 0 && ((m & 0x10) != 0))
-                    n = Math.min(Math.max(Common.searchYM2608Adpcm(ff) - 1, 0), 95);
+                    n = Math.clamp(Common.searchYM2608Adpcm(ff) - 1, 0, 95);
 
                 int v = ((m & 0x10) != 0) ? fmRegister[p][0x40 + c] : 127;
-                newParam.channels[2].volumeL = Math.min(Math.max((int) ((127 - v) / 127.0 * ((fmRegister[0][0xb4 + 2] & 0x80) != 0 ? 1 : 0) * fmCh3SlotVol[0] / 80.0), 0), 19);
-                newParam.channels[2].volumeR = Math.min(Math.max((int) ((127 - v) / 127.0 * ((fmRegister[0][0xb4 + 2] & 0x40) != 0 ? 1 : 0) * fmCh3SlotVol[0] / 80.0), 0), 19);
+                newParam.channels[2].volumeL = Math.clamp((int) ((127 - v) / 127.0 * ((fmRegister[0][0xb4 + 2] & 0x80) != 0 ? 1 : 0) * fmCh3SlotVol[0] / 80.0), 0, 19);
+                newParam.channels[2].volumeR = Math.clamp((int) ((127 - v) / 127.0 * ((fmRegister[0][0xb4 + 2] & 0x40) != 0 ? 1 : 0) * fmCh3SlotVol[0] / 80.0), 0, 19);
             }
             newParam.channels[ch].note = n;
 
@@ -262,12 +262,12 @@ public class frmYM2612 extends frmBase {
                 if ((fmKey[2] & (0x10 << (ch - 5))) != 0 && ((m & (0x10 << op)) != 0)) {
                     float ff = freq / ((2 << 20) / (masterClock / (24 * fmDiv))) * (2 << (octav + 2));
                     ff /= 1038f;
-                    n = Math.min(Math.max(Common.searchYM2608Adpcm(ff) - 1, 0), 95);
+                    n = Math.clamp(Common.searchYM2608Adpcm(ff) - 1, 0, 95);
                 }
                 newParam.channels[ch].note = n;
 
                 int v = ((m & (0x10 << op)) != 0) ? fmRegister[0][0x42 + op * 4] : 127;
-                newParam.channels[ch].volumeL = Math.min(Math.max((int) ((127 - v) / 127.0 * fmCh3SlotVol[ch - 5] / 80.0), 0), 19);
+                newParam.channels[ch].volumeL = Math.clamp((int) ((127 - v) / 127.0 * fmCh3SlotVol[ch - 5] / 80.0), 0, 19);
             } else {
                 newParam.channels[ch].note = -1;
                 newParam.channels[ch].volumeL = 0;
@@ -278,17 +278,17 @@ public class frmYM2612 extends frmBase {
         if (newParam.channels[5].pcmBuff > 0)
             newParam.channels[5].pcmBuff--;
         if (newParam.channels[5].pcmMode != 0) {
-            newParam.channels[5].volumeL = Math.min(Math.max(fmVol[5] / 80, 0), 19);
-            newParam.channels[5].volumeR = Math.min(Math.max(fmVol[5] / 80, 0), 19);
+            newParam.channels[5].volumeL = Math.clamp(fmVol[5] / 80, 0, 19);
+            newParam.channels[5].volumeR = Math.clamp(fmVol[5] / 80, 0, 19);
         }
 
-        if (newParam.fileFormat instanceof XGMFileFormat && audio.driverVirtual instanceof Xgm) {
+        if (newParam.fileFormat instanceof XGMFileFormat && audio.plugin.driverVirtual instanceof XgmDriver) {
 
-            if (audio.driverVirtual != null && ((Xgm) audio.driverVirtual).xgmpcm != null) {
+            if (audio.plugin.driverVirtual != null && ((XgmDriver) audio.plugin.driverVirtual).getXgmPcm() != null) {
                 for (int i = 0; i < 4; i++) {
-                    if (((Xgm) audio.driverVirtual).xgmpcm[i].isPlaying) {
-                        newParam.xpcmInst[i] = ((Xgm) audio.driverVirtual).xgmpcm[i].inst;
-                        int d = (((Xgm) audio.driverVirtual).xgmpcm[i].data / 6);
+                    if (((XgmDriver) audio.plugin.driverVirtual).getXgmPcm()[i].isPlaying) {
+                        newParam.xpcmInst[i] = ((XgmDriver) audio.plugin.driverVirtual).getXgmPcm()[i].inst;
+                        int d = (((XgmDriver) audio.plugin.driverVirtual).getXgmPcm()[i].data / 6);
                         d = Math.min(d, 19);
                         newParam.xpcmVolL[i] = d;
                         newParam.xpcmVolR[i] = d;

@@ -21,7 +21,7 @@ public class UnZDF {
             if (ele.getValue().name.equalsIgnoreCase("LZZ.R")) continue;
             if (ele.getValue().name.equalsIgnoreCase(Path.getFileName(arcFile))) continue;
 
-            res.add(new Tuple<String, Long>(ele.getValue().name, (long) ele.getValue().body.length));
+            res.add(new Tuple<>(ele.getValue().name, (long) ele.getValue().body.length));
         }
 
         return res;

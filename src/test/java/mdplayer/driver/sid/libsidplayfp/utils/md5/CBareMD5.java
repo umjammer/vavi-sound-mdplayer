@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 
 
 /**
@@ -182,9 +183,7 @@ public class CBareMD5 {
         b = ii(b, c, d, a, x[ 9], 21, 0xeb86d391); /* 64 */
 
         // zero out inputs
-        for (int i = 0; i < x.length; i++) {
-            x[i] = 0;
-        }
+        Arrays.fill(x, 0);
 
         h[0] += a;
         h[1] += b;

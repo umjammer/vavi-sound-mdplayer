@@ -8,6 +8,8 @@ package mdplayer.driver.sid;
 
 import java.util.Map;
 
+import musicDriverInterface.MetaData;
+
 
 /**
  * SidDriver.
@@ -21,5 +23,7 @@ public interface SidDriver {
 
     Map<String, Object> getInfo();
 
-    void setSong(int songNo);
+    MetaData getMetaData(byte[] buf, Object... args);
+
+    int getSongs();
 }

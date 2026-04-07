@@ -362,9 +362,11 @@ public class Filter {
     // State of filter.
     protected int vhp; // highpass
     protected int vbp; // bandpass
-    protected int[] vbpX = {0}, vbpVc = {0};
+    protected final int[] vbpX = {0};
+    protected final int[] vbpVc = {0};
     protected int vlp; // lowpass
-    protected int[] vlpX = {0}, vlpVc = {0};
+    protected final int[] vlpX = {0};
+    protected final int[] vlpVc = {0};
     // Filter / mixer inputs.
     protected int ve;
     protected int v3;
@@ -394,23 +396,23 @@ public class Filter {
         public int vcMax;
 
         // Reverse op-amp transfer function.
-        public short[] opampRev = new short[1 << 16];
+        public final short[] opampRev = new short[1 << 16];
         // Lookup tables for gain and summer op-amps : Output stage / filter.
-        public short[] summer = new short[SummerOffset.intI(5)]; // <5>::value];
-        public short[][] gain = new short[][] {new short[1 << 16], new short[1 << 16], new short[1 << 16], new short[1 << 16],
+        public final short[] summer = new short[SummerOffset.intI(5)]; // <5>::value];
+        public final short[][] gain = new short[][] {new short[1 << 16], new short[1 << 16], new short[1 << 16], new short[1 << 16],
                 new short[1 << 16], new short[1 << 16], new short[1 << 16], new short[1 << 16],
                 new short[1 << 16], new short[1 << 16], new short[1 << 16], new short[1 << 16],
                 new short[1 << 16], new short[1 << 16], new short[1 << 16], new short[1 << 16]};
-        public short[] mixer = new short[MixerOffset.intI(8)]; // <8>::value];
+        public final short[] mixer = new short[MixerOffset.intI(8)]; // <8>::value];
         // Cutoff frequency DAC Output voltage table. FC instanceof an 11 bit register.
-        public short[] f0Dac = new short[1 << 11];
+        public final short[] f0Dac = new short[1 << 11];
     }
 
     // VCR - 6581 only.
 
     // Common parameters.
 
-    protected static ModelFilter[] modelFilters = new ModelFilter[] {new ModelFilter(), new ModelFilter()};
+    protected static final ModelFilter[] modelFilters = new ModelFilter[] {new ModelFilter(), new ModelFilter()};
 
     //
     // Inline functions.
@@ -434,74 +436,73 @@ public class Filter {
 
         // Sum inputs routed into the filter.
         int vi = 0;
-        int offset = 0;
-
-        switch (sum & 0xf) {
-        case 0x0:
-            vi = 0;
-            offset = 0;
-            break;
-        case 0x1:
-            vi = v1;
-            offset = 131072;
-            break;
-        case 0x2:
-            vi = v2;
-            offset = 131072;
-            break;
-        case 0x3:
-            vi = v2 + v1;
-            offset = 327680;
-            break;
-        case 0x4:
-            vi = v3;
-            offset = 131072;
-            break;
-        case 0x5:
-            vi = v3 + v1;
-            offset = 327680;
-            break;
-        case 0x6:
-            vi = v3 + v2;
-            offset = 327680;
-            break;
-        case 0x7:
-            vi = v3 + v2 + v1;
-            offset = 589824;
-            break;
-        case 0x8:
-            vi = ve;
-            offset = 131072;
-            break;
-        case 0x9:
-            vi = ve + v1;
-            offset = 327680;
-            break;
-        case 0xa:
-            vi = ve + v2;
-            offset = 327680;
-            break;
-        case 0xb:
-            vi = ve + v2 + v1;
-            offset = 589824;
-            break;
-        case 0xc:
-            vi = ve + v3;
-            offset = 327680;
-            break;
-        case 0xd:
-            vi = ve + v3 + v1;
-            offset = 589824;
-            break;
-        case 0xe:
-            vi = ve + v3 + v2;
-            offset = 589824;
-            break;
-        case 0xf:
-            vi = ve + v3 + v2 + v1;
-            offset = 917504;
-            break;
-        }
+        int offset = switch (sum & 0xf) {
+            case 0x0 -> {
+                vi = 0;
+                yield 0;
+            }
+            case 0x1 -> {
+                vi = v1;
+                yield 131072;
+            }
+            case 0x2 -> {
+                vi = v2;
+                yield 131072;
+            }
+            case 0x3 -> {
+                vi = v2 + v1;
+                yield 327680;
+            }
+            case 0x4 -> {
+                vi = v3;
+                yield 131072;
+            }
+            case 0x5 -> {
+                vi = v3 + v1;
+                yield 327680;
+            }
+            case 0x6 -> {
+                vi = v3 + v2;
+                yield 327680;
+            }
+            case 0x7 -> {
+                vi = v3 + v2 + v1;
+                yield 589824;
+            }
+            case 0x8 -> {
+                vi = ve;
+                yield 131072;
+            }
+            case 0x9 -> {
+                vi = ve + v1;
+                yield 327680;
+            }
+            case 0xa -> {
+                vi = ve + v2;
+                yield 327680;
+            }
+            case 0xb -> {
+                vi = ve + v2 + v1;
+                yield 589824;
+            }
+            case 0xc -> {
+                vi = ve + v3;
+                yield 327680;
+            }
+            case 0xd -> {
+                vi = ve + v3 + v1;
+                yield 589824;
+            }
+            case 0xe -> {
+                vi = ve + v3 + v2;
+                yield 589824;
+            }
+            case 0xf -> {
+                vi = ve + v3 + v2 + v1;
+                yield 917504;
+            }
+            default -> 0;
+        };
 
         // Calculate filter outputs.
         if (sid_model.ordinal() == 0) {
@@ -543,74 +544,73 @@ public class Filter {
 
         // Sum inputs routed into the filter.
         int Vi = 0;
-        int offset = 0;
-
-        switch (sum & 0xf) {
-        case 0x0:
-            Vi = 0;
-            offset = SummerOffset.intI(0);
-            break;
-        case 0x1:
-            Vi = v1;
-            offset = SummerOffset.intI(1);
-            break;
-        case 0x2:
-            Vi = v2;
-            offset = SummerOffset.intI(1);
-            break;
-        case 0x3:
-            Vi = v2 + v1;
-            offset = SummerOffset.intI(2);
-            break;
-        case 0x4:
-            Vi = v3;
-            offset = SummerOffset.intI(1);
-            break;
-        case 0x5:
-            Vi = v3 + v1;
-            offset = SummerOffset.intI(2);
-            break;
-        case 0x6:
-            Vi = v3 + v2;
-            offset = SummerOffset.intI(2);
-            break;
-        case 0x7:
-            Vi = v3 + v2 + v1;
-            offset = SummerOffset.intI(3);
-            break;
-        case 0x8:
-            Vi = ve;
-            offset = SummerOffset.intI(1);
-            break;
-        case 0x9:
-            Vi = ve + v1;
-            offset = SummerOffset.intI(2);
-            break;
-        case 0xa:
-            Vi = ve + v2;
-            offset = SummerOffset.intI(2);
-            break;
-        case 0xb:
-            Vi = ve + v2 + v1;
-            offset = SummerOffset.intI(3);
-            break;
-        case 0xc:
-            Vi = ve + v3;
-            offset = SummerOffset.intI(2);
-            break;
-        case 0xd:
-            Vi = ve + v3 + v1;
-            offset = SummerOffset.intI(3);
-            break;
-        case 0xe:
-            Vi = ve + v3 + v2;
-            offset = SummerOffset.intI(3);
-            break;
-        case 0xf:
-            Vi = ve + v3 + v2 + v1;
-            offset = SummerOffset.intI(4);
-            break;
-        }
+        int offset = switch (sum & 0xf) {
+            case 0x0 -> {
+                Vi = 0;
+                yield SummerOffset.intI(0);
+            }
+            case 0x1 -> {
+                Vi = v1;
+                yield SummerOffset.intI(1);
+            }
+            case 0x2 -> {
+                Vi = v2;
+                yield SummerOffset.intI(1);
+            }
+            case 0x3 -> {
+                Vi = v2 + v1;
+                yield SummerOffset.intI(2);
+            }
+            case 0x4 -> {
+                Vi = v3;
+                yield SummerOffset.intI(1);
+            }
+            case 0x5 -> {
+                Vi = v3 + v1;
+                yield SummerOffset.intI(2);
+            }
+            case 0x6 -> {
+                Vi = v3 + v2;
+                yield SummerOffset.intI(2);
+            }
+            case 0x7 -> {
+                Vi = v3 + v2 + v1;
+                yield SummerOffset.intI(3);
+            }
+            case 0x8 -> {
+                Vi = ve;
+                yield SummerOffset.intI(1);
+            }
+            case 0x9 -> {
+                Vi = ve + v1;
+                yield SummerOffset.intI(2);
+            }
+            case 0xa -> {
+                Vi = ve + v2;
+                yield SummerOffset.intI(2);
+            }
+            case 0xb -> {
+                Vi = ve + v2 + v1;
+                yield SummerOffset.intI(3);
+            }
+            case 0xc -> {
+                Vi = ve + v3;
+                yield SummerOffset.intI(2);
+            }
+            case 0xd -> {
+                Vi = ve + v3 + v1;
+                yield SummerOffset.intI(3);
+            }
+            case 0xe -> {
+                Vi = ve + v3 + v2;
+                yield SummerOffset.intI(3);
+            }
+            case 0xf -> {
+                Vi = ve + v3 + v2 + v1;
+                yield SummerOffset.intI(4);
+            }
+            default -> 0;
+        };
 
         // Maximum delta cycles for filter fixpoint iteration to converge
         // instanceof approximately 3.
@@ -699,522 +699,521 @@ public class Filter {
 
         // Sum inputs routed into the mixer.
         int vi = 0;
-        int offset = 0;
-
-        switch (mix & 0x7f) {
-        case 0x00:
-            vi = 0;
-            offset = 0;
-            break;
-        case 0x01:
-            vi = v1;
-            offset = 1;
-            break;
-        case 0x02:
-            vi = v2;
-            offset = 1;
-            break;
-        case 0x03:
-            vi = v2 + v1;
-            offset = 65537;
-            break;
-        case 0x04:
-            vi = v3;
-            offset = 1;
-            break;
-        case 0x05:
-            vi = v3 + v1;
-            offset = 65537;
-            break;
-        case 0x06:
-            vi = v3 + v2;
-            offset = 65537;
-            break;
-        case 0x07:
-            vi = v3 + v2 + v1;
-            offset = 196609;
-            break;
-        case 0x08:
-            vi = ve;
-            offset = 1;
-            break;
-        case 0x09:
-            vi = ve + v1;
-            offset = 65537;
-            break;
-        case 0x0a:
-            vi = ve + v2;
-            offset = 65537;
-            break;
-        case 0x0b:
-            vi = ve + v2 + v1;
-            offset = 196609;
-            break;
-        case 0x0c:
-            vi = ve + v3;
-            offset = 65537;
-            break;
-        case 0x0d:
-            vi = ve + v3 + v1;
-            offset = 196609;
-            break;
-        case 0x0e:
-            vi = ve + v3 + v2;
-            offset = 196609;
-            break;
-        case 0x0f:
-            vi = ve + v3 + v2 + v1;
-            offset = 393217;
-            break;
-        case 0x10:
-            vi = vlp;
-            offset = 1;
-            break;
-        case 0x11:
-            vi = vlp + v1;
-            offset = 65537;
-            break;
-        case 0x12:
-            vi = vlp + v2;
-            offset = 65537;
-            break;
-        case 0x13:
-            vi = vlp + v2 + v1;
-            offset = 196609;
-            break;
-        case 0x14:
-            vi = vlp + v3;
-            offset = 65537;
-            break;
-        case 0x15:
-            vi = vlp + v3 + v1;
-            offset = 196609;
-            break;
-        case 0x16:
-            vi = vlp + v3 + v2;
-            offset = 196609;
-            break;
-        case 0x17:
-            vi = vlp + v3 + v2 + v1;
-            offset = 393217;
-            break;
-        case 0x18:
-            vi = vlp + ve;
-            offset = 65537;
-            break;
-        case 0x19:
-            vi = vlp + ve + v1;
-            offset = 196609;
-            break;
-        case 0x1a:
-            vi = vlp + ve + v2;
-            offset = 196609;
-            break;
-        case 0x1b:
-            vi = vlp + ve + v2 + v1;
-            offset = 393217;
-            break;
-        case 0x1c:
-            vi = vlp + ve + v3;
-            offset = 196609;
-            break;
-        case 0x1d:
-            vi = vlp + ve + v3 + v1;
-            offset = 393217;
-            break;
-        case 0x1e:
-            vi = vlp + ve + v3 + v2;
-            offset = 393217;
-            break;
-        case 0x1f:
-            vi = vlp + ve + v3 + v2 + v1;
-            offset = 655361;
-            break;
-        case 0x20:
-            vi = vbp;
-            offset = 1;
-            break;
-        case 0x21:
-            vi = vbp + v1;
-            offset = 65537;
-            break;
-        case 0x22:
-            vi = vbp + v2;
-            offset = 65537;
-            break;
-        case 0x23:
-            vi = vbp + v2 + v1;
-            offset = 196609;
-            break;
-        case 0x24:
-            vi = vbp + v3;
-            offset = 65537;
-            break;
-        case 0x25:
-            vi = vbp + v3 + v1;
-            offset = 196609;
-            break;
-        case 0x26:
-            vi = vbp + v3 + v2;
-            offset = 196609;
-            break;
-        case 0x27:
-            vi = vbp + v3 + v2 + v1;
-            offset = 393217;
-            break;
-        case 0x28:
-            vi = vbp + ve;
-            offset = 65537;
-            break;
-        case 0x29:
-            vi = vbp + ve + v1;
-            offset = 196609;
-            break;
-        case 0x2a:
-            vi = vbp + ve + v2;
-            offset = 196609;
-            break;
-        case 0x2b:
-            vi = vbp + ve + v2 + v1;
-            offset = 393217;
-            break;
-        case 0x2c:
-            vi = vbp + ve + v3;
-            offset = 196609;
-            break;
-        case 0x2d:
-            vi = vbp + ve + v3 + v1;
-            offset = 393217;
-            break;
-        case 0x2e:
-            vi = vbp + ve + v3 + v2;
-            offset = 393217;
-            break;
-        case 0x2f:
-            vi = vbp + ve + v3 + v2 + v1;
-            offset = 655361;
-            break;
-        case 0x30:
-            vi = vbp + vlp;
-            offset = 65537;
-            break;
-        case 0x31:
-            vi = vbp + vlp + v1;
-            offset = 196609;
-            break;
-        case 0x32:
-            vi = vbp + vlp + v2;
-            offset = 196609;
-            break;
-        case 0x33:
-            vi = vbp + vlp + v2 + v1;
-            offset = 393217;
-            break;
-        case 0x34:
-            vi = vbp + vlp + v3;
-            offset = 196609;
-            break;
-        case 0x35:
-            vi = vbp + vlp + v3 + v1;
-            offset = 393217;
-            break;
-        case 0x36:
-            vi = vbp + vlp + v3 + v2;
-            offset = 393217;
-            break;
-        case 0x37:
-            vi = vbp + vlp + v3 + v2 + v1;
-            offset = 655361;
-            break;
-        case 0x38:
-            vi = vbp + vlp + ve;
-            offset = 196609;
-            break;
-        case 0x39:
-            vi = vbp + vlp + ve + v1;
-            offset = 393217;
-            break;
-        case 0x3a:
-            vi = vbp + vlp + ve + v2;
-            offset = 393217;
-            break;
-        case 0x3b:
-            vi = vbp + vlp + ve + v2 + v1;
-            offset = 655361;
-            break;
-        case 0x3c:
-            vi = vbp + vlp + ve + v3;
-            offset = 393217;
-            break;
-        case 0x3d:
-            vi = vbp + vlp + ve + v3 + v1;
-            offset = 655361;
-            break;
-        case 0x3e:
-            vi = vbp + vlp + ve + v3 + v2;
-            offset = 655361;
-            break;
-        case 0x3f:
-            vi = vbp + vlp + ve + v3 + v2 + v1;
-            offset = 983041;
-            break;
-        case 0x40:
-            vi = vhp;
-            offset = 1;
-            break;
-        case 0x41:
-            vi = vhp + v1;
-            offset = 65537;
-            break;
-        case 0x42:
-            vi = vhp + v2;
-            offset = 65537;
-            break;
-        case 0x43:
-            vi = vhp + v2 + v1;
-            offset = 196609;
-            break;
-        case 0x44:
-            vi = vhp + v3;
-            offset = 65537;
-            break;
-        case 0x45:
-            vi = vhp + v3 + v1;
-            offset = 196609;
-            break;
-        case 0x46:
-            vi = vhp + v3 + v2;
-            offset = 196609;
-            break;
-        case 0x47:
-            vi = vhp + v3 + v2 + v1;
-            offset = 393217;
-            break;
-        case 0x48:
-            vi = vhp + ve;
-            offset = 65537;
-            break;
-        case 0x49:
-            vi = vhp + ve + v1;
-            offset = 196609;
-            break;
-        case 0x4a:
-            vi = vhp + ve + v2;
-            offset = 196609;
-            break;
-        case 0x4b:
-            vi = vhp + ve + v2 + v1;
-            offset = 393217;
-            break;
-        case 0x4c:
-            vi = vhp + ve + v3;
-            offset = 196609;
-            break;
-        case 0x4d:
-            vi = vhp + ve + v3 + v1;
-            offset = 393217;
-            break;
-        case 0x4e:
-            vi = vhp + ve + v3 + v2;
-            offset = 393217;
-            break;
-        case 0x4f:
-            vi = vhp + ve + v3 + v2 + v1;
-            offset = 655361;
-            break;
-        case 0x50:
-            vi = vhp + vlp;
-            offset = 65537;
-            break;
-        case 0x51:
-            vi = vhp + vlp + v1;
-            offset = 196609;
-            break;
-        case 0x52:
-            vi = vhp + vlp + v2;
-            offset = 196609;
-            break;
-        case 0x53:
-            vi = vhp + vlp + v2 + v1;
-            offset = 393217;
-            break;
-        case 0x54:
-            vi = vhp + vlp + v3;
-            offset = 196609;
-            break;
-        case 0x55:
-            vi = vhp + vlp + v3 + v1;
-            offset = 393217;
-            break;
-        case 0x56:
-            vi = vhp + vlp + v3 + v2;
-            offset = 393217;
-            break;
-        case 0x57:
-            vi = vhp + vlp + v3 + v2 + v1;
-            offset = 655361;
-            break;
-        case 0x58:
-            vi = vhp + vlp + ve;
-            offset = 196609;
-            break;
-        case 0x59:
-            vi = vhp + vlp + ve + v1;
-            offset = 393217;
-            break;
-        case 0x5a:
-            vi = vhp + vlp + ve + v2;
-            offset = 393217;
-            break;
-        case 0x5b:
-            vi = vhp + vlp + ve + v2 + v1;
-            offset = 655361;
-            break;
-        case 0x5c:
-            vi = vhp + vlp + ve + v3;
-            offset = 393217;
-            break;
-        case 0x5d:
-            vi = vhp + vlp + ve + v3 + v1;
-            offset = 655361;
-            break;
-        case 0x5e:
-            vi = vhp + vlp + ve + v3 + v2;
-            offset = 655361;
-            break;
-        case 0x5f:
-            vi = vhp + vlp + ve + v3 + v2 + v1;
-            offset = 983041;
-            break;
-        case 0x60:
-            vi = vhp + vbp;
-            offset = 65537;
-            break;
-        case 0x61:
-            vi = vhp + vbp + v1;
-            offset = 196609;
-            break;
-        case 0x62:
-            vi = vhp + vbp + v2;
-            offset = 196609;
-            break;
-        case 0x63:
-            vi = vhp + vbp + v2 + v1;
-            offset = 393217;
-            break;
-        case 0x64:
-            vi = vhp + vbp + v3;
-            offset = 196609;
-            break;
-        case 0x65:
-            vi = vhp + vbp + v3 + v1;
-            offset = 393217;
-            break;
-        case 0x66:
-            vi = vhp + vbp + v3 + v2;
-            offset = 393217;
-            break;
-        case 0x67:
-            vi = vhp + vbp + v3 + v2 + v1;
-            offset = 655361;//MixerOffset.IntI(5);//MixerOffset < 5 >::value;
-            break;
-        case 0x68:
-            vi = vhp + vbp + ve;
-            offset = 196609;//MixerOffset.IntI(3);//MixerOffset < 3 >::value;
-            break;
-        case 0x69:
-            vi = vhp + vbp + ve + v1;
-            offset = 393217;//MixerOffset.IntI(4);//MixerOffset < 4 >::value;
-            break;
-        case 0x6a:
-            vi = vhp + vbp + ve + v2;
-            offset = 393217;//MixerOffset.IntI(4);//MixerOffset < 4 >::value;
-            break;
-        case 0x6b:
-            vi = vhp + vbp + ve + v2 + v1;
-            offset = 655361;// MixerOffset.IntI(5);//MixerOffset < 5 >::value;
-            break;
-        case 0x6c:
-            vi = vhp + vbp + ve + v3;
-            offset = 393217;//MixerOffset.IntI(4);//MixerOffset < 4 >::value;
-            break;
-        case 0x6d:
-            vi = vhp + vbp + ve + v3 + v1;
-            offset = 655361;// MixerOffset.IntI(5);//MixerOffset < 5 >::value;
-            break;
-        case 0x6e:
-            vi = vhp + vbp + ve + v3 + v2;
-            offset = 655361;//MixerOffset.IntI(5);//MixerOffset < 5 >::value;
-            break;
-        case 0x6f:
-            vi = vhp + vbp + ve + v3 + v2 + v1;
-            offset = 983041;//MixerOffset.IntI(6);//MixerOffset < 6 >::value;
-            break;
-        case 0x70:
-            vi = vhp + vbp + vlp;
-            offset = 196609;//MixerOffset.IntI(3);//MixerOffset < 3 >::value;
-            break;
-        case 0x71:
-            vi = vhp + vbp + vlp + v1;
-            offset = 393217;//MixerOffset.IntI(4);//MixerOffset < 4 >::value;
-            break;
-        case 0x72:
-            vi = vhp + vbp + vlp + v2;
-            offset = 393217;//MixerOffset.IntI(4);//MixerOffset < 4 >::value;
-            break;
-        case 0x73:
-            vi = vhp + vbp + vlp + v2 + v1;
-            offset = 655361;//MixerOffset.IntI(5);//MixerOffset < 5 >::value;
-            break;
-        case 0x74:
-            vi = vhp + vbp + vlp + v3;
-            offset = 393217;// MixerOffset.IntI(4);//MixerOffset < 4 >::value;
-            break;
-        case 0x75:
-            vi = vhp + vbp + vlp + v3 + v1;
-            offset = 655361; // MixerOffset.IntI(5); //MixerOffset<5>::value;
-            break;
-        case 0x76:
-            vi = vhp + vbp + vlp + v3 + v2;
-            offset = 655361; // MixerOffset.IntI(5); //MixerOffset<5>::value;
-            break;
-        case 0x77:
-            vi = vhp + vbp + vlp + v3 + v2 + v1;
-            offset = 983041; //MixerOffset.IntI(6); //MixerOffset<6>::value;
-            break;
-        case 0x78:
-            vi = vhp + vbp + vlp + ve;
-            offset = 393217; //MixerOffset.IntI(4); //MixerOffset<4>::value;
-            break;
-        case 0x79:
-            vi = vhp + vbp + vlp + ve + v1;
-            offset = 655361; //MixerOffset.IntI(5); //MixerOffset<5>::value;
-            break;
-        case 0x7a:
-            vi = vhp + vbp + vlp + ve + v2;
-            offset = 655361; //MixerOffset.IntI(5); //MixerOffset<5>::value;
-            break;
-        case 0x7b:
-            vi = vhp + vbp + vlp + ve + v2 + v1;
-            offset = 983041; //MixerOffset.IntI(6); //MixerOffset<6>::value;
-            break;
-        case 0x7c:
-            vi = vhp + vbp + vlp + ve + v3;
-            offset = 655361; //MixerOffset.IntI(5); //MixerOffset<5>::value;
-            break;
-        case 0x7d:
-            vi = vhp + vbp + vlp + ve + v3 + v1;
-            offset = 983041; // MixerOffset.IntI(6); //MixerOffset<6>::value;
-            break;
-        case 0x7e:
-            vi = vhp + vbp + vlp + ve + v3 + v2;
-            offset = 983041; //MixerOffset.IntI(6); //MixerOffset<6>::value;
-            break;
-        case 0x7f:
-            vi = vhp + vbp + vlp + ve + v3 + v2 + v1;
-            offset = 1376257; // MixerOffset.IntI(7); //MixerOffset<7>::value;
-            break;
-        }
+        int offset = switch (mix & 0x7f) {
+            case 0x00 -> {
+                vi = 0;
+                yield 0;
+            }
+            case 0x01 -> {
+                vi = v1;
+                yield 1;
+            }
+            case 0x02 -> {
+                vi = v2;
+                yield 1;
+            }
+            case 0x03 -> {
+                vi = v2 + v1;
+                yield 65537;
+            }
+            case 0x04 -> {
+                vi = v3;
+                yield 1;
+            }
+            case 0x05 -> {
+                vi = v3 + v1;
+                yield 65537;
+            }
+            case 0x06 -> {
+                vi = v3 + v2;
+                yield 65537;
+            }
+            case 0x07 -> {
+                vi = v3 + v2 + v1;
+                yield 196609;
+            }
+            case 0x08 -> {
+                vi = ve;
+                yield 1;
+            }
+            case 0x09 -> {
+                vi = ve + v1;
+                yield 65537;
+            }
+            case 0x0a -> {
+                vi = ve + v2;
+                yield 65537;
+            }
+            case 0x0b -> {
+                vi = ve + v2 + v1;
+                yield 196609;
+            }
+            case 0x0c -> {
+                vi = ve + v3;
+                yield 65537;
+            }
+            case 0x0d -> {
+                vi = ve + v3 + v1;
+                yield 196609;
+            }
+            case 0x0e -> {
+                vi = ve + v3 + v2;
+                yield 196609;
+            }
+            case 0x0f -> {
+                vi = ve + v3 + v2 + v1;
+                yield 393217;
+            }
+            case 0x10 -> {
+                vi = vlp;
+                yield 1;
+            }
+            case 0x11 -> {
+                vi = vlp + v1;
+                yield 65537;
+            }
+            case 0x12 -> {
+                vi = vlp + v2;
+                yield 65537;
+            }
+            case 0x13 -> {
+                vi = vlp + v2 + v1;
+                yield 196609;
+            }
+            case 0x14 -> {
+                vi = vlp + v3;
+                yield 65537;
+            }
+            case 0x15 -> {
+                vi = vlp + v3 + v1;
+                yield 196609;
+            }
+            case 0x16 -> {
+                vi = vlp + v3 + v2;
+                yield 196609;
+            }
+            case 0x17 -> {
+                vi = vlp + v3 + v2 + v1;
+                yield 393217;
+            }
+            case 0x18 -> {
+                vi = vlp + ve;
+                yield 65537;
+            }
+            case 0x19 -> {
+                vi = vlp + ve + v1;
+                yield 196609;
+            }
+            case 0x1a -> {
+                vi = vlp + ve + v2;
+                yield 196609;
+            }
+            case 0x1b -> {
+                vi = vlp + ve + v2 + v1;
+                yield 393217;
+            }
+            case 0x1c -> {
+                vi = vlp + ve + v3;
+                yield 196609;
+            }
+            case 0x1d -> {
+                vi = vlp + ve + v3 + v1;
+                yield 393217;
+            }
+            case 0x1e -> {
+                vi = vlp + ve + v3 + v2;
+                yield 393217;
+            }
+            case 0x1f -> {
+                vi = vlp + ve + v3 + v2 + v1;
+                yield 655361;
+            }
+            case 0x20 -> {
+                vi = vbp;
+                yield 1;
+            }
+            case 0x21 -> {
+                vi = vbp + v1;
+                yield 65537;
+            }
+            case 0x22 -> {
+                vi = vbp + v2;
+                yield 65537;
+            }
+            case 0x23 -> {
+                vi = vbp + v2 + v1;
+                yield 196609;
+            }
+            case 0x24 -> {
+                vi = vbp + v3;
+                yield 65537;
+            }
+            case 0x25 -> {
+                vi = vbp + v3 + v1;
+                yield 196609;
+            }
+            case 0x26 -> {
+                vi = vbp + v3 + v2;
+                yield 196609;
+            }
+            case 0x27 -> {
+                vi = vbp + v3 + v2 + v1;
+                yield 393217;
+            }
+            case 0x28 -> {
+                vi = vbp + ve;
+                yield 65537;
+            }
+            case 0x29 -> {
+                vi = vbp + ve + v1;
+                yield 196609;
+            }
+            case 0x2a -> {
+                vi = vbp + ve + v2;
+                yield 196609;
+            }
+            case 0x2b -> {
+                vi = vbp + ve + v2 + v1;
+                yield 393217;
+            }
+            case 0x2c -> {
+                vi = vbp + ve + v3;
+                yield 196609;
+            }
+            case 0x2d -> {
+                vi = vbp + ve + v3 + v1;
+                yield 393217;
+            }
+            case 0x2e -> {
+                vi = vbp + ve + v3 + v2;
+                yield 393217;
+            }
+            case 0x2f -> {
+                vi = vbp + ve + v3 + v2 + v1;
+                yield 655361;
+            }
+            case 0x30 -> {
+                vi = vbp + vlp;
+                yield 65537;
+            }
+            case 0x31 -> {
+                vi = vbp + vlp + v1;
+                yield 196609;
+            }
+            case 0x32 -> {
+                vi = vbp + vlp + v2;
+                yield 196609;
+            }
+            case 0x33 -> {
+                vi = vbp + vlp + v2 + v1;
+                yield 393217;
+            }
+            case 0x34 -> {
+                vi = vbp + vlp + v3;
+                yield 196609;
+            }
+            case 0x35 -> {
+                vi = vbp + vlp + v3 + v1;
+                yield 393217;
+            }
+            case 0x36 -> {
+                vi = vbp + vlp + v3 + v2;
+                yield 393217;
+            }
+            case 0x37 -> {
+                vi = vbp + vlp + v3 + v2 + v1;
+                yield 655361;
+            }
+            case 0x38 -> {
+                vi = vbp + vlp + ve;
+                yield 196609;
+            }
+            case 0x39 -> {
+                vi = vbp + vlp + ve + v1;
+                yield 393217;
+            }
+            case 0x3a -> {
+                vi = vbp + vlp + ve + v2;
+                yield 393217;
+            }
+            case 0x3b -> {
+                vi = vbp + vlp + ve + v2 + v1;
+                yield 655361;
+            }
+            case 0x3c -> {
+                vi = vbp + vlp + ve + v3;
+                yield 393217;
+            }
+            case 0x3d -> {
+                vi = vbp + vlp + ve + v3 + v1;
+                yield 655361;
+            }
+            case 0x3e -> {
+                vi = vbp + vlp + ve + v3 + v2;
+                yield 655361;
+            }
+            case 0x3f -> {
+                vi = vbp + vlp + ve + v3 + v2 + v1;
+                yield 983041;
+            }
+            case 0x40 -> {
+                vi = vhp;
+                yield 1;
+            }
+            case 0x41 -> {
+                vi = vhp + v1;
+                yield 65537;
+            }
+            case 0x42 -> {
+                vi = vhp + v2;
+                yield 65537;
+            }
+            case 0x43 -> {
+                vi = vhp + v2 + v1;
+                yield 196609;
+            }
+            case 0x44 -> {
+                vi = vhp + v3;
+                yield 65537;
+            }
+            case 0x45 -> {
+                vi = vhp + v3 + v1;
+                yield 196609;
+            }
+            case 0x46 -> {
+                vi = vhp + v3 + v2;
+                yield 196609;
+            }
+            case 0x47 -> {
+                vi = vhp + v3 + v2 + v1;
+                yield 393217;
+            }
+            case 0x48 -> {
+                vi = vhp + ve;
+                yield 65537;
+            }
+            case 0x49 -> {
+                vi = vhp + ve + v1;
+                yield 196609;
+            }
+            case 0x4a -> {
+                vi = vhp + ve + v2;
+                yield 196609;
+            }
+            case 0x4b -> {
+                vi = vhp + ve + v2 + v1;
+                yield 393217;
+            }
+            case 0x4c -> {
+                vi = vhp + ve + v3;
+                yield 196609;
+            }
+            case 0x4d -> {
+                vi = vhp + ve + v3 + v1;
+                yield 393217;
+            }
+            case 0x4e -> {
+                vi = vhp + ve + v3 + v2;
+                yield 393217;
+            }
+            case 0x4f -> {
+                vi = vhp + ve + v3 + v2 + v1;
+                yield 655361;
+            }
+            case 0x50 -> {
+                vi = vhp + vlp;
+                yield 65537;
+            }
+            case 0x51 -> {
+                vi = vhp + vlp + v1;
+                yield 196609;
+            }
+            case 0x52 -> {
+                vi = vhp + vlp + v2;
+                yield 196609;
+            }
+            case 0x53 -> {
+                vi = vhp + vlp + v2 + v1;
+                yield 393217;
+            }
+            case 0x54 -> {
+                vi = vhp + vlp + v3;
+                yield 196609;
+            }
+            case 0x55 -> {
+                vi = vhp + vlp + v3 + v1;
+                yield 393217;
+            }
+            case 0x56 -> {
+                vi = vhp + vlp + v3 + v2;
+                yield 393217;
+            }
+            case 0x57 -> {
+                vi = vhp + vlp + v3 + v2 + v1;
+                yield 655361;
+            }
+            case 0x58 -> {
+                vi = vhp + vlp + ve;
+                yield 196609;
+            }
+            case 0x59 -> {
+                vi = vhp + vlp + ve + v1;
+                yield 393217;
+            }
+            case 0x5a -> {
+                vi = vhp + vlp + ve + v2;
+                yield 393217;
+            }
+            case 0x5b -> {
+                vi = vhp + vlp + ve + v2 + v1;
+                yield 655361;
+            }
+            case 0x5c -> {
+                vi = vhp + vlp + ve + v3;
+                yield 393217;
+            }
+            case 0x5d -> {
+                vi = vhp + vlp + ve + v3 + v1;
+                yield 655361;
+            }
+            case 0x5e -> {
+                vi = vhp + vlp + ve + v3 + v2;
+                yield 655361;
+            }
+            case 0x5f -> {
+                vi = vhp + vlp + ve + v3 + v2 + v1;
+                yield 983041;
+            }
+            case 0x60 -> {
+                vi = vhp + vbp;
+                yield 65537;
+            }
+            case 0x61 -> {
+                vi = vhp + vbp + v1;
+                yield 196609;
+            }
+            case 0x62 -> {
+                vi = vhp + vbp + v2;
+                yield 196609;
+            }
+            case 0x63 -> {
+                vi = vhp + vbp + v2 + v1;
+                yield 393217;
+            }
+            case 0x64 -> {
+                vi = vhp + vbp + v3;
+                yield 196609;
+            }
+            case 0x65 -> {
+                vi = vhp + vbp + v3 + v1;
+                yield 393217;
+            }
+            case 0x66 -> {
+                vi = vhp + vbp + v3 + v2;
+                yield 393217;
+            }
+            case 0x67 -> {
+                vi = vhp + vbp + v3 + v2 + v1;
+                yield 655361;
+            }
+            case 0x68 -> {
+                vi = vhp + vbp + ve;
+                yield 196609;
+            }
+            case 0x69 -> {
+                vi = vhp + vbp + ve + v1;
+                yield 393217;
+            }
+            case 0x6a -> {
+                vi = vhp + vbp + ve + v2;
+                yield 393217;
+            }
+            case 0x6b -> {
+                vi = vhp + vbp + ve + v2 + v1;
+                yield 655361;
+            }
+            case 0x6c -> {
+                vi = vhp + vbp + ve + v3;
+                yield 393217;
+            }
+            case 0x6d -> {
+                vi = vhp + vbp + ve + v3 + v1;
+                yield 655361;
+            }
+            case 0x6e -> {
+                vi = vhp + vbp + ve + v3 + v2;
+                yield 655361;
+            }
+            case 0x6f -> {
+                vi = vhp + vbp + ve + v3 + v2 + v1;
+                yield 983041;
+            }
+            case 0x70 -> {
+                vi = vhp + vbp + vlp;
+                yield 196609;
+            }
+            case 0x71 -> {
+                vi = vhp + vbp + vlp + v1;
+                yield 393217;
+            }
+            case 0x72 -> {
+                vi = vhp + vbp + vlp + v2;
+                yield 393217;
+            }
+            case 0x73 -> {
+                vi = vhp + vbp + vlp + v2 + v1;
+                yield 655361;
+            }
+            case 0x74 -> {
+                vi = vhp + vbp + vlp + v3;
+                yield 393217;
+            }
+            case 0x75 -> {
+                vi = vhp + vbp + vlp + v3 + v1;
+                yield 655361;
+            }
+            case 0x76 -> {
+                vi = vhp + vbp + vlp + v3 + v2;
+                yield 655361;
+            }
+            case 0x77 -> {
+                vi = vhp + vbp + vlp + v3 + v2 + v1;
+                yield 983041;
+            }
+            case 0x78 -> {
+                vi = vhp + vbp + vlp + ve;
+                yield 393217;
+            }
+            case 0x79 -> {
+                vi = vhp + vbp + vlp + ve + v1;
+                yield 655361;
+            }
+            case 0x7a -> {
+                vi = vhp + vbp + vlp + ve + v2;
+                yield 655361;
+            }
+            case 0x7b -> {
+                vi = vhp + vbp + vlp + ve + v2 + v1;
+                yield 983041;
+            }
+            case 0x7c -> {
+                vi = vhp + vbp + vlp + ve + v3;
+                yield 655361;
+            }
+            case 0x7d -> {
+                vi = vhp + vbp + vlp + ve + v3 + v1;
+                yield 983041;
+            }
+            case 0x7e -> {
+                vi = vhp + vbp + vlp + ve + v3 + v2;
+                yield 983041;
+            }
+            case 0x7f -> {
+                vi = vhp + vbp + vlp + ve + v3 + v2 + v1;
+                yield 1376257;
+            }
+            default -> 0;
+        };
 
         // Sum the inputs : the mixer and run the mixer Output through the gain.
         if (sid_model.ordinal() == 0) {
@@ -1470,7 +1469,7 @@ public class Filter {
         int Vgdt = kVddt - vi;
 
         // "Snake" current, scaled by (1/m)*2^13*m*2^16*m*2^16*2^-15 = m*2^30
-        int n_I_snake = (int) (mf.nSnake * ((int) (((long) Vgst * Vgst - (long) Vgdt * Vgdt) >> 15)));
+        int n_I_snake = mf.nSnake * ((int) (((long) Vgst * Vgst - (long) Vgdt * Vgdt) >> 15));
 
         // VCR gate voltage.       // Scaled by m*2^16
         // Vg = Vddt - sqrt(((Vddt - vi)^2 + Vgdt^2)/2)
@@ -1608,7 +1607,7 @@ public class Filter {
         public boolean dacTerm;
     }
 
-    public static ModelFilterInit[] modelFilterInits = new ModelFilterInit[] {
+    public static final ModelFilterInit[] modelFilterInits = new ModelFilterInit[] {
             new ModelFilterInit(), new ModelFilterInit()
     };
 
@@ -1657,8 +1656,8 @@ public class Filter {
         modelFilterInits[1].dacTerm = true;
     }
 
-    public static short[] vcr_kVg = new short[1 << 16];
-    public static short[] vcr_n_Ids_term = new short[1 << 16];
+    public static final short[] vcr_kVg = new short[1 << 16];
+    public static final short[] vcr_n_Ids_term = new short[1 << 16];
 
 //# ifndef HAS_LOG1P
     public static double log1p(double x) {
@@ -1745,7 +1744,6 @@ public class Filter {
                             scaledVoltage[fi1.opampVoltageSize - 2][0] = (1 << 16) - 1;
                 }
 
-                Spline sp = new Spline();
                 //sp.interpolate(scaledVoltage, scaledVoltage + fi1.opamp_voltage_size - 1,
                 //Spline.PointPlotter<Integer>(opamp), 1.0);
                 Spline.interpolate(scaledVoltage, fi1.opampVoltageSize - 1, opamp, 1.0);

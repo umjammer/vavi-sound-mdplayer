@@ -45,10 +45,10 @@ import mdplayer.driver.sid.libsidplayfp.EventScheduler;
 
 
          //Pointer to the Mos6526 which this Interrupt belongs to.
-        protected Mos6526 parent;
+        protected final Mos6526 parent;
 
          //Event scheduler.
-        protected EventScheduler eventScheduler;
+        protected final EventScheduler eventScheduler;
 
          //Interrupt control register
         private byte icr;

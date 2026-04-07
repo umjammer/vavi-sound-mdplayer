@@ -23,7 +23,6 @@
 package mdplayer.driver.sid.libsidplayfp.sidplayfp;
 
 import dotnet4j.io.FileStream;
-import mdplayer.Setting;
 import mdplayer.driver.sid.libsidplayfp.Player;
 
 

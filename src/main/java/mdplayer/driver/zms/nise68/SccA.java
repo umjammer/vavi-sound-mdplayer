@@ -16,7 +16,7 @@ public class SccA {
 
     private static final Logger logger = getLogger(SccA.class.getName());
 
-    private BiFunction<Integer, Byte, Integer> scc;
+    private final BiFunction<Integer, Byte, Integer> scc;
     private byte group = 0;
     private byte interrupt = 0;
     private byte vect = 0;
@@ -28,7 +28,7 @@ public class SccA {
     private short generalTimerValue = 0;
     private int renderingFreq;
     // private double clkM = 4_915_200.0 / 8.0;// 1_000_000.0;
-    private double clkM = 1_000_000.0;
+    private final double clkM = 1_000_000.0;
     private double stepM;
     private double generalTimerValueWrk = 0.0;
     private double clickcounter = 1.0;
@@ -50,30 +50,18 @@ public class SccA {
         int c = ptr & 0xf;
         byte dat = 0;
         if (c == 0x5) {
-            switch (currentReg) {
-                case 0:
-                    dat = 4; // 4 TxBufferEmpty
-                    break;
-                case 1:
-                    dat = 1; // 1 AllSent completed
-                    break;
-                case 2:
-                    dat = vect;
-                    break;
-                case 3:
-                    dat = 0;
-                    break;
-                case 8:
-                    throw new UnsupportedOperationException();
-                case 10:
-                    throw new UnsupportedOperationException();
-                case 12:
-                    throw new UnsupportedOperationException();
-                case 13:
-                    throw new UnsupportedOperationException();
-                case 15:
-                    throw new UnsupportedOperationException();
-            }
+            dat = switch (currentReg) {
+                case 0 -> 4; // 4 TxBufferEmpty
+                case 1 -> 1; // 1 AllSent completed
+                case 2 -> vect;
+                case 3 -> 0;
+                case 8 -> throw new UnsupportedOperationException();
+                case 10 -> throw new UnsupportedOperationException();
+                case 12 -> throw new UnsupportedOperationException();
+                case 13 -> throw new UnsupportedOperationException();
+                case 15 -> throw new UnsupportedOperationException();
+                default -> dat;
+            };
             currentReg = 0; // Anything you do resets the register to 0.
         } else {
             return dat;

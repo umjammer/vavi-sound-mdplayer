@@ -40,7 +40,7 @@ public class frmVisWave extends frmBase {
     private double dispHeight = 1.0;
     private boolean fft = false;
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmVisWave.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmVisWave.class);
 
     public frmVisWave(frmMain frm) {
         parent = frm;
@@ -49,7 +49,7 @@ public class frmVisWave extends frmBase {
     }
 
     private void timer1_Tick(ActionEvent ev) {
-        audio.driverVirtual.copyWaveBuffer(buf);
+        audio.plugin.driverVirtual.copyWaveBuffer(buf);
 
         g.setColor(Color.black);
         g.fillRect(0, 0, bmp.getWidth(), bmp.getHeight());
@@ -150,16 +150,16 @@ public class frmVisWave extends frmBase {
 
     public short[] convertTo(float[] src) {
         for (int i = 0; i < src.length / 2; i++) {
-            destS[i * 2] = (short) (Math.min(Math.max(-src[i] * 150.0f * 32768.0f * 0.6, Short.MIN_VALUE), Short.MAX_VALUE));
-            destS[i * 2 + 1] = (short) (Math.min(Math.max(-src[i] * 150.0f * 32768.0f * 0.6, Short.MIN_VALUE), Short.MAX_VALUE));
+            destS[i * 2] = (short) (Math.clamp(-src[i] * 150.0f * 32768.0f * 0.6, Short.MIN_VALUE, Short.MAX_VALUE));
+            destS[i * 2 + 1] = (short) (Math.clamp(-src[i] * 150.0f * 32768.0f * 0.6, Short.MIN_VALUE, Short.MAX_VALUE));
         }
         return destS;
     }
 
     public short[] convertTo2(float[] src) {
         for (int i = 0; i < src.length / 2; i++) {
-            destS2[i * 2] = (short) (Math.min(Math.max(-src[i] * 150.0f * 32768.0f * 0.6, Short.MIN_VALUE), Short.MAX_VALUE));
-            destS2[i * 2 + 1] = (short) (Math.min(Math.max(-src[i] * 150.0f * 32768.0f * 0.6, Short.MIN_VALUE), Short.MAX_VALUE));
+            destS2[i * 2] = (short) (Math.clamp(-src[i] * 150.0f * 32768.0f * 0.6, Short.MIN_VALUE, Short.MAX_VALUE));
+            destS2[i * 2 + 1] = (short) (Math.clamp(-src[i] * 150.0f * 32768.0f * 0.6, Short.MIN_VALUE, Short.MAX_VALUE));
         }
         return destS2;
     }
@@ -190,11 +190,11 @@ public class frmVisWave extends frmBase {
 
         private final double[] fact = new double[M + 1];
 
-        private final double aa = 96;
+        private static final double aa = 96;
 
         private double iza;
 
-        private double alpha(double a) {
+        private static double alpha(double a) {
             if (a <= 21) {
                 return 0;
             }
@@ -219,7 +219,7 @@ public class frmVisWave extends frmBase {
             return ret;
         }
 
-        private void rfft(int n, int isign, double[] x) {
+        private static void rfft(int n, int isign, double[] x) {
             int ipsize = 0, wsize = 0;
             int[] ip = null;
             double[] w = null;

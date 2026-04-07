@@ -42,7 +42,7 @@ public class IniParser {
     public static class ParseError extends RuntimeException {
     }
 
-    private String parseSection(String buffer) {
+    private static String parseSection(String buffer) {
         int pos = buffer.indexOf(']');
 
         if (pos == -1) {
@@ -52,7 +52,7 @@ public class IniParser {
         return buffer.substring(1, pos);
     }
 
-    private Tuple<String, String> parseKey(String buffer) {
+    private static Tuple<String, String> parseKey(String buffer) {
         int pos = buffer.indexOf('=');
 
         if (pos == -1) {

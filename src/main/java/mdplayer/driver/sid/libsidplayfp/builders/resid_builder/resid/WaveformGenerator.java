@@ -508,7 +508,7 @@ public class WaveformGenerator {
 //#endif // RESID_INLINING || defined(RESID_WAVE_CC)
 
     // Waveform lookup tables.
-    public static short[][][] modelWave = {
+    public static final short[][][] modelWave = {
             {
                     new short[1 << 12],
                     new short[1 << 12],
@@ -556,7 +556,7 @@ public class WaveformGenerator {
     }
 
     // DAC lookup tables.
-    protected static short[][] modelDac = {
+    protected static final short[][] modelDac = {
             new short[1 << 12],
             new short[1 << 12]
     };

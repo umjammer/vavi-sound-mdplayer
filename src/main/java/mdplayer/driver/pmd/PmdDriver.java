@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import javax.swing.JOptionPane;
 
 import dotnet4j.io.File;
 import dotnet4j.io.FileAccess;
@@ -21,7 +20,6 @@ import dotnet4j.io.MemoryStream;
 import dotnet4j.io.Path;
 import dotnet4j.io.Stream;
 import dotnet4j.util.compat.Tuple;
-import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.P86Chip;
@@ -29,24 +27,32 @@ import mdplayer.chips.PpsChip;
 import mdplayer.chips.Ppz8Chip;
 import mdplayer.chips.Ym2608Chip;
 import mdplayer.driver.BaseDriver;
-import mdplayer.driver.Vgm;
-import mdplayer.driver.Vgm.Gd3;
+import mdplayer.format.FileFormat;
+import mdplayer.format.MMLFileFormat;
 import mdplayer.plugin.BasePlugin;
 import musicDriverInterface.ChipAction;
 import musicDriverInterface.ChipDatum;
 import musicDriverInterface.CompilerInfo;
-import musicDriverInterface.GD3Tag;
 import musicDriverInterface.ICompiler;
 import musicDriverInterface.IDriver;
+import musicDriverInterface.MetaData;
 import musicDriverInterface.MmlDatum;
-import musicDriverInterface.Tag;
 
 import static java.lang.System.getLogger;
 
 
-public class PMDJava extends BaseDriver {
+/**
+ * PMD
+ * <p>
+ * environment variable
+ * <li>{@code mdplayer.pmd.dir} ... </li>
+ * <li>{@code mdplayer.pmd.opt} ... </li>
+ *
+ * @author kumatan
+ */
+public class PmdDriver extends BaseDriver {
 
-    private static final Logger logger = getLogger(PMDJava.class.getName());
+    private static final Logger logger = getLogger(PmdDriver.class.getName());
 
     private ICompiler pmdCompiler = null;
 
@@ -74,75 +80,66 @@ public class PMDJava extends BaseDriver {
 
     private PMDFileType mtype;
 
-    public PMDJava() {
+    public PmdDriver() {
     }
 
-    public Gd3 getGD3Info(byte[] buf, int vgmGd3, PMDFileType mtype) {
-        GD3Tag gt;
+    public MetaData getMetaData(byte[] buf, int vgmGd3, PMDFileType mtype) {
+        MetaData metaData;
 
         if (mtype == PMDFileType.MML) {
             EnvironmentE env = new EnvironmentE();
-            env.addEnv("pmd");
-            env.addEnv("pmdopt");
-            envPmd = env.getEnvVal("pmd");
-            envPmdOpt = env.getEnvVal("pmdopt");
+            env.addEnv("mdplayer.pmd.dir");
+            env.addEnv("mdplayer.pmd.opt");
+            envPmd = env.getEnvVal("mdplayer.pmd.dir");
+            envPmdOpt = env.getEnvVal("mdplayer.pmd.opt");
 
             pmdCompiler = ICompiler.factory("pmd.compiler.Compiler");
             pmdCompiler.setCompileSwitch((Function<String, Stream>) this::appendFileReaderCallback);
-            gt = pmdCompiler.getGD3TagInfo(buf);
+            metaData = pmdCompiler.getMetaData(buf);
         } else {
             pmdDriver = IDriver.factory("pmd.driver.Driver");
             // pmdDriver.SetDriverSwitch((Func<String, Stream>)appendFileReaderCallback);
-            gt = pmdDriver.getGD3TagInfo(buf);
+            metaData = pmdDriver.getMetaData(buf);
         }
 
-        Vgm.Gd3 g = new Gd3();
-        g.trackName = gt.items.containsKey(Tag.Title) ? gt.items.get(Tag.Title)[0] : "";
-        g.trackNameJ = gt.items.containsKey(Tag.TitleJ) ? gt.items.get(Tag.TitleJ)[0] : "";
-        g.composer = gt.items.containsKey(Tag.Composer) ? gt.items.get(Tag.Composer)[0] : "";
-        g.composerJ = gt.items.containsKey(Tag.ComposerJ) ? gt.items.get(Tag.ComposerJ)[0] : "";
-        g.vgmBy = gt.items.containsKey(Tag.Artist) ? gt.items.get(Tag.Artist)[0] : "";
-        g.converted = gt.items.containsKey(Tag.ReleaseDate) ? gt.items.get(Tag.ReleaseDate)[0] : "";
-
-        return g;
+        return metaData;
     }
 
+    /**
+     * @param args 0: FileFormat
+     */
     @Override
-    public boolean init(byte[] vgmBuf,
-                        int fileType,
-                        BasePlugin plugin,
-                        EnmModel model,
-                        Class<? extends Chip>[] useChip,
-                        int latency,
-                        int waitTime) {
-        mtype = fileType == 0 ? PMDFileType.MML : PMDFileType.M;
-        gd3 = getGD3Info(vgmBuf, 0, mtype);
+    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
+                     int latency, int waitTime, Object... args) {
 
-        this.vgmBuf = vgmBuf;
+        FileFormat fileFormat = (FileFormat) args[0];
+        mtype = fileFormat instanceof MMLFileFormat ? PMDFileType.MML : PMDFileType.M;
+        metaData = getMetaData(vgmBuf, 0, mtype);
+
+        this.dataBuf = vgmBuf;
         this.plugin = plugin;
         this.model = model;
-        this.useChip = useChip;
         this.latency = latency;
         this.waitTime = waitTime;
 
         counter = 0;
         totalCounter = 0;
         loopCounter = 0;
-        vgmCurLoop = 0;
+        curLoop = 0;
         stopped = false;
-        vgmFrameCounter = -latency - waitTime;
-        vgmSpeed = 1;
+        frameCounter = -latency - waitTime;
+        speed = 1;
 
 //#if DEBUG
         // The actual chip thread skips processing (for debugging)
         if (model == EnmModel.RealModel)
-            return true;
+            return;
 //#endif
 
         if (mtype == PMDFileType.MML)
-            return initMML();
+            initMML();
         else
-            return initM();
+            initM();
     }
 
     @Override
@@ -157,19 +154,19 @@ public class PMDJava extends BaseDriver {
 //#endif
 
         try {
-            vgmSpeedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * vgmSpeed;
-            while (vgmSpeedCounter >= 1.0) {
-                vgmSpeedCounter -= 1.0;
+            speedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * speed;
+            while (speedCounter >= 1.0) {
+                speedCounter -= 1.0;
 
                 pmdDriver.render();
 
                 counter++;
-                vgmFrameCounter++;
+                frameCounter++;
             }
 
             int lp = pmdDriver.getNowLoopCounter();
             lp = Math.max(lp, 0);
-            vgmCurLoop = lp;
+            curLoop = lp;
 
             if (pmdDriver.getStatus() < 1) {
                 if (pmdDriver.getStatus() == 0) {
@@ -188,7 +185,7 @@ public class PMDJava extends BaseDriver {
         M
     }
 
-    private PMDFileType checkFileType(byte[] buf) {
+    private static PMDFileType checkFileType(byte[] buf) {
         if (buf == null || buf.length < 4) {
             return PMDFileType.unknown;
         }
@@ -203,7 +200,7 @@ public class PMDJava extends BaseDriver {
         return PMDFileType.MML;
     }
 
-    private boolean initMML() {
+    private void initMML() {
         pmdCompiler.init();
 
         MmlDatum[] ret;
@@ -211,24 +208,21 @@ public class PMDJava extends BaseDriver {
         try {
             pmdCompiler.setCompileSwitch("PmdOption=%s \"%s\"".formatted(
                     setting.getPmd().compilerArguments, playingFileName));
-            try (MemoryStream sourceMML = new MemoryStream(vgmBuf)) {
+            try (MemoryStream sourceMML = new MemoryStream(dataBuf)) {
                 ret = pmdCompiler.compile(sourceMML, this::appendFileReaderCallback);// wrkMUCFullPath, disp);
             }
 
             info = pmdCompiler.getCompilerInfo();
 
         } catch (Exception e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-            ret = null;
-            info = null;
+            throw new IllegalStateException("error in compiling", e);
         }
 
-        if (ret == null || info == null) return false;
         if (!info.errorList.isEmpty()) {
-            if (model == EnmModel.VirtualModel) {
-                JOptionPane.showMessageDialog(null, "Compile error");
-            }
-            return false;
+//            if (model == EnmModel.VirtualModel) {
+//                JOptionPane.showMessageDialog(null, "Compile error");
+//            }
+            throw new IllegalArgumentException("Compile error: " + info.errorList);
         }
 
         if (pmdDriver == null) pmdDriver = IDriver.factory("pmd.driver.Driver");
@@ -249,7 +243,7 @@ public class PMDJava extends BaseDriver {
         envPmd = env.getEnvVal("pmd");
         envPmdOpt = env.getEnvVal("pmdopt");
 
-        Object[] additionalPDDDotNETOption = new Object[] {
+        Object[] additionalPDDDotNETOption = {
                 isLoadADPCM, // bool
                 loadADPCMOnly, // bool
                 setting.getPmd().isAuto, // boolean isAUTO;
@@ -287,7 +281,6 @@ public class PMDJava extends BaseDriver {
 
         pmdDriver.startRendering(Common.VGMProcSampleRate, new Tuple<>("YM2608", baseClock));
         pmdDriver.startMusic(0);
-        return true;
     }
 
     private void writeOPNA1(ChipDatum cd) {
@@ -300,7 +293,7 @@ public class PMDJava extends BaseDriver {
         if (cd.port == -1 || cd.port == 10000) // vavi
             return;
 
-        plugin.audio.chipRegister.chip(Ym2608Chip.class).write(0, cd.port, cd.address, cd.data, model);
+        plugin.chipRegister.chip(Ym2608Chip.class).write(0, cd.port, cd.address, cd.data, model);
     }
 
     private void sendOPNAWait(long size, int elapsed) {
@@ -313,7 +306,7 @@ public class PMDJava extends BaseDriver {
 
         // Add additional weight based on size and elapsed time.
         int m = Math.max((int) (size / 20 - elapsed), 0); // 20 Threshold (magic number)
-        try { Thread.sleep(m); } catch (InterruptedException e) {}
+        try { Thread.sleep(m); } catch (InterruptedException _) {}
     }
 
     public static class PMDChipAction implements ChipAction {
@@ -347,7 +340,7 @@ public class PMDJava extends BaseDriver {
         }
     }
 
-    private boolean initM() {
+    private void initM() {
         if (pmdDriver == null)
             pmdDriver = IDriver.factory("pmd.driver.Driver");
 
@@ -355,7 +348,7 @@ public class PMDJava extends BaseDriver {
         boolean isLoadADPCM = true;
         boolean loadADPCMOnly = false;
         List<MmlDatum> buf = new ArrayList<>();
-        for (byte b : vgmBuf)
+        for (byte b : dataBuf)
             buf.add(new MmlDatum(b & 0xff));
 
         isNRM = setting.getPmd().soundBoard == 0;
@@ -365,10 +358,10 @@ public class PMDJava extends BaseDriver {
         usePPZ = setting.getPmd().usePPZ8;
 
         EnvironmentE env = new EnvironmentE();
-        env.addEnv("pmd");
-        env.addEnv("pmdopt");
-        envPmd = env.getEnvVal("pmd");
-        envPmdOpt = env.getEnvVal("pmdopt");
+        env.addEnv("mdplayer.pmd.dir");
+        env.addEnv("mdplayer.pmd.opt");
+        envPmd = env.getEnvVal("mdplayer.pmd.dir");
+        envPmdOpt = env.getEnvVal("mdplayer.pmd.opt");
 
         Object[] additionalPDDDotNETOption = new Object[] {
             isLoadADPCM, // bool
@@ -403,8 +396,6 @@ public class PMDJava extends BaseDriver {
 
         pmdDriver.startRendering(Common.VGMProcSampleRate, new Tuple<>("YM2608", baseClock));
         pmdDriver.startMusic(0);
-
-        return true;
     }
 
     private void chipWaitSend(long elapsed, int size) {
@@ -430,7 +421,7 @@ public class PMDJava extends BaseDriver {
         if (dat.port == -1)
             return;
 
-        plugin.audio.chipRegister.chip(Ym2608Chip.class).write(0, dat.port, dat.address, dat.data, model);
+        plugin.chipRegister.chip(Ym2608Chip.class).write(0, dat.port, dat.address, dat.data, model);
         //logger.log(Level.TRACE, "%d %d".formatted(dat.address, dat.data));
     }
 
@@ -439,9 +430,9 @@ public class PMDJava extends BaseDriver {
             return 0;
 
         if (arg.port == 0x05) {
-            plugin.audio.chipRegister.chip(PpsChip.class).writePcm(0, (byte[]) arg.additionalData, model);
+            plugin.chipRegister.chip(PpsChip.class).writePcm(0, (byte[]) arg.additionalData, model);
         } else {
-            plugin.audio.chipRegister.chip(PpsChip.class).write(0, arg.port, arg.address, arg.data, model);
+            plugin.chipRegister.chip(PpsChip.class).write(0, arg.port, arg.address, arg.data, model);
         }
 
         return 0;
@@ -452,9 +443,9 @@ public class PMDJava extends BaseDriver {
             return 0;
 
         if (arg.port == 0x00) {
-            plugin.audio.chipRegister.chip(P86Chip.class).writePcm(0, arg.address, arg.data, (byte[]) arg.additionalData, model);
+            plugin.chipRegister.chip(P86Chip.class).writePcm(0, arg.address, arg.data, (byte[]) arg.additionalData, model);
         } else {
-            plugin.audio.chipRegister.chip(P86Chip.class).write(0, arg.port, arg.address, arg.data, model);
+            plugin.chipRegister.chip(P86Chip.class).write(0, arg.port, arg.address, arg.data, model);
         }
 
         return 0;
@@ -465,31 +456,33 @@ public class PMDJava extends BaseDriver {
             return 0;
 
         if (arg.port == 0x03) {
-            plugin.audio.chipRegister.chip(Ppz8Chip.class).writePcm(0, arg.address, arg.data, (byte[][]) arg.additionalData, model);
+            plugin.chipRegister.chip(Ppz8Chip.class).writePcm(0, arg.address, arg.data, (byte[][]) arg.additionalData, model);
         } else {
-            plugin.audio.chipRegister.chip(Ppz8Chip.class).write(0, arg.port, arg.address, arg.data, model);
+            plugin.chipRegister.chip(Ppz8Chip.class).write(0, arg.port, arg.address, arg.data, model);
         }
 
         return 0;
     }
 
     private Stream appendFileReaderCallback(String arg) {
+logger.log(Level.DEBUG, "find pmd additional file: " + arg);
         String fileName;
         fileName = arg;
         String dir = Path.getDirectoryName(arg);
         if (dir == null || dir.isEmpty())
-            fileName = Path.combine(Path.getDirectoryName(playingFileName), fileName);
+            fileName = Path.combine(Path.getDirectoryName(playingFileName.replace(java.io.File.separator, "\\")), fileName);
 
         if (envPmd != null) {
             int i = 0;
-            while (!File.exists(fileName) && i < envPmd.length) {
+            while (!File.exists(fileName.replace("\\", java.io.File.separator)) && i < envPmd.length) {
                 fileName = Path.combine(envPmd[i++], Path.getFileName(arg));
             }
         }
 
         FileStream stream;
         try {
-            stream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
+logger.log(Level.DEBUG, "found pmd additional file: " + fileName.replace("\\", java.io.File.separator));
+            stream = new FileStream(fileName.replace("\\", java.io.File.separator), FileMode.Open, FileAccess.Read, FileShare.Read);
         } catch (IOException e) {
             logger.log(Level.ERROR, e.getMessage(), e);
             stream = null;
@@ -499,17 +492,7 @@ public class PMDJava extends BaseDriver {
     }
 
     @Override
-    public Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean init(byte[] vgmBuf,
-                        BasePlugin plugin,
-                        EnmModel model,
-                        Class<? extends Chip>[] useChip,
-                        int latency,
-                        int waitTime) {
+    public MetaData getMetaData(byte[] buf, Object... args) {
         throw new UnsupportedOperationException();
     }
 
@@ -521,7 +504,7 @@ public class PMDJava extends BaseDriver {
         }
 
         public void addEnv(String envName) {
-            String env = System.getenv(envName);
+            String env = System.getProperty(envName);
             if (env != null && !env.isEmpty()) {
                 envs.add("%s=%s".formatted(envName, env));
             }
@@ -552,7 +535,7 @@ public class PMDJava extends BaseDriver {
         }
     }
 
-    private String[] getPMDOption() {
+    private static String[] getPMDOption() {
         List<String> op = new ArrayList<>();
 
         // envPMDOpt

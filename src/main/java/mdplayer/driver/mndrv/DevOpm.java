@@ -1,7 +1,6 @@
 package mdplayer.driver.mndrv;
 
 import mdplayer.driver.mxdrv.XMemory;
-import server.netsiddev.Settings;
 
 
 /**
@@ -2633,7 +2632,7 @@ public class DevOpm {
         mm.write(reg.a4 + W_Ww.delay_work, (byte) ((mm.readByte(reg.a4 + W_Ww.delay_work) - 1) & 0xff));
         if (mm.readByte(reg.a4 + W_Ww.delay_work) != 0) return;
 
-        mm.write(reg.a4 + W_Ww.delay_work, (byte) mm.readByte(reg.a4 + W_Ww.speed));
+        mm.write(reg.a4 + W_Ww.delay_work, mm.readByte(reg.a4 + W_Ww.speed));
         reg.setD4_B(mm.readByte(reg.a4 + W_Ww.work) & 0xff);
         reg.setD4_B(reg.getD4_B() + (mm.readByte(reg.a4 + W_Ww.rate_work) & 0xff));
         mm.write(reg.a4 + W_Ww.work, (byte) reg.getD4_B());
@@ -2660,7 +2659,7 @@ public class DevOpm {
 
         mm.write(reg.a4 + W_Ww.depth_work, (byte) ((mm.readByte(reg.a4 + W_Ww.depth_work) - 1) & 0xff));
         if (mm.readByte(reg.a4 + W_Ww.depth_work) != 0) return;
-        mm.write(reg.a4 + W_Ww.depth_work, (byte) mm.readByte(reg.a4 + W_Ww.depth));
+        mm.write(reg.a4 + W_Ww.depth_work, mm.readByte(reg.a4 + W_Ww.depth));
         mm.write(reg.a4 + W_Ww.rate_work, (byte) (-(byte) mm.readByte(reg.a4 + W_Ww.rate_work)));
     }
 

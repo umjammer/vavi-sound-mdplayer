@@ -6,8 +6,9 @@
 
 package mdplayer.chips;
 
-import mdplayer.Audio;
 import mdplayer.Chip;
+import mdplayer.driver.BaseDriver;
+import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.instrument.Cs4231Inst;
 
@@ -20,7 +21,7 @@ import mdsound.instrument.Cs4231Inst;
  */
 public class Cs4231Chip implements Chip {
 
-    private Audio context;
+    private BasePlugin<? extends BaseDriver> context;
 
     @Override
     public Class<? extends Instrument>[] implementations() {
@@ -28,7 +29,7 @@ public class Cs4231Chip implements Chip {
     }
 
     @Override
-    public void init(Audio context) {
+    public void init(BasePlugin<? extends BaseDriver> context) {
         this.context = context;
     }
 

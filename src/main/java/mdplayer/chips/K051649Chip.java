@@ -6,11 +6,12 @@
 
 package mdplayer.chips;
 
-import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
+import mdplayer.driver.BaseDriver;
+import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.chips.K051649;
 import mdsound.instrument.K051649Inst;
@@ -28,7 +29,7 @@ public class K051649Chip implements Chip {
 
     private final RSoundChip[] realChips = {null, null};
 
-    private K051649 scc_k051649 = new K051649();
+    private final K051649 scc_k051649 = new K051649();
 
     private int sccR_port;
 
@@ -47,7 +48,7 @@ public class K051649Chip implements Chip {
 
     public int clock;
 
-    private Audio context;
+    private BasePlugin<? extends BaseDriver> context;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -56,7 +57,7 @@ public class K051649Chip implements Chip {
     }
 
     @Override
-    public void init(Audio context) {
+    public void init(BasePlugin<? extends BaseDriver> context) {
         this.context = context;
 
         K051649Inst chip = Instrument.getInstrument(K051649Inst.class); // ugly

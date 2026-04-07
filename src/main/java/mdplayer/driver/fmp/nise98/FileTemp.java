@@ -37,7 +37,7 @@ public class FileTemp {
         }
     }
 
-    public byte[] ReadTemp(String filename) {
+    public byte[] readTemp(String filename) {
         if (!temp.containsKey(filename.toUpperCase())) {
             return null;
         }

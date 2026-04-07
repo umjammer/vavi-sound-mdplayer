@@ -3,11 +3,10 @@ package mdplayer.driver.fmp.nise98;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.util.Objects;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
+import dotnet4j.util.compat.TriConsumer;
 import mdplayer.driver.mndrv.FMTimer;
-import musicDriverInterface.ChipDatum;
 
 import static java.lang.System.getLogger;
 
@@ -17,7 +16,7 @@ public class Nise98 {
     private static final Logger logger = getLogger(Nise98.class.getName());
 
     private Function<String, Object[]> msgWrite = null;
-    private Consumer<ChipDatum> opnaWrite;
+    private TriConsumer<Integer, Integer, Integer> opnaWrite;
     private Register286 regs = null;
     private Memory98 mem = null;
     private Nise286 cpu = null;
@@ -54,13 +53,13 @@ public class Nise98 {
         // bit76:10 int 4(IRQ10)
         // bit76:01 int 6(IRQ13)
         // bit76:00 int 0(IRQ03)
-        public byte int_ = (byte) 0b1100_0000;
+        public static final byte int_ = (byte) 0b1100_0000;
         public byte p88lastAdr = 0;
         public byte p8clastAdr = 0;
         public boolean isBusy = false;
         public boolean isTimerBOverFlow = true;
         public boolean isTimerAOverFlow = false;
-        public byte[] regs;
+        public final byte[] regs;
         public byte[] adpcmMem;
         public byte adpcmPtr = 0;
         public boolean adpcmReadMode = false;
@@ -88,8 +87,8 @@ public class Nise98 {
         }
     }
 
-    public void init(Function<String, Object[]> msgWrite, Consumer<ChipDatum> opnaWrite, FileTemp fileTemp, OngenBoardType ongen /* = enmOngenBoardType.PC9801_86B */) {
-        logger.log(Level.DEBUG, "<Nise98>Init");
+    public void init(Function<String, Object[]> msgWrite, TriConsumer<Integer, Integer, Integer> opnaWrite, FileTemp fileTemp, OngenBoardType ongen /* = enmOngenBoardType.PC9801_86B */) {
+        logger.log(Level.TRACE, "<Nise98>Init");
 
         this.opnaWrite = opnaWrite;
         this.fileTemp = fileTemp;
@@ -236,7 +235,7 @@ public class Nise98 {
                  //        ~~~~ Here, FMP is completely ignored (however, if it is 0xff, the judgment process ends.
                 //              It is likely that further investigation will be carried out in subsequent processes).
 
-logger.log(Level.INFO, "fmReg188.ongen: " + fmReg188.ongen);
+logger.log(Level.TRACE, "fmReg188.ongen: " + fmReg188.ongen);
                 if (fmReg188.ongen == OngenBoardType.None) return (byte) 0xff;
                 else if (fmReg188.ongen == OngenBoardType.PC9801_26K) return (byte) 0xff;
                 else if (fmReg188.ongen == OngenBoardType.PC9801_86B) return (byte) 0b0100_0001;
@@ -253,7 +252,7 @@ logger.log(Level.INFO, "fmReg188.ongen: " + fmReg188.ongen);
     }
 
     public short inpW(short port) {
-        logger.log(Level.DEBUG, "<Nise98>IN  Port:$%04x".formatted(port & 0xffff));
+        logger.log(Level.TRACE, "<Nise98>IN  Port:$%04x".formatted(port & 0xffff));
         switch (port & 0xffff) {
 //            case 0xa460:
 //                return IsOPNA ? 0x00 : 0xff; // 0xFF:not OPNA
@@ -435,7 +434,6 @@ logger.log(Level.INFO, "fmReg188.ongen: " + fmReg188.ongen);
         logger.log(Level.TRACE, "<Nise98> --- OUT FM Port:%03x Dat:$%02x".formatted(port & 0xfff, data & 0xff));
         if (fs.ongen == OngenBoardType.None) return;
 
-        ChipDatum cd;
         switch (port & 0xff) { // byte size
             case 0x088: // FM port adr
                 fs.p88lastAdr = data;
@@ -443,8 +441,7 @@ logger.log(Level.INFO, "fmReg188.ongen: " + fmReg188.ongen);
             case 0x08a: // FM port val
                 if (fs.regs != null) fs.regs[fs.p88lastAdr & 0xff] = data;
                 fs.timer.writeReg(fs.p88lastAdr, data);
-                cd = new ChipDatum(port, fs.p88lastAdr & 0xff, data & 0xff);
-                opnaWrite.accept(cd);
+                opnaWrite.accept(port & 0xffff, fs.p88lastAdr & 0xff, data & 0xff);
                 break;
             case 0x08c: // FM port val
                 fs.p8clastAdr = data;
@@ -470,8 +467,7 @@ logger.log(Level.INFO, "fmReg188.ongen: " + fmReg188.ongen);
                 } else if (fs.p8clastAdr == 0x10) {
                     //if (data == 0x13) fs.adpcmPtr++;
                 }
-                cd = new ChipDatum(port, fs.p8clastAdr & 0xff, data & 0xff);
-                opnaWrite.accept(cd);
+                opnaWrite.accept(port & 0xffff, fs.p8clastAdr & 0xff, data & 0xff);
                 break;
             default:
                 throw new UnsupportedOperationException("<Nise98>Request port:$%04x".formatted(port & 0xffff));
@@ -513,8 +509,8 @@ logger.log(Level.INFO, "fmReg188.ongen: " + fmReg188.ongen);
             }
         }
 
-        logger.log(Level.DEBUG, "Terminate program. return code=$%02x".formatted(dos.getReturnCode() & 0xff));
-//        logger.log(Level.DEBUG, "");
+        logger.log(Level.TRACE, "Terminate program. return code=$%02x".formatted(dos.getReturnCode() & 0xff));
+//        logger.log(Level.TRACE, "");
 
         return dos.getReturnCode();
     }
@@ -569,7 +565,7 @@ logger.log(Level.INFO, "fmReg188.ongen: " + fmReg188.ongen);
         //logger.log(Level.DEBUG, "");
     }
 
-    private void dispRegs(Register286 regs) {
+    private static void dispRegs(Register286 regs) {
         logger.log(Level.TRACE, Objects.requireNonNull(regs, regs.toString()));
     }
 }

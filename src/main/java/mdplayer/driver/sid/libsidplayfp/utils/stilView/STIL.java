@@ -232,7 +232,7 @@ public class STIL {
      *
      * @param str - what to convert
      */
-    private void convertSlashes(String str) {
+    private static void convertSlashes(String str) {
         str = str.replace('/', StilDefs.SLASH);
     }
 
@@ -241,7 +241,7 @@ public class STIL {
      *
      * @param str - what to convert
      */
-    private void convertToSlashes(String str) {
+    private static void convertToSlashes(String str) {
         // std::replace(str.begin(), str.end(), SLASH, '/');
         str = str.replace(StilDefs.SLASH, '/');
     }
@@ -453,7 +453,7 @@ public class STIL {
         return true;
     }
 
-    private boolean stringCmp(String a, String b, int len) {
+    private static boolean stringCmp(String a, String b, int len) {
         if (a == null && b == null && len == 0) return true;
         if (a == null || b == null) return false;
         if (a.length() < len) return false;
@@ -1128,7 +1128,7 @@ public class STIL {
      * @return - false - if nothing was put into 'result'
      * - true  - 'result' has the resulting field
      */
-    private boolean getField(String[] result, String buffer, int tuneNo /* = 0 */, Field field /* = Field.all */) {
+    private static boolean getField(String[] result, String buffer, int tuneNo /* = 0 */, Field field /* = Field.all */) {
         logger.fine("getField() called, buffer=" + buffer + ", rest=" + tuneNo + "," + field + "\n");
 
         // Clean  the result buffer first.
@@ -1337,7 +1337,7 @@ public class STIL {
      * @return false: if nothing was put into 'result',
      * true: 'result' has the resulting field
      */
-    private boolean getOneField(String[] result, String src, int start, int end, Field field) {
+    private static boolean getOneField(String[] result, String src, int start, int end, Field field) {
         // Sanity checking
 
         if ((end < start) || (src.charAt(end - 1) != '\n')) {

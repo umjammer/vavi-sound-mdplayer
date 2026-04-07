@@ -34,7 +34,7 @@ public class Nise286 {
 
     public byte w_mmsk = (byte) 0xff; // (IR7 (INT0Fh)-IR0(INT08h)) All interrupts are disabled
     public byte w_smsk = (byte) 0xff; // (IR15(INT17h)-IR8(INT10h)) All interrupts are disabled
-    public boolean[] interruptTrigger = new boolean[24];
+    public final boolean[] interruptTrigger = new boolean[24];
     public int iLevel = 0;
     private final List<Supplier<Boolean>> lstHook = new ArrayList<>();
 
@@ -824,8 +824,8 @@ public class Nise286 {
 
         UserInt ui;
         synchronized (userIntLockObject) {
-            ui = lstUserInt.get(0);
-            lstUserInt.remove(0);
+            ui = lstUserInt.getFirst();
+            lstUserInt.removeFirst();
         }
 
         short ofs = mem.peekW(ui.getIntNum() * 4);
@@ -895,79 +895,54 @@ public class Nise286 {
     private int getMod00RwAdr(byte rm, boolean noSeg /* = false */) {
         int seg = getSegment(rm, noSeg, true);
 
-        switch (rm) {
-            case 0:
-                return seg + ((regs.getBX() + regs.getSI()) & 0xffff);
-            case 1:
-                return seg + ((regs.getBX() + regs.getDI()) & 0xffff);
-            case 2:
-                return seg + ((regs.getBP() + regs.getSI()) & 0xffff);
-            case 3:
-                return seg + ((regs.getBP() + regs.getDI()) & 0xffff);
-            case 4:
-                return seg + (regs.getSI() & 0xffff);
-            case 5:
-                return seg + (regs.getDI() & 0xffff);
-            case 6:
+        return switch (rm) {
+            case 0 -> seg + ((regs.getBX() + regs.getSI()) & 0xffff);
+            case 1 -> seg + ((regs.getBX() + regs.getDI()) & 0xffff);
+            case 2 -> seg + ((regs.getBP() + regs.getSI()) & 0xffff);
+            case 3 -> seg + ((regs.getBP() + regs.getDI()) & 0xffff);
+            case 4 -> seg + (regs.getSI() & 0xffff);
+            case 5 -> seg + (regs.getDI() & 0xffff);
+            case 6 -> {
                 short ptr = fetchW();
-                return seg + (ptr & 0xffff);
-            case 7:
-                return seg + (regs.getBX() & 0xffff);
-            default:
-                throw new UnsupportedOperationException();
-        }
+                yield seg + (ptr & 0xffff);
+            }
+            case 7 -> seg + (regs.getBX() & 0xffff);
+            default -> throw new UnsupportedOperationException();
+        };
     }
 
     private int getMod01RwAdr(byte rm, boolean noSeg /* = false */) {
         int seg = getSegment(rm, noSeg, false);
 
         byte disp8 = fetch();
-        switch (rm) {
-            case 0:
-                return seg + ((regs.getBX() + regs.getSI() + disp8) & 0xffff);
-            case 1:
-                return seg + ((regs.getBX() + regs.getDI() + disp8) & 0xffff);
-            case 2:
-                return seg + ((regs.getBP() + regs.getSI() + disp8) & 0xffff);
-            case 3:
-                return seg + ((regs.getBP() + regs.getDI() + disp8) & 0xffff);
-            case 4:
-                return seg + ((regs.getSI() + disp8) & 0xffff);
-            case 5:
-                return seg + ((regs.getDI() + disp8) & 0xffff);
-            case 6:
-                return seg + ((regs.getBP() + disp8) & 0xffff);
-            case 7:
-                return seg + ((regs.getBX() + disp8) & 0xffff);
-            default:
-                throw new UnsupportedOperationException();
-        }
+        return switch (rm) {
+            case 0 -> seg + ((regs.getBX() + regs.getSI() + disp8) & 0xffff);
+            case 1 -> seg + ((regs.getBX() + regs.getDI() + disp8) & 0xffff);
+            case 2 -> seg + ((regs.getBP() + regs.getSI() + disp8) & 0xffff);
+            case 3 -> seg + ((regs.getBP() + regs.getDI() + disp8) & 0xffff);
+            case 4 -> seg + ((regs.getSI() + disp8) & 0xffff);
+            case 5 -> seg + ((regs.getDI() + disp8) & 0xffff);
+            case 6 -> seg + ((regs.getBP() + disp8) & 0xffff);
+            case 7 -> seg + ((regs.getBX() + disp8) & 0xffff);
+            default -> throw new UnsupportedOperationException();
+        };
     }
 
     private int getMod02RwAdr(byte rm, boolean noSeg /* = false */) {
         int seg = getSegment(rm, noSeg, false);
 
         short disp16 = fetchW();
-        switch (rm) {
-            case 0:
-                return seg + ((regs.getBX() + regs.getSI() + disp16) & 0xffff);
-            case 1:
-                return seg + ((regs.getBX() + regs.getDI() + disp16) & 0xffff);
-            case 2:
-                return seg + ((regs.getBP() + regs.getSI() + disp16) & 0xffff);
-            case 3:
-                return seg + ((regs.getBP() + regs.getDI() + disp16) & 0xffff);
-            case 4:
-                return seg + ((regs.getSI() + disp16) & 0xffff);
-            case 5:
-                return seg + ((regs.getDI() + disp16) & 0xffff);
-            case 6:
-                return seg + ((regs.getBP() + disp16) & 0xffff);
-            case 7:
-                return seg + ((regs.getBX() + disp16) & 0xffff);
-            default:
-                throw new UnsupportedOperationException();
-        }
+        return switch (rm) {
+            case 0 -> seg + ((regs.getBX() + regs.getSI() + disp16) & 0xffff);
+            case 1 -> seg + ((regs.getBX() + regs.getDI() + disp16) & 0xffff);
+            case 2 -> seg + ((regs.getBP() + regs.getSI() + disp16) & 0xffff);
+            case 3 -> seg + ((regs.getBP() + regs.getDI() + disp16) & 0xffff);
+            case 4 -> seg + ((regs.getSI() + disp16) & 0xffff);
+            case 5 -> seg + ((regs.getDI() + disp16) & 0xffff);
+            case 6 -> seg + ((regs.getBP() + disp16) & 0xffff);
+            case 7 -> seg + ((regs.getBX() + disp16) & 0xffff);
+            default -> throw new UnsupportedOperationException();
+        };
     }
 
     private int getSegment() {
@@ -2166,20 +2141,13 @@ public class Nise286 {
         int c;
         short ic;
         a = regs.eRegs[reg];
-        switch (mod) {
-            case 0:
-                b = mem.peekW(getMod00RwAdr(rm, false));
-                break;
-            case 1:
-                b = mem.peekW(getMod01RwAdr(rm, false));
-                break;
-            case 2:
-                b = mem.peekW(getMod02RwAdr(rm, false));
-                break;
-            case 3:
-                b = regs.eRegs[rm];
-                break;
-        }
+        b = switch (mod) {
+            case 0 -> mem.peekW(getMod00RwAdr(rm, false));
+            case 1 -> mem.peekW(getMod01RwAdr(rm, false));
+            case 2 -> mem.peekW(getMod02RwAdr(rm, false));
+            case 3 -> regs.eRegs[rm];
+            default -> b;
+        };
         c = (a & 0xffff) - (b & 0xffff);
         ic = (short) c;
         regs.eRegs[reg] = ic;
@@ -2236,7 +2204,7 @@ public class Nise286 {
         logger.log(Level.TRACE, "CS");
     }
 
-    private void DAS() {
+    private static void DAS() {
         logger.log(Level.TRACE, "DAS");
         // TBD
     }
@@ -2363,20 +2331,13 @@ public class Nise286 {
         int c;
         short ic;
         a = regs.eRegs[reg];
-        switch (mod) {
-            case 0:
-                b = mem.peekW(getMod00RwAdr(rm, false));
-                break;
-            case 1:
-                b = mem.peekW(getMod01RwAdr(rm, false));
-                break;
-            case 2:
-                b = mem.peekW(getMod02RwAdr(rm, false));
-                break;
-            case 3:
-                b = regs.eRegs[rm];
-                break;
-        }
+        b = switch (mod) {
+            case 0 -> mem.peekW(getMod00RwAdr(rm, false));
+            case 1 -> mem.peekW(getMod01RwAdr(rm, false));
+            case 2 -> mem.peekW(getMod02RwAdr(rm, false));
+            case 3 -> regs.eRegs[rm];
+            default -> b;
+        };
         c = a ^ b;
         ic = (short) c;
         regs.eRegs[reg] = ic;
@@ -3305,7 +3266,7 @@ public class Nise286 {
                     case 0:
                     case 1:
                     case 2:
-                        mem.pokeB(ptr, (byte) ans);
+                        mem.pokeB(ptr, ans);
                         break;
                     case 3:
                         if (rm < 4) regs.eRegs[rm] = (short) ((regs.eRegs[rm] & 0xff00) | (ans & 0xff));
@@ -3357,23 +3318,22 @@ public class Nise286 {
         short ew = 0;
         int ptr = 0;
 
-        switch (mod) {
-            case 0:
+        ew = switch (mod) {
+            case 0 -> {
                 ptr = getMod00RwAdr(rm, false);
-                ew = mem.peekW(ptr);
-                break;
-            case 1:
+                yield mem.peekW(ptr);
+            }
+            case 1 -> {
                 ptr = getMod01RwAdr(rm, false);
-                ew = mem.peekW(ptr);
-                break;
-            case 2:
+                yield mem.peekW(ptr);
+            }
+            case 2 -> {
                 ptr = getMod02RwAdr(rm, false);
-                ew = mem.peekW(ptr);
-                break;
-            case 3:
-                ew = regs.eRegs[rm];
-                break;
-        }
+                yield mem.peekW(ptr);
+            }
+            case 3 -> regs.eRegs[rm];
+            default -> ew;
+        };
         iw = fetchW();
 
         switch (reg) {
@@ -3421,7 +3381,7 @@ public class Nise286 {
                 ans = (short) ians;
                 regs.setSZPFw(ans);
                 regs.setOFwAdd(ew, iw, ans);
-                regs.setCFw((int) ians);
+                regs.setCFw(ians);
                 regs.setAF((byte) ew, (byte) iw, (byte) ans);
                 switch (mod) {
                     case 0:
@@ -3516,23 +3476,22 @@ public class Nise286 {
         short ew = 0;
         int ptr = 0;
 
-        switch (mod) {
-            case 0:
+        ew = switch (mod) {
+            case 0 -> {
                 ptr = getMod00RwAdr(rm, false);
-                ew = mem.peekW(ptr);
-                break;
-            case 1:
+                yield mem.peekW(ptr);
+            }
+            case 1 -> {
                 ptr = getMod01RwAdr(rm, false);
-                ew = mem.peekW(ptr);
-                break;
-            case 2:
+                yield mem.peekW(ptr);
+            }
+            case 2 -> {
                 ptr = getMod02RwAdr(rm, false);
-                ew = mem.peekW(ptr);
-                break;
-            case 3:
-                ew = regs.eRegs[rm];
-                break;
-        }
+                yield mem.peekW(ptr);
+            }
+            case 3 -> regs.eRegs[rm];
+            default -> ew;
+        };
         byte ib;
         ib = fetch();
         int ians;
@@ -3640,7 +3599,7 @@ public class Nise286 {
                 ans = (short) ians;
                 regs.setSZPFw((short) ians);
                 regs.setOFwSub(ew, (short) (ib & 0xff), ans);
-                regs.setCFw((int) ians);
+                regs.setCFw(ians);
                 regs.setAF((byte) ew, ib, (byte) ans);
                 switch (mod) {
                     case 0:
@@ -3744,23 +3703,22 @@ public class Nise286 {
         short ew = 0;
         int ptr;
 
-        switch (mod) {
-            case 0:
+        ew = switch (mod) {
+            case 0 -> {
                 ptr = getMod00RwAdr(rm, false);
-                ew = mem.peekW(ptr);
-                break;
-            case 1:
+                yield mem.peekW(ptr);
+            }
+            case 1 -> {
                 ptr = getMod01RwAdr(rm, false);
-                ew = mem.peekW(ptr);
-                break;
-            case 2:
+                yield mem.peekW(ptr);
+            }
+            case 2 -> {
                 ptr = getMod02RwAdr(rm, false);
-                ew = mem.peekW(ptr);
-                break;
-            case 3:
-                ew = regs.eRegs[rm];
-                break;
-        }
+                yield mem.peekW(ptr);
+            }
+            case 3 -> regs.eRegs[rm];
+            default -> ew;
+        };
 
         short gw;
         gw = regs.eRegs[reg];
@@ -3846,23 +3804,22 @@ public class Nise286 {
         short ew = 0;
         int ptr = 0;
 
-        switch (mod) {
-            case 0:
+        ew = switch (mod) {
+            case 0 -> {
                 ptr = getMod00RwAdr(rm, false);
-                ew = mem.peekW(ptr);
-                break;
-            case 1:
+                yield mem.peekW(ptr);
+            }
+            case 1 -> {
                 ptr = getMod01RwAdr(rm, false);
-                ew = mem.peekW(ptr);
-                break;
-            case 2:
+                yield mem.peekW(ptr);
+            }
+            case 2 -> {
                 ptr = getMod02RwAdr(rm, false);
-                ew = mem.peekW(ptr);
-                break;
-            case 3:
-                ew = regs.eRegs[rm];
-                break;
-        }
+                yield mem.peekW(ptr);
+            }
+            case 3 -> regs.eRegs[rm];
+            default -> ew;
+        };
 
         short gw;
         gw = regs.eRegs[reg];
@@ -4151,7 +4108,7 @@ public class Nise286 {
     }
 
     // 0x90
-    private void NOP() {
+    private static void NOP() {
         logger.log(Level.TRACE, "NOP");
     }
 
@@ -4969,25 +4926,22 @@ public class Nise286 {
         short uans = 0;
 
         int ptr = 0;
-        short ew = 0;
-
-        switch (mod) {
-            case 0:
+        short ew = switch (mod) {
+            case 0 -> {
                 ptr = getMod00RwAdr(rm, false);
-                ew = mem.peekW(ptr);
-                break;
-            case 1:
+                yield mem.peekW(ptr);
+            }
+            case 1 -> {
                 ptr = getMod01RwAdr(rm, false);
-                ew = mem.peekW(ptr);
-                break;
-            case 2:
+                yield mem.peekW(ptr);
+            }
+            case 2 -> {
                 ptr = getMod02RwAdr(rm, false);
-                ew = mem.peekW(ptr);
-                break;
-            case 3:
-                ew = regs.eRegs[rm];
-                break;
-        }
+                yield mem.peekW(ptr);
+            }
+            case 3 -> regs.eRegs[rm];
+            default -> 0;
+        };
 
         boolean newCF;
         switch (reg) {
@@ -5240,25 +5194,22 @@ public class Nise286 {
         short uans = 0;
 
         int ptr = 0;
-        short ew = 0;
-
-        switch (mod) {
-            case 0:
+        short ew = switch (mod) {
+            case 0 -> {
                 ptr = getMod00RwAdr(rm, false);
-                ew = mem.peekW(ptr);
-                break;
-            case 1:
+                yield mem.peekW(ptr);
+            }
+            case 1 -> {
                 ptr = getMod01RwAdr(rm, false);
-                ew = mem.peekW(ptr);
-                break;
-            case 2:
+                yield mem.peekW(ptr);
+            }
+            case 2 -> {
                 ptr = getMod02RwAdr(rm, false);
-                ew = mem.peekW(ptr);
-                break;
-            case 3:
-                ew = regs.eRegs[rm];
-                break;
-        }
+                yield mem.peekW(ptr);
+            }
+            case 3 -> regs.eRegs[rm];
+            default -> 0;
+        };
 
         int count = (op == (byte) 0xd3 ? regs.getCL() : fetch()) & 0x1f;
         if (count == 0) return;
@@ -5599,23 +5550,22 @@ public class Nise286 {
 
         short ew = 0;
         int ptr = 0;
-        switch (mod) {
-            case 0:
+        ew = switch (mod) {
+            case 0 -> {
                 ptr = getMod00RwAdr(rm, false);
-                ew = mem.peekW(ptr);
-                break;
-            case 1:
+                yield mem.peekW(ptr);
+            }
+            case 1 -> {
                 ptr = getMod01RwAdr(rm, false);
-                ew = mem.peekW(ptr);
-                break;
-            case 2:
+                yield mem.peekW(ptr);
+            }
+            case 2 -> {
                 ptr = getMod02RwAdr(rm, false);
-                ew = mem.peekW(ptr);
-                break;
-            case 3:
-                ew = regs.eRegs[rm];
-                break;
-        }
+                yield mem.peekW(ptr);
+            }
+            case 3 -> regs.eRegs[rm];
+            default -> ew;
+        };
 
         short iw;
         short ans = 0;
@@ -5820,23 +5770,22 @@ public class Nise286 {
         boolean bSegPrefSw = segPrefSw;
         int bSegPref = segPref;
 
-        switch (mod) {
-            case 0:
+        ew = switch (mod) {
+            case 0 -> {
                 ptr = getMod00RwAdr(rm, false);
-                ew = mem.peekW(ptr);
-                break;
-            case 1:
+                yield mem.peekW(ptr);
+            }
+            case 1 -> {
                 ptr = getMod01RwAdr(rm, false);
-                ew = mem.peekW(ptr);
-                break;
-            case 2:
+                yield mem.peekW(ptr);
+            }
+            case 2 -> {
                 ptr = getMod02RwAdr(rm, false);
-                ew = mem.peekW(ptr);
-                break;
-            case 3:
-                ew = regs.eRegs[rm];
-                break;
-        }
+                yield mem.peekW(ptr);
+            }
+            case 3 -> regs.eRegs[rm];
+            default -> ew;
+        };
 
         short iw = 1;
         short ians;
