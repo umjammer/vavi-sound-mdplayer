@@ -60,7 +60,7 @@ public class SampledPlugin extends BasePlugin {
 
     public int read(short[] buffer, int offset, int count) {
         if (this.naudioFileReader != null) {
-            if (this.chipRegister.plugin(RealChipPlugin.class).trdClosed) {
+            if (this.chipRegister.plugin(RealChipPlugin.class).isThreadClosed()) {
                 this.chipRegister.plugin(RealChipPlugin.class).setThreadStopped(true);
                 //this.fadeout = false;
                 //this.stopped = true;
@@ -82,7 +82,7 @@ public class SampledPlugin extends BasePlugin {
         return count;
     }
 
-    public void nAudioStop() {
+    public void stopAudio() {
         try {
             AudioInputStream dmy = naudioFileReader;
             naudioFileReader = null;

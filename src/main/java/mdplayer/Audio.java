@@ -18,7 +18,6 @@ import mdplayer.chips.VstPlugin;
 import mdplayer.driver.BaseDriver;
 import mdplayer.plugin.BasePlugin;
 import mdplayer.plugin.SampledPlugin;
-import vavi.util.event.GenericSupport;
 
 import static java.lang.System.getLogger;
 import static mdplayer.plugin.BasePlugin.BUFFER_SIZE;
@@ -38,19 +37,17 @@ public final class Audio {
 
     public final VisVolume visVolume = new VisVolume();
 
-    private final GenericSupport genericSupport = new GenericSupport();
-
     private SourceDataLine line;
 
     private Audio() {
     }
 
-    /** */
+    /** singleton */
     public static Audio getInstance() {
         return instance;
     }
 
-    /** */
+    /** binds a plugin */
     public void init(BasePlugin<? extends BaseDriver> plugin) {
         this.plugin = plugin;
 
@@ -68,11 +65,12 @@ logger.log(Level.DEBUG, format);
         }
     }
 
+    /** line listener */
     private static void lineListener(LineEvent e) {
 logger.log(Level.DEBUG, "line: " + e.getType());
     }
 
-    /** */
+    /** start blocking rendering */
     public boolean play() {
         plugin.chipRegister.plugin(RealChipPlugin.class).startThread();
 
@@ -88,17 +86,11 @@ logger.log(Level.DEBUG, "line: " + e.getType());
 
         plugin.oneTimeReset = false;
 
-//        if (trd == null) {
-//            trd = new Thread(this::trdIF);
-//            trd.setPriority(Thread.NORM_PRIORITY);
-//            trd.start();
-//        }
-
         plugin.resume();
 
         if (plugin instanceof SampledPlugin sampledPlugin) {
             if (sampledPlugin.naudioFileReader != null) {
-                sampledPlugin.nAudioStop();
+                sampledPlugin.stopAudio();
             }
         }
 
@@ -130,6 +122,7 @@ logger.log(Level.DEBUG, "line: " + e.getType());
         return false;
     }
 
+    /** write to line */
     private int write(short[] buffer, int offset, int count) {
         ByteBuffer bb = ByteBuffer.allocate(count * Short.BYTES).order(ByteOrder.LITTLE_ENDIAN);
         ShortBuffer sb = bb.asShortBuffer();
@@ -138,20 +131,21 @@ logger.log(Level.DEBUG, "line: " + e.getType());
         return line.write(bb.array(), 0, count * Short.BYTES);
     }
 
+    /** */
     public void stop() {
         logger.log(Level.INFO, "stop enter");
         try {
             if (plugin.paused) pause();
 
             if (plugin.stopped) {
-                plugin.chipRegister.plugin(RealChipPlugin.class).trdClosed = true;
+                plugin.chipRegister.plugin(RealChipPlugin.class).setThreadClosed(true);
                 while (!plugin.chipRegister.plugin(RealChipPlugin.class).isThreadStopped()) { // TODO if realChip is not null, _trdStopped is false
                     Thread.sleep(1);
                 }
 
                 if (plugin instanceof SampledPlugin sampledPlugin) {
                     if (sampledPlugin.naudioFileReader != null) {
-                        sampledPlugin.nAudioStop();
+                        sampledPlugin.stopAudio();
                     }
                 }
 
@@ -169,7 +163,7 @@ logger.log(Level.DEBUG, "line: " + e.getType());
                     }
                 }
             }
-            plugin.chipRegister.plugin(RealChipPlugin.class).trdClosed = true;
+            plugin.chipRegister.plugin(RealChipPlugin.class).setThreadClosed(true);
 
             if (plugin instanceof SampledPlugin sampledPlugin) {
                 if (sampledPlugin.naudioFileReader != null) {
@@ -237,6 +231,7 @@ logger.log(Level.DEBUG, "line: " + e.getType());
         plugin.stepCounter = step;
     }
 
+    /** */
     private int render(short[] buffer, int offset, int sampleCount) {
         if (buffer == null || buffer.length < 1 || sampleCount == 0) return 0;
         if (plugin.driverVirtual == null) return sampleCount;
@@ -317,6 +312,7 @@ logger.log(Level.DEBUG, "stop: " + plugin.stopped);
         return -1;
     }
 
+    /** */
     private void updateVisualVolume(short[] buffer, int offset) {
         visVolume.master = buffer[offset];
 
@@ -325,9 +321,7 @@ logger.log(Level.DEBUG, "stop: " + plugin.stopped);
         }
     }
 
-//    protected long sw = System.currentTimeMillis();
-    public static final double swFreq = 1000d / 44100;
-
+    /** */
     public void fadeout() {
         if (isPaused()) {
             pause();
@@ -336,10 +330,12 @@ logger.log(Level.DEBUG, "stop: " + plugin.stopped);
         plugin.fadeout = true;
     }
 
+    /** */
     public void pause() {
         plugin.paused = !plugin.paused;
     }
 
+    /** */
     public boolean isPaused() {
         return plugin.paused;
     }

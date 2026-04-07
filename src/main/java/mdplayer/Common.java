@@ -498,6 +498,7 @@ logger.log(Level.DEBUG, "rhythm file: " + ffn);
         try {
             robot = new Robot();
         } catch (AWTException e) {
+            // github workflow headless mode causes exception
             logger.log(Level.WARNING, e.getMessage(), e);
         }
     }

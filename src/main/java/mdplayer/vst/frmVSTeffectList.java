@@ -153,7 +153,7 @@ public class frmVSTeffectList extends JFrame {
 
         parent.stop();
         //while (!Audio.trdStopped) { Thread.sleep(1); }
-        while (!audio.plugin.chipRegister.plugin(RealChipPlugin.class).trdClosed) {
+        while (!audio.plugin.chipRegister.plugin(RealChipPlugin.class).isThreadClosed()) {
             Thread.yield();
         }
         audio.plugin.chipRegister.plugin(VstPlugin.class).delVSTeffect("");

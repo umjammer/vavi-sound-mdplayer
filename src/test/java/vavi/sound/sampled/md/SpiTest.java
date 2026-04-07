@@ -14,7 +14,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ServiceLoader;
-import java.util.concurrent.CountDownLatch;
 import javax.sound.SoundClip;
 import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
@@ -109,7 +108,7 @@ Debug.println("volume: " + volume);
 
     @Test
     @DisplayName("directly")
-    @DisabledIfEnvironmentVariable(named = "GITHUB_WORKFLOW", matches = ".*")
+    @DisabledIfEnvironmentVariable(named = "GITHUB_WORKFLOW", matches = ".*") // github workflow doesn't support volume
     public void test0() throws Exception {
 Debug.println(inFile);
         Path path = Paths.get(inFile);
@@ -151,7 +150,7 @@ Debug.println("OUT: " + outAudioFormat);
 
     @Test
     @DisplayName("by spi")
-    @DisabledIfEnvironmentVariable(named = "GITHUB_WORKFLOW", matches = ".*")
+    @DisabledIfEnvironmentVariable(named = "GITHUB_WORKFLOW", matches = ".*") // github workflow doesn't support volume
     public void test1() throws Exception {
 Debug.println(inFile);
         Path path = Paths.get(inFile);
