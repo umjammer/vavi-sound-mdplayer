@@ -1,7 +1,7 @@
 [![Release](https://jitpack.io/v/umjammer/vavi-apps-mdplayer.svg)](https://jitpack.io/#umjammer/vavi-apps-mdplayer)
 [![Java CI](https://github.com/umjammer/vavi-apps-mdplayer/actions/workflows/maven.yml/badge.svg)](https://github.com/umjammer/vavi-apps-mdplayer/actions/workflows/maven.yml)
 [![CodeQL](https://github.com/umjammer/vavi-apps-mdplayer/actions/workflows/codeql.yml/badge.svg)](https://github.com/umjammer/vavi-apps-mdplayer/actions/workflows/codeql.yml)
-![Java](https://img.shields.io/badge/Java-21-b07219)
+![Java](https://img.shields.io/badge/Java-25-b07219)
 
 # vavi-apps-mdplayer
 
@@ -19,17 +19,16 @@ this is a fork of [MDPlayer](https://github.com/kuma4649/MDPlayer)
 | XGM                             | mega drive       |        ✅️        | built-in             |                                                                      |                                                                               |
 | XGM2                            | mega drive       |        ✅️        | built-in             |                                                                      |                                                                               |
 | MDS                             | mega drive       |  ✅️<sup>*</sup>  | driver               | [vavi-sound-mdsdrv](https://github.com/umjammer/vavi-sound-mdsdrv)   | (*) [pcm has problem](https://github.com/umjammer/vavi-sound-mdsdrv/issues/1) |
-| ZGM                             | mml2vgm          |       n/a        | built-in             |                                                                      | currently support only YM2609                                                 |
-| S98                             | PC98             |        ✅️        | built-in             |                                                                      |                                                                               |
 | MUC/MUB                         | PC88 MUCOM88     |  ✅️<sup>*</sup>  | driver               | [vavi-sound-mucom88](https://github.com/umjammer/vavi-sound-mucom88) | (*) compiler wip                                                              |
-| M/M2/MZ                         | PC98 PMD         |  ✅️<sup>*</sup>  | driver               | [vavi-sound-pmd](https://github.com/umjammer/vavi-sound-pmd)         | for commercial<br/> (*) compiler wip                                          |
-| MPZ/OPI</br>MVI/OVI</br>MZI/OZI | PC98 FMP         |        ✅️        | built-in*            |                                                                      | for freeware<br/> (*) compiler wip                                            |
+| S98                             | PC98             |        ✅️        | built-in             |                                                                      |                                                                               |
+| MML/M/M2/MZ                     | PC98 PMD         |  ✅️<sup>*</sup>  | driver               | [vavi-sound-pmd](https://github.com/umjammer/vavi-sound-pmd)         | for commercial<br/> (*) compiler wip                                          |
+| MPI/OPI</br>MVI/OVI</br>MZI/OZI | PC98 FMP         |        ✅️        | built-in*            |                                                                      | for freeware<br/> (*) compiler wip                                            |
 | MUS/O/OX/OY                     | PC98 muap98      |  ✅<sup>*</sup>   | driver               | [vavi-sound-muap](https://github.com/umjammer/vavi-sound-muap)       | (*) compiler wip                                                              |
 | MDX                             | X68k MXDRV       |        ✅️        | built-in             |                                                                      |                                                                               |
 | MND                             | X68k MNDRV       |       ✅️ ️       | built-in             |                                                                      |                                                                               |
 | ZMD/ZMS                         | X68k ZMusic      |  ✅️<sup>*</sup>  | built-in*            |                                                                      | (*) compiler wip                                                              |
 | NRD                             | X1 NRTDRV        |        ✅️        | built-in             |                                                                      |                                                                               |
-| MDR                             | MSX MoonDriver   |  ✅️<sup>*</sup>  | ~~built-in~~, driver | [vavi-sound-moon](https://github.com/umjammer/vavi-sound-moon)       | (*) compiler wip                                                              |
+| MDL/MDR                         | MSX MoonDriver   |  ✅️<sup>*</sup>  | ~~built-in~~, driver | [vavi-sound-moon](https://github.com/umjammer/vavi-sound-moon)       | (*) compiler wip                                                              |
 | MGS                             | MSX MGSDRV       |        ✅️        | built-in             |                                                                      |                                                                               |
 | NDP                             | MSX NDP          |        ✅️        | built-in*            |                                                                      |                                                                               |
 | BGM/MSD                         | MSX MuSICA       |        ✅️        | built-in*            |                                                                      | (*) compiler (v4) wip<br/> original also often fails                          |
@@ -39,12 +38,13 @@ this is a fork of [MDPlayer](https://github.com/kuma4649/MDPlayer)
 | HES                             | PC Engine        |       ✅️?        | built-in             | libgme                                                               |                                                                               |
 | GBS                             | Game Boy         |        →         | built-in             | [vavi-sound-emu](https://github.com/umjammer/vavi-sound-emu)         |                                                                               |
 | GYM                             | Sega Genesis     |       n/a        |                      | libgme                                                               |                                                                               |
-| KSS                             | MSX              |       ✅️ →       |                      | [vavi-sound-emu](https://github.com/umjammer/vavi-sound-emu)         |                                                                               |
+| KSS                             | MSX              |       ️ →        |                      | [vavi-sound-emu](https://github.com/umjammer/vavi-sound-emu)         |                                                                               |
 | SAP                             | Atari            |       n/a        |                      | libgme                                                               |                                                                               |
-| SPC                             | SNES             |      n/a →       |                      | [vavi-sound-emu](https://github.com/umjammer/vavi-sound-emu)         |                                                                               |
+| SPC                             | SNES             |        →         |                      | [vavi-sound-emu](https://github.com/umjammer/vavi-sound-emu)         |                                                                               |
 | YM                              | Atari ST         |     n/a    ️     |                      | [FastTracker_2](https://en.wikipedia.org/wiki/FastTracker_2)         |                                                                               |
 | HVL                             | Hively Tracker   |     n/a   ️      |                      | [Hively Tracker](https://github.com/pete-gordon/hivelytracker)       |                                                                               |
 | AHX                             | AHX Clone        |     n/a    ️     |                      | [AHX](http://amigascne.org/abyss/ahx/)                               |                                                                               |
+| ZGM                             | mml2vgm          |       n/a        | built-in             |                                                                      | currently support only YM2609                                                 |
 | MID                             | midi             |        ️→        | built-in             | javax.sound.midi.spi                                                 |                                                                               |
 | RCP                             | recomposer       |        🚫        | built-in             |                                                                      |                                                                               |
 | RCS                             | RCP + PCM8       |        ⏳️        | built-in             |                                                                      |                                                                               |
@@ -78,11 +78,41 @@ src/main/resources/mdplayer/driver/zms/ZMUSIC.X
 
 ## Usage
 
-### Sample Player
+### via spi
 
- [source](src/test/java/TestCase.java)
+```java
+  AudioInputStream modAis = AudioSystem.getAudioInputStream(new BufferedInputStream(Files.newInputStream(vgm)));
+  AudioFormat inFormat = sourceAis.getFormat();
+  AudioFormat outFormat = new AudioFormat(44100, 16, 2, true, false);
+  AudioInputStream pcmAis = AudioSystem.getAudioInputStream(outFormat, modAis);
+  SourceDataLine line = (SourceDataLine) AudioSystem.getLine(new DataLine.Info(SourceDataLine.class, pcmAis.getFormat()));
+  line.open(pcmAis.getFormat());
+  line.start();
+  byte[] buffer = new byte[line.getBufferSize()];
+  int bytesRead;
+  while ((bytesRead = pcmAis.read(buffer)) != -1) {
+    line.write(buffer, 0, bytesRead);
+  }
+  line.drain();
+```
 
 ### System Properties
+
+#### fmp
+
+- `mdplayer.fmp.dir` ... location for fmp.com
+- `mdplayer.fmp.pvi` ... location for (.pvi) pcm files
+
+#### zms
+
+- `mdplayer.zms.dir` ... zpd file location
+
+#### muap
+
+- `muap.dir.dta` ... dta file location
+- `muap.dir.pcm` ... pcm file location
+- `muap.dir.udp` ... udp file location
+- `muap.dir.sud` ... sud file location
 
 #### YM2608 drums
 
@@ -108,8 +138,15 @@ you can select a chip implementation variant by number.
 | YMF262  | mdplayer.variant.ymF262  | 0: dosbox, 1: mame, 2: nuked, 3: cozendey, 4: ymfm                  |
 | Qsound  | mdplayer.variant.qsound  | 0: qsound-ctr, 1: qsound                                            |
 | C140    | mdplayer.variant.c140    | 0: c140, 1: c219                                                    |
+| PCM8    | mdplayer.variant.pcm8    | 0: x68k, 1: mercuryunit                                             |
+| MPCM    | mdplayer.variant.mpcm    | 0: x68k, 1: mercuryunit                                             |
 
  * mxdrv: plugin: reject `mdplayer.variant.ym2151=3`, cause frequency mismatch (ym2151:x68sound is already in use).
+ * ⚠️ ymfm (com.github.umhammer:vavi-sound-ymfm) is excluded for spi.
+
+### Sample Player
+
+[source](src/test/java/TestCase.java)
 
 ## References
 
@@ -122,6 +159,7 @@ you can select a chip implementation variant by number.
 * http://retropc.net/saya/x68000/ (mndrv)
 * https://github.com/asma-atari-org/asma.atari.org (sap)
 * https://github.com/Manicsteiner/VGMToolbox (kss, xa, xma, xsf)
+* https://github.com/AnimaInCorpore/portable_mdx (mxdrv)
 * s98
   * https://www.zophar.net/music/s98.html (s98)
   * https://github.com/niara3/s98txt/blob/master/src/com/niara3/s98txt/Main.java (s98)
@@ -159,7 +197,7 @@ you can select a chip implementation variant by number.
 
 ## TODO
 
- * spi
+ * ~~spi~~
  * debug
     * ~~vgm using YM2151~~
       * ~~some timing is wrong for "Out_Run_(Arcade)/01 Magical Sound Shower.vgz"~~
@@ -174,7 +212,14 @@ you can select a chip implementation variant by number.
     * rcs: wip
     * rcp: wip, how to treat midi plugin as chip?
     * nsf: sp library works. `render_()` is not work, `mul` related. (replace `render_()` to vavi-sound-mdplayer:NsfTestPlayer's one, it works)
- 
+    * ~~fmp: test mochit final~~
+    * mxdrv: ~~pcm8~~, when 68k opm is chosen as 1st opm, 2nd opm cannot sound pcm8. why??? 
+ * chip class should handle one chip
+ * eliminate dotnet4j
+ * ~~vgm spi selector~~
+   * ~~vavi-sound-smu (wip)~~
+   * ~~vavi-sound-ymfm (wip)~~
+
 ---
 
 # [Original](https://github.com/kuma4649/MDPlayer)
