@@ -33,6 +33,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -108,6 +109,7 @@ Debug.println("volume: " + volume);
 
     @Test
     @DisplayName("directly")
+    @DisabledIfEnvironmentVariable(named = "GITHUB_WORKFLOW", matches = ".*")
     public void test0() throws Exception {
 Debug.println(inFile);
         Path path = Paths.get(inFile);
@@ -149,6 +151,7 @@ Debug.println("OUT: " + outAudioFormat);
 
     @Test
     @DisplayName("by spi")
+    @DisabledIfEnvironmentVariable(named = "GITHUB_WORKFLOW", matches = ".*")
     public void test1() throws Exception {
 Debug.println(inFile);
         Path path = Paths.get(inFile);
