@@ -82,18 +82,18 @@ public class TestCase {
     void setup() throws Exception {
         if (localPropertiesExists()) {
             PropsEntity.Util.bind(this);
-        }
 
-        // fmp
-        System.setProperty("mdplayer.fmp.dir", fmpDir);
-        System.setProperty("mdplayer.fmp.pvi", fmpPvi);
-        // zms
-        System.setProperty("mdplayer.zms.dir", zmsDir);
-        // muap
-        System.setProperty("muap.dir.dta", muapDirDta);
-        System.setProperty("muap.dir.pcm", muapDirPcm);
-//        System.setProperty("muap.dir.udp", muapDirUdp);
-//        System.setProperty("muap.dir.sud", muapDirSud);
+            // fmp
+            System.setProperty("mdplayer.fmp.dir", fmpDir);
+            System.setProperty("mdplayer.fmp.pvi", fmpPvi);
+            // zms
+            System.setProperty("mdplayer.zms.dir", zmsDir);
+            // muap
+            System.setProperty("muap.dir.dta", muapDirDta);
+            System.setProperty("muap.dir.pcm", muapDirPcm);
+//            System.setProperty("muap.dir.udp", muapDirUdp);
+//            System.setProperty("muap.dir.sud", muapDirSud);
+        }
 
         System.setProperty("mdplayer.variant.pcm8", "0");
 

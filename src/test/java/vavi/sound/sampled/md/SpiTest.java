@@ -81,22 +81,22 @@ class SpiTest {
     void setup() throws Exception {
         if (localPropertiesExists()) {
             PropsEntity.Util.bind(this);
+
+            // fmp
+            System.setProperty("mdplayer.fmp.dir", fmpDir);
+            System.setProperty("mdplayer.fmp.pvi", fmpPvi);
+            // zms
+            System.setProperty("mdplayer.zms.dir", zmsDir);
+            // muap
+            System.setProperty("muap.dir.dta", muapDirDta);
+            System.setProperty("muap.dir.pcm", muapDirPcm);
+//            System.setProperty("muap.dir.udp", muapDirUdp);
+//            System.setProperty("muap.dir.sud", muapDirSud);
         }
 
         // disable other vgm conversion spi
         System.setProperty("vavi.sound.sampled.spi.emu", "false");
         System.setProperty("vavi.sound.sampled.spi.ymfm", "false");
-
-        // fmp
-        System.setProperty("mdplayer.fmp.dir", fmpDir);
-        System.setProperty("mdplayer.fmp.pvi", fmpPvi);
-        // zms
-        System.setProperty("mdplayer.zms.dir", zmsDir);
-        // muap
-        System.setProperty("muap.dir.dta", muapDirDta);
-        System.setProperty("muap.dir.pcm", muapDirPcm);
-//        System.setProperty("muap.dir.udp", muapDirUdp);
-//        System.setProperty("muap.dir.sud", muapDirSud);
 
 //        System.setProperty("mdplayer.variant.ym2151", "2"); // TODO this kills pcm8
         System.setProperty("mdplayer.variant.pcm8", "0");
