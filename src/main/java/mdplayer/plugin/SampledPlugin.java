@@ -8,6 +8,7 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
+import mdplayer.chips.RealChipPlugin;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
@@ -57,10 +58,22 @@ public class SampledPlugin extends BasePlugin {
         }
     }
 
-    public int nAudioRead(short[] buffer, int offset, int count) {
+    public int read(short[] buffer, int offset, int count) {
+        if (this.naudioFileReader != null) {
+            if (this.chipRegister.plugin(RealChipPlugin.class).trdClosed) {
+                this.chipRegister.plugin(RealChipPlugin.class).setThreadStopped(true);
+                //this.fadeout = false;
+                //this.stopped = true;
+            }
+            return this.readAudio(buffer, offset, count);
+        } else {
+            return count;
+        }
+    }
+
+    private int readAudio(short[] buffer, int offset, int count) {
         try {
             naudioSrcbuffer = ensure(naudioSrcbuffer, count * 2);
-//            naudioWs.read(naudioSrcbuffer, 0, count * 2);
             convert2ByteToShort(buffer, offset, naudioSrcbuffer, count);
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);

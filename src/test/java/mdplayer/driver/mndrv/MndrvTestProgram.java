@@ -85,7 +85,7 @@ public class MndrvTestProgram {
         validBuffers = 0;
 
         while (isPlaying) {
-            int produced = audio.update(sampleBuffer, 0, bufferSize * 2);
+            int produced = audio.plugin.mds.update(sampleBuffer, 0, bufferSize * 2, null);
 
             for (int i = 0; i < produced; i++) {
                 short val = sampleBuffer[i];

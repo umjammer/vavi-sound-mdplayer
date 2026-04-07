@@ -93,41 +93,13 @@ import mdplayer.Request.enmRequest;
 import mdplayer.Setting;
 import mdplayer.TonePallet;
 import mdplayer.YM2612MIDI;
-import mdplayer.chips.Ay8910Chip;
-import mdplayer.chips.C140Chip;
-import mdplayer.chips.C352Chip;
-import mdplayer.chips.DmgChip;
-import mdplayer.chips.HuC6280Chip;
-import mdplayer.chips.K051649Chip;
-import mdplayer.chips.MidiPlugin;
-import mdplayer.chips.NesChip;
+import mdplayer.chips.*;
 import mdplayer.chips.NesChip.DmcChip;
 import mdplayer.chips.NesChip.FdsChip;
 import mdplayer.chips.NesChip.Mmc5Chip;
 import mdplayer.chips.NesChip.N163Chip;
 import mdplayer.chips.NesChip.Vrc6Chip;
 import mdplayer.chips.NesChip.Vrc7Chip;
-import mdplayer.chips.OkiM6258Chip;
-import mdplayer.chips.OkiM6295Chip;
-import mdplayer.chips.Ppz8Chip;
-import mdplayer.chips.QSoundChip;
-import mdplayer.chips.Rf5C164Chip;
-import mdplayer.chips.Rf5C68Chip;
-import mdplayer.chips.SegaPcmChip;
-import mdplayer.chips.SidChip;
-import mdplayer.chips.Sn76489Chip;
-import mdplayer.chips.Y8950Chip;
-import mdplayer.chips.Ym2151Chip;
-import mdplayer.chips.Ym2203Chip;
-import mdplayer.chips.Ym2413Chip;
-import mdplayer.chips.Ym2608Chip;
-import mdplayer.chips.Ym2610Chip;
-import mdplayer.chips.Ym2612Chip;
-import mdplayer.chips.Ym3526Chip;
-import mdplayer.chips.Ym3812Chip;
-import mdplayer.chips.YmF262Chip;
-import mdplayer.chips.YmF278BChip;
-import mdplayer.chips.YmZ280BChip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.form.kb.driver.frmPPZ8;
 import mdplayer.form.kb.frmMIDI;
@@ -4326,7 +4298,7 @@ public class frmMain extends JFrame {
             audio.pause();
         }
 
-        if (audio.getTrdStopped() && audio.plugin.isStopped()) {
+        if (audio.plugin.chipRegister.plugin(RealChipPlugin.class).isThreadStopped() && audio.plugin.isStopped()) {
             audio.plugin.resetTimeCounter();
         }
 
@@ -4504,7 +4476,7 @@ public class frmMain extends JFrame {
                 resetChannelMask(FdsChip.class, chipId, 0);
             }
 
-            audio.plugin.go();
+            audio.plugin.resume();
 
             if (frmInfo != null) {
                 frmInfo.update();

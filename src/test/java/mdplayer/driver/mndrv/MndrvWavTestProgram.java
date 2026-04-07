@@ -29,6 +29,7 @@ public class MndrvWavTestProgram {
     static {
         System.setProperty("mdplayer.variant.ymf262", "0");
         System.setProperty("dev.null", "/dev/null");
+        System.setProperty("javax.sound.sampled.SourceDataLine", "#WaveOut Mixer");
     }
 
     /** duration to render in seconds (matching reference wav) */
@@ -36,16 +37,15 @@ public class MndrvWavTestProgram {
 
     public static void main(String[] args) throws Exception {
         if (args.length < 2) {
-            System.out.println("Usage: MndrvWavTestProgram <mnd_file> <output_wav> [reference_wav]");
+            System.out.println("Usage: MndrvWavTestProgram <mnd_file> [reference_wav]");
             return;
         }
 
-        new MndrvWavTestProgram().play(args[0], args[1], args.length > 2 ? args[2] : null);
+        new MndrvWavTestProgram().play(args[0], args.length > 2 ? args[2] : null);
     }
 
-    public void play(String filename, String outWavFile, String refWavFile) throws Exception {
+    public void play(String filename, String refWavFile) throws Exception {
         System.err.println("filename: " + filename);
-        System.err.println("outWavFile: " + outWavFile);
         System.err.println("refWavFile: " + refWavFile);
         Audio audio = Audio.getInstance();
         Setting setting = Setting.getInstance();
@@ -53,9 +53,6 @@ public class MndrvWavTestProgram {
         // disable speaker output, enable WAV writer
         setting.getOutputDevice().setDeviceType(Common.DEV_Null);
         setting.getOther().setWavSwitch(true);
-        File outDirFile = new File(outWavFile).getParentFile();
-        if (!outDirFile.exists()) outDirFile.mkdirs();
-        setting.getOther().setWavPath(outDirFile.getPath());
 
         FileFormat format = FileFormat.getFileFormat(filename);
         var r = format.load((String) null, filename);
@@ -69,36 +66,25 @@ public class MndrvWavTestProgram {
         _play.setAccessible(true);
         _play.invoke(plugin);
 
-        String actualOutWavFile = new File(outDirFile, new File(filename).getName().replaceFirst("[.][^.]+$", "") + ".wav").getPath();
-        System.err.println("Actual output WAV file: " + actualOutWavFile);
-
         System.err.println("Rendering " + filename + " to WAV...");
         // Instead of plugin.play(), we run our own loop to ensure we can stop it.
         // MNDPlugin.play() would call super.play() which has an infinite loop.
 
         plugin.stopped = false;
         plugin.paused = false;
-        plugin.vgmFadeout = false;
-        plugin.vgmFadeoutCounter = 1.0;
-        plugin.vgmFadeoutCounterV = 0.00001;
+        plugin.fadeout = false;
+        plugin.fadeoutCounter = 1.0;
+        plugin.fadeoutCounterV = 0.00001;
         audio.plugin.masterVolume = setting.getBalance().getMasterVolume();
-
-        audio.waveWriter.open(filename);
 
         long start = System.currentTimeMillis();
         long timeout = (long) (RENDER_DURATION * 1000) + 10000; // duration + 10s buffer
 
         while (!plugin.stopped) {
             short[] buffer = new short[BUFFER_SIZE];
-            int ret = audio.update(buffer, 0, buffer.length);
+            int ret = audio.plugin.mds.update(buffer, 0, buffer.length, null);
             if (ret == -1) break;
             if (plugin.driverVirtual.getDriverCounter() % 1000 == 0) System.err.println("Frame: " + plugin.driverVirtual.getDriverCounter());
-
-            File out = new File(actualOutWavFile);
-            if (out.exists() && refWavFile != null && out.length() >= new File(refWavFile).length()) {
-                System.err.println("Render duration reached (by size), stopping...");
-                break;
-            }
 
             if (System.currentTimeMillis() - start > timeout) {
                 System.err.println("Render timeout reached, stopping...");
@@ -113,12 +99,12 @@ public class MndrvWavTestProgram {
 
         // Finalize rendering
         plugin.stopped = true;
-        audio.waveWriter.close();
         plugin.stop();
         plugin.close();
 
         System.err.println("Rendering complete.");
 
+        String actualOutWavFile = System.getProperty("vavi.sound.sampled.misc.waveout");
         if (refWavFile != null && new File(actualOutWavFile).exists()) {
             compareWavFiles(refWavFile, actualOutWavFile);
         }

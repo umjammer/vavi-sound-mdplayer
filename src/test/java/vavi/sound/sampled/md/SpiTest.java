@@ -14,6 +14,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ServiceLoader;
+import java.util.concurrent.CountDownLatch;
+import javax.sound.SoundClip;
 import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
@@ -28,6 +30,7 @@ import vavi.util.properties.annotation.Property;
 import vavi.util.properties.annotation.PropsEntity;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -220,8 +223,6 @@ Debug.println(originalAudioFormat);
         assertInstanceOf(MdEncoding.class, ais.getFormat().getEncoding());
     }
 
-    // com.sun.media.sound.SoftMidiAudioFileReader consumes 4byte unexpectedly.
-    // so it's excluded when test. see -agent jvm option at maven-surefire-plugin
     @Test
     @DisplayName("when unsupported file coming")
     void test5() throws Exception {
@@ -233,5 +234,12 @@ Debug.println(originalAudioFormat);
         });
 Debug.println(e.getMessage());
         assertEquals(available, is.available()); // spi must not consume input stream even one byte
+    }
+
+    @Test
+    @Disabled("loading takes too long time")
+    void test6() throws Exception {
+        var clip = SoundClip.createSoundClip(Path.of(inFile).toFile());
+        clip.play();
     }
 }

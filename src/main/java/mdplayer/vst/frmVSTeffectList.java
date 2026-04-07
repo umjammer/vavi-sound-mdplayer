@@ -34,6 +34,7 @@ import dotnet4j.io.Directory;
 import dotnet4j.io.Path;
 import mdplayer.Audio;
 import mdplayer.Setting;
+import mdplayer.chips.RealChipPlugin;
 import mdplayer.chips.VstPlugin;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
@@ -86,7 +87,7 @@ public class frmVSTeffectList extends JFrame {
 
         setting.getVst().setDefaultPath(Path.getDirectoryName(ofd.getSelectedFile().getName()));
         parent.stop();
-        while (!audio.getTrdStopped()) {
+        while (!audio.plugin.chipRegister.plugin(RealChipPlugin.class).isThreadStopped()) {
             Thread.yield();
         }
         audio.plugin.chipRegister.plugin(VstPlugin.class).addVSTeffect(ofd.getSelectedFile().getName());
@@ -138,7 +139,7 @@ public class frmVSTeffectList extends JFrame {
         if (dgvList.getSelectedRowCount() < 0) return;
 
         parent.stop();
-        while (!audio.getTrdStopped()) {
+        while (!audio.plugin.chipRegister.plugin(RealChipPlugin.class).isThreadStopped()) {
             Thread.yield();
         }
         int row = dgvList.getSelectionModel().getSelectedIndices()[0];
@@ -152,7 +153,7 @@ public class frmVSTeffectList extends JFrame {
 
         parent.stop();
         //while (!Audio.trdStopped) { Thread.sleep(1); }
-        while (!audio.trdClosed) {
+        while (!audio.plugin.chipRegister.plugin(RealChipPlugin.class).trdClosed) {
             Thread.yield();
         }
         audio.plugin.chipRegister.plugin(VstPlugin.class).delVSTeffect("");

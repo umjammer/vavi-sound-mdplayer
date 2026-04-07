@@ -49,7 +49,7 @@ public abstract class BasePlugin<T extends BaseDriver> implements Plugin {
     public final ChipLEDs chipLED = new ChipLEDs();
 
     protected byte[] vgmBuf = null;
-    protected double vgmSpeed;
+    protected double speed;
 
     public boolean oneTimeReset = false;
 
@@ -69,11 +69,9 @@ public abstract class BasePlugin<T extends BaseDriver> implements Plugin {
     public boolean stopped = false;
     public boolean paused = false;
 
-    public boolean vgmFadeout;
-    public double vgmFadeoutCounter;
-    public double vgmFadeoutCounterV;
-    protected int vgmRealFadeoutVol = 0;
-    protected int vgmRealFadeoutVolWait = 4;
+    public boolean fadeout;
+    public double fadeoutCounter;
+    public double fadeoutCounterV;
 
     public int hiyorimiEven = 0;
     public boolean hiyorimiNecessary = false;
@@ -125,27 +123,6 @@ public abstract class BasePlugin<T extends BaseDriver> implements Plugin {
 logger.log(Level.TRACE, "stop: " + this.stopped + ", " + this.hashCode());
     }
 
-    public void fadeOut() {
-        if (vgmRealFadeoutVol != 1000) vgmRealFadeoutVolWait--;
-        if (vgmRealFadeoutVolWait == 0) {
-            chips.keySet().forEach(c -> chipRegister.chip(c).setFadeout(0, vgmRealFadeoutVol));
-            chips.keySet().forEach(c -> chipRegister.chip(c).setFadeout(1, vgmRealFadeoutVol));
-
-            vgmRealFadeoutVol++;
-
-            vgmRealFadeoutVol = Math.min(127, vgmRealFadeoutVol);
-            if (vgmRealFadeoutVol == 127) {
-//                if (SoundChip.realChip != null) {
-//                    softReset(EnmModel.RealModel);
-//                }
-                vgmRealFadeoutVolWait = 1000;
-                chipRegister.plugin(MidiPlugin.class).resetAll();
-            } else {
-                vgmRealFadeoutVolWait = 700 - vgmRealFadeoutVol * 2;
-            }
-        }
-    }
-
     public int getLatency() {
         if (setting.getOutputDevice().getDeviceType() != Common.DEV_AsioOut) {
             return setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getLatency() / 1000;
@@ -154,12 +131,12 @@ logger.log(Level.TRACE, "stop: " + this.stopped + ", " + this.hashCode());
     }
 
     public void prepare() {
-        this.vgmFadeout = false;
-        this.vgmFadeoutCounter = 1.0;
-        this.vgmFadeoutCounterV = 0.00001;
-        this.vgmSpeed = 1;
-        this.vgmRealFadeoutVol = 0;
-        this.vgmRealFadeoutVolWait = 4;
+        this.fadeout = false;
+        this.fadeoutCounter = 1.0;
+        this.fadeoutCounterV = 0.00001;
+        this.speed = 1;
+        chipRegister.plugin(RealChipPlugin.class).realFadeoutVol = 0;
+        chipRegister.plugin(RealChipPlugin.class).realFadeoutVolWait = 4;
 
         chips.clear();
         this.hiyorimiNecessary = setting.getHiyorimiMode();
@@ -189,7 +166,7 @@ logger.log(Level.TRACE, "stop: " + this.stopped + ", " + this.hashCode());
         chip.smpLast = 0x00;
     }
 
-    public void go() {
+    public void resume() {
         this.stopped = false;
 //logger.log(Level.TRACE, "stopped: " + audio.stopped + ", " + audio.hashCode());
     }
@@ -203,12 +180,12 @@ logger.log(Level.INFO, "stop enter: " + this.stopped);
     }
 
     protected void resetFadeOutParam() {
-        this.vgmFadeout = false;
-        this.vgmFadeoutCounter = 1.0;
-        this.vgmFadeoutCounterV = 0.00001;
-        this.vgmSpeed = 1;
-        this.vgmRealFadeoutVol = 0;
-        this.vgmRealFadeoutVolWait = 4;
+        this.fadeout = false;
+        this.fadeoutCounter = 1.0;
+        this.fadeoutCounterV = 0.00001;
+        this.speed = 1;
+        chipRegister.plugin(RealChipPlugin.class).realFadeoutVol = 0;
+        chipRegister.plugin(RealChipPlugin.class).realFadeoutVolWait = 4;
 
         chipRegister.clearFadeoutVolume();
 
@@ -237,21 +214,21 @@ logger.log(Level.INFO, "stop enter: " + this.stopped);
     @Override
     public void ff() {
         if (driverVirtual == null) return;
-        vgmSpeed = (vgmSpeed == 1) ? 4 : 1;
-        driverVirtual.speed = vgmSpeed;
-        if (driverReal != null) driverReal.speed = vgmSpeed;
+        speed = (speed == 1) ? 4 : 1;
+        driverVirtual.speed = speed;
+        if (driverReal != null) driverReal.speed = speed;
     }
 
     public void slow() {
-        vgmSpeed = (vgmSpeed == 1) ? 0.25 : 1;
-        driverVirtual.speed = vgmSpeed;
-        if (driverReal != null) driverReal.speed = vgmSpeed;
+        speed = (speed == 1) ? 0.25 : 1;
+        driverVirtual.speed = speed;
+        if (driverReal != null) driverReal.speed = speed;
     }
 
     public void resetSlow() {
-        vgmSpeed = 1;
-        driverVirtual.speed = vgmSpeed;
-        if (driverReal != null) driverReal.speed = vgmSpeed;
+        speed = 1;
+        driverVirtual.speed = speed;
+        if (driverReal != null) driverReal.speed = speed;
     }
 
     public boolean isStopped() {
@@ -259,15 +236,15 @@ logger.log(Level.INFO, "stop enter: " + this.stopped);
     }
 
     public boolean isFadeOut() {
-        return this.vgmFadeout;
+        return this.fadeout;
     }
 
     public boolean isSlow() {
-        return !isStopped() && (vgmSpeed < 1.0);
+        return !isStopped() && (speed < 1.0);
     }
 
     public boolean isFF() {
-        return !isStopped() && (vgmSpeed > 1.0);
+        return !isStopped() && (speed > 1.0);
     }
 
     @Override
@@ -394,5 +371,11 @@ logger.log(Level.INFO, "close enter");
     public void setMasterVolume(boolean isAbs, int volume) {
         masterVolume = Common.range((isAbs ? 0 : setting.getBalance().getMasterVolume()) + volume, -192, 20);
         setting.getBalance().setMasterVolume(masterVolume);
+    }
+
+    boolean emuOnly;
+
+    public boolean isEmuOnly() {
+        return emuOnly;
     }
 }
