@@ -492,13 +492,13 @@ logger.log(Level.DEBUG, "rhythm file: " + ffn);
         clip.setContents(ss, ss);
     }
 
-    static final Robot robot;
+    static Robot robot;
 
     static {
         try {
             robot = new Robot();
         } catch (AWTException e) {
-            throw new IllegalStateException(e);
+            logger.log(Level.WARNING, e.getMessage(), e);
         }
     }
 
