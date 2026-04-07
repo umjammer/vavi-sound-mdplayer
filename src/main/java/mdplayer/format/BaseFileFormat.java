@@ -20,13 +20,10 @@ import dotnet4j.io.Path;
 import dotnet4j.util.compat.Tuple;
 import mdplayer.PlayList;
 import mdplayer.Setting;
-import mdplayer.driver.Vgm;
-import mdplayer.driver.VgmDriver;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 import vavi.util.ByteUtil;
 import vavi.util.archive.Archive;
-import vavi.util.archive.Archives;
 import vavi.util.archive.Entry;
 import vavi.util.archive.zip.JdkZipEntry;
 
@@ -46,7 +43,7 @@ public abstract class BaseFileFormat implements FileFormat {
             musics.add(music);
             return musics;
         }
-        if (ByteUtil.readLeInt(buf, 0x00) != Vgm.FCC_VGM) {
+        if (!isMatchFcc(ByteUtil.readLeInt(buf, 0x00))) {
             musics.add(music);
             return musics;
         }
@@ -59,11 +56,11 @@ public abstract class BaseFileFormat implements FileFormat {
         MetaData md = new MetaData();
         if (vgmGd3 != 0) {
             int vgmGd3Id = ByteUtil.readLeInt(buf, vgmGd3 + 0x14);
-            if (vgmGd3Id != Vgm.FCC_GD3) {
+            if (!isMatchMetaData(vgmGd3Id)) {
                 musics.add(music);
                 return musics;
             }
-            md = (new VgmDriver()).getMetaData(buf, vgmGd3);
+            md = getMetaData(buf, vgmGd3);
         }
 
         int totalCounter = ByteUtil.readLeInt(buf, 0x18);
@@ -91,6 +88,21 @@ public abstract class BaseFileFormat implements FileFormat {
 
         musics.add(music);
         return musics;
+    }
+
+    // default
+    protected boolean isMatchFcc(int fcc) {
+        return false;
+    }
+
+    // default
+    protected boolean isMatchMetaData(int fcc) {
+        return false;
+    }
+
+    // default
+    protected MetaData getMetaData(byte[] buf, int vgmGd3) {
+        return null;
     }
 
     @Override
@@ -157,24 +169,14 @@ logger.log(Level.DEBUG, result);
             throw new UncheckedIOException(e);
         }
 
-        if (FileFormat.getFileFormat(entry.getName()) instanceof VGMFileFormat) {
-            try {
-                int vgm = ByteUtil.readLeInt(buf);
-                if (vgm != VGMFileFormat.FCC_VGM) {
-
-                    try (InputStream inStream = archive.getInputStream(entry);
-                         InputStream decompStream = Archives.getInputStream(new BufferedInputStream(inStream))
-                    ) {
-                        buf = decompStream.readAllBytes();
-                    }
-                }
-            } catch (Exception ex) {
-                logger.log(Level.ERROR, ex.getMessage(), ex);
-                buf = null;
-            }
-        }
+        buf = ((BaseFileFormat) FileFormat.getFileFormat(entry.getName())).getBytesFromZipFileInternal(archive, entry, buf);
 
         return buf;
+    }
+
+    // default
+    protected byte[] getBytesFromZipFileInternal(Archive archive, Entry entry, byte[] buf) {
+        return null;
     }
 
     @Override
@@ -186,7 +188,7 @@ logger.log(Level.DEBUG, result);
      * General purpose
      */
     @Override
-    public List<PlayList.Music> addFileLoop(PlayList.Music mc, Archive archive, Entry entry/*=null*/) throws IOException {
+    public List<PlayList.Music> addFileLoop(PlayList.Music mc, Archive archive, Entry entry /* = null */) throws IOException {
         byte[] buf;
         if (entry == null) {
             try {
@@ -195,18 +197,8 @@ logger.log(Level.DEBUG, result);
                 logger.log(Level.ERROR, ex.getMessage(), ex);
                 buf = null;
             }
-            if (buf == null && mc.format instanceof VGMFileFormat) {
-                if (Path.getExtension(mc.fileName).equalsIgnoreCase(".vgm")) {
-                    mc.fileName = Path.changeExtension(mc.fileName, ".vgz");
-                } else {
-                    mc.fileName = Path.changeExtension(mc.fileName, ".Vgm");
-                }
-                try {
-                    buf = File.readAllBytes(mc.fileName);
-                } catch (Exception ex) {
-                    logger.log(Level.ERROR, ex.getMessage(), ex);
-                    buf = null;
-                }
+            if (buf == null) {
+                buf = addFileLoopInternal(mc);
             }
         } else {
             try (InputStream reader = archive.getInputStream(entry)) {
@@ -227,7 +219,7 @@ logger.log(Level.DEBUG, result);
     }
 
     @Override
-    public List<PlayList.Music> addFileLoop(int index, PlayList.Music mc, Archive archive, Entry entry/* = null*/) throws IOException {
+    public List<PlayList.Music> addFileLoop(int index, PlayList.Music mc, Archive archive, Entry entry /* = null */) throws IOException {
         byte[] buf;
         if (entry == null) {
             try {
@@ -236,18 +228,8 @@ logger.log(Level.DEBUG, result);
                 logger.log(Level.ERROR, ex.getMessage(), ex);
                 buf = null;
             }
-            if (buf == null && mc.format instanceof VGMFileFormat) {
-                if (Path.getExtension(mc.fileName).equalsIgnoreCase(".vgm")) {
-                    mc.fileName = Path.changeExtension(mc.fileName, ".vgz");
-                } else {
-                    mc.fileName = Path.changeExtension(mc.fileName, ".Vgm");
-                }
-                try {
-                    buf = File.readAllBytes(mc.fileName);
-                } catch (Exception ex) {
-                    logger.log(Level.ERROR, ex.getMessage(), ex);
-                    buf = null;
-                }
+            if (buf == null) {
+                buf = addFileLoopInternal(mc);
             }
 
             List<PlayList.Music> musics;
@@ -261,6 +243,11 @@ logger.log(Level.DEBUG, result);
             }
             return null;
         }
+    }
+
+    // default
+    protected byte[] addFileLoopInternal(PlayList.Music mc) {
+        return null;
     }
 
     @Override

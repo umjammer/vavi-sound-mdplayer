@@ -1,28 +1,36 @@
 package mdplayer.format;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.Collections;
 import java.util.List;
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
+import dotnet4j.io.File;
 import dotnet4j.io.FileAccess;
 import dotnet4j.io.FileMode;
 import dotnet4j.io.FileStream;
 import dotnet4j.io.MemoryStream;
+import dotnet4j.io.Path;
 import dotnet4j.io.compression.CompressionMode;
 import dotnet4j.io.compression.GZipStream;
 import mdplayer.PlayList;
+import mdplayer.driver.Vgm;
+import mdplayer.driver.VgmDriver;
 import mdplayer.plugin.Plugin;
 import mdplayer.plugin.VGMPlugin;
 import mdplayer.properties.Resources;
+import musicDriverInterface.MetaData;
 import vavi.sound.sampled.md.MdEncoding;
 import vavi.sound.sampled.md.MdFileFormatType;
 import vavi.util.ByteUtil;
 import vavi.util.archive.Archive;
+import vavi.util.archive.Archives;
 import vavi.util.archive.Entry;
 
 
@@ -88,6 +96,54 @@ public class VGMFileFormat extends BaseFileFormat {
                 "DriverBalance_VGM.mbc",
                 Resources.getDefaultVolumeBalance_VGM()
         };
+    }
+
+    @Override
+    protected boolean isMatchFcc(int fcc) {
+        return fcc == Vgm.FCC_VGM;
+    }
+
+    @Override
+    protected boolean isMatchMetaData(int fcc) {
+        return fcc == Vgm.FCC_GD3;
+    }
+
+    @Override
+    protected MetaData getMetaData(byte[] buf, int vgmGd3) {
+        return new VgmDriver().getMetaData(buf, vgmGd3);
+    }
+
+    @Override
+    protected byte[] getBytesFromZipFileInternal(Archive archive, Entry entry, byte[] buf) {
+        try {
+            int vgm = ByteUtil.readLeInt(buf);
+            if (vgm != VGMFileFormat.FCC_VGM) {
+
+                try (InputStream inStream = archive.getInputStream(entry);
+                     InputStream decompStream = Archives.getInputStream(new BufferedInputStream(inStream))
+                ) {
+                    return decompStream.readAllBytes();
+                }
+            }
+        } catch (Exception ex) {
+            logger.log(Level.ERROR, ex.getMessage(), ex);
+        }
+        return null;
+    }
+
+    @Override
+    protected byte[] addFileLoopInternal(PlayList.Music mc) {
+        if (Path.getExtension(mc.fileName).equalsIgnoreCase(".vgm")) {
+            mc.fileName = Path.changeExtension(mc.fileName, ".vgz");
+        } else {
+            mc.fileName = Path.changeExtension(mc.fileName, ".Vgm");
+        }
+        try {
+            return File.readAllBytes(mc.fileName);
+        } catch (Exception ex) {
+            logger.log(Level.ERROR, ex.getMessage(), ex);
+            return null;
+        }
     }
 
     @Override
