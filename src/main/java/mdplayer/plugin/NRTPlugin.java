@@ -5,6 +5,7 @@ import java.lang.System.Logger.Level;
 
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.Ay8910Chip;
+import mdplayer.chips.RealChipPlugin;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.driver.nrtdrv.NrtDriver;
 import mdsound.MDSound;
@@ -76,7 +77,7 @@ logger.log(Level.DEBUG, "used chip: %02x".formatted(r));
             put(Ay8910Chip.class, chip);
         }
 
-        hiyorimiNecessary = hiyorimiDeviceFlag == 0x3 && hiyorimiNecessary;
+        chipRegister.plugin(RealChipPlugin.class).initChip(hiyorimiDeviceFlag);
 
         mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, flatten());
 

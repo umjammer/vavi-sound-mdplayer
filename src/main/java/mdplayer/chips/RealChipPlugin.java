@@ -29,6 +29,21 @@ public class RealChipPlugin implements Plugin {
     public int realFadeoutVol = 0;
     public int realFadeoutVolWait = 4;
 
+    public int hiyorimiEven = 0;
+    private boolean hiyorimiNecessary = setting.getHiyorimiMode();
+
+    public boolean isHiyorimiNecessary() {
+        return hiyorimiNecessary;
+    }
+
+    public void setHiyorimiNecessary(boolean hiyorimiNecessary) {
+        this.hiyorimiNecessary = hiyorimiNecessary;
+    }
+
+    public void initChip(int hiyorimiDeviceFlag) {
+        this.hiyorimiNecessary = hiyorimiDeviceFlag == 0x3 && this.hiyorimiNecessary;
+    }
+
     public RealChipPlugin() {
 //                , SoundChip.realChip
 //                , vstMng
@@ -187,7 +202,7 @@ public class RealChipPlugin implements Plugin {
 //                    }
                     continue;
                 }
-                if (context.hiyorimiNecessary && context.driverVirtual.isDataBlock) {
+                if (this.hiyorimiNecessary && context.driverVirtual.isDataBlock) {
                     continue;
                 }
 
@@ -195,7 +210,7 @@ public class RealChipPlugin implements Plugin {
                     fadeOut();
                 }
 
-                if (context.hiyorimiNecessary) {
+                if (this.hiyorimiNecessary) {
 //                    long v = driverReal.frameCounter - audio.driverVirtual.frameCounter;
 //                    long d = setting.getoutputDevice().getSampleRate() * (setting.LatencySCCI - setting.getoutputDevice().getSampleRate() * setting.LatencyEmulation) / 1000;
 //                    long l = getLatency() / 4;
@@ -223,10 +238,10 @@ public class RealChipPlugin implements Plugin {
                             context.driverReal.processOneFrame();
                             break;
                         case 1: // x1/2
-                            context.hiyorimiEven++;
-                            if (context.hiyorimiEven > 1) {
+                            this.hiyorimiEven++;
+                            if (this.hiyorimiEven > 1) {
                                 context.driverReal.processOneFrame();
-                                context.hiyorimiEven = 0;
+                                this.hiyorimiEven = 0;
                             }
                             break;
                         case 2: // x2

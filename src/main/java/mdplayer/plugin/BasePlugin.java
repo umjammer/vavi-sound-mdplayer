@@ -73,9 +73,6 @@ public abstract class BasePlugin<T extends BaseDriver> implements Plugin {
     public double fadeoutCounter;
     public double fadeoutCounterV;
 
-    public int hiyorimiEven = 0;
-    public boolean hiyorimiNecessary = false;
-
     // TODO variable?
     public static final int BUFFER_SIZE = 1024;
 
@@ -139,7 +136,6 @@ logger.log(Level.TRACE, "stop: " + this.stopped + ", " + this.hashCode());
         chipRegister.plugin(RealChipPlugin.class).realFadeoutVolWait = 4;
 
         chips.clear();
-        this.hiyorimiNecessary = setting.getHiyorimiMode();
         resetFadeOutParam();
 
         chipRegister.reset();
@@ -166,16 +162,12 @@ logger.log(Level.TRACE, "stop: " + this.stopped + ", " + this.hashCode());
         chip.smpLast = 0x00;
     }
 
-    public void resume() {
-        this.stopped = false;
-//logger.log(Level.TRACE, "stopped: " + audio.stopped + ", " + audio.hashCode());
-    }
-
     @Override
     public void stop() {
-logger.log(Level.INFO, "stop enter: " + this.stopped);
+logger.log(Level.TRACE, "stop enter: " + this.stopped);
         if (!this.stopped) {
             this.stopped = true;
+logger.log(Level.INFO, "stop: " + this.stopped);
         }
     }
 
@@ -192,11 +184,7 @@ logger.log(Level.INFO, "stop enter: " + this.stopped);
         chipRegister.reset();
     }
 
-    public void seqDie() {
-        close();
-        chipRegister.plugin(RealChipPlugin.class).realChipClose();
-    }
-
+    /** */
     public void setBuffer(FileFormat format, byte[] srcBuf, String playingFileName, String playingArcFileName, int midiMode, int songNo, List<Tuple<String, byte[]>> extFile) {
         //stop();
         this.fileFormat = format;

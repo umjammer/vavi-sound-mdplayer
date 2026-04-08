@@ -67,8 +67,6 @@ public class RCSPlugin extends BasePlugin<RcsDriver> {
             put(OkiM6258Chip.class, chip); // not use mds, via driver direct
         }
 
-        hiyorimiNecessary = setting.getHiyorimiMode();
-
         chipLED.put("PriMID", 1);
         chipLED.put("SecMID", 1);
         chipLED.put("PriPCM8", 1);

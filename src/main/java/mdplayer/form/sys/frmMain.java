@@ -4476,7 +4476,8 @@ public class frmMain extends JFrame {
                 resetChannelMask(FdsChip.class, chipId, 0);
             }
 
-            audio.plugin.resume();
+            audio.plugin.stopped = false;
+//logger.log(Level.TRACE, "stopped: " + audio.stopped + ", " + audio.hashCode());
 
             if (frmInfo != null) {
                 frmInfo.update();

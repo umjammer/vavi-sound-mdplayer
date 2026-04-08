@@ -52,7 +52,6 @@ public class ZMSPlugin extends BasePlugin<ZmsDriver> {
 
     @Override
     protected void initChips() {
-        hiyorimiNecessary = setting.getHiyorimiMode();
 
         MDSound.Chip chip = new MDSound.Chip();
         chip.id = 0;

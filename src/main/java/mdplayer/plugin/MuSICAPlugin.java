@@ -125,9 +125,6 @@ logger.log(Level.INFO, "MuSICA: AY: %b, SCC: %b, OPLL: %b".formatted(useAY, useS
             chipRegister.chip(K051649Chip.class).clock = MuSICA.baseClockK051649;
         }
 
-        if (hiyorimiNecessary) hiyorimiNecessary = true;
-        else hiyorimiNecessary = false;
-
         mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, flatten());
 
         if (useOPLL) {

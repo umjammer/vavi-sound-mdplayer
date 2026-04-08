@@ -7,6 +7,7 @@ import java.util.function.BiConsumer;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.Pcm8Chip;
+import mdplayer.chips.RealChipPlugin;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.driver.mxdrv.MxDriver;
 import mdsound.Instrument;
@@ -97,7 +98,7 @@ logger.log(Level.INFO, "pcm8Type: " + setting.getMxDrv().pcm8Type + ", " + chip.
         chipLED.put("PriOPM", 1);
         chipLED.put("PriOKI5", 1);
 
-        hiyorimiNecessary = hiyorimiDeviceFlag == 0x3 && hiyorimiNecessary;
+        chipRegister.plugin(RealChipPlugin.class).initChip(hiyorimiDeviceFlag);
 
         mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, flatten());
 

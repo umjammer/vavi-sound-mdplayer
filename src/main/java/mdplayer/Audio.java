@@ -86,7 +86,7 @@ logger.log(Level.DEBUG, "line: " + e.getType());
 
         plugin.oneTimeReset = false;
 
-        plugin.resume();
+//logger.log(Level.TRACE, "stopped: " + audio.stopped + ", " + audio.hashCode());
 
         if (plugin instanceof SampledPlugin sampledPlugin) {
             if (sampledPlugin.naudioFileReader != null) {
@@ -133,7 +133,7 @@ logger.log(Level.DEBUG, "line: " + e.getType());
 
     /** */
     public void stop() {
-        logger.log(Level.INFO, "stop enter");
+        logger.log(Level.TRACE, "stop enter");
         try {
             if (plugin.paused) pause();
 
@@ -190,7 +190,7 @@ logger.log(Level.DEBUG, "line: " + e.getType());
                 if (timeout < 1) break;
             }
             plugin.stopped = true;
-//logger.log(Level.DEBUG, "stop: " + stopped + ", " + hashCode());
+logger.log(Level.INFO, "stop: " + plugin.stopped + ", " + hashCode());
 
             try {
                 plugin.chipRegister.softReset(EnmModel.VirtualModel);
@@ -250,8 +250,6 @@ logger.log(Level.DEBUG, "line: " + e.getType());
                 }
             }
 
-//            stwh.reset();
-//            stwh.start();
             int cnt = plugin.driverVirtual.render(buffer, offset, sampleCount);
 //logger.log(Level.TRACE, "sampleCount: " + sampleCount);
 
@@ -290,8 +288,6 @@ logger.log(Level.DEBUG, "line: " + e.getType());
                     plugin.stopped = true;
 logger.log(Level.DEBUG, "stop: " + plugin.stopped);
 
-                    // Processing time per frame
-//                    procTimePer1Frame = (int) ((double) stwh.ElapsedMilliseconds / (i + 1) * 1000000.0);
                     return i + 1;
                 }
             }
@@ -300,8 +296,6 @@ logger.log(Level.DEBUG, "stop: " + plugin.stopped);
                 updateVisualVolume(buffer, offset);
             }
 
-            // Processing time per frame
-//            procTimePer1Frame = (int) ((double) stwh.ElapsedMilliseconds / sampleCount * 1000000.0);
             return cnt;
 
         } catch (Exception ex) {
@@ -351,7 +345,8 @@ logger.log(Level.DEBUG, "stop: " + plugin.stopped);
 
             switch (req.request) {
                 case Die: // Please kill yourself
-                    plugin.seqDie();
+                    plugin.close();
+                    plugin.chipRegister.plugin(RealChipPlugin.class).realChipClose();
                     req.setEnd(true);
                     return;
                 case Stop:

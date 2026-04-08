@@ -131,9 +131,6 @@ public class MuapPlugin extends BasePlugin<MuapDriver> {
         chipLED.put("PriCS4231", 1);
         put(Cs4231Chip.class, chip);
 
-        if (hiyorimiNecessary) hiyorimiNecessary = true;
-        else hiyorimiNecessary = false;
-
         mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, flatten());
 
         setVolume(MAIN_TAG, Ym2608Chip.class, true, setting.getBalance().getVolume(MAIN_TAG, Ym2608Chip.class));

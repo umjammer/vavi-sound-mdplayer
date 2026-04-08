@@ -105,9 +105,6 @@ public class FMPPlugin extends BasePlugin<FmpDriver> {
         chipLED.put("PriPPZ8", 1);
         put(Ppz8Chip.class, chip);
 
-        if (hiyorimiNecessary) hiyorimiNecessary = true;
-        else hiyorimiNecessary = false;
-
         mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, flatten());
 
         mds.setVolume(MAIN_TAG, chipRegister.chip(Ym2608Chip.class).inst(0), setting.getBalance().getVolume(MAIN_TAG, Ym2608Chip.class));
