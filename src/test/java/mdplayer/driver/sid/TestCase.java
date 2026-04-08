@@ -10,12 +10,15 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.concurrent.CountDownLatch;
 
+import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTune;
+import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTuneInfo;
 import vavi.util.Debug;
 import vavi.util.properties.annotation.Property;
 import vavi.util.properties.annotation.PropsEntity;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIf;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 
@@ -25,6 +28,7 @@ import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-01-25 nsano initial version <br>
  */
+@EnabledIf("localPropertiesExists")
 @PropsEntity(url = "file:local.properties")
 public class TestCase {
 
@@ -56,5 +60,15 @@ Debug.println(sid);
 
         CountDownLatch cdl = new CountDownLatch(1);
         cdl.await();
+    }
+
+    @Test
+    void test2() throws Exception {
+        byte[] buf = Files.readAllBytes(Paths.get(sid));
+        SidTune tune = new SidTune(buf, buf.length);
+        SidTuneInfo info = tune.getInfo();
+        System.out.println("Songs: " + info.songs());
+        System.out.println("Clock Speed: " + info.clockSpeed());
+        System.out.println("Song Speed: " + info.songSpeed());
     }
 }

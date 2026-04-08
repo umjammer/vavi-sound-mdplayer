@@ -7,6 +7,7 @@ import javax.sound.sampled.AudioSystem;
 import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.Setting;
+import mdplayer.driver.BaseDriver;
 import mdplayer.format.FileFormat;
 import mdplayer.plugin.BasePlugin;
 
@@ -28,7 +29,6 @@ public class MndrvWavTestProgram {
 
     static {
         System.setProperty("mdplayer.variant.ymf262", "0");
-        System.setProperty("dev.null", "/dev/null");
         System.setProperty("javax.sound.sampled.SourceDataLine", "#WaveOut Mixer");
     }
 
@@ -56,35 +56,23 @@ public class MndrvWavTestProgram {
 
         FileFormat format = FileFormat.getFileFormat(filename);
         var r = format.load((String) null, filename);
-        BasePlugin plugin = (BasePlugin) format.getPlugin();
+        BasePlugin<? extends BaseDriver> plugin = (BasePlugin<? extends BaseDriver>) format.getPlugin();
         plugin.setBuffer(format, r.getItem1(), filename, null, 0, 0, r.getItem2());
 
         // Initialize driver and chips without starting the infinite loop in BasePlugin.play()
-        plugin.driverVirtual = new MnDriver();
-        ((MnDriver) plugin.driverVirtual).setExtendFile(r.getItem2());
-        java.lang.reflect.Method _play = plugin.getClass().getDeclaredMethod("_play");
-        _play.setAccessible(true);
-        _play.invoke(plugin);
+        plugin.prepare();
 
         System.err.println("Rendering " + filename + " to WAV...");
         // Instead of plugin.play(), we run our own loop to ensure we can stop it.
         // MNDPlugin.play() would call super.play() which has an infinite loop.
-
-        plugin.stopped = false;
-        plugin.paused = false;
-        plugin.fadeout = false;
-        plugin.fadeoutCounter = 1.0;
-        plugin.fadeoutCounterV = 0.00001;
-        audio.plugin.masterVolume = setting.getBalance().getMasterVolume();
 
         long start = System.currentTimeMillis();
         long timeout = (long) (RENDER_DURATION * 1000) + 10000; // duration + 10s buffer
 
         while (!plugin.stopped) {
             short[] buffer = new short[BUFFER_SIZE];
-            int ret = audio.plugin.mds.update(buffer, 0, buffer.length, null);
-            if (ret == -1) break;
-            if (plugin.driverVirtual.getDriverCounter() % 1000 == 0) System.err.println("Frame: " + plugin.driverVirtual.getDriverCounter());
+            int ret = plugin.getDriver().render(buffer, 0, buffer.length);
+            if (plugin.getDriver().getDriverCounter() % 1000 == 0) System.err.println("Frame: " + plugin.driverVirtual.getDriverCounter());
 
             if (System.currentTimeMillis() - start > timeout) {
                 System.err.println("Render timeout reached, stopping...");

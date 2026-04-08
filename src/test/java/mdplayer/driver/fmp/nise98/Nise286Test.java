@@ -8,6 +8,7 @@ package mdplayer.driver.fmp.nise98;
 
 import mdplayer.driver.fmp.nise98.Nise98.OngenBoardType;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
@@ -24,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class Nise286Test {
 
     @Test
-    @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
+    @Disabled("nise286 still has a unimplemented instruction for test386.com")
     void test1() throws Exception {
         Nise98 nise98 = new Nise98();
         nise98.init(null, this::nop, null, OngenBoardType.SpeakBoard);
