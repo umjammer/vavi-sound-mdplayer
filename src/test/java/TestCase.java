@@ -60,20 +60,24 @@ public class TestCase {
     String fmpDir;
     @Property
     String fmpPvi;
-
     @Property
     String zmsDir;
+    @Property
+    String mgsDir;
+    @Property
+    String ndpDir;
+    @Property
+    String musicaDir;
+    @Property(name = "muap.dir.dta")
+    String muapDirDta;
+    @Property(name = "muap.dir.pcm")
+    String muapDirPcm;
 
     @Property
     String dir;
 
     @Property
     String ext;
-
-    @Property(name = "muap.dir.dta")
-    String muapDirDta;
-    @Property(name = "muap.dir.pcm")
-    String muapDirPcm;
 
     static boolean onIde = System.getProperty("vavi.test", "").equals("ide");
     static long time = onIde ? 1000 * 1000 : 10 * 1000;
@@ -88,6 +92,12 @@ public class TestCase {
             System.setProperty("mdplayer.fmp.pvi", fmpPvi);
             // zms
             System.setProperty("mdplayer.zms.dir", zmsDir);
+            // mgsdrv
+            System.setProperty("mdplayer.mgs.dir", mgsDir);
+            // ndp
+            System.setProperty("mdplayer.ndp.dir", ndpDir);
+            // musica
+            System.setProperty("mdplayer.musica.dir", musicaDir);
             // muap
             System.setProperty("muap.dir.dta", muapDirDta);
             System.setProperty("muap.dir.pcm", muapDirPcm);
@@ -96,12 +106,16 @@ public class TestCase {
         }
 
         System.setProperty("mdplayer.variant.pcm8", "0");
+        System.setProperty("mdplayer.variant.ay8910", "1");
 
         System.setProperty("mdplayer.volume", "%4.2f".formatted(volume));
 Debug.println("volume: " + volume + ", player.volume: " + System.getProperty("mdplayer.volume") + ", cwd: " + System.getProperty("user.dir") + ", time: " + time);
 Debug.println("mdplayer.fmp.dir: " + System.getProperty("mdplayer.fmp.dir"));
 Debug.println("mdplayer.fmp.pvi: " + System.getProperty("mdplayer.fmp.pvi"));
 Debug.println("mdplayer.zms.dir: " + System.getProperty("mdplayer.zms.dir"));
+Debug.println("mdplayer.mgs.dir: " + System.getProperty("mdplayer.mgs.dir"));
+Debug.println("mdplayer.ndp.dir: " + System.getProperty("mdplayer.ndp.dir"));
+Debug.println("mdplayer.musica.dir: " + System.getProperty("mdplayer.musica.dir"));
 Debug.println("muap.dir.dta: " + System.getProperty("muap.dir.dta"));
 Debug.println("muap.dir.pcm: " + System.getProperty("muap.dir.pcm"));
 Debug.println("mdplayer.variant.ymf262: " + System.getProperty("mdplayer.variant.ymf262"));

@@ -34,6 +34,7 @@ public class MusicaDriver extends BaseDriver {
         musica.ym2413Write = (a, d) -> plugin.chipRegister.chip(Ym2413Chip.class).write(0, a, d, model);
         musica.updateTrackName = this::updateTrackName;
         musica.updateNote = this::updateNote;
+        musica.dir = System.getProperty("mdplayer.musica.dir", System.getProperty("user.dir"));
     }
 
     @Override

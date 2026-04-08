@@ -50,12 +50,15 @@ public class MuSICA_K4 {
     BiConsumer<Integer, Integer> ay8910Write;
     BiConsumer<Integer, Integer> ym2413Write;
 
-    void run(byte[] msdBin, byte[] vcdBin) throws IOException, URISyntaxException {
+    /** KINROU4.COM location */
+    String dir;
+
+    void run(byte[] msdBin, byte[] vcdBin) throws IOException {
         this.msdBin = msdBin;
         this.vcdBin = vcdBin;
         this.bgmBin = null;
 
-        Path fileName = Path.of(MuSICA_K4.class.getResource("KINROU4.COM").toURI());
+        Path fileName = Path.of(dir, "KINROU4.COM");
 
         vdp = new MsxVdp();
         z80 = new Z80ProcessorImpl();

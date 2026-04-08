@@ -31,7 +31,8 @@ import static mdplayer.Common.charset;
  * sampling data |  CNF   |   ZPD
  * </pre>
  * system property
- * <li>"mdplayer.zms.zpd" ... zpd file location</li>
+ * <li>{@code mdplayer.zms.dir} ... zmusic.x etc. location, default {@code $HOME}</li>
+ * <li>{@code mdplayer.zms.zpd} ... zpd file search location, nullable and multipliable by {@code ;} separation</li>
  *
  * @author kumatan
  */
@@ -120,6 +121,8 @@ public class ZmsDriver extends BaseDriver {
                 plugin.chipRegister.chip(MPcmChip.class).setVolTable(0, type, vtbl);
             }
         };
+        zms.dir = System.getProperty("mdplayer.zms.dir", System.getProperty("user.dir"));
+        zms.zpd = System.getProperty("mdplayer.zms.zpd");
     }
 
     public int getVersion() {

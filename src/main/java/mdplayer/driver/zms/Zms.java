@@ -57,7 +57,7 @@ public class Zms {
     }
 
     private int checkCounter = 0;
-    private List<String> envZPDs = new ArrayList<>();
+    private List<String> dirZPDs = new ArrayList<>();
     public int version = 0;
     private FMTimer timerOPM;
     public final Pcm8St[] pcm8St = {
@@ -210,7 +210,7 @@ public class Zms {
         } else {
             fileMng = new FileMng(dn, "C:");
         }
-        nise68.init(envZPDs, version == 2, fileMng);
+        nise68.init(dirZPDs, version == 2, fileMng);
 
         fileMng.setVFile(Path.getFileName(fnZMD), data);
         //nise68.hmn.fb.add(fnZMD, dataBuf);
@@ -233,6 +233,10 @@ public class Zms {
     private int trp = 3 + 32;
     int waitNextPlay = 0;
     private int rc;
+    /** zmusic.x etc. location */
+    String dir;
+    /** .zpd file location */
+    String zpd;
 
     private void play() throws IOException {
         String fn = playingFileName;
@@ -241,7 +245,7 @@ public class Zms {
         if (dn != null && !dn.isEmpty()) withoutExtFn = Path.combine(dn, Path.getFileNameWithoutExtension(fn));
         else withoutExtFn = Path.getFileNameWithoutExtension(fn);
         fnZMD = Path.getFileName(withoutExtFn + ".ZMD");
-        java.nio.file.Path crntDir = java.nio.file.Path.of(System.getProperty("mdplayer.zms.dir", System.getProperty("user.dir")));
+        java.nio.file.Path crntDir = java.nio.file.Path.of(dir);
 
         java.nio.file.Path zmsc3 = crntDir.resolve("ZMSC3.X");
         if (!Files.exists(zmsc3)) {
@@ -346,17 +350,15 @@ public class Zms {
         // zmsc3 resident
         nise68.hmn.memMng = new MemMng(0x0004_0000);
 
-        //if (nise68.loadRun(zmsc3, "-w", Path.GetDirectoryName(fnZMD), 0x00012000,
-        // true, true, true
-        //) != 0) throw new Exception("zmsc3 resident Error");
-        if ((rc = nise68.loadRun(zmsc3.toString(), "-w", 0x0001_2000
-                , true, true, true,
+        //if (nise68.loadRun(zmsc3, "-w", Path.getDirectoryName(fnZMD), 0x0001_2000,
+        //      true, true, true
+        //) != 0) throw new IllegalStateException("zmsc3 resident Error");
+        if ((rc = nise68.loadRun(zmsc3.toString(), "-w", 0x0001_2000,
+                true, true, true,
                 100_000_000, 0
         )) != 0) throw new IllegalStateException("zmsc3 resident Error: " + rc);
 
         // play
-        //logger.log(Level.INFO, "");
-        //Log.SetLogLevel(LogLevel.Information);
 
         //if ((rc = nise68.LoadRun("C:\\ZP3.R", "-PC:\\SAMPLE1\\SAMPLE.ZMS", "C:\\", 0x00042000,
         //    true, true, true
@@ -628,12 +630,12 @@ public class Zms {
     void setZPDSearchPath() {
         try {
             // Get the environment variable "ZPD"
-            String envZPD = System.getProperty("mdplayer.zms.zpd");
-            if (envZPD != null && !envZPD.isEmpty()) {
-                envZPDs = Arrays.asList(envZPD.split(";"));
+            if (zpd != null && !zpd.isEmpty()) {
+                dirZPDs = Arrays.asList(zpd.split(";"));
             }
         } catch (Exception e) {
-            envZPDs = Collections.emptyList();
+logger.log(Level.ERROR, e.getMessage(), e);
+            dirZPDs = Collections.emptyList();
         }
     }
 }

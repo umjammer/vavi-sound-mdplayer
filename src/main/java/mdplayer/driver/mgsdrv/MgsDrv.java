@@ -21,6 +21,8 @@ import static java.lang.System.getLogger;
 
 
 /**
+ * MSX MgsDrv
+ *
  * @author kumatan
  */
 public class MgsDrv {
@@ -39,6 +41,9 @@ public class MgsDrv {
     BiConsumer<Integer, Integer> ay8910Write;
     BiConsumer<Integer, Integer> ym2413Write;
 
+    /** msgdrv.com dir */
+    String dir;
+
     public int interrupt() {
         //logger.log(Level.TRACE, "\n_INTER(001FH)");
         z80.getRegisters().setPC((short) 0x601f);
@@ -54,7 +59,7 @@ public class MgsDrv {
     }
 
     void run(byte[] vgmBuf) throws IOException, URISyntaxException {
-        Path fileName = Path.of(MgsDrv.class.getResource("MGSDRV.COM").toURI());
+        Path fileName = Path.of(dir, "MGSDRV.COM");
 
         z80 = new Z80ProcessorImpl();
         z80.setClockSynchronizer(null);

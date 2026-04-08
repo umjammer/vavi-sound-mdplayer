@@ -18,6 +18,9 @@ import static java.lang.System.getLogger;
 
 /**
  * MSX NDP
+ * <p>
+ * system property
+ * <li>{@code mdplayer.ndp.dir} ... ndp.bin location, default {@code $HOME}</li>
  *
  * @author kumatan
  */
@@ -32,6 +35,7 @@ public class NdpDriver extends BaseDriver {
         ndp.k051649Write = (i, a, d) -> plugin.chipRegister.chip(K051649Chip.class).write(i, a, d, model);
         ndp.ay8910Write = (a, d) -> plugin.chipRegister.chip(Ay8910Chip.class).write(0, a, d, model);
         ndp.ym2413Write = (a, d) -> plugin.chipRegister.chip(Ym2413Chip.class).write(0, a, d, model);
+        ndp.dir = System.getProperty("mdplayer.ndp.dir", System.getProperty("user.dir"));
     }
 
     @Override
@@ -68,6 +72,7 @@ public class NdpDriver extends BaseDriver {
         try {
             ndp.run(vgmBuf);
         } catch (Exception e) {
+logger.log(Level.ERROR, e.getMessage(), e);
             throw new IllegalStateException(e);
         }
     }

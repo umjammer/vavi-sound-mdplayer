@@ -105,7 +105,19 @@ src/main/resources/mdplayer/driver/zms/ZMUSIC.X
 
 #### zms
 
-- `mdplayer.zms.dir` ... zpd file location
+- `mdplayer.zms.dir` ... zpd driver file location
+
+#### mgs
+
+- `mdplayer.mgs.dir` ... mgsdrv driver file location
+
+#### ndp
+
+- `mdplayer.ndp.dir` ... ndp driver file location
+
+#### musica
+
+- `mdplayer.musica.dir` ... musica driver file location
 
 #### muap
 

@@ -48,6 +48,9 @@ public class MuSICA {
     Consumer<String> updateTrackName;
     Consumer<String> updateNote;
 
+    /** KINROU5.DRV location */
+    String dir;
+
     public int interrupt() {
         //logger.log(Level.TRACE, "\r\n_INTER(001FH)");
         z80.getRegisters().setPC((short) 0x6029);
@@ -66,8 +69,8 @@ public class MuSICA {
         return z80.getRegisters().getHL() & 0xffff;
     }
 
-    void run(byte[] vgmBuf) throws IOException, URISyntaxException {
-        Path fileName = Path.of(MuSICA.class.getResource("KINROU5.DRV").toURI());
+    void run(byte[] vgmBuf) throws IOException {
+        Path fileName = Path.of(dir, "KINROU5.DRV");
 
         z80 = new Z80ProcessorImpl();
         z80.setClockSynchronizer(null);
