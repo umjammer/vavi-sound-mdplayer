@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -19,12 +20,13 @@ import vavi.util.archive.Archives;
 import vavi.util.archive.Entry;
 
 import static java.lang.System.getLogger;
-import static mdplayer.Common.charset;
 
 
 public class NiseDos {
 
     private static final Logger logger = getLogger(NiseDos.class.getName());
+
+    public Charset charset;
 
     private final Register286 regs;
     private final Memory98 mem;

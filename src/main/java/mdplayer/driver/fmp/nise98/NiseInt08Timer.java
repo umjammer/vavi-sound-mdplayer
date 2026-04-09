@@ -1,5 +1,6 @@
 package mdplayer.driver.fmp.nise98;
 
+
 class NiseInt08Timer {
 
     private final Nise286 cpu;

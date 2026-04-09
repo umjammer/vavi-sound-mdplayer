@@ -6,6 +6,7 @@ package mdplayer.driver.fmp;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
@@ -21,7 +22,6 @@ import mdplayer.driver.fmp.nise98.NiseDos;
 import mdplayer.driver.fmp.nise98.Register286;
 
 import static java.lang.System.getLogger;
-import static mdplayer.Common.charset;
 
 
 /**
@@ -35,6 +35,9 @@ public class FMP {
     TriConsumer<Integer, Integer, Integer> setPPZ8Data;
     TriConsumer<Integer, Integer, Integer> opnaWrite;
     Consumer<Boolean> blockWrite;
+
+    Charset charset;
+    String dir;
 
     public static final int baseClock = 7987200;
     private int step = 0;
@@ -96,12 +99,14 @@ logger.log(Level.ERROR, e.getMessage());
     void run(byte[] vgmBuf) {
         //var fileNameFMP = "FMP.COM";
         //var fileNamePPZ8 = "PPZ8.COM";
-        Path crntDir = Path.of(System.getProperty("mdplayer.fmp.dir", System.getProperty("user.dir")));
+        Path crntDir = Path.of(dir);
         Path fileNameFMP = crntDir.resolve("FMP.COM");
         logger.log(Level.DEBUG, fileNameFMP);
         nise98.init(null, opnaWrite, ft, OngenBoardType.SpeakBoard); // .PC9801_86B); // .SpeakBoard); // .PC9801_26K);
         nise98.getDos().setArcFile(playingArcFileName);
         nise98.getDos().setSearchPath(searchPaths);
+        nise98.getDos().charset = charset;
+        nise98.getPPZ8().charset = charset;
 
         // FMP Residency
         //nise98.LoadRun(fileNameFMP, "s -s", 0x2000); // , true, true, true, 3_000_000, 108213); // 108213->wait Loop exit

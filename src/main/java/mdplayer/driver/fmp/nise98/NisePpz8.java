@@ -2,6 +2,8 @@ package mdplayer.driver.fmp.nise98;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,12 +11,13 @@ import dotnet4j.util.compat.TriConsumer;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
-import static mdplayer.Common.charset;
 
 
 public class NisePpz8 {
 
     private static final Logger logger = getLogger(NisePpz8.class.getName());
+
+    public Charset charset;
 
     private final Register286 regs;
     private final Memory98 mem;
@@ -66,7 +69,7 @@ public class NisePpz8 {
         mem.pokeB(ptr + 0x03, (byte) '7');
 
         // Residency release message
-        byte[] bmsg = "The PPZ8 has been disabled as resident.\r\n$".getBytes(charset);
+        byte[] bmsg = "The PPZ8 has been disabled as resident.\r\n$".getBytes(StandardCharsets.US_ASCII);
         ptr = (ppz8EntryAddressSeg << 4) + ppz8ReleaseMessageOfs;
         for (byte ch : bmsg) {
             mem.pokeB(ptr, ch);
