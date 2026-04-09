@@ -16,6 +16,7 @@ import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.instrument.Ay8910Inst;
 import mdsound.instrument.MameAy8910Inst;
+import mdsound.instrument.NpYm2149Inst;
 
 
 /**
@@ -50,7 +51,7 @@ public class Ay8910Chip implements Chip {
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Instrument>[] implementations() {
-        return new Class[] {Ay8910Inst.class, MameAy8910Inst.class};
+        return new Class[] {Ay8910Inst.class, MameAy8910Inst.class, NpYm2149Inst.class};
     }
 
     @Override

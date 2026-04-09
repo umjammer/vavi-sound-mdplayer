@@ -951,12 +951,12 @@ public class Setting implements Serializable, Cloneable {
     }
 
     public void init() {
-        // ay8910
+        // ay8910 PSG
         if (this.getAY8910Type() == null || this.getAY8910Type().length < 2) {
             this.setAY8910Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 this.getAY8910Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                this.getAY8910Type()[i].setUseEmu(new boolean[2]); // {0: fmgen, 1: mame}
+                this.getAY8910Type()[i].setUseEmu(new boolean[3]); // {0: fmgen, 1: mame, 2: np}
                 this.getAY8910Type()[i].getUseEmu()[parseInt("mdplayer.variant.ay8910", 0)] = true;
                 this.getAY8910Type()[i].setUseReal(new boolean[1]);
             }
@@ -1037,12 +1037,13 @@ public class Setting implements Serializable, Cloneable {
                 this.getYM2203Type()[i].setUseReal(new boolean[1]);
             }
         }
+        // ym2413 OPLL
         if (this.getYM2413Type() == null || this.getYM2413Type().length < 2) {
             this.setYM2413Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 this.getYM2413Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                this.getYM2413Type()[i].setUseEmu(new boolean[1]);
-                this.getYM2413Type()[i].getUseEmu()[0] = true;
+                this.getYM2413Type()[i].setUseEmu(new boolean[4]); // {0: mame, 1: vrc7, 2: emu, 3: np}
+                this.getYM2413Type()[i].getUseEmu()[parseInt("mdplayer.variant.ym2413", 0)] = true;
                 this.getYM2413Type()[i].setUseReal(new boolean[1]);
             }
         }

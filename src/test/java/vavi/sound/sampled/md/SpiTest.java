@@ -112,7 +112,8 @@ class SpiTest {
         System.setProperty("mdplayer.variant.pcm8", "0");
 //        System.setProperty("mdplayer.variant.mpcm", "0");
 //        System.setProperty("mdplayer.variant.ym2151", "1");
-//        System.setProperty("mdplayer.variant.ay8910", "1");
+        System.setProperty("mdplayer.variant.ay8910", "2");
+        System.setProperty("mdplayer.variant.ym2413", "3");
 
 Debug.println("volume: " + volume + ", player.volume: " + System.getProperty("mdplayer.volume") + ", cwd: " + System.getProperty("user.dir") + ", time: " + time);
 Debug.println("mdplayer.fmp.dir: " + System.getProperty("mdplayer.fmp.dir"));

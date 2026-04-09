@@ -138,11 +138,11 @@ you can select a chip implementation variant by number.
 
 | chip    | system property          | setting                                                             |
 |---------|--------------------------|---------------------------------------------------------------------|
-| AY8910  | mdplayer.variant.ay8910  | 0: fmgen, 1: mame                                                   |
+| AY8910  | mdplayer.variant.ay8910  | 0: fmgen, 1: mame, 2: np                                            |
 | SN76496 | mdplayer.variant.sn76496 | 0: sn76489, 1: sn76496                                              |
 | YM2151  | mdplayer.variant.ym2151  | 0: fmgen, 1: mame, 2: 68k, 3: ymfm                                  |
 | YM2203  | mdplayer.variant.ym2203  | 0: fmgen, 1: ymfm                                                   |
-| YM2413  | mdplayer.variant.ym2413  | 0: mame, 1: vrc7, 2: emu                                            |
+| YM2413  | mdplayer.variant.ym2413  | 0: mame, 1: vrc7, 2: emu, 3: np                                     |
 | YM2608  | mdplayer.variant.ym2608  | 0: fmgen, 1: ymfm                                                   |
 | YM2610  | mdplayer.variant.ym2610  | 0: fmgen, 1: ymfm                                                   |
 | YM2612  | mdplayer.variant.ym2612  | 0: mame-A, 1: nuke-A, 2: mame-B, 3: nuke-B(simple), 4: nuke-A(vavi) |
