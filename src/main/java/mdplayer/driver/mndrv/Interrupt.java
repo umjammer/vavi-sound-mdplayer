@@ -1,6 +1,7 @@
 package mdplayer.driver.mndrv;
 
-import mdplayer.driver.mxdrv.XMemory;
+import mdplayer.emu.fm.FMTimer;
+import mdplayer.emu.nise68.XMemory;
 
 
 //

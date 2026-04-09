@@ -14,12 +14,12 @@ import java.util.function.Consumer;
 
 import dotnet4j.util.compat.StringUtilities;
 import dotnet4j.util.compat.TriConsumer;
-import mdplayer.driver.fmp.nise98.FileTemp;
-import mdplayer.driver.fmp.nise98.Memory98;
-import mdplayer.driver.fmp.nise98.Nise98;
-import mdplayer.driver.fmp.nise98.Nise98.OngenBoardType;
-import mdplayer.driver.fmp.nise98.NiseDos;
-import mdplayer.driver.fmp.nise98.Register286;
+import mdplayer.emu.nise98.FileTemp;
+import mdplayer.emu.nise98.Memory98;
+import mdplayer.emu.nise98.Nise98;
+import mdplayer.emu.nise98.Nise98.OngenBoardType;
+import mdplayer.emu.nise98.NiseDos;
+import mdplayer.emu.nise98.Register286;
 
 import static java.lang.System.getLogger;
 

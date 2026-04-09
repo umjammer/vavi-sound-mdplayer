@@ -9,6 +9,9 @@ package mdplayer.driver.zms.nise68;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import mdplayer.emu.nise68.Memory68;
+import mdplayer.emu.nise68.NiseM68;
+import mdplayer.emu.nise68.Register68;
 import vavi.util.Debug;
 
 import org.junit.jupiter.api.Disabled;

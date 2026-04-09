@@ -16,14 +16,12 @@ import dotnet4j.io.File;
 import dotnet4j.io.FileNotFoundException;
 import dotnet4j.io.Path;
 import dotnet4j.util.compat.Tuple;
-import mdplayer.Common;
-import mdplayer.UnZDF;
-import mdplayer.driver.mndrv.FMTimer;
 import mdplayer.driver.mxdrv.MXDRV.Pcm8Interface;
 import mdplayer.driver.mxdrv.MXDRV.Pcm8St;
-import mdplayer.driver.zms.nise68.FileMng;
-import mdplayer.driver.zms.nise68.MemMng;
-import mdplayer.driver.zms.nise68.Nise68;
+import mdplayer.emu.fm.FMTimer;
+import mdplayer.emu.nise68.FileMng;
+import mdplayer.emu.nise68.MemMng;
+import mdplayer.emu.nise68.Nise68;
 
 import static java.lang.System.getLogger;
 
@@ -41,6 +39,11 @@ public class Zms {
     private FileMng fileMng = new FileMng(System.getProperty("user.dir"), "C:");
     Pcm8Interface pcm8;
     MPcmInterface mpcm;
+    int frequency;
+    /** zmusic.x etc. location */
+    String dir;
+    /** .zpd file location */
+    String zpd;
 
     /** abstraction for mpcm chip implementation */
     public interface MPcmInterface {
@@ -199,11 +202,12 @@ public class Zms {
         nise68 = new Nise68();
         nise68.setMPcm(version == 2 ? this::pcm8CallBack : this::mPcmCallBack);
         nise68.setOpm(this::opmCallBack);
-        nise68.setMidi(this::midiCallBack, Common.VGMProcSampleRate);
-        nise68.setSCC_A(this::sccCallBack, Common.VGMProcSampleRate);
+        nise68.setMidi(this::midiCallBack, frequency);
+        nise68.setSCC_A(this::sccCallBack, frequency);
         if (playingArcFileName != null && !playingArcFileName.isEmpty()) {
             if (playingFileName.toUpperCase().endsWith(".ZDF")) {
                 UnZDF cmd = new UnZDF();
+                cmd.dir = dir;
                 fileMng = cmd.unpack(playingArcFileName);
             }
 
@@ -233,10 +237,6 @@ public class Zms {
     private int trp = 3 + 32;
     int waitNextPlay = 0;
     private int rc;
-    /** zmusic.x etc. location */
-    String dir;
-    /** .zpd file location */
-    String zpd;
 
     private void play() throws IOException {
         String fn = playingFileName;
@@ -264,7 +264,7 @@ public class Zms {
         trp = 3 + 32;
 
         if (version == 2) {
-            timerOPM = new FMTimer(true, null, 4000000); // , Common.VGMProcSampleRate);
+            timerOPM = new FMTimer(true, null, 4000000); // , frequency);
 
             // If zpd is specified, specify zmusic to preload
             String optionZpd = "";
@@ -418,8 +418,7 @@ public class Zms {
         else withoutExtFn = Path.getFileNameWithoutExtension(fn);
         String fnZMD = Path.getFileName(withoutExtFn + ".ZMD");
         String fnZMS = Path.getFileName(withoutExtFn + ".ZMS");
-        String crntDir = System.getProperty("mdplayer.zms.dir", System.getProperty("user.dir"));
-        java.nio.file.Path zmc = java.nio.file.Path.of(crntDir, "ZMUSIC.X");
+        java.nio.file.Path zmc = java.nio.file.Path.of(dir, "ZMUSIC.X");
         if (!Files.exists(zmc)) {
             logger.log(Level.INFO, "File not found : %s".formatted(zmc));
             return false; // throw new FileNotFoundException(zmc);
@@ -430,8 +429,8 @@ public class Zms {
         nise68 = new Nise68();
         nise68.setMPcm(this::mPcmCallBack);
         nise68.setOpm(this::opmCallBack);
-        nise68.setMidi(this::midiCallBack, Common.VGMProcSampleRate);
-        nise68.setSCC_A(this::sccCallBack, Common.VGMProcSampleRate);
+        nise68.setMidi(this::midiCallBack, frequency);
+        nise68.setSCC_A(this::sccCallBack, frequency);
         nise68.init(null, false, fileMng);
 
         // compile
@@ -460,8 +459,7 @@ public class Zms {
         else withoutExtFn = Path.getFileNameWithoutExtension(fn);
         String fnZMD = Path.getFileName(withoutExtFn + ".ZMD");
         String fnZMS = Path.getFileName(withoutExtFn + ".ZMS");
-        String crntDir = System.getProperty("mdplayer.zms.dir", System.getProperty("user.dir"));
-        java.nio.file.Path zmusic = java.nio.file.Path.of(crntDir, "ZMUSIC.X");
+        java.nio.file.Path zmusic = java.nio.file.Path.of(dir, "ZMUSIC.X");
         if (!Files.exists(zmusic)) {
             logger.log(Level.INFO, "File not found : %s".formatted(zmusic));
             return false; // throw new FileNotFoundException(zmc);
@@ -470,8 +468,8 @@ public class Zms {
         nise68 = new Nise68();
         nise68.setMPcm(this::pcm8CallBack);
         nise68.setOpm(this::opmCallBack);
-        nise68.setMidi(this::midiCallBack, Common.VGMProcSampleRate);
-        nise68.setSCC_A(this::sccCallBack, Common.VGMProcSampleRate);
+        nise68.setMidi(this::midiCallBack, frequency);
+        nise68.setSCC_A(this::sccCallBack, frequency);
 
         fileMng = new FileMng(dn, "C:"); // Set the path of the music file to the current physical drive. The current virtual drive is "C:" (default).
         fileMng.setVFile(zmusic.toString());

@@ -11,6 +11,8 @@ package mdplayer.driver.mxdrv;
 import java.util.function.BiConsumer;
 import java.util.function.IntFunction;
 
+import mdplayer.emu.nise68.XMemory;
+
 
 /**
  * MXDRV X68000

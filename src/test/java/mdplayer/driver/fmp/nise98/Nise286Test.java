@@ -6,11 +6,11 @@
 
 package mdplayer.driver.fmp.nise98;
 
-import mdplayer.driver.fmp.nise98.Nise98.OngenBoardType;
+import mdplayer.emu.nise98.Nise98;
+import mdplayer.emu.nise98.Nise98.OngenBoardType;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

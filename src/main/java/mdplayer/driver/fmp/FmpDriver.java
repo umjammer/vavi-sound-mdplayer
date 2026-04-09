@@ -8,7 +8,7 @@ import mdplayer.Common.EnmModel;
 import mdplayer.chips.Ppz8Chip;
 import mdplayer.chips.Ym2608Chip;
 import mdplayer.driver.BaseDriver;
-import mdplayer.driver.fmp.nise98.FileTemp;
+import mdplayer.emu.nise98.FileTemp;
 import mdplayer.plugin.BasePlugin;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;

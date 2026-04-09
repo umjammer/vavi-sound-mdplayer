@@ -15,6 +15,10 @@ import dotnet4j.util.compat.TriConsumer;
 import konamiman.z80.Z80Processor;
 import konamiman.z80.Z80ProcessorImpl;
 import konamiman.z80.events.BeforeInstructionFetchEvent;
+import mdplayer.emu.msx.Mapper;
+import mdplayer.emu.msx.MapperRamCartridge;
+import mdplayer.emu.msx.MsxMemory;
+import mdplayer.emu.msx.MsxPort;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;

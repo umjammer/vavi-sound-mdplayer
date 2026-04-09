@@ -15,6 +15,7 @@ import mdplayer.chips.Ym2151Chip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.mxdrv.MXDRV.MdxPcmInterface;
 import mdplayer.driver.mxdrv.MXDRV.Pcm8Interface;
+import mdplayer.emu.nise68.XMemory;
 import mdplayer.plugin.BasePlugin;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;

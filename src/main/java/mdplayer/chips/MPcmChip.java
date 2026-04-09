@@ -12,6 +12,9 @@ import java.lang.System.Logger.Level;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.driver.BaseDriver;
+import mdplayer.emu.nise68.XMemory;
+import mdplayer.emu.nise68.Memory68;
+import mdplayer.emu.nise68.Register68;
 import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.Instrument.PcmEnabledInstrument;
@@ -123,7 +126,7 @@ public class MPcmChip implements Chip {
     public void writePcm(int chipId, int ch, Object pcm, Object mem, Object reg, int n) {
         switch (context.mds.inst(inst(chipId))) {
             case X68kMPcmInst mpcm -> {
-                if (pcm instanceof mdplayer.driver.zms.Zms.MPCMSt[] mpcmSt && mem instanceof mdplayer.driver.zms.nise68.Memory68 mem68 && reg instanceof mdplayer.driver.zms.nise68.Register68 reg68) {
+                if (pcm instanceof mdplayer.driver.zms.Zms.MPCMSt[] mpcmSt && mem instanceof Memory68 mem68 && reg instanceof Register68 reg68) {
                     MPcm.PCM ptr = new MPcm.PCM();
                     ptr.adrsBuf = mem68.mem;
                     mpcmSt[ch].type = ptr.type = mem68.peekB(0x00 + reg68.getAl(1));
@@ -139,7 +142,7 @@ public class MPcmChip implements Chip {
 
                     //nise68.dumpMemory((int) ptr.adrs_ptr, (int) (ptr.adrs_ptr + ptr.size));
                     mpcm.writePcm(0, ch, ptr);
-                } else if (pcm instanceof mdplayer.driver.zms.Zms.MPCMSt[] mpcmSt && mem instanceof mdplayer.driver.mxdrv.XMemory mm && reg instanceof mdplayer.driver.mndrv.Reg reg68) {
+                } else if (pcm instanceof mdplayer.driver.zms.Zms.MPCMSt[] mpcmSt && mem instanceof XMemory mm && reg instanceof mdplayer.driver.mndrv.Reg reg68) {
                     MPcm.PCM tbl = new MPcm.PCM();
                     tbl.adrsBuf = mm.mm;
                     mpcmSt[ch].type = tbl.type = mm.readByte(0x00 + reg68.a1);
@@ -158,7 +161,7 @@ logger.log(Level.WARNING, "unhandled type: {0}, {1}, {2}", pcm.getClass().getNam
                 }
             }
             case MPcmPPInst mpcmpp -> {
-                if (pcm instanceof mdplayer.driver.zms.Zms.MPCMSt[] mpcmSt && mem instanceof mdplayer.driver.zms.nise68.Memory68 mem68 && reg instanceof mdplayer.driver.zms.nise68.Register68 reg68) {
+                if (pcm instanceof mdplayer.driver.zms.Zms.MPCMSt[] mpcmSt && mem instanceof Memory68 mem68 && reg instanceof Register68 reg68) {
                     SETPCM ptr = new SETPCM();
                     ptr.adrs_buf = mem68.mem;
                     mpcmSt[ch].type = ptr.type = mem68.peekB(0x00 + reg68.getAl(1));
@@ -174,7 +177,7 @@ logger.log(Level.WARNING, "unhandled type: {0}, {1}, {2}", pcm.getClass().getNam
 
                     //nise68.dumpMemory((int) ptr.adrs_ptr, (int) (ptr.adrs_ptr + ptr.size));
                     mpcmpp.setPcm(0, ch, ptr);
-                } else if (pcm instanceof mdplayer.driver.zms.Zms.MPCMSt[] mpcmSt && mem instanceof mdplayer.driver.mxdrv.XMemory mm && reg instanceof mdplayer.driver.mndrv.Reg reg68) {
+                } else if (pcm instanceof mdplayer.driver.zms.Zms.MPCMSt[] mpcmSt && mem instanceof XMemory mm && reg instanceof mdplayer.driver.mndrv.Reg reg68) {
                     SETPCM ptr = new SETPCM();
                     ptr.adrs_buf = mm.mm;
                     mpcmSt[ch].type = ptr.type = mm.readByte(0x00 + reg68.a1);

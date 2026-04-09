@@ -4,20 +4,20 @@ public interface MnWork {
     int TRACK = 64;
 }
 
-//wavememory effect work structure
+// wavememory effect work structure
 interface W_We {
     int start = 0;              // .ds.l	1		* Absolute starting address
     int loop_start = 4;         // .ds.l	1		* Loop starting point absolute address
-    int loop_end = 8;             // .ds.l	1		* Absolute address of loop end point
-    int loop_count = 12;         // .ds.l	1		* Loop count ( == 0 for infinite loop)
-    int ko_start = 16;             // .ds.l	1		* Key-off start point
+    int loop_end = 8;           // .ds.l	1		* Absolute address of loop end point
+    int loop_count = 12;        // .ds.l	1		* Loop count ( == 0 for infinite loop)
+    int ko_start = 16;          // .ds.l	1		* Key-off start point
     int ko_loop_start = 20;     // .ds.l	1		* Key-off loop start point
-    int ko_loop_end = 24;         // .ds.l	1		* Key-off loop end point
+    int ko_loop_end = 24;       // .ds.l	1		* Key-off loop end point
     int ko_loop_count = 28;     // .ds.l	1		* Key-off loop count
     int adrs_work = 32;         // .ds.l	1		* Address Work
     int start_adrs_work = 36;   // .ds.l	1		* Loop start address work
     int end_adrs_work = 40;     // .ds.l	1		* Loop end point address work
-    int lp_cnt_work = 44;         // .ds.l	1		* Loop Work
+    int lp_cnt_work = 44;       // .ds.l	1		* Loop Work
     int exec_adrs = 48;         // .ds.l	1		* Actual working address
     int reset = 52;             // .ds.W	1		* Redefining the value
 
@@ -104,7 +104,7 @@ interface W_L {
     int _work_size = bendwork + 2;                              // _lfo_work_size:
 }
 
-//PCM work structure
+// PCM work structure
 interface P {
     int NUM = 0;                                                // .ds.W	1
     int SEL = NUM + 2;                                          // .ds.b	1		* PCM Type
@@ -120,7 +120,7 @@ interface P {
 
 }
 
-//track work structure
+// track work structure
 interface W {
     int dataptr = 0;                                            // .ds.l	1			    * $00 ! data pointer
     int voiceptr = dataptr + 4;                                 // .ds.l	1			    * $04 ! Current tone pointer
@@ -379,7 +379,7 @@ interface W {
 
 }
 
-//driver work structure
+// driver work structure
 interface Dw {
     //.offset	0
     int DRV_FLAG = 0;                          //.ds.b	1			* $00
@@ -414,32 +414,32 @@ interface Dw {
     //                  * bit 4 fadeout & stop
     //                  * bit 3 During Jump
     //                  * bit 0 Driver Processing
-    int CH3KOM = DRV_STATUS + 1;                //.ds.b   1			* $0E Sound Effects Mode keyon flag
-    int CH3KOS = CH3KOM + 1;                   //.ds.b   1			* $0F    〃      keyoff flag
+    int CH3KOM = DRV_STATUS + 1;            //.ds.b   1			* $0E Sound Effects Mode keyon flag
+    int CH3KOS = CH3KOM + 1;                //.ds.b   1			* $0F    〃      keyoff flag
 
-    int CH3MODEM = CH3KOS + 1;                //.ds.b   1			* $10
-    int CH3MODES = CH3MODEM + 1;                //.ds.b   1			* $11
-    int VOICENUM = CH3MODES + 1;                //.ds.W   1			* $12 Number of defined tones
-    int ENVNUM = VOICENUM + 2;                 //.ds.W   1			* $14 Number of defined waveforms
+    int CH3MODEM = CH3KOS + 1;              //.ds.b   1			* $10
+    int CH3MODES = CH3MODEM + 1;            //.ds.b   1			* $11
+    int VOICENUM = CH3MODES + 1;            //.ds.W   1			* $12 Number of defined tones
+    int ENVNUM = VOICENUM + 2;              //.ds.W   1			* $14 Number of defined waveforms
 
-    int DIV = ENVNUM + 2;                      //.ds.W   1			* $16 Whole Note Clock
+    int DIV = ENVNUM + 2;                   //.ds.W   1			* $16 Whole Note Clock
     //.ds.l   1			* $18
     //.ds.l   1			* $1C
 
-    int PSGMIX_M = DIV + 2 + 4 + 4;            //.ds.b   1			* $20 MASTER
-    int PSGMIX_S = PSGMIX_M + 1;               //.ds.b   1			* $21 SLAVE
+    int PSGMIX_M = DIV + 2 + 4 + 4;         //.ds.b   1			* $20 MASTER
+    int PSGMIX_S = PSGMIX_M + 1;            //.ds.b   1			* $21 SLAVE
 
-    int M_BD = PSGMIX_S + 1;                    //.ds.b   1			* $22 BD / LR vol
+    int M_BD = PSGMIX_S + 1;                //.ds.b   1			* $22 BD / LR vol
     int M_SD = M_BD + 1;                    //.ds.b   1			* $23 SD
-    int M_TC = M_SD + 1;                        //.ds.b   1			* $24 TC
-    int M_HH = M_TC + 1;                        //.ds.b   1			* $25 HH
-    int M_TOM = M_HH + 1;                        //.ds.b   1			* $26 TOM
-    int M_RIM = M_TOM + 1;                     //.ds.b   1			* $27 RIM
+    int M_TC = M_SD + 1;                    //.ds.b   1			* $24 TC
+    int M_HH = M_TC + 1;                    //.ds.b   1			* $25 HH
+    int M_TOM = M_HH + 1;                   //.ds.b   1			* $26 TOM
+    int M_RIM = M_TOM + 1;                  //.ds.b   1			* $27 RIM
 
-    int S_BD = 40;                    //.ds.b   1			* $28 BD / LR vol
-    int S_SD = 41;                    //.ds.b   1			* $29 SD
-    int S_TC = 42;                    //.ds.b   1			* $2A TC
-    int S_HH = 43;                    //.ds.b   1			* $2B HH
+    int S_BD = 40;                 //.ds.b   1			* $28 BD / LR vol
+    int S_SD = 41;                 //.ds.b   1			* $29 SD
+    int S_TC = 42;                 //.ds.b   1			* $2A TC
+    int S_HH = 43;                 //.ds.b   1			* $2B HH
     int S_TOM = 44;                //.ds.b   1			* $2C TOM
     int S_RIM = 45;                //.ds.b   1			* $2D RIM
 
@@ -459,36 +459,36 @@ interface Dw {
     //	                * bit 7 extended LFO
     //	                * bit 6 Octave OK
 
-    int EMUMODE = 49;                //.ds.b   1			* $31 OPN Emulation Mode
+    int EMUMODE = 49;              //.ds.b   1			* $31 OPN Emulation Mode
     int UNREMOVE = 50;             //.ds.W   1			* $32 Resident flag
 
-    int INTEXECNUM = 52;            //.ds.W   1			* $34 _INTEXEC Registration Count
-    int INTEXECBUF = 54;            //.ds.l   8			* $36 Buffer for _INTEXEC
-    int SUBEVENTNUM = 86;            //.ds.W   1			* $56 How many sub-events are registered
-    int SUBEVENTADR = 88;            //.ds.l   8			* $58 _SETSUBEVENT Address buffer
+    int INTEXECNUM = 52;           //.ds.W   1			* $34 _INTEXEC Registration Count
+    int INTEXECBUF = 54;           //.ds.l   8			* $36 Buffer for _INTEXEC
+    int SUBEVENTNUM = 86;          //.ds.W   1			* $56 How many sub-events are registered
+    int SUBEVENTADR = 88;          //.ds.l   8			* $58 _SETSUBEVENT Address buffer
     int SUBEVENTID = 120;          //.ds.l   8			* $78 _SETSUBEVENT ID Buffer
 
-    int TIMER_FLAG = 152;            //.ds.W   1			* $98
-    int TEMPO2 = 154;                //.ds.b   1			* $9A
+    int TIMER_FLAG = 152;          //.ds.W   1			* $98
+    int TEMPO2 = 154;              //.ds.b   1			* $9A
     int TEMPO3 = 155;              //.ds.b   1			* $9B
 
-    int NOISE_M = 156;                //.ds.b   1			* $9C NOISE FREQ Psg MASTER
-    int NOISE_S = 157;                //.ds.b   1			* $9D NOISE FREQ Psg SLAVE
+    int NOISE_M = 156;             //.ds.b   1			* $9C NOISE FREQ Psg MASTER
+    int NOISE_S = 157;             //.ds.b   1			* $9D NOISE FREQ Psg SLAVE
     int NOISE_O = 158;             //.ds.b   1			* $9E NOISE FREQ OPM
 
     //.ds.b   639
 
-    int ADPCMNAME = 798;            //.ds.b   96			* $31E
+    int ADPCMNAME = 798;           //.ds.b   96			* $31E
     int MASKDATA = 894;            //.ds.b   256			* $37E
 
     int USE_TRACK = 1150;          //.ds.W   1			* $47E ! Number of tracks used
     int RANDOMESEED = 1152;        //.ds.l   1			* $480
     //.ds.b   1			* $484
     int SP_KEY = 1157;             //.ds.b   1			* $485 1 if key is pressed
-    int MUTE = 1158;                //.ds.b   1			* $486 Did you fast forward and MUTE?
+    int MUTE = 1158;               //.ds.b   1			* $486 Did you fast forward and MUTE?
     int RHY_DAT = 1159;            //.ds.b   1			* $487 master rhythm data
     int RHY_DAT2 = 1160;           //.ds.b   1			* $488 slave rhythm data
-    int RHY_TV = 1161;                //.ds.b   1			* $489 ! rhythm total volume
+    int RHY_TV = 1161;             //.ds.b   1			* $489 ! rhythm total volume
     int LOOP_COUNTER = 1162;       //.ds.W   1			* $48A !
     //
     // The following cannot be referenced in ascending order:
@@ -503,8 +503,8 @@ interface Dw {
     int PCMBUFADR = 13464;         //.ds.l	1
     int MPCMWORKADR = 13468;       //.ds.l	1
     int ZPDCOUNT = 13472;          //.ds.l	1
-    int VOL_PTR = 13476;            //.ds.l	1			* Volume definition pointer
-    int ENV_PTR = 13480;            //.ds.l	1			* Envelope Definition Pointer
+    int VOL_PTR = 13476;           //.ds.l	1			* Volume definition pointer
+    int ENV_PTR = 13480;           //.ds.l	1			* Envelope Definition Pointer
     int WAVE_PTR = 13484;          //.ds.l	1			* Waveform Definition Pointer
     int TITLE_PTR = 13488;         //.ds.l	1			* Title definition pointer
     int TONE_PTR = 13492;          //.ds.l	1			* Tone definition pointer

@@ -19,8 +19,8 @@ import mdplayer.chips.RealChipPlugin;
 import mdplayer.chips.Ym2608Chip;
 import mdplayer.driver.fmp.FMP;
 import mdplayer.driver.fmp.FmpDriver;
-import mdplayer.driver.fmp.nise98.FileTemp;
 import mdplayer.driver.pmd.PmdDriver;
+import mdplayer.emu.nise98.FileTemp;
 import mdsound.MDSound;
 import mdsound.instrument.Ym2608Inst;
 

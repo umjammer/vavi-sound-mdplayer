@@ -14,11 +14,11 @@ import dotnet4j.util.compat.TriConsumer;
 import konamiman.z80.Z80Processor;
 import konamiman.z80.Z80ProcessorImpl;
 import konamiman.z80.events.BeforeInstructionFetchEvent;
-import mdplayer.driver.mgsdrv.Mapper;
-import mdplayer.driver.mgsdrv.MapperRamCartridge;
-import mdplayer.driver.mgsdrv.MsxMemory;
-import mdplayer.driver.mgsdrv.MsxPort;
-import mdplayer.driver.mgsdrv.MsxVdp;
+import mdplayer.emu.msx.Mapper;
+import mdplayer.emu.msx.MapperRamCartridge;
+import mdplayer.emu.msx.MsxMemory;
+import mdplayer.emu.msx.MsxPort;
+import mdplayer.emu.msx.MsxVdp;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
