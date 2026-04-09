@@ -34,10 +34,10 @@ public class MsxMemory implements Memory {
 
     @Override
     public byte[] getContents(int startAddress, int length) {
-        if (startAddress >= this.size)
+        if (startAddress >= size)
             throw new IndexOutOfBoundsException("startAddress cannot go beyond memory size");
 
-        if (startAddress + length > this.size)
+        if (startAddress + length > size)
             throw new IndexOutOfBoundsException("startAddress + length cannot go beyond memory size");
 
         if (startAddress < 0)
