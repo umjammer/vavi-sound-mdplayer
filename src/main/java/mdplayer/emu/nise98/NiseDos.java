@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 import dotnet4j.util.compat.StringUtilities;
+import mdplayer.Common;
 import vavi.util.ByteUtil;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Archives;
@@ -621,6 +622,7 @@ logger.log(Level.TRACE, "error message from program");
             if (Files.exists(fn))
                 return Files.readAllBytes(fn);
         } catch (Exception e) {
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
 
         return readAllByteFromArcFile(fs.name.toString());
@@ -632,8 +634,9 @@ logger.log(Level.TRACE, "error message from program");
             return true;
         }
         Path fn = filePath.resolve(filename);
-        if (Files.exists(fn) || fileTemp.existTemp(fn.toString())) {
-            fndFilename[0] = fn.toString();
+        Path realFn = Common.fileExistsIgnoreCase(fn);
+        if (realFn != null || fileTemp.existTemp(fn.toString())) {
+            fndFilename[0] = realFn != null ? realFn.toString() : fn.toString();
             return true;
         }
 
@@ -642,8 +645,10 @@ logger.log(Level.TRACE, "error message from program");
             for (String fp : searchPath) {
                 Path sfn = Path.of(fp, f);
                 logger.log(Level.INFO, "Search File: %s".formatted(sfn));
-                if (Files.exists(sfn)) {
-                    fndFilename[0] = sfn.toString();
+                Path realSfn = Common.fileExistsIgnoreCase(sfn);
+                if (realSfn != null) {
+                    fndFilename[0] = realSfn.toString();
+logger.log(Level.INFO, "file found: " + fn);
                     return true;
                 }
             }
@@ -651,19 +656,22 @@ logger.log(Level.TRACE, "error message from program");
 
         if (playingArcFileExist(filename)) {
             fndFilename[0] = fn.toString();
+logger.log(Level.INFO, "arc file found: " + fn);
             return true;
         }
 
         fndFilename[0] = "";
+logger.log(Level.INFO, "file not found: " + fn);
         return false;
     }
 
     private boolean playingArcFileExist(String fn) {
         if (playingArcFile.isEmpty()) return false;
-        if (!Files.exists(Path.of(playingArcFile))) return false;
+        Path realPath = Common.fileExistsIgnoreCase(Path.of(playingArcFile));
+        if (realPath == null) return false;
 
         try {
-            Archive archive = Archives.getArchive(playingArcFile);
+            Archive archive = Archives.getArchive(realPath);
             for (Entry ent : archive.entries()) {
                 if (ent.getName().equals(fn))
                     return true;
@@ -677,7 +685,8 @@ logger.log(Level.TRACE, "error message from program");
 
     private byte[] readAllByteFromArcFile(String fs) {
         if (playingArcFile.isEmpty()) return null;
-        if (!Files.exists(Path.of(playingArcFile))) return null;
+        Path realPath = Common.fileExistsIgnoreCase(Path.of(playingArcFile));
+        if (realPath == null) return null;
 
         try {
             Archive archive = Archives.getArchive(playingArcFile);
@@ -700,16 +709,18 @@ logger.log(Level.TRACE, "error message from program");
             if (fileTemp.existTemp(p.toString()))
                 return fileTemp.readTemp(fn);
 
-            if (Files.exists(p))
-                return Files.readAllBytes(p);
+            Path realPath = Common.fileExistsIgnoreCase(p);
+            if (realPath != null)
+                return Files.readAllBytes(realPath);
 
             if (!searchPath.isEmpty()) {
                 String f = p.getFileName().toString();
                 for (String fp : searchPath) {
                     Path sfn = Path.of(fp, f);
                     logger.log(Level.INFO, "Search File: %s".formatted(sfn));
-                    if (Files.exists(sfn)) {
-                        byte[] b = Files.readAllBytes(sfn);
+                    Path realSfn = Common.fileExistsIgnoreCase(Path.of(playingArcFile));
+                    if (realSfn != null) {
+                        byte[] b = Files.readAllBytes(realSfn);
                         logger.log(Level.INFO, "read data size: %s".formatted(b.length));
                         return b;
                     }
