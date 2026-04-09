@@ -6277,7 +6277,7 @@ public class NiseM68 {
         int cyc = 0;
 
 //#if DEBUG
-        String nimo = "MOVEM.w ";
+        StringBuilder nimo = new StringBuilder("MOVEM.w ");
 //#endif
 
         // dst
@@ -6293,7 +6293,7 @@ public class NiseM68 {
 
         short rl = fetchW();
 //#if DEBUG
-        String dnimo = "";
+        StringBuilder dnimo = new StringBuilder();
 //#endif
 
         boolean ff = false;
@@ -6309,13 +6309,13 @@ public class NiseM68 {
                     // Pre-decrement mode
                     val = reg.getD()[i % 8];
 //#if DEBUG
-                    nimo += "D%d".formatted(i % 8);
+                    nimo.append("D%d".formatted(i % 8));
 //#endif
 
                 } else {
                     val = reg.getA().get(7 - (i % 8));
 //#if DEBUG
-                    nimo += "A%d".formatted(7 - (i % 8));
+                    nimo.append("A%d".formatted(7 - (i % 8)));
 //#endif
 
                 }
@@ -6324,13 +6324,13 @@ public class NiseM68 {
                     // Pre-decrement mode
                     val = reg.getA().get(i % 8);
 //#if DEBUG
-                    nimo += "A%d".formatted(i % 8);
+                    nimo.append("A%d".formatted(i % 8));
 //#endif
 
                 } else {
                     val = reg.getD()[7 - (i % 8)];
 //#if DEBUG
-                    nimo += "D%d".formatted(7 - (i % 8));
+                    nimo.append("D%d".formatted(7 - (i % 8)));
 //#endif
 
                 }
@@ -6341,7 +6341,7 @@ public class NiseM68 {
                 case 2: // (An)
                     mem.pokeW(reg.getA().get(dr) + shift, (short) val);
 //#if DEBUG
-                    dnimo = "(A%d)".formatted(dr);
+                    dnimo = new StringBuilder("(A%d)".formatted(dr));
 //#endif
 
                     cyc = 4;
@@ -6351,7 +6351,7 @@ public class NiseM68 {
                     reg.getA().set(dr, reg.getA().get(dr) - 2);
                     mem.pokeW(reg.getA().get(dr), (short) val);
 //#if DEBUG
-                    dnimo = "-(A%d)".formatted(dr);
+                    dnimo = new StringBuilder("-(A%d)".formatted(dr));
 //#endif
 
                     cyc = 4;
@@ -6364,7 +6364,7 @@ public class NiseM68 {
                     }
                     mem.pokeW(reg.getA().get(dr) + d16 + shift, (short) val);
 //#if DEBUG
-                    dnimo = "$%04x(A%d)".formatted(d16, dr);
+                    dnimo = new StringBuilder("$%04x(A%d)".formatted(d16, dr));
 //#endif
 
                     cyc = 6;
@@ -6380,7 +6380,7 @@ public class NiseM68 {
                     isL = (vw & 0x0800) != 0;
                     IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                    dnimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                    dnimo.append("$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w"));
 //#endif
 
                     if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
@@ -6397,7 +6397,7 @@ public class NiseM68 {
                                 ff = true;
                             }
 //#if DEBUG
-                            dnimo = "$%04x".formatted(ptr);
+                            dnimo = new StringBuilder("$%04x".formatted(ptr));
 //#endif
 
                             mem.pokeW(ptr + shift, (short) val);
@@ -6410,7 +6410,7 @@ public class NiseM68 {
                                 ff = true;
                             }
 //#if DEBUG
-                            dnimo = "$%08x".formatted(ptr);
+                            dnimo = new StringBuilder("$%08x".formatted(ptr));
 //#endif
 
                             mem.pokeW(ptr + shift, (short) val);
@@ -6425,13 +6425,13 @@ public class NiseM68 {
         }
 
 //#if DEBUG
-        nimo += " , " + dnimo;
+        nimo.append(" , ").append(dnimo);
 //#endif
 
         cycle += cyc;
 
 //#if DEBUG
-        logger.log(Level.TRACE, nimo);
+        logger.log(Level.TRACE, nimo.toString());
 //#endif
 
         return cycle;
@@ -6442,7 +6442,7 @@ public class NiseM68 {
         int cyc = 0;
 
 //#if DEBUG
-        String nimo = "MOVEM ";
+        StringBuilder nimo = new StringBuilder("MOVEM ");
 //#endif
 
         // dst
@@ -6458,7 +6458,7 @@ public class NiseM68 {
 
         short rl = fetchW();
 //#if DEBUG
-        String dnimo = "";
+        StringBuilder dnimo = new StringBuilder();
 //#endif
 
         boolean ff = false;
@@ -6474,13 +6474,13 @@ public class NiseM68 {
                     // Pre-decrement mode
                     val = reg.getD()[i % 8];
 //#if DEBUG
-                    nimo += "D%d".formatted(i % 8);
+                    nimo.append("D%d".formatted(i % 8));
 //#endif
 
                 } else {
                     val = reg.getA().get(7 - (i % 8));
 //#if DEBUG
-                    nimo += "A%s".formatted(7 - (i % 8));
+                    nimo.append("A%s".formatted(7 - (i % 8)));
 //#endif
 
                 }
@@ -6489,12 +6489,12 @@ public class NiseM68 {
                     // Pre-decrement mode
                     val = reg.getA().get(i % 8);
 //#if DEBUG
-                    nimo += "A%s".formatted(i % 8);
+                    nimo.append("A%s".formatted(i % 8));
 //#endif
                 } else {
                     val = reg.getD()[7 - (i % 8)];
 //#if DEBUG
-                    nimo += "D%d".formatted(7 - (i % 8));
+                    nimo.append("D%d".formatted(7 - (i % 8)));
 //#endif
                 }
             }
@@ -6504,7 +6504,7 @@ public class NiseM68 {
                 case 2: // (An)
                     mem.pokeL(reg.getA().get(dr) + shift, val);
 //#if DEBUG
-                    dnimo = "(A%d)".formatted(dr);
+                    dnimo = new StringBuilder("(A%d)".formatted(dr));
 //#endif
 
                     cyc = 4;
@@ -6514,7 +6514,7 @@ public class NiseM68 {
                     reg.getA().set(dr, reg.getA().get(dr) - 4);
                     mem.pokeL(reg.getA().get(dr), val);
 //#if DEBUG
-                    dnimo = "-(A%d)".formatted(dr);
+                    dnimo = new StringBuilder("-(A%d)".formatted(dr));
 //#endif
 
                     cyc = 4;
@@ -6527,7 +6527,7 @@ public class NiseM68 {
                     }
                     mem.pokeL(reg.getA().get(dr) + d16 + shift, val);
 //#if DEBUG
-                    dnimo = "$%04x(A%d)".formatted(d16, dr);
+                    dnimo = new StringBuilder("$%04x(A%d)".formatted(d16, dr));
 //#endif
 
                     cyc = 6;
@@ -6543,7 +6543,7 @@ public class NiseM68 {
                     isL = (vw & 0x0800) != 0;
                     IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                    dnimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                    dnimo.append("$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w"));
 //#endif
 
                     if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
@@ -6560,7 +6560,7 @@ public class NiseM68 {
                                 ff = true;
                             }
 //#if DEBUG
-                            dnimo = "$%04x".formatted(ptr);
+                            dnimo = new StringBuilder("$%04x".formatted(ptr));
 //#endif
 
                             mem.pokeL(ptr + shift, val);
@@ -6573,7 +6573,7 @@ public class NiseM68 {
                                 ff = true;
                             }
 //#if DEBUG
-                            dnimo = "$%08x".formatted(ptr);
+                            dnimo = new StringBuilder("$%08x".formatted(ptr));
 //#endif
 
                             mem.pokeL(ptr + shift, val);
@@ -6588,13 +6588,13 @@ public class NiseM68 {
         }
 
 //#if DEBUG
-        nimo += " , " + dnimo;
+        nimo.append(" , ").append(dnimo);
 //#endif
 
         cycle += cyc;
 
 //#if DEBUG
-        logger.log(Level.TRACE, nimo);
+        logger.log(Level.TRACE, nimo.toString());
 //#endif
 
         return cycle;
@@ -6624,7 +6624,7 @@ public class NiseM68 {
 
         short rl = fetchW();
 //#if DEBUG
-        String dnimo = "";
+        StringBuilder dnimo = new StringBuilder();
 //#endif
 
         boolean nimoSw = true;
@@ -6654,7 +6654,7 @@ public class NiseM68 {
                 // dst
                 reg.getA().set(7 - (i % 8), val);
 //#if DEBUG
-                dnimo += "A%s".formatted(7 - (i % 8));
+                dnimo.append("A%s".formatted(7 - (i % 8)));
 //#endif
 
                 cyc += Cycle.MovemToReg_l1[cycle[0]];
@@ -6662,7 +6662,7 @@ public class NiseM68 {
                 // dst
                 reg.getD()[7 - (i % 8)] = val;
 //#if DEBUG
-                dnimo += "D%d".formatted(7 - (i % 8));
+                dnimo.append("D%d".formatted(7 - (i % 8)));
 //#endif
 
                 cyc += Cycle.MovemToReg_l1[cycle[0]];
@@ -10006,7 +10006,7 @@ public class NiseM68 {
         byte vald = mem.peekB(reg.getAl(dr));
         byte src = mem.peekB(reg.getAl(sr));
 
-        dst = (short) vald;
+        dst = vald;
 //#if DEBUG
         String nimo = "CMPM.b (A%d)+,(A%d)+".formatted(sr, dr);
 //#endif

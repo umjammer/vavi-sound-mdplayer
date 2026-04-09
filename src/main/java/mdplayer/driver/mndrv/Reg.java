@@ -1,8 +1,6 @@
 package mdplayer.driver.mndrv;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 
@@ -25,8 +23,6 @@ public class Reg {
     public int a7;
 
     public int sr;
-
-    public List<Integer> arg = new ArrayList<>();
 
     public int getD0_B() {
         return D0_L & 0xff;

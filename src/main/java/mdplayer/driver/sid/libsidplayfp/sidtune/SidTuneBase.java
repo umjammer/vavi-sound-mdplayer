@@ -38,9 +38,8 @@ import dotnet4j.io.SeekOrigin;
 import mdplayer.driver.sid.libsidplayfp.SidEndian;
 import mdplayer.driver.sid.libsidplayfp.SidMemory;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTuneInfo;
+import vavi.util.ByteUtil;
 
-import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
-import static dotnet4j.util.compat.CollectionUtilities.toList;
 import static java.lang.System.getLogger;
 
 
@@ -247,7 +246,7 @@ public class SidTuneBase {
         mem.writeMemWord((byte) 0xae, end);
 
         // Copy data from cache to the correct destination.
-        mem.fillRam(info.loadAddress, ByteBuffer.wrap(toByteArray(cache), fileOffset, info.c64DataLen), info.c64DataLen);
+        mem.fillRam(info.loadAddress, ByteBuffer.wrap(ByteUtil.toByteArray(cache), fileOffset, info.c64DataLen), info.c64DataLen);
     }
 
     /**
@@ -267,7 +266,7 @@ public class SidTuneBase {
 
             byte[] fileBuf = new byte[(int) fileLen];
             inFile.read(fileBuf, 0, (int) fileLen);
-            bufferRef.addAll(toList(fileBuf));
+            bufferRef.addAll(ByteUtil.toList(fileBuf));
         }
     }
 
@@ -292,7 +291,7 @@ public class SidTuneBase {
                 fileBuf.add((byte) datb);
             }
 
-            return getFromBuffer(toByteArray(fileBuf), fileBuf.size());
+            return getFromBuffer(ByteUtil.toByteArray(fileBuf), fileBuf.size());
         } catch (java.io.IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -317,7 +316,7 @@ public class SidTuneBase {
         if (s == null) s = (new MUS()).load(buf1, true);
         if (s == null) throw new dotnet4j.io.IOException(ERR_UNRECOGNIZED_FORMAT);
 
-        List<Byte> lstBuf1 = toList(buf1);
+        List<Byte> lstBuf1 = ByteUtil.toList(buf1);
         s.acceptSidTune("-", "-", lstBuf1, false);
         return s;
     }
@@ -387,7 +386,7 @@ public class SidTuneBase {
             // We only detect an offset of two. Some position independent
             // sidtunes contain a load address of 0xE000, but are loaded
             // to 0x0FFE and call player at 0x1000.
-            info.fixLoad = (SidEndian.toLittle16(ByteBuffer.wrap(toByteArray(buf), fileOffset, buf.size() - fileOffset)) == (info.loadAddress + 2));
+            info.fixLoad = (SidEndian.toLittle16(ByteBuffer.wrap(ByteUtil.toByteArray(buf), fileOffset, buf.size() - fileOffset)) == (info.loadAddress + 2));
         }
 
         // Check the size of the data.
@@ -421,12 +420,12 @@ public class SidTuneBase {
         loadFile(fileName, fileBuf1);
 
         // File loaded. Now check if it instanceof : a valid single-file-format.
-        byte[] aryFileBuf1 = toByteArray(fileBuf1);
+        byte[] aryFileBuf1 = ByteUtil.toByteArray(fileBuf1);
         SidTuneBase s = PSid.load(aryFileBuf1);
-        fileBuf1 = toList(aryFileBuf1);
+        fileBuf1 = ByteUtil.toList(aryFileBuf1);
         if (s == null) {
             // Try some native C64 file formats
-            s = (new MUS()).load(toByteArray(fileBuf1), true);
+            s = (new MUS()).load(ByteUtil.toByteArray(fileBuf1), true);
             if (s != null) {
                 // Try to find second file.
                 String fileName2;
@@ -443,13 +442,13 @@ public class SidTuneBase {
                             loadFile(fileName2, fileBuf2);
                             // Check if tunes : wrong order and therefore swap them here
                             if (fileNameExtensions[n].equals(".mus")) {
-                                SidTuneBase s2 = (new MUS()).load(toByteArray(fileBuf2), toByteArray(fileBuf1), 0, true);
+                                SidTuneBase s2 = (new MUS()).load(ByteUtil.toByteArray(fileBuf2), ByteUtil.toByteArray(fileBuf1), 0, true);
                                 if (s2 != null) {
                                     s2.acceptSidTune(fileName2, fileName, fileBuf2, separatorIsSlash);
                                     return s2;
                                 }
                             } else {
-                                SidTuneBase s2 = (new MUS()).load(toByteArray(fileBuf1), true);
+                                SidTuneBase s2 = (new MUS()).load(ByteUtil.toByteArray(fileBuf1), true);
                                 if (s2 != null) {
                                     s2.acceptSidTune(fileName, fileName2, fileBuf1, separatorIsSlash);
                                     return s2;
@@ -622,6 +621,6 @@ public class SidTuneBase {
             }
         }
 
-        return new String(toByteArray(buffer), StandardCharsets.US_ASCII);
+        return new String(ByteUtil.toByteArray(buffer), StandardCharsets.US_ASCII);
     }
 }

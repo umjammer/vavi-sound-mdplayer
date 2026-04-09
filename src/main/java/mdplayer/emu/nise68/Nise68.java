@@ -147,8 +147,8 @@ public class Nise68 {
         step = 0;
         run++;
 
-        reg.setSSP(hmn.defSSP);
-        reg.setUSP(hmn.defUSP);
+        reg.setSSP(NiseHuman.defSSP);
+        reg.setUSP(NiseHuman.defUSP);
         cpu.ctrap2((short) num);
 
         while (((useStepCounter && step < MaxStepCounter) || !useStepCounter) && !hmn.programTerminate) {
@@ -211,8 +211,8 @@ public class Nise68 {
         step = 0;
         run++;
 
-        reg.setSSP(hmn.defSSP);
-        reg.setUSP(hmn.defUSP);
+        reg.setSSP(NiseHuman.defSSP);
+        reg.setUSP(NiseHuman.defUSP);
         cpu.ctrapPtr(iocs.interruptOPM);
 
         while (((useStepCounter && step < MaxStepCounter) || !useStepCounter) && !hmn.programTerminate) {

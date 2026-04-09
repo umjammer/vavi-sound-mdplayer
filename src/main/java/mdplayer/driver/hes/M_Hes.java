@@ -619,18 +619,18 @@ public class M_Hes {
             nezPlay.song.initaddress = this.initAddr;
             nezPlay.song.playaddress = 0;
 
-            nezPlay._songinfodata.detail =
-                    "Type           : HES" +
-                            "Start Song: %2x" +
-                            "Init Address: %4x" +
-                            "First Mapper 0 : %2x" +
-                            "First Mapper 1 : %2x" +
-                            "First Mapper 2 : %2x" +
-                            "First Mapper 3 : %2x" +
-                            "First Mapper 4 : %2x" +
-                            "First Mapper 5 : %2x" +
-                            "First Mapper 6 : %2x" +
-                            "First Mapper 7 : %2x".formatted(
+            nezPlay._songinfodata.detail = """
+                    Type           : HES
+                            "Start Song: %2x
+                            "Init Address: %4x
+                            "First Mapper 0 : %2x
+                            "First Mapper 1 : %2x
+                            "First Mapper 2 : %2x
+                            "First Mapper 3 : %2x
+                            "First Mapper 4 : %2x
+                            "First Mapper 5 : %2x
+                            "First Mapper 6 : %2x
+                            "First Mapper 7 : %2x""".formatted(
                                     pData[5], this.initAddr,
                                     pData[0x8],
                                     pData[0x9],

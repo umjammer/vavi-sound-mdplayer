@@ -31,8 +31,8 @@ public class MIDITrack implements Serializable {
     private boolean mute = false;
     private transient Color color = Color.black;
     private List<MIDIPart> parts = new ArrayList<>();
-    private List<MIDIRythm> rythms = new ArrayList<>();
-    private boolean rythmMode = false;
+    private List<MIDIRythm> rhythms = new ArrayList<>();
+    private boolean rhythmMode = false;
     private int key = 0;
     private int st = 0;
     private Integer startPartIndex = null;
@@ -224,19 +224,19 @@ public class MIDITrack implements Serializable {
     }
 
     public void setRythm(List<MIDIRythm> value) {
-        rythms = value;
+        rhythms = value;
     }
 
     List<MIDIRythm> getRythm() {
-        return rythms;
+        return rhythms;
     }
 
     public void setRythmMode(boolean value) {
-        rythmMode = value;
+        rhythmMode = value;
     }
 
     boolean getRythmMode() {
-        return rythmMode;
+        return rhythmMode;
     }
 
     public void setKey(int value) {

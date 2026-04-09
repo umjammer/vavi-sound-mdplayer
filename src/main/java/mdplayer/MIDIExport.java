@@ -9,8 +9,8 @@ import dotnet4j.io.File;
 import dotnet4j.io.Path;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.chips.Ym2612Chip;
+import vavi.util.ByteUtil;
 
-import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
 import static java.lang.System.getLogger;
 
 
@@ -133,7 +133,7 @@ public class MIDIExport {
             if (setting.getMidiExport().getUseYM2151Export()) for (List<Byte> dat : midi2151.data) buf.addAll(dat);
             if (setting.getMidiExport().getUseYM2612Export()) for (List<Byte> dat : midi2612.data) buf.addAll(dat);
 
-            File.writeAllBytes(Path.combine(setting.getMidiExport().getExportPath(), Path.changeExtension(Path.getFileName(fn), ".mid")), toByteArray(buf));
+            File.writeAllBytes(Path.combine(setting.getMidiExport().getExportPath(), Path.changeExtension(Path.getFileName(fn), ".mid")), ByteUtil.toByteArray(buf));
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
         }

@@ -16,11 +16,11 @@ public class Hes {
     public int play_address;
     public int song;
 
-    public NezPlay nezPlay;
+    public final NezPlay nezPlay;
 
     int last_out = 0;
     int silent_length;
-    HESDetector ld;
+    final HESDetector ld;
     double time_in_ms;
     public boolean playtime_detected;
 

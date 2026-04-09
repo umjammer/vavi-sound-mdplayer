@@ -55,8 +55,8 @@ class SpiTest {
         return Files.exists(Paths.get("local.properties"));
     }
 
-    static boolean onIde = System.getProperty("vavi.test", "").equals("ide");
-    static long time = onIde ? 1000 * 1000 : 10 * 1000;
+    static final boolean onIde = System.getProperty("vavi.test", "").equals("ide");
+    static final long time = onIde ? 1000 * 1000 : 10 * 1000;
 
     @Property(name = "vgm")
     String inFile = "src/test/resources/test.vgm";

@@ -194,7 +194,7 @@ public class STIL {
     private final String[] resultBug = {null};
 
     // final ios_base::openmode STILopenFlags = ios::in | ios::binary;
-    public FileMode STILopenFlags = FileMode.Open; // | ios::binary;
+    public final FileMode STILopenFlags = FileMode.Open; // | ios::binary;
 
     public static final float VERSION_NO = 3.0f;
 

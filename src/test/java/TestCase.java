@@ -79,8 +79,8 @@ public class TestCase {
     @Property
     String ext;
 
-    static boolean onIde = System.getProperty("vavi.test", "").equals("ide");
-    static long time = onIde ? 1000 * 1000 : 10 * 1000;
+    static final boolean onIde = System.getProperty("vavi.test", "").equals("ide");
+    static final long time = onIde ? 1000 * 1000 : 10 * 1000;
 
     @BeforeEach
     void setup() throws Exception {
@@ -243,7 +243,7 @@ Debug.println(music);
     /**
      * @param args 0: audio file
      */
-    public static void main(String[] args) throws Exception {
+    static void main(String[] args) throws Exception {
         TestCase app = new TestCase();
         if (args.length == 1)
             app.file = args[0];

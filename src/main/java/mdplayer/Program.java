@@ -17,7 +17,7 @@ class Program {
     /**
      * The main entry point for the application.
      */
-    public static void main(String[] args) {
+    static void main(String[] args) {
         Common.setCommandLineArgs(args);
 
         String fn = checkFiles();

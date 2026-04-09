@@ -196,9 +196,9 @@ public class MuSICA {
             if (msg.equals(":_SYSTEM")) {
                 args.getExecutionStopper().stop(false);
             }
-        } else if ((z80.getRegisters().getPC() & 0xffff) >= mapper.jumpAddress && (z80.getRegisters().getPC() & 0xffff) < mapper.jumpAddress + 16) {
+        } else if ((z80.getRegisters().getPC() & 0xffff) >= Mapper.jumpAddress && (z80.getRegisters().getPC() & 0xffff) < Mapper.jumpAddress + 16) {
             //logger.log(Level.TRACE, "Call MAPPER PROC(0x%04x～) PC-%04x:%04x".formatted(mapper.JumpAddress, z80.getRegisters().PC - mapper.JumpAddress));
-            mapper.callMapperProc(args, z80, (z80.getRegisters().getPC() & 0xffff) - mapper.jumpAddress);
+            mapper.callMapperProc(args, z80, (z80.getRegisters().getPC() & 0xffff) - Mapper.jumpAddress);
         } else if ((z80.getRegisters().getPC() & 0xffff) == 0xffca) {
             //logger.log(Level.TRACE, "Call EXTBIO(0xffca) Reg.DE=%04x".formatted(z80.getRegisters().DE));
             callEXTBIO(args, z80);
@@ -240,7 +240,7 @@ public class MuSICA {
             case 0x02:
                 z80.getRegisters().setA((byte) 0);
                 z80.getRegisters().setBC((short) 0);
-                z80.getRegisters().setHL((short) mapper.tableAddress);
+                z80.getRegisters().setHL((short) Mapper.tableAddress);
                 break;
         }
     }

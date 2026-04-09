@@ -27,9 +27,8 @@ import dotnet4j.io.IOException;
 import mdplayer.driver.sid.libsidplayfp.SidEndian;
 import mdplayer.driver.sid.libsidplayfp.SidMemory;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTuneInfo;
+import vavi.util.ByteUtil;
 
-import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
-import static dotnet4j.util.compat.CollectionUtilities.toList;
 import static mdplayer.driver.sid.libsidplayfp.SidEndian.toBig16;
 import static mdplayer.driver.sid.libsidplayfp.SidEndian.toLittle16;
 
@@ -961,10 +960,10 @@ public class MUS extends SidTuneBase {
         if (strBuf.length != 0 && info.getSidChips() > 1) {
             // Install MUS data //#2 _NOT_ including load address.
             //musBuf.AddRange(strBuf);
-            List<Byte> b = toList(musBuf);
-            List<Byte> c = toList(strBuf);
+            List<Byte> b = ByteUtil.toList(musBuf);
+            List<Byte> c = ByteUtil.toList(strBuf);
             b.addAll(c);
-            musBuf = toByteArray(b);
+            musBuf = ByteUtil.toByteArray(b);
         }
 
         strBuf = null;

@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.ServiceLoader;
 
-import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 

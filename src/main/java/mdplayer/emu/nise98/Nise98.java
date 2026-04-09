@@ -392,7 +392,7 @@ logger.log(Level.TRACE, "fmReg188.ongen: " + fmReg188.ongen);
                     return (byte) 0xff;
 
                 if (fs.p88lastAdr == 0x0e)
-                    return fs.int_;
+                    return FmStatus.int_;
                 else if (fs.p88lastAdr == (byte) 0xff)
                     return (byte) (fs.ongen == OngenBoardType.PC9801_26K ? 0x00 : 0x01);
                 else

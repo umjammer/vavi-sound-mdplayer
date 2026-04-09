@@ -20,15 +20,15 @@ public class SccA {
     private byte group = 0;
     private byte interrupt = 0;
     private byte vect = 0;
-    private byte intMask = (byte) 0xff;
+    private static final byte intMask = (byte) 0xff;
 
-    private byte[] reg = new byte[0x100];
+    private final byte[] reg = new byte[0x100];
     private Consumer<Byte>[] cmdw = null;
     private Supplier<Byte>[] cmdr = null;
     private short generalTimerValue = 0;
     private int renderingFreq;
     // private double clkM = 4_915_200.0 / 8.0;// 1_000_000.0;
-    private final double clkM = 1_000_000.0;
+    private static final double clkM = 1_000_000.0;
     private double stepM;
     private double generalTimerValueWrk = 0.0;
     private double clickcounter = 1.0;

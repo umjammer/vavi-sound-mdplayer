@@ -24,7 +24,7 @@ public class MemMng {
         address = 0x2000;
     }
 
-    final int bl = 4;
+    static final int bl = 4;
 
     public boolean set(int memPtr, int size) {
         if (dicMng.containsKey(memPtr)) return false;
