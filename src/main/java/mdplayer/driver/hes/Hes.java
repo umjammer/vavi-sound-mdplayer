@@ -1,6 +1,9 @@
 package mdplayer.driver.hes;
 
+import mdplayer.driver.hes.M_Hes.NezPlay;
 
+
+/** HES (PC-Engine) */
 public class Hes {
 
     public static final int FCC_HES = 0x4d534548;  // "HESM"
@@ -13,15 +16,25 @@ public class Hes {
     public int play_address;
     public int song;
 
-    public M_Hes.NEZ_PLAY nez_play;
+    public NezPlay nezPlay;
 
     int last_out = 0;
-    int silent_length = 0;
-    HESDetector ld = null;
+    int silent_length;
+    HESDetector ld;
     double time_in_ms;
-    public boolean playtime_detected = false;
+    public boolean playtime_detected;
 
     final int[] buf = new int[2];
+
+    public Hes() {
+        this.silent_length = 0;
+        this.playtime_detected = false;
+
+        this.ld = new HESDetector();
+        this.ld.reset();
+
+        this.nezPlay = new NezPlay();
+    }
 
     public static class HESDetector extends mdsound.np.LoopDetector.BasicDetector {
         public HESDetector() {

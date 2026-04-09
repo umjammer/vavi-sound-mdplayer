@@ -27,7 +27,7 @@ public class KmEvent {
         /** Bidirectional Linked List */
         public int next;
         /** Internal State Flags */
-        public int sysflag;
+        public int sysFlag;
         /** Unused */
         public int flag2;
     }
@@ -51,7 +51,7 @@ public class KmEvent {
     private static void reset(Event kme) {
         kme.item[0].count = 0;
         for (int id = 0; id <= KMEVENT_ITEM_MAX; id++) {
-            kme.item[id].sysflag &= ~Flag.ALLOCED.v;
+            kme.item[id].sysFlag &= ~Flag.ALLOCED.v;
             kme.item[id].count = 0;
             kme.item[id].next = id;
             kme.item[id].prev = id;
@@ -61,7 +61,7 @@ public class KmEvent {
     public void init(Event kme) {
         for (int id = 0; id <= KMEVENT_ITEM_MAX; id++) {
             kme.item[id] = new Item();
-            kme.item[id].sysflag = 0;
+            kme.item[id].sysFlag = 0;
         }
         reset(kme);
     }
@@ -69,8 +69,8 @@ public class KmEvent {
     public int alloc(Event kme) {
         int id;
         for (id = 1; id <= KMEVENT_ITEM_MAX; id++) {
-            if (kme.item[id].sysflag == 0) {
-                kme.item[id].sysflag = Flag.ALLOCED.v;
+            if (kme.item[id].sysFlag == 0) {
+                kme.item[id].sysFlag = Flag.ALLOCED.v;
                 return id;
             }
         }
@@ -112,7 +112,7 @@ public class KmEvent {
 
     public void free(Event kme, int curid) {
         unlistItem(kme, curid);
-        kme.item[curid].sysflag = 0;
+        kme.item[curid].sysFlag = 0;
     }
 
     public void setTimer(Event kme, int curid, int time) {
@@ -149,7 +149,7 @@ public class KmEvent {
         while (nextCount != 0 && kme.item[0].count >= nextCount) {
             // Resetting the event occurrence flag
             for (id = kme.item[0].next; id != 0; id = kme.item[id].next) {
-                kme.item[id].sysflag &= 0xfc; // ~((byte) Flag.KMEVENT_FLAG_BREAKED + (byte) Flag.KMEVENT_FLAG_DISPATCHED);
+                kme.item[id].sysFlag &= 0xfc; // ~((byte) Flag.KMEVENT_FLAG_BREAKED + (byte) Flag.KMEVENT_FLAG_DISPATCHED);
             }
             // Progress by nextCount
             kme.item[0].count -= nextCount;
@@ -158,14 +158,14 @@ public class KmEvent {
                 kme.item[id].count -= nextCount;
                 if (kme.item[id].count != 0) continue;
                 // Set the event occurrence flag
-                kme.item[id].sysflag |= Flag.BREAKED.v;
+                kme.item[id].sysFlag |= Flag.BREAKED.v;
             }
             for (id = kme.item[0].next; id != 0; id = kme.item[id].next) {
                 // Checking the event done flag
-                if ((kme.item[id].sysflag & Flag.DISPATCHED.v) != 0) continue;
-                kme.item[id].sysflag |= Flag.DISPATCHED.v;
+                if ((kme.item[id].sysFlag & Flag.DISPATCHED.v) != 0) continue;
+                kme.item[id].sysFlag |= Flag.DISPATCHED.v;
                 // Checking the event occurrence flag
-                if ((kme.item[id].sysflag & Flag.BREAKED.v) == 0) continue;
+                if ((kme.item[id].sysFlag & Flag.BREAKED.v) == 0) continue;
                 // Target event start
                 kme.item[id].proc.accept(kme, id, kme.item[id].user);
                 // Rescan from the beginning

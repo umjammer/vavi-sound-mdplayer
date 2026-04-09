@@ -1,13 +1,10 @@
 package mdplayer.driver.hes;
 
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import dotnet4j.util.compat.TriConsumer;
-import mdplayer.ChipRegister;
-import mdplayer.Common;
-import mdplayer.Common.EnmModel;
-import mdplayer.chips.HuC6280Chip;
 import mdplayer.driver.hes.KmEvent.Event;
 import vavi.util.ByteUtil;
 
@@ -29,9 +26,7 @@ import vavi.util.ByteUtil;
  */
 public class M_Hes {
 
-    private final Km6280 km6280 = new Km6280();
-
-    public static class NEZ_PLAY {
+    public static class NezPlay {
 
         static class SongInfo {
             public int songno;
@@ -56,7 +51,7 @@ public class M_Hes {
 
         private final SongInfoData _songinfodata = new SongInfoData();
 
-        public int ExecuteHES() {
+        public int executeHES() {
             return this.heshes != null ? this.heshes.execute() : 0;
         }
 
@@ -120,9 +115,9 @@ public class M_Hes {
             PARAMETER
         }
 
-        public Km6280.K6280Context ctx;
+        public Km6280 ctx;
         //public KMIF_SOUND_DEVICE hessnd;
-        public KMIF_SOUND_DEVICE hespcm;
+        public KmifSoundDevice hespcm;
         public final Event kme = new Event();
         public int vsync;
         public int timer;
@@ -130,7 +125,7 @@ public class M_Hes {
         /** break point */
         public int bp;
         /** break point flag */
-        public int breaked;
+        public int broken;
 
         /** cycles per sample:fixed point */
         public int cps;
@@ -150,18 +145,19 @@ public class M_Hes {
         public final byte[] playerRom = new byte[0x10];
 
         /** IO $C01 ($C00)*/
-        public int hestimReload;
+        public int hesTimReload;
         /** IO $C00 */
-        public int hestimCounter;
+        public int hesTimCounter;
         /** IO $C01 */
-        public int hestimStart;
-        public int hesvdcStatus;
-        public int hesvdcCr;
-        public int hesvdcAdr;
+        public int hesTimStart;
+        public int hesVdcStatus;
+        public int hesVdcCr;
+        public int hesVdcAdr;
 
         private final KmEvent kmEvent = new KmEvent();
 
-        public ChipRegister chipRegister;
+        int freqency;
+        BiConsumer<Integer, Integer> huC6280Write;
         public Hes.HESDetector ld;
         private boolean disableSendChip = false;
 
@@ -192,20 +188,20 @@ public class M_Hes {
 
         public void vsyncEvent(Event _event, int curid, HESHES _this) {
             _this.setUpVsync();
-            if ((_this.hesvdcCr & 8) != 0) {
-                _this.ctx.iRequest |= Km6280.K6280Context.IRQ.INT1.v;
+            if ((_this.hesVdcCr & 8) != 0) {
+                _this.ctx.iRequest |= Km6280.IRQ.INT1.v;
                 //logger.log(Level.TRACE, "vsyncEvent");
-                _this.breaked = 0;
+                _this.broken = 0;
             }
-            _this.hesvdcStatus = 1;
+            _this.hesVdcStatus = 1;
         }
 
         private static void timerEvent(Event _event, int curid, HESHES _this) {
-            if (_this.hestimStart != 0 && _this.hestimCounter-- == 0) {
-                _this.hestimCounter = _this.hestimReload;
-                _this.ctx.iRequest |= Km6280.K6280Context.IRQ.TIMER.v;
+            if (_this.hesTimStart != 0 && _this.hesTimCounter-- == 0) {
+                _this.hesTimCounter = _this.hesTimReload;
+                _this.ctx.iRequest |= Km6280.IRQ.TIMER.v;
                 //logger.log(Level.TRACE, "timerEvent");
-                _this.breaked = 0;
+                _this.broken = 0;
             }
             _this.setUpTimer();
         }
@@ -217,8 +213,8 @@ public class M_Hes {
             if (this.cpsGap >= cycles)
                 this.cpsGap -= cycles;
             else {
-                int excycles = cycles - this.cpsGap;
-                this.cpsGap = km6280_exec(this.ctx, excycles) - excycles;
+                int exCycles = cycles - this.cpsGap;
+                this.cpsGap = km6280_exec(this.ctx, exCycles) - exCycles;
             }
             this.cpsRem &= (1 << SHIFT_CPS) - 1;
             this.totalCycles += cycles;
@@ -247,12 +243,12 @@ public class M_Hes {
         private void write6270(int a, int v) {
             switch (a) {
             case 0:
-                this.hesvdcAdr = v;
+                this.hesVdcAdr = v;
                 break;
             case 2:
-                switch (this.hesvdcAdr) {
+                switch (this.hesVdcAdr) {
                 case 5: // CR */
-                    this.hesvdcCr = v;
+                    this.hesVdcCr = v;
                     break;
                 }
                 break;
@@ -264,8 +260,8 @@ public class M_Hes {
         private int read6270(int a) {
             int v = 0;
             if (a == 0) {
-                if (this.hesvdcStatus != 0) {
-                    this.hesvdcStatus = 0;
+                if (this.hesVdcStatus != 0) {
+                    this.hesVdcStatus = 0;
                     v = 0x20;
                 }
                 this.ctx.iRequest &= 0xffff_ffdf;// ~Km6280.IRQ.INT1;
@@ -285,23 +281,23 @@ public class M_Hes {
                 return 0;
             case 3: // TIMER
                 if ((a & 1) != 0)
-                    return this.hestimStart;
+                    return this.hesTimStart;
                 else
-                    return this.hestimCounter;
+                    return this.hesTimCounter;
             case 5: // IRQ
                 switch (a & 15) {
                 case 2: {
                     int v = 0xf8;
-                    if ((this.ctx.iMask & Km6280.K6280Context.IRQ.TIMER.v) == 0) v |= 4;
-                    if ((this.ctx.iMask & Km6280.K6280Context.IRQ.INT1.v) == 0) v |= 2;
-                    if ((this.ctx.iMask & Km6280.K6280Context.IRQ.INT2.v) == 0) v |= 1;
+                    if ((this.ctx.iMask & Km6280.IRQ.TIMER.v) == 0) v |= 4;
+                    if ((this.ctx.iMask & Km6280.IRQ.INT1.v) == 0) v |= 2;
+                    if ((this.ctx.iMask & Km6280.IRQ.INT2.v) == 0) v |= 1;
                     return v;
                 }
                 case 3: {
                     int v = 0;
-                    if ((this.ctx.iRequest & Km6280.K6280Context.IRQ.TIMER.v) != 0) v |= 4;
-                    if ((this.ctx.iRequest & Km6280.K6280Context.IRQ.INT1.v) != 0) v |= 2;
-                    if ((this.ctx.iRequest & Km6280.K6280Context.IRQ.INT2.v) != 0) v |= 1;
+                    if ((this.ctx.iRequest & Km6280.IRQ.TIMER.v) != 0) v |= 4;
+                    if ((this.ctx.iRequest & Km6280.IRQ.INT1.v) != 0) v |= 2;
+                    if ((this.ctx.iRequest & Km6280.IRQ.INT2.v) != 0) v |= 1;
 //#if 0
 //                    THIS_->ctx.iRequest &= ~(TIMER | INT1 | INT2);
 //#endif
@@ -334,19 +330,19 @@ public class M_Hes {
             case 2: // Psg
                 //logger.log(Level.TRACE, "Adr:%2X Dat:%2X".formatted((int) (a & 0xf), (int) v));
                 if (!disableSendChip)
-                    chipRegister.chip(HuC6280Chip.class).write(0, a & 0xf, v, EnmModel.VirtualModel);
+                    huC6280Write.accept(a & 0xf, v);
                 ld.write(a & 0xf, v, 0);
                 break;
             case 3: // TIMER
                 switch (a & 1) {
                 case 0:
-                    this.hestimReload = v & 127;
+                    this.hesTimReload = v & 127;
                     break;
                 case 1:
                     v &= 1;
-                    if (v != 0 && this.hestimStart == 0)
-                        this.hestimCounter = this.hestimReload;
-                    this.hestimStart = v;
+                    if (v != 0 && this.hesTimStart == 0)
+                        this.hesTimCounter = this.hesTimReload;
+                    this.hesTimStart = v;
                     break;
                 }
                 break;
@@ -354,9 +350,9 @@ public class M_Hes {
                 switch (a & 15) {
                 case 2:
                     this.ctx.iMask &= 0xffffff8f;
-                    if ((v & 4) == 0) this.ctx.iMask |= Km6280.K6280Context.IRQ.TIMER.v;
-                    if ((v & 2) == 0) this.ctx.iMask |= Km6280.K6280Context.IRQ.INT1.v;
-                    if ((v & 1) == 0) this.ctx.iMask |= Km6280.K6280Context.IRQ.INT2.v;
+                    if ((v & 4) == 0) this.ctx.iMask |= Km6280.IRQ.TIMER.v;
+                    if ((v & 2) == 0) this.ctx.iMask |= Km6280.IRQ.INT1.v;
+                    if ((v & 1) == 0) this.ctx.iMask |= Km6280.IRQ.INT2.v;
                     break;
                 case 3:
                     this.ctx.iRequest &= 0xffffffef;
@@ -427,16 +423,6 @@ public class M_Hes {
                 }
         }
 
-        @Deprecated
-        private static int getWordLE(byte[] p) {
-            return ByteUtil.readLeShort(p);
-        }
-
-        @Deprecated
-        private static int getDwordLE(byte[] p) {
-            return ByteUtil.readLeInt(p);
-        }
-
         public int allocPhysicalAddress(int a, int l) {
             int page = a >> 13;
             int lastPage = (a + l - 1) >> 13;
@@ -471,20 +457,20 @@ public class M_Hes {
             }
         }
 
-        private int km6280_exec(Km6280.K6280Context ctx, int cycles) {
+        private int km6280_exec(Km6280 ctx, int cycles) {
             HESHES THIS_ = ctx.user;
             int kmecycle;
             kmecycle = ctx.clock = 0;
             while (ctx.clock < cycles) {
-                if (THIS_.breaked == 0) {
+                if (THIS_.broken == 0) {
 
 //logger.log(Level.TRACE, "pc:%4x s:%2x SPDAT0x1FF:%2x%2x",formatted(THIS_.ctx.pc, THIS_.ctx.s, THIS_.memMap[0xf8][0x1ff], THIS_.memMap[0xf8][0x1fe]));
                     // Execute 1op
                     ctx.K_EXEC();
 
                     if (ctx.pc == THIS_.bp) {
-                        if (((THIS_.ctx.iRequest) & (THIS_.ctx.iMask ^ 0x3) & (Km6280.K6280Context.IRQ.INT1.ordinal() | Km6280.K6280Context.IRQ.TIMER.ordinal())) == 0)
-                            THIS_.breaked = 1;
+                        if (((THIS_.ctx.iRequest) & (THIS_.ctx.iMask ^ 0x3) & (Km6280.IRQ.INT1.ordinal() | Km6280.IRQ.TIMER.ordinal())) == 0)
+                            THIS_.broken = 1;
                     }
                 } else {
                     int[] nextCount = new int[1];
@@ -509,10 +495,10 @@ public class M_Hes {
             return kmecycle;
         }
 
-        private void reset(NEZ_PLAY nezPlay) {
+        private void reset(NezPlay nezPlay) {
             int i, initbreak;
             //int freq = NESAudioFrequencyGet(pNezPlay);
-            int freq = Common.VGMProcSampleRate;
+            int freq = freqency;
 
             //this.hessnd.reset(this.hessnd.ctx, HES_BASECYCLES, freq);
             this.hespcm.reset.accept(HES_BASECYCLES, freq);
@@ -526,7 +512,7 @@ public class M_Hes {
                 }
 
             this.cps = fixDiv(HES_BASECYCLES, freq, SHIFT_CPS);
-            this.ctx = new Km6280.K6280Context();
+            this.ctx = new Km6280();
             this.ctx.user = this;
             this.ctx.readByte = HESHES::readEvent;
             this.ctx.writeByte = HESHES::writeEvent;
@@ -542,13 +528,13 @@ public class M_Hes {
             this.bp = this.playerRomAddr + 3;
             for (i = 0; i < 8; i++) this.mpr[i] = this.firstMpr[i];
 
-            this.breaked = 0;
+            this.broken = 0;
             this.cpsRem = this.cpsGap = this.totalCycles = 0;
 
             //this.ctx.a = (SONGINFO_GetSongNo(this.song) - 1) & 0xff;
             this.ctx.a = (nezPlay.song.songno - 1) & 0xff;
             //this.ctx.a = (int)((49 - 1) & 0xff);
-            this.ctx.p = Km6280.K6280Context.Flags.Z.v + Km6280.K6280Context.Flags.I.v;
+            this.ctx.p = Km6280.Flags.Z.v + Km6280.Flags.I.v;
             this.ctx.x = this.ctx.y = 0;
             this.ctx.s = 0xff;
             this.ctx.pc = this.playerRomAddr;
@@ -563,11 +549,11 @@ public class M_Hes {
             this.playerRom[0x04] = (byte) (((this.playerRomAddr + 3) >> 0) & 0xff);
             this.playerRom[0x05] = (byte) (((this.playerRomAddr + 3) >> 8) & 0xff);
 
-            this.hesvdcStatus = 0;
-            this.hesvdcCr = 0;
-            this.hesvdcAdr = 0;
+            this.hesVdcStatus = 0;
+            this.hesVdcCr = 0;
+            this.hesVdcAdr = 0;
             this.setUpVsync();
-            this.hestimReload = this.hestimCounter = this.hestimStart = 0;
+            this.hesTimReload = this.hesTimCounter = this.hesTimStart = 0;
             this.setUpTimer();
 
             // request execute(5sec)
@@ -575,18 +561,18 @@ public class M_Hes {
 
             this.disableSendChip = true;
 
-            while (this.breaked == 0 && --initbreak != 0)
+            while (this.broken == 0 && --initbreak != 0)
                 this.km6280_exec(this.ctx, HES_BASECYCLES >> 8);
 
             this.disableSendChip = false;
-            this.chipRegister.chip(HuC6280Chip.class).write(0, 1, 0xff, EnmModel.VirtualModel);
+            this.huC6280Write.accept(1, 0xff);
 
-            if (this.breaked != 0) {
-                this.breaked = 0;
+            if (this.broken != 0) {
+                this.broken = 0;
                 this.ctx.p &= 0xffff_fffb; // ~Km6280.Flags.I;
             } else {
                 this.ctx.a = (nezPlay.song.songno - 1) & 0xff;
-                this.ctx.p = Km6280.K6280Context.Flags.Z.v + Km6280.K6280Context.Flags.I.v;
+                this.ctx.p = Km6280.Flags.Z.v + Km6280.Flags.I.v;
                 this.ctx.x = this.ctx.y = 0;
                 this.ctx.s = 0xff;
                 this.ctx.pc = this.playerRomAddr;
@@ -614,7 +600,7 @@ public class M_Hes {
             // Dump settings up to here
         }
 
-        private int load(NEZ_PLAY nezPlay, byte[] pData, int uSize) {
+        private int load(NezPlay nezPlay, byte[] pData, int uSize) {
             int i, p;
 //            XMEMSET(this., 0, sizeof(HESHES));
 //            this. = new HESHES();
