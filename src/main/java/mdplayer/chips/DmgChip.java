@@ -76,6 +76,12 @@ public class DmgChip implements Chip {
         context.mds.inst(inst(chipId)).resetMask(chipId, ch);
     }
 
+    public int read(int chipId, int addr) {
+        if (chipId == 1) return 0;
+
+        return context.mds.inst(DmgInst.class).read(chipId, addr);
+    }
+
     public GbSound read(int chipId) {
         if (chipId == 1) return null;
 

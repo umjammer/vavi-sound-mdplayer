@@ -898,6 +898,11 @@ public class Resources {
         return resourceMan.getString("DefaultVolumeBalance_ZGM");
     }
 
+    public static String getDefaultVolumeBalance_GBS() {
+
+        return resourceMan.getString("DefaultVolumeBalance_GBS");
+    }
+
     /**
      * Looks up localized resources of type BufferedImage.
      */

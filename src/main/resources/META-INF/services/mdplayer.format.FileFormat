@@ -31,3 +31,4 @@ mdplayer.format.ZMSFileFormat
 mdplayer.format.MusFileFormat
 mdplayer.format.OFileFormat
 mdplayer.format.MdsFileFormat
+mdplayer.format.GbsFileFormat
