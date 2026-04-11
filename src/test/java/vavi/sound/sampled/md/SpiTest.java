@@ -13,10 +13,12 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 import java.util.ServiceLoader;
 import javax.sound.SoundClip;
 import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioFormat.Encoding;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
@@ -62,6 +64,9 @@ class SpiTest {
     String inFile = "src/test/resources/test.vgm";
 
     @Property
+    int track;
+
+    @Property
     String fmpDir;
     @Property
     String fmpPvi;
@@ -77,6 +82,19 @@ class SpiTest {
     String muapDirDta;
     @Property(name = "muap.dir.pcm")
     String muapDirPcm;
+
+    @Property(name = "mdplayer.variant.pcm8")
+    int variantPcm8;
+    @Property(name = "mdplayer.variant.mpcm")
+    int variantMpcm;
+    @Property(name = "mdplayer.variant.ym2151")
+    int variantYm2151;
+    @Property(name = "mdplayer.variant.ym2413")
+    int variantYm2413;
+    @Property(name = "mdplayer.variant.ymf262")
+    int variantYmf262;
+    @Property(name = "mdplayer.variant.ay8910")
+    int variantAy8910;
 
     @Property(name = "vavi.test.volume")
     double volume = 0.2;
@@ -105,26 +123,28 @@ class SpiTest {
         }
 
         // disable other vgm conversion spi
-        System.setProperty("vavi.sound.sampled.spi.emu", "false");
+        System.setProperty("vavi.sound.sampled.spi.emu.vgm", "false");
+        System.setProperty("vavi.sound.sampled.spi.emu.gbs", "false");
         System.setProperty("vavi.sound.sampled.spi.ymfm", "false");
 
-//        System.setProperty("mdplayer.variant.ym2151", "2"); // TODO this kills pcm8
-        System.setProperty("mdplayer.variant.pcm8", "0");
-//        System.setProperty("mdplayer.variant.mpcm", "0");
-//        System.setProperty("mdplayer.variant.ym2151", "1");
-        System.setProperty("mdplayer.variant.ay8910", "2");
-        System.setProperty("mdplayer.variant.ym2413", "3");
+        System.setProperty("mdplayer.variant.pcm8", String.valueOf(variantPcm8));
+        System.setProperty("mdplayer.variant.mpcm", String.valueOf(variantMpcm));
+        System.setProperty("mdplayer.variant.ym2151", String.valueOf(variantYm2151));
+        System.setProperty("mdplayer.variant.ym2413", String.valueOf(variantYm2413));
+        System.setProperty("mdplayer.variant.ay8910", String.valueOf(variantAy8910));
+        System.setProperty("mdplayer.variant.ymf262", String.valueOf(variantYmf262));
 
 Debug.println("volume: " + volume + ", player.volume: " + System.getProperty("mdplayer.volume") + ", cwd: " + System.getProperty("user.dir") + ", time: " + time);
-Debug.println("mdplayer.fmp.dir: " + System.getProperty("mdplayer.fmp.dir"));
-Debug.println("mdplayer.fmp.pvi: " + System.getProperty("mdplayer.fmp.pvi"));
-Debug.println("mdplayer.zms.dir: " + System.getProperty("mdplayer.zms.dir"));
-Debug.println("mdplayer.mgs.dir: " + System.getProperty("mdplayer.mgs.dir"));
-Debug.println("mdplayer.ndp.dir: " + System.getProperty("mdplayer.ndp.dir"));
-Debug.println("mdplayer.musica.dir: " + System.getProperty("mdplayer.musica.dir"));
-Debug.println("muap.dir.dta: " + System.getProperty("muap.dir.dta"));
-Debug.println("muap.dir.pcm: " + System.getProperty("muap.dir.pcm"));
-Debug.println("mdplayer.variant.ymf262: " + System.getProperty("mdplayer.variant.ymf262"));
+Debug.println("settings\n" +
+        "mdplayer.fmp.dir: " + System.getProperty("mdplayer.fmp.dir") + "\n" +
+        "mdplayer.fmp.pvi: " + System.getProperty("mdplayer.fmp.pvi") + "\n" +
+        "mdplayer.zms.dir: " + System.getProperty("mdplayer.zms.dir") + "\n" +
+        "mdplayer.mgs.dir: " + System.getProperty("mdplayer.mgs.dir") + "\n" +
+        "mdplayer.ndp.dir: " + System.getProperty("mdplayer.ndp.dir") + "\n" +
+        "mdplayer.musica.dir: " + System.getProperty("mdplayer.musica.dir") + "\n" +
+        "muap.dir.dta: " + System.getProperty("muap.dir.dta") + "\n" +
+        "muap.dir.pcm: " + System.getProperty("muap.dir.pcm") + "\n" +
+        "mdplayer.variant.ymf262: " + System.getProperty("mdplayer.variant.ymf262"));
     }
 
     @Test
@@ -137,12 +157,16 @@ Debug.println(inFile);
 
         AudioFormat inAudioFormat = sourceAis.getFormat();
 Debug.println("IN: " + inAudioFormat);
+        Map<String, Object> map = Map.of("track", track);
         AudioFormat outAudioFormat = new AudioFormat(
+                Encoding.PCM_SIGNED,
                 44100,
                 16,
                 2,
-                true,
-                false);
+                4,
+                44100,
+                false,
+                map);
 Debug.println("OUT: " + outAudioFormat);
 
         assertTrue(new MdFormatConversionProvider().isConversionSupported(outAudioFormat, inAudioFormat));
@@ -182,12 +206,16 @@ Debug.println("IN: " + inAudioFormat + ", " + inAudioFormat.getEncoding().getCla
 
         assertInstanceOf(MdEncoding.class, inAudioFormat.getEncoding());
 
+        Map<String, Object> map = Map.of("track", track);
         AudioFormat outAudioFormat = new AudioFormat(
+                Encoding.PCM_SIGNED,
                 44100,
                 16,
                 2,
-                true,
-                false);
+                4,
+                44100,
+                false,
+                map);
 Debug.println("OUT: " + outAudioFormat);
 
 for(var codec : ServiceLoader.load(FormatConversionProvider.class)) {
