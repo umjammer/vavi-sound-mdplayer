@@ -59,13 +59,13 @@ public class ChipRegister {
         for (Chip chip : chipServiceLoader) {
             chips.put(chip.getClass(), chip);
         }
-logger.log(Level.INFO, "chips: " + chips.size());
+logger.log(Level.TRACE, "chips: " + chips.size());
 
         // reused instance
         for (Plugin plugin : pluginServiceLoader) {
             plugins.put(plugin.getClass(), plugin);
         }
-logger.log(Level.INFO, "plugins: " + plugins.size());
+logger.log(Level.TRACE, "sub plugins: " + plugins.size());
     }
 
     /** for all chips and plugins */
