@@ -109,7 +109,7 @@ public class Memory {
         } else if (pc >= 0xfea0 && pc < 0xff00) {
             ; //Not use
         } else if (pc >= 0xff00 && pc < 0xff80) {
-            io.write(pc, dat);
+            io.write(pc, dat & 0xff);
         } else if (pc >= 0xff80 && pc < 0xffff) {
             hiRAM[(pc - 0xff80) & 0xFFFF] = dat;
         } else if (pc == 0xffff) {

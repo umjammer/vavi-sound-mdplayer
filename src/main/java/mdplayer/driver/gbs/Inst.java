@@ -15,10 +15,10 @@ public class Inst {
     public Inst(Supplier<Integer> meth, int length, String cycle, String flags) {
         this.meth = meth;
         this.length = length;
-        String scycle = cycle;
+        String sCycle = cycle;
         this.flags = flags;
 
-        String[] c = scycle.split("/");
+        String[] c = sCycle.split("/");
         // Filter out empty strings (equivalent to RemoveEmptyEntries)
         List<String> filtered = new ArrayList<>();
         for (String part : c) {

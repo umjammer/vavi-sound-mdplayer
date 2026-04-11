@@ -3,7 +3,6 @@ package mdplayer.driver.gbs;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
-import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.DmgChip;
 import mdplayer.driver.BaseDriver;
@@ -21,17 +20,17 @@ public class Gbs extends BaseDriver {
     private IO io;
     private Memory memory;
     private Cpu cpu;
-    private int GBClock = 4194304;
-    private double GBVSync = 60.0;
+    private static final int GBClock = 4194304;
+    private static final double GBVSync = 60.0;
     private double cycles = 0.0;
-    private double vcycles = 0.0;
+    private double vCycles = 0.0;
     private GbsInfo info;
-    private int breakSp; // ushort in C# -> int in Java
+    private int breakSp;
     private boolean initFlg = false;
 
     @Override
     public MetaData getMetaData(byte[] buf, Object... args) {
-        GbsInfo gbsInfo = getGbsInfo(buf);
+        GbsInfo gbsInfo = GbsInfo.factory(buf);
 
         songs = gbsInfo.nums;
         MetaData metaData = new MetaData();
@@ -49,12 +48,17 @@ public class Gbs extends BaseDriver {
         return metaData;
     }
 
+    /**
+     * @param args 0: songNo
+     */
     @Override
     public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model, int latency, int waitTime, Object... args) {
         getMetaData(vgmBuf, 0);
-        info = getGbsInfo(vgmBuf);
+        info = GbsInfo.factory(vgmBuf);
         this.plugin = plugin;
         this.model = model;
+
+        song = (byte) (((int) args[0] - 1) % songs);
 
         //logger.log(Level.TRACE, "Load " + fn);
         //logger.log(Level.TRACE, "title     : " + info.title);
@@ -72,8 +76,7 @@ public class Gbs extends BaseDriver {
                     a -> plugin.chipRegister.chip(DmgChip.class).read(0, a));
             memory = new Memory(info.mem, io);
             cpu = new Cpu(GBClock, memory);
-            cpu.vgmFrameCounter = frameCounter;
-            cpu.Init();
+            cpu.init();
 
             cpu.reg.pc = info.initAddress & 0xFFFF;
             cpu.reg.sp = info.sp & 0xFFFF;
@@ -81,7 +84,7 @@ public class Gbs extends BaseDriver {
             cpu.reg.a = song;
             try {
                 while (!cpu.isHalt && !cpu.isStop) {
-                    cpu.ExecuteOneStep();
+                    cpu.executeOneStep();
                     if (cpu.reg.sp == breakSp) break;
                 }
             } catch (UnsupportedOperationException e) {
@@ -95,9 +98,9 @@ public class Gbs extends BaseDriver {
         }
 
         double oneVClock = GBVSync / (double) setting.getOutputDevice().getSampleRate();
-        vcycles += oneVClock;
-        if (vcycles >= 1.0) {
-            vcycles -= 1.0;
+        vCycles += oneVClock;
+        if (vCycles >= 1.0) {
+            vCycles -= 1.0;
             if (cpu.reg.sp == breakSp) {
                 cpu.reg.pc = info.playAddress & 0xFFFF;
                 cpu.reg.sp = info.sp & 0xFFFF;
@@ -114,10 +117,9 @@ public class Gbs extends BaseDriver {
         //step = 0;
         try {
             if (cpu.reg.sp != breakSp) {
-                cpu.vgmFrameCounter = frameCounter;
                 double oneClock = cpu.clock / (double) setting.getOutputDevice().getSampleRate();
                 while (cycles < oneClock && cpu.reg.sp != breakSp) {
-                    int cycle = cpu.ExecuteOneStep();
+                    int cycle = cpu.executeOneStep();
                     cycles += cycle;
                     //step++;
                 }
@@ -132,44 +134,5 @@ public class Gbs extends BaseDriver {
         //logger.log(Level.TRACE, "Total step  : " + step);
 
         //logger.log(Level.TRACE, "Play process count : " + i + 1);
-    }
-
-    GbsInfo getGbsInfo(byte[] b) {
-        // IdentifierCheck
-        if (b[0] != 'G' || b[1] != 'B' || b[2] != 'S') throw new IllegalArgumentException("Unknown format");
-
-        GbsInfo info = new GbsInfo();
-        info.version = b[3];
-        info.nums = b[4];
-        info.firstSong = b[5];
-        info.loadAddress = (b[6] & 0xFF) + ((b[7] & 0xFF) << 8);
-        info.initAddress = (b[8] & 0xFF) + ((b[9] & 0xFF) << 8);
-        info.playAddress = (b[10] & 0xFF) + ((b[11] & 0xFF) << 8);
-        info.sp = (b[12] & 0xFF) + ((b[13] & 0xFF) << 8);
-        info.timerModulo = b[14];
-        info.timerControl = b[15];
-
-        info.title = new String(b, 0x10, 32, Common.charset).replace("\0", "");
-        info.author = new String(b, 0x30, 32, Common.charset).replace("\0", "");
-        info.copyright = new String(b, 0x50, 32, Common.charset).replace("\0", "");
-
-        info.mem = new byte[2][];
-        info.mem[0] = new byte[0x4000];
-        info.mem[1] = new byte[0x4000];
-
-        int ptr = info.loadAddress % 0x4000;
-        int cptr = 0x70;
-        int bank = info.loadAddress / 0x4000;
-        while ((bank < 2 && ptr < 0x4000) && cptr < b.length) {
-            info.mem[bank][ptr] = b[cptr];
-            ptr++;
-            if (ptr == 0x4000) {
-                ptr = 0;
-                bank++;
-            }
-            cptr++;
-        }
-
-        return info;
     }
 }
