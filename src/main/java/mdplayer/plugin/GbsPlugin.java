@@ -1,6 +1,13 @@
+/*
+ * Copyright (c) 2026 by Naohide Sano, All rights reserved.
+ *
+ * Programmed by Naohide Sano
+ */
+
 package mdplayer.plugin;
 
 import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
@@ -8,6 +15,7 @@ import mdplayer.chips.DmgChip;
 import mdplayer.chips.HuC6280Chip;
 import mdplayer.driver.gbs.Gbs;
 import mdplayer.driver.hes.HesDriver;
+import mdplayer.plugin.BasePlugin.HasSongNo;
 import mdsound.MDSound;
 
 import static java.lang.System.getLogger;
@@ -20,9 +28,15 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-04-10 nsano initial version <br>
  */
-public class GbsPlugin extends BasePlugin<Gbs> {
+public class GbsPlugin extends BasePlugin<Gbs> implements HasSongNo {
 
     private static final Logger logger = getLogger(GbsPlugin.class.getName());
+
+    /** for spi */
+    public void setSongNo(int songNo) {
+logger.log(Level.INFO, "songNo: " + songNo);
+        this.songNo = songNo;
+    }
 
     @Override
     public void prepare() {

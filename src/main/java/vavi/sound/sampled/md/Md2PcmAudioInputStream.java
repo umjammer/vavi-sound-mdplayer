@@ -17,6 +17,7 @@ import java.util.Map;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 
+import mdplayer.plugin.BasePlugin.HasSongNo;
 import mdplayer.plugin.Plugin;
 import vavi.io.OutputEngine;
 import vavi.io.OutputEngineInputStream;
@@ -42,7 +43,7 @@ class Md2PcmAudioInputStream extends AudioInputStream {
      * @param length the length in sample frames of the data in this stream.
      */
     public Md2PcmAudioInputStream(AudioFormat sourceFormat, AudioFormat format, long length, Map<String, Object> props) throws IOException {
-        super(new OutputEngineInputStream(new MdOutputEngine((Plugin) sourceFormat.getProperty("md"), props)), format, length);
+        super(new OutputEngineInputStream(new MdOutputEngine((Plugin) sourceFormat.getProperty("vavi.sound.sampled.md"), props)), format, length);
     }
 
     /** */
@@ -54,9 +55,11 @@ class Md2PcmAudioInputStream extends AudioInputStream {
         final Plugin plugin;
 
         /** */
-        public MdOutputEngine(Plugin plugin, Map<String, Object> props) throws IOException {
+        public MdOutputEngine(Plugin plugin, Map<String, Object> props) {
 logger.log(Level.DEBUG,"plugin: " + plugin.getClass().getSimpleName());
             this.plugin = plugin;
+            if (plugin instanceof HasSongNo hasSongNo)
+                hasSongNo.setSongNo((int) props.getOrDefault("track", 1)); // 1 origin, adjust in each plugin
             plugin.prepare();
         }
 

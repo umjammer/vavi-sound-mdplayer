@@ -36,6 +36,10 @@ public abstract class BasePlugin<T extends BaseDriver> implements Plugin {
 
     protected final Setting setting = Setting.getInstance();
 
+    public interface HasSongNo {
+        void setSongNo(int songNo);
+    }
+
     public final MDSound mds;
 
     public final ChipRegister chipRegister;
@@ -184,7 +188,7 @@ logger.log(Level.INFO, "stop: " + this.stopped);
         chipRegister.reset();
     }
 
-    /** */
+    /** TODO consider more */
     public void setBuffer(FileFormat format, byte[] srcBuf, String playingFileName, String playingArcFileName, int midiMode, int songNo, List<Tuple<String, byte[]>> extFile) {
         //stop();
         this.fileFormat = format;

@@ -1,6 +1,7 @@
 package mdplayer.plugin;
 
 import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 
 import mdplayer.Common;
 import mdplayer.chips.MidiPlugin;
@@ -13,6 +14,7 @@ import mdplayer.chips.NesChip.N163Chip;
 import mdplayer.chips.NesChip.Vrc6Chip;
 import mdplayer.chips.NesChip.Vrc7Chip;
 import mdplayer.driver.nsf.NsfMdDriver2;
+import mdplayer.plugin.BasePlugin.HasSongNo;
 import mdsound.Instrument;
 import mdsound.MDSound;
 import mdsound.instrument.NesInst;
@@ -27,9 +29,15 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-08 nsano initial version <br>
  */
-public class NSFPlugin extends BasePlugin<NsfMdDriver2> {
+public class NSFPlugin extends BasePlugin<NsfMdDriver2> implements HasSongNo {
 
     private static final Logger logger = getLogger(NSFPlugin.class.getName());
+
+    /** for spi */
+    public void setSongNo(int songNo) {
+logger.log(Level.INFO, "songNo: " + songNo);
+        this.songNo = songNo;
+    }
 
     @Override
     public void prepare() {

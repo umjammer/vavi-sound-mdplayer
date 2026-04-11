@@ -117,7 +117,7 @@ logger.log(TRACE, e.getMessage(), e);
             throw (UnsupportedAudioFileException) new UnsupportedAudioFileException().initCause(e);
         }
         Map<String, Object> props = new HashMap<>();
-        props.put("md", plugin);
+        props.put("vavi.sound.sampled.md", plugin);
         AudioFormat format = new AudioFormat(encoding, samplingRate, NOT_SPECIFIED, channels, NOT_SPECIFIED, NOT_SPECIFIED, false, props);
         return new AudioFileFormat(type, format, NOT_SPECIFIED);
     }
