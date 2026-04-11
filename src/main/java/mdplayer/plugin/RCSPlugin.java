@@ -72,8 +72,8 @@ public class RCSPlugin extends BasePlugin<RcsDriver> {
         chipLED.put("PriPCM8", 1);
 
         chipRegister.plugin(MidiPlugin.class).releaseAll();
-        chipRegister.plugin(MidiPlugin.class).make(setting, midiMode);
-        chipRegister.plugin(MidiPlugin.class).set(setting.getMidiOut().getMidiOutInfos().get(midiMode));
+        chipRegister.plugin(MidiPlugin.class).make();
+        chipRegister.plugin(MidiPlugin.class).set(setting.getMidiOut().getMidiOutInfos().get(chipRegister.plugin(MidiPlugin.class).midiMode));
 
         driverVirtual.setSupportFileName((supportFile == null || supportFile.length < 1) ? null : supportFile[0]);
         driverReal.setSupportFileName((supportFile == null || supportFile.length < 1) ? null : supportFile[0]);

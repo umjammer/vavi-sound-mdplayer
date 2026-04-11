@@ -65,7 +65,6 @@ public abstract class BasePlugin<T extends BaseDriver> implements Plugin {
 
     public String playingFileName;
     public String playingArcFileName;
-    protected int midiMode = 0;
     protected int songNo = 0;
     protected List<Tuple<String, byte[]>> extendFiles = null;
 
@@ -104,10 +103,9 @@ public abstract class BasePlugin<T extends BaseDriver> implements Plugin {
     }
 
     protected BasePlugin() {
-        mds = new MDSound(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, null);
+        mds = new MDSound();
 
         chipRegister = new ChipRegister();
-        chipRegister.init(this);
 
         init();
     }
@@ -116,6 +114,7 @@ public abstract class BasePlugin<T extends BaseDriver> implements Plugin {
     public void init() {
         oneTimeReset = false;
 
+        chipRegister.init(this);
         // midi out released
         chipRegister.plugin(MidiPlugin.class).releaseAll();
 
@@ -196,7 +195,7 @@ logger.log(Level.INFO, "stop: " + this.stopped);
         this.vgmBuf = srcBuf;
         this.playingFileName = playingFileName; // for WaveWriter
         this.playingArcFileName = playingArcFileName;
-        this.midiMode = midiMode;
+        chipRegister.plugin(MidiPlugin.class).midiMode = midiMode;
         this.songNo = songNo;
         chipRegister.plugin(MidiPlugin.class).setFileName(playingFileName); // for ExportMIDI
         extendFiles = extFile; // Additional files

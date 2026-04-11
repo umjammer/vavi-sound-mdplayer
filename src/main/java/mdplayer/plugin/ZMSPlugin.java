@@ -93,8 +93,8 @@ public class ZMSPlugin extends BasePlugin<ZmsDriver> {
         mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, flatten());
 
         chipRegister.plugin(MidiPlugin.class).releaseAll();
-        chipRegister.plugin(MidiPlugin.class).make(setting, midiMode);
-//        chipRegister.plugin(MidiPlugin.class).set(setting.getMidiOut().getMidiOutInfos().get(midiMode)); // , midiOuts, midiOutsType);
+        chipRegister.plugin(MidiPlugin.class).make();
+//        chipRegister.plugin(MidiPlugin.class).set(setting.getMidiOut().getMidiOutInfos().get(chipRegister.plugin(MidiPlugin.class).midiMode));
 
         if (contains(Ym2151Chip.class, 0))
             chipRegister.chip(Ym2151Chip.class).writeClock(0, 4000000, EnmModel.RealModel);
