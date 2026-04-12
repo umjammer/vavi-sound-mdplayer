@@ -8,6 +8,7 @@ package vavi.sound.sampled.md;
 
 import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
@@ -24,7 +25,10 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.SourceDataLine;
 import javax.sound.sampled.UnsupportedAudioFileException;
+import javax.sound.sampled.spi.AudioFileReader;
 import javax.sound.sampled.spi.FormatConversionProvider;
+
+import com.sun.media.sound.JDK13Services;
 
 import vavi.util.Debug;
 import vavi.util.properties.annotation.Property;
@@ -148,7 +152,7 @@ Debug.println("settings\n" +
     }
 
     @Test
-    @DisplayName("directly")
+    @DisplayName("via spi directly")
     @DisabledIfEnvironmentVariable(named = "GITHUB_WORKFLOW", matches = ".*") // github workflow doesn't support volume
     public void test0() throws Exception {
 Debug.println(inFile);
@@ -194,7 +198,7 @@ Debug.println("OUT: " + outAudioFormat);
     }
 
     @Test
-    @DisplayName("by spi")
+    @DisplayName("via spi")
     @DisabledIfEnvironmentVariable(named = "GITHUB_WORKFLOW", matches = ".*") // github workflow doesn't support volume
     public void test1() throws Exception {
 Debug.println(inFile);
@@ -292,5 +296,25 @@ Debug.println(e.getMessage());
     void test6() throws Exception {
         var clip = SoundClip.createSoundClip(Path.of(inFile).toFile());
         clip.play();
+    }
+
+    @Test
+    @DisplayName("just test")
+    void test7() throws IOException {
+Debug.println(inFile);
+        Path path = Paths.get(inFile);
+        InputStream is = new BufferedInputStream(Files.newInputStream(path));
+
+        for(var o : JDK13Services.getProviders(AudioFileReader.class)) {
+            AudioFileReader reader = (AudioFileReader) o;
+            try {
+Debug.println("TRY reader: " + reader.getClass().getName() + ", " + is.available());
+                reader.getAudioFileFormat(is);
+Debug.println("OK reader: " + reader.getClass().getName());
+                break;
+            } catch (UnsupportedAudioFileException e) {
+Debug.println("FAILED reader: " + reader.getClass().getName() + ", " + is.available());
+            }
+        }
     }
 }
