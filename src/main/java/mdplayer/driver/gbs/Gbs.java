@@ -58,8 +58,9 @@ public class Gbs extends BaseDriver {
         this.plugin = plugin;
         this.model = model;
 
-        song = (byte) (((int) args[0] - 1) % songs);
-logger.log(Level.DEBUG, "internal song no: " + song);
+        int s = (int) args[0] - 1;
+        song = (byte) (0 < s || s >= songs ? s : 0);
+logger.log(Level.DEBUG, "internal song no: " + song + " / " + songs);
 
         //logger.log(Level.TRACE, "Load " + fn);
         //logger.log(Level.TRACE, "title     : " + info.title);

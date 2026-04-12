@@ -567,7 +567,7 @@ public class Cpu {
         byte d = reg.a;
         reg.setC((d & 0x01) != 0);
 
-        d = (byte) ((d >>> 1) | (reg.isC() ? 0x80 : 0));
+        d = (byte) (((d & 0xFF) >>> 1) | (reg.isC() ? 0x80 : 0));
         reg.a = d;
 
         reg.setZ(false);
@@ -754,7 +754,7 @@ public class Cpu {
         byte e = (byte) (reg.isC() ? 0x80 : 0);
         reg.setC((d & 0x01) != 0);
 
-        d = (byte) ((d >>> 1) | e);
+        d = (byte) (((d & 0xFF) >>> 1) | e);
         reg.a = d;
 
         reg.setZ(false);
@@ -3385,7 +3385,7 @@ public class Cpu {
     int RRC_B() {
         byte d = reg.b;
         reg.setC((d & 0x01) != 0);
-        d = (byte)((d >>> 1) | (reg.isC() ? 0x80 : 0));
+        d = (byte)(((d & 0xFF) >>> 1) | (reg.isC() ? 0x80 : 0));
         reg.b = d;
 
         reg.setZ(d == 0);
@@ -3400,7 +3400,7 @@ public class Cpu {
     int RRC_C() {
         byte d = reg.c;
         reg.setC((d & 0x01) != 0);
-        d = (byte)((d >>> 1) | (reg.isC() ? 0x80 : 0));
+        d = (byte)(((d & 0xFF) >>> 1) | (reg.isC() ? 0x80 : 0));
         reg.c = d;
 
         reg.setZ(d == 0);
@@ -3415,7 +3415,7 @@ public class Cpu {
     int RRC_D() {
         byte d = reg.d;
         reg.setC((d & 0x01) != 0);
-        d = (byte)((d >>> 1) | (reg.isC() ? 0x80 : 0));
+        d = (byte)(((d & 0xFF) >>> 1) | (reg.isC() ? 0x80 : 0));
         reg.d = d;
 
         reg.setZ(d == 0);
@@ -3430,7 +3430,7 @@ public class Cpu {
     int RRC_E() {
         byte d = reg.e;
         reg.setC((d & 0x01) != 0);
-        d = (byte)((d >>> 1) | (reg.isC() ? 0x80 : 0));
+        d = (byte)(((d & 0xFF) >>> 1) | (reg.isC() ? 0x80 : 0));
         reg.e = d;
 
         reg.setZ(d == 0);
@@ -3445,7 +3445,7 @@ public class Cpu {
     int RRC_H() {
         byte d = reg.h;
         reg.setC((d & 0x01) != 0);
-        d = (byte)((d >>> 1) | (reg.isC() ? 0x80 : 0));
+        d = (byte)(((d & 0xFF) >>> 1) | (reg.isC() ? 0x80 : 0));
         reg.h = d;
 
         reg.setZ(d == 0);
@@ -3460,7 +3460,7 @@ public class Cpu {
     int RRC_L() {
         byte d = reg.l;
         reg.setC((d & 0x01) != 0);
-        d = (byte)((d >>> 1) | (reg.isC() ? 0x80 : 0));
+        d = (byte)(((d & 0xFF) >>> 1) | (reg.isC() ? 0x80 : 0));
         reg.l = d;
 
         reg.setZ(d == 0);
@@ -3475,7 +3475,7 @@ public class Cpu {
     int RRC_pHLs() {
         byte d = mem.peekB(reg.getHl());
         reg.setC((d & 0x01) != 0);
-        d = (byte)((d >>> 1) | (reg.isC() ? 0x80 : 0));
+        d = (byte)(((d & 0xFF) >>> 1) | (reg.isC() ? 0x80 : 0));
         mem.pokeB(reg.getHl(), d);
 
         reg.setZ(d == 0);
@@ -3490,7 +3490,7 @@ public class Cpu {
     int RRC_A() {
         byte d = reg.a;
         reg.setC((d & 0x01) != 0);
-        d = (byte)((d >>> 1) | (reg.isC() ? 0x80 : 0));
+        d = (byte)(((d & 0xFF) >>> 1) | (reg.isC() ? 0x80 : 0));
         reg.a = d;
 
         reg.setZ(d == 0);
@@ -3645,7 +3645,7 @@ public class Cpu {
         byte e = (byte)(reg.isC() ? 0x80 : 0);
         reg.setC((d & 0x01) != 0);
 
-        d = (byte)((d >>> 1) | e);
+        d = (byte)(((d & 0xFF) >>> 1) | e);
         reg.b = d;
 
         reg.setZ(d == 0);
@@ -3662,7 +3662,7 @@ public class Cpu {
         byte e = (byte)(reg.isC() ? 0x80 : 0);
         reg.setC((d & 0x01) != 0);
 
-        d = (byte)((d >>> 1) | e);
+        d = (byte)(((d & 0xFF) >>> 1) | e);
         reg.c = d;
 
         reg.setZ(d == 0);
@@ -3679,7 +3679,7 @@ public class Cpu {
         byte e = (byte)(reg.isC() ? 0x80 : 0);
         reg.setC((d & 0x01) != 0);
 
-        d = (byte)((d >>> 1) | e);
+        d = (byte)(((d & 0xFF) >>> 1) | e);
         reg.d = d;
 
         reg.setZ(d == 0);
@@ -3696,7 +3696,7 @@ public class Cpu {
         byte e = (byte)(reg.isC() ? 0x80 : 0);
         reg.setC((d & 0x01) != 0);
 
-        d = (byte)((d >>> 1) | e);
+        d = (byte)(((d & 0xFF) >>> 1) | e);
         reg.e = d;
 
         reg.setZ(d == 0);
@@ -3713,7 +3713,7 @@ public class Cpu {
         byte e = (byte)(reg.isC() ? 0x80 : 0);
         reg.setC((d & 0x01) != 0);
 
-        d = (byte)((d >>> 1) | e);
+        d = (byte)(((d & 0xFF) >>> 1) | e);
         reg.h = d;
 
         reg.setZ(d == 0);
@@ -3730,7 +3730,7 @@ public class Cpu {
         byte e = (byte)(reg.isC() ? 0x80 : 0);
         reg.setC((d & 0x01) != 0);
 
-        d = (byte)((d >>> 1) | e);
+        d = (byte)(((d & 0xFF) >>> 1) | e);
         reg.l = d;
 
         reg.setZ(d == 0);
@@ -3747,7 +3747,7 @@ public class Cpu {
         byte e = (byte)(reg.isC() ? 0x80 : 0);
         reg.setC((d & 0x01) != 0);
 
-        d = (byte)((d >>> 1) | e);
+        d = (byte)(((d & 0xFF) >>> 1) | e);
         mem.pokeB(reg.getHl(), d);
 
         reg.setZ(d == 0);
@@ -3764,7 +3764,7 @@ public class Cpu {
         byte e = (byte)(reg.isC() ? 0x80 : 0);
         reg.setC((d & 0x01) != 0);
 
-        d = (byte)((d >>> 1) | e);
+        d = (byte)(((d & 0xFF) >>> 1) | e);
         reg.a = d;
 
         reg.setZ(d == 0);
@@ -3893,7 +3893,7 @@ public class Cpu {
     // 0x28 (CB) - 0x128
     int SRA_B() {
         byte a = reg.b;
-        reg.b = (byte)((a >>> 1) | (a & 0x80));
+        reg.b = (byte)(((a & 0xFF) >>> 1) | (a & 0x80));
 
         reg.setZ(reg.b == 0);
         reg.setS(false);
@@ -3907,7 +3907,7 @@ public class Cpu {
 
     int SRA_C() {
         byte a = reg.c;
-        reg.c = (byte)((a >>> 1) | (a & 0x80));
+        reg.c = (byte)(((a & 0xFF) >>> 1) | (a & 0x80));
 
         reg.setZ(reg.c == 0);
         reg.setS(false);
@@ -3921,7 +3921,7 @@ public class Cpu {
 
     int SRA_D() {
         byte a = reg.d;
-        reg.d = (byte)((a >>> 1) | (a & 0x80));
+        reg.d = (byte)(((a & 0xFF) >>> 1) | (a & 0x80));
 
         reg.setZ(reg.d == 0);
         reg.setS(false);
@@ -3935,7 +3935,7 @@ public class Cpu {
 
     int SRA_E() {
         byte a = reg.e;
-        reg.e = (byte)((a >>> 1) | (a & 0x80));
+        reg.e = (byte)(((a & 0xFF) >>> 1) | (a & 0x80));
 
         reg.setZ(reg.e == 0);
         reg.setS(false);
@@ -3949,7 +3949,7 @@ public class Cpu {
 
     int SRA_H() {
         byte a = reg.h;
-        reg.h = (byte)((a >>> 1) | (a & 0x80));
+        reg.h = (byte)(((a & 0xFF) >>> 1) | (a & 0x80));
 
         reg.setZ(reg.h == 0);
         reg.setS(false);
@@ -3963,7 +3963,7 @@ public class Cpu {
 
     int SRA_L() {
         byte a = reg.l;
-        reg.l = (byte)((a >>> 1) | (a & 0x80));
+        reg.l = (byte)(((a & 0xFF) >>> 1) | (a & 0x80));
 
         reg.setZ(reg.l == 0);
         reg.setS(false);
@@ -3977,7 +3977,7 @@ public class Cpu {
 
     int SRA_pHLs() {
         byte a = mem.peekB(reg.getHl());
-        byte b = (byte)((a >>> 1) | (a & 0x80));
+        byte b = (byte)(((a & 0xFF) >>> 1) | (a & 0x80));
         mem.pokeB(reg.getHl(), b);
 
         reg.setZ(b == 0);
@@ -3992,7 +3992,7 @@ public class Cpu {
 
     int SRA_A() {
         byte a = reg.a;
-        reg.a = (byte)((a >>> 1) | (a & 0x80));
+        reg.a = (byte)(((a & 0xFF) >>> 1) | (a & 0x80));
 
         reg.setZ(reg.a == 0);
         reg.setS(false);
@@ -4007,7 +4007,7 @@ public class Cpu {
     // 0x30 (CB) - 0x130
     int SWAP_B() {
         byte a = reg.b;
-        reg.b = (byte)(((a >>> 4) & 0xf) | ((a << 4) & 0xf0));
+        reg.b = (byte)((((a & 0xFF) >>> 4) & 0xf) | ((a << 4) & 0xf0));
         reg.setZ(reg.b == 0);
         reg.setS(false);
         reg.setH(false);
@@ -4020,7 +4020,7 @@ public class Cpu {
 
     int SWAP_C() {
         byte a = reg.c;
-        reg.c = (byte)(((a >>> 4) & 0xf) | ((a << 4) & 0xf0));
+        reg.c = (byte)((((a & 0xFF) >>> 4) & 0xf) | ((a << 4) & 0xf0));
         reg.setZ(reg.c == 0);
         reg.setS(false);
         reg.setH(false);
@@ -4033,7 +4033,7 @@ public class Cpu {
 
     int SWAP_D() {
         byte a = reg.d;
-        reg.d = (byte)(((a >>> 4) & 0xf) | ((a << 4) & 0xf0));
+        reg.d = (byte)((((a & 0xFF) >>> 4) & 0xf) | ((a << 4) & 0xf0));
         reg.setZ(reg.d == 0);
         reg.setS(false);
         reg.setH(false);
@@ -4046,7 +4046,7 @@ public class Cpu {
 
     int SWAP_E() {
         byte a = reg.e;
-        reg.e = (byte)(((a >>> 4) & 0xf) | ((a << 4) & 0xf0));
+        reg.e = (byte)((((a & 0xFF) >>> 4) & 0xf) | ((a << 4) & 0xf0));
         reg.setZ(reg.e == 0);
         reg.setS(false);
         reg.setH(false);
@@ -4059,7 +4059,7 @@ public class Cpu {
 
     int SWAP_H() {
         byte a = reg.h;
-        reg.h = (byte)(((a >>> 4) & 0xf) | ((a << 4) & 0xf0));
+        reg.h = (byte)((((a & 0xFF) >>> 4) & 0xf) | ((a << 4) & 0xf0));
         reg.setZ(reg.h == 0);
         reg.setS(false);
         reg.setH(false);
@@ -4072,7 +4072,7 @@ public class Cpu {
 
     int SWAP_L() {
         byte a = reg.l;
-        reg.l = (byte)(((a >>> 4) & 0xf) | ((a << 4) & 0xf0));
+        reg.l = (byte)((((a & 0xFF) >>> 4) & 0xf) | ((a << 4) & 0xf0));
         reg.setZ(reg.l == 0);
         reg.setS(false);
         reg.setH(false);
@@ -4085,7 +4085,7 @@ public class Cpu {
 
     int SWAP_pHLs() {
         byte a = mem.peekB(reg.getHl());
-        a = (byte)(((a >>> 4) & 0xf) | ((a << 4) & 0xf0));
+        a = (byte)((((a & 0xFF) >>> 4) & 0xf) | ((a << 4) & 0xf0));
         mem.pokeB(reg.getHl(), a);
         reg.setZ(a == 0);
         reg.setS(false);
@@ -4099,7 +4099,7 @@ public class Cpu {
 
     int SWAP_A() {
         byte a = reg.a;
-        reg.a = (byte)(((a >>> 4) & 0xf) | ((a << 4) & 0xf0));
+        reg.a = (byte)((((a & 0xFF) >>> 4) & 0xf) | ((a << 4) & 0xf0));
         reg.setZ(reg.a == 0);
         reg.setS(false);
         reg.setH(false);
@@ -4113,7 +4113,7 @@ public class Cpu {
     // 0x38 (CB) - 0x138
     int SRL_B() {
         byte a = reg.b;
-        reg.b = (byte)(a >>> 1);
+        reg.b = (byte)((a & 0xFF) >>> 1);
 
         reg.setZ(reg.b == 0);
         reg.setS(false);
@@ -4127,7 +4127,7 @@ public class Cpu {
 
     int SRL_C() {
         byte a = reg.c;
-        reg.c = (byte)(a >>> 1);
+        reg.c = (byte)((a & 0xFF) >>> 1);
 
         reg.setZ(reg.c == 0);
         reg.setS(false);
@@ -4141,7 +4141,7 @@ public class Cpu {
 
     int SRL_D() {
         byte a = reg.d;
-        reg.d = (byte)(a >>> 1);
+        reg.d = (byte)((a & 0xFF) >>> 1);
 
         reg.setZ(reg.d == 0);
         reg.setS(false);
@@ -4155,7 +4155,7 @@ public class Cpu {
 
     int SRL_E() {
         byte a = reg.e;
-        reg.e = (byte)(a >>> 1);
+        reg.e = (byte)((a & 0xFF) >>> 1);
 
         reg.setZ(reg.e == 0);
         reg.setS(false);
@@ -4169,7 +4169,7 @@ public class Cpu {
 
     int SRL_H() {
         byte a = reg.h;
-        reg.h = (byte)(a >>> 1);
+        reg.h = (byte)((a & 0xFF) >>> 1);
 
         reg.setZ(reg.h == 0);
         reg.setS(false);
@@ -4183,7 +4183,7 @@ public class Cpu {
 
     int SRL_L() {
         byte a = reg.l;
-        reg.l = (byte)(a >>> 1);
+        reg.l = (byte)((a & 0xFF) >>> 1);
 
         reg.setZ(reg.l == 0);
         reg.setS(false);
@@ -4197,7 +4197,7 @@ public class Cpu {
 
     int SRL_pHLs() {
         byte a = mem.peekB(reg.getHl());
-        byte b = (byte)(a >>> 1);
+        byte b = (byte)((a & 0xFF) >>> 1);
         mem.pokeB(reg.getHl(), b);
 
         reg.setZ(b == 0);
@@ -4212,7 +4212,7 @@ public class Cpu {
 
     int SRL_A() {
         byte a = reg.a;
-        reg.a = (byte)(a >>> 1);
+        reg.a = (byte)((a & 0xFF) >>> 1);
 
         reg.setZ(reg.a == 0);
         reg.setS(false);

@@ -73,14 +73,14 @@ public class Memory {
         } else if (pc >= 0xfe00 && pc < 0xfea0) {
             return spriteAtrTbl[(pc - 0xfe00) & 0xFFFF];
         } else if (pc >= 0xfea0 && pc < 0xff00) {
-            //return 0;//Not use
+            //return 0; // Not use
             throw new IllegalArgumentException("Not use area.");
         } else if (pc >= 0xff00 && pc < 0xff80) {
             return (byte) io.read(pc);
         } else if (pc >= 0xff80 && pc < 0xffff) {
             return hiRAM[(pc - 0xff80) & 0xFFFF];
         } else if (pc == 0xffff) {
-            return ier; //Interrupt Enable Register
+            return ier; // Interrupt Enable Register
         } else {
             throw new IllegalArgumentException("Not written to RAM area.");
         }
