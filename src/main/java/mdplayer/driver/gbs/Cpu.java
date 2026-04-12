@@ -31,6 +31,10 @@ public class Cpu {
     }
 
     public int executeOneStep() {
+        if (isHalt || isStop) {
+            return 4;
+        }
+
         int pc;
         int cycle;
 
@@ -51,7 +55,7 @@ public class Cpu {
             StringBuilder smem = new StringBuilder();
             int len = Math.min(insts[c].length, 4);
             for (int i = 0; i < len; i++)
-                smem.append(String.format("%02X ", mem.peekB(pc + i) & 0xFF));
+                smem.append(String.format("%02X ", mem.peekB((pc + i) & 0xFFFF) & 0xFF));
             // Pad with spaces - "            ".substring(len * 3) equivalent
             int padding = 12 - (len * 3);
             if (padding > 0) {
@@ -408,7 +412,7 @@ public class Cpu {
         reg.pc += 2;
         reg.setBc(d);
 
-        nimo = String.format("LD BC,$%04X", d & 0xff);
+        nimo = String.format("LD BC,$%04X", d & 0xffff);
 
         return insts[0x01].cycle[0];
     }
@@ -462,7 +466,7 @@ public class Cpu {
         reg.pc &= 0xffff;
         reg.b = d;
 
-        nimo = String.format("LD B,$%02X", d & 0xff);
+        nimo = String.format("LD B,$%02X", d & 0xffff);
 
         return insts[0x06].cycle[0];
     }
@@ -495,14 +499,14 @@ public class Cpu {
     }
 
     int ADD_HL_BC() {
-        int a = reg.getHl() + reg.getBc();
-        int b = (reg.l & 0xFF) + (reg.c & 0xFF);
-        reg.setHl(a & 0xFFFF);
+        int hl = reg.getHl();
+        int rr = reg.getBc();
+        int res = hl + rr;
+        reg.setHl(res & 0xFFFF);
 
-        //reg.Z =;
         reg.setS(false);
-        reg.setH((b & 0xf00) != 0);
-        reg.setC((a & 0xf0000) != 0);
+        reg.setH(((hl & 0x0FFF) + (rr & 0x0FFF)) > 0x0FFF);
+        reg.setC(res > 0xFFFF);
 
         nimo = "ADD HL,BC";
 
@@ -558,7 +562,7 @@ public class Cpu {
         reg.pc &= 0xffff;
         reg.c = d;
 
-        nimo = String.format("LD C,$%02X", d & 0xff);
+        nimo = String.format("LD C,$%02X", d & 0xffff);
 
         return insts[0x0e].cycle[0];
     }
@@ -581,8 +585,11 @@ public class Cpu {
 
     // 0x10
     int STOP_0() {
+        reg.pc++;
+        reg.pc &= 0xFFFF;
         isStop = true;
-        return 1;
+        nimo = "STOP 0";
+        return insts[0x10].cycle[0];
     }
 
     int LD_DE_d16() {
@@ -590,7 +597,7 @@ public class Cpu {
         reg.pc += 2;
         reg.setDe(d);
 
-        nimo = String.format("LD DE,$%04X", d & 0xff);
+        nimo = String.format("LD DE,$%04X", d & 0xffff);
 
         return insts[0x11].cycle[0];
     }
@@ -644,7 +651,7 @@ public class Cpu {
         reg.pc &= 0xffff;
         reg.d = d;
 
-        nimo = String.format("LD D,$%02X", d & 0xff);
+        nimo = String.format("LD D,$%02X", d & 0xffff);
 
         return insts[0x16].cycle[0];
     }
@@ -675,20 +682,20 @@ public class Cpu {
         int c = insts[0x18].cycle[0];
         reg.pc = (reg.pc + d) & 0xFFFF;
 
-        nimo = String.format("JR $%02X", d & 0xff);
+        nimo = String.format("JR $%02X", d & 0xffff);
 
         return c;
     }
 
     int ADD_HL_DE() {
-        int a = reg.getHl() + reg.getDe();
-        int b = (reg.l & 0xFF) + (reg.e & 0xFF);
-        reg.setHl(a & 0xFFFF);
+        int hl = reg.getHl();
+        int rr = reg.getDe();
+        int res = hl + rr;
+        reg.setHl(res & 0xFFFF);
 
-        //reg.Z =;
         reg.setS(false);
-        reg.setH((b & 0xf00) != 0);
-        reg.setC((a & 0xf0000) != 0);
+        reg.setH(((hl & 0x0FFF) + (rr & 0x0FFF)) > 0x0FFF);
+        reg.setC(res > 0xFFFF);
 
         nimo = "ADD HL,DE";
 
@@ -744,7 +751,7 @@ public class Cpu {
         reg.pc &= 0xffff;
         reg.e = d;
 
-        nimo = String.format("LD E,$%02X", d & 0xff);
+        nimo = String.format("LD E,$%02X", d & 0xffff);
 
         return insts[0x1e].cycle[0];
     }
@@ -778,7 +785,7 @@ public class Cpu {
             c = insts[0x20].cycle[0];
         }
 
-        nimo = String.format("JR NZ,$%02X", d & 0xff);
+        nimo = String.format("JR NZ,$%02X", d & 0xffff);
 
         return c;
     }
@@ -788,7 +795,7 @@ public class Cpu {
         reg.pc += 2;
         reg.setHl(d);
 
-        nimo = String.format("LD HL,$%04X", d & 0xff);
+        nimo = String.format("LD HL,$%04X", d & 0xffff);
 
         return insts[0x21].cycle[0];
     }
@@ -849,18 +856,27 @@ public class Cpu {
     }
 
     int DAA() {
-        int tmp = reg.a & 0xFF;
-        if (reg.isS()) {
-            if (reg.isH() || ((reg.a & 0xf) > 9)) tmp -= 6;
-            if (reg.isC() || ((reg.a & 0xff) > 0x99)) tmp -= 0x60;
+        int a = reg.a & 0xFF;
+        if (!reg.isS()) {
+            if (reg.isH() || (a & 0x0F) > 0x09) {
+                a += 0x06;
+            }
+            if (reg.isC() || a > 0x9F) {
+                a += 0x60;
+                reg.setC(true);
+            }
         } else {
-            if (reg.isH() || ((reg.a & 0xf) > 9)) tmp += 6;
-            if (reg.isC() || ((reg.a & 0xff) > 0x99)) tmp += 0x60;
+            if (reg.isH()) {
+                a -= 0x06;
+            }
+            if (reg.isC()) {
+                a -= 0x60;
+            }
         }
+
+        reg.a = (byte) a;
+        reg.setZ(reg.a == 0);
         reg.setH(false);
-        reg.setC((tmp & 0xFF) > 0x99); // TODO grok
-        reg.setZ((tmp & 0xFF) == 0);
-        reg.a = (byte) (tmp & 0xFF);
 
         nimo = "DAA";
 
@@ -879,20 +895,19 @@ public class Cpu {
             c = insts[0x28].cycle[0];
         }
 
-        nimo = String.format("JR Z,$%02X", d & 0xff);
+        nimo = String.format("JR Z,$%02X", d & 0xffff);
 
         return c;
     }
 
     int ADD_HL_HL() {
-        int a = reg.getHl() + reg.getHl();
-        int b = (reg.l & 0xFF) + (reg.l & 0xFF);
-        reg.setHl(a & 0xFFFF);
+        int hl = reg.getHl();
+        int res = hl + hl;
+        reg.setHl(res & 0xFFFF);
 
-        //reg.Z =;
         reg.setS(false);
-        reg.setH((b & 0xf00) != 0);
-        reg.setC((a & 0xf0000) != 0);
+        reg.setH(((hl & 0x0FFF) + (hl & 0x0FFF)) > 0x0FFF);
+        reg.setC(res > 0xFFFF);
 
         nimo = "ADD HL,HL";
 
@@ -950,7 +965,7 @@ public class Cpu {
         reg.pc &= 0xffff;
         reg.l = d;
 
-        nimo = String.format("LD L,$%02X", d & 0xff);
+        nimo = String.format("LD L,$%02X", d & 0xffff);
 
         return insts[0x2e].cycle[0];
     }
@@ -975,7 +990,7 @@ public class Cpu {
             c = insts[0x30].cycle[0];
         }
 
-        nimo = String.format("JR NC,$%02X", d & 0xff);
+        nimo = String.format("JR NC,$%02X", d & 0xffff);
 
         return c;
     }
@@ -985,7 +1000,7 @@ public class Cpu {
         reg.pc += 2;
         reg.sp = d;
 
-        nimo = String.format("LD SP,$%04X", d & 0xff);
+        nimo = String.format("LD SP,$%04X", d & 0xffff);
 
         return insts[0x31].cycle[0];
     }
@@ -1043,7 +1058,7 @@ public class Cpu {
         reg.pc &= 0xffff;
         mem.pokeB(reg.getHl(), d);
 
-        nimo = String.format("LD (HL),$%02X", d & 0xff);
+        nimo = String.format("LD (HL),$%02X", d & 0xffff);
 
         return insts[0x36].cycle[0];
     }
@@ -1070,20 +1085,20 @@ public class Cpu {
             c = insts[0x38].cycle[0];
         }
 
-        nimo = String.format("JR C,$%02X", d & 0xff);
+        nimo = String.format("JR C,$%02X", d & 0xffff);
 
         return c;
     }
 
     int ADD_HL_SP() {
-        int a = reg.getHl() + reg.sp;
-        int b = (reg.l & 0xFF) + (reg.sp & 0xFF);
-        reg.setHl(a & 0xFFFF);
+        int hl = reg.getHl();
+        int sp = reg.sp;
+        int res = hl + sp;
+        reg.setHl(res & 0xFFFF);
 
-        //reg.Z =;
         reg.setS(false);
-        reg.setH((b & 0xf00) != 0);
-        reg.setC((a & 0xf0000) != 0);
+        reg.setH(((hl & 0x0FFF) + (sp & 0x0FFF)) > 0x0FFF);
+        reg.setC(res > 0xFFFF);
 
         nimo = "ADD HL,SP";
 
@@ -1142,7 +1157,7 @@ public class Cpu {
         reg.pc &= 0xffff;
         reg.a = d;
 
-        nimo = String.format("LD A,$%02X", d & 0xff);
+        nimo = String.format("LD A,$%02X", d & 0xffff);
 
         return insts[0x3e].cycle[0];
     }
@@ -2680,7 +2695,7 @@ public class Cpu {
             cycle = 1;
         }
 
-        nimo = String.format("CALL NZ,$%04X", d & 0xff);
+        nimo = String.format("CALL NZ,$%04X", d & 0xffff);
 
         return insts[0xc4].cycle[cycle];
     }
@@ -2711,7 +2726,7 @@ public class Cpu {
     }
 
     int RST_00H() {
-        push((reg.pc + 2) & 0xFFFF);
+        push(reg.pc);
         reg.pc = 0x00;
 
         nimo = "RST $00";
@@ -2750,7 +2765,7 @@ public class Cpu {
             c = insts[0xca].cycle[0];
         }
 
-        nimo = String.format("JP Z,$%04X", d & 0xff);
+        nimo = String.format("JP Z,$%04X", d & 0xffff);
 
         return c;
     }
@@ -2808,7 +2823,7 @@ public class Cpu {
     }
 
     int RST_08H() {
-        push((reg.pc + 2) & 0xFFFF);
+        push(reg.pc);
         reg.pc = 0x08;
 
         nimo = "RST $08";
@@ -2847,7 +2862,7 @@ public class Cpu {
             c = insts[0xd2].cycle[0];
         }
 
-        nimo = String.format("JP NC,$%04X", d & 0xff);
+        nimo = String.format("JP NC,$%04X", d & 0xffff);
 
         return c;
     }
@@ -2866,7 +2881,7 @@ public class Cpu {
             cycle = 1;
         }
 
-        nimo = String.format("CALL NC,$%04X", d & 0xff);
+        nimo = String.format("CALL NC,$%04X", d & 0xffff);
 
         return insts[0xd4].cycle[cycle];
     }
@@ -2897,7 +2912,7 @@ public class Cpu {
     }
 
     int RST_10H() {
-        push((reg.pc + 2) & 0xFFFF);
+        push(reg.pc);
         reg.pc = 0x10;
 
         nimo = "RST $10";
@@ -2938,7 +2953,7 @@ public class Cpu {
             c = insts[0xda].cycle[0];
         }
 
-        nimo = String.format("JP C,$%04X", d & 0xff);
+        nimo = String.format("JP C,$%04X", d & 0xffff);
 
         return c;
     }
@@ -2982,7 +2997,7 @@ public class Cpu {
     }
 
     int RST_18H() {
-        push((reg.pc + 2) & 0xFFFF);
+        push(reg.pc);
         reg.pc = 0x18;
 
         nimo = "RST $18";
@@ -3035,13 +3050,13 @@ public class Cpu {
         reg.setH(true);
         reg.setC(false);
 
-        nimo = String.format("AND $%02X", d & 0xff);
+        nimo = String.format("AND $%02X", d & 0xffff);
 
         return insts[0xe6].cycle[0];
     }
 
     int RST_20H() {
-        push((reg.pc + 2) & 0xFFFF);
+        push(reg.pc);
         reg.pc = 0x20;
 
         nimo = "RST $20";
@@ -3051,20 +3066,19 @@ public class Cpu {
 
     // 0xe8
     int ADD_SP_r8() {
-        int a = reg.sp;
+        int sp = reg.sp;
         byte b = mem.peekB(reg.pc);
-        int s = (byte) b;
-        int c = a + s;
-        int d = (a & 0xff) + s;
+        int r8 = b & 0xFF;
+        int offset = (byte) b;
 
-        reg.sp = c & 0xFFFF;
+        reg.sp = (sp + offset) & 0xFFFF;
         reg.pc++;
         reg.pc &= 0xffff;
 
         reg.setZ(false);
         reg.setS(false);
-        reg.setH((d & 0xf00) != 0);
-        reg.setC((c & 0xf0000) != 0);
+        reg.setH(((sp & 0x0F) + (r8 & 0x0F)) > 0x0F);
+        reg.setC(((sp & 0xFF) + (r8 & 0xFF)) > 0xFF);
 
         nimo = String.format("ADD SP,$%02X", b & 0xff);
 
@@ -3086,7 +3100,7 @@ public class Cpu {
         reg.pc &= 0xFFFF;
         mem.pokeB(d, reg.a);
 
-        nimo = String.format("LD ($%04X),A", d & 0xff);
+        nimo = String.format("LD ($%04X),A", d & 0xffff);
 
         return insts[0xea].cycle[0];
     }
@@ -3108,7 +3122,7 @@ public class Cpu {
     }
 
     int RST_28H() {
-        push((reg.pc + 2) & 0xFFFF);
+        push(reg.pc);
         reg.pc = 0x28;
 
         nimo = "RST $28";
@@ -3170,13 +3184,13 @@ public class Cpu {
         reg.setH(false);
         reg.setC(false);
 
-        nimo = String.format("OR $%02X", d & 0xff);
+        nimo = String.format("OR $%02X", d & 0xffff);
 
         return insts[0xf6].cycle[0];
     }
 
     int RST_30H() {
-        push((reg.pc + 2) & 0xFFFF);
+        push(reg.pc);
         reg.pc = 0x30;
 
         nimo = "RST $30";
@@ -3186,20 +3200,19 @@ public class Cpu {
 
     // 0xf8
     int LD_HL_SPplsr8() {
-        int a = reg.sp;
+        int sp = reg.sp;
         byte b = mem.peekB(reg.pc);
-        int s = b; // signed
+        int r8 = b & 0xFF;
+        int offset = (byte) b;
+
+        reg.setHl((sp + offset) & 0xFFFF);
         reg.pc++;
         reg.pc &= 0xFFFF;
-        int c = a + s;
-        int d = (a & 0xff) + s;
-
-        reg.setHl(c & 0xFFFF);
 
         reg.setZ(false);
         reg.setS(false);
-        reg.setH((d & 0xf00) != 0);
-        reg.setC((c & 0xf0000) != 0);
+        reg.setH(((sp & 0x0F) + (r8 & 0x0F)) > 0x0F);
+        reg.setC(((sp & 0xFF) + (r8 & 0xFF)) > 0xFF);
 
         nimo = String.format("LD HL,SP+$%02X", b & 0xff);
 
@@ -3220,7 +3233,7 @@ public class Cpu {
         reg.pc &= 0xFFFF;
         reg.a = mem.peekB(d);
 
-        nimo = String.format("LD A,($%04X)", d & 0xff);
+        nimo = String.format("LD A,($%04X)", d & 0xffff);
 
         return insts[0xfa].cycle[0];
     }
@@ -3252,7 +3265,7 @@ public class Cpu {
     }
 
     int RST_38H() {
-        push((reg.pc + 2) & 0xFFFF);
+        push(reg.pc);
         reg.pc = 0x38;
 
         nimo = "RST $38";

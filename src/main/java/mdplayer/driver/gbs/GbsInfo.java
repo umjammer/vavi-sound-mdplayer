@@ -40,14 +40,17 @@ public class GbsInfo {
         info.author = new String(b, 0x30, 32, Common.charset).replace("\0", "");
         info.copyright = new String(b, 0x50, 32, Common.charset).replace("\0", "");
 
-        info.mem = new byte[2][];
-        info.mem[0] = new byte[0x4000];
-        info.mem[1] = new byte[0x4000];
+        int dataSize = b.length - 0x70;
+        int maxBank = (info.loadAddress + dataSize + 0x3FFF) / 0x4000;
+        info.mem = new byte[maxBank][];
+        for (int i = 0; i < maxBank; i++) {
+            info.mem[i] = new byte[0x4000];
+        }
 
         int ptr = info.loadAddress % 0x4000;
         int cptr = 0x70;
         int bank = info.loadAddress / 0x4000;
-        while ((bank < 2 && ptr < 0x4000) && cptr < b.length) {
+        while (bank < maxBank && cptr < b.length) {
             info.mem[bank][ptr] = b[cptr];
             ptr++;
             if (ptr == 0x4000) {

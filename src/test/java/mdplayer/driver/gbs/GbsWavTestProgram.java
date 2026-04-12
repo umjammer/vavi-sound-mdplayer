@@ -36,7 +36,10 @@ public class GbsWavTestProgram {
     @Test
     @Disabled("it works, but not passed")
     public void test() throws Exception {
-        new GbsWavTestProgram().play("../vavi-sound-emu/tmp/CGB-B2XE-USA.gbs", "../vavi-sound-emu/tmp/waveout.wav");
+        new GbsWavTestProgram().play(
+                "../vavi-sound-emu/tmp/CGB-B2XE-USA.gbs",
+                "../vavi-sound-emu/tmp/waveout.wav",
+                1);
     }
 
     public static void main(String[] args) throws Exception {
@@ -45,10 +48,10 @@ public class GbsWavTestProgram {
             return;
         }
 
-        new GbsWavTestProgram().play(args[0], args.length > 1 ? args[1] : null);
+        new GbsWavTestProgram().play(args[0], args.length > 1 ? args[1] : null, 1);
     }
 
-    public void play(String filename, String refWavFile) throws Exception {
+    public void play(String filename, String refWavFile, int songNo) throws Exception {
         System.err.println("filename: " + filename);
         System.err.println("refWavFile: " + refWavFile);
         Setting setting = Setting.getInstance();
@@ -60,7 +63,7 @@ public class GbsWavTestProgram {
         FileFormat format = FileFormat.getFileFormat(filename);
         var r = format.load((String) null, filename);
         BasePlugin<? extends BaseDriver> plugin = (BasePlugin<? extends BaseDriver>) format.getPlugin();
-        plugin.setBuffer(format, r.getItem1(), filename, null, 0, 1, r.getItem2());
+        plugin.setBuffer(format, r.getItem1(), filename, null, 0, songNo, r.getItem2());
 
         // Initialize driver and chips without starting the infinite loop in BasePlugin.play()
         plugin.prepare();
