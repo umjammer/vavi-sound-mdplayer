@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
@@ -76,8 +77,9 @@ public class MDXFileFormat extends BaseFileFormat {
         String[] PDX = new String[1];
         MxDriver.getPDXFileName(srcBuf, PDX, Common.charset);
         if (PDX[0] != null && !PDX[0].isEmpty()) {
-            buf = getExtendFileAllBytes(fn, PDX[0] + ".pdx", archive, entry);
-            if (buf != null) ret.add(new Tuple<>(PDX[0] + ".PDX", buf));
+            String pdx = PDX[0].toLowerCase().endsWith(".pdx") ? PDX[0] : PDX[0] + ".pdx";
+            buf = getExtendFileAllBytes(fn, pdx, archive, entry);
+            if (buf != null) ret.add(new Tuple<>(pdx, buf));
         }
 
         return ret;
