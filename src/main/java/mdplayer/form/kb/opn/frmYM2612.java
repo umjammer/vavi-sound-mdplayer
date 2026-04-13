@@ -20,6 +20,7 @@ import mdplayer.Common;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
+import mdplayer.chips.Ym2608Chip;
 import mdplayer.chips.Ym2612Chip;
 import mdplayer.driver.XgmDriver;
 import mdplayer.form.frmBase;
@@ -196,7 +197,7 @@ public class frmYM2612 extends frmBase {
                 ff /= 1038f;
 
                 if ((fmKey[ch] & 1) != 0) {
-                    n = Math.clamp(Common.searchYM2608Adpcm(ff) - 1, 0, 95);
+                    n = Math.clamp(Ym2608Chip.searchYM2608Adpcm(ff) - 1, 0, 95);
                     //if (ch == 0)
                     //{
                     //    logger.log(Level.TRACE, "freq:%d  masterClock:%d  fmDiv:%d  octav:%d ff:%d  n:%d".formatted(freq, masterClock, fmDiv, octav,ff,n));
@@ -227,7 +228,7 @@ public class frmYM2612 extends frmBase {
                 ff /= 1038f;
 
                 if ((fmKey[2] & 0x10) != 0 && ((m & 0x10) != 0))
-                    n = Math.clamp(Common.searchYM2608Adpcm(ff) - 1, 0, 95);
+                    n = Math.clamp(Ym2608Chip.searchYM2608Adpcm(ff) - 1, 0, 95);
 
                 int v = ((m & 0x10) != 0) ? fmRegister[p][0x40 + c] : 127;
                 newParam.channels[2].volumeL = Math.clamp((int) ((127 - v) / 127.0 * ((fmRegister[0][0xb4 + 2] & 0x80) != 0 ? 1 : 0) * fmCh3SlotVol[0] / 80.0), 0, 19);
@@ -262,7 +263,7 @@ public class frmYM2612 extends frmBase {
                 if ((fmKey[2] & (0x10 << (ch - 5))) != 0 && ((m & (0x10 << op)) != 0)) {
                     float ff = freq / ((2 << 20) / (masterClock / (24 * fmDiv))) * (2 << (octav + 2));
                     ff /= 1038f;
-                    n = Math.clamp(Common.searchYM2608Adpcm(ff) - 1, 0, 95);
+                    n = Math.clamp(Ym2608Chip.searchYM2608Adpcm(ff) - 1, 0, 95);
                 }
                 newParam.channels[ch].note = n;
 

@@ -210,7 +210,7 @@ public class frmYM2608 extends frmBase {
                 ff /= 1038f;
 
                 if ((fmKeyYM2608[ch] & 1) != 0)
-                    n = Math.clamp(Common.searchYM2608Adpcm(ff) - 1, 0, 95);
+                    n = Math.clamp(Ym2608Chip.searchYM2608Adpcm(ff) - 1, 0, 95);
 
                 byte con = (byte) (fmKeyYM2608[ch]);
                 int v = 127;
@@ -236,7 +236,7 @@ public class frmYM2608 extends frmBase {
                 ff /= 1038f;
 
                 if ((fmKeyYM2608[2] & 0x10) > 0 && ((m & 0x10) != 0))
-                    n = Math.clamp(Common.searchYM2608Adpcm(ff) - 1, 0, 95);
+                    n = Math.clamp(Ym2608Chip.searchYM2608Adpcm(ff) - 1, 0, 95);
 
                 int v = ((m & 0x10) != 0) ? ym2608Register[p][0x40 + c] : 127;
                 newParam.channels[2].volumeL = Math.clamp((int) ((127 - v) / 127.0 * ((ym2608Register[0][0xb4 + 2] & 0x80) != 0 ? 1 : 0) * ym2608Ch3SlotVol[0] / 80.0), 0, 19);
@@ -266,7 +266,7 @@ public class frmYM2608 extends frmBase {
                 if ((fmKeyYM2608[2] & (0x10 << (ch - 5))) != 0 && ((m & (0x10 << op)) != 0)) {
                     float ff = freq / ((2 << 20) / (masterClock / (24 * fmDiv))) * (2 << (octav + 2));
                     ff /= 1038f;
-                    n = Math.clamp(Common.searchYM2608Adpcm(ff) - 1, 0, 95);
+                    n = Math.clamp(Ym2608Chip.searchYM2608Adpcm(ff) - 1, 0, 95);
                 }
                 newParam.channels[ch].note = n;
 
@@ -318,7 +318,7 @@ public class frmYM2608 extends frmBase {
         int delta = (ym2608Register[1][0x0a] << 8) | ym2608Register[1][0x09];
         newParam.channels[12].freq = delta;
         float frq = delta / 9447.0f;
-        newParam.channels[12].note = (ym2608Register[1][0x00] & 0x80) != 0 ? (Common.searchYM2608Adpcm(frq) - 1) : -1;
+        newParam.channels[12].note = (ym2608Register[1][0x00] & 0x80) != 0 ? (Ym2608Chip.searchYM2608Adpcm(frq) - 1) : -1;
         if ((ym2608Register[1][0x01] & 0xc0) == 0) {
             newParam.channels[12].note = -1;
         }

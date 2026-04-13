@@ -22,6 +22,7 @@ import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.Tables;
+import mdplayer.chips.SegaPcmChip;
 import mdplayer.chips.Ym2413Chip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
@@ -130,7 +131,7 @@ public class frmYM2413 extends frmBase {
             int freq = ym2413Register[0x10 + ch] + ((ym2413Register[0x20 + ch] & 0x1) << 8);
             int oct = ((ym2413Register[0x20 + ch] & 0xe) >> 1);
 
-            nyc.note = Common.searchSegaPCMNote(freq / 172.0) + (oct - 4) * 12;
+            nyc.note = SegaPcmChip.searchSegaPCMNote(freq / 172.0) + (oct - 4) * 12;
 
             if (ki.on[ch]) {
                 nyc.volumeL = (19 - nyc.inst[3]);

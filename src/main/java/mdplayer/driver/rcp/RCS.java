@@ -373,8 +373,8 @@ public class RCS {
     private int stDevNum = 0;
     private int pt = 0;
     private int skipPtr = 4;
-    private byte[] msgBuf2 = new byte[2];
-    private byte[] msgBuf3 = new byte[3];
+    private final byte[] msgBuf2 = new byte[2];
+    private final byte[] msgBuf3 = new byte[3];
     private final byte[] msgBuf = new byte[256];
 
     byte[] vgmBuf;

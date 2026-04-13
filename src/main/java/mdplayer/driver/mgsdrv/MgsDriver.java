@@ -1,4 +1,3 @@
-
 package mdplayer.driver.mgsdrv;
 
 import java.lang.System.Logger;
@@ -18,6 +17,10 @@ import static java.lang.System.getLogger;
 
 
 /**
+ * MSX MgsDrv
+ *
+ * system property
+ * <li>{@code mdplayer.mgs.dir} ... mgsdrv.com location, default {@code $HOME}</li>
  * @author kumatan
  */
 public class MgsDriver extends BaseDriver {
@@ -31,6 +34,7 @@ public class MgsDriver extends BaseDriver {
         mgs.k051649Write = (i, a, d) -> plugin.chipRegister.chip(K051649Chip.class).write(i, a, d, model);
         mgs.ay8910Write = (a, d) -> plugin.chipRegister.chip(Ay8910Chip.class).write(0, a, d, model);
         mgs.ym2413Write = (a, d) -> plugin.chipRegister.chip(Ym2413Chip.class).write(0, a, d, model);
+        mgs.dir = System.getProperty("mdplayer.mgs.dir", System.getProperty("user.dir"));
     }
 
     public void setPlayingFileName(String value) {

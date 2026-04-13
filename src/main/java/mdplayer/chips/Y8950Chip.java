@@ -6,11 +6,8 @@
 
 package mdplayer.chips;
 
-import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.Setting;
-import mdplayer.driver.BaseDriver;
-import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.instrument.Y8950Inst;
 
@@ -21,7 +18,7 @@ import mdsound.instrument.Y8950Inst;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
-public class Y8950Chip implements Chip {
+public class Y8950Chip extends BaseChip {
 
     private final Setting.ChipType2[] chipTypes = setting.getY8950Type();
 
@@ -34,17 +31,10 @@ public class Y8950Chip implements Chip {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false}
     };
 
-    private BasePlugin<? extends BaseDriver> context;
-
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Instrument>[] implementations() {
         return new Class[] {Y8950Inst.class};
-    }
-
-    @Override
-    public void init(BasePlugin<? extends BaseDriver> context) {
-        this.context = context;
     }
 
     @Override
@@ -55,10 +45,6 @@ public class Y8950Chip implements Chip {
                 register[chipId][i] = 0;
             }
         }
-    }
-
-    @Override
-    public void updateVol() {
     }
 
     public ChipKeyInfo getKeyInfo(int chipId) {
@@ -152,6 +138,8 @@ public class Y8950Chip implements Chip {
 
         if (model == EnmModel.VirtualModel)
             context.mds.inst(Y8950Inst.class).writePcm(chipId, buf, offset, length, srcOffset, romSize);
+
+        dumpData(model, "Y8950_PCMData", srcOffset, buf, length);
     }
 
     public int[] read(int chipId) {

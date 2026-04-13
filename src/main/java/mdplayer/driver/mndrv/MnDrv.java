@@ -7,7 +7,9 @@ import java.util.function.BiConsumer;
 
 import dotnet4j.util.compat.QuadConsumer;
 import dotnet4j.util.compat.Tuple;
-import mdplayer.driver.mxdrv.XMemory;
+import mdplayer.Common;
+import mdplayer.emu.fm.FMTimer;
+import mdplayer.emu.nise68.XMemory;
 import mdplayer.driver.zms.Zms.MPCMSt;
 import mdplayer.driver.zms.Zms.MPcmInterface;
 
@@ -44,8 +46,8 @@ public class MnDrv {
         devpsgemu = new DevPsgEmu();
         devrhy = new DevRhy();
         interrupt = new Interrupt();
-        timerOPM = new FMTimer(true, null, 4000000);
-        timerOPN = new FMTimer(false, null, 8000000);
+        timerOPM = new FMTimer(true, null, 4000000, Common.VGMProcSampleRate);
+        timerOPN = new FMTimer(false, null, 8000000, Common.VGMProcSampleRate);
 
         comanalyze.reg = reg;
         comanalyze.ab = ab;

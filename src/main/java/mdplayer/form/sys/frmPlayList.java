@@ -58,7 +58,6 @@ import mdplayer.Common.EnmArcType;
 import mdplayer.MDChipParams;
 import mdplayer.PlayList;
 import mdplayer.Setting;
-import mdplayer.form.sys.frmTPPut.cols;
 import mdplayer.format.FileFormat;
 import mdplayer.properties.Resources;
 import vavi.awt.dnd.BasicDTListener;
@@ -965,7 +964,7 @@ loopEx:
         if (!playing) return;
         if (setting == null) return;
 
-        ofn = Audio.getInstance().plugin.playingFileName;;
+        ofn = Audio.getInstance().plugin.playingFileName;
         oafn = Audio.getInstance().plugin.playingArcFileName;
 
         exts[0] = setting.getOther().getTextExt().split(";");

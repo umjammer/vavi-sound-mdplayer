@@ -91,6 +91,7 @@ logger.log(DEBUG, "enter: available: " + bitStream.available() + ", " + bitStrea
         int channels = 2;
         AudioFileFormat.Type type;
         try {
+            bitStream.mark(10); // *1
             InputStream in = Archives.getInputStream(bitStream); // TODO 2nd time doesn't work well
 logger.log(Level.TRACE, "input stream M: " + in + ", " + in.available());
             if (!in.markSupported()) {
@@ -112,12 +113,13 @@ logger.log(DEBUG, "filename: " + fn);
             plugin.setBuffer(fileFormat, r.getItem1(), fn, null, 0, 0, r.getItem2());
 
         } catch (IllegalArgumentException | NoSuchElementException e) {
+            bitStream.reset(); // *1
 logger.log(DEBUG, "error exit: available: " + bitStream.available() + ", " + bitStream);
 logger.log(TRACE, e.getMessage(), e);
             throw (UnsupportedAudioFileException) new UnsupportedAudioFileException().initCause(e);
         }
         Map<String, Object> props = new HashMap<>();
-        props.put("md", plugin);
+        props.put("vavi.sound.sampled.md", plugin);
         AudioFormat format = new AudioFormat(encoding, samplingRate, NOT_SPECIFIED, channels, NOT_SPECIFIED, NOT_SPECIFIED, false, props);
         return new AudioFileFormat(type, format, NOT_SPECIFIED);
     }

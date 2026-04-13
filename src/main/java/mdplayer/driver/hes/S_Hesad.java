@@ -1,54 +1,58 @@
 package mdplayer.driver.hes;
 
-public class S_Hesad extends KMIF_SOUND_DEVICE {
+import mdplayer.driver.hes.S_Deltat.Kmif_LogTable;
+import mdplayer.driver.hes.S_Deltat.YmDeltaTPcmSound_;
+
+
+public class S_Hesad extends KmifSoundDevice {
 
     private static final int CPS_SHIFT = 16;
     private static final int PCE_VOLUME = 1;  // 1
     private static final int ADPCM_VOLUME = 50;
 
-    public static class HESADPCM {
+    static class HesAdpcm {
 
-        public KMIF_SOUND_DEVICE kmif;
-        public KMIF_SOUND_DEVICE deltadev;
+        public KmifSoundDevice kmif;
+        public KmifSoundDevice deltaDev;
 
-        public static class common_ {
-            public int mastervolume;
+        public static class Common {
+            public int masterVolume;
             public int cps;
             public int pt;
         }
 
-        public final common_ common = new common_();
+        public final Common common = new Common();
 
-        public byte[] pcmbuf = new byte[0x10000];
+        public byte[] pcmBuf = new byte[0x10000];
         public byte[] port = new byte[0x10];
         public final byte[] regs = new byte[0x18];
-        public int outfreq;
+        public int outFreq;
         public int freq;
         public int addr;
-        public int writeptr;
-        public int readptr;
-        public int playflag;
-        public int repeatflag;
+        public int writePtr;
+        public int readPtr;
+        public int playFlag;
+        public int repeatFlag;
         public int length;
         public int volume;
-        public int fadetimer;
-        public int fadecount;
+        public int fadeTimer;
+        public int fadeCount;
 
-        private void HESAdPcmReset() {
+        private void reset() {
             this.addr = 0;
             this.freq = 0;
-            this.writeptr = 0;
-            this.readptr = 0;
-            this.playflag = 0;
-            this.repeatflag = 0;
+            this.writePtr = 0;
+            this.readPtr = 0;
+            this.playFlag = 0;
+            this.repeatFlag = 0;
             this.length = 0;
             this.volume = 0xff;
-            this.deltadev.write.accept(0, 1);
+            this.deltaDev.write.accept(0, 1);
         }
     }
 
     private void sndsynth(int[] p) {
-        HESADPCM sndp = (HESADPCM) ctx;
+        HesAdpcm sndp = (HesAdpcm) ctx;
         int[] pbf = new int[2];
         pbf[0] = 0;
         pbf[1] = 0;
@@ -57,7 +61,7 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
         p[0] = p[0] * PCE_VOLUME;
         p[1] = p[1] * PCE_VOLUME;
 
-//        sndp.deltadev.synth.accept(pbf); // TODO vavi
+//        sndp.deltaDev.synth.accept(pbf); // TODO vavi
 
         sndp.common.pt += sndp.common.cps;
 
@@ -65,13 +69,13 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
         while (sndp.common.pt > 100000) {
             sndp.common.pt -= 100000;
 
-            if (sndp.fadecount > 0 && sndp.fadetimer != 0) {
-                sndp.fadecount--;
-                sndp.volume = 0xff * sndp.fadecount / sndp.fadetimer;
+            if (sndp.fadeCount > 0 && sndp.fadeTimer != 0) {
+                sndp.fadeCount--;
+                sndp.volume = 0xff * sndp.fadeCount / sndp.fadeTimer;
             }
-            if (sndp.fadecount < 0 && sndp.fadetimer != 0) {
-                sndp.fadecount++;
-                sndp.volume = 0xff - (0xff * sndp.fadecount / sndp.fadetimer);
+            if (sndp.fadeCount < 0 && sndp.fadeTimer != 0) {
+                sndp.fadeCount++;
+                sndp.volume = 0xff - (0xff * sndp.fadeCount / sndp.fadeTimer);
             }
 
         }
@@ -81,26 +85,26 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
     }
 
     private void sndreset(int clock, int freq) {
-        HESADPCM sndp = (HESADPCM) ctx;
-        //XMEMSET(&sndp.pcmbuf, 0, sizeof(sndp.pcmbuf));
-        sndp.pcmbuf = new byte[0x10000];
+        HesAdpcm sndp = (HesAdpcm) ctx;
+        //XMEMSET(&sndp.pcmBuf, 0, sizeof(sndp.pcmBuf));
+        sndp.pcmBuf = new byte[0x10000];
         //XMEMSET(&sndp.port, 0, sizeof(sndp.port));
         sndp.port = new byte[0x10];
-        sndp.HESAdPcmReset();
-        sndp.outfreq = freq;
-        sndp.fadetimer = 0;
-        sndp.fadecount = 0;
+        sndp.reset();
+        sndp.outFreq = freq;
+        sndp.fadeTimer = 0;
+        sndp.fadeCount = 0;
         sndp.common.cps = 100000000 / freq;
         sndp.common.pt = 0;
         sndp.volume = 0xff;
-//        sndp.deltadev.reset.accept(clock, freq); // TODO vavi: self recursion
-        sndp.deltadev.write.accept(1, 0);
-        sndp.deltadev.write.accept(0xb, 0xff);
-        //sndp->deltadev->setinst(sndp->deltadev,0,sndp->pcmbuf,0x100);
+//        sndp.deltaDev.reset.accept(clock, freq); // TODO vavi: self recursion
+        sndp.deltaDev.write.accept(1, 0);
+        sndp.deltaDev.write.accept(0xb, 0xff);
+        //sndp.deltaDev.setInst(sndp.deltaDev,0,sndp->pcmBuf,0x100);
     }
 
     private void sndwrite(int a, int v) {
-        HESADPCM sndp = (HESADPCM) ctx;
+        HesAdpcm sndp = (HesAdpcm) ctx;
         sndp.port[a & 15] = (byte) v;
         sndp.regs[a & 15] = (byte) v;
         switch (a & 15) {
@@ -116,7 +120,7 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
             break;
         case 0xA:
             // write buffer
-            sndp.pcmbuf[sndp.writeptr++] = (byte) v;
+            sndp.pcmBuf[sndp.writePtr++] = (byte) v;
             break;
         case 0xB:
             // DMA busy?
@@ -126,41 +130,41 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
         case 0xD:
             if ((v & 0x80) != 0) {
                 // reset
-                sndp.HESAdPcmReset();
+                sndp.reset();
             }
             if ((v & 0x03) == 0x03) {
                 // set write pointer
-                sndp.writeptr = sndp.addr;
-                sndp.regs[0x10] = (byte) (sndp.writeptr & 0xff);
-                sndp.regs[0x11] = (byte) (sndp.writeptr >> 8);
+                sndp.writePtr = sndp.addr;
+                sndp.regs[0x10] = (byte) (sndp.writePtr & 0xff);
+                sndp.regs[0x11] = (byte) (sndp.writePtr >> 8);
             }
             if ((v & 0x08) != 0) {
                 // set read pointer
-                sndp.readptr = sndp.addr != 0 ? sndp.addr - 1 : sndp.addr;
-                sndp.regs[0x12] = (byte) (sndp.readptr & 0xff);
-                sndp.regs[0x13] = (byte) ((sndp.readptr >> 8) & 0xff);
+                sndp.readPtr = sndp.addr != 0 ? sndp.addr - 1 : sndp.addr;
+                sndp.regs[0x12] = (byte) (sndp.readPtr & 0xff);
+                sndp.regs[0x13] = (byte) ((sndp.readPtr >> 8) & 0xff);
             }
             if ((v & 0x10) != 0) {
                 sndp.length = sndp.addr;
                 sndp.regs[0x14] = (byte) (sndp.length & 0xff);
                 sndp.regs[0x15] = (byte) ((sndp.length >> 8) & 0xff);
             }
-            sndp.repeatflag = ((v & 0x20) == 0x20) ? 1 : 0;
-            sndp.playflag = ((v & 0x40) == 0x40) ? 1 : 0;
-            if (sndp.playflag != 0) {
-                sndp.deltadev.write.accept(2, sndp.readptr & 0xff);
-                sndp.deltadev.write.accept(3, (sndp.readptr >> 8) & 0xff);
-                sndp.deltadev.write.accept(4, (sndp.length + sndp.readptr) & 0xff);
-                sndp.deltadev.write.accept(5, ((sndp.length + sndp.readptr) >> 8) & 0xff);
-                sndp.deltadev.write.accept(0, 1);
-                sndp.deltadev.write.accept(0, (0x80 | (sndp.repeatflag >> 1)));
+            sndp.repeatFlag = ((v & 0x20) == 0x20) ? 1 : 0;
+            sndp.playFlag = ((v & 0x40) == 0x40) ? 1 : 0;
+            if (sndp.playFlag != 0) {
+                sndp.deltaDev.write.accept(2, sndp.readPtr & 0xff);
+                sndp.deltaDev.write.accept(3, (sndp.readPtr >> 8) & 0xff);
+                sndp.deltaDev.write.accept(4, (sndp.length + sndp.readPtr) & 0xff);
+                sndp.deltaDev.write.accept(5, ((sndp.length + sndp.readPtr) >> 8) & 0xff);
+                sndp.deltaDev.write.accept(0, 1);
+                sndp.deltaDev.write.accept(0, (0x80 | (sndp.repeatFlag >> 1)));
             }
             break;
         case 0xE:
             // set freq
             sndp.freq = 7111 / (16 - (v & 15));
-            sndp.deltadev.write.accept(0x9, sndp.freq & 0xff);
-            sndp.deltadev.write.accept(0xa, (sndp.freq >> 8) & 0xff);
+            sndp.deltaDev.write.accept(0x9, sndp.freq & 0xff);
+            sndp.deltaDev.write.accept(0xa, (sndp.freq >> 8) & 0xff);
             break;
         case 0xF:
             // fade out
@@ -173,25 +177,25 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
             case 0x5:
             case 0x6:
             case 0x7:
-                sndp.fadetimer = 0;
-                sndp.fadecount = sndp.fadetimer;
+                sndp.fadeTimer = 0;
+                sndp.fadeCount = sndp.fadeTimer;
                 sndp.volume = 0xff;
                 break;
             case 0x8:
-                sndp.fadetimer = -100;
-                sndp.fadecount = sndp.fadetimer;
+                sndp.fadeTimer = -100;
+                sndp.fadeCount = sndp.fadeTimer;
                 break;
             case 0xa:
-                sndp.fadetimer = 5000;
-                sndp.fadecount = sndp.fadetimer;
+                sndp.fadeTimer = 5000;
+                sndp.fadeCount = sndp.fadeTimer;
                 break;
             case 0xc:
-                sndp.fadetimer = -100;
-                sndp.fadecount = sndp.fadetimer;
+                sndp.fadeTimer = -100;
+                sndp.fadeCount = sndp.fadeTimer;
                 break;
             case 0xe:
-                sndp.fadetimer = 1500;
-                sndp.fadecount = sndp.fadetimer;
+                sndp.fadeTimer = 1500;
+                sndp.fadeCount = sndp.fadeTimer;
                 break;
             }
 
@@ -200,12 +204,12 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
     }
 
     private int sndread(int a) {
-        HESADPCM sndp = (HESADPCM) ctx;
+        HesAdpcm sndp = (HesAdpcm) ctx;
         return switch (a & 15) {
-            case 0xa -> sndp.pcmbuf[sndp.readptr++];
+            case 0xa -> sndp.pcmBuf[sndp.readPtr++];
             case 0xb -> sndp.port[0xb] & ~1;
             case 0xc -> {
-                if (sndp.playflag == 0) {
+                if (sndp.playFlag == 0) {
                     sndp.port[0xc] |= 1;
                     sndp.port[0xc] &= 0xf7;// ~8;
                 } else {
@@ -224,17 +228,17 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
     private static final int LOG_BITS = 12;
 
     private void sndvolume(int volume) {
-        HESADPCM sndp = (HESADPCM) ctx;
+        HesAdpcm sndp = (HesAdpcm) ctx;
         volume = (volume << (LOG_BITS - 8)) << 1;
-        sndp.common.mastervolume = volume;
+        sndp.common.masterVolume = volume;
 
-        sndp.deltadev.volume.accept(volume);
+        sndp.deltaDev.volume.accept(volume);
     }
 
     private void sndrelease() {
-        HESADPCM sndp = (HESADPCM) ctx;
+        HesAdpcm sndp = (HesAdpcm) ctx;
 
-        sndp.deltadev.release.run();
+        sndp.deltaDev.release.run();
 
         if (sndp != null) {
             //XFREE(sndp);
@@ -242,7 +246,7 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
         }
     }
 
-    //private void setinst(Object ctx, int n, byte[] p, int l) { }
+    //private void setInst(Object ctx, int n, byte[] p, int l) { }
 
     // Register viewer settings from here
     //static Uint8* regdata;
@@ -252,10 +256,10 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
     //}
     // Register viewer settings up to here
 
-    public KMIF_SOUND_DEVICE HESAdPcmAlloc(S_Hesad s_hesad) {
-        HESADPCM sndp;
+    public KmifSoundDevice HESAdPcmAlloc(S_Hesad s_hesad) {
+        HesAdpcm sndp;
         //sndp = XMALLOC(sizeof(HESADPCM));
-        sndp = new HESADPCM();
+        sndp = new HesAdpcm();
         if (sndp == null) return null;
         //XMEMSET(sndp, 0, sizeof(HESADPCM));
         sndp.kmif = s_hesad; // TODO vavi
@@ -266,7 +270,7 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
         sndp.kmif.volume = this::sndvolume;
         sndp.kmif.write = this::sndwrite;
         sndp.kmif.read = this::sndread;
-        sndp.kmif.setinst = setinst;
+        sndp.kmif.setInst = setInst;
 
         // Register viewer settings from here
         //regdata = sndp.regs;
@@ -274,27 +278,24 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
         // Register viewer settings up to here
 
         // process sound
-        sndp.deltadev = YMDELTATPCMSoundAlloc(3, sndp.pcmbuf);
+        sndp.deltaDev = YMDELTATPCMSoundAlloc(3, sndp.pcmBuf);
         return sndp.kmif;
     }
 
-    private KMIF_SOUND_DEVICE YMDELTATPCMSoundAlloc(int ymdeltatpcm_type, byte[] pcmbuf) {
+    private KmifSoundDevice YMDELTATPCMSoundAlloc(int ymdeltatpcm_type, byte[] pcmbuf) {
         int ram_size;
-        S_Deltat.YMDELTATPCMSOUND_ sndp;
+        YmDeltaTPcmSound_ sndp;
         ram_size = switch (ymdeltatpcm_type) {
-            case 0 -> // YMDELTATPCM_TYPE_Y8950:
-                    32 * 1024;
-            case 1 -> // YMDELTATPCM_TYPE_YM2608:
-                    256 * 1024;
-            case 3 -> // MSM5205:
-                    256 * 256;
+            case 0 -> 32 * 1024;  // YMDELTATPCM_TYPE_Y8950
+            case 1 -> 256 * 1024; // YMDELTATPCM_TYPE_YM2608
+            case 3 -> 256 * 256;  // MSM5205
             default -> 0;
         };
-        //sndp = XMALLOC(sizeof(YMDELTATPCMSOUND) + ram_size);
-        sndp = new S_Deltat.YMDELTATPCMSOUND_();
+        //sndp = XMALLOC(sizeof(ymDeltaTPcmSound) + ram_size);
+        sndp = new YmDeltaTPcmSound_();
         if (sndp == null) return null;
         sndp.ram_size = ram_size;
-        sndp.ymdeltatpcm_type = ymdeltatpcm_type;
+        sndp.ymDeltaTPcm_type = ymdeltatpcm_type;
         switch (ymdeltatpcm_type) {
         case 0: // YMDELTATPCM_TYPE_Y8950:
             sndp.memShift = 2;
@@ -319,15 +320,15 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
         sndp.kmif.reset = this::sndreset;
         sndp.kmif.write = this::sndwrite;
         sndp.kmif.read = this::sndread;
-        sndp.kmif.setinst = this.setinst;
+        sndp.kmif.setInst = this.setInst;
         // RAM
         //ram_size != 0 ? (byte[])(sndp + 1) : 0;
-        sndp.rambuf = pcmbuf;
-        sndp.rammask = ram_size != 0 ? (ram_size - 1) : 0;
+        sndp.ramBuf = pcmbuf;
+        sndp.ramMask = ram_size != 0 ? (ram_size - 1) : 0;
         // ROM
-        sndp.rombuf = null;
-        sndp.rommask = 0;
-        sndp.logtbl = S_Deltat.KMIF_LOGTABLE.LogTableAddRef();
+        sndp.romBuf = null;
+        sndp.romMask = 0;
+        sndp.logtbl = Kmif_LogTable.logTableAddRef();
         if (sndp.logtbl == null) {
             sndp.releaseSound();
             return null;

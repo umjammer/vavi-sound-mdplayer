@@ -40,8 +40,8 @@ public class RCPPlugin extends BasePlugin<RcpDriver> {
         chipLED.put("SecMID", 1);
 
         chipRegister.plugin(MidiPlugin.class).releaseAll();
-        chipRegister.plugin(MidiPlugin.class).make(setting, midiMode);
-//        chipRegister.plugin(MidiPlugin.class).set(setting.getMidiOut().getMidiOutInfos().get(midiMode));
+        chipRegister.plugin(MidiPlugin.class).make();
+//        chipRegister.plugin(MidiPlugin.class).set(setting.getMidiOut().getMidiOutInfos().get(chipRegister.plugin(MidiPlugin.class).midiMode));
 
         driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel,
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,

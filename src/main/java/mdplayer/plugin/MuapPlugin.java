@@ -79,7 +79,7 @@ public class MuapPlugin extends BasePlugin<MuapDriver> {
             chip.setVolumes.put("RHYTHM", ym2608::setVolume);
             chip.setVolumes.put("ADPCM", ym2608::setVolume);
         }
-        Function<String, Stream> fn = Common::getOPNARyhthmStream;
+        Function<String, Stream> fn = Ym2608Chip::getOPNARyhthmStream;
         chip.option = new Object[] {fn};
         chipLED.put("PriOPNA", 1);
         put(Ym2608Chip.class, chip);
@@ -130,9 +130,6 @@ public class MuapPlugin extends BasePlugin<MuapDriver> {
         chip.option = null;
         chipLED.put("PriCS4231", 1);
         put(Cs4231Chip.class, chip);
-
-        if (hiyorimiNecessary) hiyorimiNecessary = true;
-        else hiyorimiNecessary = false;
 
         mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, flatten());
 

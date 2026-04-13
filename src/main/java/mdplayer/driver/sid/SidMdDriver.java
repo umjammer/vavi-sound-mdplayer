@@ -42,7 +42,7 @@ public class SidMdDriver extends BaseDriver implements SidDriver {
             return null;
         }
 
-        sid.songs = Common.getBE16(buf, 0x0e);
+        sid.songs = ByteUtil.readBeShort(buf, 0x0e) & 0xffff;
 
         MetaData md = new MetaData();
         try {

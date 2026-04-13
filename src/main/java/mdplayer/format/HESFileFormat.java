@@ -13,7 +13,6 @@ import dotnet4j.io.File;
 import dotnet4j.io.Path;
 import mdplayer.Common.EnmArcType;
 import mdplayer.PlayList;
-import mdplayer.driver.Vgm;
 import mdplayer.driver.hes.HesDriver;
 import mdplayer.plugin.HESPlugin;
 import mdplayer.plugin.Plugin;

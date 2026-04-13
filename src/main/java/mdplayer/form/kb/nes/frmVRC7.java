@@ -22,6 +22,7 @@ import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.chips.NesChip;
 import mdplayer.chips.NesChip.Vrc7Chip;
+import mdplayer.chips.SegaPcmChip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
@@ -130,7 +131,7 @@ public class frmVRC7 extends frmBase {
             // Octave
             int oct = ((vrc7Register[0x20 + ch] & 0xe) >> 1);
             // Get the approximate pitch from the frequency and octave information
-            nyc.note = mdplayer.Common.searchSegaPCMNote(freq / 172.0) + (oct - 4) * 12;
+            nyc.note = SegaPcmChip.searchSegaPCMNote(freq / 172.0) + (oct - 4) * 12;
 
 
             // In case of one-shot (a state where key-on has occurred at least once since the last process)

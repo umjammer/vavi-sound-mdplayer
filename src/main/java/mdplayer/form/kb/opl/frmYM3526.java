@@ -21,6 +21,7 @@ import mdplayer.Common;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
+import mdplayer.chips.SegaPcmChip;
 import mdplayer.chips.Ym3526Chip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
@@ -180,7 +181,7 @@ public class frmYM3526 extends frmBase {
 
             // FNUM / (2^19) * (mClock/72) * (2 ^ (block - 1))
             double fmus = (double) nyc.inst[12] / (1 << 19) * (masterClock / 72.0) * (1 << nyc.inst[11]);
-            nyc.note = Common.searchSegaPCMNote(fmus / 523.3);//523.3 -> c4
+            nyc.note = SegaPcmChip.searchSegaPCMNote(fmus / 523.3);//523.3 -> c4
 
             if (ki.on[c]) {
                 int tl1 = nyc.inst[5 + 0 * 17];

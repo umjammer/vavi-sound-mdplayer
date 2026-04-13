@@ -7,7 +7,7 @@ import java.util.function.Function;
 import dotnet4j.util.compat.TriConsumer;
 
 
-class KMIF_SOUND_DEVICE {
+class KmifSoundDevice {
     interface dlgRelease extends Runnable {
     }
 
@@ -36,12 +36,12 @@ class KMIF_SOUND_DEVICE {
     public dlgVolume volume;
     public dlgWrite write;
     public dlgRead read;
-    public dlgSetinst setinst;
+    public dlgSetinst setInst;
 }
 
-public class S_Deltat extends KMIF_SOUND_DEVICE {
+public class S_Deltat extends KmifSoundDevice {
 
-    public static class KMIF_LOGTABLE {
+    public static class Kmif_LogTable {
 
         public static final int LOG_BITS = 12;
         public static final int LIN_BITS = 7;
@@ -53,14 +53,14 @@ public class S_Deltat extends KMIF_SOUND_DEVICE {
         }
 
         public static dlgRelease release;
-        public final int[] lineartbl = new int[(1 << LIN_BITS) + 1];
-        public final int[] logtbl = new int[1 << LOG_BITS];
+        public final int[] linearTbl = new int[(1 << LIN_BITS) + 1];
+        public final int[] logTbl = new int[1 << LOG_BITS];
 
         public static final Object log_tables_mutex = new Object();
         public static int log_tables_refcount = 0;
-        public static KMIF_LOGTABLE log_tables = null;
+        public static Kmif_LogTable log_tables = null;
 
-        public static void LogTableRelease(Object ctx) {
+        public static void logTableRelease(Object ctx) {
             synchronized (log_tables_mutex) {
 //                while (log_tables_mutex != 1) {
 //                    XSLEEP(0);
@@ -78,23 +78,23 @@ public class S_Deltat extends KMIF_SOUND_DEVICE {
             double a;
             for (i = 0; i < (1 << LOG_BITS); i++) {
                 a = (1 << LOG_LIN_BITS) / Math.pow(2, i / (double) (1 << LOG_BITS));
-                this.logtbl[i] = (int) a;
+                this.logTbl[i] = (int) a;
             }
-            this.lineartbl[0] = LOG_LIN_BITS << LOG_BITS;
+            this.linearTbl[0] = LOG_LIN_BITS << LOG_BITS;
             for (i = 1; i < (1 << LIN_BITS) + 1; i++) {
                 int ua;
                 a = i << (LOG_LIN_BITS - LIN_BITS);
                 ua = (int) ((LOG_LIN_BITS - (Math.log(a) / Math.log(2))) * (1 << LOG_BITS));
-                this.lineartbl[i] = ua << 1;
+                this.linearTbl[i] = ua << 1;
             }
         }
 
-        public static KMIF_LOGTABLE LogTableAddRef() {
+        public static Kmif_LogTable logTableAddRef() {
             synchronized (log_tables_mutex) {
                 if (log_tables_refcount == 0) {
-                    log_tables = new KMIF_LOGTABLE();
+                    log_tables = new Kmif_LogTable();
                     ctx = log_tables;
-                    release = KMIF_LOGTABLE::LogTableRelease;
+                    release = Kmif_LogTable::logTableRelease;
                     log_tables.LogTableCalc();
                 }
                 if (log_tables != null) log_tables_refcount++;
@@ -102,19 +102,19 @@ public class S_Deltat extends KMIF_SOUND_DEVICE {
             return log_tables;
         }
 
-        public int LogToLin(int l, int sft) {
+        public int logToLin(int l, int sft) {
             int ret;
             int ofs;
             ofs = l + (sft << (LOG_BITS + 1));
             sft = ofs >> (LOG_BITS + 1);
             if (sft >= LOG_LIN_BITS) return 0;
             ofs = (ofs >> 1) & ((1 << LOG_BITS) - 1);
-            ret = logtbl[ofs] >> sft;
+            ret = logTbl[ofs] >> sft;
             return (l & 1) != 0 ? -ret : ret;
         }
     }
 
-    public static class YMDELTATPCMSOUND_ {
+    public static class YmDeltaTPcmSound_ {
 
         public final byte[] chMask = {
                 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -217,10 +217,10 @@ public class S_Deltat extends KMIF_SOUND_DEVICE {
         private static final int CPS_SHIFT = 16;
         private static final int PHASE_SHIFT = 16; // 16(fix)
 
-        public KMIF_SOUND_DEVICE kmif;
-        public KMIF_LOGTABLE logtbl;
+        public KmifSoundDevice kmif;
+        public Kmif_LogTable logtbl;
 
-        public static class YMDELTATPCMSOUND_COMMON_TAG {
+        public static class YmDeltaTpcMsound_Common_Tag {
             public int mastervolume;
             public int step;
             public int output;
@@ -241,28 +241,28 @@ public class S_Deltat extends KMIF_SOUND_DEVICE {
             public final byte[] regs = new byte[0x10];
         }
 
-        public YMDELTATPCMSOUND_COMMON_TAG common = new YMDELTATPCMSOUND_COMMON_TAG();
-        public byte[] romrambuf;
-        public int romrammask;
-        public byte[] rambuf;
-        public int rammask;
-        public byte[] rombuf;
-        public int rommask;
-        public int ymdeltatpcm_type;
+        public YmDeltaTpcMsound_Common_Tag common = new YmDeltaTpcMsound_Common_Tag();
+        public byte[] romRamBuf;
+        public int romRamMask;
+        public byte[] ramBuf;
+        public int ramMask;
+        public byte[] romBuf;
+        public int romMask;
+        public int ymDeltaTPcm_type;
         public int memShift;
         public int ram_size;
 
-        public YMDELTATPCMSOUND_ YMDELTATPCMSOUND;
+        public YmDeltaTPcmSound_ ymDeltaTPcmSound;
 
         public static final byte[] table_step = {
-                        1, 3, 5, 7, 9, 11, 13, 15,
-                        -1, -1, -1, -1, 2, 4, 6, 8
-                };
+                1, 3, 5, 7, 9, 11, 13, 15,
+                -1, -1, -1, -1, 2, 4, 6, 8
+        };
 
         public static final byte[] table_scale = {
-                        57, 57, 57, 57, 77, 102, (byte) 128, (byte) 153,
-                        57, 57, 57, 57, 77, 102, (byte) 128, (byte) 153
-                };
+                57, 57, 57, 57, 77, 102, (byte) 128, (byte) 153,
+                57, 57, 57, 57, 77, 102, (byte) 128, (byte) 153
+        };
 
         public static final int[] scaleTable = {
                 2, 6, 10, 14, 18, 22, 26, 30, -2, -6, -10, -14, -18, -22, -26, -30,
@@ -317,13 +317,13 @@ public class S_Deltat extends KMIF_SOUND_DEVICE {
         };
 
         private void writeRam(int v) {
-            this.rambuf[(this.common.mem >> 1) & this.rammask] = (byte) v;
+            this.ramBuf[(this.common.mem >> 1) & this.ramMask] = (byte) v;
             this.common.mem += 1 << 1;
         }
 
         private int readRam() {
             int v;
-            v = this.romrambuf[(this.common.play >> 1) & this.romrammask];
+            v = this.romRamBuf[(this.common.play >> 1) & this.romRamMask];
             if ((this.common.play & 1) != 0)
                 v &= 0x0f;
             else
@@ -333,7 +333,7 @@ public class S_Deltat extends KMIF_SOUND_DEVICE {
                 if ((this.common.regs[0] & 0x10) != 0) {
                     this.common.play = this.common.start;
                     this.common.step = 0;
-                    if (this.ymdeltatpcm_type == 3) {
+                    if (this.ymDeltaTPcm_type == 3) {
                         this.common.scale = 0;
                     } else {
                         this.common.scale = 127;
@@ -346,7 +346,7 @@ public class S_Deltat extends KMIF_SOUND_DEVICE {
         }
 
         private void stepDeltaT(int data) {
-            if (this.ymdeltatpcm_type == 3) { // MSM5205
+            if (this.ymDeltaTPcm_type == 3) { // MSM5205
                 this.common.scale = this.common.scale + scaleTable[(this.common.step << 4) + (data & 0xf)];
                 if (this.common.scale > 2047) this.common.scale = 2047;
                 if (this.common.scale < -2048) this.common.scale = -2048;
@@ -371,7 +371,6 @@ public class S_Deltat extends KMIF_SOUND_DEVICE {
         public int SSR(int x, int y) {
             return x >> y;
         }
-
 //#else
 //        public int SSR(int x, int y) {
 //            return x >= 0 ? x >> y : -((-x - 1) >> y) - 1;
@@ -391,7 +390,7 @@ public class S_Deltat extends KMIF_SOUND_DEVICE {
                     do {
                         stepDeltaT(readRam());
                     } while (--step != 0);
-                    if (this.ymdeltatpcm_type == 3) {
+                    if (this.ymDeltaTPcm_type == 3) { // MSM5205
                         this.common.output = this.common.scale * this.common.level32;
                     } else {
                         this.common.output = this.common.step * this.common.level32;
@@ -414,8 +413,7 @@ public class S_Deltat extends KMIF_SOUND_DEVICE {
                     this.common.key = 1;
                     this.common.play = this.common.start;
                     this.common.step = 0;
-                    if (this.ymdeltatpcm_type == 3) // MSM5205)
-                    {
+                    if (this.ymDeltaTPcm_type == 3) { // MSM5205
                         this.common.scale = 0;
                     } else {
                         this.common.scale = 127;
@@ -426,8 +424,8 @@ public class S_Deltat extends KMIF_SOUND_DEVICE {
             // L,R,-,-,SAMPLE,DA/AD,RAMTYPE,ROM
             case 0x01: // Control Register 2
                 // MSX-AUDIO does not have ADPCM ROM, so disable it.
-                //sndp.romrambuf  = (sndp.common.regs[1] & 1) ? sndp.rombuf  : sndp.rambuf;
-                //sndp.romrammask = (sndp.common.regs[1] & 1) ? sndp.rommask : sndp.rammask;
+                //sndp.romRamBuf  = (sndp.common.regs[1] & 1) ? sndp.romBuf  : sndp.ramBuf;
+                //sndp.romRamMask = (sndp.common.regs[1] & 1) ? sndp.romMask : sndp.ramMask;
                 break;
             case 0x02: // Start Address L
             case 0x03: // Start Address H
@@ -452,9 +450,8 @@ public class S_Deltat extends KMIF_SOUND_DEVICE {
                 break;
             case 0x0b: // Level Control
                 this.common.level = v;
-                this.common.level32 = (this.common.level * this.logtbl.LogToLin(this.common.mastervolume, KMIF_LOGTABLE.LOG_LIN_BITS - 15)) >> 7;
-                if (this.ymdeltatpcm_type == 3) // MSM5205)
-                {
+                this.common.level32 = (this.common.level * this.logtbl.logToLin(this.common.mastervolume, Kmif_LogTable.LOG_LIN_BITS - 15)) >> 7;
+                if (this.ymDeltaTPcm_type == 3) { // MSM5205
                     this.common.output = this.common.scale * this.common.level32;
                 } else {
                     this.common.output = this.common.step * this.common.level32;
@@ -470,55 +467,51 @@ public class S_Deltat extends KMIF_SOUND_DEVICE {
 
         public void resetSound(int clock, int freq) {
             //XMEMSET(&sndp.common, 0, sizeof(sndp.common));
-            this.common = new YMDELTATPCMSOUND_.YMDELTATPCMSOUND_COMMON_TAG();
+            this.common = new YmDeltaTpcMsound_Common_Tag();
             this.common.cps = DivFix(clock, 72 * freq, CPS_SHIFT);
-            this.romrambuf = (this.common.regs[1] & 1) != 0 ? this.rombuf : this.rambuf;
-            this.romrammask = (this.common.regs[1] & 1) != 0 ? this.rommask : this.rammask;
+            this.romRamBuf = (this.common.regs[1] & 1) != 0 ? this.romBuf : this.ramBuf;
+            this.romRamMask = (this.common.regs[1] & 1) != 0 ? this.romMask : this.ramMask;
             this.common.granuality = 4;
         }
 
         public void volumeSound(int volume) {
-            volume = (volume << (KMIF_LOGTABLE.LOG_BITS - 8)) << 1;
+            volume = (volume << (Kmif_LogTable.LOG_BITS - 8)) << 1;
             this.common.mastervolume = volume;
-            this.common.level32 = (this.common.level * this.logtbl.LogToLin(this.common.mastervolume, KMIF_LOGTABLE.LOG_LIN_BITS - 15)) >> 7;
+            this.common.level32 = (this.common.level * this.logtbl.logToLin(this.common.mastervolume, Kmif_LogTable.LOG_LIN_BITS - 15)) >> 7;
             this.common.output = this.common.step * this.common.level32;
             this.common.output = SSR(this.common.output, 8 + 2);
         }
 
         public void releaseSound() {
             if (this != null) {
-                YMDELTATPCMSOUND_ s = this;
-                if (s.logtbl != null) KMIF_LOGTABLE.release.accept(KMIF_LOGTABLE.ctx);
+                YmDeltaTPcmSound_ s = this;
+                if (s.logtbl != null) Kmif_LogTable.release.accept(Kmif_LogTable.ctx);
             }
         }
 
         public void setInst(int n, byte[] p, int l) {
             if (n != 0) return;
             if (p != null) {
-                this.rombuf = p;
-                this.rommask = l - 1;
-                this.romrambuf = (this.common.regs[1] & 1) != 0 ? this.rombuf : this.rambuf;
-                this.romrammask = (this.common.regs[1] & 1) != 0 ? this.rommask : this.rammask;
+                this.romBuf = p;
+                this.romMask = l - 1;
+                this.romRamBuf = (this.common.regs[1] & 1) != 0 ? this.romBuf : this.ramBuf;
+                this.romRamMask = (this.common.regs[1] & 1) != 0 ? this.romMask : this.ramMask;
             } else {
-                this.rombuf = null;
-                this.rommask = 0;
+                this.romBuf = null;
+                this.romMask = 0;
             }
         }
     }
 
     // Register viewer settings from here
 
-    private YMDELTATPCMSOUND_ sndpr;
+    private YmDeltaTPcmSound_ sndpr;
 
-    private interface ioview_ioread_DEV_ADPCM extends Function<Integer, Integer> {
-    }
+    // ioview_ioread_DEV_ADPCM
+    private Function<Integer, Integer> ioview_ioread_DEV_ADPCM_;
 
-    private ioview_ioread_DEV_ADPCM ioview_ioread_DEV_ADPCM_;
-
-    private interface ioview_ioread_DEV_ADPCM2 extends Function<Integer, Integer> {
-    }
-
-    private ioview_ioread_DEV_ADPCM2 ioview_ioread_DEV_ADPCM2_;
+    // ioview_ioread_DEV_ADPCM2
+    private Function<Integer, Integer> ioview_ioread_DEV_ADPCM2_;
 
     private int ioview_ioread_bf(int a) {
         if (a <= 0xb) return sndpr.common.regs[a];
@@ -526,44 +519,33 @@ public class S_Deltat extends KMIF_SOUND_DEVICE {
     }
 
     private int ioview_ioread_bf2(int a) {
-        if (a < sndpr.ram_size) return sndpr.rambuf[a];
+        if (a < sndpr.ram_size) return sndpr.ramBuf[a];
         else return 0x100;
     }
 
     // Register viewer settings up to here
 
-    private KMIF_SOUND_DEVICE YMDELTATPCMSoundAlloc(int ymDeltaTPcmType, byte[] pcmBuf) {
+    private KmifSoundDevice alloc(int ymDeltaTPcmType, byte[] pcmBuf) {
         int ramSize;
-        YMDELTATPCMSOUND_ sndp;
+        YmDeltaTPcmSound_ sndp;
         ramSize = switch (ymDeltaTPcmType) {
-            case 0 -> // YMDELTATPCM_TYPE_Y8950:
-                    32 * 1024;
-            case 1 -> // YMDELTATPCM_TYPE_YM2608:
-                    256 * 1024;
-            case 3 -> // MSM5205:
-                    256 * 256;
+            case 0 -> 32 * 1024;  // YMDELTATPCM_TYPE_Y8950
+            case 1 -> 256 * 1024; // YMDELTATPCM_TYPE_YM2608
+            case 3 -> 256 * 256;  // MSM5205
             default -> 0;
         };
-        sndp = new YMDELTATPCMSOUND_();
-        sndp.rambuf = new byte[ramSize];
+        sndp = new YmDeltaTPcmSound_();
+        sndp.ramBuf = new byte[ramSize];
         if (sndp == null) return null;
         sndp.ram_size = ramSize;
-        sndp.ymdeltatpcm_type = ymDeltaTPcmType;
-        switch (ymDeltaTPcmType) {
-        case 0: // YMDELTATPCM_TYPE_Y8950:
-            sndp.memShift = 2;
-            break;
-        case 1: // YMDELTATPCM_TYPE_YM2608:
-            // OPNA
-            sndp.memShift = 6;
-            break;
-        case 2: // YMDELTATPCM_TYPE_YM2610:
-            sndp.memShift = 9;
-            break;
-        case 3: // MSM5205:
-            sndp.memShift = 0;
-            break;
-        }
+        sndp.ymDeltaTPcm_type = ymDeltaTPcmType;
+        sndp.memShift = switch (ymDeltaTPcmType) {
+            case 0 -> 2; // YMDELTATPCM_TYPE_Y8950
+            case 1 -> 6; // YMDELTATPCM_TYPE_YM2608 // OPNA
+            case 2 -> 9; // YMDELTATPCM_TYPE_YM2610
+            case 3 -> 0; // MSM5205
+            default -> 0;
+        };
         sndp.kmif.ctx = sndp;
         sndp.kmif.release = sndp::releaseSound;
         sndp.kmif.synth = sndp::synthSound;
@@ -571,17 +553,17 @@ public class S_Deltat extends KMIF_SOUND_DEVICE {
         sndp.kmif.reset = sndp::resetSound;
         sndp.kmif.write = sndp::writeSound;
         sndp.kmif.read = sndp::readSound;
-        sndp.kmif.setinst = sndp::setInst;
+        sndp.kmif.setInst = sndp::setInst;
         // RAM
         if (pcmBuf != null)
-            sndp.rambuf = pcmBuf;
+            sndp.ramBuf = pcmBuf;
         else
-            sndp.rambuf = ramSize != 0 ? sndp.rambuf : null;
-        sndp.rammask = ramSize != 0 ? (ramSize - 1) : 0;
+            sndp.ramBuf = ramSize != 0 ? sndp.ramBuf : null;
+        sndp.ramMask = ramSize != 0 ? (ramSize - 1) : 0;
         // ROM
-        sndp.rombuf = null;
-        sndp.rommask = 0;
-        sndp.logtbl = KMIF_LOGTABLE.LogTableAddRef();
+        sndp.romBuf = null;
+        sndp.romMask = 0;
+        sndp.logtbl = Kmif_LogTable.logTableAddRef();
         if (sndp.logtbl == null) {
             sndp.releaseSound();
             return null;

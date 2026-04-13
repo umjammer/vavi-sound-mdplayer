@@ -11,7 +11,6 @@ import java.lang.System.Logger.Level;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.SidChip;
 import mdplayer.driver.BaseDriver;
@@ -47,7 +46,7 @@ public class SidMdDriver2 extends BaseDriver implements SidDriver {
             return null;
         }
 
-        sid.songs = Common.getBE16(buf, 0x0e);
+        sid.songs = ByteUtil.readBeShort(buf, 0x0e) & 0xffff;
 
         MetaData md = new MetaData();
         try {

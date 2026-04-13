@@ -20,7 +20,7 @@ import mdsound.instrument.C352Inst;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
-public class C352Chip implements Chip {
+public class C352Chip extends BaseChip {
 
     public final int[][] register = {null, null};
 
@@ -35,8 +35,6 @@ public class C352Chip implements Chip {
 
     public int clock;
 
-    private BasePlugin<? extends BaseDriver> context;
-
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Instrument>[] implementations() {
@@ -45,20 +43,12 @@ public class C352Chip implements Chip {
 
     @Override
     public void init(BasePlugin<? extends BaseDriver> context) {
-        this.context = context;
+        super.init(context);
 
         for (int chipId = 0; chipId < 2; chipId++) {
             register[chipId] = new int[0x203];
             keyOn[chipId] = new int[32];
         }
-    }
-
-    @Override
-    public void reset() {
-    }
-
-    @Override
-    public void updateVol() {
     }
 
     public void setMask(int chipId, int ch, boolean mask) {
@@ -93,6 +83,8 @@ public class C352Chip implements Chip {
 
         if (model == EnmModel.VirtualModel)
             context.mds.inst(C352Inst.class).writePcm(chipId, buf, offset, length, srcOffset, romSize);
+
+        dumpData(model, "C352_PCMData", srcOffset, buf, length);
     }
 
     public int[] getChip(int chipId) {

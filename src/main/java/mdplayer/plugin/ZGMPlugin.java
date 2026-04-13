@@ -3,6 +3,7 @@ package mdplayer.plugin;
 import java.lang.System.Logger;
 
 import mdplayer.Common;
+import mdplayer.chips.RealChipPlugin;
 import mdplayer.driver.zgm.Zgm;
 
 import static java.lang.System.getLogger;
@@ -53,7 +54,7 @@ public class ZGMPlugin extends BasePlugin<Zgm> {
         // chips initialization
         //
 
-        hiyorimiNecessary = hiyorimiDeviceFlag == 0x3 && hiyorimiNecessary;
+        chipRegister.plugin(RealChipPlugin.class).initChip(hiyorimiDeviceFlag);
 
         mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, flatten());
     }

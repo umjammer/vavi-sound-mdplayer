@@ -8,22 +8,27 @@ package vavi.sound.sampled.md;
 
 import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 import java.util.ServiceLoader;
-import java.util.concurrent.CountDownLatch;
 import javax.sound.SoundClip;
 import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioFormat.Encoding;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.SourceDataLine;
 import javax.sound.sampled.UnsupportedAudioFileException;
+import javax.sound.sampled.spi.AudioFileReader;
 import javax.sound.sampled.spi.FormatConversionProvider;
+
+import com.sun.media.sound.JDK13Services;
 
 import vavi.util.Debug;
 import vavi.util.properties.annotation.Property;
@@ -56,24 +61,44 @@ class SpiTest {
         return Files.exists(Paths.get("local.properties"));
     }
 
-    static boolean onIde = System.getProperty("vavi.test", "").equals("ide");
-    static long time = onIde ? 1000 * 1000 : 10 * 1000;
+    static final boolean onIde = System.getProperty("vavi.test", "").equals("ide");
+    static final long time = onIde ? 1000 * 1000 : 10 * 1000;
 
     @Property(name = "vgm")
     String inFile = "src/test/resources/test.vgm";
 
     @Property
+    int track;
+
+    @Property
     String fmpDir;
     @Property
     String fmpPvi;
-
     @Property
     String zmsDir;
-
+    @Property
+    String mgsDir;
+    @Property
+    String ndpDir;
+    @Property
+    String musicaDir;
     @Property(name = "muap.dir.dta")
     String muapDirDta;
     @Property(name = "muap.dir.pcm")
     String muapDirPcm;
+
+    @Property(name = "mdplayer.variant.pcm8")
+    int variantPcm8;
+    @Property(name = "mdplayer.variant.mpcm")
+    int variantMpcm;
+    @Property(name = "mdplayer.variant.ym2151")
+    int variantYm2151;
+    @Property(name = "mdplayer.variant.ym2413")
+    int variantYm2413;
+    @Property(name = "mdplayer.variant.ymf262")
+    int variantYmf262;
+    @Property(name = "mdplayer.variant.ay8910")
+    int variantAy8910;
 
     @Property(name = "vavi.test.volume")
     double volume = 0.2;
@@ -88,6 +113,12 @@ class SpiTest {
             System.setProperty("mdplayer.fmp.pvi", fmpPvi);
             // zms
             System.setProperty("mdplayer.zms.dir", zmsDir);
+            // mgsdrv
+            System.setProperty("mdplayer.mgs.dir", mgsDir);
+            // ndp
+            System.setProperty("mdplayer.ndp.dir", ndpDir);
+            // musica
+            System.setProperty("mdplayer.musica.dir", musicaDir);
             // muap
             System.setProperty("muap.dir.dta", muapDirDta);
             System.setProperty("muap.dir.pcm", muapDirPcm);
@@ -96,20 +127,33 @@ class SpiTest {
         }
 
         // disable other vgm conversion spi
-        System.setProperty("vavi.sound.sampled.spi.emu", "false");
+        System.setProperty("vavi.sound.sampled.spi.emu.vgm", "false");
+        System.setProperty("vavi.sound.sampled.spi.emu.gbs", "false");
         System.setProperty("vavi.sound.sampled.spi.ymfm", "false");
 
-//        System.setProperty("mdplayer.variant.ym2151", "2"); // TODO this kills pcm8
-        System.setProperty("mdplayer.variant.pcm8", "0");
-//        System.setProperty("mdplayer.variant.mpcm", "0");
-//        System.setProperty("mdplayer.variant.ym2151", "1");
+        System.setProperty("mdplayer.variant.pcm8", String.valueOf(variantPcm8));
+        System.setProperty("mdplayer.variant.mpcm", String.valueOf(variantMpcm));
+        System.setProperty("mdplayer.variant.ym2151", String.valueOf(variantYm2151));
+        System.setProperty("mdplayer.variant.ym2413", String.valueOf(variantYm2413));
+        System.setProperty("mdplayer.variant.ay8910", String.valueOf(variantAy8910));
+        System.setProperty("mdplayer.variant.ymf262", String.valueOf(variantYmf262));
 
-Debug.println("volume: " + volume);
+Debug.println("volume: " + volume + ", player.volume: " + System.getProperty("mdplayer.volume") + ", cwd: " + System.getProperty("user.dir") + ", time: " + time);
+Debug.println("settings\n" +
+        "mdplayer.fmp.dir: " + System.getProperty("mdplayer.fmp.dir") + "\n" +
+        "mdplayer.fmp.pvi: " + System.getProperty("mdplayer.fmp.pvi") + "\n" +
+        "mdplayer.zms.dir: " + System.getProperty("mdplayer.zms.dir") + "\n" +
+        "mdplayer.mgs.dir: " + System.getProperty("mdplayer.mgs.dir") + "\n" +
+        "mdplayer.ndp.dir: " + System.getProperty("mdplayer.ndp.dir") + "\n" +
+        "mdplayer.musica.dir: " + System.getProperty("mdplayer.musica.dir") + "\n" +
+        "muap.dir.dta: " + System.getProperty("muap.dir.dta") + "\n" +
+        "muap.dir.pcm: " + System.getProperty("muap.dir.pcm") + "\n" +
+        "mdplayer.variant.ymf262: " + System.getProperty("mdplayer.variant.ymf262"));
     }
 
     @Test
-    @DisplayName("directly")
-    @DisabledIfEnvironmentVariable(named = "GITHUB_WORKFLOW", matches = ".*")
+    @DisplayName("via spi directly")
+    @DisabledIfEnvironmentVariable(named = "GITHUB_WORKFLOW", matches = ".*") // github workflow doesn't support volume
     public void test0() throws Exception {
 Debug.println(inFile);
         Path path = Paths.get(inFile);
@@ -117,12 +161,16 @@ Debug.println(inFile);
 
         AudioFormat inAudioFormat = sourceAis.getFormat();
 Debug.println("IN: " + inAudioFormat);
+        Map<String, Object> map = Map.of("track", track);
         AudioFormat outAudioFormat = new AudioFormat(
+                Encoding.PCM_SIGNED,
                 44100,
                 16,
                 2,
-                true,
-                false);
+                4,
+                44100,
+                false,
+                map);
 Debug.println("OUT: " + outAudioFormat);
 
         assertTrue(new MdFormatConversionProvider().isConversionSupported(outAudioFormat, inAudioFormat));
@@ -150,8 +198,8 @@ Debug.println("OUT: " + outAudioFormat);
     }
 
     @Test
-    @DisplayName("by spi")
-    @DisabledIfEnvironmentVariable(named = "GITHUB_WORKFLOW", matches = ".*")
+    @DisplayName("via spi")
+    @DisabledIfEnvironmentVariable(named = "GITHUB_WORKFLOW", matches = ".*") // github workflow doesn't support volume
     public void test1() throws Exception {
 Debug.println(inFile);
         Path path = Paths.get(inFile);
@@ -162,12 +210,16 @@ Debug.println("IN: " + inAudioFormat + ", " + inAudioFormat.getEncoding().getCla
 
         assertInstanceOf(MdEncoding.class, inAudioFormat.getEncoding());
 
+        Map<String, Object> map = Map.of("track", track);
         AudioFormat outAudioFormat = new AudioFormat(
+                Encoding.PCM_SIGNED,
                 44100,
                 16,
                 2,
-                true,
-                false);
+                4,
+                44100,
+                false,
+                map);
 Debug.println("OUT: " + outAudioFormat);
 
 for(var codec : ServiceLoader.load(FormatConversionProvider.class)) {
@@ -244,5 +296,25 @@ Debug.println(e.getMessage());
     void test6() throws Exception {
         var clip = SoundClip.createSoundClip(Path.of(inFile).toFile());
         clip.play();
+    }
+
+    @Test
+    @DisplayName("just test")
+    void test7() throws IOException {
+Debug.println(inFile);
+        Path path = Paths.get(inFile);
+        InputStream is = new BufferedInputStream(Files.newInputStream(path));
+
+        for(var o : JDK13Services.getProviders(AudioFileReader.class)) {
+            AudioFileReader reader = (AudioFileReader) o;
+            try {
+Debug.println("TRY reader: " + reader.getClass().getName() + ", " + is.available());
+                reader.getAudioFileFormat(is);
+Debug.println("OK reader: " + reader.getClass().getName());
+                break;
+            } catch (UnsupportedAudioFileException e) {
+Debug.println("FAILED reader: " + reader.getClass().getName() + ", " + is.available());
+            }
+        }
     }
 }

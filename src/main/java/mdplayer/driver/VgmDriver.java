@@ -38,7 +38,7 @@ public class VgmDriver extends BaseDriver {
         vgm.getUsedChips = () -> usedChips;
         vgm.setVersion = s -> version = s;
         vgm.getVersion = () -> version;
-        vgm.getMetaData = this::getMetaData;
+        vgm.updateMetaData = (b, o) -> metaData = getMetaData(b, o);
     }
 
     @Override

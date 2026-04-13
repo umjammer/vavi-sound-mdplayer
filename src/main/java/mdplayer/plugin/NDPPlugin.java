@@ -59,8 +59,8 @@ public class NDPPlugin extends BasePlugin<NdpDriver> {
             chip.option = null;
             if (chip.instrument instanceof MameAy8910Inst) {
                 chip.option = new Object[] {
-                        (byte) (setting.getAY8910Type()[0].getYM2149mode() ? 0x10 : 0x00), // chip_type 0x10:YM2149 0x00:AY
-                        (byte) 0x00  // chip_flag
+                        (setting.getAY8910Type()[0].getYM2149mode() ? 0x10 : 0x00), // chip_type 0x10:YM2149 0x00:AY
+                        0x00  // chip_flag
                 };
             }
             put(Ay8910Chip.class, chip);

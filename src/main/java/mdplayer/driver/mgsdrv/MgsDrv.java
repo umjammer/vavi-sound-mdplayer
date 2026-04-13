@@ -15,12 +15,18 @@ import dotnet4j.util.compat.TriConsumer;
 import konamiman.z80.Z80Processor;
 import konamiman.z80.Z80ProcessorImpl;
 import konamiman.z80.events.BeforeInstructionFetchEvent;
+import mdplayer.emu.msx.Mapper;
+import mdplayer.emu.msx.MapperRamCartridge;
+import mdplayer.emu.msx.MsxMemory;
+import mdplayer.emu.msx.MsxPort;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
 
 
 /**
+ * MSX MgsDrv
+ *
  * @author kumatan
  */
 public class MgsDrv {
@@ -39,6 +45,9 @@ public class MgsDrv {
     BiConsumer<Integer, Integer> ay8910Write;
     BiConsumer<Integer, Integer> ym2413Write;
 
+    /** msgdrv.com dir */
+    String dir;
+
     public int interrupt() {
         //logger.log(Level.TRACE, "\n_INTER(001FH)");
         z80.getRegisters().setPC((short) 0x601f);
@@ -54,7 +63,7 @@ public class MgsDrv {
     }
 
     void run(byte[] vgmBuf) throws IOException, URISyntaxException {
-        Path fileName = Path.of(MgsDrv.class.getResource("MGSDRV.COM").toURI());
+        Path fileName = Path.of(dir, "MGSDRV.COM");
 
         z80 = new Z80ProcessorImpl();
         z80.setClockSynchronizer(null);
@@ -187,9 +196,9 @@ public class MgsDrv {
             if (msg.equals(":_SYSTEM")) {
                 args.getExecutionStopper().stop(false);
             }
-        } else if ((z80.getRegisters().getPC() & 0xffff) >= mapper.jumpAddress && (z80.getRegisters().getPC() & 0xffff) < mapper.jumpAddress + 16) {
+        } else if ((z80.getRegisters().getPC() & 0xffff) >= Mapper.jumpAddress && (z80.getRegisters().getPC() & 0xffff) < Mapper.jumpAddress + 16) {
             //logger.log(Level.TRACE, "\nCall MAPPER PROC(0x%04x～) pc-%04x:%04x".formatted(mapper.JumpAddress, z80.getRegisters().getPC() - mapper.JumpAddress));
-            mapper.callMapperProc(args, z80, (z80.getRegisters().getPC() & 0xffff) - mapper.jumpAddress);
+            mapper.callMapperProc(args, z80, (z80.getRegisters().getPC() & 0xffff) - Mapper.jumpAddress);
         } else if ((z80.getRegisters().getPC() & 0xffff) == 0xffca) {
             //logger.log(Level.TRACE, "\nCall EXTBIO(0xffca) Reg.DE=%04x".formatted(z80.getRegisters().getDE()));
             callEXTBIO(args, z80);
@@ -231,7 +240,7 @@ public class MgsDrv {
         case 0x02:
             z80.getRegisters().setA((byte) 0);
             z80.getRegisters().setBC((short) 0);
-            z80.getRegisters().setHL((short) mapper.tableAddress);
+            z80.getRegisters().setHL((short) Mapper.tableAddress);
             break;
         }
     }

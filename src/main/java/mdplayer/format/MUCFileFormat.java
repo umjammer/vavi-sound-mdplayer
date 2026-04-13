@@ -11,7 +11,6 @@ import javax.sound.sampled.AudioFormat.Encoding;
 
 import dotnet4j.io.Path;
 import mdplayer.PlayList;
-import mdplayer.driver.Vgm;
 import mdplayer.driver.mucom.MucomDriver;
 import mdplayer.plugin.MucomPlugin;
 import mdplayer.plugin.Plugin;

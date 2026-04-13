@@ -2,6 +2,8 @@ package mdplayer.driver.mxdrv;
 
 import java.nio.ByteBuffer;
 
+import mdplayer.emu.nise68.XMemory;
+
 
 public class Depend {
     public static final int FALSE = 0;

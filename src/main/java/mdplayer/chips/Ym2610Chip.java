@@ -6,7 +6,6 @@
 
 package mdplayer.chips;
 
-import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
@@ -27,7 +26,7 @@ import mdsound.instrument.YmFmYm2610Inst;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
-public class Ym2610Chip implements Chip {
+public class Ym2610Chip extends BaseChip {
 
     private final Setting.ChipType2[] chipTypes = setting.getYM2610Type();
 
@@ -67,8 +66,6 @@ public class Ym2610Chip implements Chip {
 
     public int clock;
 
-    private BasePlugin<? extends BaseDriver> context;
-
     @SuppressWarnings("unchecked")
     private Class<? extends AdpcmEnabledInstrument> _inst(int chipId) {
         return (Class<? extends AdpcmEnabledInstrument>) inst(chipId);
@@ -87,7 +84,7 @@ public class Ym2610Chip implements Chip {
 
     @Override
     public void init(BasePlugin<? extends BaseDriver> context) {
-        this.context = context;
+        super.init(context);
 
         for (int chipId = 0; chipId < 2; chipId++) {
             register[chipId] = new int[][] {new int[0x100], new int[0x100]};
@@ -105,6 +102,9 @@ public class Ym2610Chip implements Chip {
 
             nowFadeoutVol[chipId] = 0;
         }
+
+        ym2610AdpcmA = new byte[][] {null, null};
+        ym2610AdpcmB = new byte[][] {null, null};
     }
 
     @Override
@@ -615,5 +615,40 @@ public class Ym2610Chip implements Chip {
 
     public void resetMask(int chipId, int ch) {
         setMask(chipId, ch, false);
+    }
+
+    private byte[][] ym2610AdpcmA = new byte[][] {null, null};
+    private byte[][] ym2610AdpcmB = new byte[][] {null, null};
+
+    public void writeAdpcmA(int chipId, byte[] vgmBuf, int vgmAdr, int bLen, int startAddress, int romSize, EnmModel model) {
+        if (ym2610AdpcmA[chipId] == null || ym2610AdpcmA[chipId].length != romSize)
+            ym2610AdpcmA[chipId] = new byte[romSize];
+        if (ym2610AdpcmA[chipId].length > 0) {
+            for (int cnt = 0; cnt < bLen - 8; cnt++) {
+                ym2610AdpcmA[chipId][startAddress + cnt] = vgmBuf[vgmAdr + 15 + cnt];
+            }
+            if (model == mdplayer.Common.EnmModel.VirtualModel)
+                writeAdpcmA(chipId, ym2610AdpcmA[chipId], model);
+            else
+                writeAdpcmA(chipId, model, startAddress, bLen - 8, vgmBuf, vgmAdr + 15);
+        }
+
+        dumpData(model, "YM2610_ADPCMA", vgmAdr + 15, vgmBuf, bLen - 8);
+    }
+
+    public void writeAdpcmB(int chipId, byte[] vgmBuf, int vgmAdr, int bLen, int startAddress, int romSize, EnmModel model) {
+        if (ym2610AdpcmB[chipId] == null || ym2610AdpcmB[chipId].length != romSize)
+            ym2610AdpcmB[chipId] = new byte[romSize];
+        if (ym2610AdpcmB[chipId].length > 0) {
+            for (int cnt = 0; cnt < bLen - 8; cnt++) {
+                ym2610AdpcmB[chipId][startAddress + cnt] = vgmBuf[vgmAdr + 15 + cnt];
+            }
+            if (model == mdplayer.Common.EnmModel.VirtualModel)
+                writeAdpcmB(chipId, ym2610AdpcmB[chipId], model);
+            else
+                writeAdpcmB(chipId, model, startAddress, bLen - 8, vgmBuf, vgmAdr + 15);
+        }
+
+        dumpData(model, "YM2610_ADPCMB", vgmAdr + 15, vgmBuf, bLen - 8);
     }
 }

@@ -3,7 +3,6 @@ package mdplayer.driver.musica;
 import java.io.IOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,10 +15,10 @@ import konamiman.z80.Z80Processor;
 import konamiman.z80.Z80ProcessorImpl;
 import konamiman.z80.events.BeforeInstructionFetchEvent;
 import mdplayer.Common;
-import mdplayer.driver.mgsdrv.Mapper;
-import mdplayer.driver.mgsdrv.MapperRamCartridge;
-import mdplayer.driver.mgsdrv.MsxMemory;
-import mdplayer.driver.mgsdrv.MsxPort;
+import mdplayer.emu.msx.Mapper;
+import mdplayer.emu.msx.MapperRamCartridge;
+import mdplayer.emu.msx.MsxMemory;
+import mdplayer.emu.msx.MsxPort;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
@@ -48,6 +47,9 @@ public class MuSICA {
     Consumer<String> updateTrackName;
     Consumer<String> updateNote;
 
+    /** KINROU5.DRV location */
+    String dir;
+
     public int interrupt() {
         //logger.log(Level.TRACE, "\r\n_INTER(001FH)");
         z80.getRegisters().setPC((short) 0x6029);
@@ -66,8 +68,8 @@ public class MuSICA {
         return z80.getRegisters().getHL() & 0xffff;
     }
 
-    void run(byte[] vgmBuf) throws IOException, URISyntaxException {
-        Path fileName = Path.of(MuSICA.class.getResource("KINROU5.DRV").toURI());
+    void run(byte[] vgmBuf) throws IOException {
+        Path fileName = Path.of(dir, "KINROU5.DRV");
 
         z80 = new Z80ProcessorImpl();
         z80.setClockSynchronizer(null);
@@ -194,9 +196,9 @@ public class MuSICA {
             if (msg.equals(":_SYSTEM")) {
                 args.getExecutionStopper().stop(false);
             }
-        } else if ((z80.getRegisters().getPC() & 0xffff) >= mapper.jumpAddress && (z80.getRegisters().getPC() & 0xffff) < mapper.jumpAddress + 16) {
+        } else if ((z80.getRegisters().getPC() & 0xffff) >= Mapper.jumpAddress && (z80.getRegisters().getPC() & 0xffff) < Mapper.jumpAddress + 16) {
             //logger.log(Level.TRACE, "Call MAPPER PROC(0x%04x～) PC-%04x:%04x".formatted(mapper.JumpAddress, z80.getRegisters().PC - mapper.JumpAddress));
-            mapper.callMapperProc(args, z80, (z80.getRegisters().getPC() & 0xffff) - mapper.jumpAddress);
+            mapper.callMapperProc(args, z80, (z80.getRegisters().getPC() & 0xffff) - Mapper.jumpAddress);
         } else if ((z80.getRegisters().getPC() & 0xffff) == 0xffca) {
             //logger.log(Level.TRACE, "Call EXTBIO(0xffca) Reg.DE=%04x".formatted(z80.getRegisters().DE));
             callEXTBIO(args, z80);
@@ -238,7 +240,7 @@ public class MuSICA {
             case 0x02:
                 z80.getRegisters().setA((byte) 0);
                 z80.getRegisters().setBC((short) 0);
-                z80.getRegisters().setHL((short) mapper.tableAddress);
+                z80.getRegisters().setHL((short) Mapper.tableAddress);
                 break;
         }
     }

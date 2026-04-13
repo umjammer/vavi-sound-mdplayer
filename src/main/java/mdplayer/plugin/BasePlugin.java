@@ -36,6 +36,10 @@ public abstract class BasePlugin<T extends BaseDriver> implements Plugin {
 
     protected final Setting setting = Setting.getInstance();
 
+    public interface HasSongNo {
+        void setSongNo(int songNo);
+    }
+
     public final MDSound mds;
 
     public final ChipRegister chipRegister;
@@ -61,7 +65,6 @@ public abstract class BasePlugin<T extends BaseDriver> implements Plugin {
 
     public String playingFileName;
     public String playingArcFileName;
-    protected int midiMode = 0;
     protected int songNo = 0;
     protected List<Tuple<String, byte[]>> extendFiles = null;
 
@@ -72,9 +75,6 @@ public abstract class BasePlugin<T extends BaseDriver> implements Plugin {
     public boolean fadeout;
     public double fadeoutCounter;
     public double fadeoutCounterV;
-
-    public int hiyorimiEven = 0;
-    public boolean hiyorimiNecessary = false;
 
     // TODO variable?
     public static final int BUFFER_SIZE = 1024;
@@ -103,10 +103,9 @@ public abstract class BasePlugin<T extends BaseDriver> implements Plugin {
     }
 
     protected BasePlugin() {
-        mds = new MDSound(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, null);
+        mds = new MDSound();
 
         chipRegister = new ChipRegister();
-        chipRegister.init(this);
 
         init();
     }
@@ -115,6 +114,7 @@ public abstract class BasePlugin<T extends BaseDriver> implements Plugin {
     public void init() {
         oneTimeReset = false;
 
+        chipRegister.init(this);
         // midi out released
         chipRegister.plugin(MidiPlugin.class).releaseAll();
 
@@ -139,7 +139,6 @@ logger.log(Level.TRACE, "stop: " + this.stopped + ", " + this.hashCode());
         chipRegister.plugin(RealChipPlugin.class).realFadeoutVolWait = 4;
 
         chips.clear();
-        this.hiyorimiNecessary = setting.getHiyorimiMode();
         resetFadeOutParam();
 
         chipRegister.reset();
@@ -166,16 +165,12 @@ logger.log(Level.TRACE, "stop: " + this.stopped + ", " + this.hashCode());
         chip.smpLast = 0x00;
     }
 
-    public void resume() {
-        this.stopped = false;
-//logger.log(Level.TRACE, "stopped: " + audio.stopped + ", " + audio.hashCode());
-    }
-
     @Override
     public void stop() {
-logger.log(Level.INFO, "stop enter: " + this.stopped);
+logger.log(Level.TRACE, "stop enter: " + this.stopped);
         if (!this.stopped) {
             this.stopped = true;
+logger.log(Level.INFO, "stop: " + this.stopped);
         }
     }
 
@@ -192,11 +187,7 @@ logger.log(Level.INFO, "stop enter: " + this.stopped);
         chipRegister.reset();
     }
 
-    public void seqDie() {
-        close();
-        chipRegister.plugin(RealChipPlugin.class).realChipClose();
-    }
-
+    /** TODO consider more */
     public void setBuffer(FileFormat format, byte[] srcBuf, String playingFileName, String playingArcFileName, int midiMode, int songNo, List<Tuple<String, byte[]>> extFile) {
         //stop();
         this.fileFormat = format;
@@ -204,7 +195,7 @@ logger.log(Level.INFO, "stop enter: " + this.stopped);
         this.vgmBuf = srcBuf;
         this.playingFileName = playingFileName; // for WaveWriter
         this.playingArcFileName = playingArcFileName;
-        this.midiMode = midiMode;
+        chipRegister.plugin(MidiPlugin.class).midiMode = midiMode;
         this.songNo = songNo;
         chipRegister.plugin(MidiPlugin.class).setFileName(playingFileName); // for ExportMIDI
         extendFiles = extFile; // Additional files

@@ -1,6 +1,6 @@
 package mdplayer.driver.mndrv;
 
-import mdplayer.driver.mxdrv.XMemory;
+import mdplayer.emu.nise68.XMemory;
 
 
 /**

@@ -3,7 +3,6 @@ package mdplayer.format;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.System.Logger;
-import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -78,37 +77,9 @@ public class MDXFileFormat extends BaseFileFormat {
         String[] PDX = new String[1];
         MxDriver.getPDXFileName(srcBuf, PDX, Common.charset);
         if (PDX[0] != null && !PDX[0].isEmpty()) {
-            buf = getExtendFileAllBytes(fn, PDX[0], archive, entry);
-            String pdx0 = PDX[0].toLowerCase();
-            if (buf == null) {
-                String pdx = Path.changeExtension(pdx0, ".PDX");
-                buf = getExtendFileAllBytes(fn, pdx, archive, entry);
-                if (buf != null) {
-                    logger.log(Level.TRACE, "found pdx: " + pdx);
-                }
-                if (buf == null) {
-                    pdx = Path.changeExtension(pdx0, ".pdx");
-                    buf = getExtendFileAllBytes(fn, pdx, archive, entry);
-                    if (buf != null) {
-                        logger.log(Level.TRACE, "found pdx: " + pdx);
-                    }
-                }
-                if (buf == null) {
-                    pdx = Path.changeExtension(pdx0.toUpperCase(), ".PDX");
-                    buf = getExtendFileAllBytes(fn, pdx, archive, entry);
-                    if (buf != null) {
-                        logger.log(Level.TRACE, "found pdx: " + pdx);
-                    }
-                }
-                if (buf == null) {
-                    pdx = Path.changeExtension(pdx0.toUpperCase(), ".pdx");
-                    buf = getExtendFileAllBytes(fn, pdx, archive, entry);
-                    if (buf != null) {
-                        logger.log(Level.TRACE, "found pdx: " + pdx);
-                    }
-                }
-            }
-            if (buf != null) ret.add(new Tuple<>(".PDX", buf));
+            String pdx = PDX[0].toLowerCase().endsWith(".pdx") ? PDX[0] : PDX[0] + ".pdx";
+            buf = getExtendFileAllBytes(fn, pdx, archive, entry);
+            if (buf != null) ret.add(new Tuple<>(pdx, buf));
         }
 
         return ret;

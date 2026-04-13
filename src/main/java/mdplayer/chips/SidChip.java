@@ -6,10 +6,7 @@
 
 package mdplayer.chips;
 
-import mdplayer.Chip;
-import mdplayer.driver.BaseDriver;
 import mdplayer.driver.sid.SidDriver;
-import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 
 
@@ -19,7 +16,7 @@ import mdsound.Instrument;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
-public class SidChip implements Chip {
+public class SidChip extends BaseChip {
 
     public SidDriver sid;
 
@@ -27,18 +24,6 @@ public class SidChip implements Chip {
     @SuppressWarnings("unchecked")
     public Class<? extends Instrument>[] implementations() {
         return new Class[0];
-    }
-
-    @Override
-    public void init(BasePlugin<? extends BaseDriver> context) {
-    }
-
-    @Override
-    public void reset() {
-    }
-
-    @Override
-    public void updateVol() {
     }
 
     public Integer[] read(int chipId) {

@@ -21,7 +21,6 @@ import mdplayer.Common.EnmModel;
 import mdplayer.MIDIExport;
 import mdplayer.MIDIParam;
 import mdplayer.MidiOutInfo;
-import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
 import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
@@ -44,6 +43,8 @@ public class MidiPlugin implements Plugin {
 
     private static final Logger logger = getLogger(MidiPlugin.class.getName());
 
+    public int midiMode = 0;
+
     public final MIDIParam[] params = {null, null};
 
     public MIDIExport export;
@@ -60,15 +61,12 @@ public class MidiPlugin implements Plugin {
     private BasePlugin<? extends BaseDriver> context;
 
     public MidiPlugin() {
-        mds = new MDSound(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, null);
+        mds = new MDSound();
     }
 
     @Override
     public void init(BasePlugin<? extends BaseDriver> context) {
         this.context = context;
-
-        mdsInit();
-        resetAll();
 
         export = new MIDIExport();
         export.registerYM2612 = context.chipRegister.chip(Ym2612Chip.class).register;
@@ -77,6 +75,12 @@ public class MidiPlugin implements Plugin {
         for (int chipId = 0; chipId < 2; chipId++) {
             params[chipId] = new MIDIParam();
         }
+    }
+
+    /** */
+    public void prepare() {
+        mdsInit();
+        resetAll();
     }
 
     @Override
@@ -228,16 +232,17 @@ public class MidiPlugin implements Plugin {
         mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, infos);
 
         // Creates a midi instance.
-        make(setting, 1);
+        midiMode = 1;
+        make();
     }
 
-    public void make(Setting setting, int m) {
+    public void make() {
         if (setting.getMidiOut().getMidiOutInfos() == null || setting.getMidiOut().getMidiOutInfos().isEmpty())
             return;
-        if (setting.getMidiOut().getMidiOutInfos().get(m) == null || setting.getMidiOut().getMidiOutInfos().get(m).length < 1)
+        if (setting.getMidiOut().getMidiOutInfos().get(midiMode) == null || setting.getMidiOut().getMidiOutInfos().get(midiMode).length < 1)
             return;
 
-        for (int i = 0; i < setting.getMidiOut().getMidiOutInfos().get(m).length; i++) {
+        for (int i = 0; i < setting.getMidiOut().getMidiOutInfos().get(midiMode).length; i++) {
             int n = -1;
             int t = 0;
             Receiver mo = null;
@@ -254,11 +259,11 @@ public class MidiPlugin implements Plugin {
                 if (device.getMaxReceivers() == 0) {
                     continue;
                 }
-                if (!setting.getMidiOut().getMidiOutInfos().get(m)[i].name.equals(info.getName()))
+                if (!setting.getMidiOut().getMidiOutInfos().get(midiMode)[i].name.equals(info.getName()))
                     continue;
 
                 n = j++;
-                t = setting.getMidiOut().getMidiOutInfos().get(m)[i].type;
+                t = setting.getMidiOut().getMidiOutInfos().get(midiMode)[i].type;
                 break;
             }
 

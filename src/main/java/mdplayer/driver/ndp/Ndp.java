@@ -3,7 +3,6 @@ package mdplayer.driver.ndp;
 import java.io.IOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,17 +13,17 @@ import dotnet4j.util.compat.TriConsumer;
 import konamiman.z80.Z80Processor;
 import konamiman.z80.Z80ProcessorImpl;
 import konamiman.z80.events.BeforeInstructionFetchEvent;
-import mdplayer.driver.mgsdrv.Mapper;
-import mdplayer.driver.mgsdrv.MapperRamCartridge;
-import mdplayer.driver.mgsdrv.MsxMemory;
-import mdplayer.driver.mgsdrv.MsxPort;
-import mdplayer.driver.mgsdrv.Z80Opcode;
+import mdplayer.emu.msx.Mapper;
+import mdplayer.emu.msx.MapperRamCartridge;
+import mdplayer.emu.msx.MsxMemory;
+import mdplayer.emu.msx.MsxPort;
+import mdplayer.emu.msx.Z80Opcode;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
 
 
-// MSX NDP
+/** MSX NDP */
 public class Ndp {
 
     private static final Logger logger = getLogger(Ndp.class.getName());
@@ -40,6 +39,9 @@ public class Ndp {
     TriConsumer<Integer, Integer, Integer> k051649Write;
     BiConsumer<Integer, Integer> ay8910Write;
     BiConsumer<Integer, Integer> ym2413Write;
+
+    /** ndp.bin location */
+    String dir;
 
     public int interrupt(Runnable stop) {
         byte playFG = 0;
@@ -71,13 +73,14 @@ public class Ndp {
             int a = z80.getRegisters().getA() & 0xff;
             return (a == 255) ? 0 : a;
         } catch (RuntimeException ex) {
+logger.log(Level.ERROR, ex.getMessage(), ex);
             stop.run();
             throw ex;
         }
     }
 
-    void run(byte[] vgmBuf) throws IOException, URISyntaxException {
-        Path fileName = Path.of(Ndp.class.getResource("NDP.BIN").toURI());
+    void run(byte[] vgmBuf) throws IOException {
+        Path fileName = Path.of(dir, "NDP.BIN");
 
         z80 = new Z80ProcessorImpl();
         z80.setClockSynchronizer(null);
@@ -150,12 +153,6 @@ public class Ndp {
         //}
     }
 
-    private String playingFileName;
-
-    public String getPlayingFileName() {
-        return playingFileName;
-    }
-
     private void z80OnBeforeInstructionFetch(BeforeInstructionFetchEvent args) {
         // Absolutely minimum implementation of CP/M for ZEXALL and ZEXDOC to work
 
@@ -222,9 +219,9 @@ public class Ndp {
             if (msg.equals(":_SYSTEM")) {
                 args.getExecutionStopper().stop(false);
             }
-        } else if ((z80.getRegisters().getPC() & 0xffff) >= mapper.jumpAddress && (z80.getRegisters().getPC() & 0xffff) < mapper.jumpAddress + 16) {
+        } else if ((z80.getRegisters().getPC() & 0xffff) >= Mapper.jumpAddress && (z80.getRegisters().getPC() & 0xffff) < Mapper.jumpAddress + 16) {
             //logger.log(Level.TRACE, "Call MAPPER PROC(0x%04x~) PC-%04x:%04x".formatted(mapper.jumpAddress, (z80.getRegisters().getPC() & 0xffff) - mapper.jumpAddress));
-            mapper.callMapperProc(args, z80, (z80.getRegisters().getPC() & 0xffff) - mapper.jumpAddress);
+            mapper.callMapperProc(args, z80, (z80.getRegisters().getPC() & 0xffff) - Mapper.jumpAddress);
         } else if ((z80.getRegisters().getPC() & 0xffff) == 0xffca) {
             //logger.log(Level.TRACE, "Call EXTBIO(0xffca) Reg.DE=%04x".formatted(z80.getRegisters().getDE() & 0xffff));
             callExtBio(args, z80);
@@ -276,7 +273,7 @@ public class Ndp {
             case 0x02:
                 z80.getRegisters().setA((byte) 0);
                 z80.getRegisters().setBC((short) 0);
-                z80.getRegisters().setHL((short) mapper.tableAddress);
+                z80.getRegisters().setHL((short) Mapper.tableAddress);
                 break;
         }
     }

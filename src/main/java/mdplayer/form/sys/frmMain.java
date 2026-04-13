@@ -238,7 +238,7 @@ public class frmMain extends JFrame {
     private int frameSizeH = 0;
 
     private Transmitter midiin = null;
-    private boolean forcedExit = false;
+    private static final boolean forcedExit = false;
     private final YM2612MIDI ym2612MIDI;
     private boolean flgReinit = false;
     public boolean reqAllScreenInit = true;
@@ -3488,7 +3488,7 @@ public class frmMain extends JFrame {
         }
     }
 
-    Audio audio = Audio.getInstance();
+    final Audio audio = Audio.getInstance();
 
     private void reinit(Setting setting) {
         if (!flgReinit) return;
@@ -4476,7 +4476,8 @@ public class frmMain extends JFrame {
                 resetChannelMask(FdsChip.class, chipId, 0);
             }
 
-            audio.plugin.resume();
+            audio.plugin.stopped = false;
+//logger.log(Level.TRACE, "stopped: " + audio.stopped + ", " + audio.hashCode());
 
             if (frmInfo != null) {
                 frmInfo.update();

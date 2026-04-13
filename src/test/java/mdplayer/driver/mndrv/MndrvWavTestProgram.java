@@ -4,13 +4,12 @@ import java.io.File;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 
-import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.Setting;
+import mdplayer.driver.BaseDriver;
 import mdplayer.format.FileFormat;
 import mdplayer.plugin.BasePlugin;
 
-import static mdplayer.plugin.BasePlugin.BUFFER_SIZE;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
@@ -28,8 +27,6 @@ public class MndrvWavTestProgram {
 
     static {
         System.setProperty("mdplayer.variant.ymf262", "0");
-        System.setProperty("dev.null", "/dev/null");
-        System.setProperty("javax.sound.sampled.SourceDataLine", "#WaveOut Mixer");
     }
 
     /** duration to render in seconds (matching reference wav) */
@@ -41,13 +38,12 @@ public class MndrvWavTestProgram {
             return;
         }
 
-        new MndrvWavTestProgram().play(args[0], args.length > 2 ? args[2] : null);
+        new MndrvWavTestProgram().play(args[0], args[1]);
     }
 
     public void play(String filename, String refWavFile) throws Exception {
         System.err.println("filename: " + filename);
         System.err.println("refWavFile: " + refWavFile);
-        Audio audio = Audio.getInstance();
         Setting setting = Setting.getInstance();
 
         // disable speaker output, enable WAV writer
@@ -56,37 +52,32 @@ public class MndrvWavTestProgram {
 
         FileFormat format = FileFormat.getFileFormat(filename);
         var r = format.load((String) null, filename);
-        BasePlugin plugin = (BasePlugin) format.getPlugin();
+        BasePlugin<? extends BaseDriver> plugin = (BasePlugin<? extends BaseDriver>) format.getPlugin();
         plugin.setBuffer(format, r.getItem1(), filename, null, 0, 0, r.getItem2());
 
         // Initialize driver and chips without starting the infinite loop in BasePlugin.play()
-        plugin.driverVirtual = new MnDriver();
-        ((MnDriver) plugin.driverVirtual).setExtendFile(r.getItem2());
-        java.lang.reflect.Method _play = plugin.getClass().getDeclaredMethod("_play");
-        _play.setAccessible(true);
-        _play.invoke(plugin);
+        plugin.prepare();
 
         System.err.println("Rendering " + filename + " to WAV...");
         // Instead of plugin.play(), we run our own loop to ensure we can stop it.
         // MNDPlugin.play() would call super.play() which has an infinite loop.
 
-        plugin.stopped = false;
-        plugin.paused = false;
-        plugin.fadeout = false;
-        plugin.fadeoutCounter = 1.0;
-        plugin.fadeoutCounterV = 0.00001;
-        audio.plugin.masterVolume = setting.getBalance().getMasterVolume();
+        double timeout = RENDER_DURATION + 10; // duration + 10s buffer
 
-        long start = System.currentTimeMillis();
-        long timeout = (long) (RENDER_DURATION * 1000) + 10000; // duration + 10s buffer
+        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
 
-        while (!plugin.stopped) {
-            short[] buffer = new short[BUFFER_SIZE];
-            int ret = audio.plugin.mds.update(buffer, 0, buffer.length, null);
-            if (ret == -1) break;
-            if (plugin.driverVirtual.getDriverCounter() % 1000 == 0) System.err.println("Frame: " + plugin.driverVirtual.getDriverCounter());
+        while (true) {
+            short[] buffer = new short[8192];
+            int ret = plugin.getDriver().render(buffer, 0, buffer.length);
+            if (plugin.getDriver().getDriverCounter() % 1000 == 0) System.err.println("Frame: " + plugin.driverVirtual.getDriverCounter());
 
-            if (System.currentTimeMillis() - start > timeout) {
+            // accumulate to byte array
+            for (short value : buffer) {
+                baos.write(value & 0xff);
+                baos.write((value >> 8) & 0xff);
+            }
+
+            if (plugin.driverVirtual.getDriverCounter() / 44100. > timeout) {
                 System.err.println("Render timeout reached, stopping...");
                 break;
             }
@@ -98,14 +89,26 @@ public class MndrvWavTestProgram {
         }
 
         // Finalize rendering
-        plugin.stopped = true;
         plugin.stop();
         plugin.close();
 
         System.err.println("Rendering complete.");
 
-        String actualOutWavFile = System.getProperty("vavi.sound.sampled.misc.waveout");
-        if (refWavFile != null && new File(actualOutWavFile).exists()) {
+        String actualOutWavFile = "tmp/mnd_out.wav";
+        new File("tmp").mkdirs();
+        javax.sound.sampled.AudioFormat af = new javax.sound.sampled.AudioFormat(44100, 16, 2, true, false);
+        byte[] audioBytes = baos.toByteArray();
+        javax.sound.sampled.AudioSystem.write(
+                new javax.sound.sampled.AudioInputStream(
+                        new java.io.ByteArrayInputStream(audioBytes),
+                        af,
+                        audioBytes.length / af.getFrameSize()
+                ),
+                javax.sound.sampled.AudioFileFormat.Type.WAVE,
+                new File(actualOutWavFile)
+        );
+
+        if (refWavFile != null && actualOutWavFile != null && new File(actualOutWavFile).exists()) {
             compareWavFiles(refWavFile, actualOutWavFile);
         }
     }

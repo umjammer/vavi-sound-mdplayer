@@ -19,8 +19,8 @@ import mdplayer.chips.RealChipPlugin;
 import mdplayer.chips.Ym2608Chip;
 import mdplayer.driver.fmp.FMP;
 import mdplayer.driver.fmp.FmpDriver;
-import mdplayer.driver.fmp.nise98.FileTemp;
 import mdplayer.driver.pmd.PmdDriver;
+import mdplayer.emu.nise98.FileTemp;
 import mdsound.MDSound;
 import mdsound.instrument.Ym2608Inst;
 
@@ -89,7 +89,7 @@ public class FMPPlugin extends BasePlugin<FmpDriver> {
             chip.setVolumes.put("ADPCM", ym2608::setVolume);
         }
         chip.clock = FMP.baseClock;
-        Function<String, Stream> fn = Common::getOPNARyhthmStream;
+        Function<String, Stream> fn = Ym2608Chip::getOPNARyhthmStream;
         chip.option = new Object[] {fn};
         chipLED.put("PriOPNA", 1);
         put(Ym2608Chip.class, chip);
@@ -104,9 +104,6 @@ public class FMPPlugin extends BasePlugin<FmpDriver> {
         chip.option = null;
         chipLED.put("PriPPZ8", 1);
         put(Ppz8Chip.class, chip);
-
-        if (hiyorimiNecessary) hiyorimiNecessary = true;
-        else hiyorimiNecessary = false;
 
         mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, flatten());
 

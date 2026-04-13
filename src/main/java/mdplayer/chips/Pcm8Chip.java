@@ -28,7 +28,7 @@ import mdsound.x68sound.X68Sound;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-02-09 nsano initial version <br>
  */
-public class Pcm8Chip implements Chip {
+public class Pcm8Chip extends BaseChip {
 
     private static final Logger logger = System.getLogger(Pcm8Chip.class.getName());
 
@@ -36,8 +36,6 @@ public class Pcm8Chip implements Chip {
             {false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false}
     };
-
-    private BasePlugin<? extends BaseDriver> context;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -48,19 +46,6 @@ public class Pcm8Chip implements Chip {
     @Override
     public int activeIndex(int chipId) {
         return setting.getZMusic().pcm8Type;
-    }
-
-    @Override
-    public void init(BasePlugin<? extends BaseDriver> context) {
-        this.context = context;
-    }
-
-    @Override
-    public void reset() {
-    }
-
-    @Override
-    public void updateVol() {
     }
 
     public static boolean isFromDF(int v) {

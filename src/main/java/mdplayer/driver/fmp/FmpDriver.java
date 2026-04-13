@@ -8,7 +8,7 @@ import mdplayer.Common.EnmModel;
 import mdplayer.chips.Ppz8Chip;
 import mdplayer.chips.Ym2608Chip;
 import mdplayer.driver.BaseDriver;
-import mdplayer.driver.fmp.nise98.FileTemp;
+import mdplayer.emu.nise98.FileTemp;
 import mdplayer.plugin.BasePlugin;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
@@ -34,7 +34,8 @@ public class FmpDriver extends BaseDriver {
 
     public FmpDriver() {
         fmp = new FMP();
-
+        fmp.charset = Common.charset;
+        fmp.dir = System.getProperty("mdplayer.fmp.dir", System.getProperty("user.dir"));
         fmp.blockWrite = b -> this.isDataBlock = b;
         fmp.setPPZ8PCMData = this::setPPZ8PCMData;
         fmp.setPPZ8Data = this::setPPZ8Data;

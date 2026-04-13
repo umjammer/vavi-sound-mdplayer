@@ -4,6 +4,7 @@ import java.lang.System.Logger;
 
 import mdplayer.Chip;
 import mdplayer.Common;
+import mdplayer.chips.RealChipPlugin;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.chips.YmF262Chip;
 import mdplayer.chips.YmF278BChip;
@@ -49,7 +50,6 @@ public class MDLPlugin extends BasePlugin<MoonDriver> {
         chipRegister.chip(Ym2151Chip.class).setFadeout(0, 0);
         chipRegister.chip(Ym2151Chip.class).setFadeout(1, 0);
 
-        hiyorimiNecessary = setting.getHiyorimiMode();
         int hiyorimiDeviceFlag = 0;
 
         byte sndgen = vgmBuf[7];
@@ -93,8 +93,7 @@ public class MDLPlugin extends BasePlugin<MoonDriver> {
             useChipFromMdr[0] = YmF278BChip.class;
         }
 
-        if (hiyorimiDeviceFlag == 0x3 && hiyorimiNecessary) hiyorimiNecessary = true;
-        else hiyorimiNecessary = false;
+        chipRegister.plugin(RealChipPlugin.class).initChip(hiyorimiDeviceFlag);
 
         mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, flatten());
 

@@ -3,6 +3,7 @@ package mdplayer.driver;
 
 import mdplayer.Common.EnmModel;
 import mdplayer.Setting;
+import mdplayer.chips.RealChipPlugin;
 import mdplayer.chips.VstPlugin;
 import mdplayer.plugin.BasePlugin;
 import musicDriverInterface.MetaData;
@@ -46,6 +47,7 @@ public abstract class BaseDriver {
 
     protected int waitTime = 0;
 
+    /** */
     public abstract void init(byte[] vgmBuf,
                               BasePlugin<? extends BaseDriver> plugin,
                               EnmModel model,
@@ -53,12 +55,15 @@ public abstract class BaseDriver {
                               int waitTime,
                               Object... args);
 
+    /** advances the clock */
     public abstract void processOneFrame();
 
+    /** gets the metadata */
     public abstract MetaData getMetaData(byte[] buf, Object... args);
 
+    /** renders the audio */
     public int render(short[] buffer, int offset, int sampleCount) {
-        if (plugin.hiyorimiNecessary && plugin.driverReal != null && plugin.driverReal.isDataBlock)
+        if (plugin.chipRegister.plugin(RealChipPlugin.class).isHiyorimiNecessary() && plugin.driverReal != null && plugin.driverReal.isDataBlock)
             return plugin.mds.update(buffer, offset, sampleCount, null);
 
         if (plugin.stepCounter > 0) {

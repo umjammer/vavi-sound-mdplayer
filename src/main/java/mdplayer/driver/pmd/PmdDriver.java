@@ -98,7 +98,7 @@ public class PmdDriver extends BaseDriver {
             metaData = pmdCompiler.getMetaData(buf);
         } else {
             pmdDriver = IDriver.factory("pmd.driver.Driver");
-            // pmdDriver.SetDriverSwitch((Func<String, Stream>)appendFileReaderCallback);
+            //pmdDriver.SetDriverSwitch((Func<String, Stream>) appendFileReaderCallback);
             metaData = pmdDriver.getMetaData(buf);
         }
 
@@ -408,7 +408,7 @@ public class PmdDriver extends BaseDriver {
 
         // Add additional weight based on size and elapsed time.
         int m = Math.max((int) (size / 20 - elapsed), 0); // 20 Threshold (magic number)
-        try { Thread.sleep(m); } catch (InterruptedException e) {}
+        try { Thread.sleep(m); } catch (InterruptedException _) {}
     }
 
     private void chipWriteRegister(ChipDatum dat) {

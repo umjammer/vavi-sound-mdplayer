@@ -7,6 +7,7 @@ import dotnet4j.io.Stream;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.MPcmChip;
+import mdplayer.chips.RealChipPlugin;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.chips.Ym2203Chip;
 import mdplayer.chips.Ym2608Chip;
@@ -74,7 +75,7 @@ public class MNDPlugin extends BasePlugin<MnDriver> {
                 chip.setVolumes.put("RHYTHM", opna::setVolume);
                 chip.setVolumes.put("ADPCM", opna::setVolume);
             }
-            Function<String, Stream> fn = Common::getOPNARyhthmStream;
+            Function<String, Stream> fn = Ym2608Chip::getOPNARyhthmStream;
             chip.option = new Object[] {fn};
             put(Ym2608Chip.class, chip);
             chipRegister.chip(Ym2608Chip.class).clock = 8000000;
@@ -93,7 +94,7 @@ public class MNDPlugin extends BasePlugin<MnDriver> {
                 chip.setVolumes.put("RHYTHM", opna::setVolume);
                 chip.setVolumes.put("ADPCM", opna::setVolume);
             }
-            Function<String, Stream> fn = Common::getOPNARyhthmStream;
+            Function<String, Stream> fn = Ym2608Chip::getOPNARyhthmStream;
             chip.option = new Object[] {fn};
 //            chip.option = new Object[] {Common.getApplicationFolder()};
             put(Ym2608Chip.class, chip);
@@ -115,7 +116,7 @@ public class MNDPlugin extends BasePlugin<MnDriver> {
         chipLED.put("SecOPNA", 1);
         chipLED.put("PriOKI5", 1);
 
-        hiyorimiNecessary = hiyorimiDeviceFlag == 0x3 && hiyorimiNecessary;
+        chipRegister.plugin(RealChipPlugin.class).initChip(hiyorimiDeviceFlag);
 
         mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, flatten());
 

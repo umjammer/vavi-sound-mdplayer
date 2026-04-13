@@ -24,18 +24,14 @@ import java.util.function.Consumer;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 
-import dotnet4j.io.FileAccess;
-import dotnet4j.io.FileMode;
-import dotnet4j.io.FileShare;
-import dotnet4j.io.FileStream;
-import dotnet4j.io.Stream;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 import vavi.awt.dnd.BasicDTListener;
 import vavi.util.ByteUtil;
+import vavi.util.StringUtil;
 
 import static java.lang.System.getLogger;
-import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.nio.charset.StandardCharsets.UTF_16LE;
 import static java.util.function.Predicate.not;
 
 
@@ -77,28 +73,16 @@ public class Common {
     public static final int DEV_Null = 5;
 
     public static final int VGMProcSampleRate = 44100;
-    public static final int NsfClock = 1789773;
     public static Path settingFilePath;
     public static Path playingFilePath;
-
-    public static int getBE16(byte[] buf, int adr) {
-        if (buf == null || buf.length - 1 < adr + 1) {
-            throw new IndexOutOfBoundsException();
-        }
-
-        int dat;
-        dat = (buf[adr] & 0xff) * 0x100 + (buf[adr + 1] & 0xff);
-
-        return dat;
-    }
 
     /**
      * find an asciiz string from a byte array
      * @return nullable
      */
-    public static byte[] getByteArray(byte[] buf, int[] adr) {
+    private static byte[] getByteArray(byte[] buf, int[] adr) {
         if (adr[0] >= buf.length) {
-            logger.log(Level.WARNING, adr[0] + " > " + buf.length);
+            logger.log(Level.TRACE, adr[0] + " > " + buf.length);
             return null;
         }
 
@@ -114,25 +98,33 @@ public class Common {
         return ByteUtil.toByteArray(ary);
     }
 
+    private static String getAsciiz(byte[] buf, int[] adr) {
+        byte[] b = getByteArray(buf, adr);
+        return b != null ? new String(b, UTF_16LE) : null;
+    }
+
     public static MetaData getMetaData(byte[] buf, int adr) {
         MetaData metaData = new MetaData();
 
+String x = null;
         try {
             int[] adr_ = new int[] {adr};
-            try { metaData.set(Tag.Title, new String(Common.getByteArray(buf, adr_), UTF_8)); } catch (Exception _) {}
-            try { metaData.set(Tag.TitleJ, new String(Common.getByteArray(buf, adr_), UTF_8)); } catch (Exception _) {}
-            try { metaData.set(Tag.GameTitle, new String(Common.getByteArray(buf, adr_), UTF_8)); } catch (Exception _) {}
-            try { metaData.set(Tag.GameTitleJ, new String(Common.getByteArray(buf, adr_), UTF_8)); } catch (Exception _) {}
-            try { metaData.set(Tag.GameSystem, new String(Common.getByteArray(buf, adr_), UTF_8)); } catch (Exception _) {}
-            try { metaData.set(Tag.GameSystemJ, new String(Common.getByteArray(buf, adr_), UTF_8)); } catch (Exception _) {}
-            try { metaData.set(Tag.Composer, new String(Common.getByteArray(buf, adr_), UTF_8)); } catch (Exception _) {}
-            try { metaData.set(Tag.ComposerJ, new String(Common.getByteArray(buf, adr_), UTF_8)); } catch (Exception _) {}
-            try { metaData.set(Tag.Converter, new String(Common.getByteArray(buf, adr_), UTF_8)); } catch (Exception _) {}
-            try { metaData.set(Tag.Maker, new String(Common.getByteArray(buf, adr_), UTF_8)); } catch (Exception _) {}
-            try { metaData.set(Tag.Note, new String(Common.getByteArray(buf, adr_), UTF_8)); } catch (Exception _) {}
+            String s = getAsciiz(buf, adr_); if (s != null) metaData.set(Tag.Title, s);
+            s = getAsciiz(buf, adr_); if (s != null) metaData.set(Tag.TitleJ, s);
+            s = getAsciiz(buf, adr_); if (s != null) metaData.set(Tag.GameTitle, s);
+            s = getAsciiz(buf, adr_); if (s != null) metaData.set(Tag.GameTitleJ, s);
+            s = getAsciiz(buf, adr_); if (s != null) metaData.set(Tag.GameSystem, s);
+            s = getAsciiz(buf, adr_); if (s != null) metaData.set(Tag.GameSystemJ, s);
+            s = getAsciiz(buf, adr_); if (s != null) metaData.set(Tag.Composer, s);
+            s = getAsciiz(buf, adr_); if (s != null) metaData.set(Tag.ComposerJ, s);
+            s = getAsciiz(buf, adr_); if (s != null) metaData.set(Tag.Converter, s);
+            s = getAsciiz(buf, adr_); if (s != null) metaData.set(Tag.Maker, s);
+            s = getAsciiz(buf, adr_); if (s != null) metaData.set(Tag.Note, s);
             // Lyric(Custom extensions)
             byte[] bLyric = Common.getByteArray(buf, adr_);
             if (bLyric != null) {
+x = new String(bLyric);
+logger.log(Level.TRACE, "lyric: " + StringUtil.getDump(bLyric));
                 int i = 0;
                 int st = 0;
                 while (i < bLyric.length) {
@@ -140,20 +132,27 @@ public class Common {
                     int l = bLyric[i + 1] & 0xff;
                     if ((h == 0x5b && l == 0x00 && i != 0) || i >= bLyric.length - 2) {
                         if ((i >= bLyric.length - 2) || (bLyric[i + 2] != 0x5b || bLyric[i + 3] != 0x00)) {
-                            String m = new String(bLyric, st, i - st + ((i >= bLyric.length - 2) ? 2 : 0), UTF_8);
+                            String m = new String(bLyric, st, i - st + ((i >= bLyric.length - 2) ? 2 : 0), UTF_16LE);
                             st = i;
 
-                            int cnt = Integer.parseInt(m.substring(1, m.indexOf("]") - 1));
-                            m = m.substring(m.indexOf("]") + 1);
-                            metaData.add(Tag.Lyric, cnt + "," + cnt + "." + m);
+                            int p = m.indexOf("]");
+                            if (p > 0) {
+                                int cnt = Integer.parseInt(m.substring(1, p - 1));
+                                m = m.substring(m.indexOf("]") + 1);
+                                metaData.add(Tag.Lyric, cnt + "," + cnt + "." + m);
+                            } else {
+                                metaData.add(Tag.Lyric, m);
+                            }
                         }
                     }
                     i += 2;
                 }
             }
         } catch (Exception ex) {
+logger.log(Level.ERROR, "lyric: " + x);
             logger.log(Level.ERROR, ex.getMessage(), ex);
         }
+logger.log(Level.INFO, "metaData: " + metaData);
 
         return metaData;
     }
@@ -258,34 +257,6 @@ public class Common {
         return n;
     }
 
-    public static int getOPENAIRRhythmStream(float freq) {
-        float m = Float.MAX_VALUE;
-        int n = 0;
-        for (int i = 0; i < 12 * 8; i++) {
-            //if (freq < Tables.freqTbl[i]) break;
-            //n = i;
-            float a = Math.abs(freq - Tables.freqTbl[i]);
-            if (m > a) {
-                m = a;
-                n = i;
-            }
-        }
-        return n;
-    }
-
-    public static int searchSegaPCMNote(double ml) {
-        double m = Double.MAX_VALUE;
-        int n = 0;
-        for (int i = 0; i < 12 * 8; i++) {
-            double a = Math.abs(ml - (Tables.pcmMulTbl[i % 12 + 12] * Math.pow(2, ((i / 12) - 4))));
-            if (m > a) {
-                m = a;
-                n = i;
-            }
-        }
-        return n;
-    }
-
     public static int searchPCMNote(int ml, int mul) {
         int m = Integer.MAX_VALUE;
         ml = ml % (1024 * mul);
@@ -300,45 +271,11 @@ public class Common {
         return n;
     }
 
-    public static int searchYM2608Adpcm(float freq) {
-        float m = Float.MAX_VALUE;
-        int n = 0;
-
-        for (int i = 0; i < 12 * 8; i++) {
-            if (freq < Tables.pcmMulTbl[i % 12 + 12] * Math.pow(2, ((i / 12) - 3))) break;
-            n = i;
-            float a = Math.abs(freq - (float) (Tables.pcmMulTbl[i % 12 + 12] * Math.pow(2, ((i / 12) - 3))));
-            if (m > a) {
-                m = a;
-                n = i;
-            }
-        }
-
-        return n + 1;
-    }
-
-    public static int getYM2151Hosei(float ym2151ClockValue, float baseClock) {
-        int ret = 0;
-
-        float delta = ym2151ClockValue / baseClock;
-        float d;
-        float oldD = Float.MAX_VALUE;
-        for (int i = 0; i < Tables.pcmMulTbl.length; i++) {
-            d = Math.abs(delta - Tables.pcmMulTbl[i]);
-            ret = i;
-            if (d > oldD) break;
-            oldD = d;
-        }
-        ret -= 12;
-
-        return ret;
-    }
-
     public static Path getApplicationFolder() {
         return Path.of(System.getProperty("user.dir"));
     }
 
-    public static Path getApplicationDataFolder(boolean make/* = false*/) {
+    public static Path getApplicationDataFolder(boolean make /* = false */) {
         try {
             String appPath = System.getProperty("user.dir");
             Path fullPath = Path.of(appPath, "./config/kuma", "mdplayer");
@@ -351,7 +288,7 @@ public class Common {
         }
     }
 
-    public static Path getOperationFolder(boolean make/* = false*/) {
+    public static Path getOperationFolder(boolean make /* = false */) {
         try {
             Path appDataFolder = getApplicationDataFolder(false);
             if (appDataFolder == null) return null;
@@ -393,35 +330,6 @@ logger.log(Level.DEBUG, "delete attributes: " + dir);
                     .forEach(f -> f.setWritable(true));
         } catch (IOException e) {
             throw new UncheckedIOException(e);
-        }
-    }
-
-    public static Stream getOPNARyhthmStream(String fn) {
-        try {
-            Path ffn = Path.of(fn);
-
-            Path chk;
-
-            chk = playingFilePath.resolve(fn);
-            if (Files.exists(chk))
-                ffn = chk;
-            else {
-                chk = getApplicationFolder().resolve(fn);
-                if (Files.exists(chk)) ffn = chk;
-                else {
-                    // TODO mdsound in mdplayer
-                    chk = Path.of(System.getProperty("mdsound.pcm.path", "")).resolve(fn);
-                    if (Files.exists(chk)) ffn = chk;
-                }
-            }
-
-logger.log(Level.DEBUG, "rhythm file: " + ffn);
-            if (!Files.exists(ffn)) return null;
-            FileStream fs = new FileStream(ffn.toString(), FileMode.Open, FileAccess.Read, FileShare.Read);
-            return fs;
-        } catch (Exception e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-            return null;
         }
     }
 
@@ -498,6 +406,7 @@ logger.log(Level.DEBUG, "rhythm file: " + ffn);
         try {
             robot = new Robot();
         } catch (AWTException e) {
+            // github workflow headless mode causes exception
             logger.log(Level.WARNING, e.getMessage(), e);
         }
     }
@@ -565,5 +474,65 @@ logger.log(Level.DEBUG, "rhythm file: " + ffn);
             drop.accept((List<java.io.File>) data);
             return true;
         }
+    }
+
+    /** */
+    public static Path fileExistsIgnoreCase(Path path) {
+logger.log(Level.TRACE, "check existence case insensitive: " + path);
+        int p = path.getFileName().toString().lastIndexOf('.');
+        String base = path.getFileName().toString().substring(0, p);
+        String ext0 = path.getFileName().toString().substring(p).toLowerCase();
+        Path parent = path.getParent();
+
+        // File.ext
+        String filename = base + ext0;
+        Path trial = parent != null ? parent.resolve(filename) : Path.of(filename);
+        if (Files.exists(trial)) {
+            logger.log(Level.TRACE, "found file: " + trial);
+            return trial;
+        }
+
+        // File.EXT
+        filename = base + ext0.toUpperCase();
+        trial = parent != null ? parent.resolve(filename) : Path.of(filename);
+        if (Files.exists(trial)) {
+            logger.log(Level.TRACE, "found file: " + trial);
+            return trial;
+        }
+
+        // file.ext
+        filename = base.toLowerCase() + ext0;
+        trial = parent != null ? parent.resolve(filename) : Path.of(filename);
+        if (Files.exists(trial)) {
+            logger.log(Level.TRACE, "found file: " + trial);
+            return trial;
+        }
+
+        // file.EXT
+        filename = base.toLowerCase() + ext0.toUpperCase();
+        trial = parent != null ? parent.resolve(filename) : Path.of(filename);
+        if (Files.exists(trial)) {
+            logger.log(Level.TRACE, "found file: " + trial);
+            return trial;
+        }
+
+        // FILE.ext
+        filename = base.toUpperCase() + ext0;
+        trial = parent != null ? parent.resolve(filename) : Path.of(filename);
+        if (Files.exists(trial)) {
+            logger.log(Level.TRACE, "found file: " + trial);
+            return trial;
+        }
+
+        // FILE.EXT
+        filename = base.toUpperCase() + ext0.toUpperCase();
+        trial = parent != null ? parent.resolve(filename) : Path.of(filename);
+        if (Files.exists(trial)) {
+            logger.log(Level.TRACE, "found file: " + trial);
+            return trial;
+        }
+
+logger.log(Level.WARNING, path + " not found");
+        return null;
     }
 }

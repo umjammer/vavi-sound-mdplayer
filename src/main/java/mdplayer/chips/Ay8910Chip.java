@@ -16,6 +16,7 @@ import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.instrument.Ay8910Inst;
 import mdsound.instrument.MameAy8910Inst;
+import mdsound.instrument.NpYm2149Inst;
 
 
 /**
@@ -24,7 +25,7 @@ import mdsound.instrument.MameAy8910Inst;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
-public class Ay8910Chip implements Chip {
+public class Ay8910Chip extends BaseChip {
 
     private final Setting.ChipType2[] chipTypes = setting.getAY8910Type();
 
@@ -45,12 +46,10 @@ public class Ay8910Chip implements Chip {
 
     public int clock;
 
-    private BasePlugin<? extends BaseDriver> context;
-
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Instrument>[] implementations() {
-        return new Class[] {Ay8910Inst.class, MameAy8910Inst.class};
+        return new Class[] {Ay8910Inst.class, MameAy8910Inst.class, NpYm2149Inst.class};
     }
 
     @Override
@@ -60,7 +59,7 @@ public class Ay8910Chip implements Chip {
 
     @Override
     public void init(BasePlugin<? extends BaseDriver> context) {
-        this.context = context;
+        super.init(context);
 
         for (int chipId = 0; chipId < 2; chipId++) {
             psgRegister[chipId] = new int[0x100];
@@ -71,14 +70,6 @@ public class Ay8910Chip implements Chip {
 
             fadeoutVolume[chipId] = 0;
         }
-    }
-
-    @Override
-    public void reset() {
-    }
-
-    @Override
-    public void updateVol() {
     }
 
     public void write(int chipId, int addr, int data, EnmModel model) {

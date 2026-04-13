@@ -6,7 +6,6 @@
 
 package mdplayer.chips;
 
-import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
@@ -15,6 +14,7 @@ import mdplayer.instruments.Vrc7Inst;
 import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.instrument.Emu2413Inst;
+import mdsound.instrument.NpYm2413Inst;
 import mdsound.instrument.Ym2413Inst;
 
 
@@ -27,14 +27,14 @@ import mdsound.instrument.Ym2413Inst;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
-public class Ym2413Chip implements Chip {
+public class Ym2413Chip extends BaseChip {
 
     private final Setting.ChipType2[] chipTypes = setting.getYM2413Type();
 
     private final RSoundChip[] realChips = {null, null};
 
     public final int[][] register = {null, null};
-    //    private final int[] registerRhythmB = {0, 0};
+//    private final int[] registerRhythmB = {0, 0};
 //    private final int[] registerRhythm = {0, 0};
     private final ChipKeyInfo[] keyInfo = {new ChipKeyInfo(14), new ChipKeyInfo(14)};
     private final int[] fadeout = {0, 0};
@@ -46,12 +46,10 @@ public class Ym2413Chip implements Chip {
 
     public int clock;
 
-    private BasePlugin<? extends BaseDriver> context;
-
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Instrument>[] implementations() {
-        return new Class[] {Ym2413Inst.class, Vrc7Inst.class, Emu2413Inst.class};
+        return new Class[] {Ym2413Inst.class, Vrc7Inst.class, Emu2413Inst.class, NpYm2413Inst.class};
     }
 
     @Override
@@ -61,7 +59,7 @@ public class Ym2413Chip implements Chip {
 
     @Override
     public void init(BasePlugin<? extends BaseDriver> context) {
-        this.context = context;
+        super.init(context);
 
         for (int chipId = 0; chipId < 2; chipId++) {
             register[chipId] = new int[0x39];
@@ -75,14 +73,6 @@ public class Ym2413Chip implements Chip {
 
             fadeout[chipId] = 0;
         }
-    }
-
-    @Override
-    public void reset() {
-    }
-
-    @Override
-    public void updateVol() {
     }
 
     public void write(int chipId, int addr, int data, EnmModel model) {

@@ -9,6 +9,9 @@ package mdplayer.driver.zms.nise68;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import mdplayer.emu.nise68.Memory68;
+import mdplayer.emu.nise68.NiseM68;
+import mdplayer.emu.nise68.Register68;
 import vavi.util.Debug;
 
 import org.junit.jupiter.api.Disabled;
@@ -26,7 +29,7 @@ public class Nise68Test {
     static final String testSuite = "Test_Suite.bin";
 
     @Test
-    @Disabled
+    @Disabled("ninem68 still has unimplemented instructions for Test_Suite.bin")
     void test1() throws Exception {
         Memory68 mem = new Memory68(16 * 1024 * 1024);
         Register68 reg = new Register68();

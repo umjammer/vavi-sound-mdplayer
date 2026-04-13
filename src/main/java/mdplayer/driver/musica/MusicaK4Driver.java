@@ -1,5 +1,7 @@
 package mdplayer.driver.musica;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
@@ -32,6 +34,7 @@ public class MusicaK4Driver extends BaseDriver {
         musicaK4.k051649Write = (i, a, d) -> plugin.chipRegister.chip(K051649Chip.class).write(i, a, d, model);
         musicaK4.ay8910Write = (a, d) -> plugin.chipRegister.chip(Ay8910Chip.class).write(0, a, d, model);
         musicaK4.ym2413Write = (a, d) -> plugin.chipRegister.chip(Ym2413Chip.class).write(0, a, d, model);
+        musicaK4.dir = System.getProperty("mdplayer.musica.dir", System.getProperty("user.dir"));
     }
 
     public byte[] getBgmBin() {
@@ -66,6 +69,10 @@ public class MusicaK4Driver extends BaseDriver {
         logger.log(Level.INFO, "\n" + StringUtil.getDump(vgmBuf, 128));
         try {
             musicaK4.run(vgmBuf, vcdBuf);
+        } catch (IllegalStateException e) {
+            throw e;
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }

@@ -3,7 +3,6 @@ package mdplayer.driver.musica;
 import java.io.IOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -15,11 +14,11 @@ import dotnet4j.util.compat.TriConsumer;
 import konamiman.z80.Z80Processor;
 import konamiman.z80.Z80ProcessorImpl;
 import konamiman.z80.events.BeforeInstructionFetchEvent;
-import mdplayer.driver.mgsdrv.Mapper;
-import mdplayer.driver.mgsdrv.MapperRamCartridge;
-import mdplayer.driver.mgsdrv.MsxMemory;
-import mdplayer.driver.mgsdrv.MsxPort;
-import mdplayer.driver.mgsdrv.MsxVdp;
+import mdplayer.emu.msx.Mapper;
+import mdplayer.emu.msx.MapperRamCartridge;
+import mdplayer.emu.msx.MsxMemory;
+import mdplayer.emu.msx.MsxPort;
+import mdplayer.emu.msx.MsxVdp;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
@@ -50,12 +49,15 @@ public class MuSICA_K4 {
     BiConsumer<Integer, Integer> ay8910Write;
     BiConsumer<Integer, Integer> ym2413Write;
 
-    void run(byte[] msdBin, byte[] vcdBin) throws IOException, URISyntaxException {
+    /** KINROU4.COM location */
+    String dir;
+
+    void run(byte[] msdBin, byte[] vcdBin) throws IOException {
         this.msdBin = msdBin;
         this.vcdBin = vcdBin;
         this.bgmBin = null;
 
-        Path fileName = Path.of(MuSICA_K4.class.getResource("KINROU4.COM").toURI());
+        Path fileName = Path.of(dir, "KINROU4.COM");
 
         vdp = new MsxVdp();
         z80 = new Z80ProcessorImpl();
@@ -166,9 +168,9 @@ public class MuSICA_K4 {
             if (msg.equals(":_SYSTEM")) {
                 args.getExecutionStopper().stop(false);
             }
-        } else if ((z80.getRegisters().getPC() & 0xffff) >= mapper.jumpAddress && (z80.getRegisters().getPC() & 0xffff) < mapper.jumpAddress + 16) {
+        } else if ((z80.getRegisters().getPC() & 0xffff) >= Mapper.jumpAddress && (z80.getRegisters().getPC() & 0xffff) < Mapper.jumpAddress + 16) {
             //logger.log(Level.TRACE, "\r\nCall MAPPER PROC(0x%04x～) PC-%04x:%04x".formatted(mapper.JumpAddress, (z80.getRegisters().getPC() & 0xffff) - mapper.JumpAddress));
-            mapper.callMapperProc(args, z80, (z80.getRegisters().getPC() & 0xffff) - mapper.jumpAddress);
+            mapper.callMapperProc(args, z80, (z80.getRegisters().getPC() & 0xffff) - Mapper.jumpAddress);
         } else if ((z80.getRegisters().getPC() & 0xffff) == 0xffca) {
             //logger.log(Level.TRACE, "\r\nCall EXTBIO(0xffca) Reg.DE=%04x".formatted(z80.getRegisters().getDE()));
             callEXTBIO(args, z80);
@@ -212,7 +214,7 @@ public class MuSICA_K4 {
             case 0x02:
                 z80.getRegisters().setA((byte) 0);
                 z80.getRegisters().setBC((short) 0);
-                z80.getRegisters().setHL((short) mapper.tableAddress);
+                z80.getRegisters().setHL((short) Mapper.tableAddress);
                 break;
         }
     }

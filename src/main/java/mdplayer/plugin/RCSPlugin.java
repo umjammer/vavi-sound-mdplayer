@@ -67,15 +67,13 @@ public class RCSPlugin extends BasePlugin<RcsDriver> {
             put(OkiM6258Chip.class, chip); // not use mds, via driver direct
         }
 
-        hiyorimiNecessary = setting.getHiyorimiMode();
-
         chipLED.put("PriMID", 1);
         chipLED.put("SecMID", 1);
         chipLED.put("PriPCM8", 1);
 
         chipRegister.plugin(MidiPlugin.class).releaseAll();
-        chipRegister.plugin(MidiPlugin.class).make(setting, midiMode);
-        chipRegister.plugin(MidiPlugin.class).set(setting.getMidiOut().getMidiOutInfos().get(midiMode));
+        chipRegister.plugin(MidiPlugin.class).make();
+        chipRegister.plugin(MidiPlugin.class).set(setting.getMidiOut().getMidiOutInfos().get(chipRegister.plugin(MidiPlugin.class).midiMode));
 
         driverVirtual.setSupportFileName((supportFile == null || supportFile.length < 1) ? null : supportFile[0]);
         driverReal.setSupportFileName((supportFile == null || supportFile.length < 1) ? null : supportFile[0]);

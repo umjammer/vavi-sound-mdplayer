@@ -8,7 +8,6 @@ import java.io.UncheckedIOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.lang.reflect.Field;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -18,6 +17,7 @@ import javax.sound.sampled.AudioFormat.Encoding;
 import dotnet4j.io.File;
 import dotnet4j.io.Path;
 import dotnet4j.util.compat.Tuple;
+import mdplayer.Common;
 import mdplayer.PlayList;
 import mdplayer.Setting;
 import musicDriverInterface.MetaData;
@@ -121,7 +121,8 @@ public abstract class BaseFileFormat implements FileFormat {
 logger.log(Level.DEBUG, "try: " + extFn);
                 return BaseFileFormat.getFileSearchPathList(srcFn).stream()
                         .map(dirPath -> dirPath.resolve(extFn))
-                        .filter(Files::exists).findFirst()
+                        .filter(p -> Common.fileExistsIgnoreCase(p) != null).findFirst()
+                        .map(Common::fileExistsIgnoreCase)
                         .map(Object::toString)
                         .map(File::readAllBytes).orElse(null);
             } else {

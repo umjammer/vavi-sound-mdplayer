@@ -39,7 +39,7 @@ import static java.lang.System.getLogger;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
-public class NesChip implements Chip {
+public class NesChip extends BaseChip {
 
     private static final Logger logger = getLogger(NesChip.class.getName());
 
@@ -365,25 +365,10 @@ public class NesChip implements Chip {
     public NesFme7 fme7 = null;
     public NesVrc7 vrc7 = null;
 
-    protected BasePlugin<? extends BaseDriver> context;
-
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Instrument>[] implementations() {
         return new Class[] {NesInst.class};
-    }
-
-    @Override
-    public void init(BasePlugin<? extends BaseDriver> context) {
-        this.context = context;
-    }
-
-    @Override
-    public void reset() {
-    }
-
-    @Override
-    public void updateVol() {
     }
 
     public void write(int chipId, int addr, int data, EnmModel model) {
@@ -471,6 +456,8 @@ public class NesChip implements Chip {
 
         if (model == EnmModel.VirtualModel)
             context.mds.inst(NesInst.class).writePcm(chipId, vgmBuf, vgmAdr, dataSize, stAdr);
+
+        dumpData(model, "NES_PCMData", vgmAdr, vgmBuf, dataSize);
     }
 
     public int[] readApu(int chipId) {

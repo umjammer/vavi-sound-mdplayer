@@ -1,10 +1,10 @@
 package mdplayer.driver.mndrv;
 
-import mdplayer.driver.mxdrv.XMemory;
+import mdplayer.emu.nise68.XMemory;
 
 
 //
-//	part of track analyze
+// part of track analyze
 //
 public class ComAnalyze {
     public Reg reg;

@@ -1,10 +1,10 @@
 package mdplayer.driver.mndrv;
 
-import mdplayer.driver.mxdrv.XMemory;
+import mdplayer.emu.nise68.XMemory;
 
 
 //
-//	part of wavememory
+// part of wave memory
 //
 public class ComWave {
 

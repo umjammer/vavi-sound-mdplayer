@@ -3,6 +3,7 @@ package mdplayer.driver.zms;
 import java.io.IOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,13 +18,12 @@ import dotnet4j.io.FileNotFoundException;
 import dotnet4j.io.Path;
 import dotnet4j.util.compat.Tuple;
 import mdplayer.Common;
-import mdplayer.UnZDF;
-import mdplayer.driver.mndrv.FMTimer;
 import mdplayer.driver.mxdrv.MXDRV.Pcm8Interface;
 import mdplayer.driver.mxdrv.MXDRV.Pcm8St;
-import mdplayer.driver.zms.nise68.FileMng;
-import mdplayer.driver.zms.nise68.MemMng;
-import mdplayer.driver.zms.nise68.Nise68;
+import mdplayer.emu.fm.FMTimer;
+import mdplayer.emu.nise68.FileMng;
+import mdplayer.emu.nise68.MemMng;
+import mdplayer.emu.nise68.Nise68;
 
 import static java.lang.System.getLogger;
 
@@ -41,6 +41,11 @@ public class Zms {
     private FileMng fileMng = new FileMng(System.getProperty("user.dir"), "C:");
     Pcm8Interface pcm8;
     MPcmInterface mpcm;
+    int frequency;
+    /** zmusic.x etc. location */
+    String dir;
+    /** .zpd file location */
+    String zpd;
 
     /** abstraction for mpcm chip implementation */
     public interface MPcmInterface {
@@ -57,7 +62,7 @@ public class Zms {
     }
 
     private int checkCounter = 0;
-    private List<String> envZPDs = new ArrayList<>();
+    private List<String> dirZPDs = new ArrayList<>();
     public int version = 0;
     private FMTimer timerOPM;
     public final Pcm8St[] pcm8St = {
@@ -102,6 +107,7 @@ public class Zms {
     IntSupplier wait;
     BiConsumer<Integer, Integer> ym2151Write;
     BiConsumer<Integer, byte[]> midiSend;
+    Charset charset;
 
     void trap() {
         if (version == 2) {
@@ -199,18 +205,19 @@ public class Zms {
         nise68 = new Nise68();
         nise68.setMPcm(version == 2 ? this::pcm8CallBack : this::mPcmCallBack);
         nise68.setOpm(this::opmCallBack);
-        nise68.setMidi(this::midiCallBack, Common.VGMProcSampleRate);
-        nise68.setSCC_A(this::sccCallBack, Common.VGMProcSampleRate);
+        nise68.setMidi(this::midiCallBack, frequency);
+        nise68.setSCC_A(this::sccCallBack, frequency);
         if (playingArcFileName != null && !playingArcFileName.isEmpty()) {
             if (playingFileName.toUpperCase().endsWith(".ZDF")) {
                 UnZDF cmd = new UnZDF();
-                fileMng = cmd.unpack(playingArcFileName);
+                cmd.dir = dir;
+                fileMng = cmd.unpack(playingArcFileName, Common.charset);
             }
 
         } else {
             fileMng = new FileMng(dn, "C:");
         }
-        nise68.init(envZPDs, version == 2, fileMng);
+        nise68.init(dirZPDs, version == 2, fileMng, charset);
 
         fileMng.setVFile(Path.getFileName(fnZMD), data);
         //nise68.hmn.fb.add(fnZMD, dataBuf);
@@ -241,7 +248,7 @@ public class Zms {
         if (dn != null && !dn.isEmpty()) withoutExtFn = Path.combine(dn, Path.getFileNameWithoutExtension(fn));
         else withoutExtFn = Path.getFileNameWithoutExtension(fn);
         fnZMD = Path.getFileName(withoutExtFn + ".ZMD");
-        java.nio.file.Path crntDir = java.nio.file.Path.of(System.getProperty("mdplayer.zms.dir", System.getProperty("user.dir")));
+        java.nio.file.Path crntDir = java.nio.file.Path.of(dir);
 
         java.nio.file.Path zmsc3 = crntDir.resolve("ZMSC3.X");
         if (!Files.exists(zmsc3)) {
@@ -260,7 +267,7 @@ public class Zms {
         trp = 3 + 32;
 
         if (version == 2) {
-            timerOPM = new FMTimer(true, null, 4000000); // , Common.VGMProcSampleRate);
+            timerOPM = new FMTimer(true, null, 4000000, frequency);
 
             // If zpd is specified, specify zmusic to preload
             String optionZpd = "";
@@ -346,17 +353,15 @@ public class Zms {
         // zmsc3 resident
         nise68.hmn.memMng = new MemMng(0x0004_0000);
 
-        //if (nise68.loadRun(zmsc3, "-w", Path.GetDirectoryName(fnZMD), 0x00012000,
-        // true, true, true
-        //) != 0) throw new Exception("zmsc3 resident Error");
-        if ((rc = nise68.loadRun(zmsc3.toString(), "-w", 0x0001_2000
-                , true, true, true,
+        //if (nise68.loadRun(zmsc3, "-w", Path.getDirectoryName(fnZMD), 0x0001_2000,
+        //      true, true, true
+        //) != 0) throw new IllegalStateException("zmsc3 resident Error");
+        if ((rc = nise68.loadRun(zmsc3.toString(), "-w", 0x0001_2000,
+                true, true, true,
                 100_000_000, 0
         )) != 0) throw new IllegalStateException("zmsc3 resident Error: " + rc);
 
         // play
-        //logger.log(Level.INFO, "");
-        //Log.SetLogLevel(LogLevel.Information);
 
         //if ((rc = nise68.LoadRun("C:\\ZP3.R", "-PC:\\SAMPLE1\\SAMPLE.ZMS", "C:\\", 0x00042000,
         //    true, true, true
@@ -416,8 +421,7 @@ public class Zms {
         else withoutExtFn = Path.getFileNameWithoutExtension(fn);
         String fnZMD = Path.getFileName(withoutExtFn + ".ZMD");
         String fnZMS = Path.getFileName(withoutExtFn + ".ZMS");
-        String crntDir = System.getProperty("mdplayer.zms.dir", System.getProperty("user.dir"));
-        java.nio.file.Path zmc = java.nio.file.Path.of(crntDir, "ZMUSIC.X");
+        java.nio.file.Path zmc = java.nio.file.Path.of(dir, "ZMUSIC.X");
         if (!Files.exists(zmc)) {
             logger.log(Level.INFO, "File not found : %s".formatted(zmc));
             return false; // throw new FileNotFoundException(zmc);
@@ -428,9 +432,9 @@ public class Zms {
         nise68 = new Nise68();
         nise68.setMPcm(this::mPcmCallBack);
         nise68.setOpm(this::opmCallBack);
-        nise68.setMidi(this::midiCallBack, Common.VGMProcSampleRate);
-        nise68.setSCC_A(this::sccCallBack, Common.VGMProcSampleRate);
-        nise68.init(null, false, fileMng);
+        nise68.setMidi(this::midiCallBack, frequency);
+        nise68.setSCC_A(this::sccCallBack, frequency);
+        nise68.init(null, false, fileMng, charset);
 
         // compile
         //nise68.hmn.fb.add(fnZMS, dataBuf);
@@ -458,8 +462,7 @@ public class Zms {
         else withoutExtFn = Path.getFileNameWithoutExtension(fn);
         String fnZMD = Path.getFileName(withoutExtFn + ".ZMD");
         String fnZMS = Path.getFileName(withoutExtFn + ".ZMS");
-        String crntDir = System.getProperty("mdplayer.zms.dir", System.getProperty("user.dir"));
-        java.nio.file.Path zmusic = java.nio.file.Path.of(crntDir, "ZMUSIC.X");
+        java.nio.file.Path zmusic = java.nio.file.Path.of(dir, "ZMUSIC.X");
         if (!Files.exists(zmusic)) {
             logger.log(Level.INFO, "File not found : %s".formatted(zmusic));
             return false; // throw new FileNotFoundException(zmc);
@@ -468,13 +471,13 @@ public class Zms {
         nise68 = new Nise68();
         nise68.setMPcm(this::pcm8CallBack);
         nise68.setOpm(this::opmCallBack);
-        nise68.setMidi(this::midiCallBack, Common.VGMProcSampleRate);
-        nise68.setSCC_A(this::sccCallBack, Common.VGMProcSampleRate);
+        nise68.setMidi(this::midiCallBack, frequency);
+        nise68.setSCC_A(this::sccCallBack, frequency);
 
         fileMng = new FileMng(dn, "C:"); // Set the path of the music file to the current physical drive. The current virtual drive is "C:" (default).
         fileMng.setVFile(zmusic.toString());
 
-        nise68.init(null, false, fileMng);
+        nise68.init(null, false, fileMng, charset);
 
         // compile
         //nise68.hmn.fb.add(fnZMS, dataBuf);
@@ -628,12 +631,12 @@ public class Zms {
     void setZPDSearchPath() {
         try {
             // Get the environment variable "ZPD"
-            String envZPD = System.getProperty("mdplayer.zms.zpd");
-            if (envZPD != null && !envZPD.isEmpty()) {
-                envZPDs = Arrays.asList(envZPD.split(";"));
+            if (zpd != null && !zpd.isEmpty()) {
+                dirZPDs = Arrays.asList(zpd.split(";"));
             }
         } catch (Exception e) {
-            envZPDs = Collections.emptyList();
+logger.log(Level.ERROR, e.getMessage(), e);
+            dirZPDs = Collections.emptyList();
         }
     }
 }

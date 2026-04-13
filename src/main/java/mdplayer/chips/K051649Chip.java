@@ -23,7 +23,7 @@ import mdsound.instrument.K051649Inst;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
-public class K051649Chip implements Chip {
+public class K051649Chip extends BaseChip {
 
     private final Setting.ChipType2[] chipTypes = setting.getK051649Type();
 
@@ -48,8 +48,6 @@ public class K051649Chip implements Chip {
 
     public int clock;
 
-    private BasePlugin<? extends BaseDriver> context;
-
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Instrument>[] implementations() {
@@ -58,20 +56,11 @@ public class K051649Chip implements Chip {
 
     @Override
     public void init(BasePlugin<? extends BaseDriver> context) {
-        this.context = context;
+        super.init(context);
 
         K051649Inst chip = Instrument.getInstrument(K051649Inst.class); // ugly
         chip.start(0, 100, 200);
         chip.start(1, 100, 200);
-    }
-
-    @Override
-    public void reset() {
-    }
-
-    @Override
-    public void updateVol() {
-
     }
 
     public void setMask(int chipId, int ch) {

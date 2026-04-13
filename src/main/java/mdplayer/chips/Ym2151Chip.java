@@ -6,11 +6,11 @@
 
 package mdplayer.chips;
 
-import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
+import mdplayer.Tables;
 import mdplayer.driver.BaseDriver;
 import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
@@ -29,7 +29,7 @@ import mdsound.instrument.YmFmYm2151Inst;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
-public class Ym2151Chip implements Chip {
+public class Ym2151Chip extends BaseChip {
 
     private final Setting.ChipType2[] chipTypes = setting.getYM2151Type();
 
@@ -58,8 +58,6 @@ public class Ym2151Chip implements Chip {
 
     public final int[] hosei = {0, 0};
 
-    private BasePlugin<? extends BaseDriver> context;
-
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Instrument>[] implementations() {
@@ -73,7 +71,7 @@ public class Ym2151Chip implements Chip {
 
     @Override
     public void init(BasePlugin<? extends BaseDriver> context) {
-        this.context = context;
+        super.init(context);
 
         for (int chipId = 0; chipId < 2; chipId++) {
             register[chipId] = new int[0x100];
@@ -382,14 +380,31 @@ public class Ym2151Chip implements Chip {
 
     public void setYm2151Hosei(EnmModel model, float ym2151ClockValue) {
         for (int chipId = 0; chipId < 2; chipId++) {
-            ym2151Hosei[chipId] = Common.getYM2151Hosei(ym2151ClockValue, 3579545);
+            ym2151Hosei[chipId] = getYM2151Hosei(ym2151ClockValue, 3579545);
             if (model == EnmModel.RealModel) {
                 ym2151Hosei[chipId] = 0;
                 int clock = context.chipRegister.chip(Ym2151Chip.class).getClock(chipId);
                 if (clock != -1) {
-                    ym2151Hosei[chipId] = Common.getYM2151Hosei(ym2151ClockValue, clock);
+                    ym2151Hosei[chipId] = getYM2151Hosei(ym2151ClockValue, clock);
                 }
             }
         }
+    }
+
+    private static int getYM2151Hosei(float ym2151ClockValue, float baseClock) {
+        int ret = 0;
+
+        float delta = ym2151ClockValue / baseClock;
+        float d;
+        float oldD = Float.MAX_VALUE;
+        for (int i = 0; i < Tables.pcmMulTbl.length; i++) {
+            d = Math.abs(delta - Tables.pcmMulTbl[i]);
+            ret = i;
+            if (d > oldD) break;
+            oldD = d;
+        }
+        ret -= 12;
+
+        return ret;
     }
 }
