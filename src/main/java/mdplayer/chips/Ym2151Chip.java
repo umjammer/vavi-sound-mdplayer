@@ -6,7 +6,6 @@
 
 package mdplayer.chips;
 
-import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
@@ -29,7 +28,7 @@ import mdsound.instrument.YmFmYm2151Inst;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
-public class Ym2151Chip implements Chip {
+public class Ym2151Chip extends BaseChip {
 
     private final Setting.ChipType2[] chipTypes = setting.getYM2151Type();
 
@@ -58,8 +57,6 @@ public class Ym2151Chip implements Chip {
 
     public final int[] hosei = {0, 0};
 
-    private BasePlugin<? extends BaseDriver> context;
-
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Instrument>[] implementations() {
@@ -73,7 +70,7 @@ public class Ym2151Chip implements Chip {
 
     @Override
     public void init(BasePlugin<? extends BaseDriver> context) {
-        this.context = context;
+        super.init(context);
 
         for (int chipId = 0; chipId < 2; chipId++) {
             register[chipId] = new int[0x100];

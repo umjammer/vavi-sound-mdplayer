@@ -6,10 +6,7 @@
 
 package mdplayer.chips;
 
-import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
-import mdplayer.driver.BaseDriver;
-import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.instrument.Ga20Inst;
 
@@ -20,27 +17,12 @@ import mdsound.instrument.Ga20Inst;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
-public class Ga20Chip implements Chip {
-
-    private BasePlugin<? extends BaseDriver> context;
+public class Ga20Chip extends BaseChip {
 
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Instrument>[] implementations() {
         return new Class[] {Ga20Inst.class};
-    }
-
-    @Override
-    public void init(BasePlugin<? extends BaseDriver> context) {
-        this.context = context;
-    }
-
-    @Override
-    public void reset() {
-    }
-
-    @Override
-    public void updateVol() {
     }
 
     public void write(int chipId, int adr, int dat, EnmModel model) {
@@ -63,5 +45,7 @@ public class Ga20Chip implements Chip {
 
         if (model == EnmModel.VirtualModel)
             context.mds.inst(Ga20Inst.class).writePcm(chipId, buf, offset, length, srcOffset, romSize);
+
+        dumpData(model, "GA20_PCMData", srcOffset, buf, length);
     }
 }

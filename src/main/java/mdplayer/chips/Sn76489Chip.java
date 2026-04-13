@@ -6,7 +6,6 @@
 
 package mdplayer.chips;
 
-import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
@@ -25,7 +24,7 @@ import mdsound.instrument.Sn76496Inst;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
-public class Sn76489Chip implements Chip {
+public class Sn76489Chip extends BaseChip {
 
     private final Setting.ChipType2[] chipTypes = setting.getSN76489Type();
 
@@ -57,8 +56,6 @@ public class Sn76489Chip implements Chip {
 
     public int clock;
 
-    private BasePlugin<? extends BaseDriver> context;
-
     @SuppressWarnings("unchecked")
     private Class<? extends PannableInstrument> _inst(int chipId) {
         return (Class<? extends PannableInstrument>) inst(chipId);
@@ -77,7 +74,7 @@ public class Sn76489Chip implements Chip {
 
     @Override
     public void init(BasePlugin<? extends BaseDriver> context) {
-        this.context = context;
+        super.init(context);
 
         for (int chipId = 0; chipId < 2; chipId++) {
             register[chipId] = new int[] {0, 15, 0, 15, 0, 15, 0, 15};
@@ -93,10 +90,6 @@ public class Sn76489Chip implements Chip {
                 write(chipId, 0x90 + (c << 5) + 0xf, EnmModel.RealModel);
             }
         }
-    }
-
-    @Override
-    public void updateVol() {
     }
 
     public void write(int chipId, int data, EnmModel model) {

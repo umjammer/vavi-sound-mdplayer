@@ -19,28 +19,11 @@ import mdsound.instrument.Cs4231Inst;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-12-29 nsano initial version <br>
  */
-public class Cs4231Chip implements Chip {
-
-    private BasePlugin<? extends BaseDriver> context;
+public class Cs4231Chip extends BaseChip {
 
     @Override
     public Class<? extends Instrument>[] implementations() {
         return new Class[] {Cs4231Inst.class};
-    }
-
-    @Override
-    public void init(BasePlugin<? extends BaseDriver> context) {
-        this.context = context;
-    }
-
-    @Override
-    public void reset() {
-
-    }
-
-    @Override
-    public void updateVol() {
-
     }
 
     public void setFifoBuf(int chipId, byte[] buf) {

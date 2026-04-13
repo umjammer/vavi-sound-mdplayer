@@ -21,27 +21,12 @@ import mdsound.instrument.MultiPcmInst;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
-public class MultiPcmChip implements Chip {
-
-    private BasePlugin<? extends BaseDriver> context;
+public class MultiPcmChip extends BaseChip {
 
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Instrument>[] implementations() {
         return new Class[] {MultiPcmInst.class};
-    }
-
-    @Override
-    public void init(BasePlugin<? extends BaseDriver> context) {
-        this.context = context;
-    }
-
-    @Override
-    public void reset() {
-    }
-
-    @Override
-    public void updateVol() {
     }
 
     public void write(int chipId, int addr, int data, EnmModel model) {
@@ -85,5 +70,7 @@ public class MultiPcmChip implements Chip {
 
         if (model == EnmModel.VirtualModel)
             context.mds.inst(MultiPcmInst.class).writePcm(chipId, buf, offset, length, srcOffset, romSize);
+
+        dumpData(model, "MultiPCM_PCMData", srcOffset, buf, length);
     }
 }

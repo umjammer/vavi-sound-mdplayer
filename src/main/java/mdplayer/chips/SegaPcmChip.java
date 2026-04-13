@@ -6,7 +6,13 @@
 
 package mdplayer.chips;
 
-import mdplayer.Chip;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+import java.util.ArrayList;
+import java.util.List;
+
+import dotnet4j.io.File;
+import dotnet4j.io.Path;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
@@ -15,6 +21,8 @@ import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.chips.SegaPcm;
 import mdsound.instrument.SegaPcmInst;
+import musicDriverInterface.MetaData.Tag;
+import vavi.util.ByteUtil;
 
 
 /**
@@ -23,7 +31,9 @@ import mdsound.instrument.SegaPcmInst;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
-public class SegaPcmChip implements Chip {
+public class SegaPcmChip extends BaseChip {
+
+    private static final Logger logger = System.getLogger(SegaPcmChip.class.getName());
 
     private final Setting.ChipType2[] chipTypes = setting.getSEGAPCMType();
 
@@ -42,8 +52,6 @@ public class SegaPcmChip implements Chip {
             null, null
     };
 
-    private BasePlugin<? extends BaseDriver> context;
-
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Instrument>[] implementations() {
@@ -52,20 +60,12 @@ public class SegaPcmChip implements Chip {
 
     @Override
     public void init(BasePlugin<? extends BaseDriver> context) {
-        this.context = context;
+        super.init(context);
 
         for (int chipId = 0; chipId < 2; chipId++) {
             register[chipId] = new byte[0x200];
             keyOn[chipId] = new boolean[16];
         }
-    }
-
-    @Override
-    public void reset() {
-    }
-
-    @Override
-    public void updateVol() {
     }
 
     public void setMask(int chipId, int ch, boolean mask) {
@@ -129,6 +129,8 @@ public class SegaPcmChip implements Chip {
                 context.chipRegister.plugin(RealChipPlugin.class).realChip.SendData();
             }
         }
+
+        dumpDataForSegaPCM(model, "SEGAPCM_PCMData", dataLength, romData, srcStartAdr);
     }
 
     public void writeClock(int chipId, int clock, EnmModel model) {
@@ -158,5 +160,86 @@ public class SegaPcmChip implements Chip {
 
     public void resetMask(int chipId, int ch) {
         setMask(chipId, ch, false);
+    }
+
+    private void dumpDataForSegaPCM(mdplayer.Common.EnmModel model, String chipName, int adr, byte[] romData, int len) {
+        if (model == mdplayer.Common.EnmModel.RealModel) return;
+        if (!setting.getOther().getDumpSwitch()) return;
+
+        try {
+            String dFn = Path.combine(setting.getOther().getDumpPath(), "%2$s_%3$s_%1$03d.wav".formatted(dumpCounter++, chipName, context.driverReal.metaData.getFirst(Tag.Title).replace("*", "").replace("?", "").replace(" ", "").replace("\"", "")));
+            List<Byte> des = new ArrayList<>();
+
+            // 'RIFF'
+            des.add((byte) 'R');
+            des.add((byte) 'I');
+            des.add((byte) 'F');
+            des.add((byte) 'F');
+            // Size
+            //int fsize = src.length + 36;
+            int fsize = len + 36;
+            des.add((byte) ((fsize & 0xff) >> 0));
+            des.add((byte) ((fsize & 0xff00) >> 8));
+            des.add((byte) ((fsize & 0xff_0000) >> 16));
+            des.add((byte) ((fsize & 0xff00_0000) >>> 24));
+            // 'WAVE'
+            des.add((byte) 'W');
+            des.add((byte) 'A');
+            des.add((byte) 'V');
+            des.add((byte) 'E');
+            // 'fmt '
+            des.add((byte) 'f');
+            des.add((byte) 'm');
+            des.add((byte) 't');
+            des.add((byte) ' ');
+            // Size(16)
+            des.add((byte) 0x10);
+            des.add((byte) 0);
+            des.add((byte) 0);
+            des.add((byte) 0);
+            // Format(1)
+            des.add((byte) 0x01);
+            des.add((byte) 0x00);
+            // Channel Number(mono)
+            des.add((byte) 0x01);
+            des.add((byte) 0x00);
+            // Sampling Frquency(16KHz)
+            des.add((byte) 0x80);
+            des.add((byte) 0x3e);
+            des.add((byte) 0);
+            des.add((byte) 0);
+            // Average Data Percentage(16K)
+            des.add((byte) 0x80);
+            des.add((byte) 0x3e);
+            des.add((byte) 0);
+            des.add((byte) 0);
+            // Block size(1)
+            des.add((byte) 0x01);
+            des.add((byte) 0x00);
+            // Bit depth(8bit)
+            des.add((byte) 0x08);
+            des.add((byte) 0x00);
+
+            // 'data'
+            des.add((byte) 'd');
+            des.add((byte) 'a');
+            des.add((byte) 't');
+            des.add((byte) 'a');
+            // Size(Data Size)
+            des.add((byte) ((len & 0xff) >> 0));
+            des.add((byte) ((len & 0xff00) >> 8));
+            des.add((byte) ((len & 0xff_0000) >> 16));
+            des.add((byte) ((len & 0xff00_0000) >>> 24));
+
+            for (int i = 0; i < len; i++) {
+                des.add(romData[adr + i]);
+            }
+
+            // output
+            File.writeAllBytes(dFn, ByteUtil.toByteArray(des));
+
+        } catch (Exception e) {
+            logger.log(Level.ERROR, e.getMessage(), e);
+        }
     }
 }

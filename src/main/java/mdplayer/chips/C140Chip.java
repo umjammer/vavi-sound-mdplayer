@@ -28,7 +28,7 @@ import mdsound.instrument.C219Inst;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
-public class C140Chip implements Chip {
+public class C140Chip extends BaseChip {
 
     private final Setting.ChipType2[] chipTypes = setting.getC140Type();
 
@@ -44,8 +44,6 @@ public class C140Chip implements Chip {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
                     false, false, false, false, false, false, false, false}
     };
-
-    private BasePlugin<? extends BaseDriver> context;
 
     @SuppressWarnings("unchecked")
     private Class<? extends PcmEnabledInstrument> _inst(int chipId) {
@@ -65,20 +63,12 @@ public class C140Chip implements Chip {
 
     @Override
     public void init(BasePlugin<? extends BaseDriver> context) {
-        this.context = context;
+        super.init(context);
 
         for (int chipId = 0; chipId < 2; chipId++) {
             pcmRegister[chipId] = new byte[0x200];
             pcmKeyOn[chipId] = new boolean[24];
         }
-    }
-
-    @Override
-    public void reset() {
-    }
-
-    @Override
-    public void updateVol() {
     }
 
     public void setMask(int chipId, int ch, boolean mask) {
@@ -137,13 +127,15 @@ public class C140Chip implements Chip {
                 context.chipRegister.plugin(RealChipPlugin.class).realChip.SendData();
             }
         }
+
+        dumpData(model, "C140_PCMData", srcOffset, buf, length);
     }
 
-    public void writeType(int chipId, C140.Type type, EnmModel model) {
+    public void writeType(int chipId, int type, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
         } else {
             if (realChips != null && realChips[chipId] != null) {
-                switch (type) {
+                switch (getType(type)) {
                     case SYSTEM2:
                         realChips[chipId].setRegister(0x1_0008, 0);
                         break;
@@ -172,5 +164,14 @@ public class C140Chip implements Chip {
 
     public void resetMask(int chipId, int ch) {
         setMask(chipId, ch, false);
+    }
+
+    private C140.Type getType(int v) {
+        return switch (v) {
+            case 0x00 -> C140.Type.SYSTEM2;
+            case 0x01 -> C140.Type.SYSTEM21;
+            case 0x02 -> C140.Type.ASIC219;
+            default -> C140.Type.ASIC219;
+        };
     }
 }

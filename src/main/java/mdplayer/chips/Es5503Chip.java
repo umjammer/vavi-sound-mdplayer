@@ -22,27 +22,12 @@ import mdsound.instrument.Es5503Inst;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-02-02 nsano initial version <br>
  */
-public class Es5503Chip implements Chip {
-
-    private BasePlugin<? extends BaseDriver> context;
+public class Es5503Chip extends BaseChip {
 
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Instrument>[] implementations() {
         return new Class[] {Es5503Inst.class};
-    }
-
-    @Override
-    public void init(BasePlugin<? extends BaseDriver> context) {
-        this.context = context;
-    }
-
-    @Override
-    public void reset() {
-    }
-
-    @Override
-    public void updateVol() {
     }
 
     public void write(int chipId, int port, int data, EnmModel model) {
@@ -66,5 +51,7 @@ public class Es5503Chip implements Chip {
             context.mds.inst(Es5503Inst.class).writePcm(chipId, Arrays.copyOfRange(buf, srcOffset, srcOffset + length), offset, length);
         } else {
         }
+
+        dumpData(model, "ES5503_PCMData", srcOffset, buf, length);
     }
 }

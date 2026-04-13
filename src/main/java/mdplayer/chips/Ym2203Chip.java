@@ -6,7 +6,6 @@
 
 package mdplayer.chips;
 
-import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RC86ctlSoundChip;
 import mdplayer.RealChip.RSoundChip;
@@ -27,7 +26,7 @@ import mdsound.instrument.YmFmYm2203Inst;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
-public class Ym2203Chip implements Chip {
+public class Ym2203Chip extends BaseChip {
 
     private final Setting.ChipType2[] chipTypes = setting.getYM2203Type();
 
@@ -45,8 +44,6 @@ public class Ym2203Chip implements Chip {
 
     public int clock;
 
-    private BasePlugin<? extends BaseDriver> context;
-
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Instrument>[] implementations() {
@@ -60,7 +57,7 @@ public class Ym2203Chip implements Chip {
 
     @Override
     public void init(BasePlugin<? extends BaseDriver> context) {
-        this.context = context;
+        super.init(context);
 
         for (int chipId = 0; chipId < 2; chipId++) {
             fmRegister[chipId] = new int[0x100];
@@ -71,10 +68,6 @@ public class Ym2203Chip implements Chip {
 
             nowFadeoutVol[chipId] = 0;
         }
-    }
-
-    @Override
-    public void reset() {
     }
 
     @Override

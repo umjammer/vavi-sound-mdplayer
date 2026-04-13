@@ -6,7 +6,6 @@
 
 package mdplayer.chips;
 
-import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
@@ -22,15 +21,13 @@ import mdsound.instrument.YmZ280BInst;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
-public class YmZ280BChip implements Chip {
+public class YmZ280BChip extends BaseChip {
 
     private final Setting.ChipType2[] chipTypes = setting.getYMZ280BType();
 
     private final RSoundChip[] realChips = {null, null};
 
     public final int[][] register = {null, null};
-
-    private BasePlugin<? extends BaseDriver> context;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -40,7 +37,7 @@ public class YmZ280BChip implements Chip {
 
     @Override
     public void init(BasePlugin<? extends BaseDriver> context) {
-        this.context = context;
+        super.init(context);
 
         for (int chipId = 0; chipId < 2; chipId++) {
             register[chipId] = new int[0x100];
@@ -48,14 +45,6 @@ public class YmZ280BChip implements Chip {
                 register[chipId][i] = 0;
             }
         }
-    }
-
-    @Override
-    public void reset() {
-    }
-
-    @Override
-    public void updateVol() {
     }
 
     public void write(int chipId, int addr, int data, EnmModel model) {
@@ -86,6 +75,8 @@ public class YmZ280BChip implements Chip {
 
         if (model == EnmModel.VirtualModel)
             context.mds.inst(YmZ280BInst.class).writePcm(chipId, buf, offset, length, srcOffset, romSize);
+
+        dumpData(model, "YMZ280B_PCMData", srcOffset, buf, length);
     }
 
     public int[] read(int chipId) {

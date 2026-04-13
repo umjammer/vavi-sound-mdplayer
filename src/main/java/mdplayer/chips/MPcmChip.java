@@ -33,7 +33,7 @@ import mdsound.instrument.X68kMPcmInst;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-04-01 nsano initial version <br>
  */
-public class MPcmChip implements Chip {
+public class MPcmChip extends BaseChip {
 
     private static final Logger logger = System.getLogger(MPcmChip.class.getName());
 
@@ -41,8 +41,6 @@ public class MPcmChip implements Chip {
             {false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false}
     };
-
-    private BasePlugin<? extends BaseDriver> context;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -53,19 +51,6 @@ public class MPcmChip implements Chip {
     @Override
     public int activeIndex(int chipId) {
         return setting.getMnDrv().mpcmType;
-    }
-
-    @Override
-    public void init(BasePlugin<? extends BaseDriver> context) {
-        this.context = context;
-    }
-
-    @Override
-    public void reset() {
-    }
-
-    @Override
-    public void updateVol() {
     }
 
     public void writePcm(int chipId, int bank, int mode, byte[] pcmData, EnmModel model) {

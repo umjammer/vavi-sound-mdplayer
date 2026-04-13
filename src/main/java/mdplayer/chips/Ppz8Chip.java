@@ -6,10 +6,7 @@
 
 package mdplayer.chips;
 
-import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
-import mdplayer.driver.BaseDriver;
-import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.chips.PPZ8;
 import mdsound.instrument.Ppz8Inst;
@@ -21,32 +18,17 @@ import mdsound.instrument.Ppz8Inst;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
-public class Ppz8Chip implements Chip {
+public class Ppz8Chip extends BaseChip {
 
     private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false}
     };
 
-    private BasePlugin<? extends BaseDriver> context;
-
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Instrument>[] implementations() {
         return new Class[] {Ppz8Inst.class};
-    }
-
-    @Override
-    public void init(BasePlugin<? extends BaseDriver> context) {
-        this.context = context;
-    }
-
-    @Override
-    public void reset() {
-    }
-
-    @Override
-    public void updateVol() {
     }
 
     public PPZ8.Channel[] read(int chipId) {

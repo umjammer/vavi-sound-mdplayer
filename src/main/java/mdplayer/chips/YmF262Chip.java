@@ -6,7 +6,6 @@
 
 package mdplayer.chips;
 
-import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
@@ -30,7 +29,7 @@ import static mdplayer.chips.YmF278BChip.channel;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
-public class YmF262Chip implements Chip {
+public class YmF262Chip extends BaseChip {
 
     private final Setting.ChipType2[] chipTypes = setting.getYMF262Type();
 
@@ -56,8 +55,6 @@ public class YmF262Chip implements Chip {
 
     private final int[] fadeout = {0, 0};
 
-    private BasePlugin<? extends BaseDriver> context;
-
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Instrument>[] implementations() {
@@ -71,7 +68,7 @@ public class YmF262Chip implements Chip {
 
     @Override
     public void init(BasePlugin<? extends BaseDriver> context) {
-        this.context = context;
+        super.init(context);
 
         for (int chipId = 0; chipId < 2; chipId++) {
             register[chipId] = new int[][] {new int[0x100], new int[0x100]};
@@ -82,14 +79,6 @@ public class YmF262Chip implements Chip {
 
             fadeout[chipId] = 0;
         }
-    }
-
-    @Override
-    public void reset() {
-    }
-
-    @Override
-    public void updateVol() {
     }
 
     public int getRhythmKeyON(int chipId) {

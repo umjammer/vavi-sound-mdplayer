@@ -6,7 +6,6 @@
 
 package mdplayer.chips;
 
-import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
@@ -23,7 +22,7 @@ import mdsound.instrument.YmF271Inst;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
-public class YmF271Chip implements Chip {
+public class YmF271Chip extends BaseChip {
 
     private final Setting.ChipType2[] chipTypes = setting.getYMF271Type();
 
@@ -34,8 +33,6 @@ public class YmF271Chip implements Chip {
             {null, null}
     };
 
-    private BasePlugin<? extends BaseDriver> context;
-
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Instrument>[] implementations() {
@@ -44,7 +41,7 @@ public class YmF271Chip implements Chip {
 
     @Override
     public void init(BasePlugin<? extends BaseDriver> context) {
-        this.context = context;
+        super.init(context);
 
         for (int chipId = 0; chipId < 2; chipId++) {
             register[chipId] = new int[][] {new int[0x100], new int[0x100], new int[0x100], new int[0x100], new int[0x100], new int[0x100], new int[0x100]};
@@ -58,14 +55,6 @@ public class YmF271Chip implements Chip {
                 register[chipId][6][i] = 0;
             }
         }
-    }
-
-    @Override
-    public void reset() {
-    }
-
-    @Override
-    public void updateVol() {
     }
 
     public void write(int chipId, int port, int addr, int data, EnmModel model) {
@@ -96,6 +85,8 @@ public class YmF271Chip implements Chip {
 
         if (model == EnmModel.VirtualModel)
             context.mds.inst(YmF271Inst.class).writePcm(chipId, buf, offset, length, srcOffset, romSize);
+
+        dumpData(model, "YMF271_PCMData", srcOffset, buf, length);
     }
 
     public YmF271 read(int chipId) {

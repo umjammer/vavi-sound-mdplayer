@@ -6,10 +6,7 @@
 
 package mdplayer.chips;
 
-import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
-import mdplayer.driver.BaseDriver;
-import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.chips.ScdPcm;
 import mdsound.instrument.ScdPcmInst;
@@ -21,32 +18,17 @@ import mdsound.instrument.ScdPcmInst;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
-public class Rf5C164Chip implements Chip {
+public class Rf5C164Chip extends BaseChip {
 
     private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false}
     };
 
-    private BasePlugin<? extends BaseDriver> context;
-
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Instrument>[] implementations() {
         return new Class[] {ScdPcmInst.class};
-    }
-
-    @Override
-    public void init(BasePlugin<? extends BaseDriver> context) {
-        this.context = context;
-    }
-
-    @Override
-    public void reset() {
-    }
-
-    @Override
-    public void updateVol() {
     }
 
     public void setMask(int chipId, int ch, boolean mask) {
@@ -65,6 +47,8 @@ public class Rf5C164Chip implements Chip {
 
         if (model == EnmModel.VirtualModel)
             context.mds.inst(ScdPcmInst.class).writePcm(chipId, buf, offset, length, srcOffset);
+
+        dumpData(model, "RF5C164_PCMData(8BitMonoSigned)", srcOffset, buf, length);
     }
 
     public void write(int chipId, int adr, int data, EnmModel model) {

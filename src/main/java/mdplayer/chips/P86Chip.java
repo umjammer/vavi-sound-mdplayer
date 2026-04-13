@@ -20,27 +20,12 @@ import mdsound.instrument.P86Inst;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
-public class P86Chip implements Chip {
-
-    private BasePlugin<? extends BaseDriver> context;
+public class P86Chip extends BaseChip {
 
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Instrument>[] implementations() {
         return new Class[] {P86Inst.class};
-    }
-
-    @Override
-    public void init(BasePlugin<? extends BaseDriver> context) {
-        this.context = context;
-    }
-
-    @Override
-    public void reset() {
-    }
-
-    @Override
-    public void updateVol() {
     }
 
     public void writePcm(int chipId, int bank, int mode, byte[] buf, EnmModel model) {

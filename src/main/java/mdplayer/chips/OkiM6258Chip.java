@@ -21,31 +21,16 @@ import mdsound.instrument.OkiM6258Inst;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
-public class OkiM6258Chip implements Chip {
+public class OkiM6258Chip extends BaseChip {
 
     private final boolean[] mask = {false, false};
 
     public final boolean[] keyOn = {false, false};
 
-    private BasePlugin<? extends BaseDriver> context;
-
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Instrument>[] implementations() {
         return new Class[] {OkiM6258Inst.class};
-    }
-
-    @Override
-    public void init(BasePlugin<? extends BaseDriver> context) {
-        this.context = context;
-    }
-
-    @Override
-    public void reset() {
-    }
-
-    @Override
-    public void updateVol() {
     }
 
     public void setMask(int chipId, boolean mask) {

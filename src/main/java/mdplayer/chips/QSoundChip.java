@@ -6,11 +6,8 @@
 
 package mdplayer.chips;
 
-import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.Setting;
-import mdplayer.driver.BaseDriver;
-import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.Instrument.PcmEnabledInstrument;
 import mdsound.instrument.CtrQSoundInst;
@@ -26,7 +23,7 @@ import mdsound.instrument.QSoundInst;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
-public class QSoundChip implements Chip {
+public class QSoundChip extends BaseChip {
 
     private final Setting.ChipType2[] chipTypes = setting.getQSoundType();
 
@@ -36,8 +33,6 @@ public class QSoundChip implements Chip {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
                     false, false, false,}
     };
-
-    private BasePlugin<? extends BaseDriver> context;
 
     @SuppressWarnings("unchecked")
     private Class<? extends PcmEnabledInstrument> _inst(int chipId) {
@@ -53,19 +48,6 @@ public class QSoundChip implements Chip {
     @SuppressWarnings("unchecked")
     public Class<? extends Instrument>[] implementations() {
         return new Class[] {CtrQSoundInst.class, QSoundInst.class};
-    }
-
-    @Override
-    public void init(BasePlugin<? extends BaseDriver> context) {
-        this.context = context;
-    }
-
-    @Override
-    public void reset() {
-    }
-
-    @Override
-    public void updateVol() {
     }
 
     public void write(int chipId, int mm, int ll, int rr, EnmModel model) {
@@ -111,6 +93,8 @@ public class QSoundChip implements Chip {
         if (model == EnmModel.VirtualModel) {
             context.mds.inst(_inst(chipId)).writePcm(chipId, romData, dataStart, dataLength, srcStartAdr, romSize);
         }
+
+        dumpData(model, "QSound_PCMData", srcStartAdr, romData, dataLength);
     }
 
     public void setMask(int chipId, int ch) {

@@ -5,27 +5,18 @@ import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.BiFunction;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.IntSupplier;
 import java.util.function.LongConsumer;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 
-import dotnet4j.io.File;
-import dotnet4j.io.FileAccess;
-import dotnet4j.io.FileMode;
-import dotnet4j.io.FileStream;
-import dotnet4j.io.Path;
 import mdplayer.ChipRegister;
 import mdplayer.Common.EnmModel;
 import mdplayer.DacControl;
 import mdplayer.Setting;
 import mdplayer.chips.*;
-import mdsound.chips.C140;
-import musicDriverInterface.MetaData;
-import musicDriverInterface.MetaData.Tag;
-import org.apache.commons.lang3.function.BooleanConsumer;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
@@ -47,7 +38,7 @@ public class Vgm {
     public static final int DefaultRF5C164ClockValue = 12500000;
     public static final int DefaultPWMClockValue = 23011361;
     public static final int DefaultC140ClockValue = 21390;
-    public static final C140.Type DefaultC140Type = C140.Type.ASIC219;
+    public static final int DefaultC140Type = 2;
     public static final int DefaultOKIM6258ClockValue = 4000000;
     public static final int DefaultOKIM6295ClockValue = 4000000;
     public static final int DefaultSEGAPCMClockValue = 4000000;
@@ -59,7 +50,7 @@ public class Vgm {
     public int rf5C164ClockValue = DefaultRF5C164ClockValue;
     public int pwmClockValue = DefaultPWMClockValue;
     public int c140ClockValue = DefaultC140ClockValue;
-    public C140.Type C140Type = DefaultC140Type;
+    public int C140Type = DefaultC140Type;
     public int okiM6258ClockValue = DefaultOKIM6258ClockValue;
     public int okiM6258Type = 0;
     public int okiM6295ClockValue = DefaultOKIM6295ClockValue;
@@ -157,21 +148,17 @@ public class Vgm {
     private final byte[] dacCtrlUsg = new byte[0xff];
     private final DacCtrlData[] dacCtrl = new DacCtrlData[0xff];
 
-    private byte[][] ym2610AdpcmA = new byte[][] {null, null};
-    private byte[][] ym2610AdpcmB = new byte[][] {null, null};
-
     byte[] vgmBuf;
     EnmModel model; // TODO mdp class
     ChipRegister chipRegister; // TODO mdp class
     IntSupplier frameCounter;
-    BooleanConsumer dataBlock;
+    Consumer<Boolean> dataBlock;
     Setting setting;
     int[] ym2151Hosei;
     LongSupplier getTotalCounter;
     LongConsumer setTotalCounter;
     LongConsumer setLoopCounter;
-    MetaData metaData;
-    BiFunction<byte[], Integer, MetaData> getMetaData;
+    BiConsumer<byte[], Integer> updateMetaData;
     IntSupplier loop;
     Consumer<String> setUsedChips;
     Supplier<String> getUsedChips;
@@ -179,13 +166,6 @@ public class Vgm {
     Supplier<String> getVersion;
 
     void init() {
-        this.opnaRamType = 0;
-
-        dumpCounter = 0;
-
-        ym2610AdpcmA = new byte[][] {null, null};
-        ym2610AdpcmB = new byte[][] {null, null};
-
         if (!getInformationHeader()) throw new IllegalArgumentException("invalid vgm header");
 
         vgmAdr = vgmDataOffset;
@@ -710,194 +690,91 @@ public class Vgm {
             case 0x80:
                  // SEGA PCM
                 chipRegister.chip(SegaPcmChip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
-                dumpDataForSegaPCM(model, "SEGAPCM_PCMData", vgmAdr + 15, bLen - 8);
                 break;
             case 0x81:
-
                 // YM2608
-
-                chipRegister.chip(Ym2608Chip.class).write(chipId, 0x1, 0x00, 0x20, model);
-                chipRegister.chip(Ym2608Chip.class).write(chipId, 0x1, 0x00, 0x21, model);
-                chipRegister.chip(Ym2608Chip.class).write(chipId, 0x1, 0x00, 0x00, model);
-
-                chipRegister.chip(Ym2608Chip.class).write(chipId, 0x1, 0x10, 0x00, model);
-                chipRegister.chip(Ym2608Chip.class).write(chipId, 0x1, 0x10, 0x80, model);
-
-                chipRegister.chip(Ym2608Chip.class).write(chipId, 0x1, 0x00, 0x61, model);
-                chipRegister.chip(Ym2608Chip.class).write(chipId, 0x1, 0x00, 0x68, model);
-                chipRegister.chip(Ym2608Chip.class).write(chipId, 0x1, 0x01, opnaRamType, model);
-
-                if (opnaRamType != 2) {
-                    chipRegister.chip(Ym2608Chip.class).write(chipId, 0x1, 0x02, (startAddress >> 2) & 0xff, model);
-                    chipRegister.chip(Ym2608Chip.class).write(chipId, 0x1, 0x03, (startAddress >> 10) & 0xff, model);
-                } else {
-                    chipRegister.chip(Ym2608Chip.class).write(chipId, 0x1, 0x02, (startAddress >> 5) & 0xff, model);
-                    chipRegister.chip(Ym2608Chip.class).write(chipId, 0x1, 0x03, (startAddress >> 13) & 0xff, model);
-                }
-                chipRegister.chip(Ym2608Chip.class).write(chipId, 0x1, 0x04, 0xff, model);
-                chipRegister.chip(Ym2608Chip.class).write(chipId, 0x1, 0x05, 0xff, model);
-                chipRegister.chip(Ym2608Chip.class).write(chipId, 0x1, 0x0c, 0xff, model);
-                chipRegister.chip(Ym2608Chip.class).write(chipId, 0x1, 0x0d, 0xff, model);
-
-                // Data Transfer
-                for (int cnt = 0; cnt < bLen - 8; cnt++) {
-                    chipRegister.chip(Ym2608Chip.class).write(chipId, 0x1, 0x08, vgmBuf[vgmAdr + 15 + cnt] & 0xff, model);
-                }
-                chipRegister.chip(Ym2608Chip.class).write(chipId, 0x1, 0x00, 0x00, model);
-                chipRegister.chip(Ym2608Chip.class).write(chipId, 0x1, 0x10, 0x80, model);
-
-//                chipRegister.getChip(Ym2608Chip.class).setYM2608Register(0x1, 0x10, 0x13, model);
-//                chipRegister.getChip(Ym2608Chip.class).setYM2608Register(0x1, 0x10, 0x80, model);
-//                chipRegister.getChip(Ym2608Chip.class).setYM2608Register(0x1, 0x00, 0x60, model);
-//                chipRegister.getChip(Ym2608Chip.class).setYM2608Register(0x1, 0x01, 0x00, model);
-
-//                chipRegister.getChip(Ym2608Chip.class).setYM2608Register(0x1, 0x02, (int)((startAddress >> 2) & 0xff), model);
-//                chipRegister.getChip(Ym2608Chip.class).setYM2608Register(0x1, 0x03, (int)((startAddress >> 10) & 0xff), model);
-//                chipRegister.getChip(Ym2608Chip.class).setYM2608Register(0x1, 0x04, (int)(((startAddress + bLen - 8) >> 2) & 0xff), model);
-//                chipRegister.getChip(Ym2608Chip.class).setYM2608Register(0x1, 0x05, (int)(((startAddress + bLen - 8) >> 10) & 0xff), model);
-//                chipRegister.getChip(Ym2608Chip.class).setYM2608Register(0x1, 0x0c, 0xff, model);
-//                chipRegister.setYM2608Register(0x1, 0x0d, 0xff, model);
-
-//                for (int cnt = 0; cnt < bLen - 8; cnt++) {
-//                    chipRegister.getChip(Ym2608Chip.class).setYM2608Register(0x1, 0x08, dataBuf[vgmAdr + 15 + cnt], model);
-//                    chipRegister.getChip(Ym2608Chip.class).setYM2608Register(0x1, 0x10, 0x1b, model);
-//                    chipRegister.getChip(Ym2608Chip.class).setYM2608Register(0x1, 0x10, 0x13, model);
-//                }
-
-//                chipRegister.getChip(Ym2608Chip.class).setYM2608Register(0x1, 0x00, 0x00, model);
-//                chipRegister.getChip(Ym2608Chip.class).setYM2608Register(0x1, 0x10, 0x80, model);
-
-                while ((chipRegister.chip(Ym2608Chip.class).read(chipId, 0x1, 0x00, model) & 0xbf) != 0) {
-                    try { Thread.sleep(0); } catch (InterruptedException ignore) {}
-                }
-                if (model == mdplayer.Common.EnmModel.RealModel) {
-                    if ((chipId == 0 && setting.getYM2608Type()[0].getUseReal()[0])
-                            || (chipId == 1 && setting.getYM2608Type()[1].getUseReal()[0])) {
-                        try { Thread.sleep(500); } catch (InterruptedException ignore) {}
-                    }
-                }
-
-                chipRegister.chip(Ym2608Chip.class).sendData(chipId, model);
-                dumpData(model, "YM2608_ADPCM", vgmAdr + 15, bLen - 8);
+                chipRegister.chip(Ym2608Chip.class).writePcm(chipId, vgmBuf, vgmAdr, bLen,startAddress, model);
                 break;
-
             case 0x82:
-                if (ym2610AdpcmA[chipId] == null || ym2610AdpcmA[chipId].length != romSize)
-                    ym2610AdpcmA[chipId] = new byte[romSize];
-                if (ym2610AdpcmA[chipId].length > 0) {
-                    for (int cnt = 0; cnt < bLen - 8; cnt++) {
-                        ym2610AdpcmA[chipId][startAddress + cnt] = vgmBuf[vgmAdr + 15 + cnt];
-                    }
-                    if (model == mdplayer.Common.EnmModel.VirtualModel)
-                        chipRegister.chip(Ym2610Chip.class).writeAdpcmA(chipId, ym2610AdpcmA[chipId], model);
-                    else
-                        chipRegister.chip(Ym2610Chip.class).writeAdpcmA(chipId, model, startAddress, bLen - 8, vgmBuf, vgmAdr + 15);
-                    dumpData(model, "YM2610_ADPCMA", vgmAdr + 15, bLen - 8);
-                }
+                chipRegister.chip(Ym2610Chip.class).writeAdpcmA(chipId, vgmBuf, vgmAdr, bLen, startAddress, romSize, model);
                 break;
             case 0x83:
-                if (ym2610AdpcmB[chipId] == null || ym2610AdpcmB[chipId].length != romSize)
-                    ym2610AdpcmB[chipId] = new byte[romSize];
-                if (ym2610AdpcmB[chipId].length > 0) {
-                    for (int cnt = 0; cnt < bLen - 8; cnt++) {
-                        ym2610AdpcmB[chipId][startAddress + cnt] = vgmBuf[vgmAdr + 15 + cnt];
-                    }
-                    if (model == mdplayer.Common.EnmModel.VirtualModel)
-                        chipRegister.chip(Ym2610Chip.class).writeAdpcmB(chipId, ym2610AdpcmB[chipId], model);
-                    else
-                        chipRegister.chip(Ym2610Chip.class).writeAdpcmB(chipId, model, startAddress, bLen - 8, vgmBuf, vgmAdr + 15);
-                    dumpData(model, "YM2610_ADPCMB", vgmAdr + 15, bLen - 8);
-                }
+                chipRegister.chip(Ym2610Chip.class).writeAdpcmB(chipId, vgmBuf, vgmAdr, bLen, startAddress, romSize, model);
                 break;
 
             case 0x84:
                 // YMF278B
                 chipRegister.chip(YmF278BChip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
-                dumpData(model, "YMF278B_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x85:
                 // YMF271
                 chipRegister.chip(YmF271Chip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
-                dumpData(model, "YMF271_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x86:
                 // YMZ280B
                 chipRegister.chip(YmZ280BChip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
-                dumpData(model, "YMZ280B_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x87:
                 // YMF278B
                 chipRegister.chip(YmF278BChip.class).writeRam(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
-                dumpData(model, "YMF278B_PCMRAMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x88:
                 // Y8950
                 chipRegister.chip(Y8950Chip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
-                dumpData(model, "Y8950_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x89:
                 // MultiPCM
                 chipRegister.chip(MultiPcmChip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
-                dumpData(model, "MultiPCM_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x8a:
                 // uPD7759
                 chipRegister.chip(Upd7759Chip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
-                dumpData(model, "uPD7759_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
                 case 0x8b:
                 // OKIM6295
                 chipRegister.chip(OkiM6295Chip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
-                dumpData(model, "OKIM6295_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x8c:
                 // K054539
                 chipRegister.chip(K054539Chip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
-                dumpData(model, "K054539_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x8d:
                 // C140
                 chipRegister.chip(C140Chip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
-                dumpData(model, "C140_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x8e:
                 // K053260
                 chipRegister.chip(K053260Chip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
-                dumpData(model, "K053260_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x8f:
                 // QSound
                 chipRegister.chip(QSoundChip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
-                dumpData(model, "QSound_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x91:
                 // X1-010
                 chipRegister.chip(X1_010Chip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
-                dumpData(model, "X1-010_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x92:
                 // C352
                 chipRegister.chip(C352Chip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
-                dumpData(model, "C352_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x93:
                 // GA20
                 chipRegister.chip(Ga20Chip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
-                dumpData(model, "GA20_PCMData", vgmAdr + 15, bLen - 8);
                 break;
             }
             vgmAdr += bLen + 7;
@@ -916,15 +793,12 @@ public class Vgm {
                 switch (bType & 0xff) {
                 case 0xc0:
                     chipRegister.chip(Rf5C68Chip.class).writePcm(chipId, stAdr, dataSize, vgmBuf, vgmAdr + 9, model);
-                    dumpData(model, "RF5C68_PCMData(8BitMonoSigned)", vgmAdr + 9, dataSize);
                     break;
                 case 0xc1:
                     chipRegister.chip(Rf5C164Chip.class).writePcm(chipId, stAdr, dataSize, vgmBuf, vgmAdr + 9, model);
-                    dumpData(model, "RF5C164_PCMData(8BitMonoSigned)", vgmAdr + 9, dataSize);
                     break;
                 case 0xc2:
                     chipRegister.chip(NesChip.class).writePcm(chipId, stAdr, dataSize, vgmBuf, vgmAdr + 9, model);
-                    dumpData(model, "NES_PCMData", vgmAdr + 9, dataSize);
                     break;
                 }
             } catch (Exception e) {
@@ -947,7 +821,6 @@ public class Vgm {
                 switch (bType) {
                     case 0xe1:
                         chipRegister.chip(Es5503Chip.class).writePcm(chipId, stAdr_E, dataSize_E, vgmBuf, vgmAdr + 11, model);
-                        dumpData(model, "ES5503_PCMData", vgmAdr + 9, dataSize_E);
                         break;
                 }
             } catch (Exception e) {
@@ -962,108 +835,6 @@ public class Vgm {
         }
 
         dataBlock.accept(false);
-    }
-
-    private int dumpCounter = 0;
-    private int opnaRamType = 0;
-
-    private void dumpData(mdplayer.Common.EnmModel model, String chipName, int adr, int len) {
-        if (model == mdplayer.Common.EnmModel.RealModel) return;
-        if (setting == null) return;
-        if (!setting.getOther().getDumpSwitch()) return;
-
-        try {
-
-            String fn = Path.combine(setting.getOther().getDumpPath(), "%2$s_%3$s_%1$03d.bin".formatted(dumpCounter++, chipName, metaData.getFirst(Tag.Title).replace("*", "").replace("?", "").replace(" ", "").replace("\"", "").replace("/", "")));
-            try (FileStream fs = new FileStream(fn, FileMode.OpenOrCreate, FileAccess.Write)) {
-                fs.write(vgmBuf, adr, len);
-            }
-        } catch (Exception e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-            // Ignore the error
-        }
-    }
-
-    private void dumpDataForSegaPCM(mdplayer.Common.EnmModel model, String chipName, int adr, int len) {
-        if (model == mdplayer.Common.EnmModel.RealModel) return;
-        if (setting == null) return;
-        if (!setting.getOther().getDumpSwitch()) return;
-
-        try {
-            String dFn = Path.combine(setting.getOther().getDumpPath(), "%2$s_%3$s_%1$03d.wav".formatted(dumpCounter++, chipName, metaData.getFirst(Tag.Title).replace("*", "").replace("?", "").replace(" ", "").replace("\"", "")));
-            List<Byte> des = new ArrayList<>();
-
-            // 'RIFF'
-            des.add((byte) 'R');
-            des.add((byte) 'I');
-            des.add((byte) 'F');
-            des.add((byte) 'F');
-            // Size
-            //int fsize = src.length + 36;
-            int fsize = len + 36;
-            des.add((byte) ((fsize & 0xff) >> 0));
-            des.add((byte) ((fsize & 0xff00) >> 8));
-            des.add((byte) ((fsize & 0xff_0000) >> 16));
-            des.add((byte) ((fsize & 0xff00_0000) >>> 24));
-            // 'WAVE'
-            des.add((byte) 'W');
-            des.add((byte) 'A');
-            des.add((byte) 'V');
-            des.add((byte) 'E');
-            // 'fmt '
-            des.add((byte) 'f');
-            des.add((byte) 'm');
-            des.add((byte) 't');
-            des.add((byte) ' ');
-            // Size(16)
-            des.add((byte) 0x10);
-            des.add((byte) 0);
-            des.add((byte) 0);
-            des.add((byte) 0);
-            // Format(1)
-            des.add((byte) 0x01);
-            des.add((byte) 0x00);
-            // Channel Number(mono)
-            des.add((byte) 0x01);
-            des.add((byte) 0x00);
-            // Sampling Frquency(16KHz)
-            des.add((byte) 0x80);
-            des.add((byte) 0x3e);
-            des.add((byte) 0);
-            des.add((byte) 0);
-            // Average Data Percentage(16K)
-            des.add((byte) 0x80);
-            des.add((byte) 0x3e);
-            des.add((byte) 0);
-            des.add((byte) 0);
-            // Block size(1)
-            des.add((byte) 0x01);
-            des.add((byte) 0x00);
-            // Bit depth(8bit)
-            des.add((byte) 0x08);
-            des.add((byte) 0x00);
-
-            // 'data'
-            des.add((byte) 'd');
-            des.add((byte) 'a');
-            des.add((byte) 't');
-            des.add((byte) 'a');
-            // Size(Data Size)
-            des.add((byte) ((len & 0xff) >> 0));
-            des.add((byte) ((len & 0xff00) >> 8));
-            des.add((byte) ((len & 0xff_0000) >> 16));
-            des.add((byte) ((len & 0xff00_0000) >>> 24));
-
-            for (int i = 0; i < len; i++) {
-                des.add(vgmBuf[adr + i]);
-            }
-
-            // output
-            File.writeAllBytes(dFn, ByteUtil.toByteArray(des));
-
-        } catch (Exception e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-        }
     }
 
     private void vcPCMRamWrite() {
@@ -1846,7 +1617,7 @@ logger.log(Level.TRACE, "Bad PCM Table Length!");
                         if (ym2608DualChipFlag) chips.add("YM2608x2");
                         else chips.add("YM2608");
 
-                        opnaRamType = searchOpnaRamType() ? 0x2 : 0x0;
+                        chipRegister.chip(Ym2608Chip.class).updateRamType(vgmBuf, vgmDataOffset);
                     }
                 }
 
@@ -2054,18 +1825,7 @@ logger.log(Level.TRACE, "Bad PCM Table Length!");
                         if (c140DualChipFlag) chips.add("C140x2");
                         else chips.add("C140");
 
-                        switch (vgmBuf[0x96]) {
-                        case 0x00:
-                            C140Type = C140.Type.SYSTEM2;
-                            break;
-                        case 0x01:
-                            C140Type = C140.Type.SYSTEM21;
-                            break;
-                        case 0x02:
-                        default:
-                            C140Type = C140.Type.ASIC219;
-                            break;
-                        }
+                        C140Type = vgmBuf[0x96] & 0xff;
                     }
                 }
 
@@ -2141,7 +1901,7 @@ logger.log(Level.TRACE, "Bad PCM Table Length!");
                     int es5503clock = ByteUtil.readLeInt(vgmBuf, 0xcc);
                     if (es5503clock != 0)
                     {
-                        es5503ClockValue = es5503clock & 0x3fff_ffff;//def=7159090
+                        es5503ClockValue = es5503clock & 0x3fff_ffff; // def=7159090
                         es5503DualChipFlag = (es5503clock & 0x4000_0000) != 0;
                         es5503Ch = vgmBuf[0xd4];
                         //if (es5503Ch == 1) es5503Ch = 2;
@@ -2200,59 +1960,10 @@ logger.log(Level.INFO, "usedChips: " + getUsedChips.get());
         if (vgmGd3 != 0) {
             int vgmGd3Id = ByteUtil.readLeInt(vgmBuf, vgmGd3 + 0x14);
             if (vgmGd3Id != FCC_GD3) return false;
-            metaData = getMetaData.apply(vgmBuf, vgmGd3);
+            updateMetaData.accept(vgmBuf, vgmGd3);
         }
 
         return true;
-    }
-
-    /**
-     * Check the RAMType of OPNA from the data
-     * @return true: x8bit, false: x1bit
-     */
-    private boolean searchOpnaRamType() {
-        try {
-            int adr = vgmDataOffset;
-
-            while (adr < vgmBuf.length && (vgmBuf[adr] & 0xff) != 0x66) {
-                int dat = vgmBuf[adr] & 0xff;
-                if (dat < 0x51) adr += 2;
-                else if (dat < 0x57) adr += 3;
-                else if (dat == 0x57) {
-                    int reg = vgmBuf[adr + 1] & 0xff;
-                    int val = vgmBuf[adr + 2] & 0xff;
-                    adr += 3;
-                    if (reg == 1) {
-                        if ((val & 2) != 0) {
-                            return true;
-                        }
-                    }
-                } else if (dat < 0x62) adr += 3;
-                else if (dat < 0x64) adr++;
-                else if (dat == 0x64) adr += 4;
-                else if (dat == 0x66) adr++;
-                else if (dat == 0x67) {
-                    int bLen = ByteUtil.readLeInt(vgmBuf, adr + 3);
-                    bLen &= 0x7fff_ffff;
-                    adr += bLen + 7;
-                } else if (dat == 0x68) {
-                    adr += 12;
-                } else if ((dat & 0xff) < 0x90) adr++;
-                else if (dat == 0x90) adr += 5;
-                else if (dat == 0x91) adr += 5;
-                else if (dat == 0x92) adr += 6;
-                else if (dat == 0x93) adr += 11;
-                else if (dat == 0x94) adr += 2;
-                else if (dat == 0x95) adr += 5;
-                else if ((dat & 0xff) < 0xc0) adr += 3;
-                else if ((dat & 0xff) < 0xe0) adr += 4;
-                else adr += 5;
-            }
-        } catch (Exception e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-        }
-
-        return false;
     }
 
     static class VgmPcmData {

@@ -21,32 +21,17 @@ import mdsound.instrument.OkiM6295Inst;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
-public class OkiM6295Chip implements Chip {
+public class OkiM6295Chip extends BaseChip {
 
     private final boolean[][] mask = {
             {false, false, false, false},
             {false, false, false, false}
     };
 
-    private BasePlugin<? extends BaseDriver> context;
-
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Instrument>[] implementations() {
         return new Class[] {OkiM6295Inst.class};
-    }
-
-    @Override
-    public void init(BasePlugin<? extends BaseDriver> context) {
-        this.context = context;
-    }
-
-    @Override
-    public void reset() {
-    }
-
-    @Override
-    public void updateVol() {
     }
 
     public void setMask(int chipId, int ch, boolean mask) {
@@ -69,6 +54,8 @@ public class OkiM6295Chip implements Chip {
 
         if (model == EnmModel.VirtualModel)
             context.mds.inst(OkiM6295Inst.class).writePcm(chipId, buf, offset, length, srcOffset, romSize);
+
+        dumpData(model, "OKIM6295_PCMData", srcOffset, buf, length);
     }
 
     public void write(int chipId, int port, int data, EnmModel model) {

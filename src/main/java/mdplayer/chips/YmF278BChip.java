@@ -6,7 +6,6 @@
 
 package mdplayer.chips;
 
-import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
@@ -22,7 +21,7 @@ import mdsound.instrument.YmF278BInst;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
-public class YmF278BChip implements Chip {
+public class YmF278BChip extends BaseChip {
 
     private final Setting.ChipType2[] chipTypes = setting.getYMF278BType();
 
@@ -57,8 +56,6 @@ public class YmF278BChip implements Chip {
             32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46
     };
 
-    private BasePlugin<? extends BaseDriver> context;
-
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Instrument>[] implementations() {
@@ -67,7 +64,7 @@ public class YmF278BChip implements Chip {
 
     @Override
     public void init(BasePlugin<? extends BaseDriver> context) {
-        this.context = context;
+        super.init(context);
 
         for (int chipId = 0; chipId < 2; chipId++) {
             register[chipId] = new int[][] {new int[0x100], new int[0x100], new int[0x100]};
@@ -81,14 +78,6 @@ public class YmF278BChip implements Chip {
             registerRhythmB[0] = 0;
             registerRhythmB[1] = 0;
         }
-    }
-
-    @Override
-    public void reset() {
-    }
-
-    @Override
-    public void updateVol() {
     }
 
     public int getRhythmKeyOn(int chipId) {
@@ -202,6 +191,8 @@ public class YmF278BChip implements Chip {
 
         if (model == EnmModel.VirtualModel)
             context.mds.inst(YmF278BInst.class).writePcm(chipId, buf, offset, length, srcOffset, romSize);
+
+        dumpData(model, "YMF278B_PCMData", srcOffset, buf, length);
     }
 
     public void writeRam(int chipId, int romSize, int offset, int length, byte[] buf, int srcOffset, EnmModel model) {
@@ -212,6 +203,8 @@ public class YmF278BChip implements Chip {
 
         if (model == EnmModel.VirtualModel)
             context.mds.inst(YmF278BInst.class).writeRam(chipId, romSize, offset, length, buf, srcOffset);
+
+        dumpData(model, "YMF278B_PCMRAMData", srcOffset,buf, length);
     }
 
     public int[][] read(int chipId) {

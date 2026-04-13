@@ -6,7 +6,6 @@
 
 package mdplayer.chips;
 
-import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
@@ -28,7 +27,7 @@ import mdsound.instrument.Ym2413Inst;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
-public class Ym2413Chip implements Chip {
+public class Ym2413Chip extends BaseChip {
 
     private final Setting.ChipType2[] chipTypes = setting.getYM2413Type();
 
@@ -47,8 +46,6 @@ public class Ym2413Chip implements Chip {
 
     public int clock;
 
-    private BasePlugin<? extends BaseDriver> context;
-
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Instrument>[] implementations() {
@@ -62,7 +59,7 @@ public class Ym2413Chip implements Chip {
 
     @Override
     public void init(BasePlugin<? extends BaseDriver> context) {
-        this.context = context;
+        super.init(context);
 
         for (int chipId = 0; chipId < 2; chipId++) {
             register[chipId] = new int[0x39];
@@ -76,14 +73,6 @@ public class Ym2413Chip implements Chip {
 
             fadeout[chipId] = 0;
         }
-    }
-
-    @Override
-    public void reset() {
-    }
-
-    @Override
-    public void updateVol() {
     }
 
     public void write(int chipId, int addr, int data, EnmModel model) {

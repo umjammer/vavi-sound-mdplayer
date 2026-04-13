@@ -6,7 +6,9 @@
 
 package mdplayer.chips;
 
-import mdplayer.Chip;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
@@ -15,6 +17,7 @@ import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.instrument.Ym2608Inst;
 import mdsound.instrument.YmFmYm2608Inst;
+import vavi.util.ByteUtil;
 
 
 /**
@@ -26,7 +29,9 @@ import mdsound.instrument.YmFmYm2608Inst;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
-public class Ym2608Chip implements Chip {
+public class Ym2608Chip extends BaseChip {
+
+    private static final Logger logger = System.getLogger(Ym2608Chip.class.getName());
 
     private final Setting.ChipType2[] chipTypes = setting.getYM2608Type();
 
@@ -66,8 +71,6 @@ public class Ym2608Chip implements Chip {
 
     public int clock;
 
-    private BasePlugin<? extends BaseDriver> context;
-
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Instrument>[] implementations() {
@@ -81,7 +84,7 @@ public class Ym2608Chip implements Chip {
 
     @Override
     public void init(BasePlugin<? extends BaseDriver> context) {
-        this.context = context;
+        super.init(context);
 
         for (int chipId = 0; chipId < 2; chipId++) {
             register[chipId] = new int[][] {new int[0x100], new int[0x100]};
@@ -99,6 +102,8 @@ public class Ym2608Chip implements Chip {
 
             fadeout[chipId] = 0;
         }
+
+        this.opnaRamType = 0;
     }
 
     @Override
@@ -488,6 +493,13 @@ public class Ym2608Chip implements Chip {
         }
     }
 
+    public void sendData(int chipId, EnmModel model, int len, byte[] buf, int ofs) {
+        if (model != EnmModel.VirtualModel)
+            sendData(chipId, model);
+
+        dumpData(model, "YM2608_ADPCM",ofs, buf, len);
+    }
+
     public void setFadeout(int chipId, int v) {
 
         fadeout[chipId] = v;
@@ -576,5 +588,126 @@ public class Ym2608Chip implements Chip {
     public void clearFadeout() {
         setFadeout(0, 0);
         setFadeout(1, 0);
+    }
+
+    private int opnaRamType = 0;
+
+    public void writePcm(int chipId, byte[] vgmBuf, int vgmAdr, int bLen, int startAddress, EnmModel model) {
+        write(chipId, 0x1, 0x00, 0x20, model);
+        write(chipId, 0x1, 0x00, 0x21, model);
+        write(chipId, 0x1, 0x00, 0x00, model);
+
+        write(chipId, 0x1, 0x10, 0x00, model);
+        write(chipId, 0x1, 0x10, 0x80, model);
+
+        write(chipId, 0x1, 0x00, 0x61, model);
+        write(chipId, 0x1, 0x00, 0x68, model);
+        write(chipId, 0x1, 0x01, opnaRamType, model);
+
+        if (opnaRamType != 2) {
+            write(chipId, 0x1, 0x02, (startAddress >> 2) & 0xff, model);
+            write(chipId, 0x1, 0x03, (startAddress >> 10) & 0xff, model);
+        } else {
+            write(chipId, 0x1, 0x02, (startAddress >> 5) & 0xff, model);
+            write(chipId, 0x1, 0x03, (startAddress >> 13) & 0xff, model);
+        }
+        write(chipId, 0x1, 0x04, 0xff, model);
+        write(chipId, 0x1, 0x05, 0xff, model);
+        write(chipId, 0x1, 0x0c, 0xff, model);
+        write(chipId, 0x1, 0x0d, 0xff, model);
+
+        // Data Transfer
+        for (int cnt = 0; cnt < bLen - 8; cnt++) {
+            write(chipId, 0x1, 0x08, vgmBuf[vgmAdr + 15 + cnt] & 0xff, model);
+        }
+        write(chipId, 0x1, 0x00, 0x00, model);
+        write(chipId, 0x1, 0x10, 0x80, model);
+
+//                write(0x1, 0x10, 0x13, model);
+//                write(0x1, 0x10, 0x80, model);
+//                write(0x1, 0x00, 0x60, model);
+//                write(0x1, 0x01, 0x00, model);
+
+//                write(0x1, 0x02, (int) ((startAddress >> 2) & 0xff), model);
+//                write(0x1, 0x03, (int) ((startAddress >> 10) & 0xff), model);
+//                write(0x1, 0x04, (int) (((startAddress + bLen - 8) >> 2) & 0xff), model);
+//                write(0x1, 0x05, (int) (((startAddress + bLen - 8) >> 10) & 0xff), model);
+//                write(0x1, 0x0c, 0xff, model);
+//                chipRegister.setYM2608Register(0x1, 0x0d, 0xff, model);
+
+//                for (int cnt = 0; cnt < bLen - 8; cnt++) {
+//                    write(0x1, 0x08, dataBuf[vgmAdr + 15 + cnt], model);
+//                    write(0x1, 0x10, 0x1b, model);
+//                    write(0x1, 0x10, 0x13, model);
+//                }
+
+//                write(0x1, 0x00, 0x00, model);
+//                write(0x1, 0x10, 0x80, model);
+
+        while ((read(chipId, 0x1, 0x00, model) & 0xbf) != 0) {
+            try { Thread.sleep(0); } catch (InterruptedException ignore) {}
+        }
+        if (model == mdplayer.Common.EnmModel.RealModel) {
+            if ((chipId == 0 && setting.getYM2608Type()[0].getUseReal()[0])
+                    || (chipId == 1 && setting.getYM2608Type()[1].getUseReal()[0])) {
+                try { Thread.sleep(500); } catch (InterruptedException ignore) {}
+            }
+        }
+
+        sendData(chipId, model, bLen - 8, vgmBuf, vgmAdr + 15);
+    }
+
+    /**
+     * Check the RAMType of OPNA from the data
+     * @return true: x8bit, false: x1bit
+     */
+    private static boolean searchOpnaRamType(byte[] vgmBuf, int vgmDataOffset) {
+        try {
+            int adr = vgmDataOffset;
+
+            while (adr < vgmBuf.length && (vgmBuf[adr] & 0xff) != 0x66) {
+                int dat = vgmBuf[adr] & 0xff;
+                if (dat < 0x51) adr += 2;
+                else if (dat < 0x57) adr += 3;
+                else if (dat == 0x57) {
+                    int reg = vgmBuf[adr + 1] & 0xff;
+                    int val = vgmBuf[adr + 2] & 0xff;
+                    adr += 3;
+                    if (reg == 1) {
+                        if ((val & 2) != 0) {
+                            return true;
+                        }
+                    }
+                } else if (dat < 0x62) adr += 3;
+                else if (dat < 0x64) adr++;
+                else if (dat == 0x64) adr += 4;
+                else if (dat == 0x66) adr++;
+                else if (dat == 0x67) {
+                    int bLen = ByteUtil.readLeInt(vgmBuf, adr + 3);
+                    bLen &= 0x7fff_ffff;
+                    adr += bLen + 7;
+                } else if (dat == 0x68) {
+                    adr += 12;
+                } else if ((dat & 0xff) < 0x90) adr++;
+                else if (dat == 0x90) adr += 5;
+                else if (dat == 0x91) adr += 5;
+                else if (dat == 0x92) adr += 6;
+                else if (dat == 0x93) adr += 11;
+                else if (dat == 0x94) adr += 2;
+                else if (dat == 0x95) adr += 5;
+                else if ((dat & 0xff) < 0xc0) adr += 3;
+                else if ((dat & 0xff) < 0xe0) adr += 4;
+                else adr += 5;
+            }
+        } catch (Exception e) {
+            logger.log(Level.ERROR, e.getMessage(), e);
+        }
+
+        return false;
+    }
+
+    /** */
+    public void updateRamType(byte[] vgmBuf, int vgmDataOffset) {
+        opnaRamType = searchOpnaRamType(vgmBuf, vgmDataOffset) ? 0x2 : 0x0;
     }
 }

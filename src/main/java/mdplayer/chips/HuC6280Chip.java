@@ -22,7 +22,7 @@ import mdsound.instrument.HuC6280Inst;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
-public class HuC6280Chip implements Chip {
+public class HuC6280Chip extends BaseChip {
 
     private final Setting.ChipType2[] chipTypes = setting.getHuC6280Type();
 
@@ -35,25 +35,10 @@ public class HuC6280Chip implements Chip {
             0, 0
     };
 
-    private BasePlugin<? extends BaseDriver> context;
-
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Instrument>[] implementations() {
         return new Class[] {HuC6280Inst.class};
-    }
-
-    @Override
-    public void init(BasePlugin<? extends BaseDriver> context) {
-        this.context = context;
-    }
-
-    @Override
-    public void reset() {
-    }
-
-    @Override
-    public void updateVol() {
     }
 
     public void write(int chipId, int addr, int data, EnmModel model) {
