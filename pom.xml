@@ -7,40 +7,6 @@
 
   <profiles>
     <profile>
-      <id>mac</id>
-      <activation>
-        <os>
-          <family>mac</family>
-        </os>
-      </activation>
-      <properties>
-        <dev.null>/dev/null</dev.null>
-      </properties>
-    </profile>
-    <profile>
-      <id>unix</id>
-      <activation>
-        <os>
-          <family>unix</family>
-        </os>
-      </activation>
-      <properties>
-        <dev.null>/dev/null</dev.null>
-      </properties>
-    </profile>
-    <profile>
-      <id>windows</id>
-      <activation>
-        <os>
-          <family>windows</family>
-        </os>
-      </activation>
-      <properties>
-        <dev.null>NUL</dev.null>
-      </properties>
-    </profile>
-
-    <profile>
       <id>local</id>
       <activation>
         <file>
@@ -146,7 +112,15 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.12.1</version>
         <configuration>
-          <release>25</release>
+          <source>25</source> <!-- TODO release causes compilation failure why? -->
+          <target>25</target>
+          <compilerArgs>
+            <arg>--add-exports</arg>
+            <arg>java.desktop/com.sun.media.sound=ALL-UNNAMED</arg>
+          </compilerArgs>
+          <!-- https://stackoverflow.com/a/30472473 -->
+          <fork>true</fork>
+          <showWarnings>true</showWarnings>
         </configuration>
       </plugin>
       <plugin>
@@ -157,6 +131,7 @@
           <argLine>
             --add-opens=java.base/java.io=ALL-UNNAMED
             --add-opens=java.base/sun.nio.ch=ALL-UNNAMED
+            --add-exports java.desktop/com.sun.media.sound=ALL-UNNAMED
             -Djava.util.logging.config.file=src/test/resources/logging.properties
             -Dvavi.test.dev.null=@{dev.null}
             -Dmdplayer.variant.ymf262=@{mdplayer.variant.ymf262}
@@ -200,7 +175,7 @@
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
       <artifactId>vavi-util-archive</artifactId>
-      <version>1.1.10</version>
+      <version>1.1.11</version>
     </dependency>
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
@@ -216,7 +191,7 @@
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
       <artifactId>vavi-sound-mdsound</artifactId>
-      <version>0.0.14</version>
+      <version>0.0.15</version>
     </dependency>
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
@@ -226,22 +201,22 @@
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
       <artifactId>vavi-sound-mucom88</artifactId>
-      <version>0.0.7</version>
+      <version>0.0.8</version>
     </dependency>
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
       <artifactId>vavi-sound-pmd</artifactId>
-      <version>0.0.5</version>
+      <version>0.0.6</version>
     </dependency>
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
       <artifactId>vavi-sound-moon</artifactId>
-      <version>0.0.5</version>
+      <version>0.0.6</version>
     </dependency>
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
       <artifactId>vavi-sound-muap</artifactId>
-      <version>0.0.2</version>
+      <version>0.0.3</version>
     </dependency>
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->

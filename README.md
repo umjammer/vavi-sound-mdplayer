@@ -32,11 +32,11 @@ this is a fork of [MDPlayer](https://github.com/kuma4649/MDPlayer)
 | MGS                             | MSX MGSDRV       |        ✅️        | built-in             |                                                                      |                                                                               |
 | NDP                             | MSX NDP          |        ✅️        | built-in*            |                                                                      |                                                                               |
 | BGM/MSD                         | MSX MuSICA       |        ✅️        | built-in*            |                                                                      | (*) compiler (v4) wip<br/> original also often fails                          |
-| SID                             | commodore        | ✅️️ <sup>2</sup> | built-in             | [JSIDPlay2](https://github.com/umjammer/JSIDPlay2)                   |                                                                               |
-| NSF/NSFE                        | NES              | ✅️️ <sup>1</sup> | built-in,            | [NsfPlayer](https://github.com/umjammer/NsfPlayer)                   |                                                                               |
-| AY                              | ZX               |      ✅️ 🚧       | built-in             | libgme                                                               |                                                                               |
+| SID                             | commodore        | ✅️️ <sup>2</sup> | built-in, library    | [JSIDPlay2](https://github.com/umjammer/JSIDPlay2)                   |                                                                               |
+| NSF/NSFE                        | NES              | ✅️️ <sup>1</sup> | built-in, library    | [NsfPlayer](https://github.com/umjammer/NsfPlayer)                   |                                                                               |
+| AY                              | ZX               |        ✅️        | built-in             | libgme                                                               |                                                                               |
 | HES                             | PC Engine        |       ✅️?        | built-in             | libgme                                                               |                                                                               |
-| GBS                             | Game Boy         |        →         | built-in             | [vavi-sound-emu](https://github.com/umjammer/vavi-sound-emu)         |                                                                               |
+| GBS                             | Game Boy         |     ✅️🚧  ️      | built-in             | [vavi-sound-emu](https://github.com/umjammer/vavi-sound-emu)         |                                                                               |
 | GYM                             | Sega Genesis     |       n/a        |                      | libgme                                                               |                                                                               |
 | KSS                             | MSX              |       ️ →        |                      | [vavi-sound-emu](https://github.com/umjammer/vavi-sound-emu)         |                                                                               |
 | SAP                             | Atari            |       n/a        |                      | libgme                                                               |                                                                               |
@@ -64,16 +64,17 @@ this is a fork of [MDPlayer](https://github.com/kuma4649/MDPlayer)
 
 ### Other Binaries
 
-get those binaries from the internet and put those at
+get those binaries from the internet and put those at somewhere (set system properties described below)
 
 ```
-src/main/resources/mdplayer/driver/mgsdrv/MGSDRV.COM
-src/main/resources/mdplayer/driver/musica/KINROU4.COM
-src/main/resources/mdplayer/driver/musica/KINROU5.DRV
-src/main/resources/mdplayer/driver/ndp/NDP.BIN
-src/main/resources/mdplayer/driver/zms/ZMC.X
-src/main/resources/mdplayer/driver/zms/ZMSC3.X
-src/main/resources/mdplayer/driver/zms/ZMUSIC.X
+.../driver/mgsdrv/MGSDRV.COM
+.../driver/musica/KINROU4.COM
+.../driver/musica/KINROU5.DRV
+.../driver/ndp/NDP.BIN
+.../driver/zms/ZMC.X
+.../driver/zms/ZMSC3.X
+.../driver/zms/ZMUSIC.X
+.../dirver/zms/LZZ.R
 ```
 
 ## Usage
@@ -96,35 +97,51 @@ src/main/resources/mdplayer/driver/zms/ZMUSIC.X
   line.drain();
 ```
 
+### jvm options
+
+```
+--add-opens=java.base/java.io=ALL-UNNAMED
+--add-opens=java.base/sun.nio.ch=ALL-UNNAMED
+```
+
 ### System Properties
+
+#### Important
+
+when using this project with vgm, gbs spi, apply the settings below to avoid conflicts with each spi.
+
+- `vavi.sound.sampled.spi.emu.vgm` ... to disable `vavi-sound-emu` vgm spi, set `false` 
+- `vavi.sound.sampled.spi.emu.gbs` ... to disable `vavi-sound-emu` gbs spi, set `false`
+- `vavi.sound.sampled.spi.ymfm` ... to disable `vavi-sound-ymfm` vgm spi, set `false`
 
 #### fmp
 
-- `mdplayer.fmp.dir` ... location for fmp.com
-- `mdplayer.fmp.pvi` ... location for (.pvi) pcm files
+- `mdplayer.fmp.dir` ... location for `fmp.com` driver
+- `mdplayer.fmp.pvi` ... `.pvi` files location, nullable and multipliable by `;` separation
 
 #### zms
 
-- `mdplayer.zms.dir` ... zpd driver file location
+- `mdplayer.zms.dir` ... location for `zm*.x` drivers
+- `mdplayer.zms.zpd` ... zpd file search location, nullable and multipliable by `;` separation
 
 #### mgs
 
-- `mdplayer.mgs.dir` ... mgsdrv driver file location
+- `mdplayer.mgs.dir` ... location for `mgsdrv.com` driver
 
 #### ndp
 
-- `mdplayer.ndp.dir` ... ndp driver file location
+- `mdplayer.ndp.dir` ... location for `ndp.bin` driver
 
 #### musica
 
-- `mdplayer.musica.dir` ... musica driver file location
+- `mdplayer.musica.dir` ... location for `kinrou*.*` drivers
 
 #### muap
 
-- `muap.dir.dta` ... dta file location
-- `muap.dir.pcm` ... pcm file location
-- `muap.dir.udp` ... udp file location
-- `muap.dir.sud` ... sud file location
+- `muap.dir.dta` ... `.dta` file location
+- `muap.dir.pcm` ... `.pcm` file location
+- `muap.dir.udp` ... `.udp` file location
+- `muap.dir.sud` ... `.sud` file location
 
 #### YM2608 drums
 
@@ -142,7 +159,7 @@ you can select a chip implementation variant by number.
 | SN76496 | mdplayer.variant.sn76496 | 0: sn76489, 1: sn76496                                              |
 | YM2151  | mdplayer.variant.ym2151  | 0: fmgen, 1: mame, 2: 68k, 3: ymfm                                  |
 | YM2203  | mdplayer.variant.ym2203  | 0: fmgen, 1: ymfm                                                   |
-| YM2413  | mdplayer.variant.ym2413  | 0: mame, 1: vrc7, 2: emu, 3: np                                     |
+| YM2413  | mdplayer.variant.ym2413  | 0: mame, 1: vrc7(np), 2: emu, 3: np                                 |
 | YM2608  | mdplayer.variant.ym2608  | 0: fmgen, 1: ymfm                                                   |
 | YM2610  | mdplayer.variant.ym2610  | 0: fmgen, 1: ymfm                                                   |
 | YM2612  | mdplayer.variant.ym2612  | 0: mame-A, 1: nuke-A, 2: mame-B, 3: nuke-B(simple), 4: nuke-A(vavi) |
@@ -150,11 +167,8 @@ you can select a chip implementation variant by number.
 | YMF262  | mdplayer.variant.ymF262  | 0: dosbox, 1: mame, 2: nuked, 3: cozendey, 4: ymfm                  |
 | Qsound  | mdplayer.variant.qsound  | 0: qsound-ctr, 1: qsound                                            |
 | C140    | mdplayer.variant.c140    | 0: c140, 1: c219                                                    |
-| PCM8    | mdplayer.variant.pcm8    | 0: x68k, 1: mercuryunit                                             |
-| MPCM    | mdplayer.variant.mpcm    | 0: x68k, 1: mercuryunit                                             |
-
- * mxdrv: plugin: reject `mdplayer.variant.ym2151=3`, cause frequency mismatch (ym2151:x68sound is already in use).
- * ⚠️ ymfm (com.github.umhammer:vavi-sound-ymfm) is excluded for spi.
+| PCM8    | mdplayer.variant.pcm8    | 0: x68sound, 1: wachoman                                            |
+| MPCM    | mdplayer.variant.mpcm    | 0: x68sound, 1: wachoman                                            |
 
 ### Sample Player
 
@@ -190,6 +204,7 @@ you can select a chip implementation variant by number.
   * https://archive.org/details/sound_canvas_midi_collection (rcp)
   * http://www.os.rim.or.jp/~terada/contents/data.htm (zms)
   * https://nfggames.com/X68000/index.php/Mirrors/Groundzero%20Organization/x68tools/music/mndrv/ (mndrv) ... google censorship
+  * https://worldofspectrum.org/projectay/gdmusic.htm (ay)
 * processor
   * z80 
     * https://github.com/trekawek/coffee-gb (z80)
@@ -217,7 +232,7 @@ you can select a chip implementation variant by number.
     * ~~mucom: some are ok and some are not~~
     * ~~mxdrv: luck of fm channel~~
     * hes: volume related???
-    * ay: zxbeep ???
+    * ~~ay: zxbeep~~
     * ~~fmp: fmp not resident~~
     * ~~mnd: no .mnd samples on the internet~~
     * zms: wip signed byte related ... ???
@@ -225,12 +240,15 @@ you can select a chip implementation variant by number.
     * rcp: wip, how to treat midi plugin as chip?
     * nsf: sp library works. `render_()` is not work, `mul` related. (replace `render_()` to vavi-sound-mdplayer:NsfTestPlayer's one, it works)
     * ~~fmp: test mochit final~~
-    * mxdrv: ~~pcm8~~, when 68k opm is chosen as 1st opm, 2nd opm cannot sound pcm8. why??? 
+    * mxdrv: ~~pcm8~~, when 68k opm is chosen as 1st opm, 2nd opm cannot sound pcm8. why???
+    * ~~ndp: fmgen ym8910 is silence (meme's works)~~
+    * ~~gbs: song no 9 -  wrong~~
  * chip class should handle one chip
  * eliminate dotnet4j
  * ~~vgm spi selector~~
    * ~~vavi-sound-smu (wip)~~
    * ~~vavi-sound-ymfm (wip)~~
+   * this spi
 
 ---
 
