@@ -19,7 +19,6 @@ import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 
 import static java.lang.System.getLogger;
-import static mdplayer.Common.charset;
 
 
 /**
@@ -44,6 +43,7 @@ public class ZmsDriver extends BaseDriver {
 
     public ZmsDriver() {
         this.zms = new Zms();
+        zms.charset = Common.charset;
         zms.frequency = Common.VGMProcSampleRate;
         zms.ym2151Write = (a, d) -> plugin.chipRegister.chip(Ym2151Chip.class).write(0, 0, a, d, model, plugin.chipRegister.chip(Ym2151Chip.class).hosei[0], frameCounter);
         zms.midiSend = (l, d) -> plugin.chipRegister.plugin(MidiPlugin.class).send(model, l, d, 0);
@@ -174,7 +174,7 @@ public class ZmsDriver extends BaseDriver {
     }
 
     private static MetaData getMetaDataZMS(byte[] buf) {
-        String text = new String(buf, charset);
+        String text = new String(buf, Common.charset);
         String[] texts = text.split("\r\n");
         String cmt = "";
         String comment = ".COMMENT";
@@ -220,7 +220,7 @@ public class ZmsDriver extends BaseDriver {
                     ePtr++;
                 }
 
-                cmt = new String(buf, ptr, ePtr - ptr, charset);
+                cmt = new String(buf, ptr, ePtr - ptr, Common.charset);
             }
         } catch (Exception e) {
             // Do nothing

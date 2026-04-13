@@ -89,7 +89,7 @@ public class FMPPlugin extends BasePlugin<FmpDriver> {
             chip.setVolumes.put("ADPCM", ym2608::setVolume);
         }
         chip.clock = FMP.baseClock;
-        Function<String, Stream> fn = Common::getOPNARyhthmStream;
+        Function<String, Stream> fn = Ym2608Chip::getOPNARyhthmStream;
         chip.option = new Object[] {fn};
         chipLED.put("PriOPNA", 1);
         put(Ym2608Chip.class, chip);

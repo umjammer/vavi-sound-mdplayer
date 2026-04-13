@@ -20,6 +20,7 @@ import mdplayer.Common;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
+import mdplayer.chips.SegaPcmChip;
 import mdplayer.chips.YmF278BChip;
 import mdplayer.driver.moonDriver.BuiltInMoonDriver;
 import mdplayer.form.frmBase;
@@ -241,7 +242,7 @@ public class frmYMF278B extends frmBase {
             nyc.inst[16] = n == 0 ? 0 : 1;
             nyc.inst[33] = 1;
 
-            int nt = Common.searchSegaPCMNote(nyc.inst[12] / 344.0) + (nyc.inst[11] - 4) * 12;
+            int nt = SegaPcmChip.searchSegaPCMNote(nyc.inst[12] / 344.0) + (nyc.inst[11] - 4) * 12;
 
             boolean fouropChannel = cadr < 6;
             boolean fouropControl = fouropChannel && cadr % 2 == 0;

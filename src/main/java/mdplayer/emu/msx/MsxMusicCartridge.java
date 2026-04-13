@@ -1,5 +1,5 @@
-
 package mdplayer.emu.msx;
+
 
 public class MsxMusicCartridge implements Cartridge {
 

@@ -477,7 +477,7 @@ public class Xgm2 {
         int ch3m = (val & 0x8) >> 3;
         int keyOff = (vgmBuf[fmMusicPtr] & 0x40) >> 6;
         int keyOn = (vgmBuf[fmMusicPtr] & 0x80) >> 7;
-        int freq = mdplayer.Common.getBE16(vgmBuf, fmMusicPtr) & 0x3fff;
+        int freq = ByteUtil.readBeShort(vgmBuf, fmMusicPtr) & 0x3fff;
         fmMusicPtr += 2;
 
         if (ch3m == 0) {

@@ -22,6 +22,7 @@ import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.Tables;
 import mdplayer.chips.QSoundChip;
+import mdplayer.chips.SegaPcmChip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
@@ -170,7 +171,7 @@ public class frmQSound extends frmBase {
             newParam.channels[ch].volumeL = Math.clamp(vol * panL / 256 / 16, 0, 19);
             newParam.channels[ch].volumeR = Math.clamp(vol * panR / 256 / 16, 0, 19);
 
-            newParam.channels[ch].note = Math.clamp(Common.searchSegaPCMNote(newParam.channels[ch].freq / 16.0 / 166.0), 0, 7 * 12);
+            newParam.channels[ch].note = Math.clamp(SegaPcmChip.searchSegaPCMNote(newParam.channels[ch].freq / 16.0 / 166.0), 0, 7 * 12);
             if (vol == 0) newParam.channels[ch].note = -1;
         }
         //ADPCM 3ch

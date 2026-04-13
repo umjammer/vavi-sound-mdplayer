@@ -142,7 +142,7 @@ Debug.println("settings\n" +
         "mdplayer.variant.ymf262: " + System.getProperty("mdplayer.variant.ymf262"));
     }
 
-    private BasePlugin<? extends BaseDriver> plugin;
+    private Audio audio = Audio.getInstance();
 
     /** */
     void play() throws Exception {
@@ -150,10 +150,9 @@ Debug.println("filename: " + file);
         FileFormat format = FileFormat.getFileFormat(file);
 Debug.println("format: " + format.getClass().getSimpleName());
         var r = format.load((String) null, file);
-        plugin = (BasePlugin) format.getPlugin();
+        BasePlugin<? extends BaseDriver> plugin = (BasePlugin) format.getPlugin();
         plugin.setBuffer(format, r.getItem1(), file, null, 0, track, r.getItem2());
-Debug.println("plugin: " +plugin.getClass().getSimpleName());
-        Audio audio = Audio.getInstance();
+Debug.println("plugin: " + plugin.getClass().getSimpleName());
         audio.init(plugin);
         audio.play();
     }
@@ -221,8 +220,8 @@ Debug.print("await");
 Debug.println("await: broke");
             es.shutdownNow();
 Debug.println("stop");
-            plugin.stop();
-            plugin.close(); // TODO doesn't work well
+            audio.stop();
+            audio.close(); // TODO doesn't work well
         }
     }
 

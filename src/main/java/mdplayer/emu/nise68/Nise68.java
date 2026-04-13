@@ -2,6 +2,7 @@ package mdplayer.emu.nise68;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -37,10 +38,11 @@ public class Nise68 {
     public BiFunction<Integer, Integer, Integer> opm = null;
     public BiFunction<Integer, Byte, Integer> midi = null;
 
-    public void init(List<String> envZPDs, boolean isVer2, FileMng fm) {
+    public void init(List<String> envZPDs, boolean isVer2, FileMng fm, Charset charset) {
         mem = new Memory68(16 * 1024 * 1024);
         reg = new Register68();
         hmn = new NiseHuman(mem, reg, envZPDs, fm);
+        hmn.charset = charset;
         fileMng = fm;
         cpu = new NiseM68(mem, reg);
         cpu.hmn = hmn;

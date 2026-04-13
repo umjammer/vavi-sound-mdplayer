@@ -21,6 +21,7 @@ import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.chips.Ym2203Chip;
+import mdplayer.chips.Ym2608Chip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
@@ -182,7 +183,7 @@ public class frmYM2203 extends frmBase {
                 ff /= 1038f;
 
                 if ((fmKeyYM2203[ch] & 1) != 0)
-                    n = Math.clamp(Common.searchYM2608Adpcm(ff) - 1, 0, 95);
+                    n = Math.clamp(Ym2608Chip.searchYM2608Adpcm(ff) - 1, 0, 95);
 
                 byte con = (byte) (fmKeyYM2203[ch]);
                 int v = 127;
@@ -205,7 +206,7 @@ public class frmYM2203 extends frmBase {
                 ff /= 1038f;
 
                 if ((fmKeyYM2203[2] & 0x10) != 0 && ((m & 0x10) != 0))
-                    n = Math.clamp(Common.searchYM2608Adpcm(ff) - 1, 0, 95);
+                    n = Math.clamp(Ym2608Chip.searchYM2608Adpcm(ff) - 1, 0, 95);
 
                 int v = ((m & 0x10) != 0) ? ym2203Register[0x40 + c] : 127;
                 newParam.channels[2].volumeL = Math.clamp((int) ((127 - v) / 127.0 * ym2203Ch3SlotVol[0] / 80.0), 0, 19);
@@ -234,7 +235,7 @@ public class frmYM2203 extends frmBase {
                 if ((fmKeyYM2203[2] & (0x20 << (ch - 3))) != 0 && ((m & (0x10 << op)) != 0)) {
                     float ff = freq / ((2 << 20) / (masterClock / (12 * fmDiv))) * (2 << (octav + 2));
                     ff /= 1038f;
-                    n = Math.clamp(Common.searchYM2608Adpcm(ff) - 1, 0, 95);
+                    n = Math.clamp(Ym2608Chip.searchYM2608Adpcm(ff) - 1, 0, 95);
                 }
                 newParam.channels[ch].note = n;
 

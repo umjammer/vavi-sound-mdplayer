@@ -52,7 +52,7 @@ public class MucomPlugin extends BasePlugin<MucomDriver> {
         }
         Class<? extends Chip>[] useChipFromMub = MucomDriver.useChipsFromMub(vgmBuf);
 
-        Function<String, Stream> fn = Common::getOPNARyhthmStream;
+        Function<String, Stream> fn = Ym2608Chip::getOPNARyhthmStream;
 
         if (useChipFromMub[0] != Unused.class) {
             MDSound.Chip chip = new MDSound.Chip();

@@ -1,5 +1,6 @@
 package mdplayer.driver.zms;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,8 +16,8 @@ public class UnZDF {
     /** lzz.r location */
     String dir;
 
-    public List<Tuple<String, Long>> getFileList(String arcFile, String v) {
-        FileMng fileMng = unpack(arcFile);
+    public List<Tuple<String, Long>> getFileList(String arcFile, String v, Charset charset) {
+        FileMng fileMng = unpack(arcFile, charset);
         if (fileMng == null) return null;
 
         List<Tuple<String, Long>> res = new ArrayList<>();
@@ -30,8 +31,8 @@ public class UnZDF {
         return res;
     }
 
-    public byte[] getFileByte(String arcFile, String dstFile) {
-        FileMng fileMng = unpack(arcFile);
+    public byte[] getFileByte(String arcFile, String dstFile, Charset charset) {
+        FileMng fileMng = unpack(arcFile, charset);
         if (fileMng == null) return null;
 
         for (var ele : fileMng.vDrive.entrySet()) {
@@ -41,7 +42,7 @@ public class UnZDF {
         return null;
     }
 
-    public FileMng unpack(String arcFile) {
+    public FileMng unpack(String arcFile, Charset charset) {
         List<Tuple<String, Long>> res = new ArrayList<>();
         String lzz = Path.combine(dir, "lzz.r");
         if (!File.exists(lzz)) return null;
@@ -53,7 +54,7 @@ public class UnZDF {
 
         Nise68 nise68;
         nise68 = new Nise68();
-        nise68.init(null, false, fileMng);
+        nise68.init(null, false, fileMng, charset);
 
         int rc = nise68.loadRun(lzz, "-E " + Path.getFileName(arcFile), 0x0003_3c00,
                 true, true, true,

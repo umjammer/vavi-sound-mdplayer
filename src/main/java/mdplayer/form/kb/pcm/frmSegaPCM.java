@@ -202,7 +202,7 @@ public class frmSegaPCM extends frmBase {
                 double ml = dt / 256.0;
 
                 if (segapcmKeyOn[ch]) {
-                    newParam.channels[ch].note = Common.searchSegaPCMNote(ml);
+                    newParam.channels[ch].note = SegaPcmChip.searchSegaPCMNote(ml);
                     newParam.channels[ch].volumeL = Math.clamp((l * 1) >> 1, 0, 19);
                     newParam.channels[ch].volumeR = Math.clamp((r * 1) >> 1, 0, 19);
                 } else {

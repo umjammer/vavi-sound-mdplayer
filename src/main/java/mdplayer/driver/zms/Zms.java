@@ -3,6 +3,7 @@ package mdplayer.driver.zms;
 import java.io.IOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,6 +17,7 @@ import dotnet4j.io.File;
 import dotnet4j.io.FileNotFoundException;
 import dotnet4j.io.Path;
 import dotnet4j.util.compat.Tuple;
+import mdplayer.Common;
 import mdplayer.driver.mxdrv.MXDRV.Pcm8Interface;
 import mdplayer.driver.mxdrv.MXDRV.Pcm8St;
 import mdplayer.emu.fm.FMTimer;
@@ -105,6 +107,7 @@ public class Zms {
     IntSupplier wait;
     BiConsumer<Integer, Integer> ym2151Write;
     BiConsumer<Integer, byte[]> midiSend;
+    Charset charset;
 
     void trap() {
         if (version == 2) {
@@ -208,13 +211,13 @@ public class Zms {
             if (playingFileName.toUpperCase().endsWith(".ZDF")) {
                 UnZDF cmd = new UnZDF();
                 cmd.dir = dir;
-                fileMng = cmd.unpack(playingArcFileName);
+                fileMng = cmd.unpack(playingArcFileName, Common.charset);
             }
 
         } else {
             fileMng = new FileMng(dn, "C:");
         }
-        nise68.init(dirZPDs, version == 2, fileMng);
+        nise68.init(dirZPDs, version == 2, fileMng, charset);
 
         fileMng.setVFile(Path.getFileName(fnZMD), data);
         //nise68.hmn.fb.add(fnZMD, dataBuf);
@@ -264,7 +267,7 @@ public class Zms {
         trp = 3 + 32;
 
         if (version == 2) {
-            timerOPM = new FMTimer(true, null, 4000000); // , frequency);
+            timerOPM = new FMTimer(true, null, 4000000, frequency);
 
             // If zpd is specified, specify zmusic to preload
             String optionZpd = "";
@@ -431,7 +434,7 @@ public class Zms {
         nise68.setOpm(this::opmCallBack);
         nise68.setMidi(this::midiCallBack, frequency);
         nise68.setSCC_A(this::sccCallBack, frequency);
-        nise68.init(null, false, fileMng);
+        nise68.init(null, false, fileMng, charset);
 
         // compile
         //nise68.hmn.fb.add(fnZMS, dataBuf);
@@ -474,7 +477,7 @@ public class Zms {
         fileMng = new FileMng(dn, "C:"); // Set the path of the music file to the current physical drive. The current virtual drive is "C:" (default).
         fileMng.setVFile(zmusic.toString());
 
-        nise68.init(null, false, fileMng);
+        nise68.init(null, false, fileMng, charset);
 
         // compile
         //nise68.hmn.fb.add(fnZMS, dataBuf);

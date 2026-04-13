@@ -1,4 +1,3 @@
-
 package mdplayer.emu.msx;
 
 import dotnet4j.util.compat.TriConsumer;

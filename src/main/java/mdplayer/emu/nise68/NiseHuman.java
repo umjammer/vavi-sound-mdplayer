@@ -2,6 +2,7 @@ package mdplayer.emu.nise68;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -13,7 +14,6 @@ import dotnet4j.io.SeekOrigin;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
-import static mdplayer.Common.charset;
 
 
 public class NiseHuman {
@@ -37,6 +37,7 @@ public class NiseHuman {
     private Runnable[] tblFunc = new Runnable[256];
     private Runnable[] tblFEFunc = new Runnable[256];
 
+    Charset charset;
     public MemMng memMng;
     private final ProcInfo currentProc = new ProcInfo();
     private int execPtr;

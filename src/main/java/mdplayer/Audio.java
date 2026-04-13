@@ -217,7 +217,8 @@ logger.log(Level.INFO, "stop: " + plugin.stopped + ", " + hashCode());
             plugin.chipRegister.plugin(MidiPlugin.class).midiClose();
             plugin.chipRegister.plugin(RealChipPlugin.class).close();
 
-//            line.drain(); // TODO this blocks to stop
+            if (line.available() > 0)
+                line.drain();
             line.stop();
             line.close();
 

@@ -41,6 +41,8 @@ public class Nsf {
 
     private static final Logger logger = getLogger(Nsf.class.getName());
 
+    public static final int NsfClock = 1789773;
+
     static final int FCC_NSF = 0x4d53454e; // "NESM"
 
     private int version;
@@ -221,26 +223,26 @@ public class Nsf {
         chip.fme7 = new NesFme7();
         chip.vrc7 = new NesVrc7();
 
-        chip.apu.apu.init(Common.NsfClock, this.sampleRate);
+        chip.apu.apu.init(NsfClock, this.sampleRate);
         chip.apu.reset();
-        chip.dmc.dmc.init(Common.NsfClock, this.sampleRate);
+        chip.dmc.dmc.init(NsfClock, this.sampleRate);
         chip.dmc.reset();
-        chip.fds.fds.init(Common.NsfClock, this.sampleRate);
+        chip.fds.fds.init(NsfClock, this.sampleRate);
         chip.fds.reset();
-        chip.n106.setClock(Common.NsfClock);
+        chip.n106.setClock(NsfClock);
         chip.n106.setRate(this.sampleRate);
         chip.n106.reset();
-        chip.vrc6.setClock(Common.NsfClock);
+        chip.vrc6.setClock(NsfClock);
         chip.vrc6.setRate(this.sampleRate);
         chip.vrc6.reset();
-        chip.mmc5.setClock(Common.NsfClock);
+        chip.mmc5.setClock(NsfClock);
         chip.mmc5.setRate(this.sampleRate);
         chip.mmc5.reset();
         chip.mmc5.setCPU(chip.cpu);
-        chip.fme7.setClock(Common.NsfClock);
+        chip.fme7.setClock(NsfClock);
         chip.fme7.setRate(this.sampleRate);
         chip.fme7.reset();
-        chip.vrc7.setClock(Common.NsfClock);
+        chip.vrc7.setClock(NsfClock);
         chip.vrc7.setRate(this.sampleRate);
         chip.vrc7.reset();
 

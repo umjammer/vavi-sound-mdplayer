@@ -135,7 +135,7 @@ public class C140Chip extends BaseChip {
         if (model == EnmModel.VirtualModel) {
         } else {
             if (realChips != null && realChips[chipId] != null) {
-                switch (getType(type)) {
+                switch (C140.Type.valueOf(type)) {
                     case SYSTEM2:
                         realChips[chipId].setRegister(0x1_0008, 0);
                         break;
@@ -164,14 +164,5 @@ public class C140Chip extends BaseChip {
 
     public void resetMask(int chipId, int ch) {
         setMask(chipId, ch, false);
-    }
-
-    private C140.Type getType(int v) {
-        return switch (v) {
-            case 0x00 -> C140.Type.SYSTEM2;
-            case 0x01 -> C140.Type.SYSTEM21;
-            case 0x02 -> C140.Type.ASIC219;
-            default -> C140.Type.ASIC219;
-        };
     }
 }

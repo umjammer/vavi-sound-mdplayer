@@ -68,7 +68,7 @@ public class Nise98 {
         // ongenBoardType
         public OngenBoardType ongen = OngenBoardType.SpeakBoard;
 
-        public FmStatus(OngenBoardType ongen) {
+        public FmStatus(OngenBoardType ongen, int frequency) {
             this.ongen = ongen;
             if (ongen == OngenBoardType.PC9801_26K) {
                 regs = new byte[256 * 1];
@@ -83,11 +83,11 @@ public class Nise98 {
                 adpcmMem = null;
             }
 
-            timer = new FMTimer(false, null, 7987200); // OPNATimer(55467, 7987200);
+            timer = new FMTimer(false, null, 7987200, frequency); // OPNATimer(55467, 7987200);
         }
     }
 
-    public void init(Function<String, Object[]> msgWrite, TriConsumer<Integer, Integer, Integer> opnaWrite, FileTemp fileTemp, OngenBoardType ongen /* = enmOngenBoardType.PC9801_86B */) {
+    public void init(Function<String, Object[]> msgWrite, TriConsumer<Integer, Integer, Integer> opnaWrite, FileTemp fileTemp, OngenBoardType ongen /* = enmOngenBoardType.PC9801_86B */, int frequency) {
         logger.log(Level.TRACE, "<Nise98>Init");
 
         this.opnaWrite = opnaWrite;
@@ -100,28 +100,28 @@ public class Nise98 {
         ppz8 = new NisePpz8(this);
 
         if (ongen == OngenBoardType.None) {
-            fmReg088 = new FmStatus(OngenBoardType.None);
-            fmReg188 = new FmStatus(OngenBoardType.None);
-            fmReg288 = new FmStatus(OngenBoardType.None);
-            fmReg388 = new FmStatus(OngenBoardType.None);
+            fmReg088 = new FmStatus(OngenBoardType.None, frequency);
+            fmReg188 = new FmStatus(OngenBoardType.None, frequency);
+            fmReg288 = new FmStatus(OngenBoardType.None, frequency);
+            fmReg388 = new FmStatus(OngenBoardType.None, frequency);
             pA460h = (byte) 0xfc;
         } else if (ongen == OngenBoardType.PC9801_26K) {
-            fmReg088 = new FmStatus(OngenBoardType.None);
-            fmReg188 = new FmStatus(OngenBoardType.PC9801_26K);
-            fmReg288 = new FmStatus(OngenBoardType.None);
-            fmReg388 = new FmStatus(OngenBoardType.None);
+            fmReg088 = new FmStatus(OngenBoardType.None, frequency);
+            fmReg188 = new FmStatus(OngenBoardType.PC9801_26K, frequency);
+            fmReg288 = new FmStatus(OngenBoardType.None, frequency);
+            fmReg388 = new FmStatus(OngenBoardType.None, frequency);
             pA460h = (byte) 0xfc;
         } else if (ongen == OngenBoardType.PC9801_86B) {
-            fmReg088 = new FmStatus(OngenBoardType.None);
-            fmReg188 = new FmStatus(OngenBoardType.PC9801_86B);
-            fmReg288 = new FmStatus(OngenBoardType.None);
-            fmReg388 = new FmStatus(OngenBoardType.None);
+            fmReg088 = new FmStatus(OngenBoardType.None, frequency);
+            fmReg188 = new FmStatus(OngenBoardType.PC9801_86B, frequency);
+            fmReg288 = new FmStatus(OngenBoardType.None, frequency);
+            fmReg388 = new FmStatus(OngenBoardType.None, frequency);
             pA460h = 0b0100_0001;
         } else if (ongen == OngenBoardType.SpeakBoard) {
-            fmReg088 = new FmStatus(OngenBoardType.SpeakBoard);
-            fmReg188 = new FmStatus(OngenBoardType.None);
-            fmReg288 = new FmStatus(OngenBoardType.None);
-            fmReg388 = new FmStatus(OngenBoardType.None);
+            fmReg088 = new FmStatus(OngenBoardType.SpeakBoard, frequency);
+            fmReg188 = new FmStatus(OngenBoardType.None, frequency);
+            fmReg288 = new FmStatus(OngenBoardType.None, frequency);
+            fmReg388 = new FmStatus(OngenBoardType.None, frequency);
             pA460h = (byte) 0xfc;
         }
     }

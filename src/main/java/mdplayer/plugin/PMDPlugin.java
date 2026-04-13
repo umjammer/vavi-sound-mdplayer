@@ -56,7 +56,7 @@ public class PMDPlugin extends BasePlugin<PmdDriver> {
             chip.setVolumes.put("RHYTHM", ym2608::setVolume);
             chip.setVolumes.put("ADPCM", ym2608::setVolume);
         }
-        Function<String, Stream> fn = Common::getOPNARyhthmStream;
+        Function<String, Stream> fn = Ym2608Chip::getOPNARyhthmStream;
         chip.option = new Object[] {fn};
         put(Ym2608Chip.class, chip);
         chipRegister.chip(Ym2608Chip.class).clock = PmdDriver.baseClock;

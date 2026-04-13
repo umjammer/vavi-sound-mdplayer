@@ -1,7 +1,5 @@
 package mdplayer.emu.fm;
 
-import mdplayer.Common;
-
 
 public class FMTimer {
 
@@ -26,14 +24,14 @@ public class FMTimer {
     private final double step;
     private final double masterClock;
 
-    public FMTimer(boolean isOPM, Runnable csmKeyOn, double masterClock) {
+    public FMTimer(boolean isOPM, Runnable csmKeyOn, double masterClock, int sampleRate) {
         this.isOPM = isOPM;
         this.csmKeyOn = csmKeyOn;
         this.masterClock = masterClock;
         if (isOPM) {
-            step = masterClock / 64.0 / 1.0 / (double) Common.VGMProcSampleRate;
+            step = masterClock / 64.0 / 1.0 / (double) sampleRate;
         } else {
-            step = masterClock / 72.0 / 2.0 / (double) Common.VGMProcSampleRate;
+            step = masterClock / 72.0 / 2.0 / (double) sampleRate;
         }
     }
 

@@ -1,5 +1,5 @@
-
 package mdplayer.emu.msx;
+
 
 public interface Cartridge {
 

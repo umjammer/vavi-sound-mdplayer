@@ -22,6 +22,7 @@ import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.Tables;
 import mdplayer.chips.Ppz8Chip;
+import mdplayer.chips.SegaPcmChip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
@@ -192,7 +193,7 @@ public class frmPPZ8 extends frmBase {
             newParam.channels[ch].srcFreq = ppz8State[ch].srcFrequency;
             newParam.channels[ch].freq = ppz8State[ch].frequency;
 
-            newParam.channels[ch].note = Common.searchSegaPCMNote(ppz8State[ch].frequency / (double) 0x8000);
+            newParam.channels[ch].note = SegaPcmChip.searchSegaPCMNote(ppz8State[ch].frequency / (double) 0x8000);
             if (!ppz8State[ch].playing) newParam.channels[ch].note = -1;
 
             newParam.channels[ch].dda = ppz8State[ch].bank != 0;

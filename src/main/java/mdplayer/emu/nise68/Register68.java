@@ -1,5 +1,6 @@
 package mdplayer.emu.nise68;
 
+
 public class Register68 {
 
     private int[] d = new int[8];

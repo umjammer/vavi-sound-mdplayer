@@ -6,6 +6,7 @@
 
 package mdplayer.driver.fmp.nise98;
 
+import mdplayer.Common;
 import mdplayer.emu.nise98.Nise98;
 import mdplayer.emu.nise98.Nise98.OngenBoardType;
 
@@ -28,7 +29,7 @@ class Nise286Test {
     @Disabled("nise286 still has a unimplemented instruction for test386.com")
     void test1() throws Exception {
         Nise98 nise98 = new Nise98();
-        nise98.init(null, this::nop, null, OngenBoardType.SpeakBoard);
+        nise98.init(null, this::nop, null, OngenBoardType.SpeakBoard, Common.VGMProcSampleRate);
 
         int r = nise98.loadRun("tmp/test386.com", "", 0x2000);
         assertEquals(0, r);

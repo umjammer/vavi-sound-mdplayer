@@ -10,6 +10,7 @@ import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
+import mdplayer.Tables;
 import mdplayer.driver.BaseDriver;
 import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
@@ -379,14 +380,31 @@ public class Ym2151Chip extends BaseChip {
 
     public void setYm2151Hosei(EnmModel model, float ym2151ClockValue) {
         for (int chipId = 0; chipId < 2; chipId++) {
-            ym2151Hosei[chipId] = Common.getYM2151Hosei(ym2151ClockValue, 3579545);
+            ym2151Hosei[chipId] = getYM2151Hosei(ym2151ClockValue, 3579545);
             if (model == EnmModel.RealModel) {
                 ym2151Hosei[chipId] = 0;
                 int clock = context.chipRegister.chip(Ym2151Chip.class).getClock(chipId);
                 if (clock != -1) {
-                    ym2151Hosei[chipId] = Common.getYM2151Hosei(ym2151ClockValue, clock);
+                    ym2151Hosei[chipId] = getYM2151Hosei(ym2151ClockValue, clock);
                 }
             }
         }
+    }
+
+    private static int getYM2151Hosei(float ym2151ClockValue, float baseClock) {
+        int ret = 0;
+
+        float delta = ym2151ClockValue / baseClock;
+        float d;
+        float oldD = Float.MAX_VALUE;
+        for (int i = 0; i < Tables.pcmMulTbl.length; i++) {
+            d = Math.abs(delta - Tables.pcmMulTbl[i]);
+            ret = i;
+            if (d > oldD) break;
+            oldD = d;
+        }
+        ret -= 12;
+
+        return ret;
     }
 }

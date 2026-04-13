@@ -16,6 +16,7 @@ import dotnet4j.io.Path;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
+import mdplayer.Tables;
 import mdplayer.driver.BaseDriver;
 import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
@@ -241,5 +242,18 @@ public class SegaPcmChip extends BaseChip {
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
         }
+    }
+
+    public static int searchSegaPCMNote(double ml) {
+        double m = Double.MAX_VALUE;
+        int n = 0;
+        for (int i = 0; i < 12 * 8; i++) {
+            double a = Math.abs(ml - (Tables.pcmMulTbl[i % 12 + 12] * Math.pow(2, ((i / 12) - 4))));
+            if (m > a) {
+                m = a;
+                n = i;
+            }
+        }
+        return n;
     }
 }

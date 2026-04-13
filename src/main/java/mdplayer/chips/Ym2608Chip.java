@@ -8,10 +8,19 @@ package mdplayer.chips;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
+import dotnet4j.io.FileAccess;
+import dotnet4j.io.FileMode;
+import dotnet4j.io.FileShare;
+import dotnet4j.io.FileStream;
+import dotnet4j.io.Stream;
+import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
+import mdplayer.Tables;
 import mdplayer.driver.BaseDriver;
 import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
@@ -709,5 +718,66 @@ public class Ym2608Chip extends BaseChip {
     /** */
     public void updateRamType(byte[] vgmBuf, int vgmDataOffset) {
         opnaRamType = searchOpnaRamType(vgmBuf, vgmDataOffset) ? 0x2 : 0x0;
+    }
+
+    public static Stream getOPNARyhthmStream(String fn) {
+        try {
+            Path ffn = Path.of(fn);
+
+            Path chk;
+
+            chk = Common.playingFilePath.resolve(fn);
+            if (Files.exists(chk))
+                ffn = chk;
+            else {
+                chk = Common.getApplicationFolder().resolve(fn);
+                if (Files.exists(chk)) ffn = chk;
+                else {
+                    // TODO mdsound in mdplayer
+                    chk = Path.of(System.getProperty("mdsound.pcm.path", "")).resolve(fn);
+                    if (Files.exists(chk)) ffn = chk;
+                }
+            }
+
+            logger.log(Level.DEBUG, "rhythm file: " + ffn);
+            if (!Files.exists(ffn)) return null;
+            FileStream fs = new FileStream(ffn.toString(), FileMode.Open, FileAccess.Read, FileShare.Read);
+            return fs;
+        } catch (Exception e) {
+            logger.log(Level.ERROR, e.getMessage(), e);
+            return null;
+        }
+    }
+
+    public static int searchYM2608Adpcm(float freq) {
+        float m = Float.MAX_VALUE;
+        int n = 0;
+
+        for (int i = 0; i < 12 * 8; i++) {
+            if (freq < Tables.pcmMulTbl[i % 12 + 12] * Math.pow(2, ((i / 12) - 3))) break;
+            n = i;
+            float a = Math.abs(freq - (float) (Tables.pcmMulTbl[i % 12 + 12] * Math.pow(2, ((i / 12) - 3))));
+            if (m > a) {
+                m = a;
+                n = i;
+            }
+        }
+
+        return n + 1;
+    }
+
+    public static int getOPENAIRRhythmStream(float freq) {
+        float m = Float.MAX_VALUE;
+        int n = 0;
+        for (int i = 0; i < 12 * 8; i++) {
+            //if (freq < Tables.freqTbl[i]) break;
+            //n = i;
+            float a = Math.abs(freq - Tables.freqTbl[i]);
+            if (m > a) {
+                m = a;
+                n = i;
+            }
+        }
+        return n;
     }
 }

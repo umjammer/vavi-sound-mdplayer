@@ -1,5 +1,6 @@
 package mdplayer.emu.msx;
 
+
 public class Slot {
 
     public Cartridge[][] slots;
