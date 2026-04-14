@@ -84,7 +84,7 @@ public class MgsDriver extends BaseDriver {
                     frameCounter++;
                 }
             }
-            //Stopped = !IsPlaying();
+            //stopped = !isPlaying();
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
         }
@@ -96,8 +96,8 @@ public class MgsDriver extends BaseDriver {
             frameCounter++;
 
             if (frameCounter % (Common.VGMProcSampleRate / 60) == 0) {
-                int PLAYFG = mgs.interrupt();
-                if (PLAYFG == 0) stopped = true;
+                int playFg = mgs.interrupt();
+                if (playFg == 0) stopped = true;
                 curLoop = mgs.getD();
             }
         } catch (Exception ex) {

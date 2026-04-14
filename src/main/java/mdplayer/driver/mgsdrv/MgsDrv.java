@@ -74,8 +74,8 @@ public class MgsDrv {
 
         mapper = new Mapper((MapperRamCartridge) ((MsxMemory) z80.getMemory()).slot.slots[3][1], (MsxMemory) z80.getMemory());
 
-        //Stopwatch sw = new Stopwatch();
-        //sw.Start();
+        //StopWatch sw = new StopWatch();
+        //sw.start();
 
         z80.reset();
 
@@ -91,8 +91,8 @@ public class MgsDrv {
 
         z80.continue_();
 
-        //sw.Stop();
-        //logger.log(Level.TRACE, "Elapsed time: %d".formatted(sw.Elapsed));
+        //sw.stop();
+        //logger.log(Level.TRACE, "Elapsed time: %d".formatted(sw.elapsed));
 
         // Switch to the segment where MGSDRV exists
         ((MsxMemory) z80.getMemory()).changePage(3, 1, 1); // slot3-1 to Page1
@@ -214,7 +214,7 @@ public class MgsDrv {
                 z80.getRegisters().getIX() & 0xffff, z80.getRegisters().getIY() & 0xffff));
     }
 
-    private void callEXTBIO(BeforeInstructionFetchEvent args, Z80Processor z80) {
+    private static void callEXTBIO(BeforeInstructionFetchEvent args, Z80Processor z80) {
         byte funcType = z80.getRegisters().getD();
         byte function = z80.getRegisters().getE();
 
@@ -235,7 +235,7 @@ public class MgsDrv {
         z80.executeRet();
     }
 
-    private void extbioMemorymapper(BeforeInstructionFetchEvent args, Z80Processor z80, byte function) {
+    private static void extbioMemorymapper(BeforeInstructionFetchEvent args, Z80Processor z80, byte function) {
         switch (function) {
         case 0x02:
             z80.getRegisters().setA((byte) 0);
