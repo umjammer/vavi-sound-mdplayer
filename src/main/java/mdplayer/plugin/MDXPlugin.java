@@ -114,8 +114,8 @@ logger.log(Level.INFO, "pcm8Type: " + setting.getMxDrv().pcm8Type + ", " + chip.
             chipRegister.chip(Ym2151Chip.class).getUse4MYM2151scci()[0] = true;
         }
 
-        chipRegister.chip(Ym2151Chip.class).setYm2151Hosei(EnmModel.VirtualModel, 4000000);
-        if (driverReal != null) chipRegister.chip(Ym2151Chip.class).setYm2151Hosei(EnmModel.RealModel, 4000000);
+        chipRegister.chip(Ym2151Chip.class).setCorrection(EnmModel.VirtualModel, 4000000);
+        if (driverReal != null) chipRegister.chip(Ym2151Chip.class).setCorrection(EnmModel.RealModel, 4000000);
 //        chipRegister.chip(Ym2203Chip.class).setSsgVolume(0, setting.getBalance().getGimicOPNAVolume(), EnmModel.RealModel);
 //        chipRegister.chip(Ym2203Chip.class).setSsgVolume(1, setting.getBalance().getGimicOPNAVolume(), EnmModel.RealModel);
 //        chipRegister.chip(Ym2203Chip.class).setSsgVolume(0, setting.getBalance().getGimicOPNAVolume(), EnmModel.RealModel);

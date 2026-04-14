@@ -5,11 +5,11 @@ import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import dotnet4j.util.compat.QuadConsumer;
 import dotnet4j.util.compat.TriConsumer;
 import mdplayer.Common;
-import org.apache.commons.lang3.function.BooleanConsumer;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
@@ -33,7 +33,7 @@ public class S98 {
 
     int sampleRate;
     boolean isRealModel;
-    BooleanConsumer dataBlock;
+    Consumer<Boolean> dataBlock;
     Runnable stop;
     Runnable loop;
     TriConsumer<Integer, Integer, Integer> writeYM2203;

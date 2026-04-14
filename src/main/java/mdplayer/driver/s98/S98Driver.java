@@ -51,7 +51,7 @@ public class S98Driver extends BaseDriver {
         s98.writeYM2203 = (chipId, adr, data) -> plugin.chipRegister.chip(Ym2203Chip.class).write(chipId, adr, data, model);
         s98.writeYM2612 = (chipId, port, adr, data) -> plugin.chipRegister.chip(Ym2612Chip.class).write(chipId, port, adr, data, model, 0);
         s98.writeYM2608 = (chipId, port, adr, data) -> plugin.chipRegister.chip(Ym2608Chip.class).write(chipId, port, adr, data, model);
-        s98.writeYM2151 = (chipId, port, adr, data) -> plugin.chipRegister.chip(Ym2151Chip.class).write(chipId, port, adr, data, model, plugin.chipRegister.chip(Ym2151Chip.class).ym2151Hosei[chipId], 0);
+        s98.writeYM2151 = (chipId, port, adr, data) -> plugin.chipRegister.chip(Ym2151Chip.class).write(chipId, port, adr, data, model, plugin.chipRegister.chip(Ym2151Chip.class).corrections[chipId], 0);
         s98.writeYM2413 = (chipId, adr, data) -> plugin.chipRegister.chip(Ym2413Chip.class).write(chipId, adr, data, model);
         s98.writeYM3526 = (chipId, adr, data) -> plugin.chipRegister.chip(Ym3526Chip.class).write(chipId, adr, data, model);
         s98.writeYM3812 = (chipId, adr, data) -> plugin.chipRegister.chip(Ym3812Chip.class).write(chipId, adr, data, model);

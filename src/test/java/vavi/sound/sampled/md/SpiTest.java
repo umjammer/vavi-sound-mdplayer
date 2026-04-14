@@ -67,6 +67,7 @@ class SpiTest {
     @Property(name = "vgm")
     String inFile = "src/test/resources/test.vgm";
 
+    /** 1 origin */
     @Property
     int track;
 
@@ -126,11 +127,14 @@ class SpiTest {
 //            System.setProperty("muap.dir.sud", muapDirSud);
         }
 
-        // disable other vgm conversion spi
+        // disable other conflicted reader spi
         System.setProperty("vavi.sound.sampled.spi.emu.vgm", "false");
         System.setProperty("vavi.sound.sampled.spi.emu.gbs", "false");
+        System.setProperty("vavi.sound.sampled.spi.emu.nsf", "false");
+        System.setProperty("vavi.sound.sampled.spi.mod.sid", "false");
         System.setProperty("vavi.sound.sampled.spi.ymfm", "false");
 
+        // chip variant settings
         System.setProperty("mdplayer.variant.pcm8", String.valueOf(variantPcm8));
         System.setProperty("mdplayer.variant.mpcm", String.valueOf(variantMpcm));
         System.setProperty("mdplayer.variant.ym2151", String.valueOf(variantYm2151));

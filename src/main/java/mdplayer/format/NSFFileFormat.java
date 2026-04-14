@@ -3,7 +3,11 @@ package mdplayer.format;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
+import javax.sound.sampled.AudioFileFormat.Type;
+import javax.sound.sampled.AudioFormat.Encoding;
 
 import dotnet4j.io.File;
 import dotnet4j.io.Path;
@@ -16,6 +20,9 @@ import mdplayer.plugin.Plugin;
 import mdplayer.properties.Resources;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
+import vavi.sound.SoundUtil;
+import vavi.sound.sampled.md.MdEncoding;
+import vavi.sound.sampled.md.MdFileFormatType;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 
@@ -215,14 +222,23 @@ public class NSFFileFormat extends BaseFileFormat {
     }
 
     @Override
+    public Encoding getEncoding() {
+        return new MdEncoding("NSF", "nsf");
+    }
+
+    @Override
+    public Type getType() {
+        return new MdFileFormatType("NSF", "nsf");
+    }
+
+    @Override
     public int getMarkSize() {
         return 0;
     }
 
     @Override
-    public boolean isSupported(InputStream is) {
-//        if (isCompressedStream(is)) return false;
-//        return Arrays.stream(getExtensions()).anyMatch(e -> java.nio.file.Path.of(SoundUtil.getSource(is)).toString().toLowerCase().endsWith(e));
-        return false;
+    public boolean isSupported(InputStream is) throws IOException {
+        if (isCompressedStream(is)) return false;
+        return Arrays.stream(getExtensions()).anyMatch(e -> java.nio.file.Path.of(SoundUtil.getSource(is)).toString().toLowerCase().endsWith(e));
     }
 }

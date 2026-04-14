@@ -32,7 +32,7 @@ public class NrtDriver extends BaseDriver {
         nrtdrv.ctcStep = 4000000.0f / setting.getOutputDevice().getSampleRate();
         nrtdrv.ctc1Step = 4000000.0f / setting.getOutputDevice().getSampleRate();
         nrtdrv.ym2151WriteV = (i, a, d) -> plugin.chipRegister.chip(Ym2151Chip.class).write(i, 0, a, d, EnmModel.VirtualModel, 0, 0);
-        nrtdrv.ym2151WriteR = (i, a, d) -> plugin.chipRegister.chip(Ym2151Chip.class).write(i, 0, a, d, EnmModel.RealModel, plugin.chipRegister.chip(Ym2151Chip.class).ym2151Hosei[0], 0);
+        nrtdrv.ym2151WriteR = (i, a, d) -> plugin.chipRegister.chip(Ym2151Chip.class).write(i, 0, a, d, EnmModel.RealModel, plugin.chipRegister.chip(Ym2151Chip.class).corrections[0], 0);
         nrtdrv.ay8910WriteV = (a, d) -> plugin.chipRegister.chip(Ay8910Chip.class).write(0, a, d, EnmModel.VirtualModel);
         nrtdrv.loop = l -> curLoop = l;
         nrtdrv.isRealModel = model == EnmModel.RealModel;
@@ -73,7 +73,7 @@ public class NrtDriver extends BaseDriver {
             throw new IllegalStateException("Driver initialization failed.", ex);
         }
 
-        plugin.chipRegister.chip(Ym2151Chip.class).setYm2151Hosei(model, 4000000);
+        plugin.chipRegister.chip(Ym2151Chip.class).setCorrection(model, 4000000);
 
         // Initializing the Driver
         nrtdrv.call(0);

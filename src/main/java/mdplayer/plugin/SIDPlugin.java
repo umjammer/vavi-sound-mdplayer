@@ -1,9 +1,11 @@
 package mdplayer.plugin;
 
 import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 
 import mdplayer.Common;
 import mdplayer.driver.sid.SidMdDriver2;
+import mdplayer.plugin.BasePlugin.HasSongNo;
 
 import static java.lang.System.getLogger;
 
@@ -14,7 +16,7 @@ import static java.lang.System.getLogger;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-08 nsano initial version <br>
  */
-public class SIDPlugin extends BasePlugin<SidMdDriver2> {
+public class SIDPlugin extends BasePlugin<SidMdDriver2> implements HasSongNo {
 
     private static final Logger logger = getLogger(SIDPlugin.class.getName());
 
@@ -45,5 +47,11 @@ public class SIDPlugin extends BasePlugin<SidMdDriver2> {
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000,
                     songNo + 1);
         }
+    }
+
+    @Override
+    public void setSongNo(int songNo) {
+logger.log(Level.INFO, "songNo: " + songNo);
+        this.songNo = songNo + 1;
     }
 }

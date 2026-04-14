@@ -9,13 +9,13 @@ package mdplayer.chips;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
-import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
-import mdplayer.driver.BaseDriver;
-import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.instrument.NesInst;
+import mdsound.np.Device.Bus;
+import mdsound.np.NpNesApu;
+import mdsound.np.NpNesDmc;
 import mdsound.np.NpNesFds;
 import mdsound.np.chip.DeviceInfo;
 import mdsound.np.chip.NesApu;
@@ -43,6 +43,7 @@ public class NesChip extends BaseChip {
 
     private static final Logger logger = getLogger(NesChip.class.getName());
 
+    // vgm
     public static class DmcChip extends NesChip {
         private int dmcMask = 0;
 
@@ -268,6 +269,7 @@ public class NesChip extends BaseChip {
         }
     }
 
+    // vgm
     public static class FdsChip extends NesChip {
         private int fdsMask = 0;
 
@@ -352,10 +354,12 @@ public class NesChip extends BaseChip {
 
     private int apuMask = 0;
 
+    // TODO consider more
     public NesBank bank = null;
     public NesMem mem = null;
     public Km6502 cpu = null;
 
+    // TODO consider more
     public NesApu apu = null;
     public NesDmc dmc = null;
     public NesFds fds = null;
@@ -371,6 +375,7 @@ public class NesChip extends BaseChip {
         return new Class[] {NesInst.class};
     }
 
+    // vgm
     public void write(int chipId, int addr, int data, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriNES", 2);
@@ -388,6 +393,7 @@ public class NesChip extends BaseChip {
         }
     }
 
+    // vgm
     public int[] readApu(int chipId, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriNES", 2);
@@ -406,6 +412,7 @@ public class NesChip extends BaseChip {
         }
     }
 
+    // vgm
     public void setMask(int chipId, int ch) {
         if (chipId == 0) {
             switch (ch) {
@@ -427,6 +434,7 @@ public class NesChip extends BaseChip {
         context.mds.inst(NesInst.class).setMask(chipId, ch);
     }
 
+    // vgm
     public void resetMask(int chipId, int ch) {
         if (chipId == 0) {
             switch (ch) {
@@ -448,6 +456,7 @@ public class NesChip extends BaseChip {
         context.mds.inst(NesInst.class).resetMask(chipId, ch);
     }
 
+    // vgm
     public void writePcm(int chipId, int stAdr, int dataSize, byte[] vgmBuf, int vgmAdr, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriNES", 2);
@@ -460,6 +469,7 @@ public class NesChip extends BaseChip {
         dumpData(model, "NES_PCMData", vgmAdr, vgmBuf, dataSize);
     }
 
+    // vgm
     public int[] readApu(int chipId) {
         int[] reg;
 
@@ -473,5 +483,114 @@ public class NesChip extends BaseChip {
         if (reg == null) reg = readApu(chipId, Common.EnmModel.VirtualModel);
 
         return reg;
+    }
+
+    // nsf
+    public int getVolume(int chip) {
+        return switch (chip) {
+            case 0 -> context.mds.getChipInfo(NesInst.class).getTVolume();
+            case 1 -> context.mds.getChipInfo(NesInst.DMC.class).getTVolume();
+            case 2 -> context.mds.getChipInfo(NesInst.FDS.class).getTVolume();
+            case 3 -> context.mds.getChipInfo(NesInst.N160.class).getTVolume();
+            case 4 -> context.mds.getChipInfo(NesInst.VRC6.class).getTVolume();
+            case 5 -> context.mds.getChipInfo(NesInst.MMC5.class).getTVolume();
+            case 6 -> context.mds.getChipInfo(NesInst.FME7.class).getTVolume();
+            case 7 -> context.mds.getChipInfo(NesInst.VRC7.class).getTVolume();
+            default -> throw new IllegalArgumentException("Unexpected value: " + chip);
+        };
+    }
+
+    // nsf TODO consider more
+    public void start(int clock, int sampleRate) {
+        this.bank = new NesBank();
+        this.mem = new NesMem();
+        this.cpu = new Km6502(true);
+        this.apu = new NesApu();
+        this.dmc = new NesDmc();
+        this.fds = new NesFds();
+        this.n106 = new NesN106();
+        this.vrc6 = new NesVrc6();
+        this.mmc5 = new NesMmc5();
+        this.fme7 = new NesFme7();
+        this.vrc7 = new NesVrc7();
+
+        this.apu.apu.init(clock, sampleRate);
+        this.apu.reset();
+        this.dmc.dmc.init(clock, sampleRate);
+        this.dmc.reset();
+        this.fds.fds.init(clock, sampleRate);
+        this.fds.reset();
+        this.n106.setClock(clock);
+        this.n106.setRate(sampleRate);
+        this.n106.reset();
+        this.vrc6.setClock(clock);
+        this.vrc6.setRate(sampleRate);
+        this.vrc6.reset();
+        this.mmc5.setClock(clock);
+        this.mmc5.setRate(sampleRate);
+        this.mmc5.reset();
+        this.mmc5.setCPU(this.cpu);
+        this.fme7.setClock(clock);
+        this.fme7.setRate(sampleRate);
+        this.fme7.reset();
+        this.vrc7.setClock(clock);
+        this.vrc7.setRate(sampleRate);
+        this.vrc7.reset();
+
+        this.dmc.dmc.nes_apu = this.apu.apu;
+        this.dmc.dmc.setAPU(this.apu.apu);
+    }
+
+    // nsf TODO consider more
+    public void setOptions(Bus apuBus, boolean useFds, boolean useN106, boolean useVrc6, boolean useMmc5, boolean useFme7, boolean useVrc7, byte[] bankSwitch) {
+        apuBus.attach(this.apu);
+        apuBus.attach(this.dmc);
+
+        this.apu.setOption(NpNesApu.OPT.UNMUTE_ON_RESET.ordinal(), setting.getNsf().getNESUnmuteOnReset() ? 1 : 0);
+        this.apu.setOption(NpNesApu.OPT.NONLINEAR_MIXER.ordinal(), setting.getNsf().getNESNonLinearMixer() ? 1 : 0);
+        this.apu.setOption(NpNesApu.OPT.PHASE_REFRESH.ordinal(), setting.getNsf().getNESPhaseRefresh() ? 1 : 0);
+        this.apu.setOption(NpNesApu.OPT.DUTY_SWAP.ordinal(), setting.getNsf().getNESDutySwap() ? 1 : 0);
+
+        this.dmc.setOption(NpNesDmc.OPT.ENABLE_4011.ordinal(), setting.getNsf().getDMCEnable4011() ? 1 : 0);
+        this.dmc.setOption(NpNesDmc.OPT.ENABLE_PNOISE.ordinal(), setting.getNsf().getDMCEnablePnoise() ? 1 : 0);
+        this.dmc.setOption(NpNesDmc.OPT.UNMUTE_ON_RESET.ordinal(), setting.getNsf().getDMCUnmuteOnReset() ? 1 : 0);
+        this.dmc.setOption(NpNesDmc.OPT.DPCM_ANTI_CLICK.ordinal(), setting.getNsf().getDMCDPCMAntiClick() ? 1 : 0);
+        this.dmc.setOption(NpNesDmc.OPT.NONLINEAR_MIXER.ordinal(), setting.getNsf().getDMCNonLinearMixer() ? 1 : 0);
+        this.dmc.setOption(NpNesDmc.OPT.RANDOMIZE_NOISE.ordinal(), setting.getNsf().getDMCRandomizeNoise() ? 1 : 0);
+        this.dmc.setOption(NpNesDmc.OPT.TRI_MUTE.ordinal(), setting.getNsf().getDMCTRImute() ? 1 : 0);
+        this.dmc.setOption(NpNesDmc.OPT.RANDOMIZE_TRI.ordinal(), setting.getNsf().getDMCRandomizeTRI() ? 1 : 0);
+        this.dmc.setOption(NpNesDmc.OPT.DPCM_REVERSE.ordinal(), setting.getNsf().getDMCDPCMReverse() ? 1 : 0);
+
+        if (useFds) {
+            boolean write_enable = !setting.getNsf().getFDSWriteDisable8000();
+            this.fds.setOption(0, setting.getNsf().getFDSLpf());
+            this.fds.setOption(1, setting.getNsf().getFDS4085Reset() ? 1 : 0);
+            this.mem.setFDSMode(write_enable);
+            this.bank.setFDSMode(write_enable);
+            this.bank.setBankDefault(6, bankSwitch[6] & 0xff);
+            this.bank.setBankDefault(7, bankSwitch[7] & 0xff);
+            apuBus.attach(this.fds);
+        } else {
+            this.mem.setFDSMode(false);
+            this.bank.setFDSMode(false);
+        }
+        if (useN106) {
+            this.n106.setOption(0, setting.getNsf().getN160Serial() ? 1 : 0);
+            apuBus.attach(this.n106);
+        }
+        if (useVrc6) {
+            apuBus.attach(this.vrc6);
+        }
+        if (useMmc5) {
+            this.mmc5.setOption(0, setting.getNsf().getMMC5NonLinearMixer() ? 1 : 0);
+            this.mmc5.setOption(1, setting.getNsf().getMMC5PhaseRefresh() ? 1 : 0);
+            apuBus.attach(this.mmc5);
+        }
+        if (useFme7) {
+            apuBus.attach(this.fme7);
+        }
+        if (useVrc7) {
+            apuBus.attach(this.vrc7);
+        }
     }
 }

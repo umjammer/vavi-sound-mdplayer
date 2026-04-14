@@ -28,6 +28,7 @@ public class XgmDriver extends BaseDriver {
 
     public XgmDriver() {
         this.xgm = new Xgm();
+        xgm.sampleRate = Common.VGMProcSampleRate;
         xgm.pcmStep = setting.getOutputDevice().getSampleRate() / 14000.0;
         xgm.stop = () -> stopped = true;
         xgm.loop = () -> curLoop++;
@@ -37,7 +38,7 @@ public class XgmDriver extends BaseDriver {
     }
 
     public XgmPcm[] getXgmPcm() {
-        return xgm.xgmpcm;
+        return xgm.xgmPcm;
     }
 
     @Override
@@ -68,7 +69,7 @@ public class XgmDriver extends BaseDriver {
         // Initializing the Driver
         xgm.init();
 
-        xgm.vgmBuf = dataBuf;
+        xgm.xgmBuf = dataBuf;
     }
 
     @Override

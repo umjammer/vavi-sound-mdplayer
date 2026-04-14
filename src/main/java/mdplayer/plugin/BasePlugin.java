@@ -36,6 +36,7 @@ public abstract class BasePlugin<T extends BaseDriver> implements Plugin {
 
     protected final Setting setting = Setting.getInstance();
 
+    /** for spi, 0 origin */
     public interface HasSongNo {
         void setSongNo(int songNo);
     }

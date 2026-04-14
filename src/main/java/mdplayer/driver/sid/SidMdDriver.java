@@ -6,12 +6,16 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.function.Function;
 
-import mdplayer.Common;
+import dotnet4j.io.File;
+import dotnet4j.io.FileAccess;
+import dotnet4j.io.FileMode;
+import dotnet4j.io.FileStream;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.SidChip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTuneInfo.Model;
 import mdplayer.plugin.BasePlugin;
+import mdsound.VisWaveBuffer;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 import vavi.util.ByteUtil;
@@ -86,9 +90,9 @@ public class SidMdDriver extends BaseDriver implements SidDriver {
      * @param args 0: songNo
      */
     @Override
-    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
+    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
                      int latency, int waitTime, Object... args) {
-        this.dataBuf = vgmBuf;
+        this.dataBuf = dataBuf;
         this.plugin = plugin;
         this.model = model;
         this.latency = latency;
@@ -109,10 +113,42 @@ public class SidMdDriver extends BaseDriver implements SidDriver {
         speed = 1;
         speedCounter = 0;
 
-        metaData = getMetaData(vgmBuf);
+        metaData = getMetaData(dataBuf);
 
         setSong((int) args[0]);
-        sid.init(vgmBuf, setting);
+
+        byte[] aryKernel = null;
+        byte[] aryBasic = null;
+        byte[] aryCharacter = null;
+        if (File.exists(setting.getSid().romKernalPath)) {
+            try (FileStream fs = new FileStream(setting.getSid().romKernalPath, FileMode.Open, FileAccess.Read)) {
+                aryKernel = new byte[(int) fs.getLength()];
+                fs.read(aryKernel, 0, aryKernel.length);
+            }
+        }
+        if (File.exists(setting.getSid().romBasicPath)) {
+            try (FileStream fs = new FileStream(setting.getSid().romBasicPath, FileMode.Open, FileAccess.Read)) {
+                aryBasic = new byte[(int) fs.getLength()];
+                fs.read(aryBasic, 0, aryBasic.length);
+            }
+        }
+        if (File.exists(setting.getSid().romCharacterPath)) {
+            try (FileStream fs = new FileStream(setting.getSid().romCharacterPath, FileMode.Open, FileAccess.Read)) {
+                aryCharacter = new byte[(int) fs.getLength()];
+                fs.read(aryCharacter, 0, aryCharacter.length);
+            }
+        }
+
+        sid.init(dataBuf,
+                aryKernel, aryBasic, aryCharacter,
+                setting.getSid().outputBufferSize,
+                setting.getOutputDevice().getSampleRate(),
+                setting.getSid().quality,
+                setting.getSid().c64model,
+                setting.getSid().sidModel,
+                setting.getSid().c64modelForce,
+                setting.getSid().sidmodelForce
+                );
         sid.initial = true;
     }
 
@@ -163,7 +199,7 @@ public class SidMdDriver extends BaseDriver implements SidDriver {
         }
         for (int i = 0; i < length / 2; i++) {
             processOneFrame();
-            if (i * 2 + 1 < length) sid.visWB.enq(b[offset + i * 2], b[offset + i * 2 + 1]);
+            if (i * 2 + 1 < length) this.visWB.enq(b[offset + i * 2], b[offset + i * 2 + 1]);
         }
 
         return length;
@@ -171,7 +207,7 @@ public class SidMdDriver extends BaseDriver implements SidDriver {
 
     @Override
     public void copyWaveBuffer(short[][] dest) {
-        sid.visWB.copy(dest);
+        this.visWB.copy(dest);
     }
 
     @Override
@@ -210,4 +246,6 @@ public class SidMdDriver extends BaseDriver implements SidDriver {
     public int getSongs() {
         return sid.songs;
     }
+
+    final VisWaveBuffer visWB = new VisWaveBuffer();
 }

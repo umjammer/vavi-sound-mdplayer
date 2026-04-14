@@ -34,6 +34,9 @@ public class RcsDriver extends BaseDriver {
 
     public RcsDriver() {
         this.rcs = new RCS();
+        rcs.charset = Common.charset;
+        rcs.sampleRate = Common.VGMProcSampleRate;
+        rcs.musicStep = Common.VGMProcSampleRate / 60.0;
         rcs.isVirtualModel = model == EnmModel.VirtualModel;
         int vstDelta = plugin.chipRegister.plugin(VstPlugin.class).vstDelta;
         rcs.midiSend = (l, d) -> plugin.chipRegister.plugin(MidiPlugin.class).send(model, l, d, vstDelta);

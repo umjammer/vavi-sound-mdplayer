@@ -14,7 +14,6 @@ import java.util.function.Consumer;
 
 import dotnet4j.util.compat.StringUtilities;
 import dotnet4j.util.compat.TriConsumer;
-import mdplayer.Common;
 import mdplayer.emu.nise98.FileTemp;
 import mdplayer.emu.nise98.Memory98;
 import mdplayer.emu.nise98.Nise98;
@@ -39,6 +38,7 @@ public class FMP {
 
     Charset charset;
     String dir;
+    int sampleRate;
 
     public static final int baseClock = 7987200;
     private int step = 0;
@@ -103,7 +103,7 @@ logger.log(Level.ERROR, e.getMessage());
         Path crntDir = Path.of(dir);
         Path fileNameFMP = crntDir.resolve("FMP.COM");
         logger.log(Level.DEBUG, fileNameFMP);
-        nise98.init(null, opnaWrite, ft, OngenBoardType.SpeakBoard, Common.VGMProcSampleRate); // .PC9801_86B); // .SpeakBoard); // .PC9801_26K);
+        nise98.init(null, opnaWrite, ft, OngenBoardType.SpeakBoard, sampleRate); // .PC9801_86B); // .SpeakBoard); // .PC9801_26K);
         nise98.getDos().setArcFile(playingArcFileName);
         nise98.getDos().setSearchPath(searchPaths);
         nise98.getDos().charset = charset;
@@ -164,7 +164,7 @@ logger.log(Level.ERROR, e.getMessage());
         var fileNameFMC = "FMC.EXE";
         int rc = 0;
 
-        nise98.init(null, opnaWrite, ft, OngenBoardType.SpeakBoard, Common.VGMProcSampleRate); // .PC9801_86B); // .SpeakBoard); // .PC9801_26K);
+        nise98.init(null, opnaWrite, ft, OngenBoardType.SpeakBoard, sampleRate); // .PC9801_86B); // .SpeakBoard); // .PC9801_26K);
 
         // FMP resident
         nise98.loadRun(fileNameFMP, "s -s", 0x2000);

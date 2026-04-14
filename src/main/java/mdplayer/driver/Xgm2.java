@@ -49,7 +49,7 @@ public class Xgm2 {
     private int[] psgID = null;
     private int[] gd3ID = null;
 
-    public XGM2PCM[] xgm2pcm = null;
+    public Xgm2Pcm[] xgm2pcm = null;
     private double pcmSpeedCounter;
 
     private int fmWaitCnt = 0;
@@ -89,7 +89,7 @@ public class Xgm2 {
     private byte ch3KeyOn = 0;
     private boolean vi = true;
 
-    public static class XGM2PCM {
+    public static class Xgm2Pcm {
 
         public int priority = 0;
         public int speed = 0;
@@ -110,7 +110,7 @@ public class Xgm2 {
         musicStep = mdplayer.Common.VGMProcSampleRate / 60.0; // setting.outputDevice.SampleRate / 60.0;
     }
 
-    byte[] vgmBuf;
+    byte[] xgmBuf;
     Consumer<String> version;
     BiConsumer<Boolean, Integer> tag;
     Runnable stop;
@@ -121,7 +121,7 @@ public class Xgm2 {
     void init() {
         fmMusicPtr = fmDataBlockAddr;
         psgMusicPtr = psgDataBlockAddr;
-        xgm2pcm = new XGM2PCM[] {new XGM2PCM(), new XGM2PCM(), new XGM2PCM(), new XGM2PCM()};
+        xgm2pcm = new Xgm2Pcm[] {new Xgm2Pcm(), new Xgm2Pcm(), new Xgm2Pcm(), new Xgm2Pcm()};
 
         dacEnable = 0;
         ch3spEnable = false;
@@ -265,12 +265,12 @@ public class Xgm2 {
 
         for (int i = 0; i < 4; i++) {
             if (!xgm2pcm[i].isPlaying) continue;
-            if (xgm2pcm[i].addr == vgmBuf.length) {
+            if (xgm2pcm[i].addr == xgmBuf.length) {
                 xgm2pcm[i].isPlaying = false;
                 xgm2pcm[i].data = 0;
                 continue;
             }
-            byte d = vgmBuf[xgm2pcm[i].addr]; // signed
+            byte d = xgmBuf[xgm2pcm[i].addr]; // signed
             if (xgm2pcm[i].speed == 0) xgm2pcm[i].addr++;
             else {
                 xgm2pcm[i].speedWait++;
@@ -299,13 +299,13 @@ public class Xgm2 {
 
     private void oneFrameFM() {
         if (fmWaitCnt-- > 0) return;
-        if (vgmBuf == null) return;
+        if (xgmBuf == null) return;
         while (true) {
-            if (fmMusicPtr >= vgmBuf.length) {
+            if (fmMusicPtr >= xgmBuf.length) {
                 endFm = true;
                 return;
             }
-            byte dat = vgmBuf[fmMusicPtr++];
+            byte dat = xgmBuf[fmMusicPtr++];
 
             int cmd = dat & 0xf0;
             byte val = (byte) (dat & 0x0f);
@@ -315,16 +315,16 @@ public class Xgm2 {
             switch (cmd) {
                 case 0x00: // wait
                     fmWaitCnt = val & 0xff;
-                    if (fmWaitCnt == 15) fmWaitCnt = (vgmBuf[fmMusicPtr++] & 0xff) + 15;
+                    if (fmWaitCnt == 15) fmWaitCnt = (xgmBuf[fmMusicPtr++] & 0xff) + 15;
                     return;
                 case 0x10: // pcm play
-                    id = vgmBuf[fmMusicPtr++] & 0xff;
+                    id = xgmBuf[fmMusicPtr++] & 0xff;
                     playPCM(val, id);
                     break;
                 case 0x20: // ym2612 load instrument
                     cs = val & 0x3;
                     port = (byte) ((val & 0x4) >> 2);
-                    for (int i = 0; i < 30; i++) vd[i] = vgmBuf[fmMusicPtr++];
+                    for (int i = 0; i < 30; i++) vd[i] = xgmBuf[fmMusicPtr++];
                     sendInst(cs, port, vd);
                     break;
                 case 0x30: // YM2612 frequency set + key OFF/ON
@@ -368,8 +368,8 @@ public class Xgm2 {
                 case 0x90: // YM2612 TL set
                     cs = val & 0x3;
                     slot = (val & 0xc) >> 2;
-                    port = vgmBuf[fmMusicPtr] & 0x1;
-                    tl = (byte) ((vgmBuf[fmMusicPtr] & 0xff) >> 1);
+                    port = xgmBuf[fmMusicPtr] & 0x1;
+                    tl = (byte) ((xgmBuf[fmMusicPtr] & 0xff) >> 1);
                     fmMusicPtr += 1;
                     fmTL[port][cs][slot] = tl;
                     writeYM2612(port == 0, (0x40 + slot * 4 + cs) & 0xff, fmTL[port][cs][slot] & 0xff);
@@ -390,8 +390,8 @@ public class Xgm2 {
                     cs = (val & 0x7) + 1;
                     port = (val & 0x8) >> 3;
                     for (int i = 0; i < cs; i++) {
-                        adr = vgmBuf[fmMusicPtr++];
-                        dat = vgmBuf[fmMusicPtr++];
+                        adr = xgmBuf[fmMusicPtr++];
+                        dat = xgmBuf[fmMusicPtr++];
                         writeYM2612(port == 0, adr & 0xff, dat & 0xff);
                     }
                     break;
@@ -401,12 +401,12 @@ public class Xgm2 {
                             pendingFrame++;
                             return;
                         case 0x08: // YM2612 advanced $28 (key) register write (not ALL OFF/ON)
-                            dat = vgmBuf[fmMusicPtr];
+                            dat = xgmBuf[fmMusicPtr];
                             fmMusicPtr += 1;
                             writeYM2612P0(0x28, dat & 0xff);
                             break;
                         case 0x09: // YM2612 register $22 (LFO) write
-                            dat = vgmBuf[fmMusicPtr];
+                            dat = xgmBuf[fmMusicPtr];
                             fmMusicPtr += 1;
                             writeYM2612P0(0x22, dat & 0xff);
                             break;
@@ -427,7 +427,7 @@ public class Xgm2 {
                             dacEnable = 0;
                             break;
                         case 0x0f:
-                            int loopAdr = ByteUtil.readLe24(vgmBuf, fmMusicPtr);
+                            int loopAdr = ByteUtil.readLe24(xgmBuf, fmMusicPtr);
                             if (loopAdr == 0xff_ffff) endFm = true;
                             fmMusicPtr = fmDataBlockAddr + loopAdr;
                             fmLoopCnt++;
@@ -443,9 +443,9 @@ public class Xgm2 {
     private void fmTlDeltaSet(byte val) {
         int cs = val & 0x3;
         int slot = (val & 0xc) >> 2;
-        int port = vgmBuf[fmMusicPtr] & 0x1;
-        int addOrSub = (vgmBuf[fmMusicPtr] & 0x2) >> 1;
-        byte tl = (byte) (((vgmBuf[fmMusicPtr] & 0xff) >> 2) + 1);
+        int port = xgmBuf[fmMusicPtr] & 0x1;
+        int addOrSub = (xgmBuf[fmMusicPtr] & 0x2) >> 1;
+        byte tl = (byte) (((xgmBuf[fmMusicPtr] & 0xff) >> 2) + 1);
         fmMusicPtr += 1;
         fmTL[port][cs][slot] = (byte) ((fmTL[port][cs][slot] & 0xff) + (addOrSub == 0 ? 1 : -1) * (tl & 0xff));
         writeYM2612(port == 0, (0x40 + slot * 4 + cs) & 0xff, fmTL[port][cs][slot] & 0xff);
@@ -455,8 +455,8 @@ public class Xgm2 {
         int cs = val & 0x3;
         int port = (val & 0x4) >> 2;
         int ch3m = (val & 0x8) >> 3;
-        int addOrsub = vgmBuf[fmMusicPtr] & 0x1;
-        byte freq = (byte) (((vgmBuf[fmMusicPtr] & 0xff) >> 1) + 1);
+        int addOrsub = xgmBuf[fmMusicPtr] & 0x1;
+        byte freq = (byte) (((xgmBuf[fmMusicPtr] & 0xff) >> 1) + 1);
         fmMusicPtr += 1;
 
         if (ch3m == 0) {
@@ -475,9 +475,9 @@ public class Xgm2 {
         int cs = val & 0x3;
         int port = (val & 0x4) >> 2;
         int ch3m = (val & 0x8) >> 3;
-        int keyOff = (vgmBuf[fmMusicPtr] & 0x40) >> 6;
-        int keyOn = (vgmBuf[fmMusicPtr] & 0x80) >> 7;
-        int freq = ByteUtil.readBeShort(vgmBuf, fmMusicPtr) & 0x3fff;
+        int keyOff = (xgmBuf[fmMusicPtr] & 0x40) >> 6;
+        int keyOn = (xgmBuf[fmMusicPtr] & 0x80) >> 7;
+        int freq = ByteUtil.readBeShort(xgmBuf, fmMusicPtr) & 0x3fff;
         fmMusicPtr += 2;
 
         if (ch3m == 0) {
@@ -568,13 +568,13 @@ public class Xgm2 {
 
     private void oneFramePsg() {
         if (psgWaitCnt-- > 0) return;
-        if (vgmBuf == null) return;
+        if (xgmBuf == null) return;
         while (true) {
-            if (psgMusicPtr >= vgmBuf.length) {
+            if (psgMusicPtr >= xgmBuf.length) {
                 endPsg = true;
                 return;
             }
-            byte dat = vgmBuf[psgMusicPtr++];
+            byte dat = xgmBuf[psgMusicPtr++];
             int cmd = dat & 0xf0;
             byte val = (byte) (dat & 0x0f);
 
@@ -584,9 +584,9 @@ public class Xgm2 {
             switch (cmd) {
                 case 0x00: // wait
                     psgWaitCnt = val & 0xff;
-                    if (psgWaitCnt == 14) psgWaitCnt = (vgmBuf[psgMusicPtr++] & 0xff) + 14;
+                    if (psgWaitCnt == 14) psgWaitCnt = (xgmBuf[psgMusicPtr++] & 0xff) + 14;
                     else if (psgWaitCnt == 15) {
-                        int loopAdr = ByteUtil.readLe24(vgmBuf, psgMusicPtr);
+                        int loopAdr = ByteUtil.readLe24(xgmBuf, psgMusicPtr);
                         if (loopAdr == 0xff_ffff) endPsg = true;
                         psgMusicPtr = psgDataBlockAddr + loopAdr;
                         psgLoopCnt++;
@@ -595,7 +595,7 @@ public class Xgm2 {
                     return;
                 case 0x10: // PSG freq/tone low update + end of frame
                     eof = (val & 1) != 0;
-                    dat = vgmBuf[psgMusicPtr++];
+                    dat = xgmBuf[psgMusicPtr++];
                     sn76489Write.accept(dat & 0xff);
                     ch = (dat & 0x60) >> 5;
                     psgFreq[ch] = (psgFreq[ch] & 0x3f0) | (dat & 0xf);
@@ -604,7 +604,7 @@ public class Xgm2 {
                 case 0x20: // PSG freq/tone update
                     td = val & 3;
                     ch = (val & 0xc) >> 2;
-                    dat = vgmBuf[psgMusicPtr++];
+                    dat = xgmBuf[psgMusicPtr++];
                     psgFreq[ch] = (dat & 0xff) | (td << 8);
                     sn76489Write.accept((0x80 | (ch << 5) | (psgFreq[ch] & 0xf)) & 0xff);
                     sn76489Write.accept(((psgFreq[ch] & 0x3f0) >> 4) & 0xff);
@@ -612,7 +612,7 @@ public class Xgm2 {
                 case 0x30: // PSG freq/tone update + end of frame
                     td = val & 3;
                     ch = (val & 0xc) >> 2;
-                    dat = vgmBuf[psgMusicPtr++];
+                    dat = xgmBuf[psgMusicPtr++];
                     psgFreq[ch] = (dat & 0xff) | (td << 8);
                     sn76489Write.accept((0x80 |  (ch << 5) | (psgFreq[ch] & 0xf)) & 0xff);
                     sn76489Write.accept(((psgFreq[ch] & 0x3f0) >> 4) & 0xff);

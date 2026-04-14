@@ -4,7 +4,6 @@ import java.lang.System.Logger;
 import java.util.function.Function;
 
 import dotnet4j.io.Stream;
-import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.MPcmChip;
 import mdplayer.chips.RealChipPlugin;
@@ -159,8 +158,8 @@ public class MNDPlugin extends BasePlugin<MnDriver> {
         if (contains(Ym2151Chip.class, 1))
             chipRegister.chip(Ym2151Chip.class).writeClock((byte) 1, 4000000, EnmModel.RealModel);
 
-        chipRegister.chip(Ym2151Chip.class).setYm2151Hosei(EnmModel.VirtualModel, 4000000);
-        if (driverReal != null) chipRegister.chip(Ym2151Chip.class).setYm2151Hosei(EnmModel.RealModel, 4000000);
+        chipRegister.chip(Ym2151Chip.class).setCorrection(EnmModel.VirtualModel, 4000000);
+        if (driverReal != null) chipRegister.chip(Ym2151Chip.class).setCorrection(EnmModel.RealModel, 4000000);
 
         if (contains(Ym2203Chip.class, 0))
             chipRegister.chip(Ym2203Chip.class).setSsgVolume((byte) 0, setting.getBalance().getGimicOPNVolume(), EnmModel.RealModel);

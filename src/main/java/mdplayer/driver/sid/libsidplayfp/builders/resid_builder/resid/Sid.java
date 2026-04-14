@@ -26,8 +26,6 @@ import java.lang.System.Logger.Level;
 import java.util.Arrays;
 import java.util.function.Consumer;
 
-import mdplayer.Setting;
-
 
 public class Sid {
 
@@ -267,7 +265,7 @@ public class Sid {
     /**
      * Constructor.
      */
-    public Sid(Setting setting) {
+    public Sid(double sampleRate) {
         // Initialize pointers.
         sample = null;
         fir = null;
@@ -282,7 +280,7 @@ public class Sid {
         voice[1].setSyncSource(voice[0]);
         voice[2].setSyncSource(voice[1]);
 
-        setSamplingParameters(985248d, SidDefs.SamplingMethod.FAST, setting.getOutputDevice().getSampleRate(), -1d, 0.97d);
+        setSamplingParameters(985248d, SidDefs.SamplingMethod.FAST, sampleRate, -1d, 0.97d);
 
         busValue = 0;
         busValueTtl = 0;

@@ -34,6 +34,7 @@ public class FmpDriver extends BaseDriver {
 
     public FmpDriver() {
         fmp = new FMP();
+        fmp.sampleRate = Common.VGMProcSampleRate;
         fmp.charset = Common.charset;
         fmp.dir = System.getProperty("mdplayer.fmp.dir", System.getProperty("user.dir"));
         fmp.blockWrite = b -> this.isDataBlock = b;

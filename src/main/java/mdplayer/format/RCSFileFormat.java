@@ -11,6 +11,7 @@ import javax.sound.sampled.AudioFormat.Encoding;
 
 import dotnet4j.io.Path;
 import dotnet4j.util.compat.Tuple;
+import mdplayer.Common;
 import mdplayer.PlayList;
 import mdplayer.driver.rcp.RCP;
 import mdplayer.driver.rcp.RcsDriver;
@@ -100,7 +101,7 @@ public class RCSFileFormat extends BaseFileFormat {
         byte[] buf;
 
         String[] cm6 = new String[1], gsd = new String[1], gsd2 = new String[1];
-        RCP.getControlFileName(srcBuf, cm6, gsd, gsd2);
+        RCP.getControlFileName(srcBuf, cm6, gsd, gsd2, Common.charset);
         if (cm6[0] != null && !cm6[0].isEmpty()) {
             buf = getExtendFileAllBytes(fn, cm6[0], archive, entry);
             if (buf != null) ret.add(new Tuple<>(".cm6", buf));

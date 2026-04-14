@@ -31,10 +31,11 @@ public class MidiDriver extends BaseDriver {
 
     public MidiDriver() {
         this.midi = new MID();
-        int vstDelta = plugin.chipRegister.plugin(VstPlugin.class).vstDelta;
-        midi.send0 = (n, d) -> plugin.chipRegister.plugin(MidiPlugin.class).send(model, n, d, vstDelta);
-        midi.send2 = (n, d1, d2) -> plugin.chipRegister.plugin(MidiPlugin.class).send(model, n, d1, d2, vstDelta);
-        midi.send3 = (n, d1, d2, d) -> plugin.chipRegister.plugin(MidiPlugin.class).send(model, n, d1, d2, d, vstDelta);
+        midi.charset = Common.charset;
+        midi.musicStep = Common.VGMProcSampleRate / 60.0;;
+        midi.send0 = (n, d) -> plugin.chipRegister.plugin(MidiPlugin.class).send(model, n, d, plugin.chipRegister.plugin(VstPlugin.class).vstDelta);
+        midi.send2 = (n, d1, d2) -> plugin.chipRegister.plugin(MidiPlugin.class).send(model, n, d1, d2, plugin.chipRegister.plugin(VstPlugin.class).vstDelta);
+        midi.send3 = (n, d1, d2, d) -> plugin.chipRegister.plugin(MidiPlugin.class).send(model, n, d1, d2, d, plugin.chipRegister.plugin(VstPlugin.class).vstDelta);
         midi.lyric = (n, l) -> plugin.chipRegister.plugin(MidiPlugin.class).params[n].Lyric = l;
         midi.stop = () -> stopped = true;
         midi.counter = () -> frameCounter = -latency - waitTime;

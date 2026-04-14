@@ -2,6 +2,7 @@ package mdplayer.driver.rcp;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -14,27 +15,23 @@ import java.util.function.IntSupplier;
 
 import dotnet4j.io.Path;
 import dotnet4j.util.compat.Tuple;
-import mdplayer.Common;
 import mdplayer.driver.rcp.MIDIEvent.MIDIEventType;
 import mdplayer.driver.rcp.MIDIEvent.MIDISpEventType;
 import vavi.util.ByteUtil;
 import vavi.util.StringUtil;
 
 import static java.lang.System.getLogger;
-import static mdplayer.Common.charset;
 
 
 public class RCP {
 
     private static final Logger logger = getLogger(RCP.class.getName());
 
-    public RCP() {
-        musicStep = Common.VGMProcSampleRate / 60.0;
-    }
-
     private double oneSyncTime = 0.009;
-    private double musicStep;
+    double musicStep;
     private double musicDownCounter = 0.0;
+    Charset charset;
+    int sampleRate;
 
     List<CtlSysex>[] beforeSend = null;
     int[] sendControlDelta = null;
@@ -118,8 +115,8 @@ public class RCP {
      * @param gsd OUT
      * @param gsd2 OUT
      */
-    public static void getControlFileName(byte[] buf, String[] cm6, String[] gsd, String[] gsd2) {
-        Boolean ret = checkHeadString(buf);
+    public static void getControlFileName(byte[] buf, String[] cm6, String[] gsd, String[] gsd2, Charset charset) {
+        Boolean ret = checkHeadString(buf, charset);
         if (ret == null) return;
         boolean isG36 = ret;
         int ptr = 96;
@@ -191,7 +188,7 @@ public class RCP {
     private boolean relativeTempoChangeSW = false;
 
     /** @return tri-state (nullable boolean) */
-    static Boolean checkHeadString(byte[] buf) {
+    static Boolean checkHeadString(byte[] buf, Charset charset) {
         if (buf == null || buf.length < 32) {
 logger.log(Level.INFO, "buf is null or buf.length < 32");
             return null;
@@ -213,7 +210,7 @@ logger.log(Level.INFO, "rcp v3");
     }
 
     boolean getInformationHeader() {
-        Boolean ret = checkHeadString(data);
+        Boolean ret = checkHeadString(data, charset);
         if (ret == null) {
 logger.log(Level.INFO, "checkHeadString");
             return false;
@@ -898,7 +895,6 @@ logger.log(Level.INFO, "checkHeadString");
     }
 
     private void init() {
-
         tick.millisec = 0;
         tick.count = 0;
         tick.before = 0;
@@ -957,7 +953,7 @@ logger.log(Level.INFO, "checkHeadString");
 
     void oneFrameMain() {
         try {
-            musicStep = Common.VGMProcSampleRate * oneSyncTime;
+            musicStep = sampleRate * oneSyncTime;
 
             if (musicDownCounter <= 0.0) {
                 if (beforeSend != null) {

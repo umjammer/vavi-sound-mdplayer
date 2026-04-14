@@ -14,17 +14,11 @@ import java.lang.System.Logger.Level;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 
-import dotnet4j.io.File;
-import dotnet4j.io.FileAccess;
-import dotnet4j.io.FileMode;
-import dotnet4j.io.FileStream;
 import libsidplay.common.SamplingRate;
 import libsidplay.config.IConfig;
 import libsidplay.sidtune.SidTune;
 import libsidplay.sidtune.SidTuneError;
 import libsidplay.sidtune.SidTuneInfo;
-import mdplayer.Setting;
-import mdsound.VisWaveBuffer;
 import sidplay.Player;
 import sidplay.audio.Audio;
 import sidplay.audio.AudioDriver;
@@ -98,34 +92,14 @@ public class Sid2 {
         }
     };
 
-    void init(byte[] data, Setting setting) {
-
-        byte[] aryKernel;
-        byte[] aryBasic;
-        byte[] aryCharacter;
-        if (File.exists(setting.getSid().romKernalPath))
-            try (FileStream fs = new FileStream(setting.getSid().romKernalPath, FileMode.Open, FileAccess.Read)) {
-                aryKernel = new byte[(int) fs.getLength()];
-                fs.read(aryKernel, 0, aryKernel.length);
-            }
-        if (File.exists(setting.getSid().romBasicPath))
-            try (FileStream fs = new FileStream(setting.getSid().romBasicPath, FileMode.Open, FileAccess.Read)) {
-                aryBasic = new byte[(int) fs.getLength()];
-                fs.read(aryBasic, 0, aryBasic.length);
-            }
-        if (File.exists(setting.getSid().romCharacterPath))
-            try (FileStream fs = new FileStream(setting.getSid().romCharacterPath, FileMode.Open, FileAccess.Read)) {
-                aryCharacter = new byte[(int) fs.getLength()];
-                fs.read(aryCharacter, 0, aryCharacter.length);
-            }
-
+    void init(byte[] data, int sampleRate) {
         try {
             sidTune = SidTune.load("mdsound", new ByteArrayInputStream(data));
 
             sidConfig = new IniConfig();
             sidConfig.getAudioSection().setAudio(Audio.STREAM);
-            SamplingRate samplingRate = SamplingRate.getByFrequency(setting.getOutputDevice().getSampleRate());
-logger.log(Level.TRACE, "sampleRate: " + setting.getOutputDevice().getSampleRate());
+            SamplingRate samplingRate = SamplingRate.getByFrequency(sampleRate);
+logger.log(Level.TRACE, "sampleRate: " + sampleRate);
             sidConfig.getAudioSection().setSamplingRate(samplingRate);
 
             sidPlayer = new Player(sidConfig);
@@ -150,6 +124,4 @@ logger.log(Level.TRACE, "audioDriver: " + audioDriver);
             throw new IllegalStateException(e);
         }
     }
-
-    final VisWaveBuffer visWB = new VisWaveBuffer();
 }

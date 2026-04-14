@@ -35,8 +35,10 @@ public class RcpDriver extends BaseDriver {
 
     public RcpDriver() {
         this.rcp = new RCP();
-        int vstDelta = plugin.chipRegister.plugin(VstPlugin.class).vstDelta;
-        rcp.midiSend = (l, d) -> plugin.chipRegister.plugin(MidiPlugin.class).send(model, l, d, vstDelta);
+        rcp.charset = Common.charset;
+        rcp.sampleRate = Common.VGMProcSampleRate;
+        rcp.musicStep = Common.VGMProcSampleRate / 60.0;
+        rcp.midiSend = (l, d) -> plugin.chipRegister.plugin(MidiPlugin.class).send(model, l, d, plugin.chipRegister.plugin(VstPlugin.class).vstDelta);
         rcp.lyric = l -> plugin.chipRegister.plugin(MidiPlugin.class).params[0].Lyric = l;
         rcp.counter = () -> frameCounter = -latency - waitTime;
         rcp.midiCount = () -> plugin.chipRegister.plugin(MidiPlugin.class).getCount();
@@ -50,7 +52,7 @@ public class RcpDriver extends BaseDriver {
     @Override
     public MetaData getMetaData(byte[] buf, Object... args) {
         if (buf == null) return null;
-        Boolean ret = RCP.checkHeadString(buf);
+        Boolean ret = RCP.checkHeadString(buf, Common.charset);
         if (ret == null) return null;
         boolean isG36 = ret;
 

@@ -2,6 +2,7 @@ package mdplayer.driver.rcp;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -15,7 +16,6 @@ import java.util.function.IntSupplier;
 import dotnet4j.io.File;
 import dotnet4j.io.Path;
 import dotnet4j.util.compat.Tuple;
-import mdplayer.Common;
 import mdplayer.driver.mxdrv.MXDRV.Pcm8St;
 import mdplayer.driver.rcp.MIDIEvent.MIDIEventType;
 import mdplayer.driver.rcp.MIDIEvent.MIDISpEventType;
@@ -25,20 +25,17 @@ import mdsound.instrument.X68kYm2151Inst;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
-import static mdplayer.Common.charset;
 
 
 public class RCS {
 
     private static final Logger logger = getLogger(RCS.class.getName());
 
-    public RCS() {
-        musicStep = Common.VGMProcSampleRate / 60.0;
-    }
-
     private double oneSyncTime = 0.009;
-    private double musicStep = 1; // setting.outputDevice.SampleRate / 60.0;
+    double musicStep;
     private double musicDownCounter = 0.0;
+    Charset charset;
+    int sampleRate;
 
     List<CtlSysex>[] beforeSend = null;
     int[] sendControlDelta = null;
@@ -71,7 +68,7 @@ public class RCS {
 
     public List<Tuple<String, byte[]>> extendFiles = null;
 
-    public static void getControlFileName(
+    public void getControlFileName(
             String fn,
             String supportfile,
             byte[] buf,
@@ -1153,7 +1150,7 @@ public class RCS {
 
     void oneFrameMain() {
         try {
-            musicStep = Common.VGMProcSampleRate * oneSyncTime;
+            musicStep = sampleRate * oneSyncTime;
 
             if (musicDownCounter <= 0.0) {
                 if (beforeSend != null) {

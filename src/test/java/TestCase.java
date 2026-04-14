@@ -56,6 +56,7 @@ public class TestCase {
     @Property
     String file;
 
+    /** 1 origin */
     @Property
     int track;
 
@@ -151,7 +152,7 @@ Debug.println("filename: " + file);
 Debug.println("format: " + format.getClass().getSimpleName());
         var r = format.load((String) null, file);
         BasePlugin<? extends BaseDriver> plugin = (BasePlugin) format.getPlugin();
-        plugin.setBuffer(format, r.getItem1(), file, null, 0, track, r.getItem2());
+        plugin.setBuffer(format, r.getItem1(), file, null, 0, track - 1, r.getItem2());
 Debug.println("plugin: " + plugin.getClass().getSimpleName());
         audio.init(plugin);
         audio.play();

@@ -40,7 +40,7 @@ public class MxDriver extends BaseDriver {
     public MxDriver() {
         this.mxdrv = new MXDRV();
         // called the same timing as mdxPcm.getPcm
-        mxdrv.ym2151Write = (a, d) -> plugin.chipRegister.chip(Ym2151Chip.class).write(0, 0, a, d, model, plugin.chipRegister.chip(Ym2151Chip.class).ym2151Hosei[0], frameCounter);
+        mxdrv.ym2151Write = (a, d) -> plugin.chipRegister.chip(Ym2151Chip.class).write(0, 0, a, d, model, plugin.chipRegister.chip(Ym2151Chip.class).corrections[0], frameCounter);
         mxdrv.isFromDF = Pcm8Chip::isFromDF;
         mxdrv.isFromPTM = Pcm8Chip::isFromPTM;
         mxdrv.mdxPCM = new MdxPcmInterface() {
@@ -275,7 +275,7 @@ public class MxDriver extends BaseDriver {
         frameCounter = -latency - waitTime;
         speed = 1;
 
-        plugin.chipRegister.chip(Ym2151Chip.class).setYm2151Hosei(model, 4000000);
+        plugin.chipRegister.chip(Ym2151Chip.class).setCorrection(model, 4000000);
 
         byte[][] mdx = new byte[1][];
         int[] mdxSize = new int[1];

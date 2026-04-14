@@ -229,7 +229,7 @@ public class frmYM2151 extends frmBase {
             //newParam.ym2151[chipId].channels[ch].note = (fmKeyYM2151[ch] > 0) ? (oct * 12 + note + audio.vgmReal.YM2151Hosei + 1 + 9) : -1;
             int hosei = 0;
             if (audio.plugin.driverVirtual != null) { // is Vgm)
-                hosei = audio.plugin.chipRegister.chip(Ym2151Chip.class).ym2151Hosei[chipId];
+                hosei = audio.plugin.chipRegister.chip(Ym2151Chip.class).corrections[chipId];
             }
             newParam.channels[ch].note = ((fmKeyYM2151[ch] & 1) != 0) ? (oct * 12 + note + hosei) : -1;
 

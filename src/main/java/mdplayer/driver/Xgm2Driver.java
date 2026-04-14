@@ -77,7 +77,7 @@ public class Xgm2Driver extends XgmDriver {
         // initialize Driver
         xgm2.init();
 
-        xgm2.vgmBuf = vgmBuf;
+        xgm2.xgmBuf = vgmBuf;
     }
 
     @Override

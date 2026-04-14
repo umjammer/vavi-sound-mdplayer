@@ -118,7 +118,7 @@ public class NoiseCheckTest {
         engine = new playSidFp(SamplingRate);
         engine.setRoms(null, null, null);
 
-        ReSidBuilder rs = new ReSidBuilder("ReSid", setting);
+        ReSidBuilder rs = new ReSidBuilder("ReSid", setting.getOutputDevice().getSampleRate());
         rs.create(1);
 
         tune = new SidTune(buf, buf.length);

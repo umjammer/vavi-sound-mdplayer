@@ -45,7 +45,7 @@ public class ZmsDriver extends BaseDriver {
         this.zms = new Zms();
         zms.charset = Common.charset;
         zms.frequency = Common.VGMProcSampleRate;
-        zms.ym2151Write = (a, d) -> plugin.chipRegister.chip(Ym2151Chip.class).write(0, 0, a, d, model, plugin.chipRegister.chip(Ym2151Chip.class).hosei[0], frameCounter);
+        zms.ym2151Write = (a, d) -> plugin.chipRegister.chip(Ym2151Chip.class).write(0, 0, a, d, model, plugin.chipRegister.chip(Ym2151Chip.class).corrections[0], frameCounter);
         zms.midiSend = (l, d) -> plugin.chipRegister.plugin(MidiPlugin.class).send(model, l, d, 0);
         zms.loop = l -> curLoop = l;
         zms.stop = () -> stopped = true;

@@ -36,7 +36,7 @@ public class MnDriver extends BaseDriver {
     public MnDriver() {
         this.mndrv = new MnDrv();
         mndrv.ym2608Write = (c, p, a, d) -> plugin.chipRegister.chip(Ym2608Chip.class).write(c, p, a, d, model);
-        mndrv.ym2151Write = (a, d) -> plugin.chipRegister.chip(Ym2151Chip.class).write(0, 0, a, d, model, plugin.chipRegister.chip(Ym2151Chip.class).ym2151Hosei[0], 0);
+        mndrv.ym2151Write = (a, d) -> plugin.chipRegister.chip(Ym2151Chip.class).write(0, 0, a, d, model, plugin.chipRegister.chip(Ym2151Chip.class).corrections[0], 0);
         mndrv.stop = () -> stopped = true;
         mndrv.mpcm = new MPcmInterface() {
             @Override
@@ -112,9 +112,9 @@ public class MnDriver extends BaseDriver {
         frameCounter = -latency - waitTime;
         speed = 1;
 
-        plugin.chipRegister.chip(Ym2151Chip.class).setYm2151Hosei(model, 4000000);
+        plugin.chipRegister.chip(Ym2151Chip.class).setCorrection(model, 4000000);
 
-        mndrv.init(vgmBuf, model == EnmModel.RealModel);
+        mndrv.init(vgmBuf, model == EnmModel.RealModel, Common.VGMProcSampleRate);
     }
 
     @Override

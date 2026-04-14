@@ -33,7 +33,7 @@ public class NSFPlugin extends BasePlugin<NsfMdDriver2> implements HasSongNo {
 
     private static final Logger logger = getLogger(NSFPlugin.class.getName());
 
-    /** for spi */
+    /** for spi, 0 origin */
     public void setSongNo(int songNo) {
 logger.log(Level.INFO, "songNo: " + songNo);
         this.songNo = songNo;
@@ -95,7 +95,6 @@ logger.log(Level.INFO, "songNo: " + songNo);
         chip.setVolumes.put("APU", chip.mainWrappedSetVolume(apu::setVolume));
         chip.option = null;
         put(NesChip.class, chip);
-        driverVirtual.setApu(chip);
 
         NesInst.DMC dmc = new NesInst.DMC();
         chip = new MDSound.Chip();
@@ -107,7 +106,6 @@ logger.log(Level.INFO, "songNo: " + songNo);
         chip.option = null;
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, DmcChip.class);
         put(DmcChip.class, chip);
-        driverVirtual.setDmc(chip);
 
         NesInst.FDS fds = new NesInst.FDS();
         chip = new MDSound.Chip();
@@ -119,7 +117,6 @@ logger.log(Level.INFO, "songNo: " + songNo);
         chip.option = null;
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, FdsChip.class);
         put(FdsChip.class, chip);
-        driverVirtual.setFds(chip);
 
         chip = new MDSound.Chip();
         chip.id = 0;
@@ -129,7 +126,6 @@ logger.log(Level.INFO, "songNo: " + songNo);
         chip.option = null;
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, Mmc5Chip.class);
         put(Mmc5Chip.class, chip);
-        driverVirtual.setMmc5(chip);
 
         chip = new MDSound.Chip();
         chip.id = 0;
@@ -139,7 +135,6 @@ logger.log(Level.INFO, "songNo: " + songNo);
         chip.option = null;
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, N163Chip.class);
         put(N163Chip.class, chip);
-        driverVirtual.setN160(chip);
 
         chip = new MDSound.Chip();
         chip.id = 0;
@@ -149,7 +144,6 @@ logger.log(Level.INFO, "songNo: " + songNo);
         chip.option = null;
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, Vrc6Chip.class);
         put(Vrc6Chip.class, chip);
-        driverVirtual.setVrc6(chip);
 
         chip = new MDSound.Chip();
         chip.id = 0;
@@ -159,7 +153,6 @@ logger.log(Level.INFO, "songNo: " + songNo);
         chip.option = null;
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, Vrc7Chip.class);
         put(Vrc7Chip.class, chip);
-        driverVirtual.setVrc7(chip);
 
         chip = new MDSound.Chip();
         chip.id = 0;
@@ -169,7 +162,6 @@ logger.log(Level.INFO, "songNo: " + songNo);
         chip.option = null;
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, Fme7Chip.class);
         put(Fme7Chip.class, chip);
-        driverVirtual.setFme7(chip);
 
         mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, flatten());
 

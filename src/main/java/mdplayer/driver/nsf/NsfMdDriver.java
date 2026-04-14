@@ -3,11 +3,11 @@ package mdplayer.driver.nsf;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
+import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.NesChip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.plugin.BasePlugin;
-import mdsound.MDSound;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 import vavi.util.ByteUtil;
@@ -28,6 +28,7 @@ public class NsfMdDriver extends BaseDriver implements NsfDriver {
 
     public NsfMdDriver() {
         this.nsf = new Nsf();
+        nsf.getVolume = plugin.chipRegister.chip(NesChip.class)::getVolume;
         nsf.isRealModel = model != EnmModel.RealModel;
         nsf.sampleRate = setting.getOutputDevice().getSampleRate();
         nsf.updateAtMiddle = this::updateAtMiddle;
@@ -57,7 +58,7 @@ public class NsfMdDriver extends BaseDriver implements NsfDriver {
             return null;
         }
 
-        nsf.init(buf);
+        nsf.initInfo(buf, Common.charset);
 
         MetaData md = new MetaData();
         md.set(Tag.GameTitle, nsf.title);
@@ -156,46 +157,6 @@ public class NsfMdDriver extends BaseDriver implements NsfDriver {
     @Override
     public boolean useVrc7() {
         return nsf.useVrc7;
-    }
-
-    @Override
-    public void setApu(MDSound.Chip chip) {
-        nsf.cAPU = chip;
-    }
-
-    @Override
-    public void setDmc(MDSound.Chip chip) {
-        nsf.cDMC = chip;
-    }
-
-    @Override
-    public void setFds(MDSound.Chip chip) {
-        nsf.cFDS = chip;
-    }
-
-    @Override
-    public void setMmc5(MDSound.Chip chip) {
-        nsf.cMMC5 = chip;
-    }
-
-    @Override
-    public void setN160(MDSound.Chip chip) {
-        nsf.cN160 = chip;
-    }
-
-    @Override
-    public void setVrc6(MDSound.Chip chip) {
-        nsf.cVRC6 = chip;
-    }
-
-    @Override
-    public void setVrc7(MDSound.Chip chip) {
-        nsf.cVRC7 = chip;
-    }
-
-    @Override
-    public void setFme7(MDSound.Chip chip) {
-        nsf.cFME7 = chip;
     }
 
     @Override

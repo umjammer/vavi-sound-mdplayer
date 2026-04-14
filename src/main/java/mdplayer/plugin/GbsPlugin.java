@@ -32,7 +32,7 @@ public class GbsPlugin extends BasePlugin<Gbs> implements HasSongNo {
 
     private static final Logger logger = getLogger(GbsPlugin.class.getName());
 
-    /** for spi */
+    @Override
     public void setSongNo(int songNo) {
 logger.log(Level.INFO, "songNo: " + songNo);
         this.songNo = songNo;

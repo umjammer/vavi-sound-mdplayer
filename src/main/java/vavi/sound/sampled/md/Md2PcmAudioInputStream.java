@@ -59,7 +59,7 @@ class Md2PcmAudioInputStream extends AudioInputStream {
 logger.log(Level.DEBUG,"plugin: " + plugin.getClass().getSimpleName());
             this.plugin = plugin;
             if (plugin instanceof HasSongNo hasSongNo)
-                hasSongNo.setSongNo((int) props.getOrDefault("track", 1)); // 1 origin, adjust in each plugin
+                hasSongNo.setSongNo((int) props.getOrDefault("track", 1) - 1); // get 1 origin, set 0 origin
             plugin.prepare();
         }
 

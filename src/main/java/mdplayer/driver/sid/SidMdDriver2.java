@@ -11,10 +11,15 @@ import java.lang.System.Logger.Level;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
+import dotnet4j.io.File;
+import dotnet4j.io.FileAccess;
+import dotnet4j.io.FileMode;
+import dotnet4j.io.FileStream;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.SidChip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.plugin.BasePlugin;
+import mdsound.VisWaveBuffer;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 import vavi.util.ByteUtil;
@@ -116,7 +121,27 @@ public class SidMdDriver2 extends BaseDriver implements SidDriver {
         metaData = getMetaData(vgmBuf);
 
         sid.song = (int) args[0];
-        sid.init(vgmBuf, setting);
+
+        byte[] aryKernel;
+        byte[] aryBasic;
+        byte[] aryCharacter;
+        if (File.exists(setting.getSid().romKernalPath))
+            try (FileStream fs = new FileStream(setting.getSid().romKernalPath, FileMode.Open, FileAccess.Read)) {
+                aryKernel = new byte[(int) fs.getLength()];
+                fs.read(aryKernel, 0, aryKernel.length);
+            }
+        if (File.exists(setting.getSid().romBasicPath))
+            try (FileStream fs = new FileStream(setting.getSid().romBasicPath, FileMode.Open, FileAccess.Read)) {
+                aryBasic = new byte[(int) fs.getLength()];
+                fs.read(aryBasic, 0, aryBasic.length);
+            }
+        if (File.exists(setting.getSid().romCharacterPath))
+            try (FileStream fs = new FileStream(setting.getSid().romCharacterPath, FileMode.Open, FileAccess.Read)) {
+                aryCharacter = new byte[(int) fs.getLength()];
+                fs.read(aryCharacter, 0, aryCharacter.length);
+            }
+
+        sid.init(vgmBuf, setting.getOutputDevice().getSampleRate());
 
         plugin.chipRegister.chip(SidChip.class).setDriver(this);
     }
@@ -175,7 +200,7 @@ static final int INTERVAL = 1024;
 if (CC++ % INTERVAL == 0) {
  logger.log(Level.DEBUG, "SID: %d, %d".formatted(buffer[c + 0], buffer[c + 1]));
 }
-                sid.visWB.enq(buffer[c + 0], buffer[c + 1]);
+                this.visWB.enq(buffer[c + 0], buffer[c + 1]);
                 c += 2;
             }
         } catch (InterruptedException e) {
@@ -187,11 +212,13 @@ if (CC++ % INTERVAL == 0) {
 
     @Override
     public void copyWaveBuffer(short[][] dest) {
-        sid.visWB.copy(dest);
+        this.visWB.copy(dest);
     }
 
     @Override
     public boolean isNotRenderingOnPause() {
         return true;
     }
+
+    final VisWaveBuffer visWB = new VisWaveBuffer();
 }

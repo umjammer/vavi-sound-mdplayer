@@ -2,15 +2,16 @@ package mdplayer.driver.nsf;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.DoubleSupplier;
 import java.util.function.IntConsumer;
+import java.util.function.IntFunction;
 import java.util.function.IntSupplier;
 import java.util.function.LongConsumer;
 
-import mdplayer.Common;
 import mdplayer.Setting;
 import mdplayer.chips.NesChip;
 import mdsound.np.DCFilter;
@@ -19,22 +20,10 @@ import mdsound.np.Filter;
 import mdsound.np.LoopDetector;
 import mdsound.np.NpNesApu;
 import mdsound.np.NpNesDmc;
-import mdsound.np.chip.NesApu;
-import mdsound.np.chip.NesDmc;
-import mdsound.np.chip.NesFds;
-import mdsound.np.chip.NesFme7;
-import mdsound.np.chip.NesMmc5;
-import mdsound.np.chip.NesN106;
-import mdsound.np.chip.NesVrc6;
-import mdsound.np.chip.NesVrc7;
-import mdsound.np.cpu.Km6502;
-import mdsound.np.memory.NesBank;
-import mdsound.np.memory.NesMem;
 import org.apache.commons.lang3.function.BooleanConsumer;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
-import static mdplayer.Common.charset;
 
 
 public class Nsf {
@@ -44,6 +33,8 @@ public class Nsf {
     public static final int NsfClock = 1789773;
 
     static final int FCC_NSF = 0x4d53454e; // "NESM"
+
+    IntFunction<Integer> getVolume;
 
     private int version;
     public int songs;
@@ -99,23 +90,11 @@ public class Nsf {
      */
     public int song;
 
-    private Device.Bus apuBus;
-
-    private Device.Bus stack;
     private Device.Layer layer;
     /** DC filter applied to the final output stage */
     private mdsound.np.DCFilter dcf;
     /** Low-pass filter applied to the final output */
     private mdsound.np.Filter lpf;
-
-    mdsound.MDSound.Chip cAPU = null;
-    mdsound.MDSound.Chip cDMC = null;
-    mdsound.MDSound.Chip cFDS = null;
-    mdsound.MDSound.Chip cMMC5 = null;
-    mdsound.MDSound.Chip cN160 = null;
-    mdsound.MDSound.Chip cVRC6 = null;
-    mdsound.MDSound.Chip cVRC7 = null;
-    mdsound.MDSound.Chip cFME7 = null;
 
     private LoopDetector.NESDetector ld = null;
 //    private NESDetectorEx ld = null;
@@ -138,7 +117,7 @@ public class Nsf {
     IntSupplier getCounter;
     IntConsumer incCounter;
 
-    void init(byte[] buf) {
+    void initInfo(byte[] buf, Charset charset) {
         version = buf[0x05] & 0xff;
         songs = buf[0x06] & 0xff;
         start = buf[0x07] & 0xff;
@@ -211,47 +190,11 @@ public class Nsf {
     }
 
     void init(Setting setting) {
-        chip.bank = new NesBank();
-        chip.mem = new NesMem();
-        chip.cpu = new Km6502(true);
-        chip.apu = new NesApu();
-        chip.dmc = new NesDmc();
-        chip.fds = new NesFds();
-        chip.n106 = new NesN106();
-        chip.vrc6 = new NesVrc6();
-        chip.mmc5 = new NesMmc5();
-        chip.fme7 = new NesFme7();
-        chip.vrc7 = new NesVrc7();
+        chip.start(NsfClock, this.sampleRate);
 
-        chip.apu.apu.init(NsfClock, this.sampleRate);
-        chip.apu.reset();
-        chip.dmc.dmc.init(NsfClock, this.sampleRate);
-        chip.dmc.reset();
-        chip.fds.fds.init(NsfClock, this.sampleRate);
-        chip.fds.reset();
-        chip.n106.setClock(NsfClock);
-        chip.n106.setRate(this.sampleRate);
-        chip.n106.reset();
-        chip.vrc6.setClock(NsfClock);
-        chip.vrc6.setRate(this.sampleRate);
-        chip.vrc6.reset();
-        chip.mmc5.setClock(NsfClock);
-        chip.mmc5.setRate(this.sampleRate);
-        chip.mmc5.reset();
-        chip.mmc5.setCPU(chip.cpu);
-        chip.fme7.setClock(NsfClock);
-        chip.fme7.setRate(this.sampleRate);
-        chip.fme7.reset();
-        chip.vrc7.setClock(NsfClock);
-        chip.vrc7.setRate(this.sampleRate);
-        chip.vrc7.reset();
-
-        chip.dmc.dmc.nes_apu = chip.apu.apu;
-        chip.dmc.dmc.setAPU(chip.apu.apu);
-
-        stack = new Device.Bus();
+        Device.Bus stack = new Device.Bus();
         layer = new Device.Layer();
-        apuBus = new Device.Bus();
+        Device.Bus apuBus = new Device.Bus();
 
         dcf = new DCFilter();
         lpf = new Filter();
@@ -286,55 +229,7 @@ public class Nsf {
         ld.reset();
         stack.attach(ld);
 
-        apuBus.attach(chip.apu);
-        apuBus.attach(chip.dmc);
-
-        chip.apu.setOption(NpNesApu.OPT.UNMUTE_ON_RESET.ordinal(), setting.getNsf().getNESUnmuteOnReset() ? 1 : 0);
-        chip.apu.setOption(NpNesApu.OPT.NONLINEAR_MIXER.ordinal(), setting.getNsf().getNESNonLinearMixer() ? 1 : 0);
-        chip.apu.setOption(NpNesApu.OPT.PHASE_REFRESH.ordinal(), setting.getNsf().getNESPhaseRefresh() ? 1 : 0);
-        chip.apu.setOption(NpNesApu.OPT.DUTY_SWAP.ordinal(), setting.getNsf().getNESDutySwap() ? 1 : 0);
-
-        chip.dmc.setOption(NpNesDmc.OPT.ENABLE_4011.ordinal(), setting.getNsf().getDMCEnable4011() ? 1 : 0);
-        chip.dmc.setOption(NpNesDmc.OPT.ENABLE_PNOISE.ordinal(), setting.getNsf().getDMCEnablePnoise() ? 1 : 0);
-        chip.dmc.setOption(NpNesDmc.OPT.UNMUTE_ON_RESET.ordinal(), setting.getNsf().getDMCUnmuteOnReset() ? 1 : 0);
-        chip.dmc.setOption(NpNesDmc.OPT.DPCM_ANTI_CLICK.ordinal(), setting.getNsf().getDMCDPCMAntiClick() ? 1 : 0);
-        chip.dmc.setOption(NpNesDmc.OPT.NONLINEAR_MIXER.ordinal(), setting.getNsf().getDMCNonLinearMixer() ? 1 : 0);
-        chip.dmc.setOption(NpNesDmc.OPT.RANDOMIZE_NOISE.ordinal(), setting.getNsf().getDMCRandomizeNoise() ? 1 : 0);
-        chip.dmc.setOption(NpNesDmc.OPT.TRI_MUTE.ordinal(), setting.getNsf().getDMCTRImute() ? 1 : 0);
-        chip.dmc.setOption(NpNesDmc.OPT.RANDOMIZE_TRI.ordinal(), setting.getNsf().getDMCRandomizeTRI() ? 1 : 0);
-        chip.dmc.setOption(NpNesDmc.OPT.DPCM_REVERSE.ordinal(), setting.getNsf().getDMCDPCMReverse() ? 1 : 0);
-
-        if (useFds) {
-            boolean write_enable = !setting.getNsf().getFDSWriteDisable8000();
-            chip.fds.setOption(0, setting.getNsf().getFDSLpf());
-            chip.fds.setOption(1, setting.getNsf().getFDS4085Reset() ? 1 : 0);
-            chip.mem.setFDSMode(write_enable);
-            chip.bank.setFDSMode(write_enable);
-            chip.bank.setBankDefault(6, bankSwitch[6] & 0xff);
-            chip.bank.setBankDefault(7, bankSwitch[7] & 0xff);
-            apuBus.attach(chip.fds);
-        } else {
-            chip.mem.setFDSMode(false);
-            chip.bank.setFDSMode(false);
-        }
-        if (useN106) {
-            chip.n106.setOption(0, setting.getNsf().getN160Serial() ? 1 : 0);
-            apuBus.attach(chip.n106);
-        }
-        if (useVrc6) {
-            apuBus.attach(chip.vrc6);
-        }
-        if (useMmc5) {
-            chip.mmc5.setOption(0, setting.getNsf().getMMC5NonLinearMixer() ? 1 : 0);
-            chip.mmc5.setOption(1, setting.getNsf().getMMC5PhaseRefresh() ? 1 : 0);
-            apuBus.attach(chip.mmc5);
-        }
-        if (useFme7) {
-            apuBus.attach(chip.fme7);
-        }
-        if (useVrc7) {
-            apuBus.attach(chip.vrc7);
-        }
+        chip.setOptions(apuBus, useFds, useN106, useVrc6, useMmc5, useFme7, useVrc7, bankSwitch);
 
         if (bmax > 0) layer.attach(chip.bank);
         layer.attach(chip.mem);
@@ -451,20 +346,20 @@ int CC;
             chip.apu.tick(apu_clocks);
             chip.apu.render(buf);
 
-            int mul = (int) (16384.0 * Math.pow(10.0, cAPU.getTVolume() / 40.0));
+            int mul = (int) (16384.0 * Math.pow(10.0, getVolume.apply(0) / 40.0)); // apu
             out[0] = (buf[0] * mul) >> 13;
             out[1] = (buf[1] * mul) >> 13;
 
             chip.dmc.tick(apu_clocks);
             chip.dmc.render(buf);
-            mul = (int) (16384.0 * Math.pow(10.0, cDMC.getTVolume() / 40.0));
+            mul = (int) (16384.0 * Math.pow(10.0, getVolume.apply(1) / 40.0)); // dmc
             out[0] += (buf[0] * mul) >> 13;
             out[1] += (buf[1] * mul) >> 13;
 
             if (useFds) {
                 chip.fds.tick(apu_clocks);
                 chip.fds.render(buf);
-                mul = (int) (16384.0 * Math.pow(10.0, cFDS.getTVolume() / 40.0));
+                mul = (int) (16384.0 * Math.pow(10.0, getVolume.apply(2) / 40.0)); // fds
                 out[0] += (buf[0] * mul) >> 13;
                 out[1] += (buf[1] * mul) >> 13;
             }
@@ -472,7 +367,7 @@ int CC;
             if (useN106) {
                 chip.n106.tick(apu_clocks);
                 chip.n106.render(buf);
-                mul = (int) (16384.0 * Math.pow(10.0, cN160.getTVolume() / 40.0));
+                mul = (int) (16384.0 * Math.pow(10.0, getVolume.apply(3) / 40.0)); // n160
                 out[0] += (buf[0] * mul) >> 10;
                 out[1] += (buf[1] * mul) >> 10;
             }
@@ -480,7 +375,7 @@ int CC;
             if (useVrc6) {
                 chip.vrc6.tick(apu_clocks);
                 chip.vrc6.render(buf);
-                mul = (int) (16384.0 * Math.pow(10.0, cVRC6.getTVolume() / 40.0));
+                mul = (int) (16384.0 * Math.pow(10.0, getVolume.apply(4) / 40.0)); // vrc6
                 out[0] += (buf[0] * mul) >> 10;
                 out[1] += (buf[1] * mul) >> 10;
             }
@@ -488,7 +383,7 @@ int CC;
             if (useMmc5) {
                 chip.mmc5.tick(apu_clocks);
                 chip.mmc5.render(buf);
-                mul = (int) (16384.0 * Math.pow(10.0, cMMC5.getTVolume() / 40.0));
+                mul = (int) (16384.0 * Math.pow(10.0, getVolume.apply(5) / 40.0)); // mmc5
                 out[0] += (buf[0] * mul) >> 10;
                 out[1] += (buf[1] * mul) >> 10;
             }
@@ -496,7 +391,7 @@ int CC;
             if (useFme7) {
                 chip.fme7.tick(apu_clocks);
                 chip.fme7.render(buf);
-                mul = (int) (16384.0 * Math.pow(10.0, cFME7.getTVolume() / 40.0));
+                mul = (int) (16384.0 * Math.pow(10.0, getVolume.apply(6) / 40.0)); // fme7
                 out[0] += (buf[0] * mul) >> 9;
                 out[1] += (buf[1] * mul) >> 9;
             }
@@ -504,7 +399,7 @@ int CC;
             if (useVrc7) {
                 chip.vrc7.tick(apu_clocks);
                 chip.vrc7.render(buf);
-                mul = (int) (16384.0 * Math.pow(10.0, cVRC7.getTVolume() / 40.0));
+                mul = (int) (16384.0 * Math.pow(10.0, getVolume.apply(7) / 40.0)); // vrc7
                 out[0] += (buf[0] * mul) >> 10;
                 out[1] += (buf[1] * mul) >> 10;
             }

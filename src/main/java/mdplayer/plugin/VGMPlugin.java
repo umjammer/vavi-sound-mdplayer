@@ -1001,7 +1001,7 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
                 chipRegister.chip(Ym2608Chip.class).setSsgVolume((byte) 1, SSGVolumeFromTAG, EnmModel.RealModel);
         }
 
-        chipRegister.chip(Ym2151Chip.class).setYm2151Hosei(EnmModel.VirtualModel, driverVirtual.vgm.ym2151ClockValue);
-        if (driverReal != null) chipRegister.chip(Ym2151Chip.class).setYm2151Hosei(EnmModel.RealModel, driverReal.vgm.ym2151ClockValue);
+        chipRegister.chip(Ym2151Chip.class).setCorrection(EnmModel.VirtualModel, driverVirtual.vgm.ym2151ClockValue);
+        if (driverReal != null) chipRegister.chip(Ym2151Chip.class).setCorrection(EnmModel.RealModel, driverReal.vgm.ym2151ClockValue);
     }
 }

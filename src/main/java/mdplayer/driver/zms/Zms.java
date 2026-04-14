@@ -17,7 +17,6 @@ import dotnet4j.io.File;
 import dotnet4j.io.FileNotFoundException;
 import dotnet4j.io.Path;
 import dotnet4j.util.compat.Tuple;
-import mdplayer.Common;
 import mdplayer.driver.mxdrv.MXDRV.Pcm8Interface;
 import mdplayer.driver.mxdrv.MXDRV.Pcm8St;
 import mdplayer.emu.common.FMTimer;
@@ -211,7 +210,7 @@ public class Zms {
             if (playingFileName.toUpperCase().endsWith(".ZDF")) {
                 UnZDF cmd = new UnZDF();
                 cmd.dir = dir;
-                fileMng = cmd.unpack(playingArcFileName, Common.charset);
+                fileMng = cmd.unpack(playingArcFileName, charset);
             }
 
         } else {

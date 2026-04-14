@@ -99,8 +99,8 @@ public class ZMSPlugin extends BasePlugin<ZmsDriver> {
         if (contains(Ym2151Chip.class, 0))
             chipRegister.chip(Ym2151Chip.class).writeClock(0, 4000000, EnmModel.RealModel);
 
-        chipRegister.chip(Ym2151Chip.class).hosei[0] = 4000000;
-        chipRegister.chip(Ym2151Chip.class).hosei[1] = 4000000;
+        chipRegister.chip(Ym2151Chip.class).corrections[0] = 4000000;
+        chipRegister.chip(Ym2151Chip.class).corrections[1] = 4000000;
 
         chipLED.put("PriPCM8", 0);
         chipLED.put("PriMPCMX68k", 0);

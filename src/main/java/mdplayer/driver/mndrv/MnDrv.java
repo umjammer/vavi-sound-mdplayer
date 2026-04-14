@@ -7,7 +7,6 @@ import java.util.function.BiConsumer;
 
 import dotnet4j.util.compat.QuadConsumer;
 import dotnet4j.util.compat.Tuple;
-import mdplayer.Common;
 import mdplayer.emu.common.FMTimer;
 import mdplayer.emu.nise68.XMemory;
 import mdplayer.driver.zms.Zms.MPCMSt;
@@ -46,8 +45,6 @@ public class MnDrv {
         devpsgemu = new DevPsgEmu();
         devrhy = new DevRhy();
         interrupt = new Interrupt();
-        timerOPM = new FMTimer(true, null, 4000000, Common.VGMProcSampleRate);
-        timerOPN = new FMTimer(false, null, 8000000, Common.VGMProcSampleRate);
 
         comanalyze.reg = reg;
         comanalyze.ab = ab;
@@ -126,8 +123,6 @@ public class MnDrv {
         interrupt.devopn = devopn;
         interrupt.devopm = devopm;
         interrupt.devmpcm = devmpcm;
-        interrupt.timerOPM = timerOPM;
-        interrupt.timerOPN = timerOPN;
     }
 
     public final Reg reg;
@@ -145,8 +140,8 @@ public class MnDrv {
     public final DevRhy devrhy;
     public final Interrupt interrupt;
     public final Ab ab;
-    public final FMTimer timerOPM;
-    public final FMTimer timerOPN;
+    public FMTimer timerOPM;
+    public FMTimer timerOPN;
 
     final byte[] vtbl = new byte[128 * 2];
     MPcmInterface mpcm;
@@ -166,7 +161,12 @@ public class MnDrv {
         }
     }
 
-    void init(byte[] data, boolean isRealModel) {
+    void init(byte[] data, boolean isRealModel, int sampleRate) {
+        timerOPM = new FMTimer(true, null, 4000000, sampleRate);
+        timerOPN = new FMTimer(false, null, 8000000, sampleRate);
+        interrupt.timerOPM = timerOPM;
+        interrupt.timerOPN = timerOPN;
+
         this.isRealModel = isRealModel;
 
         int memPtr = 0x03_0000;

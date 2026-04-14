@@ -93,7 +93,7 @@ public class SidTestProgram {
         engine = new playSidFp(SamplingRate);
         engine.setRoms(null, null, null); // No ROMs for now
 
-        ReSidBuilder rs = new ReSidBuilder("ReSid", setting);
+        ReSidBuilder rs = new ReSidBuilder("ReSid", setting.getOutputDevice().getSampleRate());
         rs.create(1); // Create 1 SID
 
         tune = new SidTune(buf, buf.length);
