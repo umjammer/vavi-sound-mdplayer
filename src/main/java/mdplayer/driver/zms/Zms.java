@@ -20,7 +20,7 @@ import dotnet4j.util.compat.Tuple;
 import mdplayer.Common;
 import mdplayer.driver.mxdrv.MXDRV.Pcm8Interface;
 import mdplayer.driver.mxdrv.MXDRV.Pcm8St;
-import mdplayer.emu.fm.FMTimer;
+import mdplayer.emu.common.FMTimer;
 import mdplayer.emu.nise68.FileMng;
 import mdplayer.emu.nise68.MemMng;
 import mdplayer.emu.nise68.Nise68;

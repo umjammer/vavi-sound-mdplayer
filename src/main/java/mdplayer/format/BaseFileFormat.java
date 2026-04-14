@@ -17,9 +17,9 @@ import javax.sound.sampled.AudioFormat.Encoding;
 import dotnet4j.io.File;
 import dotnet4j.io.Path;
 import dotnet4j.util.compat.Tuple;
-import mdplayer.Common;
 import mdplayer.PlayList;
 import mdplayer.Setting;
+import mdplayer.emu.common.Utils;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 import vavi.util.ByteUtil;
@@ -121,8 +121,8 @@ public abstract class BaseFileFormat implements FileFormat {
 logger.log(Level.DEBUG, "try: " + extFn);
                 return BaseFileFormat.getFileSearchPathList(srcFn).stream()
                         .map(dirPath -> dirPath.resolve(extFn))
-                        .filter(p -> Common.fileExistsIgnoreCase(p) != null).findFirst()
-                        .map(Common::fileExistsIgnoreCase)
+                        .filter(p -> Utils.fileExistsIgnoreCase(p) != null).findFirst()
+                        .map(Utils::fileExistsIgnoreCase)
                         .map(Object::toString)
                         .map(File::readAllBytes).orElse(null);
             } else {

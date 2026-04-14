@@ -1,4 +1,4 @@
-package mdplayer.emu.fm;
+package mdplayer.emu.common;
 
 
 public class FMTimer {

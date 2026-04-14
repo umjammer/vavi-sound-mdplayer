@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 import dotnet4j.util.compat.StringUtilities;
-import mdplayer.Common;
+import mdplayer.emu.common.Utils;
 import vavi.util.ByteUtil;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Archives;
@@ -634,7 +634,7 @@ logger.log(Level.TRACE, "error message from program");
             return true;
         }
         Path fn = filePath.resolve(filename);
-        Path realFn = Common.fileExistsIgnoreCase(fn);
+        Path realFn = Utils.fileExistsIgnoreCase(fn);
         if (realFn != null || fileTemp.existTemp(fn.toString())) {
             fndFilename[0] = realFn != null ? realFn.toString() : fn.toString();
             return true;
@@ -645,7 +645,7 @@ logger.log(Level.TRACE, "error message from program");
             for (String fp : searchPath) {
                 Path sfn = Path.of(fp, f);
                 logger.log(Level.INFO, "Search File: %s".formatted(sfn));
-                Path realSfn = Common.fileExistsIgnoreCase(sfn);
+                Path realSfn = Utils.fileExistsIgnoreCase(sfn);
                 if (realSfn != null) {
                     fndFilename[0] = realSfn.toString();
 logger.log(Level.INFO, "file found: " + fn);
@@ -667,7 +667,7 @@ logger.log(Level.INFO, "file not found: " + fn);
 
     private boolean playingArcFileExist(String fn) {
         if (playingArcFile.isEmpty()) return false;
-        Path realPath = Common.fileExistsIgnoreCase(Path.of(playingArcFile));
+        Path realPath = Utils.fileExistsIgnoreCase(Path.of(playingArcFile));
         if (realPath == null) return false;
 
         try {
@@ -685,7 +685,7 @@ logger.log(Level.INFO, "file not found: " + fn);
 
     private byte[] readAllByteFromArcFile(String fs) {
         if (playingArcFile.isEmpty()) return null;
-        Path realPath = Common.fileExistsIgnoreCase(Path.of(playingArcFile));
+        Path realPath = Utils.fileExistsIgnoreCase(Path.of(playingArcFile));
         if (realPath == null) return null;
 
         try {
@@ -709,7 +709,7 @@ logger.log(Level.INFO, "file not found: " + fn);
             if (fileTemp.existTemp(p.toString()))
                 return fileTemp.readTemp(fn);
 
-            Path realPath = Common.fileExistsIgnoreCase(p);
+            Path realPath = Utils.fileExistsIgnoreCase(p);
             if (realPath != null)
                 return Files.readAllBytes(realPath);
 
@@ -718,7 +718,7 @@ logger.log(Level.INFO, "file not found: " + fn);
                 for (String fp : searchPath) {
                     Path sfn = Path.of(fp, f);
                     logger.log(Level.INFO, "Search File: %s".formatted(sfn));
-                    Path realSfn = Common.fileExistsIgnoreCase(Path.of(playingArcFile));
+                    Path realSfn = Utils.fileExistsIgnoreCase(Path.of(playingArcFile));
                     if (realSfn != null) {
                         byte[] b = Files.readAllBytes(realSfn);
                         logger.log(Level.INFO, "read data size: %s".formatted(b.length));

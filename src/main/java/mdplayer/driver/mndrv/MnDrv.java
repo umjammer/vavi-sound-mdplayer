@@ -8,7 +8,7 @@ import java.util.function.BiConsumer;
 import dotnet4j.util.compat.QuadConsumer;
 import dotnet4j.util.compat.Tuple;
 import mdplayer.Common;
-import mdplayer.emu.fm.FMTimer;
+import mdplayer.emu.common.FMTimer;
 import mdplayer.emu.nise68.XMemory;
 import mdplayer.driver.zms.Zms.MPCMSt;
 import mdplayer.driver.zms.Zms.MPcmInterface;

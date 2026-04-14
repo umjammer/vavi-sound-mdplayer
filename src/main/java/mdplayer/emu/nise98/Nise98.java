@@ -6,7 +6,7 @@ import java.util.Objects;
 import java.util.function.Function;
 
 import dotnet4j.util.compat.TriConsumer;
-import mdplayer.emu.fm.FMTimer;
+import mdplayer.emu.common.FMTimer;
 
 import static java.lang.System.getLogger;
 
