@@ -35,7 +35,7 @@ public class SystemRAMBank implements IBank {
     public final byte[] ram = new byte[0x10000];
 
     /**
-     //Initialize RAM with powerup pattern.
+     * Initialize RAM with power-up pattern.
      */
     public void reset() {
         Arrays.fill(ram, (byte) 0);

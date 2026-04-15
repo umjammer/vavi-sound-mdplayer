@@ -109,14 +109,14 @@ public class PmdDriver extends BaseDriver {
      * @param args 0: FileFormat
      */
     @Override
-    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
+    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
                      int latency, int waitTime, Object... args) {
 
         FileFormat fileFormat = (FileFormat) args[0];
         mtype = fileFormat instanceof MMLFileFormat ? PMDFileType.MML : PMDFileType.M;
-        metaData = getMetaData(vgmBuf, 0, mtype);
+        metaData = getMetaData(dataBuf, 0, mtype);
 
-        this.dataBuf = vgmBuf;
+        this.dataBuf = dataBuf;
         this.plugin = plugin;
         this.model = model;
         this.latency = latency;

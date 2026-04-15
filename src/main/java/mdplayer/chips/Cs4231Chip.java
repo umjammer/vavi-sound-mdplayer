@@ -6,9 +6,6 @@
 
 package mdplayer.chips;
 
-import mdplayer.Chip;
-import mdplayer.driver.BaseDriver;
-import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.instrument.Cs4231Inst;
 

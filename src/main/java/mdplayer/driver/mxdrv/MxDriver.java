@@ -259,14 +259,14 @@ public class MxDriver extends BaseDriver {
     }
 
     @Override
-    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model, int latency, int waitTime, Object... args) {
-        this.dataBuf = vgmBuf;
+    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model, int latency, int waitTime, Object... args) {
+        this.dataBuf = dataBuf;
         this.plugin = plugin;
         this.model = model;
         this.latency = latency;
         this.waitTime = waitTime;
 
-        metaData = getMetaData(vgmBuf);
+        metaData = getMetaData(dataBuf);
         counter = 0;
         totalCounter = 0;
         loopCounter = 0;
@@ -282,7 +282,7 @@ public class MxDriver extends BaseDriver {
         byte[][] pdx = new byte[1][];
         int[] pdxSize = new int[1];
         String[] pdxFileName = new String[1];
-        makeMdxBuf(vgmBuf, mdx, mdxSize, pdxFileName);
+        makeMdxBuf(dataBuf, mdx, mdxSize, pdxFileName);
         makePdxBuf(pdxFileName[0], pdx, pdxSize);
         if ((pdxFileName[0] != null && !pdxFileName[0].isEmpty()) && pdx[0] == null) {
             logger.log(Level.WARNING, "pdxFileName: %s, pdx: %s".formatted(pdxFileName[0], pdx[0]));

@@ -1,5 +1,6 @@
 package mdplayer.driver.zms;
 
+import java.io.IOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.util.List;
@@ -234,9 +235,9 @@ public class ZmsDriver extends BaseDriver {
     }
 
     @Override
-    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
+    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
                      int latency, int waitTime, Object... args) {
-        metaData = getMetaData(vgmBuf, 0);
+        metaData = getMetaData(dataBuf, 0);
         this.plugin = plugin;
         loopCounter = 0;
         curLoop = 0;
@@ -246,9 +247,8 @@ public class ZmsDriver extends BaseDriver {
         zms.setZPDSearchPath();
 
         try {
-            zms.run(vgmBuf);
-        } catch (Exception e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
+            zms.run(dataBuf);
+        } catch (IOException e) {
             throw new IllegalStateException(e);
         }
     }

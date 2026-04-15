@@ -32,7 +32,7 @@ public class XgmDriver extends BaseDriver {
         xgm.pcmStep = setting.getOutputDevice().getSampleRate() / 14000.0;
         xgm.stop = () -> stopped = true;
         xgm.loop = () -> curLoop++;
-        xgm.tag = () -> metaData = getMetaData(dataBuf);
+        xgm.updateMetaData = () -> metaData = getMetaData(dataBuf);
         xgm.ym2612Write = (p, a, d) -> plugin.chipRegister.chip(Ym2612Chip.class).write(0, p, a, d, model, frameCounter);
         xgm.sn76489Write = v -> plugin.chipRegister.chip(Sn76489Chip.class).write(0, v, model);
     }
@@ -42,9 +42,9 @@ public class XgmDriver extends BaseDriver {
     }
 
     @Override
-    public void init(byte[] xgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
+    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
                      int latency, int waitTime, Object... args) {
-        this.dataBuf = xgmBuf;
+        this.dataBuf = dataBuf;
         this.plugin = plugin;
         this.model = model;
         this.latency = latency;
@@ -59,7 +59,7 @@ public class XgmDriver extends BaseDriver {
         speed = 1;
         speedCounter = 0;
 
-        xgm.getXGMInfo(dataBuf);
+        xgm.getXGMInfo(this.dataBuf);
 
         if (model == EnmModel.RealModel) {
             plugin.chipRegister.chip(Ym2612Chip.class).setSyncWait((byte) 0, 1);
@@ -69,7 +69,7 @@ public class XgmDriver extends BaseDriver {
         // Initializing the Driver
         xgm.init();
 
-        xgm.xgmBuf = dataBuf;
+        xgm.xgmBuf = this.dataBuf;
     }
 
     @Override
@@ -97,15 +97,15 @@ public class XgmDriver extends BaseDriver {
 
     @Override
     public MetaData getMetaData(byte[] buf, Object... args) {
-        xgm.getXGMInfo(buf);
+        xgm.getXGMInfo(buf); // #getMetaData below is called inside
         return metaData;
     }
 
-    private MetaData getMetaData(byte[] vgmBuf) {
+    private MetaData getMetaData(byte[] dataBuf) {
 
         if (!xgm.existGD3) return new MetaData();
 
-        MetaData md = Common.getMetaData(vgmBuf, xgm.gd3InfoStartAddr + 12);
+        MetaData md = Common.getMetaData(dataBuf, xgm.gd3InfoStartAddr + 12);
         md.set(Tag.Chip, usedChips);
 
         return md;

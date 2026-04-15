@@ -27,7 +27,7 @@ public class AyDriver extends BaseDriver {
     private AY ay;
 
     @Override
-    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
+    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
                      int latency, int waitTime, Object... args) {
         this.plugin = plugin;
         loopCounter = 0;
@@ -42,7 +42,7 @@ public class AyDriver extends BaseDriver {
         ay.setSampleRate(setting.getOutputDevice().getSampleRate());
 
         try {
-            ay.run(vgmBuf);
+            ay.run(dataBuf);
             ay.setup(songNo,
                     (r, d) -> plugin.chipRegister.chip(Ay8910Chip.class).write(0, r, d, model),
                     () -> plugin.chipRegister.chip(ZxBeepChip.class).write(0, -1, -1, -1, model)

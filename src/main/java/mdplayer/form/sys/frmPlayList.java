@@ -99,8 +99,9 @@ public class frmPlayList extends JFrame {
         setting = frm.setting;
         initializeComponent();
 
-        playList = PlayList.Load(null);
-        playList.setDGV(dgvList);
+        playList = PlayList.load(null);
+        playList.addRow = row -> ((DefaultTableModel) dgvList.getModel()).addRow(row);
+        playList.setRow = (index, row) -> ((DefaultTableModel) dgvList.getModel()).insertRow(index, row);
         playIndex = -1;
 
         oldPlayIndex = -1;
@@ -555,12 +556,13 @@ loopEx:
             String filename = ofd.getSelectedFile().getPath();
 
             if (filename.toLowerCase().lastIndexOf(".m3u") == -1) {
-                pl = PlayList.Load(filename);
+                pl = PlayList.load(filename);
                 playing = false;
                 playList = pl;
-                playList.setDGV(dgvList);
+                playList.addRow = row -> ((DefaultTableModel) dgvList.getModel()).addRow(row);
+                playList.setRow = (index, row) -> ((DefaultTableModel) dgvList.getModel()).insertRow(index, row);
             } else {
-                pl = PlayList.LoadM3U(filename);
+                pl = PlayList.loadM3U(filename);
                 playing = false;
                 playList.getMusics().clear();
                 for (PlayList.Music ms : pl.getMusics()) {

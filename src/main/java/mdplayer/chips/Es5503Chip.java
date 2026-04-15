@@ -8,10 +8,7 @@ package mdplayer.chips;
 
 import java.util.Arrays;
 
-import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
-import mdplayer.driver.BaseDriver;
-import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.instrument.Es5503Inst;
 

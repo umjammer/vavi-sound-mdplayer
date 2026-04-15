@@ -35,6 +35,7 @@ public interface FileFormat {
      */
     List<Tuple<String, byte[]>> getExtendFile(String fn, byte[] srcBuf, Archive archive /* = null */, Entry entry /* = null */);
 
+    // TODO move logic from form to here
     String[] getPresetMixerBalance();
 
     byte[] getAllBytes(String filename);

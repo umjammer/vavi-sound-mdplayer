@@ -70,11 +70,11 @@ logger.log(Level.DEBUG, "type: " + mtype);
     }
 
     @Override
-    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
+    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
                      int latency, int waitTime, Object... args) {
-        metaData = getMetaData(vgmBuf, 0);
+        metaData = getMetaData(dataBuf, 0);
 
-        this.dataBuf = vgmBuf;
+        this.dataBuf = dataBuf;
         this.plugin = plugin;
         this.model = model;
         this.latency = latency;

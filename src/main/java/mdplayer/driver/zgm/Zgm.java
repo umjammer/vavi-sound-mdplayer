@@ -50,9 +50,9 @@ public class Zgm extends BaseDriver {
     }
 
     @Override
-    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
+    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
                      int latency, int waitTime, Object... args) {
-        this.dataBuf = vgmBuf;
+        this.dataBuf = dataBuf;
         this.plugin = plugin;
         this.model = model;
         this.latency = latency;
@@ -67,7 +67,7 @@ public class Zgm extends BaseDriver {
         speed = 1;
         speedCounter = 0;
 
-        getZGMInfo(vgmBuf);
+        getZGMInfo(dataBuf);
     }
 
     @Override

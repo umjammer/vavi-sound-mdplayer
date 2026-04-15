@@ -33,8 +33,6 @@ import static java.lang.System.getLogger;
 /**
  * Sid2.
  *
- * TODO eliminate mdplayer packages
- *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-02-16 nsano initial version <br>
  */
@@ -115,7 +113,7 @@ logger.log(Level.TRACE, "audioDriver: " + audioDriver);
 
             sidPlayer.play(sidTune);
             while (sidPlayer.stateProperty().get() != State.PLAY) {
-                try { Thread.sleep(10L); } catch (InterruptedException ex) { /* noop */ }
+                try { Thread.sleep(10L); } catch (InterruptedException _) {}
             }
 
             // Get tune details

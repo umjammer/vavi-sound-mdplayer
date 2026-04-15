@@ -31,7 +31,7 @@ import mdplayer.driver.sid.libsidplayfp.EventCallback;
 import mdplayer.driver.sid.libsidplayfp.EventScheduler;
 import mdplayer.driver.sid.libsidplayfp.EventScheduler.EventPhase;
 import mdplayer.driver.sid.libsidplayfp.SidEndian;
-import mdplayer.driver.sid.libsidplayfp.c64.cia.InterruptSource.INTERRUPT;
+import mdplayer.driver.sid.libsidplayfp.c64.cia.InterruptSource.Interrupt;
 
 
 /**
@@ -71,7 +71,7 @@ public class Mos6526 {
     }
 
     /**
-     * This instanceof the timer a of this CIA.
+     * This instanceof the timer A of this CIA.
      * <p>
      * @author Ken Händel
      */
@@ -90,10 +90,10 @@ public class Mos6526 {
         }
 
         /**
-         * Create timer a.
+         * Create timer A.
          */
         public TimerA(EventScheduler scheduler, Mos6526 parent) {
-            super("CIA Timer a", scheduler, parent);
+            super("CIA Timer A", scheduler, parent);
         }
     }
 
@@ -231,7 +231,7 @@ public class Mos6526 {
         }
     }
 
-    // Event context.
+    /** Event context. */
     protected final EventScheduler eventScheduler;
 
     // Ports
@@ -240,33 +240,33 @@ public class Mos6526 {
     protected final byte ddra;
     protected final byte ddrb;
 
-    // These are all CIA registers.
+    /** These are all CIA registers. */
     protected final byte[] regs = new byte[0x10];
 
     // Timers a and B.
     protected final TimerA timerA;
     protected final TimerB timerB;
 
-    // Interrupt Source
+    /** Interrupt Source */
     protected final InterruptSource interruptSource;
 
-    // TOD
+    /** TOD */
     protected final Tod tod;
 
-    // Serial data Registers
+    /** Serial data Registers */
     protected final SerialPort serialPort;
 
-    // Have we already scheduled CIA->CPU Interrupt transition?
+    /** Have we already scheduled CIA->CPU Interrupt transition? */
     protected boolean triggerScheduled;
 
-    // Events
+    /** Events */
     protected final EventCallback<Mos6526> bTickEvent;
 
     /**
      * Trigger an Interrupt from TOD.
      */
     public void todInterrupt() {
-        interruptSource.trigger((byte) INTERRUPT.INTERRUPT_ALARM.v);
+        interruptSource.trigger((byte) Interrupt.ALARM.v);
     }
 
     /**
@@ -286,10 +286,10 @@ public class Mos6526 {
     }
 
     /**
-     * Timer a underflow.
+     * Timer A underflow.
      */
     public void underflowA() {
-        interruptSource.trigger((byte) INTERRUPT.INTERRUPT_UNDERFLOW_A.v);
+        interruptSource.trigger((byte) Interrupt.UNDERFLOW_A.v);
 
         if ((regs[Reg.CRB.ordinal()] & 0x41) == 0x41) {
             if (timerB.started()) {
@@ -302,7 +302,7 @@ public class Mos6526 {
      * Timer B underflow.
      */
     public void underflowB() {
-        interruptSource.trigger((byte) INTERRUPT.INTERRUPT_UNDERFLOW_B.v);
+        interruptSource.trigger((byte) Interrupt.UNDERFLOW_B.v);
     }
 
     /**
@@ -407,10 +407,8 @@ public class Mos6526 {
     /**
      * Write CIA register.
      * <p>
-     * @param addr
-     *            register address to write (lowest 4 bits)
-     * @param data
-     *            value to write
+     * @param addr register address to write (lowest 4 bits)
+     * @param data value to write
      */
     protected void write(byte addr, byte data) {
         addr &= 0x0f;

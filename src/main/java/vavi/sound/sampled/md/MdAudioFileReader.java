@@ -92,7 +92,7 @@ logger.log(DEBUG, "enter: available: " + bitStream.available() + ", " + bitStrea
         AudioFileFormat.Type type;
         try {
             bitStream.mark(10); // *1
-            InputStream in = Archives.getInputStream(bitStream); // TODO 2nd time doesn't work well
+            InputStream in = Archives.getInputStream(bitStream);
 logger.log(Level.TRACE, "input stream M: " + in + ", " + in.available());
             if (!in.markSupported()) {
                 in = new BufferedInputStream(in, 20 * 1024 * 1024);

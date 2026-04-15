@@ -48,16 +48,16 @@ public class BuiltInMoonDriver extends BaseDriver {
     }
 
     @Override
-    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
+    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
                      int latency, int waitTime, Object... args) {
 
-        this.dataBuf = vgmBuf;
+        this.dataBuf = dataBuf;
         this.plugin = plugin;
         this.model = model;
         this.latency = latency;
         this.waitTime = waitTime;
 
-        metaData = getMetaData(vgmBuf);
+        metaData = getMetaData(dataBuf);
         counter = 0;
         totalCounter = 0;
         loopCounter = 0;
@@ -68,14 +68,14 @@ public class BuiltInMoonDriver extends BaseDriver {
 
         try {
             a = 0;
-            for (int i = 0; i < vgmBuf.length; i++) {
+            for (int i = 0; i < dataBuf.length; i++) {
                 if (i % 0x4000 == 0) {
                     int af = a;
                     changePage3();
                     a = (byte) af;
                     a += 2;
                 }
-                writeMemory((0x8000 + (i % 0x4000)) & 0xffff, vgmBuf[i] & 0xff);
+                writeMemory((0x8000 + (i % 0x4000)) & 0xffff, dataBuf[i] & 0xff);
             }
         } catch (Exception ex) {
 logger.log(Level.DEBUG, ex.getMessage(), ex);

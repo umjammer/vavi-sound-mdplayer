@@ -56,7 +56,7 @@ public class MusicaDriver extends BaseDriver {
     }
 
     @Override
-    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
+    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
                      int latency, int waitTime, Object... args) {
         this.plugin = plugin;
         loopCounter = 0;
@@ -65,7 +65,7 @@ public class MusicaDriver extends BaseDriver {
         frameCounter = -latency - waitTime;
 
         try {
-            musica.run(vgmBuf);
+            musica.run(dataBuf);
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }

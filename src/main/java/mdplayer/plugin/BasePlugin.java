@@ -148,24 +148,6 @@ logger.log(Level.TRACE, "stop: " + this.stopped + ", " + this.hashCode());
         masterVolume = setting.getBalance().getMasterVolume();
     }
 
-    public void changeChipSampleRate(MDSound.Chip chip, int newSmplRate) {
-
-        if (chip.samplingRate == newSmplRate)
-            return;
-
-        // quick and dirty hack to make sample rate changes work
-        chip.samplingRate = newSmplRate;
-        if (chip.samplingRate < setting.getOutputDevice().getSampleRate())
-            chip.resampler = 0x01;
-        else if (chip.samplingRate == setting.getOutputDevice().getSampleRate())
-            chip.resampler = 0x02;
-        else if (chip.samplingRate > setting.getOutputDevice().getSampleRate())
-            chip.resampler = 0x03;
-        chip.smpP = 1;
-        chip.smpNext -= chip.smpLast;
-        chip.smpLast = 0x00;
-    }
-
     @Override
     public void stop() {
 logger.log(Level.TRACE, "stop enter: " + this.stopped);
@@ -363,11 +345,5 @@ logger.log(Level.INFO, "close enter");
     public void setMasterVolume(boolean isAbs, int volume) {
         masterVolume = Common.range((isAbs ? 0 : setting.getBalance().getMasterVolume()) + volume, -192, 20);
         setting.getBalance().setMasterVolume(masterVolume);
-    }
-
-    boolean emuOnly;
-
-    public boolean isEmuOnly() {
-        return emuOnly;
     }
 }

@@ -95,15 +95,15 @@ public class MnDriver extends BaseDriver {
     }
 
     @Override
-    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
+    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
                      int latency, int waitTime, Object... args) {
-        this.dataBuf = vgmBuf;
+        this.dataBuf = dataBuf;
         this.plugin = plugin;
         this.model = model;
         this.latency = latency;
         this.waitTime = waitTime;
 
-        metaData = getMetaData(vgmBuf);
+        metaData = getMetaData(dataBuf);
         counter = 0;
         totalCounter = 0;
         loopCounter = 0;
@@ -114,7 +114,7 @@ public class MnDriver extends BaseDriver {
 
         plugin.chipRegister.chip(Ym2151Chip.class).setCorrection(model, 4000000);
 
-        mndrv.init(vgmBuf, model == EnmModel.RealModel, Common.VGMProcSampleRate);
+        mndrv.init(dataBuf, model == EnmModel.RealModel, Common.VGMProcSampleRate);
     }
 
     @Override

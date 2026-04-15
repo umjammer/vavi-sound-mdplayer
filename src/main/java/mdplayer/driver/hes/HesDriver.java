@@ -53,10 +53,10 @@ public class HesDriver extends BaseDriver {
      * @param args 0: [int] song number
      */
     @Override
-    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
+    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
                      int latency, int waitTime, Object... args) {
 
-        this.dataBuf = vgmBuf;
+        this.dataBuf = dataBuf;
         this.plugin = plugin;
         this.model = model;
         this.latency = latency;
@@ -79,9 +79,9 @@ public class HesDriver extends BaseDriver {
         speed = 1;
         speedCounter = 0;
 
-        metaData = getMetaData(vgmBuf);
+        metaData = getMetaData(dataBuf);
 
-        if (hes.nezPlay.HESLoad(vgmBuf, vgmBuf.length) != 0)
+        if (hes.nezPlay.HESLoad(dataBuf, dataBuf.length) != 0)
             throw new IllegalArgumentException("invalid hes data");
         hes.nezPlay.heshes.freqency = Common.VGMProcSampleRate;
         hes.nezPlay.heshes.huC6280Write = (a, v) -> plugin.chipRegister.chip(HuC6280Chip.class).write(0, a & 0xf, v, EnmModel.VirtualModel);

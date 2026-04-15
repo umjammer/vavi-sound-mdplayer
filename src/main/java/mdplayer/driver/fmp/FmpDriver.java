@@ -84,10 +84,10 @@ public class FmpDriver extends BaseDriver {
     }
 
     @Override
-    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
+    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
                      int latency, int waitTime, Object... args) {
 
-        MetaData _ = getMetaData(vgmBuf, 0);
+        MetaData _ = getMetaData(dataBuf, 0);
         this.plugin = plugin;
         loopCounter = 0;
         curLoop = 0;
@@ -95,7 +95,7 @@ public class FmpDriver extends BaseDriver {
         frameCounter = -latency - waitTime;
 
         try {
-            fmp.run(vgmBuf);
+            fmp.run(dataBuf);
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }

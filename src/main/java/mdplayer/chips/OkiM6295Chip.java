@@ -6,10 +6,7 @@
 
 package mdplayer.chips;
 
-import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
-import mdplayer.driver.BaseDriver;
-import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.chips.OkiM6295;
 import mdsound.instrument.OkiM6295Inst;
@@ -42,6 +39,7 @@ public class OkiM6295Chip extends BaseChip {
             context.mds.inst(inst(chipId), 0).resetMask(chipId, 1 << ch);
     }
 
+    // TODO abstract
     public OkiM6295.ChannelInfo read(int chipId) {
         return context.mds.inst(OkiM6295Inst.class, 0).getChInfo(chipId);
     }

@@ -39,7 +39,7 @@ public class Xgm {
 
     byte[] xgmBuf;
     Runnable stop;
-    Runnable tag;
+    Runnable updateMetaData;
     Runnable loop;
     TriConsumer<Integer, Integer, Integer> ym2612Write;
     IntConsumer sn76489Write;
@@ -61,30 +61,30 @@ public class Xgm {
     }
 
     /** @throws IllegalArgumentException parse error */
-    void getXGMInfo(byte[] vgmBuf) {
-        if (vgmBuf == null) throw new IllegalArgumentException("null buffer");
+    void getXGMInfo(byte[] dataBuf) {
+        if (dataBuf == null) throw new IllegalArgumentException("null buffer");
 
         try {
-            if (ByteUtil.readLeInt(vgmBuf, 0) != FCC_XGM) throw new IllegalArgumentException("not xgm data");
+            if (ByteUtil.readLeInt(dataBuf, 0) != FCC_XGM) throw new IllegalArgumentException("not xgm data");
 
             for (int i = 0; i < 63; i++) {
                 sampleID[i] = new XGMSampleID();
-                sampleID[i].addr = ((int) ByteUtil.readLeShort(vgmBuf, i * 4 + 4) * 256);
-                sampleID[i].size = ((int) ByteUtil.readLeShort(vgmBuf, i * 4 + 6) * 256);
+                sampleID[i].addr = ((int) ByteUtil.readLeShort(dataBuf, i * 4 + 4) * 256);
+                sampleID[i].size = ((int) ByteUtil.readLeShort(dataBuf, i * 4 + 6) * 256);
             }
 
-            sampleDataBlockSize = ByteUtil.readLeShort(vgmBuf, 0x100);
-            versionInformation = vgmBuf[0x102] & 0xff;
-            dataInformation = vgmBuf[0x103] & 0xff;
+            sampleDataBlockSize = ByteUtil.readLeShort(dataBuf, 0x100);
+            versionInformation = dataBuf[0x102] & 0xff;
+            dataInformation = dataBuf[0x103] & 0xff;
             isNTSC = (dataInformation & 0x1) == 0;
             existGD3 = (dataInformation & 0x2) != 0;
             multiTrackFile = (dataInformation & 0x4) != 0;
             sampleDataBlockAddr = 0x104;
-            musicDataBlockSize = ByteUtil.readLeInt(vgmBuf, sampleDataBlockAddr + sampleDataBlockSize * 256);
+            musicDataBlockSize = ByteUtil.readLeInt(dataBuf, sampleDataBlockAddr + sampleDataBlockSize * 256);
             musicDataBlockAddr = sampleDataBlockAddr + sampleDataBlockSize * 256 + 4;
             gd3InfoStartAddr = musicDataBlockAddr + musicDataBlockSize;
 
-            tag.run();
+            updateMetaData.run();
 
             if (musicDataBlockSize == 0) {
                 throw new IllegalArgumentException("illegal block size");

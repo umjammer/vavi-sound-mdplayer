@@ -130,7 +130,7 @@ public class Mos656X extends Event {
     private byte irqMask;
 
     /** Light pen */
-    private final Lightpen lp = new Lightpen();
+    private final LightPen lp = new LightPen();
 
     /** the 8 sprites data */
     private final Sprites sprites;

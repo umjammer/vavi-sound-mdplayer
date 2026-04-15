@@ -24,10 +24,10 @@
 package mdplayer.driver.sid.libsidplayfp.c64.vic_ii;
 
 /**
- * Lightpen emulation.
+ * Light pen emulation.
  * Does not reflect model differences.
  */
-public class Lightpen {
+public class LightPen {
 
     /** Last VIC raster line */
     private int lastLine;
@@ -44,7 +44,6 @@ public class Lightpen {
     /** Has light pen IRQ been triggered : this frame already? */
     private boolean isTriggered;
 
-
     /**
      * Set VIC screen size.
      *
@@ -57,7 +56,7 @@ public class Lightpen {
     }
 
     /**
-     * Reset the lightpen.
+     * Reset the light-pen.
      */
     public void reset() {
         lpx = 0;
@@ -101,7 +100,7 @@ public class Lightpen {
     }
 
     /**
-     * Trigger lightpen from CIA.
+     * Trigger light-pen from CIA.
      *
      * @param lineCycle current line cycle
      * @param rasterY current y raster position
@@ -125,7 +124,7 @@ public class Lightpen {
     }
 
     /**
-     * Untrigger lightpen from CIA.
+     * Untrigger light-pen from CIA.
      */
     public void untrigger() {
         isTriggered = false;

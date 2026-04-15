@@ -1,5 +1,6 @@
 package mdplayer.driver.mgsdrv;
 
+import java.io.IOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
@@ -57,7 +58,7 @@ public class MgsDriver extends BaseDriver {
     }
 
     @Override
-    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
+    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
                      int latency, int waitTime, Object... args) {
         this.plugin = plugin;
         loopCounter = 0;
@@ -66,8 +67,8 @@ public class MgsDriver extends BaseDriver {
         frameCounter = -latency - waitTime;
 
         try {
-            mgs.run(vgmBuf);
-        } catch (Exception e) {
+            mgs.run(dataBuf);
+        } catch (IOException e) {
             throw new IllegalStateException(e);
         }
     }

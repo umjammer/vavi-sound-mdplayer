@@ -156,7 +156,7 @@ public class NSFFileFormat extends BaseFileFormat {
     }
 
     @Override
-    public List<PlayList.Music> addFileLoop(PlayList.Music mc, Archive archive, Entry entry/* = null*/) throws IOException {
+    public List<PlayList.Music> addFileLoop(PlayList.Music mc, Archive archive, Entry entry /* = null */) throws IOException {
         byte[] buf;
         if (entry == null) {
             buf = File.readAllBytes(mc.fileName);

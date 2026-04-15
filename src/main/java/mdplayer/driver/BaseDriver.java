@@ -48,7 +48,7 @@ public abstract class BaseDriver {
     protected int waitTime = 0;
 
     /** */
-    public abstract void init(byte[] vgmBuf,
+    public abstract void init(byte[] dataBuf,
                               BasePlugin<? extends BaseDriver> plugin,
                               EnmModel model,
                               int latency,

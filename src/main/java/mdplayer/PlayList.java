@@ -14,9 +14,9 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import javax.swing.JOptionPane;
-import javax.swing.JTable;
-import javax.swing.table.DefaultTableModel;
 
 import dotnet4j.io.FileMode;
 import dotnet4j.io.FileStream;
@@ -148,7 +148,7 @@ public class PlayList implements Serializable, Cloneable {
         }
     }
 
-    public static PlayList Load(String fileName) {
+    public static PlayList load(String fileName) {
         try {
             Path fullPath;
             if (fileName == null || fileName.isEmpty()) {
@@ -169,7 +169,7 @@ public class PlayList implements Serializable, Cloneable {
         }
     }
 
-    public static PlayList LoadM3U(String filename) {
+    public static PlayList loadM3U(String filename) {
         try {
             PlayList pl = new PlayList();
 
@@ -227,11 +227,8 @@ public class PlayList implements Serializable, Cloneable {
         return ret;
     }
 
-    private JTable dgvList;
-
-    public void setDGV(JTable dgv) {
-        dgvList = dgv;
-    }
+    public BiConsumer<Integer, Object[]> setRow;
+    public Consumer<Object[]> addRow;
 
     public void addFile(String filename) {
         try {
@@ -272,7 +269,7 @@ public class PlayList implements Serializable, Cloneable {
 
             List<Object[]> rows = makeRow(musics);
             for (Object[] row : rows)
-                ((DefaultTableModel) dgvList.getModel()).addRow(row);
+                addRow.accept(row);
             this.musics.addAll(musics);
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
@@ -286,7 +283,7 @@ public class PlayList implements Serializable, Cloneable {
 
             List<Object[]> rows = makeRow(musics);
             for (Object[] row : rows)
-                ((DefaultTableModel) dgvList.getModel()).insertRow(index[0], row);
+                setRow.accept(index[0], row);
             this.musics.addAll(index[0], musics);
             index[0] += rows.size();
         } catch (Exception ex) {

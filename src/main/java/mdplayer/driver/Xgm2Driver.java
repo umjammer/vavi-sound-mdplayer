@@ -50,9 +50,9 @@ public class Xgm2Driver extends XgmDriver {
     }
 
     @Override
-    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
+    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
                      int latency, int waitTime, Object... args) {
-        this.dataBuf = vgmBuf;
+        this.dataBuf = dataBuf;
         this.plugin = plugin;
         this.model = model;
         this.latency = latency;
@@ -67,7 +67,7 @@ public class Xgm2Driver extends XgmDriver {
         speed = 1;
         speedCounter = 0;
 
-        xgm2.getXGM2Info(vgmBuf);
+        xgm2.getXGM2Info(dataBuf);
 
         if (model == EnmModel.RealModel) {
             plugin.chipRegister.chip(Ym2612Chip.class).setSyncWait(0, 1);
@@ -77,7 +77,7 @@ public class Xgm2Driver extends XgmDriver {
         // initialize Driver
         xgm2.init();
 
-        xgm2.xgmBuf = vgmBuf;
+        xgm2.xgmBuf = dataBuf;
     }
 
     @Override

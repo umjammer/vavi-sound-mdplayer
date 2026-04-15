@@ -303,7 +303,7 @@ Debug.println(e.getMessage());
     }
 
     @Test
-    @DisplayName("just test")
+    @DisplayName("simulate inside spi")
     void test7() throws IOException {
 Debug.println(inFile);
         Path path = Paths.get(inFile);

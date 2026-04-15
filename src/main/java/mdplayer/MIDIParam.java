@@ -33,7 +33,7 @@ public class MIDIParam {
     public int LCDDisplayLetterTime;
     public int LCDDisplayLetterTimeXG;
     public int LCDDisplayLetterLen = 0;
-    public String Lyric;
+    public String lyric;
 
     public byte MasterVolume = 0;
 
@@ -216,7 +216,7 @@ public class MIDIParam {
 //            nrpnEGRls[ch] = 64;
 
         }
-        Lyric = "";
+        lyric = "";
     }
 
     public void sendBuffer(byte[] dat) {

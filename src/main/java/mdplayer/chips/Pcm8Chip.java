@@ -9,10 +9,7 @@ package mdplayer.chips;
 import java.lang.System.Logger;
 import java.util.Objects;
 
-import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
-import mdplayer.driver.BaseDriver;
-import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.instrument.Pcm8PPInst;
 import mdsound.instrument.X68kYm2151Inst;

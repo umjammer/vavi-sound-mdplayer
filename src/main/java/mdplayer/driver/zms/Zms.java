@@ -189,7 +189,7 @@ public class Zms {
         }
     }
 
-    void run(byte[] data) throws Exception {
+    void run(byte[] data) throws IOException {
         //if (model == EnmModel.RealModel) { return; }
 
         String fn = playingFileName;

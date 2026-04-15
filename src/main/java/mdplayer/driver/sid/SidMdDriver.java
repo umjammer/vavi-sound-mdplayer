@@ -1,15 +1,16 @@
 package mdplayer.driver.sid;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.function.Function;
 
-import dotnet4j.io.File;
-import dotnet4j.io.FileAccess;
-import dotnet4j.io.FileMode;
-import dotnet4j.io.FileStream;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.SidChip;
 import mdplayer.driver.BaseDriver;
@@ -120,23 +121,27 @@ public class SidMdDriver extends BaseDriver implements SidDriver {
         byte[] aryKernel = null;
         byte[] aryBasic = null;
         byte[] aryCharacter = null;
-        if (File.exists(setting.getSid().romKernalPath)) {
-            try (FileStream fs = new FileStream(setting.getSid().romKernalPath, FileMode.Open, FileAccess.Read)) {
-                aryKernel = new byte[(int) fs.getLength()];
-                fs.read(aryKernel, 0, aryKernel.length);
+        try {
+            Path p = Path.of(setting.getSid().romKernalPath);
+            if (Files.exists(p)) {
+                try (InputStream fs = Files.newInputStream(p)) {
+                    aryKernel = fs.readAllBytes();
+                }
             }
-        }
-        if (File.exists(setting.getSid().romBasicPath)) {
-            try (FileStream fs = new FileStream(setting.getSid().romBasicPath, FileMode.Open, FileAccess.Read)) {
-                aryBasic = new byte[(int) fs.getLength()];
-                fs.read(aryBasic, 0, aryBasic.length);
+            p = Path.of(setting.getSid().romBasicPath);
+            if (Files.exists(p)) {
+                try (InputStream fs = Files.newInputStream(p)) {
+                    aryBasic = fs.readAllBytes();
+                }
             }
-        }
-        if (File.exists(setting.getSid().romCharacterPath)) {
-            try (FileStream fs = new FileStream(setting.getSid().romCharacterPath, FileMode.Open, FileAccess.Read)) {
-                aryCharacter = new byte[(int) fs.getLength()];
-                fs.read(aryCharacter, 0, aryCharacter.length);
+            p = Path.of(setting.getSid().romCharacterPath);
+            if (Files.exists(p)) {
+                try (InputStream fs = Files.newInputStream(p)) {
+                    aryCharacter = fs.readAllBytes();
+                }
             }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
 
         sid.init(dataBuf,
@@ -165,7 +170,7 @@ public class SidMdDriver extends BaseDriver implements SidDriver {
                     frameCounter++;
                 }
             }
-            //Stopped = !isPlaying();
+            //stopped = !isPlaying();
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
         }

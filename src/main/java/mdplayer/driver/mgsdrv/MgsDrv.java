@@ -62,7 +62,7 @@ public class MgsDrv {
         return z80.getRegisters().getD() & 0xff;
     }
 
-    void run(byte[] vgmBuf) throws IOException, URISyntaxException {
+    void run(byte[] vgmBuf) throws IOException {
         Path fileName = Path.of(dir, "MGSDRV.COM");
 
         z80 = new Z80ProcessorImpl();

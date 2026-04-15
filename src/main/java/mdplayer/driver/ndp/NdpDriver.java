@@ -61,7 +61,7 @@ public class NdpDriver extends BaseDriver {
     }
 
     @Override
-    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
+    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
                      int latency, int waitTime, Object... args) {
         this.plugin = plugin;
         loopCounter = 0;
@@ -70,7 +70,7 @@ public class NdpDriver extends BaseDriver {
         frameCounter = -latency - waitTime;
 
         try {
-            ndp.run(vgmBuf);
+            ndp.run(dataBuf);
         } catch (Exception e) {
 logger.log(Level.ERROR, e.getMessage(), e);
             throw new IllegalStateException(e);

@@ -11,7 +11,7 @@ class SmartPtrBase<T> {
 
     public SmartPtrBase(byte[] buffer,
                         long bufferLen,
-                        boolean bufOwner/* = false */) {
+                        boolean bufOwner /* = false */) {
         bufBegin = null;
         bufEnd = null;
         pBufCurrent = null;

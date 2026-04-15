@@ -211,7 +211,7 @@ public class frmMIDI extends frmBase {
 
         newParam.MasterVolume = prm.MasterVolume;
 
-        newParam.Lyric = prm.Lyric;
+        newParam.lyric = prm.lyric;
 
     }
 
@@ -246,7 +246,7 @@ public class frmMIDI extends frmBase {
 
         DrawBuff.drawFont4IntMIDI(frameBuffer, 60 * 4, 17 * 16 + 8, 2 + module, oldParam.MasterVolume, newParam.MasterVolume);
 
-        DrawBuff.drawMIDI_Lyric(frameBuffer, chipId, 60 * 4, 41 * 8, oldParam.Lyric, newParam.Lyric);
+        DrawBuff.drawMIDI_Lyric(frameBuffer, chipId, 60 * 4, 41 * 8, oldParam.lyric, newParam.lyric);
 
         for (int ch = 0; ch < 16; ch++) {
             byte b = (byte) (128 - newParam.cc[ch][10] & 0xff);

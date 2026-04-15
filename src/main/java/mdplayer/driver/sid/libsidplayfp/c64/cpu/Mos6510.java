@@ -202,7 +202,7 @@ public class Mos6510 {
      * Based on tests on a couple of chips at
      * http://visual6502.org/wiki/index.php?title=6502_Opcode_8B_(XAA,_ANE)
      * the value of magic for the MOS 6510 instanceof FF.
-     * However the Lorentz test suite assumes this to be EE.
+     * However, the Lorentz test suite assumes this to be EE.
      */
     public static final byte magic = (byte) 0xff;
 

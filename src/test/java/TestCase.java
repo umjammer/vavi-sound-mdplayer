@@ -143,7 +143,7 @@ Debug.println("settings\n" +
         "mdplayer.variant.ymf262: " + System.getProperty("mdplayer.variant.ymf262"));
     }
 
-    private Audio audio = Audio.getInstance();
+    private final Audio audio = Audio.getInstance();
 
     /** */
     void play() throws Exception {
@@ -151,7 +151,7 @@ Debug.println("filename: " + file);
         FileFormat format = FileFormat.getFileFormat(file);
 Debug.println("format: " + format.getClass().getSimpleName());
         var r = format.load((String) null, file);
-        BasePlugin<? extends BaseDriver> plugin = (BasePlugin) format.getPlugin();
+        BasePlugin<? extends BaseDriver> plugin = (BasePlugin<? extends BaseDriver>) format.getPlugin();
         plugin.setBuffer(format, r.getItem1(), file, null, 0, track - 1, r.getItem2());
 Debug.println("plugin: " + plugin.getClass().getSimpleName());
         audio.init(plugin);

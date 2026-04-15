@@ -47,15 +47,15 @@ public class NrtDriver extends BaseDriver {
     }
 
     @Override
-    public void init(byte[] nrdFileData, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
+    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
                      int latency, int waitTime, Object... args) {
-        this.dataBuf = nrdFileData;
+        this.dataBuf = dataBuf;
         this.plugin = plugin;
         this.model = model;
         this.latency = latency;
         this.waitTime = waitTime;
 
-        metaData = getMetaData(nrdFileData, 42);
+        metaData = getMetaData(dataBuf, 42);
         counter = 0;
         totalCounter = 0;
         loopCounter = 0;
@@ -68,7 +68,7 @@ public class NrtDriver extends BaseDriver {
             nrtdrv.ram = new byte[65536];
             Arrays.fill(nrtdrv.ram, (byte) 0);
 
-            System.arraycopy(dataBuf, 0, nrtdrv.ram, 0x4000, Math.min(dataBuf.length, 0xfeff - 0x4000));
+            System.arraycopy(this.dataBuf, 0, nrtdrv.ram, 0x4000, Math.min(this.dataBuf.length, 0xfeff - 0x4000));
         } catch (Exception ex) {
             throw new IllegalStateException("Driver initialization failed.", ex);
         }

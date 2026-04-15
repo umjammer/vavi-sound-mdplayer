@@ -52,9 +52,9 @@ public class Gbs extends BaseDriver {
      * @param args 0: songNo
      */
     @Override
-    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model, int latency, int waitTime, Object... args) {
-        getMetaData(vgmBuf, 0);
-        info = GbsInfo.factory(vgmBuf);
+    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model, int latency, int waitTime, Object... args) {
+        getMetaData(dataBuf, 0);
+        info = GbsInfo.factory(dataBuf);
         this.plugin = plugin;
         this.model = model;
 

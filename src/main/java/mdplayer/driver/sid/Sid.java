@@ -13,7 +13,6 @@ import mdplayer.driver.sid.libsidplayfp.sidplayfp.playSidFp;
 import static java.lang.System.getLogger;
 
 
-// TODO eliminate mdplayer packages
 public class Sid {
 
     private static final Logger logger = getLogger(Sid.class.getName());

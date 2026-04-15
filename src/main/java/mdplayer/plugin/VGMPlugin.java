@@ -1,6 +1,7 @@
 package mdplayer.plugin;
 
 import java.lang.System.Logger;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -17,8 +18,6 @@ import mdsound.chips.Ym3438Const;
 import mdsound.instrument.C140Inst;
 import mdsound.instrument.C352Inst;
 import mdsound.instrument.MameAy8910Inst;
-import mdsound.instrument.OkiM6258Inst;
-import mdsound.instrument.OkiM6295Inst;
 import mdsound.instrument.Sn76496Inst;
 import mdsound.instrument.Ym2203Inst;
 import mdsound.instrument.Ym2608Inst;
@@ -259,10 +258,12 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, OkiM6258Chip.class);
             chip.clock = driverVirtual.vgm.okiM6258ClockValue;
-            chip.option = new Object[] {driverVirtual.vgm.okiM6258Type};
-//            chip.option = new Object[1] { 6 };
-            if (chip.instrument instanceof OkiM6258Inst okim6258)
-                okim6258.setCallback(0, this::changeChipSampleRate, chip);
+            BiConsumer<Integer, Integer> fn = chip::changeChipSampleRate;
+            chip.option = new Object[] {
+                    driverVirtual.vgm.okiM6258Type,
+                    fn,
+                    setting.getOutputDevice().getSampleRate()
+            };
 
             hiyorimiDeviceFlag |= 0x2;
 
@@ -279,9 +280,11 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, OkiM6295Chip.class);
                 chip.clock = driverVirtual.vgm.okiM6295ClockValue;
-                chip.option = null;
-                if (chip.instrument instanceof OkiM6295Inst okim6295)
-                    okim6295.setCallback(i, this::changeChipSampleRate, chip);
+                BiConsumer<Integer, Integer> fn = chip::changeChipSampleRate;
+                chip.option = new Object[] {
+                        fn,
+                        setting.getOutputDevice().getSampleRate()
+                };
 
                 hiyorimiDeviceFlag |= 0x2;
 

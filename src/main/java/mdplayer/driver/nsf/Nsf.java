@@ -576,7 +576,7 @@ int CC;
         detectSilent();
         updateAtTrail.accept(playtime_detected);
 
-if (CC++ % INTERVAL == 0) { logger.log(Level.DEBUG, "NSF: %d, %d, pc: %04x".formatted(out[0], out[1], this.cpu.p)); }
+if (CC++ % INTERVAL == 0) { logger.log(Level.TRACE, "NSF: %d, %d, pc: %04x".formatted(out[0], out[1], this.cpu.p)); }
         return length;
     }
 static final int INTERVAL = 1024;

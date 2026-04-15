@@ -38,9 +38,8 @@ public class RcsDriver extends BaseDriver {
         rcs.sampleRate = Common.VGMProcSampleRate;
         rcs.musicStep = Common.VGMProcSampleRate / 60.0;
         rcs.isVirtualModel = model == EnmModel.VirtualModel;
-        int vstDelta = plugin.chipRegister.plugin(VstPlugin.class).vstDelta;
-        rcs.midiSend = (l, d) -> plugin.chipRegister.plugin(MidiPlugin.class).send(model, l, d, vstDelta);
-        rcs.lyric = l -> plugin.chipRegister.plugin(MidiPlugin.class).params[0].Lyric = l;
+        rcs.midiSend = (l, d) -> plugin.chipRegister.plugin(MidiPlugin.class).send(model, l, d, plugin.chipRegister.plugin(VstPlugin.class).vstDelta);
+        rcs.lyric = l -> plugin.chipRegister.plugin(MidiPlugin.class).params[0].lyric = l;
         rcs.counter = () -> frameCounter = -latency - waitTime;
         rcs.midiCount = () -> plugin.chipRegister.plugin(MidiPlugin.class).getCount();
         rcs.stop = () -> stopped = true;
@@ -111,9 +110,9 @@ public class RcsDriver extends BaseDriver {
     }
 
     @Override
-    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
+    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
                      int latency, int waitTime, Object... args) {
-        this.dataBuf = vgmBuf;
+        this.dataBuf = dataBuf;
         this.plugin = plugin;
         this.model = model;
         this.latency = latency;
@@ -130,7 +129,7 @@ public class RcsDriver extends BaseDriver {
         speed = 1;
         speedCounter = 0;
 
-        metaData = getMetaData(vgmBuf, 0);
+        metaData = getMetaData(dataBuf, 0);
         //if (GD3 == null) return false;
 
         if (!rcs.getInformationHeader()) throw new IllegalArgumentException("Invalid header");
@@ -143,7 +142,7 @@ public class RcsDriver extends BaseDriver {
             plugin.chipRegister.chip(Ym2612Chip.class).setSyncWait(1, 1);
         }
 
-        rcs.vgmBuf = vgmBuf;
+        rcs.vgmBuf = dataBuf;
     }
 
     private boolean makeBeforeSendCommand() {

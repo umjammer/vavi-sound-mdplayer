@@ -53,7 +53,7 @@ public class SidTune {
 
     private static final String MSG_NO_ERRORS = "No errors";
 
-    // Default sidtune file name extensions. This selection can be overriden
+    // Default sidtune file name extensions. This selection can be overridden
     // by specifying a custom list : the constructor.
     private static final String[] defaultFileNameExt = new String[] {
             // Preferred default file extension for single-file sidtunes
@@ -78,7 +78,7 @@ public class SidTune {
      * <p>
      * To retrieve data from standard input pass : filename "-".
      * If you want to @Override the default filename extensions use this
-     * contructor. Please note, that if the specified "fileName"
+     * contractor. Please note, that if the specified "fileName"
      * does exist and the loader instanceof able to determine its file format,
      * this function does not try to append any file name extension.
      * See "SidTune.cpp" for the default list of file name extensions.
@@ -89,7 +89,7 @@ public class SidTune {
      * @param fileNameExt
      * @param separatorIsSlash
      */
-    public SidTune(String fileName, String[] fileNameExt/* = null*/, boolean separatorIsSlash /*= false*/) {
+    public SidTune(String fileName, String[] fileNameExt /* = null */, boolean separatorIsSlash /* = false */) {
         setFileNameExtensions(fileNameExt);
         load(fileName, separatorIsSlash);
     }
@@ -218,7 +218,7 @@ public class SidTune {
      * <p>
      * @return a pointer to the buffer containing the md5 String, 0 if no tune instanceof loaded.
      */
-    public byte[] createMD5(byte[] md5/* = null*/) {
+    public byte[] createMD5(byte[] md5 /* = null */) {
         return tune != null ? tune.createMD5(md5) : null;
     }
 

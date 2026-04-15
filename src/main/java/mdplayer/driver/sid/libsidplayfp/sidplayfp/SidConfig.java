@@ -50,7 +50,6 @@ public class SidConfig {
         MOS8580
     }
 
-
     // C64 model
     public enum C64Model {
         PAL,
@@ -58,7 +57,6 @@ public class SidConfig {
         OLD_NTSC,
         DREAN
     }
-
 
     // Sampling method
     public enum SamplingMethod {
@@ -166,18 +164,18 @@ public class SidConfig {
      * @return true if different
      */
     public boolean compare(SidConfig config) {
-        return defaultC64Model != config.defaultC64Model
-                || forceC64Model != config.forceC64Model
-                || defaultSidModel != config.defaultSidModel
-                || forceSidModel != config.forceSidModel
-                || playback != config.playback
-                || frequency != config.frequency
-                || secondSidAddress != config.secondSidAddress
-                || thirdSidAddress != config.thirdSidAddress
-                || sidEmulation != config.sidEmulation
-                || leftVolume != config.leftVolume
-                || rightVolume != config.rightVolume
-                || samplingMethod != config.samplingMethod
-                || fastSampling != config.fastSampling;
+        return defaultC64Model != config.defaultC64Model ||
+                forceC64Model != config.forceC64Model ||
+                defaultSidModel != config.defaultSidModel ||
+                forceSidModel != config.forceSidModel ||
+                playback != config.playback ||
+                frequency != config.frequency ||
+                secondSidAddress != config.secondSidAddress ||
+                thirdSidAddress != config.thirdSidAddress ||
+                sidEmulation != config.sidEmulation ||
+                leftVolume != config.leftVolume ||
+                rightVolume != config.rightVolume ||
+                samplingMethod != config.samplingMethod ||
+                fastSampling != config.fastSampling;
     }
 }

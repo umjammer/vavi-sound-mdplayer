@@ -36,7 +36,7 @@ public class MidiDriver extends BaseDriver {
         midi.send0 = (n, d) -> plugin.chipRegister.plugin(MidiPlugin.class).send(model, n, d, plugin.chipRegister.plugin(VstPlugin.class).vstDelta);
         midi.send2 = (n, d1, d2) -> plugin.chipRegister.plugin(MidiPlugin.class).send(model, n, d1, d2, plugin.chipRegister.plugin(VstPlugin.class).vstDelta);
         midi.send3 = (n, d1, d2, d) -> plugin.chipRegister.plugin(MidiPlugin.class).send(model, n, d1, d2, d, plugin.chipRegister.plugin(VstPlugin.class).vstDelta);
-        midi.lyric = (n, l) -> plugin.chipRegister.plugin(MidiPlugin.class).params[n].Lyric = l;
+        midi.lyric = (n, l) -> plugin.chipRegister.plugin(MidiPlugin.class).params[n].lyric = l;
         midi.stop = () -> stopped = true;
         midi.counter = () -> frameCounter = -latency - waitTime;
     }
@@ -138,9 +138,9 @@ public class MidiDriver extends BaseDriver {
     }
 
     @Override
-    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
+    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
                      int latency, int waitTime, Object... args) {
-        this.dataBuf = vgmBuf;
+        this.dataBuf = dataBuf;
         this.plugin = plugin;
         this.model = model;
         this.latency = latency;
@@ -157,10 +157,10 @@ public class MidiDriver extends BaseDriver {
         speed = 1;
         speedCounter = 0;
 
-        metaData = getMetaData(vgmBuf);
+        metaData = getMetaData(dataBuf);
         //if (Gd3 == null) return false;
 
-        midi.getInformationHeader(vgmBuf);
+        midi.getInformationHeader(dataBuf);
 
         // Create a command to send in advance for each port
         makeBeforeSendCommand();

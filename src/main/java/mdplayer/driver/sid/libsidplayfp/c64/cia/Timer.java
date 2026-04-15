@@ -27,6 +27,7 @@ import mdplayer.driver.sid.libsidplayfp.EventCallback;
 import mdplayer.driver.sid.libsidplayfp.EventScheduler;
 import mdplayer.driver.sid.libsidplayfp.EventScheduler.EventPhase;
 import mdplayer.driver.sid.libsidplayfp.SidEndian;
+import net.sf.saxon.functions.Current;
 
 
 /**
@@ -50,7 +51,7 @@ public class Timer extends Event {
 
     private final EventCallback<Timer> m_cycleSkippingEvent;
 
-    // Event context.
+    /** Event context. */
     private final EventScheduler eventScheduler;
 
     /**
@@ -63,22 +64,22 @@ public class Timer extends Event {
      */
     private long ciaEventPauseTime;
 
-    // PB6/PB7 Flip-flop to signal underflow's. */
+    /** PB6/PB7 Flip-flop to signal underflow's. */
     private boolean pbToggle;
 
-    // Current timer value. */
+    /** Current timer value. */
     private short timer;
 
-    // Timer start value (Latch). */
+    /** Timer start value (Latch). */
     private short latch;
 
-    // Copy of regs[CRA/B] */
+    /** Copy of regs[CRA/B] */
     private byte lastControlValue;
 
-    // Pointer to the Mos6526 which this Timer belongs to. */
+    /** Pointer to the Mos6526 which this Timer belongs to. */
     protected final Mos6526 parent;
 
-    // CRA/CRB control register / state. */
+    /** CRA/CRB control register / state. */
     protected int state;
 
     /**
@@ -113,9 +114,9 @@ public class Timer extends Event {
     }
 
     /**
-     * Set PB6/PB7 Flipflop state.
+     * Set PB6/PB7 Flip flop state.
      *
-     * @param state PB6/PB7 flipflop state
+     * @param state PB6/PB7 flip-flop state
      */
     public void setPbToggle(boolean state) {
         pbToggle = state;
@@ -143,7 +144,7 @@ public class Timer extends Event {
      * Get PB6/PB7 Flip-flop state.
      *
      * @param reg value of the control register
-     * @return PB6/PB7 flipflop state
+     * @return PB6/PB7 flip-flop state
      */
     public boolean getPb(byte reg) {
         return (reg & 0x04) != 0 ? pbToggle : (state & CIAT_OUT) != 0;
@@ -349,4 +350,3 @@ public class Timer extends Event {
             timer = latch;
     }
 }
-
