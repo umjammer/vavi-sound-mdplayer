@@ -11,14 +11,12 @@ import mdplayer.chips.*;
 import mdplayer.chips.NesChip.DmcChip;
 import mdplayer.chips.NesChip.FdsChip;
 import mdplayer.driver.VgmDriver;
-import mdsound.Instrument;
 import mdsound.MDSound;
 import mdsound.chips.C352;
 import mdsound.chips.Ym3438Const;
 import mdsound.instrument.C140Inst;
 import mdsound.instrument.C352Inst;
 import mdsound.instrument.MameAy8910Inst;
-import mdsound.instrument.NesInst;
 import mdsound.instrument.OkiM6258Inst;
 import mdsound.instrument.OkiM6295Inst;
 import mdsound.instrument.Sn76496Inst;
@@ -827,11 +825,9 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
 
             for (int i = 0; i < (driverVirtual.vgm.nesDualChipFlag ? 2 : 1); i++) {
 
-                Instrument nes = chipRegister.chip(NesChip.class).instrument(i);
-
                 MDSound.Chip chip = new MDSound.Chip();
                 chip.id = i;
-                chip.instrument = nes;
+                chip.instrument = chipRegister.chip(NesChip.class).instrument(i);
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, NesChip.class);
                 chip.clock = driverVirtual.vgm.nesClockValue;
@@ -843,11 +839,10 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
 
                 chip = new MDSound.Chip();
                 chip.id = i;
-                chip.instrument = nes;
+                chip.instrument = chipRegister.chip(DmcChip.class).instrument(i);
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                chip.volume = setting.getBalance().getVolume("DMC", NesChip.class);
+                chip.volume = setting.getBalance().getVolume(MAIN_TAG, DmcChip.class);
                 chip.clock = driverVirtual.vgm.nesClockValue;
-                chip.setVolumes.put("DMC", chip.mainWrappedSetVolume(((NesInst) nes)::setVolume));
                 chip.option = null;
                 if (i == 0) chipLED.put("PriDMC", 1);
                 else chipLED.put("SecDMC", 1);
@@ -856,11 +851,10 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
 
                 chip = new MDSound.Chip();
                 chip.id = i;
-                chip.instrument = nes;
+                chip.instrument = chipRegister.chip(FdsChip.class).instrument(i);
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                chip.volume = setting.getBalance().getVolume("FDS", NesChip.class);
+                chip.volume = setting.getBalance().getVolume(MAIN_TAG, FdsChip.class);
                 chip.clock = driverVirtual.vgm.nesClockValue;
-                chip.setVolumes.put("DMC", chip.mainWrappedSetVolume(((NesInst) nes)::setVolume));
                 chip.option = null;
                 if (i == 0) chipLED.put("PriFDS", 1);
                 else chipLED.put("SecFDS", 1);

@@ -6,26 +6,34 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
 import java.util.function.IntConsumer;
 import java.util.function.IntFunction;
 import java.util.function.IntSupplier;
 import java.util.function.LongConsumer;
 
-import mdplayer.Setting;
-import mdplayer.chips.NesChip;
 import mdsound.np.DCFilter;
 import mdsound.np.Device;
 import mdsound.np.Filter;
 import mdsound.np.LoopDetector;
-import mdsound.np.NpNesApu;
-import mdsound.np.NpNesDmc;
-import org.apache.commons.lang3.function.BooleanConsumer;
+import mdsound.np.chip.NesApu;
+import mdsound.np.chip.NesDmc;
+import mdsound.np.chip.NesFds;
+import mdsound.np.chip.NesFme7;
+import mdsound.np.chip.NesMmc5;
+import mdsound.np.chip.NesN106;
+import mdsound.np.chip.NesVrc6;
+import mdsound.np.chip.NesVrc7;
+import mdsound.np.cpu.Km6502;
+import mdsound.np.memory.NesBank;
+import mdsound.np.memory.NesMem;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
 
 
+/** Nsf player powered by np */
 public class Nsf {
 
     private static final Logger logger = getLogger(Nsf.class.getName());
@@ -35,6 +43,21 @@ public class Nsf {
     static final int FCC_NSF = 0x4d53454e; // "NESM"
 
     IntFunction<Integer> getVolume;
+    Consumer<byte[]> setOptions;
+    BiConsumer<Short, Short> enq;
+
+    public NesBank bank = null;
+    public NesMem mem = null;
+    public Km6502 cpu = null;
+
+    public NesApu apu = null;
+    public NesDmc dmc = null;
+    public NesFds fds = null;
+    public NesN106 n106 = null;
+    public NesVrc6 vrc6 = null;
+    public NesMmc5 mmc5 = null;
+    public NesFme7 fme7 = null;
+    public NesVrc7 vrc7 = null;
 
     private int version;
     public int songs;
@@ -99,8 +122,6 @@ public class Nsf {
     private LoopDetector.NESDetector ld = null;
 //    private NESDetectorEx ld = null;
 
-    NesChip chip;
-
     int sampleRate;
     private double cpu_clock_rest;
     private double apu_clock_rest;
@@ -109,7 +130,7 @@ public class Nsf {
     private int last_out = 0;
 
     boolean isRealModel;
-    BooleanConsumer updateAtTrail;
+    Consumer<Boolean> updateAtTrail;
     Runnable updateAtMiddle;
     BiConsumer<Long, Long> updateAtDetectLoop;
     LongConsumer updateAtDetectSilent;
@@ -189,8 +210,44 @@ public class Nsf {
         //song = start - 1;
     }
 
-    void init(Setting setting) {
-        chip.start(NsfClock, this.sampleRate);
+    void init(int hpf_, int lpf_) {
+        this.bank = new NesBank();
+        this.mem = new NesMem();
+        this.cpu = new Km6502(true);
+        this.apu = new NesApu();
+        this.dmc = new NesDmc();
+        this.fds = new NesFds();
+        this.n106 = new NesN106();
+        this.vrc6 = new NesVrc6();
+        this.mmc5 = new NesMmc5();
+        this.fme7 = new NesFme7();
+        this.vrc7 = new NesVrc7();
+
+        this.apu.apu.init(NsfClock, this.sampleRate);
+        this.apu.reset();
+        this.dmc.dmc.init(NsfClock, this.sampleRate);
+        this.dmc.reset();
+        this.fds.fds.init(NsfClock, this.sampleRate);
+        this.fds.reset();
+        this.n106.setClock(NsfClock);
+        this.n106.setRate(this.sampleRate);
+        this.n106.reset();
+        this.vrc6.setClock(NsfClock);
+        this.vrc6.setRate(this.sampleRate);
+        this.vrc6.reset();
+        this.mmc5.setClock(NsfClock);
+        this.mmc5.setRate(this.sampleRate);
+        this.mmc5.reset();
+        this.mmc5.setCPU(this.cpu);
+        this.fme7.setClock(NsfClock);
+        this.fme7.setRate(this.sampleRate);
+        this.fme7.reset();
+        this.vrc7.setClock(NsfClock);
+        this.vrc7.setRate(this.sampleRate);
+        this.vrc7.reset();
+
+        this.dmc.dmc.nes_apu = this.apu.apu;
+        this.dmc.dmc.setAPU(this.apu.apu);
 
         Device.Bus stack = new Device.Bus();
         layer = new Device.Layer();
@@ -202,8 +259,8 @@ public class Nsf {
         lpf.reset();
         dcf.setRate(this.sampleRate);
         dcf.reset();
-        dcf.setParam(270, 256 - setting.getNsf().getHPF()); // HPF:256-(Range0-256(Def:92))
-        lpf.setParam(4700.0, setting.getNsf().getLPF()); // LPF:(Range 0-400(Def:112))
+        dcf.setParam(270, 256 - hpf_); // HPF:256-(Range0-256(Def:92))
+        lpf.setParam(4700.0, lpf_); // LPF:(Range 0-400(Def:112))
 //logger.log(Level.TRACE, "dcf:%d".formatted(dcf.getFactor()));
 //logger.log(Level.TRACE, "lpf:%d".formatted(lpf.getFactor()));
 
@@ -213,12 +270,12 @@ public class Nsf {
             if (bmax < (bankSwitch[i] & 0xff))
                 bmax = bankSwitch[i] & 0xff;
 
-        chip.mem.setImage(body, load_address & 0xffff, bodySize);
+        this.mem.setImage(body, load_address & 0xffff, bodySize);
 
         if (bmax != 0) {
-            chip.bank.setImage(body, load_address & 0xffff, bodySize);
+            this.bank.setImage(body, load_address & 0xffff, bodySize);
             for (int i = 0; i < 8; i++)
-                chip.bank.setBankDefault(i + 8, bankSwitch[i] & 0xff);
+                this.bank.setBankDefault(i + 8, bankSwitch[i] & 0xff);
         }
 
         stack.detachAll();
@@ -229,24 +286,45 @@ public class Nsf {
         ld.reset();
         stack.attach(ld);
 
-        chip.setOptions(apuBus, useFds, useN106, useVrc6, useMmc5, useFme7, useVrc7, bankSwitch);
+        apuBus.attach(this.apu);
+        apuBus.attach(this.dmc);
 
-        if (bmax > 0) layer.attach(chip.bank);
-        layer.attach(chip.mem);
+        setOptions.accept(bankSwitch);
+        if (useFds) {
+            apuBus.attach(this.fds);
+        }
+        if (useN106) {
+            apuBus.attach(this.n106);
+        }
+        if (useVrc6) {
+            apuBus.attach(this.vrc6);
+        }
+        if (useMmc5) {
+            apuBus.attach(this.mmc5);
+        }
+        if (useFme7) {
+            apuBus.attach(this.fme7);
+        }
+        if (useVrc7) {
+            apuBus.attach(this.vrc7);
+        }
+
+        if (bmax > 0) layer.attach(this.bank);
+        layer.attach(this.mem);
 
         stack.attach(apuBus);
         stack.attach(layer);
 
-        chip.cpu.setMemory(stack);
-        chip.dmc.setMemory(stack);
+        this.cpu.setMemory(stack);
+        this.dmc.setMemory(stack);
 
-        chip.apu.apu.squareTable[0] = 0;
+        this.apu.apu.squareTable[0] = 0;
         for (int i = 1; i < 32; i++)
-            chip.apu.apu.squareTable[i] = (int) ((8192.0 * 95.88) / (8128.0 / i + 100));
+            this.apu.apu.squareTable[i] = (int) ((8192.0 * 95.88) / (8128.0 / i + 100));
 
         for (int c = 0; c < 2; ++c)
             for (int t = 0; t < 2; ++t)
-                chip.apu.apu.sm[c][t] = 128;
+                this.apu.apu.sm[c][t] = 128;
 
         reset();
     }
@@ -267,9 +345,9 @@ public class Nsf {
         speed = 1000000.0 / ((region == Region.NTSC) ? speedNtsc : speedPal);
 
         layer.reset();
-        chip.cpu.reset();
+        this.cpu.reset();
 
-        chip.cpu.start(initAddress, playAddress, speed, song, (region == Region.PAL) ? 1 : 0, 0);
+        this.cpu.start(initAddress, playAddress, speed, song, (region == Region.PAL) ? 1 : 0, 0);
     }
 
     private static Region getRegion(int flags) {
@@ -313,7 +391,7 @@ int CC;
 
         int master_volume = 0x80;
 
-        double apu_clock_per_sample = chip.cpu.NES_BASECYCLES / sampleRate;
+        double apu_clock_per_sample = this.cpu.NES_BASECYCLES / sampleRate;
         double cpu_clock_per_sample = apu_clock_per_sample * speed.getAsDouble();
 
         for (int i = 0; i < length; i++) {
@@ -324,13 +402,13 @@ int CC;
             cpu_clock_rest += cpu_clock_per_sample;
             int cpu_clocks = (int) cpu_clock_rest;
             if (cpu_clocks > 0) {
-                int real_cpu_clocks = chip.cpu.exec(cpu_clocks);
+                int real_cpu_clocks = this.cpu.exec(cpu_clocks);
                 cpu_clock_rest -= real_cpu_clocks;
 
                 // tick APU frame sequencer
-                chip.dmc.dmc.tickFrameSequence(real_cpu_clocks);
+                this.dmc.dmc.tickFrameSequence(real_cpu_clocks);
                 if (useMmc5)
-                    chip.mmc5.tickFrameSequence(real_cpu_clocks);
+                    this.mmc5.tickFrameSequence(real_cpu_clocks);
             }
 
 //            updateInfo();
@@ -342,66 +420,119 @@ int CC;
                 apu_clock_rest -= apu_clocks;
             }
 
-            // render Output
-            chip.apu.tick(apu_clocks);
-            chip.apu.render(buf);
+//            // render Output
+//            this.apu.tick(apu_clocks);
+//            this.apu.render(buf);
+//
+//            int mul = (int) (16384.0 * Math.pow(10.0, getVolume.apply(0) / 40.0)); // apu
+//            out[0] = (buf[0] * mul) >> 13;
+//            out[1] = (buf[1] * mul) >> 13;
+//
+//            this.dmc.tick(apu_clocks);
+//            this.dmc.render(buf);
+//            mul = (int) (16384.0 * Math.pow(10.0, getVolume.apply(1) / 40.0)); // dmc
+//            out[0] += (buf[0] * mul) >> 13;
+//            out[1] += (buf[1] * mul) >> 13;
+//
+//            if (useFds) {
+//                this.fds.tick(apu_clocks);
+//                this.fds.render(buf);
+//                mul = (int) (16384.0 * Math.pow(10.0, getVolume.apply(2) / 40.0)); // fds
+//                out[0] += (buf[0] * mul) >> 13;
+//                out[1] += (buf[1] * mul) >> 13;
+//            }
+//
+//            if (useN106) {
+//                this.n106.tick(apu_clocks);
+//                this.n106.render(buf);
+//                mul = (int) (16384.0 * Math.pow(10.0, getVolume.apply(3) / 40.0)); // n160
+//                out[0] += (buf[0] * mul) >> 10;
+//                out[1] += (buf[1] * mul) >> 10;
+//            }
+//
+//            if (useVrc6) {
+//                this.vrc6.tick(apu_clocks);
+//                this.vrc6.render(buf);
+//                mul = (int) (16384.0 * Math.pow(10.0, getVolume.apply(4) / 40.0)); // vrc6
+//                out[0] += (buf[0] * mul) >> 10;
+//                out[1] += (buf[1] * mul) >> 10;
+//            }
+//
+//            if (useMmc5) {
+//                this.mmc5.tick(apu_clocks);
+//                this.mmc5.render(buf);
+//                mul = (int) (16384.0 * Math.pow(10.0, getVolume.apply(5) / 40.0)); // mmc5
+//                out[0] += (buf[0] * mul) >> 10;
+//                out[1] += (buf[1] * mul) >> 10;
+//            }
+//
+//            if (useFme7) {
+//                this.fme7.tick(apu_clocks);
+//                this.fme7.render(buf);
+//                mul = (int) (16384.0 * Math.pow(10.0, getVolume.apply(6) / 40.0)); // fme7
+//                out[0] += (buf[0] * mul) >> 9;
+//                out[1] += (buf[1] * mul) >> 9;
+//            }
+//
+//            if (useVrc7) {
+//                this.vrc7.tick(apu_clocks);
+//                this.vrc7.render(buf);
+//                mul = (int) (16384.0 * Math.pow(10.0, getVolume.apply(7) / 40.0)); // vrc7
+//                out[0] += (buf[0] * mul) >> 10;
+//                out[1] += (buf[1] * mul) >> 10;
+//            }
 
-            int mul = (int) (16384.0 * Math.pow(10.0, getVolume.apply(0) / 40.0)); // apu
-            out[0] = (buf[0] * mul) >> 13;
-            out[1] = (buf[1] * mul) >> 13;
+            // TODO the original doesn't work why? (above comment out)
+            this.apu.tick(apu_clocks);
+            this.apu.render(buf);
+            out[0] = buf[0] * 2;
+            out[1] = buf[1] * 2;
 
-            chip.dmc.tick(apu_clocks);
-            chip.dmc.render(buf);
-            mul = (int) (16384.0 * Math.pow(10.0, getVolume.apply(1) / 40.0)); // dmc
-            out[0] += (buf[0] * mul) >> 13;
-            out[1] += (buf[1] * mul) >> 13;
+            this.dmc.tick(apu_clocks);
+            this.dmc.render(buf);
+            out[0] += buf[0] * 2;
+            out[1] += buf[1] * 2;
 
             if (useFds) {
-                chip.fds.tick(apu_clocks);
-                chip.fds.render(buf);
-                mul = (int) (16384.0 * Math.pow(10.0, getVolume.apply(2) / 40.0)); // fds
-                out[0] += (buf[0] * mul) >> 13;
-                out[1] += (buf[1] * mul) >> 13;
+                this.fds.tick(apu_clocks);
+                this.fds.render(buf);
+                out[0] += buf[0] * 2;
+                out[1] += buf[1] * 2;
             }
 
             if (useN106) {
-                chip.n106.tick(apu_clocks);
-                chip.n106.render(buf);
-                mul = (int) (16384.0 * Math.pow(10.0, getVolume.apply(3) / 40.0)); // n160
-                out[0] += (buf[0] * mul) >> 10;
-                out[1] += (buf[1] * mul) >> 10;
+                this.n106.tick(apu_clocks);
+                this.n106.render(buf);
+                out[0] += buf[0] * 16;
+                out[1] += buf[1] * 16;
             }
 
             if (useVrc6) {
-                chip.vrc6.tick(apu_clocks);
-                chip.vrc6.render(buf);
-                mul = (int) (16384.0 * Math.pow(10.0, getVolume.apply(4) / 40.0)); // vrc6
-                out[0] += (buf[0] * mul) >> 10;
-                out[1] += (buf[1] * mul) >> 10;
+                this.vrc6.tick(apu_clocks);
+                this.vrc6.render(buf);
+                out[0] += buf[0] * 16;
+                out[1] += buf[1] * 16;
             }
 
             if (useMmc5) {
-                chip.mmc5.tick(apu_clocks);
-                chip.mmc5.render(buf);
-                mul = (int) (16384.0 * Math.pow(10.0, getVolume.apply(5) / 40.0)); // mmc5
-                out[0] += (buf[0] * mul) >> 10;
-                out[1] += (buf[1] * mul) >> 10;
+                this.mmc5.tick(apu_clocks);
+                this.mmc5.render(buf);
+                out[0] += buf[0] * 16;
+                out[1] += buf[1] * 16;
             }
 
             if (useFme7) {
-                chip.fme7.tick(apu_clocks);
-                chip.fme7.render(buf);
-                mul = (int) (16384.0 * Math.pow(10.0, getVolume.apply(6) / 40.0)); // fme7
-                out[0] += (buf[0] * mul) >> 9;
-                out[1] += (buf[1] * mul) >> 9;
+                this.fme7.tick(apu_clocks);
+                this.fme7.render(buf);
+                out[0] += buf[0] * 32;
+                out[1] += buf[1] * 32;
             }
 
             if (useVrc7) {
-                chip.vrc7.tick(apu_clocks);
-                chip.vrc7.render(buf);
-                mul = (int) (16384.0 * Math.pow(10.0, getVolume.apply(7) / 40.0)); // vrc7
-                out[0] += (buf[0] * mul) >> 10;
-                out[1] += (buf[1] * mul) >> 10;
+                this.vrc7.tick(apu_clocks);
+                this.vrc7.render(buf);
+                out[0] += buf[0] * 16;
+                out[1] += buf[1] * 16;
             }
 
             int outM = (out[0] + out[1]); // >> 1; // mono mix
@@ -429,7 +560,7 @@ int CC;
             b[offset + i * 2] = (short) out[0];
             b[offset + i * 2 + 1] = (short) out[1];
 
-            visWB.enq((short) out[0], (short) out[1]);
+            enq.accept((short) out[0], (short) out[1]);
 //            } else { // if not 2 channels, presume mono
 //                outM = (out[0] + out[1]) >> 1;
 //                for (int i = 0; i<nch; ++i)
@@ -445,16 +576,10 @@ int CC;
         detectSilent();
         updateAtTrail.accept(playtime_detected);
 
-if (CC++ % INTERVAL == 0) { logger.log(Level.DEBUG, "NSF: %d, %d, pc: %04x".formatted(out[0], out[1], chip.cpu.p)); }
+if (CC++ % INTERVAL == 0) { logger.log(Level.DEBUG, "NSF: %d, %d, pc: %04x".formatted(out[0], out[1], this.cpu.p)); }
         return length;
     }
 static final int INTERVAL = 1024;
-
-    public void visWaveBufferCopy(short[][] dest) {
-        visWB.copy(dest);
-    }
-
-    private final mdsound.VisWaveBuffer visWB = new mdsound.VisWaveBuffer();
 
     private boolean playtime_detected = false;
 

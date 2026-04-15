@@ -3,8 +3,6 @@ package mdplayer.instruments;
 
 import java.util.function.Consumer;
 
-import mdsound.Instrument;
-import mdsound.instrument.NesInst;
 import mdsound.instrument.Ym2413Inst;
 import mdsound.np.chip.NesVrc7;
 
@@ -19,7 +17,6 @@ public class Vrc7Inst extends Ym2413Inst {
 
     public Vrc7Inst() {
         chip = new NesVrc7();
-        chip.setListener(listener);
     }
 
     @Override
@@ -36,11 +33,15 @@ public class Vrc7Inst extends Ym2413Inst {
     public void reset(int chipId) {
     }
 
+    /**
+     * @param option 0: (Consumer<int[]>) listener
+     */
     @Override
     public int start(int chipId, int samplingRate, int clock, Object... option) {
         chip.setClock(clock / 2.); // masterclock(NES:1789773)
         chip.setRate(samplingRate); // samplerate
         chip.reset();
+        chip.setListener((Consumer<int[]>) option[0]);
         rate = samplingRate;
         return samplingRate;
     }
@@ -77,8 +78,4 @@ public class Vrc7Inst extends Ym2413Inst {
         chip.write(0x9030, data);
         return 0;
     }
-
-    private final Consumer<int[]> listener = ds -> {
-        if (ds[7] != -1) Instrument.getInstrument(NesInst.class).np_nes_vrc7_volume = ds[7];
-    };
 }

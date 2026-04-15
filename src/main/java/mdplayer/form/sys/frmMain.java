@@ -95,11 +95,10 @@ import mdplayer.TonePallet;
 import mdplayer.YM2612MIDI;
 import mdplayer.chips.*;
 import mdplayer.chips.NesChip.DmcChip;
-import mdplayer.chips.NesChip.FdsChip;
-import mdplayer.chips.NesChip.Mmc5Chip;
-import mdplayer.chips.NesChip.N163Chip;
-import mdplayer.chips.NesChip.Vrc6Chip;
-import mdplayer.chips.NesChip.Vrc7Chip;
+import mdplayer.chips.NpNesChip.Mmc5Chip;
+import mdplayer.chips.NpNesChip.N163Chip;
+import mdplayer.chips.NpNesChip.Vrc6Chip;
+import mdplayer.chips.NpNesChip.Vrc7Chip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.form.kb.driver.frmPPZ8;
 import mdplayer.form.kb.frmMIDI;
@@ -4464,7 +4463,7 @@ public class frmMain extends JFrame {
                     forceChannelMask(OkiM6295Chip.class, chipId, ch, newParam.okim6295[chipId].channels[ch].mask);
                 for (int ch = 0; ch < 2; ch++) ForceChannelMaskNES(NesChip.class, chipId, ch, newParam.nesdmc);
                 for (int ch = 2; ch < 5; ch++) ForceChannelMaskNES(DmcChip.class, chipId, ch, newParam.nesdmc);
-                for (int ch = 0; ch < 3; ch++) resetChannelMask(Mmc5Chip.class, chipId, ch);
+                for (int ch = 0; ch < 3; ch++) resetChannelMask(NpNesChip.Mmc5Chip.class, chipId, ch);
                 for (int ch = 0; ch < 8; ch++)
                     forceChannelMask(Ppz8Chip.class, chipId, ch, newParam.ppz8[chipId].channels[ch].mask);
                 for (int ch = 0; ch < 4; ch++)
@@ -4473,7 +4472,7 @@ public class frmMain extends JFrame {
                     forceChannelMask(Vrc6Chip.class, chipId, ch, newParam.vrc6[chipId].channels[ch].mask);
                 for (int ch = 0; ch < 8; ch++)
                     forceChannelMask(N163Chip.class, chipId, ch, newParam.n106[chipId].channels[ch].mask);
-                resetChannelMask(FdsChip.class, chipId, 0);
+                resetChannelMask(NpNesChip.FdsChip.class, chipId, 0);
             }
 
             audio.plugin.stopped = false;
@@ -5474,7 +5473,7 @@ public class frmMain extends JFrame {
         if (chip == Ym2413Chip.class) {
             register = audio.plugin.chipRegister.chip(Ym2413Chip.class).read(chipId);
         } else if (chip == Vrc7Chip.class) {
-            int[] r = audio.plugin.chipRegister.chip(NesChip.Vrc7Chip.class).readVrc7(chipId);
+            int[] r = audio.plugin.chipRegister.chip(NpNesChip.Vrc7Chip.class).readVrc7(chipId);
             if (r == null) return;
             register = new int[r.length];
             System.arraycopy(r, 0, register, 0, r.length);
@@ -5558,7 +5557,7 @@ public class frmMain extends JFrame {
 
     private void getInstChForMCK(Class<? extends Chip> chip, int ch, int chipId) {
         if (chip == N163Chip.class) {
-            NesN106.TrackInfo[] info = (NesN106.TrackInfo[]) audio.plugin.chipRegister.chip(NesChip.N163Chip.class).readN163(0);
+            NesN106.TrackInfo[] info = (NesN106.TrackInfo[]) audio.plugin.chipRegister.chip(NpNesChip.N163Chip.class).readN163(0);
             if (info == null) return;
 
             StringBuilder n = new StringBuilder("@Nxx = { ");
@@ -6644,38 +6643,38 @@ public class frmMain extends JFrame {
                     newParam.nesdmc[chipId].dmcChannel.mask = !newParam.nesdmc[chipId].dmcChannel.mask;
                     break;
             }
-        } else if (chip.equals(FdsChip.class)) {
+        } else if (chip.equals(NpNesChip.FdsChip.class)) {
             if (!newParam.fds[chipId].channel.mask || newParam.fds[chipId].channel.mask == null)
                 audio.plugin.chipRegister.chip(NesChip.FdsChip.class).setFdsMask(chipId);
             else audio.plugin.chipRegister.chip(NesChip.FdsChip.class).resetFdsMask(chipId);
             newParam.fds[chipId].channel.mask = !newParam.fds[chipId].channel.mask;
-        } else if (chip.equals(Mmc5Chip.class)) {
+        } else if (chip.equals(NpNesChip.Mmc5Chip.class)) {
             switch (ch) {
                 case 0:
                     if (!newParam.mmc5[chipId].sqrChannels[0].mask || newParam.mmc5[chipId].sqrChannels[ch].mask == null)
-                        audio.plugin.chipRegister.chip(NesChip.Mmc5Chip.class).setMmc5Mask(chipId, ch);
-                    else audio.plugin.chipRegister.chip(NesChip.Mmc5Chip.class).resetMmc5Mask(chipId, ch);
+                        audio.plugin.chipRegister.chip(NpNesChip.Mmc5Chip.class).setMmc5Mask(chipId, ch);
+                    else audio.plugin.chipRegister.chip(NpNesChip.Mmc5Chip.class).resetMmc5Mask(chipId, ch);
                     newParam.mmc5[chipId].sqrChannels[0].mask = !newParam.mmc5[chipId].sqrChannels[0].mask;
                     break;
                 case 1:
                     if (!newParam.mmc5[chipId].sqrChannels[1].mask || newParam.mmc5[chipId].sqrChannels[ch].mask == null)
-                        audio.plugin.chipRegister.chip(NesChip.Mmc5Chip.class).setMmc5Mask(chipId, ch);
-                    else audio.plugin.chipRegister.chip(NesChip.Mmc5Chip.class).resetMmc5Mask(chipId, ch);
+                        audio.plugin.chipRegister.chip(NpNesChip.Mmc5Chip.class).setMmc5Mask(chipId, ch);
+                    else audio.plugin.chipRegister.chip(NpNesChip.Mmc5Chip.class).resetMmc5Mask(chipId, ch);
                     newParam.mmc5[chipId].sqrChannels[1].mask = !newParam.mmc5[chipId].sqrChannels[1].mask;
                     break;
                 case 2:
                     if (!newParam.mmc5[chipId].pcmChannel.mask || newParam.mmc5[chipId].pcmChannel.mask == null)
-                        audio.plugin.chipRegister.chip(NesChip.Mmc5Chip.class).setMmc5Mask(chipId, ch);
-                    else audio.plugin.chipRegister.chip(NesChip.Mmc5Chip.class).resetMmc5Mask(chipId, ch);
+                        audio.plugin.chipRegister.chip(NpNesChip.Mmc5Chip.class).setMmc5Mask(chipId, ch);
+                    else audio.plugin.chipRegister.chip(NpNesChip.Mmc5Chip.class).resetMmc5Mask(chipId, ch);
                     newParam.mmc5[chipId].pcmChannel.mask = !newParam.mmc5[chipId].pcmChannel.mask;
                     break;
             }
-        } else if (chip.equals(Vrc7Chip.class)) {
+        } else if (chip.equals(NpNesChip.Vrc7Chip.class)) {
             if (ch >= 0 && ch < 6) {
                 if (!newParam.vrc7[chipId].channels[ch].mask || newParam.vrc7[chipId].channels[ch].mask == null)
-                    audio.plugin.chipRegister.chip(NesChip.Vrc7Chip.class).setVrc7Mask(chipId, ch);
+                    audio.plugin.chipRegister.chip(NpNesChip.Vrc7Chip.class).setVrc7Mask(chipId, ch);
                 else
-                    audio.plugin.chipRegister.chip(NesChip.Vrc7Chip.class).resetVrc7Mask(chipId, ch);
+                    audio.plugin.chipRegister.chip(NpNesChip.Vrc7Chip.class).resetVrc7Mask(chipId, ch);
 
                 newParam.vrc7[chipId].channels[ch].mask = !newParam.vrc7[chipId].channels[ch].mask;
             }
@@ -6700,18 +6699,18 @@ public class frmMain extends JFrame {
         } else if (chip.equals(Vrc6Chip.class)) {
             if (ch >= 0 && ch < 3) {
                 if (!newParam.vrc6[chipId].channels[ch].mask || newParam.vrc6[chipId].channels[ch].mask == null)
-                    audio.plugin.chipRegister.chip(NesChip.Vrc6Chip.class).setVrc6Mask(chipId, ch);
+                    audio.plugin.chipRegister.chip(NpNesChip.Vrc6Chip.class).setVrc6Mask(chipId, ch);
                 else
-                    audio.plugin.chipRegister.chip(NesChip.Vrc6Chip.class).resetVrc6Mask(chipId, ch);
+                    audio.plugin.chipRegister.chip(NpNesChip.Vrc6Chip.class).resetVrc6Mask(chipId, ch);
 
                 newParam.vrc6[chipId].channels[ch].mask = !newParam.vrc6[chipId].channels[ch].mask;
             }
         } else if (chip.equals(N163Chip.class)) {
             if (ch >= 0 && ch < 8) {
                 if (!newParam.n106[chipId].channels[ch].mask || newParam.n106[chipId].channels[ch].mask == null)
-                    audio.plugin.chipRegister.chip(NesChip.N163Chip.class).setN163Mask(chipId, ch);
+                    audio.plugin.chipRegister.chip(NpNesChip.N163Chip.class).setN163Mask(chipId, ch);
                 else
-                    audio.plugin.chipRegister.chip(NesChip.N163Chip.class).resetN163Mask(chipId, ch);
+                    audio.plugin.chipRegister.chip(NpNesChip.N163Chip.class).resetN163Mask(chipId, ch);
 
                 newParam.n106[chipId].channels[ch].mask = !newParam.n106[chipId].channels[ch].mask;
             }
@@ -6749,7 +6748,7 @@ public class frmMain extends JFrame {
             audio.plugin.chipRegister.chip(Ym2413Chip.class).resetMask(chipId, ch);
         } else if (chip.equals(Vrc7Chip.class)) {
             newParam.vrc7[chipId].channels[ch].mask = false;
-            audio.plugin.chipRegister.chip(NesChip.Vrc7Chip.class).resetVrc7Mask(chipId, ch);
+            audio.plugin.chipRegister.chip(NpNesChip.Vrc7Chip.class).resetVrc7Mask(chipId, ch);
         } else if (chip.equals(Ym2608Chip.class)) {
             if (ch >= 0 && ch < 14) {
                 audio.plugin.chipRegister.chip(Ym2608Chip.class).resetMask(chipId, ch, audio.plugin.stopped);
@@ -6873,7 +6872,7 @@ public class frmMain extends JFrame {
                     audio.plugin.chipRegister.chip(NesChip.DmcChip.class).resetDmcMask(chipId, 2);
                     break;
             }
-        } else if (chip.equals(FdsChip.class)) {
+        } else if (chip.equals(NpNesChip.FdsChip.class)) {
             newParam.fds[chipId].channel.mask = false;
             audio.plugin.chipRegister.chip(NesChip.FdsChip.class).resetFdsMask(chipId);
         } else if (chip.equals(Mmc5Chip.class)) {
@@ -6888,16 +6887,16 @@ public class frmMain extends JFrame {
                     newParam.mmc5[chipId].pcmChannel.mask = false;
                     break;
             }
-            audio.plugin.chipRegister.chip(NesChip.Mmc5Chip.class).resetMmc5Mask(chipId, ch);
+            audio.plugin.chipRegister.chip(NpNesChip.Mmc5Chip.class).resetMmc5Mask(chipId, ch);
         } else if (chip.equals(DmgChip.class)) {
             newParam.dmg[chipId].channels[ch].mask = false;
             audio.plugin.chipRegister.chip(DmgChip.class).resetMask(chipId, ch);
         } else if (chip.equals(Vrc6Chip.class)) {
             newParam.vrc6[chipId].channels[ch].mask = false;
-            audio.plugin.chipRegister.chip(NesChip.Vrc6Chip.class).resetVrc6Mask(chipId, ch);
+            audio.plugin.chipRegister.chip(NpNesChip.Vrc6Chip.class).resetVrc6Mask(chipId, ch);
         } else if (chip.equals(N163Chip.class)) {
             newParam.n106[chipId].channels[ch].mask = false;
-            audio.plugin.chipRegister.chip(NesChip.N163Chip.class).resetN163Mask(chipId, ch);
+            audio.plugin.chipRegister.chip(NpNesChip.N163Chip.class).resetN163Mask(chipId, ch);
         }
     }
 
@@ -7139,16 +7138,16 @@ public class frmMain extends JFrame {
             oldParam.dmg[chipId].channels[ch].mask = !mask;
         } else if (chip.equals(Vrc6Chip.class)) {
             if (mask)
-                audio.plugin.chipRegister.chip(NesChip.Vrc6Chip.class).setVrc6Mask(chipId, ch);
+                audio.plugin.chipRegister.chip(NpNesChip.Vrc6Chip.class).setVrc6Mask(chipId, ch);
             else
-                audio.plugin.chipRegister.chip(NesChip.Vrc6Chip.class).resetVrc6Mask(chipId, ch);
+                audio.plugin.chipRegister.chip(NpNesChip.Vrc6Chip.class).resetVrc6Mask(chipId, ch);
             newParam.vrc6[chipId].channels[ch].mask = mask;
             oldParam.vrc6[chipId].channels[ch].mask = !mask;
         } else if (chip.equals(N163Chip.class)) {
             if (mask)
-                audio.plugin.chipRegister.chip(NesChip.N163Chip.class).setN163Mask(chipId, ch);
+                audio.plugin.chipRegister.chip(NpNesChip.N163Chip.class).setN163Mask(chipId, ch);
             else
-                audio.plugin.chipRegister.chip(NesChip.N163Chip.class).resetN163Mask(chipId, ch);
+                audio.plugin.chipRegister.chip(NpNesChip.N163Chip.class).resetN163Mask(chipId, ch);
             newParam.n106[chipId].channels[ch].mask = mask;
             oldParam.n106[chipId].channels[ch].mask = !mask;
         }

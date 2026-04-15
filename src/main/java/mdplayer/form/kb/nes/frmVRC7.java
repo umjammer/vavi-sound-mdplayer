@@ -20,8 +20,8 @@ import mdplayer.Chip.ChipKeyInfo;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
-import mdplayer.chips.NesChip;
-import mdplayer.chips.NesChip.Vrc7Chip;
+import mdplayer.chips.NpNesChip;
+import mdplayer.chips.NpNesChip.Vrc7Chip;
 import mdplayer.chips.SegaPcmChip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
@@ -108,11 +108,11 @@ public class frmVRC7 extends frmBase {
     };
 
     public void screenChangeParams() {
-        int[] vrc7Register = audio.plugin.chipRegister.chip(NesChip.Vrc7Chip.class).readVrc7(chipId);
+        int[] vrc7Register = audio.plugin.chipRegister.chip(NpNesChip.Vrc7Chip.class).readVrc7(chipId);
         if (vrc7Register == null) return;
 
         // Get whether there was a key-on (one-shot)
-        ChipKeyInfo ki = audio.plugin.chipRegister.chip(NesChip.Vrc7Chip.class).getVRC7KeyInfo(chipId);
+        ChipKeyInfo ki = audio.plugin.chipRegister.chip(NpNesChip.Vrc7Chip.class).getVRC7KeyInfo(chipId);
 
         for (int ch = 0; ch < 6; ch++) {
             MDChipParams.Channel nyc = newParam.channels[ch];

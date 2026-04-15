@@ -28,6 +28,7 @@ import mdplayer.chips.Ay8910Chip;
 import mdplayer.chips.C140Chip;
 import mdplayer.chips.C352Chip;
 import mdplayer.chips.NesChip;
+import mdplayer.chips.NpNesChip;
 import mdplayer.chips.QSoundChip;
 import mdplayer.chips.SegaPcmChip;
 import mdplayer.chips.SidChip;
@@ -116,7 +117,7 @@ public class frmRegTest extends frmChipBase {
 
             addChip("YM3812", 1, 0x100, select -> audio.plugin.chipRegister.chip(Ym3812Chip.class).read(0));
 
-            addChip("NES", 1, 0x30, select -> audio.plugin.chipRegister.chip(NesChip.class).readApu(0));
+            addChip("NES", 1, 0x30, select -> audio.plugin.chipRegister.chip(NpNesChip.class).readApu(0));
 
             addChip("Sid", 3, 0x19, chipId1 -> audio.plugin.chipRegister.chip(SidChip.class).read(chipId1));
         }

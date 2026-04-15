@@ -21,6 +21,7 @@ import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.chips.NesChip;
 import mdplayer.chips.NesChip.DmcChip;
+import mdplayer.chips.NpNesChip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
@@ -110,7 +111,7 @@ public class frmNESDMC extends frmBase {
         final double LOG_2 = 0.69314718055994530941723212145818;
         final int NOTE_440HZ = 12 * 4 + 9;
 
-        int[] reg = audio.plugin.chipRegister.chip(NesChip.class).readApu(chipId);
+        int[] reg = audio.plugin.chipRegister.chip(NpNesChip.class).readApu(chipId);
         int freq;
         int vol;
         int note;
@@ -133,7 +134,7 @@ public class frmNESDMC extends frmBase {
             }
         }
 
-        int[] reg2 = audio.plugin.chipRegister.chip(NesChip.DmcChip.class).readDmc(chipId);
+        int[] reg2 = audio.plugin.chipRegister.chip(NpNesChip.DmcChip.class).readDmc(chipId);
         if (reg2 == null) return;
 
         int tri = reg2[0x10];

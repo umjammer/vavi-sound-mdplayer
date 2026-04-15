@@ -15,11 +15,14 @@ mdplayer.chips.MultiPcmChip
 mdplayer.chips.NesChip
 mdplayer.chips.NesChip$DmcChip
 mdplayer.chips.NesChip$FdsChip
-mdplayer.chips.NesChip$N163Chip
-mdplayer.chips.NesChip$Mmc5Chip
-mdplayer.chips.NesChip$Vrc7Chip
-mdplayer.chips.NesChip$Vrc6Chip
-mdplayer.chips.NesChip$Fme7Chip
+mdplayer.chips.NpNesChip
+mdplayer.chips.NpNesChip$DmcChip
+mdplayer.chips.NpNesChip$FdsChip
+mdplayer.chips.NpNesChip$N163Chip
+mdplayer.chips.NpNesChip$Mmc5Chip
+mdplayer.chips.NpNesChip$Vrc7Chip
+mdplayer.chips.NpNesChip$Vrc6Chip
+mdplayer.chips.NpNesChip$Fme7Chip
 mdplayer.chips.OkiM6258Chip
 mdplayer.chips.OkiM6295Chip
 mdplayer.chips.P86Chip
@@ -50,3 +53,4 @@ mdplayer.chips.Pcm8Chip
 mdplayer.chips.ZxBeepChip
 mdplayer.chips.Cs4231Chip
 mdplayer.chips.MPcmChip
+

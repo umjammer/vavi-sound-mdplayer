@@ -5,9 +5,12 @@ import java.lang.System.Logger.Level;
 
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
-import mdplayer.chips.NesChip;
+import mdplayer.chips.NpNesChip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.plugin.BasePlugin;
+import mdsound.VisWaveBuffer;
+import mdsound.np.NpNesApu;
+import mdsound.np.NpNesDmc;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 import vavi.util.ByteUtil;
@@ -16,7 +19,7 @@ import static java.lang.System.getLogger;
 
 
 /**
- * NSF
+ * Nsf Driver powered by NP.
  *
  * @author kumatan
  */
@@ -24,11 +27,12 @@ public class NsfMdDriver extends BaseDriver implements NsfDriver {
 
     private static final Logger logger = getLogger(NsfMdDriver.class.getName());
 
-    private final Nsf nsf;
+    public final Nsf nsf;
 
     public NsfMdDriver() {
         this.nsf = new Nsf();
-        nsf.getVolume = plugin.chipRegister.chip(NesChip.class)::getVolume;
+        nsf.setOptions = this::setOptions;
+        nsf.enq = this::enq;
         nsf.isRealModel = model != EnmModel.RealModel;
         nsf.sampleRate = setting.getOutputDevice().getSampleRate();
         nsf.updateAtMiddle = this::updateAtMiddle;
@@ -82,8 +86,6 @@ public class NsfMdDriver extends BaseDriver implements NsfDriver {
         this.latency = latency;
         this.waitTime = waitTime;
 
-        nsf.chip = plugin.chipRegister.chip(NesChip.class);
-
         if (model == EnmModel.RealModel) {
             stopped = true;
             curLoop = 9999;
@@ -101,7 +103,9 @@ public class NsfMdDriver extends BaseDriver implements NsfDriver {
 
         metaData = getMetaData(vgmBuf);
 
-        nsf.init(setting);
+        nsf.getVolume = plugin.chipRegister.chip(NpNesChip.class)::getVolume;
+
+        nsf.init(setting.getNsf().getHPF(), setting.getNsf().getLPF());
     }
 
     @Override
@@ -167,7 +171,7 @@ public class NsfMdDriver extends BaseDriver implements NsfDriver {
 
     @Override
     public void copyWaveBuffer(short[][] dest) {
-        nsf.visWaveBufferCopy(dest);
+        visWB.copy(dest);
     }
 
     @Override
@@ -200,5 +204,49 @@ public class NsfMdDriver extends BaseDriver implements NsfDriver {
         if (this.totalCounter == 0) this.totalCounter = counter;
         loopCounter = 0;
         stopped = true;
+    }
+
+    //
+    private void setOptions(byte[] bankSwitch) {
+        nsf.apu.setOption(NpNesApu.OPT.UNMUTE_ON_RESET.ordinal(), setting.getNsf().getNESUnmuteOnReset() ? 1 : 0);
+        nsf.apu.setOption(NpNesApu.OPT.NONLINEAR_MIXER.ordinal(), setting.getNsf().getNESNonLinearMixer() ? 1 : 0);
+        nsf.apu.setOption(NpNesApu.OPT.PHASE_REFRESH.ordinal(), setting.getNsf().getNESPhaseRefresh() ? 1 : 0);
+        nsf.apu.setOption(NpNesApu.OPT.DUTY_SWAP.ordinal(), setting.getNsf().getNESDutySwap() ? 1 : 0);
+
+        nsf.dmc.setOption(NpNesDmc.OPT.ENABLE_4011.ordinal(), setting.getNsf().getDMCEnable4011() ? 1 : 0);
+        nsf.dmc.setOption(NpNesDmc.OPT.ENABLE_PNOISE.ordinal(), setting.getNsf().getDMCEnablePnoise() ? 1 : 0);
+        nsf.dmc.setOption(NpNesDmc.OPT.UNMUTE_ON_RESET.ordinal(), setting.getNsf().getDMCUnmuteOnReset() ? 1 : 0);
+        nsf.dmc.setOption(NpNesDmc.OPT.DPCM_ANTI_CLICK.ordinal(), setting.getNsf().getDMCDPCMAntiClick() ? 1 : 0);
+        nsf.dmc.setOption(NpNesDmc.OPT.NONLINEAR_MIXER.ordinal(), setting.getNsf().getDMCNonLinearMixer() ? 1 : 0);
+        nsf.dmc.setOption(NpNesDmc.OPT.RANDOMIZE_NOISE.ordinal(), setting.getNsf().getDMCRandomizeNoise() ? 1 : 0);
+        nsf.dmc.setOption(NpNesDmc.OPT.TRI_MUTE.ordinal(), setting.getNsf().getDMCTRImute() ? 1 : 0);
+        nsf.dmc.setOption(NpNesDmc.OPT.RANDOMIZE_TRI.ordinal(), setting.getNsf().getDMCRandomizeTRI() ? 1 : 0);
+        nsf.dmc.setOption(NpNesDmc.OPT.DPCM_REVERSE.ordinal(), setting.getNsf().getDMCDPCMReverse() ? 1 : 0);
+
+        if (useFds()) {
+            boolean write_enable = !setting.getNsf().getFDSWriteDisable8000();
+            nsf.fds.setOption(0, setting.getNsf().getFDSLpf());
+            nsf.fds.setOption(1, setting.getNsf().getFDS4085Reset() ? 1 : 0);
+            nsf.mem.setFDSMode(write_enable);
+            nsf.bank.setFDSMode(write_enable);
+            nsf.bank.setBankDefault(6, bankSwitch[6] & 0xff);
+            nsf.bank.setBankDefault(7, bankSwitch[7] & 0xff);
+        } else {
+            nsf.mem.setFDSMode(false);
+            nsf.bank.setFDSMode(false);
+        }
+        if (useN106()) {
+            nsf.n106.setOption(0, setting.getNsf().getN160Serial() ? 1 : 0);
+        }
+        if (useMmc5()) {
+            nsf.mmc5.setOption(0, setting.getNsf().getMMC5NonLinearMixer() ? 1 : 0);
+            nsf.mmc5.setOption(1, setting.getNsf().getMMC5PhaseRefresh() ? 1 : 0);
+        }
+    }
+
+    private final VisWaveBuffer visWB = new VisWaveBuffer();
+
+    private void enq(short left, short right) {
+        visWB.enq(left, right);
     }
 }

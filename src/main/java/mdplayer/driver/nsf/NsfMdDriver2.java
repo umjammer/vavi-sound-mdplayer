@@ -11,10 +11,8 @@ import java.lang.System.Logger.Level;
 
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
-import mdplayer.chips.NesChip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.plugin.BasePlugin;
-import mdsound.MDSound;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 import vavi.util.ByteUtil;
@@ -23,7 +21,7 @@ import static java.lang.System.getLogger;
 
 
 /**
- * NsfMdDriver2.
+ * Nsf Driver powered by NsfPlayer.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-04-01 nsano initial version <br>

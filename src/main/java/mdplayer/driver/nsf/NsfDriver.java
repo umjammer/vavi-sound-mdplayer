@@ -6,7 +6,6 @@
 
 package mdplayer.driver.nsf;
 
-import mdsound.MDSound.Chip;
 import musicDriverInterface.MetaData;
 
 

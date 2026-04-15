@@ -2,22 +2,23 @@ package mdplayer.plugin;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.util.function.Consumer;
 
 import mdplayer.Common;
 import mdplayer.chips.MidiPlugin;
-import mdplayer.chips.NesChip;
-import mdplayer.chips.NesChip.DmcChip;
-import mdplayer.chips.NesChip.FdsChip;
-import mdplayer.chips.NesChip.Fme7Chip;
-import mdplayer.chips.NesChip.Mmc5Chip;
-import mdplayer.chips.NesChip.N163Chip;
-import mdplayer.chips.NesChip.Vrc6Chip;
-import mdplayer.chips.NesChip.Vrc7Chip;
-import mdplayer.driver.nsf.NsfMdDriver2;
+import mdplayer.chips.NpNesChip;
+import mdplayer.chips.NpNesChip.DmcChip;
+import mdplayer.chips.NpNesChip.FdsChip;
+import mdplayer.chips.NpNesChip.Fme7Chip;
+import mdplayer.chips.NpNesChip.Mmc5Chip;
+import mdplayer.chips.NpNesChip.N163Chip;
+import mdplayer.chips.NpNesChip.Vrc6Chip;
+import mdplayer.chips.NpNesChip.Vrc7Chip;
+import mdplayer.driver.nsf.NsfMdDriver;
 import mdplayer.plugin.BasePlugin.HasSongNo;
 import mdsound.Instrument;
 import mdsound.MDSound;
-import mdsound.instrument.NesInst;
+import mdsound.instrument.NpNesInst;
 
 import static java.lang.System.getLogger;
 import static mdsound.MDSound.Chip.MAIN_TAG;
@@ -29,11 +30,11 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-08 nsano initial version <br>
  */
-public class NSFPlugin extends BasePlugin<NsfMdDriver2> implements HasSongNo {
+public class NSFPlugin extends BasePlugin<NsfMdDriver> implements HasSongNo {
 
     private static final Logger logger = getLogger(NSFPlugin.class.getName());
 
-    /** for spi, 0 origin */
+    @Override
     public void setSongNo(int songNo) {
 logger.log(Level.INFO, "songNo: " + songNo);
         this.songNo = songNo;
@@ -41,21 +42,11 @@ logger.log(Level.INFO, "songNo: " + songNo);
 
     @Override
     public void prepare() {
-        NesInst nesInst = Instrument.getInstrument(NesInst.class);
-        nesInst.np_nes_apu_volume = 0;
-        nesInst.np_nes_dmc_volume = 0;
-        nesInst.np_nes_fds_volume = 0;
-        nesInst.np_nes_fme7_volume = 0;
-        nesInst.np_nes_mmc5_volume = 0;
-        nesInst.np_nes_n106_volume = 0;
-        nesInst.np_nes_vrc6_volume = 0;
-        nesInst.np_nes_vrc7_volume = 0;
-
-        driverVirtual = new NsfMdDriver2();
+        driverVirtual = new mdplayer.driver.nsf.NsfMdDriver(); // use np driver
 
         driverReal = null;
 //        if (setting.getoutputDevice().deviceType != Common.DEV_Null) {
-//            driverReal = new Nsf();
+//            driverReal = new mdplayer.driver.nsf.NsfMdDriver();
 //        }
 
         super.prepare();
@@ -85,42 +76,37 @@ logger.log(Level.INFO, "songNo: " + songNo);
         if (driverVirtual.useVrc6()) chipLED.put("PriVRC6", 1);
         if (driverVirtual.useVrc7()) chipLED.put("PriVRC7", 1);
 
-        NesInst apu = Instrument.getInstrument(NesInst.class);
+        NpNesInst apu = Instrument.getInstrument(NpNesInst.class);
         MDSound.Chip chip = new MDSound.Chip();
         chip.id = 0;
         chip.instrument = apu;
         chip.samplingRate = setting.getOutputDevice().getSampleRate();
-        chip.volume = setting.getBalance().getVolume(MAIN_TAG, NesChip.class);
+        chip.volume = setting.getBalance().getVolume(MAIN_TAG, NpNesChip.class);
         chip.clock = 0;
-        chip.setVolumes.put("APU", chip.mainWrappedSetVolume(apu::setVolume));
         chip.option = null;
-        put(NesChip.class, chip);
+        put(NpNesChip.class, chip);
 
-        NesInst.DMC dmc = new NesInst.DMC();
         chip = new MDSound.Chip();
         chip.id = 0;
-        chip.instrument = dmc;
+        chip.instrument = Instrument.getInstrument(NpNesInst.DmcInst.class);
         chip.samplingRate = setting.getOutputDevice().getSampleRate();
         chip.clock = 0;
-        chip.setVolumes.put("DMC", chip.mainWrappedSetVolume(dmc::setVolume));
         chip.option = null;
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, DmcChip.class);
         put(DmcChip.class, chip);
 
-        NesInst.FDS fds = new NesInst.FDS();
         chip = new MDSound.Chip();
         chip.id = 0;
-        chip.instrument = fds;
+        chip.instrument = Instrument.getInstrument(NpNesInst.FdsInst.class);
         chip.samplingRate = setting.getOutputDevice().getSampleRate();
         chip.clock = 0;
-        chip.setVolumes.put("FDS", chip.mainWrappedSetVolume(fds::setVolume));
         chip.option = null;
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, FdsChip.class);
         put(FdsChip.class, chip);
 
         chip = new MDSound.Chip();
         chip.id = 0;
-        chip.instrument = new NesInst.MMC5();
+        chip.instrument = Instrument.getInstrument(NpNesInst.Mmc5Inst.class);
         chip.samplingRate = setting.getOutputDevice().getSampleRate();
         chip.clock = 0;
         chip.option = null;
@@ -129,7 +115,7 @@ logger.log(Level.INFO, "songNo: " + songNo);
 
         chip = new MDSound.Chip();
         chip.id = 0;
-        chip.instrument = new NesInst.N160();
+        chip.instrument = Instrument.getInstrument(NpNesInst.N160Inst.class);
         chip.samplingRate = setting.getOutputDevice().getSampleRate();
         chip.clock = 0;
         chip.option = null;
@@ -138,7 +124,7 @@ logger.log(Level.INFO, "songNo: " + songNo);
 
         chip = new MDSound.Chip();
         chip.id = 0;
-        chip.instrument = new NesInst.VRC6();
+        chip.instrument = Instrument.getInstrument(NpNesInst.Vrc6Inst.class);
         chip.samplingRate = setting.getOutputDevice().getSampleRate();
         chip.clock = 0;
         chip.option = null;
@@ -147,16 +133,17 @@ logger.log(Level.INFO, "songNo: " + songNo);
 
         chip = new MDSound.Chip();
         chip.id = 0;
-        chip.instrument = new NesInst.VRC7();
+        chip.instrument = Instrument.getInstrument(NpNesInst.Vrc7Inst.class);
         chip.samplingRate = setting.getOutputDevice().getSampleRate();
         chip.clock = 0;
-        chip.option = null;
+        Consumer<int[]> fn = ds -> { if (ds[7] != -1) apu.np_nes_vrc7_volume = ds[7]; };
+        chip.option = new Object[] {fn};
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, Vrc7Chip.class);
         put(Vrc7Chip.class, chip);
 
         chip = new MDSound.Chip();
         chip.id = 0;
-        chip.instrument = new NesInst.FME7();
+        chip.instrument = Instrument.getInstrument(NpNesInst.Fme7Inst.class);
         chip.samplingRate = setting.getOutputDevice().getSampleRate();
         chip.clock = 0;
         chip.option = null;
@@ -165,6 +152,7 @@ logger.log(Level.INFO, "songNo: " + songNo);
 
         mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, flatten());
 
+        chipRegister.chip(NpNesChip.class).init();
         chipRegister.plugin(MidiPlugin.class).initChipRegisterNSF();
     }
 }

@@ -21,7 +21,7 @@ import static java.lang.System.getLogger;
 
 
 /**
- * Nsf2.
+ * Nsf player powered by NsfPlay.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-02-16 nsano initial version <br>

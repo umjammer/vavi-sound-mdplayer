@@ -20,8 +20,8 @@ import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.Tables;
-import mdplayer.chips.NesChip;
-import mdplayer.chips.NesChip.Fme7Chip;
+import mdplayer.chips.NpNesChip;
+import mdplayer.chips.NpNesChip.Fme7Chip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
@@ -107,7 +107,7 @@ public class frmS5B extends frmBase {
     };
 
     public void screenChangeParams() {
-        byte[] S5BRegister = audio.plugin.chipRegister.chip(NesChip.Fme7Chip.class).readS5B(chipId);
+        byte[] S5BRegister = audio.plugin.chipRegister.chip(NpNesChip.Fme7Chip.class).readS5B(chipId);
         if (S5BRegister == null) return;
 
         for (int ch = 0; ch < 3; ch++) { //SSG
