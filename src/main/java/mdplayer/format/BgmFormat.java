@@ -13,10 +13,12 @@ import java.util.List;
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
+import dotnet4j.io.File;
 import dotnet4j.io.Path;
 import mdplayer.PlayList.Music;
-import mdplayer.driver.fmp.FmpDriver;
-import mdplayer.plugin.FMPPlugin;
+import mdplayer.driver.musica.MusicaDriver;
+import mdplayer.driver.musica.MusicaK4Driver;
+import mdplayer.plugin.MuSICAPlugin;
 import mdplayer.plugin.Plugin;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
@@ -28,21 +30,21 @@ import vavi.util.archive.Entry;
 
 
 /**
- * FMP (PC-9801) Format.
+ * MuSICA (MSX) BGM (OBJ) Format.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-02-20 nsano initial version <br>
  */
-public class FMPFormat extends BaseFileFormat implements FileFormat.SampledFileFormat {
+public class BgmFormat extends BaseFileFormat implements FileFormat.SampledFileFormat {
 
     @Override
     public String[] getExtensions() {
-        return new String[] {".mpi", ".mvi", ".mzi", ".opi", ".ovi", ".ozi"};
+        return new String[] {".bgm"};
     }
 
     @Override
     public MetaData getMetaData(byte[] buf) {
-        return new FmpDriver().getMetaData(buf, 0);
+        return new MusicaDriver().getMetaData(buf);
     }
 
     @Override
@@ -53,13 +55,12 @@ public class FMPFormat extends BaseFileFormat implements FileFormat.SampledFileF
         MetaData metaData = getMetaData(buf);
         music.title = metaData.getFirst(Tag.Title).isEmpty() ? Path.getFileName(file) : metaData.getFirst(Tag.Title);
         music.titleJ = metaData.getFirst(Tag.TitleJ).isEmpty() ? Path.getFileName(file) : metaData.getFirst(Tag.TitleJ);
-        music.game = metaData.getFirst(Tag.GameTitle);
-        music.gameJ = metaData.getFirst(Tag.GameTitleJ);
-        music.composer = metaData.getFirst(Tag.Composer);
-        music.composerJ = metaData.getFirst(Tag.ComposerJ);
-        music.vgmby = metaData.getFirst(Tag.Maker);
-
-        music.converted = metaData.getFirst(Tag.Converter);
+        music.game = "";
+        music.gameJ = "";
+        music.composer = "";
+        music.composerJ = "";
+        music.vgmby = "";
+        music.converted = "";
         music.notes = metaData.getFirst(Tag.Note);
 
         return List.of(music);
@@ -72,17 +73,17 @@ public class FMPFormat extends BaseFileFormat implements FileFormat.SampledFileF
 
     @Override
     public Plugin getPlugin() {
-        return Plugin.getPlugin(FMPPlugin.class);
+        return Plugin.getPlugin(MuSICAPlugin.class);
     }
 
     @Override
     public Encoding getEncoding() {
-        return new MdEncoding("FMP", "mpi,opi,mvi,ovi,mzi,ozi");
+        return new MdEncoding("MuSICA", "bgm");
     }
 
     @Override
     public Type getType() {
-        return new MdFileFormatType("FMP", "mpi,opi,mvi,ovi,mzi,ozi");
+        return new MdFileFormatType("MuSICA", "bgm");
     }
 
     @Override

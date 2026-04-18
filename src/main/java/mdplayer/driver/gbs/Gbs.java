@@ -42,6 +42,7 @@ public class Gbs extends BaseDriver {
         metaData.set(Tag.TitleJ, gbsInfo.title);
         metaData.set(Tag.GameSystem, gbsInfo.copyright);
         metaData.set(Tag.GameSystemJ, gbsInfo.copyright);
+        metaData.set(Tag.NumberOfSongs, String.valueOf(gbsInfo.nums));
 
         this.metaData = metaData;
 

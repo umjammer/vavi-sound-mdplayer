@@ -144,8 +144,8 @@ public class NiseHuman {
     }
 
     public void loadAndExecuteFile(String filename, String option, int startAddress) {
-        logger.log(Level.INFO, "niseHuman>%s %s".formatted(filename, option));
-        logger.log(Level.INFO, "CurrentWorkPath>%s".formatted(currentWorkPath));
+        logger.log(Level.INFO, "niseHuman: %s %s".formatted(filename, option));
+        logger.log(Level.INFO, "currentWorkPath: %s".formatted(currentWorkPath));
 
         currentWorkPath = fileMng.VCurrentPath;
         if (currentWorkPath == null || currentWorkPath.isEmpty()) currentWorkPath = "C:\\";

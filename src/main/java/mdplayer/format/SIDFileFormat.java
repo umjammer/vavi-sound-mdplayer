@@ -12,7 +12,6 @@ import javax.sound.sampled.AudioFormat.Encoding;
 import dotnet4j.io.File;
 import mdplayer.Common.EnmArcType;
 import mdplayer.PlayList;
-import mdplayer.driver.sid.SidDriver;
 import mdplayer.driver.sid.SidMdDriver2;
 import mdplayer.plugin.Plugin;
 import mdplayer.plugin.SIDPlugin;
@@ -40,12 +39,18 @@ public class SIDFileFormat extends BaseFileFormat {
     }
 
     @Override
+    public MetaData getMetaData(byte[] buf) {
+        return new SidMdDriver2().getMetaData(buf);
+    }
+
+    @Override
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
         List<PlayList.Music> musics = new ArrayList<>();
 
-        SidDriver sid = new SidMdDriver2();
-        MetaData metaData = sid.getMetaData(buf);
-        for (int s = 0; s < sid.getSongs(); s++) {
+        MetaData metaData = getMetaData(buf);
+        int songs = Integer.parseInt(metaData.getFirst(Tag.NumberOfSongs));
+
+        for (int s = 0; s < songs; s++) {
             PlayList.Music music = new PlayList.Music();
             music.format = this;
             music.fileName = file;

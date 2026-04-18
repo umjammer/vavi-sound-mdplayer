@@ -36,12 +36,18 @@ public class ZMSFileFormat extends BaseFileFormat {
     }
 
     @Override
+    public MetaData getMetaData(byte[] buf) {
+        ZmsDriver zms = new ZmsDriver();
+        zms.setPlayingFileName(filename);
+        return zms.getMetaData(buf, 8);
+    }
+
+    @Override
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
         PlayList.Music music = new PlayList.Music();
 
         music.format = this;
-        int index = 8;
-        MetaData metaData = new ZmsDriver().getMetaData(buf, index);
+        MetaData metaData = getMetaData(buf);
         music.title = metaData.getFirst(Tag.Title).isEmpty() ? Path.getFileName(file) : metaData.getFirst(Tag.Title);
         music.titleJ = metaData.getFirst(Tag.TitleJ).isEmpty() ? Path.getFileName(file) : metaData.getFirst(Tag.TitleJ);
         music.game = metaData.getFirst(Tag.GameTitle);
@@ -61,8 +67,7 @@ public class ZMSFileFormat extends BaseFileFormat {
         PlayList.Music music = new PlayList.Music();
 
         music.format = this;
-        int index = 8;
-        MetaData metaData = new ZmsDriver().getMetaData(buf, index);
+        MetaData metaData = getMetaData(buf);
         music.title = metaData.getFirst(Tag.Title).isEmpty() ? Path.getFileName(zipFile) : metaData.getFirst(Tag.Title);
         music.titleJ = metaData.getFirst(Tag.TitleJ).isEmpty() ? Path.getFileName(zipFile) : metaData.getFirst(Tag.TitleJ);
         music.game = metaData.getFirst(Tag.GameTitle);
@@ -97,9 +102,12 @@ public class ZMSFileFormat extends BaseFileFormat {
         return 0;
     }
 
+    private String filename;
+
     @Override
     public boolean isSupported(InputStream is) throws IOException {
         if (isCompressedStream(is)) return false;
-        return Arrays.stream(getExtensions()).anyMatch(e -> java.nio.file.Path.of(SoundUtil.getSource(is)).toString().toLowerCase().endsWith(e));
+        this.filename = java.nio.file.Path.of(SoundUtil.getSource(is)).toString();
+        return Arrays.stream(getExtensions()).anyMatch(e -> filename.toLowerCase().endsWith(e));
     }
 }

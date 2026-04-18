@@ -210,7 +210,7 @@ public class ZmsDriver extends BaseDriver {
             }
         }
 
-        String cmt = "";
+        String cmt = null;
         try {
             if (zms.version == 3) {
                 int ptr = (buf[9 * 4 + 0] & 0xFF) * 0x100_0000 + (buf[9 * 4 + 1] & 0xFF) * 0x1_0000 +

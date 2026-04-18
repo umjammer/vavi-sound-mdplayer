@@ -13,10 +13,11 @@ import java.util.List;
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
+import dotnet4j.io.File;
 import dotnet4j.io.Path;
 import mdplayer.PlayList.Music;
-import mdplayer.driver.fmp.FmpDriver;
-import mdplayer.plugin.FMPPlugin;
+import mdplayer.driver.musica.MusicaK4Driver;
+import mdplayer.plugin.MuSICAPlugin;
 import mdplayer.plugin.Plugin;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
@@ -28,21 +29,26 @@ import vavi.util.archive.Entry;
 
 
 /**
- * FMP (PC-9801) Format.
+ * MuSICA (MSX) MSD (MML) Format.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-02-20 nsano initial version <br>
  */
-public class FMPFormat extends BaseFileFormat implements FileFormat.SampledFileFormat {
+public class MsdFormat extends BaseFileFormat implements FileFormat.SampledFileFormat {
 
     @Override
     public String[] getExtensions() {
-        return new String[] {".mpi", ".mvi", ".mzi", ".opi", ".ovi", ".ozi"};
+        return new String[] {".msd"};
     }
 
     @Override
     public MetaData getMetaData(byte[] buf) {
-        return new FmpDriver().getMetaData(buf, 0);
+        String vcd = Path.changeExtension(filename, ".vcd");
+        byte[] vcdBuf = null;
+        if (File.exists(vcd)) {
+            vcdBuf = File.readAllBytes(vcd);
+        }
+        return new MusicaK4Driver().getMetaData(buf, vcdBuf);
     }
 
     @Override
@@ -51,16 +57,22 @@ public class FMPFormat extends BaseFileFormat implements FileFormat.SampledFileF
 
         music.format = this;
         MetaData metaData = getMetaData(buf);
-        music.title = metaData.getFirst(Tag.Title).isEmpty() ? Path.getFileName(file) : metaData.getFirst(Tag.Title);
-        music.titleJ = metaData.getFirst(Tag.TitleJ).isEmpty() ? Path.getFileName(file) : metaData.getFirst(Tag.TitleJ);
-        music.game = metaData.getFirst(Tag.GameTitle);
-        music.gameJ = metaData.getFirst(Tag.GameTitleJ);
-        music.composer = metaData.getFirst(Tag.Composer);
-        music.composerJ = metaData.getFirst(Tag.ComposerJ);
-        music.vgmby = metaData.getFirst(Tag.Maker);
-
-        music.converted = metaData.getFirst(Tag.Converter);
-        music.notes = metaData.getFirst(Tag.Note);
+        if (metaData == null) {
+            //logger.log(Level.WARNING, ".MSD compilation failed", "PlayList", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            music.title = Path.getFileName(file);
+            music.titleJ = Path.getFileName(file);
+            music.notes = "";
+        } else {
+            music.title = metaData.getFirst(Tag.Title).isEmpty() ? Path.getFileName(file) : metaData.getFirst(Tag.Title);
+            music.titleJ = metaData.getFirst(Tag.TitleJ).isEmpty() ? Path.getFileName(file) : metaData.getFirst(Tag.TitleJ);
+            music.notes = metaData.getFirst(Tag.Note);
+        }
+        music.game = "";
+        music.gameJ = "";
+        music.composer = "";
+        music.composerJ = "";
+        music.vgmby = "";
+        music.converted = "";
 
         return List.of(music);
     }
@@ -72,17 +84,17 @@ public class FMPFormat extends BaseFileFormat implements FileFormat.SampledFileF
 
     @Override
     public Plugin getPlugin() {
-        return Plugin.getPlugin(FMPPlugin.class);
+        return Plugin.getPlugin(MuSICAPlugin.class);
     }
 
     @Override
     public Encoding getEncoding() {
-        return new MdEncoding("FMP", "mpi,opi,mvi,ovi,mzi,ozi");
+        return new MdEncoding("MuSICA", "msd");
     }
 
     @Override
     public Type getType() {
-        return new MdFileFormatType("FMP", "mpi,opi,mvi,ovi,mzi,ozi");
+        return new MdFileFormatType("MuSICA", "msd");
     }
 
     @Override
@@ -90,9 +102,12 @@ public class FMPFormat extends BaseFileFormat implements FileFormat.SampledFileF
         return 0;
     }
 
+    private String filename;
+
     @Override
     public boolean isSupported(InputStream is) throws IOException {
         if (isCompressedStream(is)) return false;
-        return Arrays.stream(getExtensions()).anyMatch(e -> java.nio.file.Path.of(SoundUtil.getSource(is)).toString().toLowerCase().endsWith(e));
+        this.filename = java.nio.file.Path.of(SoundUtil.getSource(is)).toString();
+        return Arrays.stream(getExtensions()).anyMatch(e -> filename.toLowerCase().endsWith(e));
     }
 }

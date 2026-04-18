@@ -4,7 +4,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
@@ -39,15 +38,20 @@ public class GbsFileFormat extends BaseFileFormat {
     }
 
     @Override
+    public MetaData getMetaData(byte[] buf) {
+        return new Gbs().getMetaData(buf);
+    }
+
+    @Override
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
         List<PlayList.Music> musics = new ArrayList<>();
         PlayList.Music music = new PlayList.Music();
 
-        Gbs gbs = new Gbs();
-        MetaData md = gbs.getMetaData(buf);
+        MetaData md = getMetaData(buf);
+        int songs = Integer.parseInt(md.getFirst(Tag.NumberOfSongs));
 
         if (md != null) {
-            for (int s = 0; s < gbs.songs; s++) {
+            for (int s = 0; s < songs; s++) {
                 music = new PlayList.Music();
                 music.format = this;
                 music.fileName = file;

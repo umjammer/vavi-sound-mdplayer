@@ -29,6 +29,8 @@ import mdplayer.driver.BaseDriver;
 import mdplayer.format.FileFormat;
 import mdplayer.format.UnknownFileFormat;
 import mdplayer.plugin.BasePlugin;
+import musicDriverInterface.MetaData;
+import musicDriverInterface.MetaData.Tag;
 import vavi.sound.SoundUtil;
 import vavi.util.archive.Archives;
 
@@ -90,6 +92,7 @@ logger.log(DEBUG, "enter: available: " + bitStream.available() + ", " + bitStrea
         float samplingRate = 44100;
         int channels = 2;
         AudioFileFormat.Type type;
+        MetaData metaData;
         try {
             bitStream.mark(10); // *1
             InputStream in = Archives.getInputStream(bitStream);
@@ -107,6 +110,7 @@ logger.log(DEBUG, "format: " + fileFormat.getClass().getSimpleName());
             encoding = fileFormat.getEncoding();
             type = fileFormat.getType();
             var r = fileFormat.load(in, fn);
+            metaData = fileFormat.getMetaData(r.getItem1());
             plugin = (BasePlugin<? extends BaseDriver>) fileFormat.getPlugin();
 logger.log(DEBUG, "plugin: " + plugin);
 logger.log(DEBUG, "filename: " + fn);
@@ -120,8 +124,18 @@ logger.log(TRACE, e.getMessage(), e);
         }
         Map<String, Object> props = new HashMap<>();
         props.put("vavi.sound.sampled.md", plugin);
+        fillProps(props, metaData);
         AudioFormat format = new AudioFormat(encoding, samplingRate, NOT_SPECIFIED, channels, NOT_SPECIFIED, NOT_SPECIFIED, false, props);
         return new AudioFileFormat(type, format, NOT_SPECIFIED);
+    }
+
+    private static void fillProps(Map<String, Object> props, MetaData metaData) {
+        if (metaData != null) {
+            props.put("md.title", metaData.getFirst(Tag.Title));
+            props.put("md.artist", metaData.getFirst(Tag.Maker));
+            props.put("md.composer", metaData.getFirst(Tag.Composer));
+            props.put("md.album", metaData.getFirst(Tag.GameTitle));
+        }
     }
 
     @Override

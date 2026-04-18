@@ -33,6 +33,11 @@ public class ZGMFileFormat extends BaseFileFormat {
     }
 
     @Override
+    public MetaData getMetaData(byte[] buf) {
+        return new Zgm().getMetaData(buf);
+    }
+
+    @Override
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
         PlayList.Music music = new PlayList.Music();
 

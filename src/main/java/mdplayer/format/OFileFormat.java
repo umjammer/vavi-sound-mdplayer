@@ -42,12 +42,16 @@ public class OFileFormat extends BaseFileFormat {
     }
 
     @Override
+    public MetaData getMetaData(byte[] buf) {
+        return new MuapDriver().getMetaData(buf, 0);
+    }
+
+    @Override
     public List<Music> getMusic(String file, byte[] buf, String zipFile, Archive archive, Entry entry) {
         PlayList.Music music = new PlayList.Music();
 
         music.format = this;
-        int index = 0;
-        MetaData metaData = new MuapDriver().getMetaData(buf, index);
+        MetaData metaData = getMetaData(buf);
         music.title = metaData.getFirst(Tag.Title).isEmpty() ? Path.getFileName(file) : metaData.getFirst(Tag.Title);
         music.titleJ = metaData.getFirst(Tag.TitleJ).isEmpty() ? Path.getFileName(file) : metaData.getFirst(Tag.TitleJ);
         music.game = metaData.getFirst(Tag.GameTitle);

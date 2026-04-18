@@ -87,6 +87,7 @@ public class SidMdDriver2 extends BaseDriver implements SidDriver {
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
         }
+        md.set(Tag.NumberOfSongs, String.valueOf(sid.songs));
 
         return md;
     }

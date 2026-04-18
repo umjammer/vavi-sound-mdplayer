@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
@@ -13,8 +12,7 @@ import dotnet4j.io.File;
 import dotnet4j.io.Path;
 import mdplayer.Common.EnmArcType;
 import mdplayer.PlayList;
-import mdplayer.driver.nsf.NsfDriver;
-import mdplayer.driver.nsf.NsfMdDriver2;
+import mdplayer.driver.nsf.NsfMdDriver;
 import mdplayer.plugin.NSFPlugin;
 import mdplayer.plugin.Plugin;
 import mdplayer.properties.Resources;
@@ -41,15 +39,20 @@ public class NSFFileFormat extends BaseFileFormat {
     }
 
     @Override
+    public MetaData getMetaData(byte[] buf) {
+        return new NsfMdDriver().getMetaData(buf);
+    }
+
+    @Override
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
         List<PlayList.Music> musics = new ArrayList<>();
         PlayList.Music music = new PlayList.Music();
 
-        NsfDriver nsf = new NsfMdDriver2();
-        MetaData md = nsf.getMetaData(buf);
+        MetaData md = getMetaData(buf);
+        int songs = Integer.parseInt(md.getFirst(Tag.NumberOfSongs));
 
         if (md != null) {
-            for (int s = 0; s < nsf.getSongs(); s++) {
+            for (int s = 0; s < songs; s++) {
                 music = new PlayList.Music();
                 music.format = this;
                 music.fileName = file;
@@ -88,12 +91,12 @@ public class NSFFileFormat extends BaseFileFormat {
         List<PlayList.Music> musics = new ArrayList<>();
         PlayList.Music music = new PlayList.Music();
 
-        NsfDriver nsf = new NsfMdDriver2();
-        MetaData md = nsf.getMetaData(buf);
+        MetaData md = getMetaData(buf);
+        int songs = Integer.parseInt(md.getFirst(Tag.NumberOfSongs));
 
         if (md != null) {
             if (ms.songNo == -1) {
-                for (int s = 0; s < nsf.getSongs(); s++) {
+                for (int s = 0; s < songs; s++) {
                     music = new PlayList.Music();
                     music.format = this;
                     music.fileName = ms.fileName;

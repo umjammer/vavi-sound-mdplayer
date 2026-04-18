@@ -211,6 +211,11 @@ Debug.println(inFile);
 
         AudioFormat inAudioFormat = sourceAis.getFormat();
 Debug.println("IN: " + inAudioFormat + ", " + inAudioFormat.getEncoding().getClass().getName());
+Debug.println("\n" +
+ "artist:   " + inAudioFormat.getProperty("md.artist") + "\n" +
+ "album:    " + inAudioFormat.getProperty("md.album") + "\n" +
+ "title:    " + inAudioFormat.getProperty("md.title") + "\n" +
+ "composer: " + inAudioFormat.getProperty("md.composer"));
 
         assertInstanceOf(MdEncoding.class, inAudioFormat.getEncoding());
 

@@ -73,25 +73,27 @@ public class PmdDriver extends BaseDriver {
     private boolean usePPZ;
 
     private String playingFileName;
-    public String getPlayingFileName() { return playingFileName; }
     public void setPlayingFileName(String value) { playingFileName = value; }
 
     public static final int baseClock = 7987200;
 
-    private PMDFileType mtype;
-
     public PmdDriver() {
     }
 
-    public MetaData getMetaData(byte[] buf, int vgmGd3, PMDFileType mtype) {
+    @Override
+    public MetaData getMetaData(byte[] buf, Object... args) {
+        PMDFileType mType;
+        if (args == null || args.length == 0) {
+            mType = checkFileType(buf);
+        } else {
+            mType = (PMDFileType) args[0];
+        }
+
         MetaData metaData;
 
-        if (mtype == PMDFileType.MML) {
-            EnvironmentE env = new EnvironmentE();
-            env.addEnv("mdplayer.pmd.dir");
-            env.addEnv("mdplayer.pmd.opt");
-            envPmd = env.getEnvVal("mdplayer.pmd.dir");
-            envPmdOpt = env.getEnvVal("mdplayer.pmd.opt");
+        if (mType == PMDFileType.MML) {
+            envPmd = System.getProperty("mdplayer.pmd.dir", "").split(java.io.File.pathSeparator);
+            envPmdOpt = System.getProperty("mdplayer.pmd.opt", "").split(java.io.File.pathSeparator);
 
             pmdCompiler = ICompiler.factory("pmd.compiler.Compiler");
             pmdCompiler.setCompileSwitch((Function<String, Stream>) this::appendFileReaderCallback);
@@ -113,8 +115,8 @@ public class PmdDriver extends BaseDriver {
                      int latency, int waitTime, Object... args) {
 
         FileFormat fileFormat = (FileFormat) args[0];
-        mtype = fileFormat instanceof MMLFileFormat ? PMDFileType.MML : PMDFileType.M;
-        metaData = getMetaData(dataBuf, 0, mtype);
+        PMDFileType mType = fileFormat instanceof MMLFileFormat ? PMDFileType.MML : PMDFileType.M;
+        metaData = getMetaData(dataBuf, mType);
 
         this.dataBuf = dataBuf;
         this.plugin = plugin;
@@ -136,7 +138,7 @@ public class PmdDriver extends BaseDriver {
             return;
 //#endif
 
-        if (mtype == PMDFileType.MML)
+        if (mType == PMDFileType.MML)
             initMML();
         else
             initM();
@@ -237,11 +239,8 @@ public class PmdDriver extends BaseDriver {
         usePPS = setting.getPmd().usePPSDRV;
         usePPZ = setting.getPmd().usePPZ8;
 
-        EnvironmentE env = new EnvironmentE();
-        env.addEnv("pmd");
-        env.addEnv("pmdopt");
-        envPmd = env.getEnvVal("pmd");
-        envPmdOpt = env.getEnvVal("pmdopt");
+        envPmd = System.getProperty("mdplayer.pmd.dir", "").split(java.io.File.pathSeparator);
+        envPmdOpt = System.getProperty("mdplayer.pmd.opt", "").split(java.io.File.pathSeparator);
 
         Object[] additionalPDDDotNETOption = {
                 isLoadADPCM, // bool
@@ -357,11 +356,8 @@ public class PmdDriver extends BaseDriver {
         usePPS = setting.getPmd().usePPSDRV;
         usePPZ = setting.getPmd().usePPZ8;
 
-        EnvironmentE env = new EnvironmentE();
-        env.addEnv("mdplayer.pmd.dir");
-        env.addEnv("mdplayer.pmd.opt");
-        envPmd = env.getEnvVal("mdplayer.pmd.dir");
-        envPmdOpt = env.getEnvVal("mdplayer.pmd.opt");
+        envPmd = System.getProperty("mdplayer.pmd.dir", "").split(java.io.File.pathSeparator);
+        envPmdOpt = System.getProperty("mdplayer.pmd.opt", "").split(java.io.File.pathSeparator);
 
         Object[] additionalPDDDotNETOption = new Object[] {
             isLoadADPCM, // bool
@@ -489,50 +485,6 @@ logger.log(Level.DEBUG, "found pmd additional file: " + fileName.replace("\\", j
         }
 
         return stream;
-    }
-
-    @Override
-    public MetaData getMetaData(byte[] buf, Object... args) {
-        throw new UnsupportedOperationException();
-    }
-
-    public static class EnvironmentE {
-        private final List<String> envs;
-
-        public EnvironmentE() {
-            envs = new ArrayList<>();
-        }
-
-        public void addEnv(String envName) {
-            String env = System.getProperty(envName);
-            if (env != null && !env.isEmpty()) {
-                envs.add("%s=%s".formatted(envName, env));
-            }
-        }
-
-        public String[] getEnvs() {
-            return envs.toArray(String[]::new);
-        }
-
-        public String[] getEnvVal(String envName) {
-            if (envs == null)
-                return null;
-
-            for (String item : envs) {
-                String[] kv = item.split("=");
-                if (kv == null)
-                    continue;
-                if (kv.length != 2)
-                    continue;
-                if (!kv[0].equalsIgnoreCase(envName))
-                    continue;
-
-                String[] vals = kv[1].split(";");
-                return vals;
-            }
-
-            return null;
-        }
     }
 
     private static String[] getPMDOption() {

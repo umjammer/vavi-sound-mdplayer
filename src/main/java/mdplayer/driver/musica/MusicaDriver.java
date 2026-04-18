@@ -42,6 +42,9 @@ public class MusicaDriver extends BaseDriver {
         MetaData md = new MetaData();
         if (buf != null && buf.length > 8) {
             try {
+                musica.k051649Write = (i, a, d) -> {};
+                musica.ay8910Write = (a, d) -> {};
+                musica.ym2413Write = (a, d) -> {};
                 musica.run(buf);
             } catch (Exception ex) {
                 logger.log(Level.ERROR, ex.getMessage(), ex);

@@ -13,7 +13,9 @@ import javax.sound.sampled.AudioFormat.Encoding;
 
 import dotnet4j.util.compat.Tuple;
 import mdplayer.PlayList;
+import mdplayer.PlayList.Music;
 import mdplayer.plugin.Plugin;
+import musicDriverInterface.MetaData;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 
@@ -25,6 +27,8 @@ public interface FileFormat {
     FileFormat unknown = new UnknownFileFormat();
 
     String[] getExtensions();
+
+    MetaData getMetaData(byte[] buf);
 
     List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */);
 

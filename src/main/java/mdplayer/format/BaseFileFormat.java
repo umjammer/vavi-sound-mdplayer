@@ -101,7 +101,12 @@ public abstract class BaseFileFormat implements FileFormat {
     }
 
     // default
-    protected MetaData getMetaData(byte[] buf, int vgmGd3) {
+    protected MetaData getMetaData(byte[] buf, Object... args) {
+        return null;
+    }
+
+    @Override
+    public MetaData getMetaData(byte[] buf) {
         return null;
     }
 

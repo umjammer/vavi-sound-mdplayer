@@ -30,7 +30,6 @@ public class WAVFileFormat extends BaseFileFormat implements FileFormat.SampledF
 
     @Override
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
-        List<PlayList.Music> musics = new ArrayList<>();
         PlayList.Music music = new PlayList.Music();
         music.format = this;
         music.title = "(%s)".formatted(Path.getFileName(file));

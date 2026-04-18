@@ -24,7 +24,8 @@ mdplayer.format.XGMFileFormat
 mdplayer.format.ZGMFileFormat
 mdplayer.format.ZIPFileFormat
 mdplayer.format.AyFileFormat
-mdplayer.format.MuSICAFormat
+mdplayer.format.MsdFormat
+mdplayer.format.BgmFormat
 mdplayer.format.FMPFormat
 mdplayer.format.NDPFileFormat
 mdplayer.format.ZMSFileFormat

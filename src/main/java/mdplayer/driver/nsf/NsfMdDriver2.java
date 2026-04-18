@@ -67,6 +67,7 @@ public class NsfMdDriver2 extends BaseDriver implements NsfDriver {
         md.set(Tag.TitleJ, nsf.title);
         md.set(Tag.GameSystem, nsf.copyright);
         md.set(Tag.GameSystemJ, nsf.copyright);
+        md.set(Tag.NumberOfSongs, String.valueOf(nsf.songs));
 
         return md;
     }

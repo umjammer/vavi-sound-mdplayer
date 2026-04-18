@@ -36,12 +36,16 @@ public class NDPFileFormat extends BaseFileFormat {
     }
 
     @Override
+    public MetaData getMetaData(byte[] buf) {
+        return new NdpDriver().getMetaData(buf, 8);
+    }
+
+    @Override
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
         PlayList.Music music = new PlayList.Music();
 
         music.format = this;
-        int index = 8;
-        MetaData metaData = new NdpDriver().getMetaData(buf, index);
+        MetaData metaData = getMetaData(buf);
         music.title = metaData.getFirst(Tag.Title);
         music.titleJ = metaData.getFirst(Tag.TitleJ);
         music.game = "";
@@ -62,8 +66,7 @@ public class NDPFileFormat extends BaseFileFormat {
         PlayList.Music music = new PlayList.Music();
 
         music.format = this;
-        int index = 8;
-        MetaData metaData = new NdpDriver().getMetaData(buf, index);
+        MetaData metaData = getMetaData(buf);
         music.title = metaData.getFirst(Tag.Title);
         music.titleJ = metaData.getFirst(Tag.TitleJ);
         music.game = "";
