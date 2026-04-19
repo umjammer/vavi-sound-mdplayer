@@ -126,7 +126,7 @@ public class frmYM3812 extends frmBase {
     private static final byte[] rhythmAdr = new byte[] {0x53, 0x54, 0x52, 0x55, 0x51};
 
     public void screenChangeParams() {
-        int[] ym3812Register = audio.plugin.chipRegister.chip(Ym3812Chip.class).read(chipId);
+        int[] ym3812Register = (int[]) audio.plugin.chipRegister.chip(Ym3812Chip.class).getInfo(chipId).get("register");
         MDChipParams.Channel nyc;
         int slot;
         ChipKeyInfo ki = audio.plugin.chipRegister.chip(Ym3812Chip.class).getKeyInfo(chipId);

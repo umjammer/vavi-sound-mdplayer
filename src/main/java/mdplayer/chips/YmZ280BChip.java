@@ -6,6 +6,8 @@
 
 package mdplayer.chips;
 
+import java.util.Map;
+
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
@@ -79,7 +81,7 @@ public class YmZ280BChip extends BaseChip {
         dumpData(model, "YMZ280B_PCMData", srcOffset, buf, length);
     }
 
-    public int[] read(int chipId) {
-        return register[chipId];
+    public Map<String, Object> getInfo(int chipId) {
+        return Map.of("register", register[chipId]);
     }
 }

@@ -6,9 +6,10 @@
 
 package mdplayer.chips;
 
+import java.util.Map;
+
 import mdplayer.Common.EnmModel;
 import mdsound.Instrument;
-import mdsound.chips.OkiM6295;
 import mdsound.instrument.OkiM6295Inst;
 
 
@@ -39,9 +40,8 @@ public class OkiM6295Chip extends BaseChip {
             context.mds.inst(inst(chipId), 0).resetMask(chipId, 1 << ch);
     }
 
-    // TODO abstract
-    public OkiM6295.ChannelInfo read(int chipId) {
-        return context.mds.inst(OkiM6295Inst.class, 0).getChInfo(chipId);
+    public Map<String, Object> getInfo(int chipId) {
+        return context.mds.inst(OkiM6295Inst.class, 0).getInfo(chipId);
     }
 
     public void writePcm(int chipId, int romSize, int offset, int length, byte[] buf, int srcOffset, EnmModel model) {

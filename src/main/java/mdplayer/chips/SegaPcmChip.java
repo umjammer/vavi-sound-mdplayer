@@ -10,6 +10,7 @@ import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import dotnet4j.io.File;
 import dotnet4j.io.Path;
@@ -20,7 +21,6 @@ import mdplayer.Tables;
 import mdplayer.driver.BaseDriver;
 import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
-import mdsound.chips.SegaPcm;
 import mdsound.instrument.SegaPcmInst;
 import musicDriverInterface.MetaData.Tag;
 import vavi.util.ByteUtil;
@@ -143,16 +143,11 @@ public class SegaPcmChip extends BaseChip {
         }
     }
 
-    public byte[] read(int chipId) {
-        return register[chipId];
-    }
-
-    public boolean[] getKeyOn(int chipId) {
-        return keyOn[chipId];
-    }
-
-    public SegaPcm getChip(int chipId) {
-        return context.mds.inst(SegaPcmInst.class).getChip(chipId);
+    public Map<String, Object> getInfo(int chipId) {
+        Map<String, Object> info = context.mds.inst(SegaPcmInst.class).getInfo(chipId);
+        info.put("register", register[chipId]);
+        info.put("keyOn", keyOn[chipId]);
+        return info;
     }
 
     public void setMask(int chipId, int ch) {

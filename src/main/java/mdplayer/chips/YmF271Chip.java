@@ -6,13 +6,14 @@
 
 package mdplayer.chips;
 
+import java.util.Map;
+
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
 import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
-import mdsound.chips.YmF271;
 import mdsound.instrument.YmF271Inst;
 
 
@@ -89,7 +90,7 @@ public class YmF271Chip extends BaseChip {
         dumpData(model, "YMF271_PCMData", srcOffset, buf, length);
     }
 
-    public YmF271 read(int chipId) {
-        return context.mds.inst(YmF271Inst.class).getChip(chipId);
+    public Map<String, Object> getInfo(int chipId) {
+        return context.mds.inst(YmF271Inst.class).getInfo(chipId);
     }
 }

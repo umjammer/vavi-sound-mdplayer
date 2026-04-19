@@ -6,6 +6,8 @@
 
 package mdplayer.chips;
 
+import java.util.Map;
+
 import mdplayer.Common.EnmModel;
 import mdplayer.driver.BaseDriver;
 import mdplayer.plugin.BasePlugin;
@@ -70,10 +72,6 @@ public class C352Chip extends BaseChip {
             context.mds.write(inst(chipId), chipId, 0, adr, data);
     }
 
-    public int[] read(int chipId) {
-        return context.mds.inst(C352Inst.class).readFlags(chipId);
-    }
-
     public void writePcm(int chipId, int romSize, int offset, int length, byte[] buf, int srcOffset, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriC352", 2);
@@ -86,12 +84,11 @@ public class C352Chip extends BaseChip {
         dumpData(model, "C352_PCMData", srcOffset, buf, length);
     }
 
-    public int[] getChip(int chipId) {
-        return register[chipId];
-    }
-
-    public int[] getKeyOn(int chipId) {
-        return read(chipId);
+    public Map<String, Object> getInfo(int chipId) {
+        return Map.of(
+                "register", register[chipId],
+                "flags", context.mds.inst(C352Inst.class).getInfo(chipId).get("flags")
+        );
     }
 
     public void setMask(int chipId, int ch) {

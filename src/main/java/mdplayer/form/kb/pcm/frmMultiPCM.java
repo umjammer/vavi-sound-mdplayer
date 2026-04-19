@@ -13,6 +13,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
@@ -181,43 +182,33 @@ public class frmMultiPCM extends frmBase {
     }
 
     public void screenChangeParams() {
-        MultiPCM multiPCMRegister = audio.plugin.chipRegister.chip(MultiPcmChip.class).getChip(chipId);
-        if (multiPCMRegister == null) return;
+        Map<String, Object> info = audio.plugin.chipRegister.chip(MultiPcmChip.class).getInfo(chipId);
+        if (info == null) return;
 
         for (int ch = 0; ch < 28; ch++) {
-            int oct = ((multiPCMRegister.getSlot(ch).regs[3] >> 4) - 1) & 0xf;
-            oct = ((oct & 0x8) != 0) ? (oct - 16) : oct;
-            oct = oct + 4; // The fundamental tone is o5.
-            int pitch = ((multiPCMRegister.getSlot(ch).regs[3] & 0xf) << 6) | (multiPCMRegister.getSlot(ch).regs[2] >> 2);
+            newParam.channels[ch].pan = (int) info.get("channels." + ch + ".pan");
 
-            int nt = Math.clamp(oct * 12 + pitch / 85, 0, 7 * 12);
-            newParam.channels[ch].note = nt;
+            newParam.channels[ch].bit[0] = (boolean) info.get("channels." + ch + ".bit.0");
+            newParam.channels[ch].freq = (int) info.get("channels." + ch + ".freq");
+            newParam.channels[ch].bit[1] = (boolean) info.get("channels." + ch + ".bit.1");
+            newParam.channels[ch].inst[1] = (int) info.get("channels." + ch + ".inst.1");
+            newParam.channels[ch].inst[2] = (int) info.get("channels." + ch + ".inst.2");
+            newParam.channels[ch].inst[3] = (int) info.get("channels." + ch + ".inst.3");
+            newParam.channels[ch].inst[4] = (int) info.get("channels." + ch + ".inst.4");
 
-            int d = multiPCMRegister.getSlot(ch).pan;
-            d = (d == 0) ? 0xf : d;
-            newParam.channels[ch].pan = ((((d & 0xc) >> 2) * 4) << 4) | (((d & 0x3) * 4) << 0);
-
-            newParam.channels[ch].bit[0] = (multiPCMRegister.getSlot(ch).regs[4] & 0x80) != 0;
-            newParam.channels[ch].freq = ((multiPCMRegister.getSlot(ch).regs[3] & 0xf) << 6) | (multiPCMRegister.getSlot(ch).regs[2] >> 2);
-            newParam.channels[ch].bit[1] = (multiPCMRegister.getSlot(ch).regs[5] & 1) != 0; // TL Interpolation
-            newParam.channels[ch].inst[1] = (multiPCMRegister.getSlot(ch).regs[5] >> 1) & 0x7f; // TL
-            newParam.channels[ch].inst[2] = (multiPCMRegister.getSlot(ch).regs[6] >> 3) & 7; // LFO freq
-            newParam.channels[ch].inst[3] = (multiPCMRegister.getSlot(ch).regs[6]) & 7; // PLFO
-            newParam.channels[ch].inst[4] = (multiPCMRegister.getSlot(ch).regs[7]) & 7; // ALFO
-
-            if (multiPCMRegister.getSlot(ch).sample != null) {
-                newParam.channels[ch].inst[0] = multiPCMRegister.getSlot(ch).regs[1];
-                newParam.channels[ch].sadr = multiPCMRegister.getSlot(ch).sample.start;
-                newParam.channels[ch].eadr = multiPCMRegister.getSlot(ch).sample.end;
-                newParam.channels[ch].ladr = multiPCMRegister.getSlot(ch).sample.loop;
-                newParam.channels[ch].inst[5] = multiPCMRegister.getSlot(ch).sample.lfoVib;
-                newParam.channels[ch].inst[6] = multiPCMRegister.getSlot(ch).sample.ar;
-                newParam.channels[ch].inst[7] = multiPCMRegister.getSlot(ch).sample.dr1;
-                newParam.channels[ch].inst[8] = multiPCMRegister.getSlot(ch).sample.dr2;
-                newParam.channels[ch].inst[9] = multiPCMRegister.getSlot(ch).sample.dl;
-                newParam.channels[ch].inst[10] = multiPCMRegister.getSlot(ch).sample.rr;
-                newParam.channels[ch].inst[11] = multiPCMRegister.getSlot(ch).sample.krs;
-                newParam.channels[ch].inst[12] = multiPCMRegister.getSlot(ch).sample.am;
+            if (info.get("channels." + ch + ".sadr") != null) {
+                newParam.channels[ch].inst[0] = (int) info.get("channels." + ch + ".inst.0");
+                newParam.channels[ch].sadr = (int) info.get("channels." + ch + ".sadr");
+                newParam.channels[ch].eadr = (int) info.get("channels." + ch + ".eadr");
+                newParam.channels[ch].ladr = (int) info.get("channels." + ch + ".ladr");
+                newParam.channels[ch].inst[5] = (int) info.get("channels." + ch + ".inst.5");
+                newParam.channels[ch].inst[6] = (int) info.get("channels." + ch + ".inst.6");
+                newParam.channels[ch].inst[7] = (int) info.get("channels." + ch + ".inst.7");
+                newParam.channels[ch].inst[8] = (int) info.get("channels." + ch + ".inst.8");
+                newParam.channels[ch].inst[9] = (int) info.get("channels." + ch + ".inst.9");
+                newParam.channels[ch].inst[10] = (int) info.get("channels." + ch + ".inst.10");
+                newParam.channels[ch].inst[11] = (int) info.get("channels." + ch + ".inst.11");
+                newParam.channels[ch].inst[12] = (int) info.get("channels." + ch + ".inst.12");
             }
 
             if (newParam.channels[ch].bit[0]) {

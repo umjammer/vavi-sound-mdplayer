@@ -13,6 +13,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
@@ -25,7 +26,7 @@ import mdplayer.chips.YmF271Chip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
-import mdsound.chips.YmF271;
+import mdsound.instrument.YmF271Inst;
 
 
 public class frmYMF271 extends frmBase {
@@ -42,23 +43,6 @@ public class frmYMF271 extends frmBase {
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
     static final Preferences prefs = Preferences.userNodeForPackage(frmYMF271.class);
-
-    private static final int[] slotTbl = new int[] {
-            0, 24, 12, 36,
-            1, 25, 13, 37,
-            2, 26, 14, 38,
-            3, 27, 15, 39,
-
-            4, 28, 16, 40,
-            5, 29, 17, 41,
-            6, 30, 18, 42,
-            7, 31, 19, 43,
-
-            8, 32, 20, 44,
-            9, 33, 21, 45,
-            10, 34, 22, 46,
-            11, 35, 23, 47,
-    };
 
     public frmYMF271(frmMain frm, int chipId, int zoom, MDChipParams.YMF271 newParam, MDChipParams.YMF271 oldParam) {
         super(frm);
@@ -145,108 +129,107 @@ public class frmYMF271 extends frmBase {
     }
 
     public void screenChangeParams() {
-        YmF271 reg = audio.plugin.chipRegister.chip(YmF271Chip.class).read(chipId);
-        if (reg != null) {
-            for (int i = 0; i < 48; i++) {
-                int slot = slotTbl[i];
+        Map<String, Object> reg = audio.plugin.chipRegister.chip(YmF271Chip.class).getInfo(chipId);
+        for (int i = 0; i < 48; i++) {
+            int slot = YmF271Inst.slotTbl[i];
 
-                MDChipParams.Channel nrc = newParam.channels[slot];
-                YmF271.Slot slt = reg.getSlot(slot);
-                nrc.volumeL = Math.clamp((slt.volume * slt.ch0Level) >> 23, 0, 19);
-                nrc.volumeR = Math.clamp((slt.volume * slt.ch1Level) >> 23, 0, 19);
-                nrc.pan = (slt.ch1Level << 4) | (slt.ch0Level & 0xf);
-                nrc.pantp = (slt.ch3Level & 0xf0) | ((slt.ch2Level >> 4) & 0xf);
-                nrc.inst[0] = slt.ar;
-                nrc.inst[1] = slt.decay1rate;
-                nrc.inst[2] = slt.decay2rate;
-                nrc.inst[3] = slt.relrate;
-                nrc.inst[4] = slt.decay1lvl;
-                nrc.inst[5] = slt.tl;
-                nrc.inst[6] = slt.keyScale;
-                nrc.inst[7] = slt.multiple;
-                nrc.inst[8] = slt.detune;
-                nrc.inst[9] = slt.waveForm;
-                nrc.inst[10] = slt.feedback;
-                nrc.inst[11] = slt.accon;
-                nrc.inst[12] = slt.algorithm;
+            int volume = (int) reg.get("slots." + slot + ".volume");
+            int ch0Level = (int) reg.get("slots." + slot + ".ch0Level");
+            int ch1Level = (int) reg.get("slots." + slot + ".ch1Level");
+            newParam.channels[slot].volumeL = Math.clamp(((long) volume * ch0Level) >> 23, 0, 19);
+            newParam.channels[slot].volumeR = Math.clamp(((long) volume * ch1Level) >> 23, 0, 19);
+            newParam.channels[slot].pan = (int) reg.get("slots." + slot + ".pan");
+            newParam.channels[slot].pantp = (int) reg.get("slots." + slot + ".pantp");
+            newParam.channels[slot].inst[0] = (int) reg.get("slots." + slot + ".inst.0");
+            newParam.channels[slot].inst[1] = (int) reg.get("slots." + slot + ".inst.1");
+            newParam.channels[slot].inst[2] = (int) reg.get("slots." + slot + ".inst.2");
+            newParam.channels[slot].inst[3] = (int) reg.get("slots." + slot + ".inst.3");
+            newParam.channels[slot].inst[4] = (int) reg.get("slots." + slot + ".inst.4");
+            newParam.channels[slot].inst[5] = (int) reg.get("slots." + slot + ".inst.5");
+            newParam.channels[slot].inst[6] = (int) reg.get("slots." + slot + ".inst.6");
+            newParam.channels[slot].inst[7] = (int) reg.get("slots." + slot + ".inst.7");
+            newParam.channels[slot].inst[8] = (int) reg.get("slots." + slot + ".inst.8");
+            newParam.channels[slot].inst[9] = (int) reg.get("slots." + slot + ".inst.9");
+            newParam.channels[slot].inst[10] = (int) reg.get("slots." + slot + ".inst.10");
+            newParam.channels[slot].inst[11] = (int) reg.get("slots." + slot + ".inst.11");
+            newParam.channels[slot].inst[12] = (int) reg.get("slots." + slot + ".inst.12");
 
-                nrc.inst[13] = slt.block;
-                nrc.inst[14] = slt.fns;
+            newParam.channels[slot].inst[13] = (int) reg.get("slots." + slot + ".inst.13");
+            newParam.channels[slot].inst[14] = (int) reg.get("slots." + slot + ".inst.14");
 
-                nrc.inst[15] = slt.startAddr;
-                nrc.inst[16] = slt.endAddr;
-                nrc.inst[17] = slt.loopAddr;
+            newParam.channels[slot].inst[15] = (int) reg.get("slots." + slot + ".inst.15");
+            newParam.channels[slot].inst[16] = (int) reg.get("slots." + slot + ".inst.16");
+            newParam.channels[slot].inst[17] = (int) reg.get("slots." + slot + ".inst.17");
 
-                nrc.inst[18] = slt.fs;
-                nrc.inst[19] = slt.bits == 12 ? 1 : 0;
-                nrc.inst[20] = slt.srcNote;
-                nrc.inst[21] = slt.srcb;
+            newParam.channels[slot].inst[18] = (int) reg.get("slots." + slot + ".inst.18");
+            newParam.channels[slot].inst[19] = (int) reg.get("slots." + slot + ".inst.19");
+            newParam.channels[slot].inst[20] = (int) reg.get("slots." + slot + ".inst.20");
+            newParam.channels[slot].inst[21] = (int) reg.get("slots." + slot + ".inst.21");
 
-                nrc.inst[22] = slt.lfoFreq;
-                nrc.inst[23] = slt.lfoWave;
-                nrc.inst[24] = slt.pms;
-                nrc.inst[25] = slt.ams;
+            newParam.channels[slot].inst[22] = (int) reg.get("slots." + slot + ".inst.22");
+            newParam.channels[slot].inst[23] = (int) reg.get("slots." + slot + ".inst.23");
+            newParam.channels[slot].inst[24] = (int) reg.get("slots." + slot + ".inst.24");
+            newParam.channels[slot].inst[25] = (int) reg.get("slots." + slot + ".inst.25");
 
-                //note
-                if (slt.active != 0) {
-                    nrc.volumeL = Math.clamp((slt.volume * slt.ch0Level) >> 23, 0, 19);
-                    nrc.volumeR = Math.clamp((slt.volume * slt.ch1Level) >> 23, 0, 19);
-                    nrc.note = Common.searchSSGNote(nrc.inst[14]) + (((nrc.inst[13] + 8) & 0xf) - 11) * 12 - 7;
-                } else {
-                    nrc.volumeL += nrc.volumeL > 0 ? -1 : 0;
-                    nrc.volumeR += nrc.volumeR > 0 ? -1 : 0;
-                    nrc.note = -1;
-                }
+            // note
+            if ((boolean) reg.get("slots." + slot + ".active")) {
+                newParam.channels[slot].volumeL = Math.clamp(((long) volume * ch0Level) >> 23, 0, 19);
+                newParam.channels[slot].volumeR = Math.clamp(((long) volume * ch1Level) >> 23, 0, 19);
+                newParam.channels[slot].note = Common.searchSSGNote(newParam.channels[slot].inst[14]) + (((newParam.channels[slot].inst[13] + 8) & 0xf) - 11) * 12 - 7;
+            } else {
+                newParam.channels[slot].volumeL += newParam.channels[slot].volumeL > 0 ? -1 : 0;
+                newParam.channels[slot].volumeR += newParam.channels[slot].volumeR > 0 ? -1 : 0;
+                newParam.channels[slot].note = -1;
+            }
 
-                if (i % 4 == 0) {
-                    nrc.tn = reg.getSync(i / 4);
-                }
+            if (i % 4 == 0) {
+                newParam.channels[slot].tn = (int) reg.get("slots." + slot + ".sync");
             }
         }
     }
 
     public void screenDrawParams() {
         for (int i = 0; i < 48; i++) {
-            int slot = slotTbl[i];
+            int slot = YmF271Inst.slotTbl[i];
 
             MDChipParams.Channel orc = oldParam.channels[slot];
             MDChipParams.Channel nrc = newParam.channels[slot];
 
             orc.volumeL = DrawBuff.volume(frameBuffer, 273, 8 + i * 8, 1, orc.volumeL, nrc.volumeL, 0);
             orc.volumeR = DrawBuff.volume(frameBuffer, 273, 12 + i * 8, 1, orc.volumeR, nrc.volumeR, 0);
-            DrawBuff.font4Int2(frameBuffer, 25, 8 + i * 8, 0, 2, orc.echo, slot + 1);//slotnum
+            DrawBuff.font4Int2(frameBuffer, 25, 8 + i * 8, 0, 2, orc.echo, slot + 1); // slotnum
             DrawBuff.PanType2(frameBuffer, 33, 8 + i * 8, orc.pan, nrc.pan, 0);
             DrawBuff.PanType2(frameBuffer, 41, 8 + i * 8, orc.pantp, nrc.pantp, 0);
 
             DrawBuff.KeyBoardXY(frameBuffer, 49, 8 + i * 8, orc.note, nrc.note, 0);
 
-            DrawBuff.font4Int2(frameBuffer, 357, 8 + i * 8, 0, 2, orc.inst[0], nrc.inst[0]);//AR
-            DrawBuff.font4Int2(frameBuffer, 365, 8 + i * 8, 0, 2, orc.inst[1], nrc.inst[1]);//DR
-            DrawBuff.font4Int2(frameBuffer, 373, 8 + i * 8, 0, 2, orc.inst[2], nrc.inst[2]);//SR
-            DrawBuff.font4Int2(frameBuffer, 381, 8 + i * 8, 0, 2, orc.inst[3], nrc.inst[3]);//RR
-            DrawBuff.font4Int2(frameBuffer, 389, 8 + i * 8, 0, 2, orc.inst[4], nrc.inst[4]);//SL
-            DrawBuff.font4Int3(frameBuffer, 397, 8 + i * 8, 0, 3, orc.inst[5], nrc.inst[5]);//TL
-            DrawBuff.font4Int1(frameBuffer, 413, 8 + i * 8, 0, orc.inst[6], nrc.inst[6]);//KS
-            DrawBuff.font4Int2(frameBuffer, 417, 8 + i * 8, 0, 2, orc.inst[7], nrc.inst[7]);//ML
-            DrawBuff.font4Int1(frameBuffer, 429, 8 + i * 8, 0, orc.inst[8], nrc.inst[8]);//DT
-            DrawBuff.font4Int1(frameBuffer, 437, 8 + i * 8, 0, orc.inst[9], nrc.inst[9]);//WF
-            DrawBuff.font4Int1(frameBuffer, 445, 8 + i * 8, 0, orc.inst[10], nrc.inst[10]);//FB
-            DrawBuff.font4Int1(frameBuffer, 449, 8 + i * 8, 0, orc.inst[11], nrc.inst[11]);//accon
-            DrawBuff.font4Int2(frameBuffer, 453, 8 + i * 8, 0, 2, orc.inst[12], nrc.inst[12]);//algorithm
-            DrawBuff.font4Int2(frameBuffer, 465, 8 + i * 8, 0, 2, orc.inst[13], nrc.inst[13]);//algorithm
-            DrawBuff.font4Hex12Bit(frameBuffer, 477, 8 + i * 8, 0, orc.inst[14], nrc.inst[14]);//fns
-            DrawBuff.font4Hex24Bit(frameBuffer, 497, 8 + i * 8, 0, orc.inst[15], nrc.inst[15]);//startaddr
-            DrawBuff.font4Hex24Bit(frameBuffer, 525, 8 + i * 8, 0, orc.inst[16], nrc.inst[16]);//endaddr
-            DrawBuff.font4Hex24Bit(frameBuffer, 553, 8 + i * 8, 0, orc.inst[17], nrc.inst[17]);//loopaddr
-            DrawBuff.font4Int1(frameBuffer, 581, 8 + i * 8, 0, orc.inst[18], nrc.inst[18]);//fs
-            DrawBuff.font4Int1(frameBuffer, 585, 8 + i * 8, 0, orc.inst[19], nrc.inst[19]);//bits
-            DrawBuff.font4Int1(frameBuffer, 589, 8 + i * 8, 0, orc.inst[20], nrc.inst[20]);//srcnote
-            DrawBuff.font4Int1(frameBuffer, 593, 8 + i * 8, 0, orc.inst[21], nrc.inst[21]);//srcb
+            DrawBuff.font4Int2(frameBuffer, 357, 8 + i * 8, 0, 2, orc.inst[0], nrc.inst[0]); // AR
+            DrawBuff.font4Int2(frameBuffer, 365, 8 + i * 8, 0, 2, orc.inst[1], nrc.inst[1]); // DR
+            DrawBuff.font4Int2(frameBuffer, 373, 8 + i * 8, 0, 2, orc.inst[2], nrc.inst[2]); // SR
+            DrawBuff.font4Int2(frameBuffer, 381, 8 + i * 8, 0, 2, orc.inst[3], nrc.inst[3]); // RR
+            DrawBuff.font4Int2(frameBuffer, 389, 8 + i * 8, 0, 2, orc.inst[4], nrc.inst[4]); // SL
+            DrawBuff.font4Int3(frameBuffer, 397, 8 + i * 8, 0, 3, orc.inst[5], nrc.inst[5]); // TL
+            DrawBuff.font4Int1(frameBuffer, 413, 8 + i * 8, 0, orc.inst[6], nrc.inst[6]); // KS
+            DrawBuff.font4Int2(frameBuffer, 417, 8 + i * 8, 0, 2, orc.inst[7], nrc.inst[7]); // ML
+            DrawBuff.font4Int1(frameBuffer, 429, 8 + i * 8, 0, orc.inst[8], nrc.inst[8]); // DT
+            DrawBuff.font4Int1(frameBuffer, 437, 8 + i * 8, 0, orc.inst[9], nrc.inst[9]); // WF
+            DrawBuff.font4Int1(frameBuffer, 445, 8 + i * 8, 0, orc.inst[10], nrc.inst[10]); // FB
+            DrawBuff.font4Int1(frameBuffer, 449, 8 + i * 8, 0, orc.inst[11], nrc.inst[11]); // accon
+            DrawBuff.font4Int2(frameBuffer, 453, 8 + i * 8, 0, 2, orc.inst[12], nrc.inst[12]); // algorithm
+            DrawBuff.font4Int2(frameBuffer, 465, 8 + i * 8, 0, 2, orc.inst[13], nrc.inst[13]); // algorithm
+            DrawBuff.font4Hex12Bit(frameBuffer, 477, 8 + i * 8, 0, orc.inst[14], nrc.inst[14]); // fns
+            DrawBuff.font4Hex24Bit(frameBuffer, 497, 8 + i * 8, 0, orc.inst[15], nrc.inst[15]); // startaddr
+            DrawBuff.font4Hex24Bit(frameBuffer, 525, 8 + i * 8, 0, orc.inst[16], nrc.inst[16]); // endaddr
+            DrawBuff.font4Hex24Bit(frameBuffer, 553, 8 + i * 8, 0, orc.inst[17], nrc.inst[17]); // loopaddr
+            DrawBuff.font4Int1(frameBuffer, 581, 8 + i * 8, 0, orc.inst[18], nrc.inst[18]); // fs
+            DrawBuff.font4Int1(frameBuffer, 585, 8 + i * 8, 0, orc.inst[19], nrc.inst[19]); // bits
+            DrawBuff.font4Int1(frameBuffer, 589, 8 + i * 8, 0, orc.inst[20], nrc.inst[20]); // srcnote
+            DrawBuff.font4Int1(frameBuffer, 593, 8 + i * 8, 0, orc.inst[21], nrc.inst[21]); // srcb
 
-            DrawBuff.font4Int3(frameBuffer, 601, 8 + i * 8, 0, 3, orc.inst[22], nrc.inst[22]);//lfofreq
-            DrawBuff.font4Int1(frameBuffer, 617, 8 + i * 8, 0, orc.inst[23], nrc.inst[23]);//lfowave
-            DrawBuff.font4Int1(frameBuffer, 621, 8 + i * 8, 0, orc.inst[24], nrc.inst[24]);//pms
-            DrawBuff.font4Int1(frameBuffer, 625, 8 + i * 8, 0, orc.inst[25], nrc.inst[25]);//ams
+            DrawBuff.font4Int3(frameBuffer, 601, 8 + i * 8, 0, 3, orc.inst[22], nrc.inst[22]); // lfofreq
+            DrawBuff.font4Int1(frameBuffer, 617, 8 + i * 8, 0, orc.inst[23], nrc.inst[23]); // lfowave
+            DrawBuff.font4Int1(frameBuffer, 621, 8 + i * 8, 0, orc.inst[24], nrc.inst[24]); // pms
+            DrawBuff.font4Int1(frameBuffer, 625, 8 + i * 8, 0, orc.inst[25], nrc.inst[25]); // ams
 
             if (i % 4 == 0) {
                 DrawBuff.OpxOP(frameBuffer, 17, 8 + i * 8, 0, orc.tn, nrc.tn & 3);//sync
@@ -272,8 +255,8 @@ public class frmYMF271 extends frmBase {
         //
         // frmYMF271
         //
-//            this.AutoScaleDimensions = new DimensionF(6F, 12F);
-//            this.AutoScaleMode = JAutoScaleMode.Font;
+//        this.AutoScaleDimensions = new DimensionF(6F, 12F);
+//        this.AutoScaleMode = JAutoScaleMode.Font;
         //this.setBackground(Color.ControlDarkDark);
         this.setPreferredSize(new Dimension(689, 477));
         this.getContentPane().add(this.pbScreen);

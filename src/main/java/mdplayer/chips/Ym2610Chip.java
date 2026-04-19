@@ -6,6 +6,8 @@
 
 package mdplayer.chips;
 
+import java.util.Map;
+
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
@@ -582,31 +584,15 @@ public class Ym2610Chip extends BaseChip {
         write(chipId, 1, 0x0b, register[chipId][1][0x0b], EnmModel.RealModel);
     }
 
-    public int[] getVolume(int chipId) {
-        return volume[chipId];
-    }
-
-    public int[][] getRhythmVolume(int chipId) {
-        return rhythmVolume[chipId];
-    }
-
-    public int[] getAdpcmVolume(int chipId) {
-        return adpcmVolume[chipId];
-    }
-
-    public int[] getCh3SlotVolume(int chipId) {
-//        if (ctYM2612.UseScci) {
-        return ch3SlotVolume[chipId];
-//        }
-//        return context.mds.inst(_inst(chipId)).readFMCh3SlotVolume();
-    }
-
-    public int[][] read(int chipId) {
-        return register[chipId];
-    }
-
-    public int[] getKeyOn(int chipId) {
-        return keyOn[chipId];
+    public Map<String, Object> getInfo(int chipId) {
+        return Map.of(
+                "volume", volume[chipId],
+                "rhythmVolume", rhythmVolume[chipId],
+                "adpcmVolume", adpcmVolume[chipId],
+                "ch3SlotVolume", /* ctYM2612.UseScci ? */ ch3SlotVolume[chipId] /* : context.mds.inst(_inst(chipId)).readFMCh3SlotVolume(); */,
+                "register", register[chipId],
+                "keyOn", keyOn[chipId]
+        );
     }
 
     public void setMask(int chipId, int ch) {

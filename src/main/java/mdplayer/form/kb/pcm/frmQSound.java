@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Common;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
@@ -151,19 +150,19 @@ public class frmQSound extends frmBase {
     }
 
     public void screenChangeParams() {
-        int[] QSoundRegister = audio.plugin.chipRegister.chip(QSoundChip.class).read(chipId);
+        int[] qSoundRegister = (int[]) audio.plugin.chipRegister.chip(QSoundChip.class).getInfo(chipId).get("register");
 
         //PCM 16ch
         for (int ch = 0; ch < 16; ch++) {
-            newParam.channels[ch].echo = QSoundRegister[ch + 0xba];
-            newParam.channels[ch].freq = QSoundRegister[(ch << 3) + 2];
-            newParam.channels[ch].bank = QSoundRegister[(((ch + 15) % 16) << 3) + 0];
-            newParam.channels[ch].sadr = QSoundRegister[(ch << 3) + 1];
-            newParam.channels[ch].eadr = QSoundRegister[(ch << 3) + 5];
-            newParam.channels[ch].ladr = QSoundRegister[(ch << 3) + 4];
-            //newParam.channels[ch].ladr = QSoundRegister[(ch << 3) + 3];
-            int vol = QSoundRegister[(ch << 3) + 6];
-            int pan = QSoundRegister[ch + 0x80] - 0x110;
+            newParam.channels[ch].echo = qSoundRegister[ch + 0xba];
+            newParam.channels[ch].freq = qSoundRegister[(ch << 3) + 2];
+            newParam.channels[ch].bank = qSoundRegister[(((ch + 15) % 16) << 3) + 0];
+            newParam.channels[ch].sadr = qSoundRegister[(ch << 3) + 1];
+            newParam.channels[ch].eadr = qSoundRegister[(ch << 3) + 5];
+            newParam.channels[ch].ladr = qSoundRegister[(ch << 3) + 4];
+            //newParam.channels[ch].ladr = qSoundRegister[(ch << 3) + 3];
+            int vol = qSoundRegister[(ch << 3) + 6];
+            int pan = qSoundRegister[ch + 0x80] - 0x110;
             if (pan >= 97) pan = 16;//center?
             int panL = (int) (15.0 / 16.0 * (pan > 16 ? (16 - (33 - pan)) : 16));
             int panR = (int) (15.0 / 16.0 * (pan < 16 ? (16 - pan) : 16));
@@ -176,11 +175,11 @@ public class frmQSound extends frmBase {
         }
         //ADPCM 3ch
         for (int ch = 0; ch < 3; ch++) {
-            newParam.channels[ch + 16].bank = QSoundRegister[(ch << 2) + 0xcc];
-            newParam.channels[ch + 16].sadr = QSoundRegister[(ch << 2) + 0xca];
-            newParam.channels[ch + 16].eadr = QSoundRegister[(ch << 2) + 0xcb];
-            int vol = (QSoundRegister[(ch << 2) + 0xcd] >> 16);
-            int pan = QSoundRegister[ch + 16 + 0x80] - 0x110;
+            newParam.channels[ch + 16].bank = qSoundRegister[(ch << 2) + 0xcc];
+            newParam.channels[ch + 16].sadr = qSoundRegister[(ch << 2) + 0xca];
+            newParam.channels[ch + 16].eadr = qSoundRegister[(ch << 2) + 0xcb];
+            int vol = (qSoundRegister[(ch << 2) + 0xcd] >> 16);
+            int pan = qSoundRegister[ch + 16 + 0x80] - 0x110;
             if (pan >= 97) pan = 16;//center?
             int panL = (int) (15.0 / 16.0 * (pan > 16 ? (16 - (33 - pan)) : 16));
             int panR = (int) (15.0 / 16.0 * (pan < 16 ? (16 - pan) : 16));
@@ -190,20 +189,20 @@ public class frmQSound extends frmBase {
         }
 
         //echo
-        newParam.channels[0].inst[0] = QSoundRegister[0x93];//feedback
-        newParam.channels[0].inst[1] = QSoundRegister[0xd9];//end_pos
-        newParam.channels[0].inst[2] = QSoundRegister[0xe2];//delay_update
-        newParam.channels[0].inst[3] = QSoundRegister[0xe3];//next_state
+        newParam.channels[0].inst[0] = qSoundRegister[0x93];//feedback
+        newParam.channels[0].inst[1] = qSoundRegister[0xd9];//end_pos
+        newParam.channels[0].inst[2] = qSoundRegister[0xe2];//delay_update
+        newParam.channels[0].inst[3] = qSoundRegister[0xe3];//next_state
         //Wet
-        newParam.channels[0].inst[4] = QSoundRegister[0xde];//delay left
-        newParam.channels[0].inst[5] = QSoundRegister[0xe0];//delay right
-        newParam.channels[0].inst[6] = QSoundRegister[0xe4];//volume_left
-        newParam.channels[0].inst[7] = QSoundRegister[0xe6];//volume right
+        newParam.channels[0].inst[4] = qSoundRegister[0xde];//delay left
+        newParam.channels[0].inst[5] = qSoundRegister[0xe0];//delay right
+        newParam.channels[0].inst[6] = qSoundRegister[0xe4];//volume_left
+        newParam.channels[0].inst[7] = qSoundRegister[0xe6];//volume right
         //Dry
-        newParam.channels[0].inst[8] = QSoundRegister[0xdf];//delay left
-        newParam.channels[0].inst[9] = QSoundRegister[0xe1];//delay right
-        newParam.channels[0].inst[10] = QSoundRegister[0xe5];//volume_left
-        newParam.channels[0].inst[11] = QSoundRegister[0xe7];//volume right
+        newParam.channels[0].inst[8] = qSoundRegister[0xdf];//delay left
+        newParam.channels[0].inst[9] = qSoundRegister[0xe1];//delay right
+        newParam.channels[0].inst[10] = qSoundRegister[0xe5];//volume_left
+        newParam.channels[0].inst[11] = qSoundRegister[0xe7];//volume right
     }
 
     public void screenDrawParams() {

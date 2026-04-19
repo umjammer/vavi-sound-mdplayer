@@ -96,11 +96,11 @@ public class Cs4231Chip extends BaseChip {
     }
 
     public int read(int chipId, int adr) {
-        return context.mds.inst(Cs4231Inst.class).readReg(chipId, adr);
+        return context.mds.inst(Cs4231Inst.class).read(chipId, adr);
     }
 
     public int read(int chipIndex, int chipId, int adr) {
-        return context.mds.inst(Cs4231Inst.class, chipIndex).readReg(chipId, adr);
+        return context.mds.inst(Cs4231Inst.class, chipIndex).read(chipId, adr);
     }
 
     public void mute(byte chipId, byte ch, boolean mute) {

@@ -6,6 +6,8 @@
 
 package mdplayer.chips;
 
+import java.util.Map;
+
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
@@ -335,24 +337,14 @@ public class Ym2151Chip extends BaseChip {
         }
     }
 
-    public int[] getVolume(int chipId) {
-        return volume[chipId];
-    }
-
-    public int[] read(int chipId) {
-        return register[chipId];
-    }
-
-    public int[] getKeyOn(int chipId) {
-        return keyOn[chipId];
-    }
-
-    public int getPmd(int chipId) {
-        return pmd[chipId];
-    }
-
-    public int getAmd(int chipId) {
-        return amd[chipId];
+    public Map<String, Object> getInfo(int chipId) {
+        return Map.of(
+                "volume", volume[chipId],
+                "register", register[chipId],
+                "keyOn", keyOn[chipId],
+                "pmd", pmd[chipId],
+                "amd", amd[chipId]
+        );
     }
 
     public void setMask(int chipId, int ch) {

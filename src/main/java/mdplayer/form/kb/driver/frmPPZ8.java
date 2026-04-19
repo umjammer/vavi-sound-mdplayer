@@ -13,10 +13,10 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Common;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
@@ -26,7 +26,6 @@ import mdplayer.chips.SegaPcmChip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
-import mdsound.chips.PPZ8;
 import mdsound.instrument.Ppz8Inst;
 
 
@@ -172,39 +171,39 @@ public class frmPPZ8 extends frmBase {
     }
 
     public void screenChangeParams() {
-        PPZ8.Channel[] ppz8State = audio.plugin.chipRegister.chip(Ppz8Chip.class).read(chipId);
-        if (ppz8State == null) return;
+        Map<String, Object> info = audio.plugin.chipRegister.chip(Ppz8Chip.class).getInfo(chipId);
+        if (info == null) return;
 
         for (int ch = 0; ch < 8; ch++) {
-            if (ppz8State.length < ch + 1) continue;
-            if (ppz8State[ch] == null) continue;
+            if (info.get("channels." + ch + ".pan") == null) continue;
 
-            newParam.channels[ch].pan = ((ppz8State[ch].pan < 6) ? 0xf : (4 * (9 - ppz8State[ch].pan))) |
-                    (((ppz8State[ch].pan > 4) ? 0xf : (4 * ppz8State[ch].pan)) * 0x10);
+            int pan = (int) info.get("channels." + ch + ".pan");
+            newParam.channels[ch].pan = ((pan < 6) ? 0xf : (4 * (9 - pan))) |
+                    (((pan > 4) ? 0xf : (4 * pan)) * 0x10);
 
-            if (ppz8State[ch].KeyOn) {
-                newParam.channels[ch].volumeL = Math.min((ppz8State[ch].volume * (newParam.channels[ch].pan & 0xf)) / 8, 19);
-                newParam.channels[ch].volumeR = Math.min((ppz8State[ch].volume * ((newParam.channels[ch].pan & 0xf0) >> 4)) / 8, 19);
+            if ((boolean) info.get("channels." + ch + ".keyOn")) {
+                newParam.channels[ch].volumeL = Math.min(((int) info.get("channels." + ch + ".volume") * (newParam.channels[ch].pan & 0xf)) / 8, 19);
+                newParam.channels[ch].volumeR = Math.min(((int) info.get("channels." + ch + ".volume") * ((newParam.channels[ch].pan & 0xf0) >> 4)) / 8, 19);
             } else {
                 newParam.channels[ch].volumeL -= newParam.channels[ch].volumeL > 0 ? 1 : 0;
                 newParam.channels[ch].volumeR -= newParam.channels[ch].volumeR > 0 ? 1 : 0;
             }
 
-            newParam.channels[ch].srcFreq = ppz8State[ch].srcFrequency;
-            newParam.channels[ch].freq = ppz8State[ch].frequency;
+            newParam.channels[ch].srcFreq = (int) info.get("channels." + ch + ".srcFrequency");
+            newParam.channels[ch].freq = (int) info.get("channels." + ch + ".frequency");
 
-            newParam.channels[ch].note = SegaPcmChip.searchSegaPCMNote(ppz8State[ch].frequency / (double) 0x8000);
-            if (!ppz8State[ch].playing) newParam.channels[ch].note = -1;
+            newParam.channels[ch].note = SegaPcmChip.searchSegaPCMNote((int) info.get("channels." + ch + ".frequency") / (double) 0x8000);
+            if (!(boolean) info.get("channels." + ch + ".playing")) newParam.channels[ch].note = -1;
 
-            newParam.channels[ch].dda = ppz8State[ch].bank != 0;
-            newParam.channels[ch].flg16 = ppz8State[ch].num;
+            newParam.channels[ch].dda = (boolean) info.get("channels." + ch + ".dda");
+            newParam.channels[ch].flg16 = (int) info.get("channels." + ch + ".num");
 
-            newParam.channels[ch].sadr = ppz8State[ch].ptr;
-            newParam.channels[ch].eadr = ppz8State[ch].end;
-            newParam.channels[ch].ladr = ppz8State[ch].loopStartOffset;
-            newParam.channels[ch].leadr = ppz8State[ch].loopEndOffset;
-            newParam.channels[ch].volumeRL = ppz8State[ch].volume;
-            newParam.channels[ch].volumeRR = ppz8State[ch].pan;
+            newParam.channels[ch].sadr = (int) info.get("channels." + ch + ".ptr");
+            newParam.channels[ch].eadr = (int) info.get("channels." + ch + ".end");
+            newParam.channels[ch].ladr = (int) info.get("channels." + ch + ".loopStartOffset");
+            newParam.channels[ch].leadr = (int) info.get("channels." + ch + ".loopEndOffset");
+            newParam.channels[ch].volumeRL = (int) info.get("channels." + ch + ".volume");
+            newParam.channels[ch].volumeRR = (int) info.get("channels." + ch + ".pan");
         }
     }
 

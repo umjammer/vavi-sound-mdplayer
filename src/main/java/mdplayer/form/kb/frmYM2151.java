@@ -197,9 +197,9 @@ public class frmYM2151 extends frmBase {
     };
 
     public void screenChangeParams() {
-        int[] ym2151Register = audio.plugin.chipRegister.chip(Ym2151Chip.class).read(chipId);
-        int[] fmKeyYM2151 = audio.plugin.chipRegister.chip(Ym2151Chip.class).getKeyOn(chipId);
-        int[] fmYM2151Vol = audio.plugin.chipRegister.chip(Ym2151Chip.class).getVolume(chipId);
+        int[] ym2151Register = (int[]) audio.plugin.chipRegister.chip(Ym2151Chip.class).getInfo(chipId).get("register");
+        int[] fmKeyYM2151 = (int[]) audio.plugin.chipRegister.chip(Ym2151Chip.class).getInfo(chipId).get("keyOn");
+        int[] fmYM2151Vol = (int[]) audio.plugin.chipRegister.chip(Ym2151Chip.class).getInfo(chipId).get("volume");
 
         for (int ch = 0; ch < 8; ch++) {
             for (int i = 0; i < 4; i++) {
@@ -256,8 +256,8 @@ public class frmYM2151 extends frmBase {
         newParam.ne = ((ym2151Register[0x0f] & 0x80) >> 7);
         newParam.nfrq = ((ym2151Register[0x0f] & 0x1f) >> 0);
         newParam.lfrq = ((ym2151Register[0x18] & 0xff) >> 0);
-        newParam.pmd = audio.plugin.chipRegister.chip(Ym2151Chip.class).getPmd(chipId);
-        newParam.amd = audio.plugin.chipRegister.chip(Ym2151Chip.class).getAmd(chipId);
+        newParam.pmd = (int) audio.plugin.chipRegister.chip(Ym2151Chip.class).getInfo(chipId).get("pmd");
+        newParam.amd = (int) audio.plugin.chipRegister.chip(Ym2151Chip.class).getInfo(chipId).get("amd");
         newParam.waveform = ((ym2151Register[0x1b] & 0x3) >> 0);
         newParam.lfosync = ((ym2151Register[0x01] & 0x02) >> 1);
     }

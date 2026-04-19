@@ -13,6 +13,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
@@ -107,20 +108,18 @@ public class frmMegaCD extends frmBase {
     };
 
     public void screenChangeParams() {
-        ScdPcm rf5c164Register = audio.plugin.chipRegister.chip(Rf5C164Chip.class).read(chipId);
-        if (rf5c164Register != null) {
-            for (int ch = 0; ch < 8; ch++) {
-                if (rf5c164Register.getChannel(ch).enable != 0) {
-                    newParam.channels[ch].note = searchRf5c164Note(rf5c164Register.getChannel(ch).stepB);
-                    newParam.channels[ch].volumeL = Math.clamp(rf5c164Register.getChannel(ch).mulL / 3, 0, 19);
-                    newParam.channels[ch].volumeR = Math.clamp(rf5c164Register.getChannel(ch).mulR / 3, 0, 19);
-                } else {
-                    newParam.channels[ch].note = -1;
-                    newParam.channels[ch].volumeL = 0;
-                    newParam.channels[ch].volumeR = 0;
-                }
-                newParam.channels[ch].pan = rf5c164Register.getChannel(ch).pan;
+        Map<String, Object> rf5c164Register = audio.plugin.chipRegister.chip(Rf5C164Chip.class).getInfo(chipId);
+        for (int ch = 0; ch < 8; ch++) {
+            if ((boolean) rf5c164Register.get("channels." + ch + ".enable")) {
+                newParam.channels[ch].note = searchRf5c164Note((int) rf5c164Register.get("channels." + ch + ".stepB"));
+                newParam.channels[ch].volumeL = Math.clamp((int) rf5c164Register.get("channels." + ch + ".mulL") / 3, 0, 19);
+                newParam.channels[ch].volumeR = Math.clamp((int) rf5c164Register.get("channels." + ch + ".mulR") / 3, 0, 19);
+            } else {
+                newParam.channels[ch].note = -1;
+                newParam.channels[ch].volumeL = 0;
+                newParam.channels[ch].volumeR = 0;
             }
+            newParam.channels[ch].pan = (int) rf5c164Register.get("channels." + ch + ".pan");
         }
     }
 

@@ -6,9 +6,10 @@
 
 package mdplayer.chips;
 
+import java.util.Map;
+
 import mdplayer.Common.EnmModel;
 import mdsound.Instrument;
-import mdsound.chips.MultiPCM;
 import mdsound.instrument.MultiPcmInst;
 
 
@@ -38,13 +39,13 @@ public class MultiPcmChip extends BaseChip {
         }
     }
 
-    public MultiPCM getChip(int chipId) {
+    public Map<String, Object> getInfo(int chipId) {
         if (chipId == 0)
             context.chipLED.put("PriMPCM", 2);
         else
             context.chipLED.put("SecMPCM", 2);
 
-        return context.mds.inst(MultiPcmInst.class).getChip(chipId);
+        return context.mds.inst(MultiPcmInst.class).getInfo(chipId);
     }
 
     public void setBank(int chipId, int ch, int addr, EnmModel model) {

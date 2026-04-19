@@ -13,6 +13,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
@@ -24,7 +25,6 @@ import mdplayer.chips.Rf5C68Chip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
-import mdsound.chips.Rf5C68;
 
 
 public class frmRf5c68 extends frmBase {
@@ -106,20 +106,20 @@ public class frmRf5c68 extends frmBase {
     };
 
     public void screenChangeParams() {
-        Rf5C68 rf5c68Register = audio.plugin.chipRegister.chip(Rf5C68Chip.class).read(chipId);
+        Map<String, Object> rf5c68Register = audio.plugin.chipRegister.chip(Rf5C68Chip.class).getInfo(chipId);
         if (rf5c68Register != null) {
             //int[][] rf5c164Vol = audio.GetRf5c164Volume(chipId);
             for (int ch = 0; ch < 8; ch++) {
                 if (newParam.channels[ch].volume > 0) newParam.channels[ch].volume--;
 
-                if (rf5c68Register.getChannel(ch).enable != 0) {
-                    newParam.channels[ch].note = searchRf5c68Note(rf5c68Register.getChannel(ch).step);
-                    if (rf5c68Register.getChannel(ch).keyOn) {
-                        newParam.channels[ch].volume = rf5c68Register.getChannel(ch).env;
-                        rf5c68Register.getChannel(ch).keyOn = false;
+                if ((boolean) rf5c68Register.get("Channel" + ch + ".enable")) {
+                    newParam.channels[ch].note = searchRf5c68Note((int) rf5c68Register.get("Channel" + ch + ".step"));
+                    if ((boolean) rf5c68Register.get("Channel" + ch + ".keyOn")) {
+                        newParam.channels[ch].volume = (int) rf5c68Register.get("Channel" + ch + ".env");
+                        rf5c68Register.put("Channel" + ch + ".keyOn", false);
                     }
-                    int MUL_L = (newParam.channels[ch].volume * (rf5c68Register.getChannel(ch).pan & 0x0F)) >> 5;
-                    int MUL_R = (newParam.channels[ch].volume * (rf5c68Register.getChannel(ch).pan >> 4)) >> 5;
+                    int MUL_L = (newParam.channels[ch].volume * ((int) rf5c68Register.get("Channel" + ch + ".pan") & 0x0F)) >> 5;
+                    int MUL_R = (newParam.channels[ch].volume * ((int) rf5c68Register.get("Channel" + ch + ".pan") >> 4)) >> 5;
                     newParam.channels[ch].volumeL = Math.clamp(MUL_L / 3, 0, 19);
                     newParam.channels[ch].volumeR = Math.clamp(MUL_R / 3, 0, 19);
                 } else {
@@ -129,14 +129,14 @@ public class frmRf5c68 extends frmBase {
                 }
                 if (newParam.channels[ch].volumeL == 0 && newParam.channels[ch].volumeR == 0)
                     newParam.channels[ch].note = -1;
-                else if (!rf5c68Register.getChannel(ch).key) {
+                else if (!(boolean) rf5c68Register.get("Channel" + ch + ".key")) {
                     newParam.channels[ch].note = -1;
                     newParam.channels[ch].volume = 0;
                     newParam.channels[ch].volumeL = 0;
                     newParam.channels[ch].volumeR = 0;
                 }
 
-                newParam.channels[ch].pan = rf5c68Register.getChannel(ch).pan;
+                newParam.channels[ch].pan = (int) rf5c68Register.get("Channel" + ch + ".pan");
             }
         }
     }

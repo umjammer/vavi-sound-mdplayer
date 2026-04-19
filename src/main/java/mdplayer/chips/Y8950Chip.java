@@ -6,6 +6,8 @@
 
 package mdplayer.chips;
 
+import java.util.Map;
+
 import mdplayer.Common.EnmModel;
 import mdplayer.Setting;
 import mdsound.Instrument;
@@ -142,8 +144,8 @@ public class Y8950Chip extends BaseChip {
         dumpData(model, "Y8950_PCMData", srcOffset, buf, length);
     }
 
-    public int[] read(int chipId) {
-        return register[chipId];
+    public Map<String, Object> getInfo(int chipId) {
+        return Map.of("register", register[chipId]);
     }
 
     public void setMask(int chipId, int ch) {

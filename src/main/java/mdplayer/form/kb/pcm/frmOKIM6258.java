@@ -13,6 +13,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
@@ -23,7 +24,6 @@ import mdplayer.chips.OkiM6258Chip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
-import mdsound.chips.OkiM6258;
 
 
 public class frmOKIM6258 extends frmBase {
@@ -105,10 +105,10 @@ public class frmOKIM6258 extends frmBase {
     };
 
     public void screenChangeParams() {
-        OkiM6258 okim6258State = audio.plugin.chipRegister.chip(OkiM6258Chip.class).read(chipId);
+        Map<String, Object> okim6258State = audio.plugin.chipRegister.chip(OkiM6258Chip.class).getInfo(chipId);
         if (okim6258State == null) return;
 
-        switch (okim6258State.getPan() & 0x3) {
+        switch (((int) okim6258State.get("pan")) & 0x3) {
         case 0:
         case 3:
             newParam.pan = 3;
@@ -121,13 +121,12 @@ public class frmOKIM6258 extends frmBase {
             break;
         }
 
-        newParam.masterFreq = okim6258State.getMasterClock() / 1000;
-        newParam.divider = okim6258State.getDivider();
-        if (okim6258State.getDivider() == 0) newParam.pbFreq = 0;
-        else newParam.pbFreq = okim6258State.getMasterClock() / okim6258State.getDivider() / 1000;
+        newParam.masterFreq = (int) okim6258State.get("masterFreq");
+        newParam.divider = (int) okim6258State.get("divider");
+        newParam.pbFreq = (int) okim6258State.get("pbFreq");
 
-        int v = (int) (((Math.abs(okim6258State.getDataIn() - 128) * 2) >> 3) * 1.2);
-        if ((okim6258State.getStatus() & 0x2) == 0) v = 0;
+        int v = (int) (((Math.abs(((int) okim6258State.get("dataIn")) - 128) * 2) >> 3) * 1.2);
+        if ((((int) okim6258State.get("status")) & 0x2) == 0) v = 0;
         v = Math.min(v, 38);
         if (newParam.volumeL < v && ((newParam.pan & 0x2) != 0)) {
             newParam.volumeL = v;

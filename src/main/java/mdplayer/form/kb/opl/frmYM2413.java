@@ -17,7 +17,6 @@ import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
 import mdplayer.Chip.ChipKeyInfo;
-import mdplayer.Common;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
@@ -116,7 +115,7 @@ public class frmYM2413 extends frmBase {
     };
 
     public void screenChangeParams() {
-        int[] ym2413Register = audio.plugin.chipRegister.chip(Ym2413Chip.class).read(chipId);
+        int[] ym2413Register = (int[]) audio.plugin.chipRegister.chip(Ym2413Chip.class).getInfo(chipId).get("register");
         MDChipParams.Channel nyc;
         ChipKeyInfo ki = audio.plugin.chipRegister.chip(Ym2413Chip.class).getKeyInfo(chipId);
 

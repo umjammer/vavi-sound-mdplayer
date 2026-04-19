@@ -142,7 +142,7 @@ public class frmYMZ280B extends frmBase {
     }
 
     public void screenChangeParams() {
-        int[] reg = audio.plugin.chipRegister.chip(YmZ280BChip.class).read(chipId);
+        int[] reg = (int[]) audio.plugin.chipRegister.chip(YmZ280BChip.class).getInfo(chipId).get("register");
         if (reg == null) return;
 
         for (int ch = 0; ch < 8; ch++) {

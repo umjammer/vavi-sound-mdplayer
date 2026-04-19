@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Common;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
@@ -129,10 +128,10 @@ public class frmYM2612 extends frmBase {
             };
 
     public void screenChangeParams() {
-        int[][] fmRegister = audio.plugin.chipRegister.chip(Ym2612Chip.class).read(chipId);
-        int[] fmVol = audio.plugin.chipRegister.chip(Ym2612Chip.class).getVolume(chipId);
-        int[] fmCh3SlotVol = audio.plugin.chipRegister.chip(Ym2612Chip.class).getCh3SlotVolume(chipId);
-        int[] fmKey = audio.plugin.chipRegister.chip(Ym2612Chip.class).getKeyOn(chipId);
+        int[][] fmRegister = (int[][]) audio.plugin.chipRegister.chip(Ym2612Chip.class).getInfo(chipId).get("register");
+        int[] fmVol = (int[]) audio.plugin.chipRegister.chip(Ym2612Chip.class).getInfo(chipId).get("volume");
+        int[] fmCh3SlotVol = (int[]) audio.plugin.chipRegister.chip(Ym2612Chip.class).getInfo(chipId).get("ch3SlotVolume");
+        int[] fmKey = (int[]) audio.plugin.chipRegister.chip(Ym2612Chip.class).getInfo(chipId).get("keyOn");
 
         boolean isFmEx = (fmRegister[0][0x27] & 0x40) != 0;
         newParam.channels[2].ex = isFmEx;

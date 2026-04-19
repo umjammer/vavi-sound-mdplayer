@@ -83,7 +83,7 @@ public class NesChip extends BaseChip {
 
             if (model == EnmModel.VirtualModel) {
 //            if (!ctNES[chipId].UseScci) {
-                return context.mds.inst(FdsInst.class).readFds(chipId);
+                return context.mds.inst(FdsInst.class).getInfo(chipId);
 //            }
             } else {
                 return null;

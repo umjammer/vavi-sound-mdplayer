@@ -6,9 +6,10 @@
 
 package mdplayer.chips;
 
+import java.util.Map;
+
 import mdplayer.Common.EnmModel;
 import mdsound.Instrument;
-import mdsound.chips.ScdPcm;
 import mdsound.instrument.ScdPcmInst;
 
 
@@ -72,8 +73,8 @@ public class Rf5C164Chip extends BaseChip {
             context.mds.inst(ScdPcmInst.class).writeMemory(chipId, offset, data);
     }
 
-    public ScdPcm read(int chipId) {
-        return context.mds.inst(ScdPcmInst.class).getChip(chipId);
+    public Map<String, Object> getInfo(int chipId) {
+        return context.mds.inst(ScdPcmInst.class).getInfo(chipId);
     }
 
     public void setMask(int chipId, int ch) {

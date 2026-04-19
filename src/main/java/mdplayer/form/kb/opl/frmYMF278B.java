@@ -122,7 +122,7 @@ public class frmYMF278B extends frmBase {
     }
 
     public void screenChangeParams() {
-        int[][] ymf278bRegister = audio.plugin.chipRegister.chip(YmF278BChip.class).read(chipId);
+        int[][] ymf278bRegister = (int[][]) audio.plugin.chipRegister.chip(YmF278BChip.class).getInfo(chipId).get("register");
         MDChipParams.Channel nyc;
         int slot;
         int slotP;

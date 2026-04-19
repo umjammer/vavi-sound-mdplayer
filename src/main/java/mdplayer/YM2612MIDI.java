@@ -315,7 +315,7 @@ public class YM2612MIDI {
             } else if (chip == Ym2610Chip.class) {
                 srcRegs = audio.plugin.chipRegister.chip(Ym2610Chip.class).read(chipId);
             } else if (chip == Ym2203Chip.class) {
-                int[] sReg = audio.plugin.chipRegister.chip(Ym2203Chip.class).read(chipId);
+                int[] sReg = (int[]) audio.plugin.chipRegister.chip(Ym2203Chip.class).getInfo(chipId).get("register");
                 srcRegs = new int[][] {sReg, null};
             }
             for (int i = 0; i < 6; i++) {
@@ -324,7 +324,7 @@ public class YM2612MIDI {
                 }
             }
         } else if (chip == Ym2151Chip.class) {
-            int[] reg = audio.plugin.chipRegister.chip(Ym2151Chip.class).read(chipId);
+            int[] reg = (int[]) audio.plugin.chipRegister.chip(Ym2151Chip.class).getInfo(chipId).get("register");
             for (int i = 0; i < 6; i++) {
                 if (setting.getMidiKbd().getUseChannel()[i]) {
                     voiceCopyChFromOPM(ch, i, reg);

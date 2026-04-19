@@ -141,12 +141,12 @@ public class frmYM2608 extends frmBase {
 
     public void screenChangeParams() {
         boolean isFmEx;
-        int[][] ym2608Register = audio.plugin.chipRegister.chip(Ym2608Chip.class).read(chipId);
-        int[] fmKeyYM2608 = audio.plugin.chipRegister.chip(Ym2608Chip.class).getKeyOn(chipId);
-        int[] ym2608Vol = audio.plugin.chipRegister.chip(Ym2608Chip.class).getVolume(chipId);
-        int[] ym2608Ch3SlotVol = audio.plugin.chipRegister.chip(Ym2608Chip.class).getCh3SlotVolume(chipId);
-        int[][] ym2608Rhythm = audio.plugin.chipRegister.chip(Ym2608Chip.class).getRhythmVolume(chipId);
-        int[] ym2608AdpcmVol = audio.plugin.chipRegister.chip(Ym2608Chip.class).getAdpcmVolume(chipId);
+        int[][] ym2608Register = (int[][]) audio.plugin.chipRegister.chip(Ym2608Chip.class).getInfo(chipId).get("register");
+        int[] fmKeyYM2608 = (int[]) audio.plugin.chipRegister.chip(Ym2608Chip.class).getInfo(chipId).get("keyOn");
+        int[] ym2608Vol = (int[]) audio.plugin.chipRegister.chip(Ym2608Chip.class).getInfo(chipId).get("volume");
+        int[] ym2608Ch3SlotVol = (int[]) audio.plugin.chipRegister.chip(Ym2608Chip.class).getInfo(chipId).get("ch3SlotVolume");
+        int[][] ym2608Rhythm = (int[][]) audio.plugin.chipRegister.chip(Ym2608Chip.class).getInfo(chipId).get("rhythmVolume");
+        int[] ym2608AdpcmVol = (int[]) audio.plugin.chipRegister.chip(Ym2608Chip.class).getInfo(chipId).get("adpcmVolume");
 
         newParam.timerA = ym2608Register[0][0x24] | ((ym2608Register[0][0x25] & 0x3) << 8);
         newParam.timerB = ym2608Register[0][0x26];

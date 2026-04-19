@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
 import javax.sound.midi.MidiDevice;
@@ -144,8 +145,6 @@ import mdplayer.format.ZIPFileFormat;
 import mdplayer.plugin.BasePlugin;
 import mdplayer.plugin.VGMPlugin;
 import mdplayer.properties.Resources;
-import mdsound.chips.K051649;
-import mdsound.chips.OotakeHuC6280;
 import mdsound.np.chip.NesN106;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
@@ -460,8 +459,8 @@ public class frmMain extends JFrame {
             if (setting.getLocation().getOpenYm2612()[chipId]) openFormYM2612(chipId, false);
             if (setting.getLocation().getOpenYm3526()[chipId]) OpenFormYM3526(chipId, false);
             if (setting.getLocation().getOpenY8950()[chipId]) OpenFormY8950(chipId, false);
-            if (setting.getLocation().getOpenYm3812()[chipId]) OpenFormYM3812(chipId, false);
-            if (setting.getLocation().getOpenYmf262()[chipId]) OpenFormYMF262(chipId, false);
+            if (setting.getLocation().getOpenYm3812()[chipId]) openFormYM3812(chipId, false);
+            if (setting.getLocation().getOpenYmf262()[chipId]) openFormYMF262(chipId, false);
             if (setting.getLocation().getOpenYMF271()[chipId]) OpenFormYMF271(chipId, false);
             if (setting.getLocation().getOpenYmf278b()[chipId]) OpenFormYMF278B(chipId, false);
             if (setting.getLocation().getOpenVrc6()[chipId]) openFormVRC6(chipId, false);
@@ -1586,11 +1585,11 @@ public class frmMain extends JFrame {
     }
 
     private void tsmiPOPL2_Click(ActionEvent ev) {
-        OpenFormYM3812(0, false);
+        openFormYM3812(0, false);
     }
 
     private void tsmiPOPL3_Click(ActionEvent ev) {
-        OpenFormYMF262(0, false);
+        openFormYMF262(0, false);
     }
 
     private void tsmiPOPL4_Click(ActionEvent ev) {
@@ -1705,11 +1704,11 @@ public class frmMain extends JFrame {
     }
 
     private void tsmiSOPL2_Click(ActionEvent ev) {
-        OpenFormYM3812(1, false);
+        openFormYM3812(1, false);
     }
 
     private void tsmiSOPL3_Click(ActionEvent ev) {
-        OpenFormYMF262(1, false);
+        openFormYMF262(1, false);
     }
 
     private void tsmiSOPL4_Click(ActionEvent ev) {
@@ -2839,7 +2838,7 @@ public class frmMain extends JFrame {
     private void OpenFormY8950(int chipId, boolean force /* = false */) {
         if (frmY8950[chipId] != null) {
             if (!force) {
-                CloseFormY8950(chipId);
+                closeFormY8950(chipId);
                 return;
             } else return;
         }
@@ -2862,7 +2861,7 @@ public class frmMain extends JFrame {
         checkAndSetForm(frmY8950[chipId]);
     }
 
-    private void CloseFormY8950(int chipId) {
+    private void closeFormY8950(int chipId) {
         if (frmY8950[chipId] == null) return;
 
         try {
@@ -2878,7 +2877,7 @@ public class frmMain extends JFrame {
         frmY8950[chipId] = null;
     }
 
-    private void OpenFormYM3812(int chipId, boolean force /* = false */) {
+    private void openFormYM3812(int chipId, boolean force /* = false */) {
         if (frmYM3812[chipId] != null) {
             if (!force) {
                 CloseFormYM3812(chipId);
@@ -2920,7 +2919,7 @@ public class frmMain extends JFrame {
         frmYM3812[chipId] = null;
     }
 
-    private void OpenFormYMF262(int chipId, boolean force/* = false*/) {
+    private void openFormYMF262(int chipId, boolean force /* = false */) {
         if (frmYMF262[chipId] != null) {
             if (!force) {
                 CloseFormYMF262(chipId);
@@ -4517,7 +4516,7 @@ public class frmMain extends JFrame {
                 if (audio.plugin.chipLED.get("PriDCSG") != 0) OpenFormSN76489(0, true);
                 else CloseFormSN76489(0);
                 if (audio.plugin.chipLED.get("SecDCSG") != 0) {
-                    if (!audio.plugin.chipRegister.chip(Sn76489Chip.class).getFlag()) OpenFormSN76489(1, true);
+                    if (!(boolean) audio.plugin.chipRegister.chip(Sn76489Chip.class).getInfo(0).get("flag")) OpenFormSN76489(1, true);
                 } else CloseFormSN76489(1);
 
                 if (audio.plugin.chipLED.get("PriPPZ8") != 0) OpenFormPPZ8(0, true);
@@ -4642,18 +4641,18 @@ public class frmMain extends JFrame {
                 else CloseFormYM3526(1);
 
                 if (audio.plugin.chipLED.get("PriY8950") != 0) OpenFormY8950(0, true);
-                else CloseFormY8950(0);
+                else closeFormY8950(0);
                 if (audio.plugin.chipLED.get("SecY8950") != 0) OpenFormY8950(1, true);
-                else CloseFormY8950(1);
+                else closeFormY8950(1);
 
-                if (audio.plugin.chipLED.get("PriOPL2") != 0) OpenFormYM3812(0, true);
+                if (audio.plugin.chipLED.get("PriOPL2") != 0) openFormYM3812(0, true);
                 else CloseFormYM3812(0);
-                if (audio.plugin.chipLED.get("SecOPL2") != 0) OpenFormYM3812(1, true);
+                if (audio.plugin.chipLED.get("SecOPL2") != 0) openFormYM3812(1, true);
                 else CloseFormYM3812(1);
 
-                if (audio.plugin.chipLED.get("PriOPL3") != 0) OpenFormYMF262(0, true);
+                if (audio.plugin.chipLED.get("PriOPL3") != 0) openFormYMF262(0, true);
                 else CloseFormYMF262(0);
-                if (audio.plugin.chipLED.get("SecOPL3") != 0) OpenFormYMF262(1, true);
+                if (audio.plugin.chipLED.get("SecOPL3") != 0) openFormYMF262(1, true);
                 else CloseFormYMF262(1);
 
                 if (audio.plugin.chipLED.get("PriOPL4") != 0) OpenFormYMF278B(0, true);
@@ -4880,12 +4879,12 @@ public class frmMain extends JFrame {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
             int[][] fmRegister = (chip == Ym2612Chip.class)
-                    ? audio.plugin.chipRegister.chip(Ym2612Chip.class).read(chipId)
+                    ? (int[][]) audio.plugin.chipRegister.chip(Ym2612Chip.class).getInfo(chipId).get("register")
                     : (chip == Ym2608Chip.class
-                    ? audio.plugin.chipRegister.chip(Ym2608Chip.class).read(chipId)
-                    : (chip == Ym2203Chip.class ?
-                    new int[][] {audio.plugin.chipRegister.chip(Ym2203Chip.class).read(chipId), null} :
-                    audio.plugin.chipRegister.chip(Ym2610Chip.class).read(chipId)));
+                    ? (int[][]) audio.plugin.chipRegister.chip(Ym2608Chip.class).getInfo(chipId).get("register")
+                       : (chip == Ym2203Chip.class ?
+                    new int[][] {(int[]) audio.plugin.chipRegister.chip(Ym2203Chip.class).getInfo(chipId).get("register"), null} :
+                       (int[][]) audio.plugin.chipRegister.chip(Ym2610Chip.class).getInfo(chipId).get("register")));
 
             n.append("'@ FA xx\n   AR  DR  SR  RR  SL  TL  KS  ML  DT  AM\n");
 
@@ -4910,7 +4909,7 @@ public class frmMain extends JFrame {
                     (fmRegister[p][0xb0 + c] & 0x38) >> 3 // FB
             ));
         } else if (chip == Ym2151Chip.class) {
-            int[] ym2151Register = audio.plugin.chipRegister.chip(Ym2151Chip.class).read(chipId);
+            int[] ym2151Register = (int[]) audio.plugin.chipRegister.chip(Ym2151Chip.class).getInfo(chipId).get("register");
             n.append("'@ FC xx\n   AR  DR  SR  RR  SL  TL  KS  ML  DT1 DT2 AM\n");
 
             for (int i = 0; i < 4; i++) {
@@ -4947,12 +4946,12 @@ public class frmMain extends JFrame {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
             int[][] fmRegister = (chip == Ym2612Chip.class)
-                    ? audio.plugin.chipRegister.chip(Ym2612Chip.class).read(chipId)
+                    ? (int[][]) audio.plugin.chipRegister.chip(Ym2612Chip.class).getInfo(chipId).get("register")
                     : (chip == Ym2608Chip.class
-                    ? audio.plugin.chipRegister.chip(Ym2608Chip.class).read(chipId)
-                    : (chip == Ym2203Chip.class
-                    ? new int[][] {audio.plugin.chipRegister.chip(Ym2203Chip.class).read(chipId), null}
-                    : audio.plugin.chipRegister.chip(Ym2610Chip.class).read(chipId)));
+                    ? (int[][]) audio.plugin.chipRegister.chip(Ym2608Chip.class).getInfo(chipId).get("register")
+                       : (chip == Ym2203Chip.class
+                    ? new int[][] {(int[]) audio.plugin.chipRegister.chip(Ym2203Chip.class).getInfo(chipId).get("register"), null}
+                    : (int[][]) audio.plugin.chipRegister.chip(Ym2610Chip.class).getInfo(chipId).get("register")));
 
             n.append("'@xx = {\n/* AR  DR  SR  RR  SL  TL  KS  ML  DT1 DT2 AME\n");
 
@@ -4978,7 +4977,7 @@ public class frmMain extends JFrame {
                     (fmRegister[p][0xb0 + c] & 0x38) >> 3  // FB
             ));
         } else if (chip == Ym2151Chip.class) {
-            int[] ym2151Register = audio.plugin.chipRegister.chip(Ym2151Chip.class).read(chipId);
+            int[] ym2151Register = (int[]) audio.plugin.chipRegister.chip(Ym2151Chip.class).getInfo(chipId).get("register");
 
             n.append("'@xx = {\n/* AR  DR  SR  RR  SL  TL  KS  ML  DT1 DT2 AME\n");
 
@@ -5040,12 +5039,12 @@ public class frmMain extends JFrame {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
             int[][] fmRegister = (chip == Ym2612Chip.class)
-                    ? audio.plugin.chipRegister.chip(Ym2612Chip.class).read(chipId)
+                    ? (int[][]) audio.plugin.chipRegister.chip(Ym2612Chip.class).getInfo(chipId).get("register")
                     : (chip == Ym2608Chip.class
-                    ? audio.plugin.chipRegister.chip(Ym2608Chip.class).read(chipId)
-                    : (chip == Ym2203Chip.class
-                    ? new int[][] {audio.plugin.chipRegister.chip(Ym2203Chip.class).read(chipId), null}
-                    : audio.plugin.chipRegister.chip(Ym2610Chip.class).read(chipId)));
+                    ? (int[][]) audio.plugin.chipRegister.chip(Ym2608Chip.class).getInfo(chipId).get("register")
+                       : (chip == Ym2203Chip.class
+                    ? new int[][] {(int[]) audio.plugin.chipRegister.chip(Ym2203Chip.class).getInfo(chipId).get("register"), null}
+                    : (int[][]) audio.plugin.chipRegister.chip(Ym2610Chip.class).getInfo(chipId).get("register")));
 
             n.append("'@ N xx\n   AR  DR  SR  RR  SL  TL  KS  ML  DT  AM  SSG-EG\n");
 
@@ -5071,7 +5070,7 @@ public class frmMain extends JFrame {
                     (fmRegister[p][0xb0 + c] & 0x38) >> 3  // FB
             ));
         } else if (chip == Ym2151Chip.class) {
-            int[] ym2151Register = audio.plugin.chipRegister.chip(Ym2151Chip.class).read(chipId);
+            int[] ym2151Register = (int[]) audio.plugin.chipRegister.chip(Ym2151Chip.class).getInfo(chipId).get("register");
             n.append("'@ M xx\n   AR  DR  SR  RR  SL  TL  KS  ML  DT1 DT2 AME\n");
 
             for (int i = 0; i < 4; i++) {
@@ -5096,30 +5095,29 @@ public class frmMain extends JFrame {
                     (ym2151Register[0x20 + ch] & 0x38) >> 3  // FB
             ));
         } else if (chip == HuC6280Chip.class) {
-            OotakeHuC6280 huc6280Register = audio.plugin.chipRegister.chip(HuC6280Chip.class).getChip(chipId);
+            Map<String, Object> huc6280Register = audio.plugin.chipRegister.chip(HuC6280Chip.class).getInfo(chipId);
             if (huc6280Register == null) return null;
-            OotakeHuC6280.Psg psg = huc6280Register.getPsg(ch);
-            if (psg == null) return null;
-            if (psg.wave == null) return null;
-            if (psg.wave.length != 32) return null;
+            if (huc6280Register.get("channels." + ch + ".wave") == null) return null;
+            int[] wave = (int[]) huc6280Register.get("channels." + ch + ".wave");
+            if (wave.length != 32) return null;
 
             n.append("'@ H xx,\n   +0 +1 +2 +3 +4 +5 +6 +7\n");
 
             for (int i = 0; i < 32; i += 8) {
                 n.append("'@ %2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d\n".formatted(
-                        (17 - psg.wave[i + 0]),
-                        (17 - psg.wave[i + 1]),
-                        (17 - psg.wave[i + 2]),
-                        (17 - psg.wave[i + 3]),
-                        (17 - psg.wave[i + 4]),
-                        (17 - psg.wave[i + 5]),
-                        (17 - psg.wave[i + 6]),
-                        (17 - psg.wave[i + 7])
+                        (17 - wave[i + 0]),
+                        (17 - wave[i + 1]),
+                        (17 - wave[i + 2]),
+                        (17 - wave[i + 3]),
+                        (17 - wave[i + 4]),
+                        (17 - wave[i + 5]),
+                        (17 - wave[i + 6]),
+                        (17 - wave[i + 7])
                 ));
             }
         } else if (chip == Ym2413Chip.class) {
             // Ym2413
-            int[] regs = audio.plugin.chipRegister.chip(Ym2413Chip.class).read(chipId);
+            int[] regs = (int[]) audio.plugin.chipRegister.chip(Ym2413Chip.class).getInfo(chipId).get("register");
         } else if (chip == Ym3812Chip.class) {
             // OPL2
             // '@ L No "Name"
@@ -5127,7 +5125,7 @@ public class frmMain extends JFrame {
             // '@ AR DR SL RR KSL TL MT AM VIB EGT KSR WS
             // '@ CNT FB
 
-            int[] regs = audio.plugin.chipRegister.chip(Ym3812Chip.class).read(chipId);
+            int[] regs = (int[]) audio.plugin.chipRegister.chip(Ym3812Chip.class).getInfo(chipId).get("register");
             int slot;
             if (ch < 0 || ch > 8) return null;
 
@@ -5169,12 +5167,12 @@ public class frmMain extends JFrame {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
             int[][] fmRegister = (chip == Ym2612Chip.class)
-                    ? audio.plugin.chipRegister.chip(Ym2612Chip.class).read(chipId)
+                    ? (int[][]) audio.plugin.chipRegister.chip(Ym2612Chip.class).getInfo(chipId).get("register")
                     : (chip == Ym2608Chip.class
-                    ? audio.plugin.chipRegister.chip(Ym2608Chip.class).read(chipId)
-                    : (chip == Ym2203Chip.class
-                    ? new int[][] {audio.plugin.chipRegister.chip(Ym2203Chip.class).read(chipId), null}
-                    : audio.plugin.chipRegister.chip(Ym2610Chip.class).read(chipId)));
+                    ? (int[][]) audio.plugin.chipRegister.chip(Ym2608Chip.class).getInfo(chipId).get("register")
+                       : (chip == Ym2203Chip.class
+                    ? new int[][] {(int[]) audio.plugin.chipRegister.chip(Ym2203Chip.class).getInfo(chipId).get("register"), null}
+                    : (int[][]) audio.plugin.chipRegister.chip(Ym2610Chip.class).getInfo(chipId).get("register")));
 
             n.append("  @xx:{{\n  %3d %3d\n".formatted(
                     (fmRegister[p][0xb0 + c] & 0x38) >> 3, // FB
@@ -5197,7 +5195,7 @@ public class frmMain extends JFrame {
             }
             n.append("  }\n");
         } else if (chip == Ym2151Chip.class) {
-            int[] ym2151Register = audio.plugin.chipRegister.chip(Ym2151Chip.class).read(chipId);
+            int[] ym2151Register = (int[]) audio.plugin.chipRegister.chip(Ym2151Chip.class).getInfo(chipId).get("register");
 
             n.append("  @xx:{{\n  %3d %3d\n".formatted(
                     (ym2151Register[0x20 + ch] & 0x38) >> 3, // FB
@@ -5232,12 +5230,12 @@ public class frmMain extends JFrame {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
             int[][] fmRegister = (chip == Ym2612Chip.class)
-                    ? audio.plugin.chipRegister.chip(Ym2612Chip.class).read(chipId)
+                    ? (int[][]) audio.plugin.chipRegister.chip(Ym2612Chip.class).getInfo(chipId).get("register")
                     : (chip == Ym2608Chip.class
-                    ? audio.plugin.chipRegister.chip(Ym2608Chip.class).read(chipId)
-                    : (chip == Ym2203Chip.class
-                    ? new int[][] {audio.plugin.chipRegister.chip(Ym2203Chip.class).read(chipId), null}
-                    : audio.plugin.chipRegister.chip(Ym2610Chip.class).read(chipId)));
+                    ? (int[][]) audio.plugin.chipRegister.chip(Ym2608Chip.class).getInfo(chipId).get("register")
+                       : (chip == Ym2203Chip.class
+                    ? new int[][] {(int[]) audio.plugin.chipRegister.chip(Ym2203Chip.class).getInfo(chipId).get("register"), null}
+                    : (int[][]) audio.plugin.chipRegister.chip(Ym2610Chip.class).getInfo(chipId).get("register")));
 
             n.append("  @xx:{{\n  %3d, %3d\n".formatted(
                     (fmRegister[p][0xb0 + c] & 0x38) >> 3, // FB
@@ -5260,7 +5258,7 @@ public class frmMain extends JFrame {
             }
             n.append(",\"MDP\"  }\n");
         } else if (chip == Ym2151Chip.class) {
-            int[] ym2151Register = audio.plugin.chipRegister.chip(Ym2151Chip.class).read(chipId);
+            int[] ym2151Register = (int[]) audio.plugin.chipRegister.chip(Ym2151Chip.class).getInfo(chipId).get("register");
 
             n.append("  @xx:{{\n  %3d, %3d\n".formatted(
                     (ym2151Register[0x20 + ch] & 0x38) >> 3, // FB
@@ -5295,12 +5293,12 @@ public class frmMain extends JFrame {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
             int[][] fmRegister = (chip == Ym2612Chip.class)
-                    ? audio.plugin.chipRegister.chip(Ym2612Chip.class).read(chipId)
+                    ? (int[][]) audio.plugin.chipRegister.chip(Ym2612Chip.class).getInfo(chipId).get("register")
                     : (chip == Ym2608Chip.class
-                    ? audio.plugin.chipRegister.chip(Ym2608Chip.class).read(chipId)
-                    : (chip == Ym2203Chip.class
-                    ? new int[][] {audio.plugin.chipRegister.chip(Ym2203Chip.class).read(chipId), null}
-                    : audio.plugin.chipRegister.chip(Ym2610Chip.class).read(chipId)));
+                    ? (int[][]) audio.plugin.chipRegister.chip(Ym2608Chip.class).getInfo(chipId).get("register")
+                       : (chip == Ym2203Chip.class
+                    ? new int[][] {(int[]) audio.plugin.chipRegister.chip(Ym2203Chip.class).getInfo(chipId).get("register"), null}
+                    : (int[][]) audio.plugin.chipRegister.chip(Ym2610Chip.class).getInfo(chipId).get("register")));
 
             n.append("@%xxx\n");
 
@@ -5316,7 +5314,7 @@ public class frmMain extends JFrame {
                     fmRegister[p][0xb0 + c] // FB/AL
             ));
         } else if (chip == Ym2151Chip.class) {
-            int[] ym2151Register = audio.plugin.chipRegister.chip(Ym2151Chip.class).read(chipId);
+            int[] ym2151Register = (int[]) audio.plugin.chipRegister.chip(Ym2151Chip.class).getInfo(chipId).get("register");
 
             n.append("@%xxx\n");
 
@@ -5371,12 +5369,12 @@ public class frmMain extends JFrame {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
             int[][] fmRegister = (chip == Ym2612Chip.class)
-                    ? audio.plugin.chipRegister.chip(Ym2612Chip.class).read(chipId)
+                    ? (int[][]) audio.plugin.chipRegister.chip(Ym2612Chip.class).getInfo(chipId).get("register")
                     : (chip == Ym2608Chip.class
-                    ? audio.plugin.chipRegister.chip(Ym2608Chip.class).read(chipId)
-                    : (chip == Ym2203Chip.class
-                    ? new int[][] {audio.plugin.chipRegister.chip(Ym2203Chip.class).read(chipId), null}
-                    : audio.plugin.chipRegister.chip(Ym2610Chip.class).read(chipId)));
+                    ? (int[][]) audio.plugin.chipRegister.chip(Ym2608Chip.class).getInfo(chipId).get("register")
+                       : (chip == Ym2203Chip.class
+                    ? new int[][] {(int[]) audio.plugin.chipRegister.chip(Ym2203Chip.class).getInfo(chipId).get("register"), null}
+                    : (int[][]) audio.plugin.chipRegister.chip(Ym2610Chip.class).getInfo(chipId).get("register")));
 
             n.append("@ xxxx {\n");
             n.append("000,%3d,%3d,015\n".formatted(
@@ -5402,7 +5400,7 @@ public class frmMain extends JFrame {
             }
             n.append("}\n");
         } else if (chip == Ym2151Chip.class) {
-            int[] ym2151Register = audio.plugin.chipRegister.chip(Ym2151Chip.class).read(chipId);
+            int[] ym2151Register = (int[]) audio.plugin.chipRegister.chip(Ym2151Chip.class).getInfo(chipId).get("register");
 
             n.append("@ xxxx {\n");
             n.append("000,%3d,%3d,015\n".formatted(
@@ -5437,25 +5435,24 @@ public class frmMain extends JFrame {
         StringBuilder n = new StringBuilder();
 
         if (chip == HuC6280Chip.class) {
-            OotakeHuC6280 huc6280Register = audio.plugin.chipRegister.chip(HuC6280Chip.class).getChip(chipId);
+            Map<String, Object> huc6280Register = audio.plugin.chipRegister.chip(HuC6280Chip.class).getInfo(chipId);
             if (huc6280Register == null) return;
-            OotakeHuC6280.Psg psg = huc6280Register.getPsg(ch);
-            if (psg == null) return;
-            if (psg.wave == null) return;
-            if (psg.wave.length != 32) return;
+            if (huc6280Register.get("channels." + ch + ".wave") == null) return;
+            int[] wave = (int[]) huc6280Register.get("channels." + ch + ".wave");
+            if (wave.length != 32) return;
 
             n.append("@WTx={\n");
 
             for (int i = 0; i < 32; i += 8) {
                 n.append("$%2x,$%2x,$%2x,$%2x,$%2x,$%2x,$%2x,$%2x,\n".formatted(
-                        (17 - psg.wave[i + 0]),
-                        (17 - psg.wave[i + 1]),
-                        (17 - psg.wave[i + 2]),
-                        (17 - psg.wave[i + 3]),
-                        (17 - psg.wave[i + 4]),
-                        (17 - psg.wave[i + 5]),
-                        (17 - psg.wave[i + 6]),
-                        (17 - psg.wave[i + 7])
+                        (17 - wave[i + 0]),
+                        (17 - wave[i + 1]),
+                        (17 - wave[i + 2]),
+                        (17 - wave[i + 3]),
+                        (17 - wave[i + 4]),
+                        (17 - wave[i + 5]),
+                        (17 - wave[i + 6]),
+                        (17 - wave[i + 7])
                 ));
             }
 
@@ -5471,7 +5468,7 @@ public class frmMain extends JFrame {
         int[] register = null;
 
         if (chip == Ym2413Chip.class) {
-            register = audio.plugin.chipRegister.chip(Ym2413Chip.class).read(chipId);
+            register = (int[]) audio.plugin.chipRegister.chip(Ym2413Chip.class).getInfo(chipId).get("register");
         } else if (chip == Vrc7Chip.class) {
             int[] r = audio.plugin.chipRegister.chip(NpNesChip.Vrc7Chip.class).readVrc7(chipId);
             if (r == null) return;
@@ -5520,10 +5517,10 @@ public class frmMain extends JFrame {
     }
 
     private void getInstChForMGSCSCC(int ch, int chipId) {
-        K051649 chip = audio.plugin.chipRegister.chip(K051649Chip.class).getChip(chipId);
+        Map<String, Object> chip = audio.plugin.chipRegister.chip(K051649Chip.class).getInfo(chipId);
         if (chip == null) return;
         int[] register = new int[32];
-        for (int i = 0; i < 32; i++) register[i] = chip.getWaveRam(ch, i);
+        for (int i = 0; i < 32; i++) register[i] = (int) chip.get("channels." + ch + ".inst." + i);
 
         StringBuilder n = new StringBuilder("@sXX = {");
         for (int i = 0; i < 8; i++) {
@@ -5538,10 +5535,10 @@ public class frmMain extends JFrame {
     }
 
     private void getInstChForMGSCSCCPLAIN(int ch, int chipId) {
-        K051649 chip = audio.plugin.chipRegister.chip(K051649Chip.class).getChip(chipId);
+        Map<String, Object> chip = audio.plugin.chipRegister.chip(K051649Chip.class).getInfo(chipId);
         if (chip == null) return;
         int[] register = new int[32];
-        for (int i = 0; i < 32; i++) register[i] = chip.getWaveRam(ch, i);
+        for (int i = 0; i < 32; i++) register[i] = (int) chip.get("channels." + ch + ".inst." + i);
 
         StringBuilder n = new StringBuilder();
         for (int i = 0; i < 8; i++) {
@@ -5579,12 +5576,12 @@ public class frmMain extends JFrame {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
             int[][] fmRegister = (chip == Ym2612Chip.class)
-                    ? audio.plugin.chipRegister.chip(Ym2612Chip.class).read(chipId)
+                    ? (int[][]) audio.plugin.chipRegister.chip(Ym2612Chip.class).getInfo(chipId).get("register")
                     : (chip == Ym2608Chip.class
-                    ? audio.plugin.chipRegister.chip(Ym2608Chip.class).read(chipId)
-                    : (chip == Ym2203Chip.class
-                    ? new int[][] {audio.plugin.chipRegister.chip(Ym2203Chip.class).read(chipId), null}
-                    : audio.plugin.chipRegister.chip(Ym2610Chip.class).read(chipId)));
+                    ? (int[][]) audio.plugin.chipRegister.chip(Ym2608Chip.class).getInfo(chipId).get("register")
+                       : (chip == Ym2203Chip.class
+                    ? new int[][] {(int[]) audio.plugin.chipRegister.chip(Ym2203Chip.class).getInfo(chipId).get("register"), null}
+                    : (int[][]) audio.plugin.chipRegister.chip(Ym2610Chip.class).getInfo(chipId).get("register")));
 
             n[0] = (byte) (fmRegister[p][0xb0 + c] & 0x07); // AL
             n[1] = (byte) ((fmRegister[p][0xb0 + c] & 0x38) >> 3); // FB
@@ -5601,16 +5598,16 @@ public class frmMain extends JFrame {
                 n[i * 10 + 3] = (byte) dt;
                 n[i * 10 + 4] = (byte) (fmRegister[p][0x40 + ops + c] & 0x7f); // TL
                 n[i * 10 + 5] = (byte) ((fmRegister[p][0x50 + ops + c] & 0xc0) >> 6); // KS
-                n[i * 10 + 6] = (byte) (fmRegister[p][0x50 + ops + c] & 0x1f); //AR
-                n[i * 10 + 7] = (byte) (fmRegister[p][0x60 + ops + c] & 0x1f); //DR
-                n[i * 10 + 8] = (byte) (fmRegister[p][0x70 + ops + c] & 0x1f); //SR
-                n[i * 10 + 9] = (byte) (fmRegister[p][0x80 + ops + c] & 0x0f); //RR
+                n[i * 10 + 6] = (byte) (fmRegister[p][0x50 + ops + c] & 0x1f); // AR
+                n[i * 10 + 7] = (byte) (fmRegister[p][0x60 + ops + c] & 0x1f); // DR
+                n[i * 10 + 8] = (byte) (fmRegister[p][0x70 + ops + c] & 0x1f); // SR
+                n[i * 10 + 9] = (byte) (fmRegister[p][0x80 + ops + c] & 0x0f); // RR
                 n[i * 10 + 10] = (byte) ((fmRegister[p][0x80 + ops + c] & 0xf0) >> 4); // SL
                 n[i * 10 + 11] = (byte) (fmRegister[p][0x90 + ops + c] & 0x0f); // SSG
             }
 
         } else if (chip == Ym2151Chip.class) {
-            int[] ym2151Register = audio.plugin.chipRegister.chip(Ym2151Chip.class).read(chipId);
+            int[] ym2151Register = (int[]) audio.plugin.chipRegister.chip(Ym2151Chip.class).getInfo(chipId).get("register");
 
             n[0] = (byte) (ym2151Register[0x20 + ch] & 0x07); // AL
             n[1] = (byte) ((ym2151Register[0x20 + ch] & 0x38) >> 3); // FB
@@ -5626,10 +5623,10 @@ public class frmMain extends JFrame {
                 n[i * 10 + 3] = (byte) dt;
                 n[i * 10 + 4] = (byte) (ym2151Register[0x60 + ops + ch] & 0x7f); // TL
                 n[i * 10 + 5] = (byte) ((ym2151Register[0x80 + ops + ch] & 0xc0) >> 6); // KS
-                n[i * 10 + 6] = (byte) (ym2151Register[0x80 + ops + ch] & 0x1f); //AR
-                n[i * 10 + 7] = (byte) (ym2151Register[0xa0 + ops + ch] & 0x1f); //DR
-                n[i * 10 + 8] = (byte) (ym2151Register[0xc0 + ops + ch] & 0x1f); //SR
-                n[i * 10 + 9] = (byte) (ym2151Register[0xe0 + ops + ch] & 0x0f); //RR
+                n[i * 10 + 6] = (byte) (ym2151Register[0x80 + ops + ch] & 0x1f); // AR
+                n[i * 10 + 7] = (byte) (ym2151Register[0xa0 + ops + ch] & 0x1f); // DR
+                n[i * 10 + 8] = (byte) (ym2151Register[0xc0 + ops + ch] & 0x1f); // SR
+                n[i * 10 + 9] = (byte) (ym2151Register[0xe0 + ops + ch] & 0x0f); // RR
                 n[i * 10 + 10] = (byte) ((ym2151Register[0xe0 + ops + ch] & 0xf0) >> 4); // SL
                 n[i * 10 + 11] = 0;
             }
@@ -5676,12 +5673,12 @@ public class frmMain extends JFrame {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
             int[][] fmRegister = (chip == Ym2612Chip.class)
-                    ? audio.plugin.chipRegister.chip(Ym2612Chip.class).read(chipId)
+                    ? (int[][]) audio.plugin.chipRegister.chip(Ym2612Chip.class).getInfo(chipId).get("register")
                     : (chip == Ym2608Chip.class
-                    ? audio.plugin.chipRegister.chip(Ym2608Chip.class).read(chipId)
-                    : (chip == Ym2203Chip.class
-                    ? new int[][] {audio.plugin.chipRegister.chip(Ym2203Chip.class).read(chipId), null}
-                    : audio.plugin.chipRegister.chip(Ym2610Chip.class).read(chipId)));
+                    ? (int[][]) audio.plugin.chipRegister.chip(Ym2608Chip.class).getInfo(chipId).get("register")
+                       : (chip == Ym2203Chip.class
+                    ? new int[][] {(int[]) audio.plugin.chipRegister.chip(Ym2203Chip.class).getInfo(chipId).get("register"), null}
+                    : (int[][]) audio.plugin.chipRegister.chip(Ym2610Chip.class).getInfo(chipId).get("register")));
 
             n[1] = 0x02; // SYSTEM_GENESIS
 
@@ -5712,7 +5709,7 @@ public class frmMain extends JFrame {
             }
 
         } else if (chip == Ym2151Chip.class) {
-            int[] ym2151Register = audio.plugin.chipRegister.chip(Ym2151Chip.class).read(chipId);
+            int[] ym2151Register = (int[]) audio.plugin.chipRegister.chip(Ym2151Chip.class).getInfo(chipId).get("register");
 
             n[1] = 0x08; // SYSTEM_YM2151
 
@@ -5727,19 +5724,19 @@ public class frmMain extends JFrame {
 
                 n[i * 11 + 7] = (byte) (ym2151Register[0x40 + ops + ch] & 0x0f); // ML
                 n[i * 11 + 8] = (byte) (ym2151Register[0x60 + ops + ch] & 0x7f); // TL
-                n[i * 11 + 9] = (byte) (ym2151Register[0x80 + ops + ch] & 0x1f); //AR
-                n[i * 11 + 10] = (byte) (ym2151Register[0xa0 + ops + ch] & 0x1f); //DR
+                n[i * 11 + 9] = (byte) (ym2151Register[0x80 + ops + ch] & 0x1f); // AR
+                n[i * 11 + 10] = (byte) (ym2151Register[0xa0 + ops + ch] & 0x1f); // DR
                 n[i * 11 + 11] = (byte) ((ym2151Register[0xe0 + ops + ch] & 0xf0) >> 4); // SL
-                n[i * 11 + 12] = (byte) (ym2151Register[0xe0 + ops + ch] & 0x0f); //RR
-                n[i * 11 + 13] = (byte) ((ym2151Register[0xa0 + ops + ch] & 0x80) >> 7); //AM
+                n[i * 11 + 12] = (byte) (ym2151Register[0xe0 + ops + ch] & 0x0f); // RR
+                n[i * 11 + 13] = (byte) ((ym2151Register[0xa0 + ops + ch] & 0x80) >> 7); // AM
                 n[i * 11 + 14] = (byte) ((ym2151Register[0x80 + ops + ch] & 0xc0) >> 6); // KS
                 int dt = ((ym2151Register[0x40 + ops + ch] & 0x70) >> 4); // DT
                 dt = (dt == 4) ? 0 : dt;
                 // 0>5(-3)  1>6(-2)  2>7(-1)  3>0/4  4>1  5>2  6>3  7>3
                 dt = (dt > 4) ? (dt - 5) : (dt + 3);
-                int dt2 = (byte) ((ym2151Register[0xc0 + ops + ch] & 0xc0) >> 6); //DT2
+                int dt2 = (byte) ((ym2151Register[0xc0 + ops + ch] & 0xc0) >> 6); // DT2
                 n[i * 11 + 15] = (byte) ((dt & 0x7) | (dt2 << 4));
-                n[i * 11 + 16] = (byte) (ym2151Register[0xc0 + ops + ch] & 0x1f); //SR
+                n[i * 11 + 16] = (byte) (ym2151Register[0xc0 + ops + ch] & 0x1f); // SR
                 n[i * 11 + 17] = 0;
             }
 
@@ -5814,12 +5811,12 @@ public class frmMain extends JFrame {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
             int[][] fmRegister = (chip == Ym2612Chip.class)
-                    ? audio.plugin.chipRegister.chip(Ym2612Chip.class).read(chipId)
+                    ? (int[][]) audio.plugin.chipRegister.chip(Ym2612Chip.class).getInfo(chipId).get("register")
                     : (chip == Ym2608Chip.class
-                    ? audio.plugin.chipRegister.chip(Ym2608Chip.class).read(chipId)
-                    : (chip == Ym2203Chip.class
-                    ? new int[][] {audio.plugin.chipRegister.chip(Ym2203Chip.class).read(chipId), null}
-                    : audio.plugin.chipRegister.chip(Ym2610Chip.class).read(chipId)
+                    ? (int[][]) audio.plugin.chipRegister.chip(Ym2608Chip.class).getInfo(chipId).get("register")
+                       : (chip == Ym2203Chip.class
+                    ? new int[][] {(int[]) audio.plugin.chipRegister.chip(Ym2203Chip.class).getInfo(chipId).get("register"), null}
+                    : (int[][]) audio.plugin.chipRegister.chip(Ym2610Chip.class).getInfo(chipId).get("register")
             ));
 
             alg = (fmRegister[p][0xb0 + c] & 0x07) >> 0;
@@ -5852,7 +5849,7 @@ public class frmMain extends JFrame {
             }
 
         } else if (chip == Ym2151Chip.class) {
-            int[] ym2151Register = audio.plugin.chipRegister.chip(Ym2151Chip.class).read(chipId);
+            int[] ym2151Register = (int[]) audio.plugin.chipRegister.chip(Ym2151Chip.class).getInfo(chipId).get("register");
 
             alg = (ym2151Register[0x20 + ch] & 0x07) >> 0;
             fb = (ym2151Register[0x20 + ch] & 0x38) >> 3;
@@ -5961,12 +5958,12 @@ public class frmMain extends JFrame {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
             int[][] fmRegister = (chip == Ym2612Chip.class)
-                    ? audio.plugin.chipRegister.chip(Ym2612Chip.class).read(chipId)
+                    ? (int[][]) audio.plugin.chipRegister.chip(Ym2612Chip.class).getInfo(chipId).get("register")
                     : (chip == Ym2608Chip.class
-                    ? audio.plugin.chipRegister.chip(Ym2608Chip.class).read(chipId)
-                    : (chip == Ym2203Chip.class ?
-                    new int[][] {audio.plugin.chipRegister.chip(Ym2203Chip.class).read(chipId), null}
-                    : audio.plugin.chipRegister.chip(Ym2610Chip.class).read(chipId)));
+                    ? (int[][]) audio.plugin.chipRegister.chip(Ym2608Chip.class).getInfo(chipId).get("register")
+                       : (chip == Ym2203Chip.class ?
+                    new int[][] {(int[]) audio.plugin.chipRegister.chip(Ym2203Chip.class).getInfo(chipId).get("register"), null}
+                    : (int[][]) audio.plugin.chipRegister.chip(Ym2610Chip.class).getInfo(chipId).get("register")));
 
             n[12 + 32 + 3] = (byte) (fmRegister[p][0xb0 + c] & 0x3f); // FB & ALG
             n[12 + 32 + 4] = 0x10; // 0x00:OPN2  0x10:OPNA
@@ -5984,7 +5981,7 @@ public class frmMain extends JFrame {
             }
 
         } else if (chip == Ym2151Chip.class) {
-            int[] ym2151Register = audio.plugin.chipRegister.chip(Ym2151Chip.class).read(chipId);
+            int[] ym2151Register = (int[]) audio.plugin.chipRegister.chip(Ym2151Chip.class).getInfo(chipId).get("register");
 
             n[12 + 32 + 3] = (byte) ym2151Register[0x20 + ch]; // FB & ALG
             n[12 + 32 + 4] = 0x10; // 0x00:OPN2  0x10:OPNA
@@ -6039,10 +6036,10 @@ public class frmMain extends JFrame {
         if (chip != Ym3812Chip.class && chip != YmF262Chip.class && chip != YmF278BChip.class) return;
 
         int[][] reg;
-        if (chip == YmF262Chip.class) reg = audio.plugin.chipRegister.chip(YmF262Chip.class).read(chipId);
-        else if (chip == YmF278BChip.class) reg = audio.plugin.chipRegister.chip(YmF278BChip.class).read(chipId);
+        if (chip == YmF262Chip.class) reg = (int[][]) audio.plugin.chipRegister.chip(YmF262Chip.class).getInfo(chipId).get("register");
+        else if (chip == YmF278BChip.class) reg = (int[][]) audio.plugin.chipRegister.chip(YmF278BChip.class).getInfo(chipId).get("register");
         else {
-            int[] r = audio.plugin.chipRegister.chip(Ym3812Chip.class).read(chipId);
+            int[] r = (int[]) audio.plugin.chipRegister.chip(Ym3812Chip.class).getInfo(chipId).get("register");
             reg = new int[1][];
             reg[0] = r;
         }
@@ -6185,12 +6182,12 @@ public class frmMain extends JFrame {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
             int[][] fmRegister = (chip == Ym2612Chip.class) ?
-                    audio.plugin.chipRegister.chip(Ym2612Chip.class).read(chipId)
+                    (int[][]) audio.plugin.chipRegister.chip(Ym2612Chip.class).getInfo(chipId).get("register")
                     : (chip == Ym2608Chip.class
-                    ? audio.plugin.chipRegister.chip(Ym2608Chip.class).read(chipId)
-                    : (chip == Ym2203Chip.class ?
-                    new int[][] {audio.plugin.chipRegister.chip(Ym2203Chip.class).read(chipId), null}
-                    : audio.plugin.chipRegister.chip(Ym2610Chip.class).read(chipId)));
+                    ? (int[][]) audio.plugin.chipRegister.chip(Ym2608Chip.class).getInfo(chipId).get("register")
+                       : (chip == Ym2203Chip.class ?
+                    new int[][] {(int[]) audio.plugin.chipRegister.chip(Ym2203Chip.class).getInfo(chipId).get("register"), null}
+                    : (int[][]) audio.plugin.chipRegister.chip(Ym2610Chip.class).getInfo(chipId).get("register")));
 
             n.append("@: n MDPlayer\n");
             n.append("LFO:  0   0   0   0   0\n");
@@ -6218,7 +6215,7 @@ public class frmMain extends JFrame {
                 ));
             }
         } else if (chip == Ym2151Chip.class) {
-            int[] ym2151Register = audio.plugin.chipRegister.chip(Ym2151Chip.class).read(chipId);
+            int[] ym2151Register = (int[]) audio.plugin.chipRegister.chip(Ym2151Chip.class).getInfo(chipId).get("register");
 
             n.append("@: n MDPlayer\n");
             n.append("LFO:  0   0   0   0   0\n");
@@ -6259,12 +6256,12 @@ public class frmMain extends JFrame {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
             int[][] fmRegister = (chip == Ym2612Chip.class)
-                    ? audio.plugin.chipRegister.chip(Ym2612Chip.class).read(chipId)
+                    ? (int[][]) audio.plugin.chipRegister.chip(Ym2612Chip.class).getInfo(chipId).get("register")
                     : (chip == Ym2608Chip.class
-                    ? audio.plugin.chipRegister.chip(Ym2608Chip.class).read(chipId)
-                    : (chip == Ym2203Chip.class
-                    ? new int[][] {audio.plugin.chipRegister.chip(Ym2203Chip.class).read(chipId), null}
-                    : audio.plugin.chipRegister.chip(Ym2610Chip.class).read(chipId)));
+                    ? (int[][]) audio.plugin.chipRegister.chip(Ym2608Chip.class).getInfo(chipId).get("register")
+                       : (chip == Ym2203Chip.class
+                    ? new int[][] {(int[]) audio.plugin.chipRegister.chip(Ym2203Chip.class).getInfo(chipId).get("register"), null}
+                    : (int[][]) audio.plugin.chipRegister.chip(Ym2610Chip.class).getInfo(chipId).get("register")));
 
             n.append("; nm alg fbl\n");
             n.append("@xxx %3d %3d                            =      MDPlayer\n".formatted(
@@ -6290,7 +6287,7 @@ public class frmMain extends JFrame {
                 ));
             }
         } else if (chip == Ym2151Chip.class) {
-            int[] ym2151Register = audio.plugin.chipRegister.chip(Ym2151Chip.class).read(chipId);
+            int[] ym2151Register = (int[]) audio.plugin.chipRegister.chip(Ym2151Chip.class).getInfo(chipId).get("register");
             n.append("; nm alg fbl\n");
             n.append("@xxx %3d %3d                            =      MDPlayer\n".formatted(
                     ym2151Register[0x20 + ch] & 0x07, // AL

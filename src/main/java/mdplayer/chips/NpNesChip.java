@@ -8,12 +8,14 @@ package mdplayer.chips;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.util.Collections;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
 import mdplayer.driver.nsf.Nsf;
 import mdplayer.driver.nsf.NsfMdDriver;
 import mdsound.Instrument;
+import mdsound.instrument.NesInst;
 import mdsound.instrument.NpNesInst;
 import mdsound.np.chip.DeviceInfo;
 import mdsound.np.chip.NesMmc5;
@@ -262,7 +264,7 @@ public class NpNesChip extends BaseChip {
             else if (nsf.apu.apu == null) return null;
             else if (chipId == 1) return null;
             else {
-                return nsf.fds.fds.serialize();
+                return NesInst.toInfo(nsf.fds.fds);
             }
         }
 
@@ -357,7 +359,7 @@ public class NpNesChip extends BaseChip {
     }
 
     // vgm
-    public int[] readApu(int chipId) {
+    public Map<String, Object> getInfo(int chipId) {
         int[] reg;
 
         // for nsf
@@ -366,7 +368,7 @@ public class NpNesChip extends BaseChip {
         else if (chipId == 1) reg = null;
         else reg = nsf.apu.apu.reg;
 
-        return reg;
+        return reg != null ? Map.of("register", reg) : Collections.emptyMap();
     }
 
     // nsf
