@@ -1121,12 +1121,10 @@ public class STIL {
      *
      * @param result where to put the resulting String to (if any)
      * @param buffer pointer to the first char of what to search for
-     *               the field. Should be a buffer : standard STIL
-     *               format.
+     *               the field. Should be a buffer : standard STIL format.
      * @param tuneNo song number within the song (default=0)
      * @param field  which field to retrieve (default=all).
-     * @return - false - if nothing was put into 'result'
-     * - true  - 'result' has the resulting field
+     * @return false: if nothing was put into 'result', true: 'result' has the resulting field
      */
     private static boolean getField(String[] result, String buffer, int tuneNo /* = 0 */, Field field /* = Field.all */) {
         logger.fine("getField() called, buffer=" + buffer + ", rest=" + tuneNo + "," + field + "\n");

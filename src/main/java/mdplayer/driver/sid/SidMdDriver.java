@@ -35,7 +35,9 @@ public class SidMdDriver extends BaseDriver implements SidDriver {
 
     private final Sid sid;
 
-    public SidMdDriver() {
+    public SidMdDriver(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+
         this.sid = new Sid();
     }
 
@@ -92,10 +94,7 @@ public class SidMdDriver extends BaseDriver implements SidDriver {
      * @param args 0: songNo
      */
     @Override
-    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     int latency, int waitTime, Object... args) {
-        this.dataBuf = dataBuf;
-        this.plugin = plugin;
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
         this.model = model;
         this.latency = latency;
         this.waitTime = waitTime;

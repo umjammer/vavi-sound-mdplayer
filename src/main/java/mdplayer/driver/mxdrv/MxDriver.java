@@ -37,7 +37,9 @@ public class MxDriver extends BaseDriver {
 
     private Tuple<String, byte[]> extendFile = null;
 
-    public MxDriver() {
+    public MxDriver(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+
         this.mxdrv = new MXDRV();
         // called the same timing as mdxPcm.getPcm
         mxdrv.ym2151Write = (a, d) -> plugin.chipRegister.chip(Ym2151Chip.class).write(0, 0, a, d, model, plugin.chipRegister.chip(Ym2151Chip.class).corrections[0], frameCounter);
@@ -125,6 +127,10 @@ public class MxDriver extends BaseDriver {
                 plugin.chipRegister.chip(Pcm8Chip.class).abort(0);
             }
         };
+    }
+
+    public MxDriver() {
+        this(null); // gross
     }
 
     public void setExtendFile(Tuple<String,byte[]> extendFile) {
@@ -259,9 +265,7 @@ public class MxDriver extends BaseDriver {
     }
 
     @Override
-    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model, int latency, int waitTime, Object... args) {
-        this.dataBuf = dataBuf;
-        this.plugin = plugin;
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
         this.model = model;
         this.latency = latency;
         this.waitTime = waitTime;

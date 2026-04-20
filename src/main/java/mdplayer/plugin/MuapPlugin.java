@@ -9,7 +9,6 @@ package mdplayer.plugin;
 import java.util.function.Function;
 
 import dotnet4j.io.Stream;
-import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.Cs4231Chip;
 import mdplayer.chips.Ym2608Chip;
@@ -37,18 +36,15 @@ public class MuapPlugin extends BasePlugin<MuapDriver> {
 
     @Override
     public void prepare() {
-        driverVirtual = new MuapDriver();
-        driverVirtual.playingFileName = playingFileName;
+        driverVirtual = new MuapDriver(this);
 
         driverReal = null;
 //        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
-//            driverReal = new MuapJava();
-//            driverReal.playingFileName = playingFileName;
+//            driverReal = new MuapDriver(this);
 //        }
 //        driverPianoRoll = null;
 //        if (setting.pianoRoll.usePianoRoll) {
-//            driverPianoRoll = new MuapJava();
-//            driverPianoRoll.playingFileName = playingFileName;
+//            driverPianoRoll = new MuapDriver(this);
 //        }
 
         super.prepare();
@@ -159,11 +155,11 @@ public class MuapPlugin extends BasePlugin<MuapDriver> {
         chipRegister.chip(Ym2608Chip.class).setSsgVolume(0, setting.getBalance().getGimicOPNAVolume(), EnmModel.RealModel);
         chipRegister.chip(Ym2608Chip.class).setSsgVolume(1, setting.getBalance().getGimicOPNAVolume(), EnmModel.RealModel);
 
-        driverVirtual.init(vgmBuf, this, EnmModel.VirtualModel,
+        driverVirtual.init(EnmModel.VirtualModel,
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         if (driverReal != null) {
-            driverReal.init(vgmBuf, this, EnmModel.RealModel,
+            driverReal.init(EnmModel.RealModel,
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         }

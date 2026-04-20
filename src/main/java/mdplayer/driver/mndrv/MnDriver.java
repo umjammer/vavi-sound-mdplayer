@@ -33,7 +33,9 @@ public class MnDriver extends BaseDriver {
 
     private final MnDrv mndrv;
 
-    public MnDriver() {
+    public MnDriver(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+
         this.mndrv = new MnDrv();
         mndrv.ym2608Write = (c, p, a, d) -> plugin.chipRegister.chip(Ym2608Chip.class).write(c, p, a, d, model);
         mndrv.ym2151Write = (a, d) -> plugin.chipRegister.chip(Ym2151Chip.class).write(0, 0, a, d, model, plugin.chipRegister.chip(Ym2151Chip.class).corrections[0], 0);
@@ -90,15 +92,16 @@ public class MnDriver extends BaseDriver {
         };
     }
 
+    public MnDriver() {
+        this(null); // gross
+    }
+
     public void setExtendFile(List<Tuple<String,byte[]>> extendFile) {
         mndrv.extendFile = extendFile;
     }
 
     @Override
-    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     int latency, int waitTime, Object... args) {
-        this.dataBuf = dataBuf;
-        this.plugin = plugin;
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
         this.model = model;
         this.latency = latency;
         this.waitTime = waitTime;

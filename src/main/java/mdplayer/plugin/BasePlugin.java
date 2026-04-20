@@ -54,7 +54,7 @@ public abstract class BasePlugin<T extends BaseDriver> implements Plugin {
     // view
     public final ChipLEDs chipLED = new ChipLEDs();
 
-    protected byte[] vgmBuf = null;
+    protected byte[] dataBuf = null;
     protected double speed;
 
     public boolean oneTimeReset = false;
@@ -80,6 +80,10 @@ public abstract class BasePlugin<T extends BaseDriver> implements Plugin {
 
     // TODO variable?
     public static final int BUFFER_SIZE = 1024;
+
+    public byte[] getData() {
+        return dataBuf;
+    }
 
     /** used chips */
     protected final Map<Class<? extends mdplayer.Chip>, List<Chip>> chips = new HashMap<>();
@@ -185,7 +189,7 @@ logger.log(Level.INFO, "stop: " + this.stopped);
         //stop();
         this.fileFormat = format;
         this.playingFileFormat = format;
-        this.vgmBuf = format.getData();
+        this.dataBuf = format.getData();
         this.playingFileName = (String) params.get("fileName"); // for WaveWriter
         this.playingArcFileName = (String) params.get("arcFileName");
         chipRegister.plugin(MidiPlugin.class).midiMode = (int) params.getOrDefault("midiMode", 0);

@@ -42,17 +42,15 @@ public class MdsDriver extends BaseDriver {
 
     private IDriver mdsDriver = null;
 
-    private String PlayingFileName;
-
-    public String getPlayingFileName() {
-        return PlayingFileName;
-    }
-
-    public void setPlayingFileName(String value) {
-        PlayingFileName = value;
-    }
-
     public static final int opmBaseClock = 3579545;
+
+    public MdsDriver(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+    }
+
+    public MdsDriver() {
+        this(null); // gross
+    }
 
     @Override
     public MetaData getMetaData(byte[] buf, Object... args) {
@@ -65,12 +63,9 @@ public class MdsDriver extends BaseDriver {
     }
 
     @Override
-    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     int latency, int waitTime, Object... args) {
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
         metaData = getMetaData(dataBuf);
 
-        this.dataBuf = dataBuf;
-        this.plugin = plugin;
         this.model = model;
         this.latency = latency;
         this.waitTime = waitTime;
@@ -126,8 +121,7 @@ public class MdsDriver extends BaseDriver {
         actions.add(action);
         action = new MdsChipAction(this::writePSG, null, null);
         actions.add(action);
-        mdsDriver.init(actions, buf.toArray(MmlDatum[]::new),null,
-                PlayingFileName);
+        mdsDriver.init(actions, buf.toArray(MmlDatum[]::new),null, plugin.playingFileName);
 
         mdsDriver.startRendering(Common.VGMProcSampleRate, new Tuple<>("", opmBaseClock));
         mdsDriver.startMusic(0);

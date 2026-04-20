@@ -23,10 +23,14 @@ public class HesDriver extends BaseDriver {
 
     private final Hes hes;
 
-    public mdsound.MDSound.Chip c6280;
+    public HesDriver(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+
+        hes = new Hes();
+    }
 
     public HesDriver() {
-        hes = new Hes();
+        this(null); // gross
     }
 
     @Override
@@ -53,11 +57,8 @@ public class HesDriver extends BaseDriver {
      * @param args 0: [int] song number
      */
     @Override
-    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     int latency, int waitTime, Object... args) {
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
 
-        this.dataBuf = dataBuf;
-        this.plugin = plugin;
         this.model = model;
         this.latency = latency;
         this.waitTime = waitTime;

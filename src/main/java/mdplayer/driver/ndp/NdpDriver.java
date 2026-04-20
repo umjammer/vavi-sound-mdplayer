@@ -30,12 +30,18 @@ public class NdpDriver extends BaseDriver {
 
     private final Ndp ndp;
 
-    public NdpDriver() {
+    public NdpDriver(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+
         this.ndp = new Ndp();
         ndp.k051649Write = (i, a, d) -> plugin.chipRegister.chip(K051649Chip.class).write(i, a, d, model);
         ndp.ay8910Write = (a, d) -> plugin.chipRegister.chip(Ay8910Chip.class).write(0, a, d, model);
         ndp.ym2413Write = (a, d) -> plugin.chipRegister.chip(Ym2413Chip.class).write(0, a, d, model);
         ndp.dir = System.getProperty("mdplayer.ndp.dir", System.getProperty("user.dir"));
+    }
+
+    public NdpDriver() {
+        this(null); // gross
     }
 
     @Override
@@ -61,9 +67,7 @@ public class NdpDriver extends BaseDriver {
     }
 
     @Override
-    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     int latency, int waitTime, Object... args) {
-        this.plugin = plugin;
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
         loopCounter = 0;
         curLoop = 0;
         this.model = model;

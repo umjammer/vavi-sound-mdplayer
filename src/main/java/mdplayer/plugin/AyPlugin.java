@@ -31,12 +31,11 @@ public class AyPlugin extends BasePlugin<AyDriver> {
 
     @Override
     public void prepare() {
-        driverVirtual = new AyDriver();
+        driverVirtual = new AyDriver(this);
 
         driverReal = null;
 //        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
-//            audio.driverReal = new AyDriver();
-//            audio.driverReal.setting = setting;
+//            audio.driverReal = new AyDriver(this);
 //        }
 
         super.prepare();
@@ -73,12 +72,12 @@ public class AyPlugin extends BasePlugin<AyDriver> {
 
         mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, flatten());
 
-        driverVirtual.init(vgmBuf, this, EnmModel.VirtualModel,
+        driverVirtual.init(EnmModel.VirtualModel,
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000,
                 songNo);
         if (driverReal != null) {
-            driverReal.init(vgmBuf, this, EnmModel.RealModel,
+            driverReal.init(EnmModel.RealModel,
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000,
                     songNo);

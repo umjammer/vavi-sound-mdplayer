@@ -42,7 +42,9 @@ public class ZmsDriver extends BaseDriver {
 
     private final Zms zms;
 
-    public ZmsDriver() {
+    public ZmsDriver(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+
         this.zms = new Zms();
         zms.charset = Common.charset;
         zms.frequency = Common.VGMProcSampleRate;
@@ -127,6 +129,10 @@ public class ZmsDriver extends BaseDriver {
         zms.zpd = System.getProperty("mdplayer.zms.zpd");
     }
 
+    public ZmsDriver() {
+        this(null); // gross
+    }
+
     public int getVersion() {
         return zms.version;
     }
@@ -137,14 +143,6 @@ public class ZmsDriver extends BaseDriver {
 
     public void setSupportFileBinaryAndName(List<Tuple<byte[], String>> supportFileBinary) {
         zms.supportFileBinaryAndName = supportFileBinary;
-    }
-
-    public void setPlayingFileName(String value) {
-        zms.playingFileName = value;
-    }
-
-    public void setPlayingArcFileName(String value) {
-        zms.playingArcFileName = value;
     }
 
     public byte[] getCompiledData() {
@@ -163,11 +161,15 @@ public class ZmsDriver extends BaseDriver {
         return zms.compileV2(vgmBuf, fn);
     }
 
+    /**
+     * @param args 0: offset, 1: filename
+     */
     @Override
     public MetaData getMetaData(byte[] buf, Object... args) {
-        if (zms.playingFileName.toUpperCase().endsWith(".ZMS")) {
+        String filename = args.length > 1 ? (String) args[1] : plugin.playingFileName;
+        if (filename.toUpperCase().endsWith(".ZMS")) {
             return getMetaDataZMS(buf);
-        } else if (zms.playingFileName.toUpperCase().endsWith(".ZMD")) {
+        } else if (filename.toUpperCase().endsWith(".ZMD")) {
             return getMetaDataZMD(buf);
         } else {
             return new MetaData();
@@ -235,16 +237,18 @@ public class ZmsDriver extends BaseDriver {
     }
 
     @Override
-    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     int latency, int waitTime, Object... args) {
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
         metaData = getMetaData(dataBuf, 0);
-        this.plugin = plugin;
         loopCounter = 0;
         curLoop = 0;
         this.model = model;
+
         frameCounter = -latency - waitTime;
         speed = 1;
+
         zms.setZPDSearchPath();
+        zms.playingFileName = plugin.playingFileName;
+        zms.playingArcFileName = plugin.playingArcFileName;
 
         try {
             zms.run(dataBuf);

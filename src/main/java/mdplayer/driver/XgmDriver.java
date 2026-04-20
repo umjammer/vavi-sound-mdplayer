@@ -26,7 +26,9 @@ public class XgmDriver extends BaseDriver {
 
     private final Xgm xgm;
 
-    public XgmDriver() {
+    public XgmDriver(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+
         this.xgm = new Xgm();
         xgm.sampleRate = Common.VGMProcSampleRate;
         xgm.pcmStep = setting.getOutputDevice().getSampleRate() / 14000.0;
@@ -37,15 +39,16 @@ public class XgmDriver extends BaseDriver {
         xgm.sn76489Write = v -> plugin.chipRegister.chip(Sn76489Chip.class).write(0, v, model);
     }
 
+    public XgmDriver() {
+        this(null); // gross
+    }
+
     public XgmPcm[] getXgmPcm() {
         return xgm.xgmPcm;
     }
 
     @Override
-    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     int latency, int waitTime, Object... args) {
-        this.dataBuf = dataBuf;
-        this.plugin = plugin;
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
         this.model = model;
         this.latency = latency;
         this.waitTime = waitTime;

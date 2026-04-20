@@ -40,7 +40,9 @@ public class S98Driver extends BaseDriver {
 
     private final S98 s98;
 
-    public S98Driver() {
+    public S98Driver(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+
         this.s98 = new S98();
         s98.isRealModel = model == EnmModel.RealModel;
         s98.musicStep = setting.getOutputDevice().getSampleRate() / 60.0;
@@ -58,6 +60,10 @@ public class S98Driver extends BaseDriver {
         s98.writeAY8910 = (chipId, adr, data) -> plugin.chipRegister.chip(Ay8910Chip.class).write(chipId, adr, data, model);
         s98.writeSN76489 = (chipId, data) -> plugin.chipRegister.chip(Sn76489Chip.class).write(chipId, data, model);
         s98.writeYMF262 = (chipId, port, adr, data) -> plugin.chipRegister.chip(YmF262Chip.class).write(chipId, port, adr, data, model);
+    }
+
+    public S98Driver() {
+        this(null); // gross
     }
 
     public int getSSGVolumeFromTAG() {
@@ -185,10 +191,7 @@ public class S98Driver extends BaseDriver {
     }
 
     @Override
-    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     int latency, int waitTime, Object... args) {
-        this.dataBuf = dataBuf;
-        this.plugin = plugin;
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
         this.model = model;
         this.latency = latency;
         this.waitTime = waitTime;

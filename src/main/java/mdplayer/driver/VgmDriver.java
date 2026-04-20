@@ -25,7 +25,9 @@ public class VgmDriver extends BaseDriver {
 
     public final Vgm vgm;
 
-    public VgmDriver() {
+    public VgmDriver(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+
         this.vgm = new Vgm();
         vgm.frameCounter = () -> frameCounter;
         vgm.dataBlock = b -> isDataBlock = b;
@@ -40,11 +42,12 @@ public class VgmDriver extends BaseDriver {
         vgm.updateMetaData = (b, o) -> metaData = getMetaData(b, o);
     }
 
+    public VgmDriver() {
+        this(null);
+    }
+
     @Override
-    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     int latency, int waitTime, Object... args) {
-        this.dataBuf = dataBuf;
-        this.plugin = plugin;
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
         this.model = model;
         this.latency = latency;
         this.waitTime = waitTime;

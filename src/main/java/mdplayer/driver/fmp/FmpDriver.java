@@ -32,7 +32,9 @@ public class FmpDriver extends BaseDriver {
 
     private final FMP fmp;
 
-    public FmpDriver() {
+    public FmpDriver(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+
         fmp = new FMP();
         fmp.sampleRate = Common.VGMProcSampleRate;
         fmp.charset = Common.charset;
@@ -43,6 +45,10 @@ public class FmpDriver extends BaseDriver {
         fmp.opnaWrite = this::opnaWrite;
     }
 
+    public FmpDriver() {
+        this(null); // gross
+    }
+
     public void setFileTemp(FileTemp ft) {
         fmp.ft = ft;
     }
@@ -51,15 +57,7 @@ public class FmpDriver extends BaseDriver {
         fmp.setSearchPath(searchPath);
     }
 
-    public void setPlayingFileName(String playingFileName) {
-        fmp.playingFileName = playingFileName;
-    }
-
-    public void setPlayingArcFileName(String playingArcFileName) {
-        fmp.playingArcFileName = playingArcFileName;
-    }
-
-    /** before using ths method, you must set playingFileName by {@link #setPlayingFileName} */
+    /** before using ths method, you must do {@link BaseDriver#init} */
     public void compile() {
         fmp.compile();
     }
@@ -84,15 +82,16 @@ public class FmpDriver extends BaseDriver {
     }
 
     @Override
-    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     int latency, int waitTime, Object... args) {
-
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
         MetaData _ = getMetaData(dataBuf, 0);
-        this.plugin = plugin;
+
         loopCounter = 0;
         curLoop = 0;
         this.model = model;
         frameCounter = -latency - waitTime;
+
+        fmp.playingFileName = plugin.playingFileName;
+        fmp.playingArcFileName = plugin.playingArcFileName;
 
         try {
             fmp.run(dataBuf);

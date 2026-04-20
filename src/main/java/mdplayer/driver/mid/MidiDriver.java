@@ -29,7 +29,9 @@ public class MidiDriver extends BaseDriver {
 
     private final MID midi;
 
-    public MidiDriver() {
+    public MidiDriver(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+
         this.midi = new MID();
         midi.charset = Common.charset;
         midi.musicStep = Common.VGMProcSampleRate / 60.0;;
@@ -39,6 +41,10 @@ public class MidiDriver extends BaseDriver {
         midi.lyric = (n, l) -> plugin.chipRegister.plugin(MidiPlugin.class).params[n].lyric = l;
         midi.stop = () -> stopped = true;
         midi.counter = () -> frameCounter = -latency - waitTime;
+    }
+
+    public MidiDriver() {
+        this(null); // gross
     }
 
     @Override
@@ -138,10 +144,7 @@ public class MidiDriver extends BaseDriver {
     }
 
     @Override
-    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     int latency, int waitTime, Object... args) {
-        this.dataBuf = dataBuf;
-        this.plugin = plugin;
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
         this.model = model;
         this.latency = latency;
         this.waitTime = waitTime;
@@ -158,7 +161,7 @@ public class MidiDriver extends BaseDriver {
         speedCounter = 0;
 
         metaData = getMetaData(dataBuf);
-        //if (Gd3 == null) return false;
+        //if (metaData == null) return false;
 
         midi.getInformationHeader(dataBuf);
 
@@ -186,7 +189,7 @@ public class MidiDriver extends BaseDriver {
                     frameCounter++;
                 }
             }
-            //Stopped = !IsPlaying();
+            //stopped = !isPlaying();
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
         }

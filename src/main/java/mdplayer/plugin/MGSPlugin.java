@@ -28,13 +28,11 @@ public class MGSPlugin extends BasePlugin<MgsDriver> {
 
     @Override
     public void prepare() {
-        driverVirtual = new MgsDriver();
-        driverVirtual.setPlayingFileName(playingFileName);
+        driverVirtual = new MgsDriver(this);
 
         driverReal = null;
         if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
-            driverReal = new MgsDriver();
-            driverReal.setPlayingFileName(playingFileName);
+            driverReal = new MgsDriver(this);
         }
 
         super.prepare();
@@ -44,13 +42,13 @@ public class MGSPlugin extends BasePlugin<MgsDriver> {
     @Override
     protected void initChips() {
         int i = 0;
-        while (vgmBuf.length > 1 && i < vgmBuf.length - 1 && (vgmBuf[i] != 0x1a || vgmBuf[i + 1] != 0x00)) {
+        while (dataBuf.length > 1 && i < dataBuf.length - 1 && (dataBuf[i] != 0x1a || dataBuf[i + 1] != 0x00)) {
             i++;
         }
         i += 7;
         int[] trkOffsets = new int[18];
         for (int t = 0; t < trkOffsets.length; t++) {
-            trkOffsets[t] = (vgmBuf[i + t * 2] & 0xff) + (vgmBuf[i + t * 2 + 1] & 0xff) * 0x100;
+            trkOffsets[t] = (dataBuf[i + t * 2] & 0xff) + (dataBuf[i + t * 2 + 1] & 0xff) * 0x100;
         }
         boolean useAY = (trkOffsets[0] + trkOffsets[1] + trkOffsets[2] != 0);
         boolean useSCC = (trkOffsets[3] + trkOffsets[4] + trkOffsets[5] + trkOffsets[6] + trkOffsets[7] != 0);
@@ -108,11 +106,11 @@ logger.log(Level.INFO, "MGSDRV: AY: %b, SCC: %b, OPLL: %b".formatted(useAY, useS
 
         mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, flatten());
 
-        driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel,
+        driverVirtual.init(Common.EnmModel.VirtualModel,
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         if (driverReal != null) {
-            driverReal.init(vgmBuf, this, Common.EnmModel.RealModel,
+            driverReal.init(Common.EnmModel.RealModel,
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         }

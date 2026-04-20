@@ -46,10 +46,12 @@ public class MoonDriver extends BaseDriver {
     private IDriver moonDriverDriver = null;
     private MoonDriverFileType mtype;
 
-    private String playingFileName;
+    public MoonDriver(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+    }
 
-    public void setPlayingFileName(String value) {
-        playingFileName = value;
+    public MoonDriver() {
+        this(null); // gross
     }
 
     @Override
@@ -70,12 +72,9 @@ logger.log(Level.DEBUG, "type: " + mtype);
     }
 
     @Override
-    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     int latency, int waitTime, Object... args) {
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
         metaData = getMetaData(dataBuf, 0);
 
-        this.dataBuf = dataBuf;
-        this.plugin = plugin;
         this.model = model;
         this.latency = latency;
         this.waitTime = waitTime;
@@ -139,7 +138,7 @@ logger.log(Level.DEBUG, "type: " + mtype);
         moonDriverCompiler.init();
         moonDriverCompiler.setCompileSwitch("SRC");
         moonDriverCompiler.setCompileSwitch("MoonDriverOption=-i");
-        moonDriverCompiler.setCompileSwitch("MoonDriverOption=%s".formatted(playingFileName));
+        moonDriverCompiler.setCompileSwitch("MoonDriverOption=%s".formatted(plugin.playingFileName));
 
         MmlDatum[] ret;
         CompilerInfo info;
@@ -271,7 +270,7 @@ logger.log(Level.INFO, "useChip: " + plugin.getChips().stream().map(Class::getSi
                 lca,
                 buf.toArray(MmlDatum[]::new),
                 this::appendFileReaderCallback,
-                playingFileName, (double) 44100, 0);
+                plugin.playingFileName, (double) 44100, 0);
 
         moonDriverDriver.startRendering(Common.VGMProcSampleRate, new Tuple<>("YMF278B", 33868800));
         moonDriverDriver.startMusic(0);
@@ -279,7 +278,7 @@ logger.log(Level.INFO, "useChip: " + plugin.getChips().stream().map(Class::getSi
 
     private Stream appendFileReaderCallback(String arg) {
 
-        String fn = Path.combine(Path.getDirectoryName(playingFileName), arg);
+        String fn = Path.combine(Path.getDirectoryName(plugin.playingFileName), arg);
 
         if (!File.exists(fn)) return null;
 

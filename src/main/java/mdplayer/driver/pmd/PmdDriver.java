@@ -55,29 +55,25 @@ public class PmdDriver extends BaseDriver {
     private static final Logger logger = getLogger(PmdDriver.class.getName());
 
     private ICompiler pmdCompiler = null;
-
     private IDriver pmdDriver = null;
 
     private static String[] envPmd = null;
-
     private static String[] envPmdOpt = null;
 
     private boolean isNRM;
-
     private boolean isSPB;
-
     private boolean isVA;
-
     private boolean usePPS;
-
     private boolean usePPZ;
-
-    private String playingFileName;
-    public void setPlayingFileName(String value) { playingFileName = value; }
 
     public static final int baseClock = 7987200;
 
+    public PmdDriver(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+    }
+
     public PmdDriver() {
+        this(null); // gross
     }
 
     @Override
@@ -111,15 +107,12 @@ public class PmdDriver extends BaseDriver {
      * @param args 0: FileFormat
      */
     @Override
-    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     int latency, int waitTime, Object... args) {
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
 
         FileFormat fileFormat = (FileFormat) args[0];
         PMDFileType mType = fileFormat instanceof MMLFileFormat ? PMDFileType.MML : PMDFileType.M;
         metaData = getMetaData(dataBuf, mType);
 
-        this.dataBuf = dataBuf;
-        this.plugin = plugin;
         this.model = model;
         this.latency = latency;
         this.waitTime = waitTime;
@@ -209,7 +202,7 @@ public class PmdDriver extends BaseDriver {
         CompilerInfo info;
         try {
             pmdCompiler.setCompileSwitch("PmdOption=%s \"%s\"".formatted(
-                    setting.getPmd().compilerArguments, playingFileName));
+                    setting.getPmd().compilerArguments, plugin.playingFileName));
             try (MemoryStream sourceMML = new MemoryStream(dataBuf)) {
                 ret = pmdCompiler.compile(sourceMML, this::appendFileReaderCallback);// wrkMUCFullPath, disp);
             }
@@ -253,7 +246,7 @@ public class PmdDriver extends BaseDriver {
                 isSPB, // bool
                 envPmd, // String[] Environment variable PMD
                 envPmdOpt, // String[] Environment variable PMDOpt
-                playingFileName, // String srcFile;
+                plugin.playingFileName, // String srcFile;
                 "", // String PPCFileHeader is ignored (no setting required)
                 (Function<String, Stream>) this::appendFileReaderCallback
         };
@@ -360,19 +353,19 @@ public class PmdDriver extends BaseDriver {
         envPmdOpt = System.getProperty("mdplayer.pmd.opt", "").split(java.io.File.pathSeparator);
 
         Object[] additionalPDDDotNETOption = new Object[] {
-            isLoadADPCM, // bool
-            loadADPCMOnly, // bool
-            setting.getPmd().isAuto, // boolean isAUTO;
-            isVA, // bool
-            isNRM, // bool
-            usePPS, // bool
-            usePPZ, // bool
-            isSPB, // bool
-            envPmd, // String[] Environment variable PMD
-            envPmdOpt, // String[] Environment variable PMDOpt
-                playingFileName, // String srcFile;
-            "", // String PPCFileHeader is ignored (no setting required)
-            (Function<String, Stream>) this::appendFileReaderCallback
+                isLoadADPCM, // boolean
+                loadADPCMOnly, // boolean
+                setting.getPmd().isAuto, // boolean isAUTO;
+                isVA, // boolean
+                isNRM, // boolean
+                usePPS, // boolean
+                usePPZ, // boolean
+                isSPB, // boolean
+                envPmd, // String[] Environment variable PMD
+                envPmdOpt, // String[] Environment variable PMDOpt
+                plugin.playingFileName, // String srcFile;
+                "", // String PPCFileHeader is ignored (no setting required)
+                (Function<String, Stream>) this::appendFileReaderCallback
         };
 
         String[] additionalPMDOption = getPMDOption();
@@ -466,7 +459,7 @@ logger.log(Level.DEBUG, "find pmd additional file: " + arg);
         fileName = arg;
         String dir = Path.getDirectoryName(arg);
         if (dir == null || dir.isEmpty())
-            fileName = Path.combine(Path.getDirectoryName(playingFileName.replace(java.io.File.separator, "\\")), fileName);
+            fileName = Path.combine(Path.getDirectoryName(plugin.playingFileName.replace(java.io.File.separator, "\\")), fileName);
 
         if (envPmd != null) {
             int i = 0;

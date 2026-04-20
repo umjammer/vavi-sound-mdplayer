@@ -32,7 +32,9 @@ public class RcsDriver extends BaseDriver {
 
     private final RCS rcs;
 
-    public RcsDriver() {
+    public RcsDriver(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+
         this.rcs = new RCS();
         rcs.charset = Common.charset;
         rcs.sampleRate = Common.VGMProcSampleRate;
@@ -43,6 +45,10 @@ public class RcsDriver extends BaseDriver {
         rcs.counter = () -> frameCounter = -latency - waitTime;
         rcs.midiCount = () -> plugin.chipRegister.plugin(MidiPlugin.class).getCount();
         rcs.stop = () -> stopped = true;
+    }
+
+    public RcsDriver() {
+        this(null); // gross
     }
 
     public void setExtendFile(List<Tuple<String,byte[]>> extendFiles) {
@@ -110,10 +116,7 @@ public class RcsDriver extends BaseDriver {
     }
 
     @Override
-    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     int latency, int waitTime, Object... args) {
-        this.dataBuf = dataBuf;
-        this.plugin = plugin;
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
         this.model = model;
         this.latency = latency;
         this.waitTime = waitTime;

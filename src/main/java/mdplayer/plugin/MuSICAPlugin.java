@@ -46,18 +46,17 @@ public class MuSICAPlugin extends BasePlugin<MusicaDriver> {
             }
 
             MusicaK4Driver driverVirtual = new MusicaK4Driver();
-            driverVirtual.init(vgmBuf, this, null, -1, -1);
-            driverVirtual.compile(vgmBuf, vcdBuf);
+            driverVirtual.init(null, -1, -1);
+            driverVirtual.compile(dataBuf, vcdBuf);
 
-            vgmBuf = driverVirtual.getBgmBin();
+            dataBuf = driverVirtual.getBgmBin();
         }
 
-        driverVirtual = new MusicaDriver();
+        driverVirtual = new MusicaDriver(this);
 
         driverReal = null;
 //        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
-//            driverReal = new MuSICA();
-//            driverReal.setPlayingFileName(playingFileName);
+//            driverReal = new MusicaDriver(this);
 //        }
 
         super.prepare();
@@ -68,7 +67,7 @@ public class MuSICAPlugin extends BasePlugin<MusicaDriver> {
     protected void initChips() {
         int[] trkOffsets = new int[17];
         for (int t = 0; t < trkOffsets.length; t++) {
-            trkOffsets[t] = (vgmBuf[8 + t * 2] & 0xff) + (vgmBuf[9 + t * 2] & 0xff) * 0x100;
+            trkOffsets[t] = (dataBuf[8 + t * 2] & 0xff) + (dataBuf[9 + t * 2] & 0xff) * 0x100;
         }
         boolean useAY = ((trkOffsets[9] + trkOffsets[10] + trkOffsets[11]) != 0);
         boolean useSCC = ((trkOffsets[12] + trkOffsets[13] + trkOffsets[14] + trkOffsets[15] + trkOffsets[16]) != 0);
@@ -131,11 +130,11 @@ logger.log(Level.INFO, "MuSICA: AY: %b, SCC: %b, OPLL: %b".formatted(useAY, useS
             chipRegister.chip(Ym2413Chip.class).write(0, 14, 32, EnmModel.VirtualModel);
         }
 
-        driverVirtual.init(vgmBuf, this, EnmModel.VirtualModel,
+        driverVirtual.init(EnmModel.VirtualModel,
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         if (driverReal != null) {
-            driverReal.init(vgmBuf, this, EnmModel.RealModel,
+            driverReal.init(EnmModel.RealModel,
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         }

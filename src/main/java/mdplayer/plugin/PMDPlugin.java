@@ -29,13 +29,11 @@ public class PMDPlugin extends BasePlugin<PmdDriver> {
 
     @Override
     public void prepare() {
-        driverVirtual = new PmdDriver();
-        driverVirtual.setPlayingFileName(playingFileName);
+        driverVirtual = new PmdDriver(this);
 
         driverReal = null;
         if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null && !setting.getYM2608Type()[0].getUseEmu()[0] && !setting.getYM2608Type()[0].getUseEmu()[1]) {
-            driverReal = new PmdDriver();
-            driverReal.setPlayingFileName(playingFileName);
+            driverReal = new PmdDriver(this);
         }
 
         super.prepare();
@@ -114,12 +112,12 @@ public class PMDPlugin extends BasePlugin<PmdDriver> {
         chipRegister.chip(Ym2608Chip.class).setSsgVolume(0, setting.getBalance().getGimicOPNAVolume(), Common.EnmModel.RealModel);
         chipRegister.chip(Ym2608Chip.class).setSsgVolume(1, setting.getBalance().getGimicOPNAVolume(), Common.EnmModel.RealModel);
 
-        driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel,
+        driverVirtual.init(Common.EnmModel.VirtualModel,
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000,
                 fileFormat);
         if (driverReal != null) {
-            driverReal.init(vgmBuf, this, Common.EnmModel.RealModel,
+            driverReal.init(Common.EnmModel.RealModel,
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000,
                     fileFormat);

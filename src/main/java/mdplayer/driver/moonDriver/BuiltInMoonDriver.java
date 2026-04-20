@@ -48,11 +48,8 @@ public class BuiltInMoonDriver extends BaseDriver {
     }
 
     @Override
-    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     int latency, int waitTime, Object... args) {
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
 
-        this.dataBuf = dataBuf;
-        this.plugin = plugin;
         this.model = model;
         this.latency = latency;
         this.waitTime = waitTime;
@@ -154,7 +151,9 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         }
     }
 
-    public BuiltInMoonDriver() {
+    public BuiltInMoonDriver(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+
         seq_jmptable = new dlgSeqFunc[] {
                 this::seq_drumnote,   // $e0 : Set drum note
                 this::seq_drumbit,    // $e1 : Set drum bits

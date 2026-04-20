@@ -29,12 +29,18 @@ public class MusicaK4Driver extends BaseDriver {
 
     private final MuSICA_K4 musicaK4;
 
-    public MusicaK4Driver() {
+    public MusicaK4Driver(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+
         this.musicaK4 = new MuSICA_K4();
         musicaK4.k051649Write = (i, a, d) -> plugin.chipRegister.chip(K051649Chip.class).write(i, a, d, model);
         musicaK4.ay8910Write = (a, d) -> plugin.chipRegister.chip(Ay8910Chip.class).write(0, a, d, model);
         musicaK4.ym2413Write = (a, d) -> plugin.chipRegister.chip(Ym2413Chip.class).write(0, a, d, model);
         musicaK4.dir = System.getProperty("mdplayer.musica.dir", System.getProperty("user.dir"));
+    }
+
+    public MusicaK4Driver() {
+        this(null); // gross
     }
 
     public byte[] getBgmBin() {
@@ -56,7 +62,7 @@ public class MusicaK4Driver extends BaseDriver {
                 return null;
             }
             if (musicaK4.getBgmBin() == null) return null;
-            MetaData md = (new MusicaDriver()).getMetaData(musicaK4.getBgmBin());
+            MetaData md = new MusicaDriver().getMetaData(musicaK4.getBgmBin());
             ret.set(Tag.Title, md.getFirst(Tag.Title));
             ret.set(Tag.TitleJ, md.getFirst(Tag.TitleJ));
             ret.set(Tag.Note, md.getFirst(Tag.Note));
@@ -79,9 +85,7 @@ public class MusicaK4Driver extends BaseDriver {
     }
 
     @Override
-    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     int latency, int waitTime, Object... args) {
-        this.plugin = plugin;
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
     }
 
     @Override

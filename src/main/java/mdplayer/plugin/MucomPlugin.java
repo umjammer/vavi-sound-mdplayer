@@ -32,13 +32,11 @@ public class MucomPlugin extends BasePlugin<MucomDriver> {
 
     @Override
     public void prepare() {
-        driverVirtual = new MucomDriver();
-        driverVirtual.setPlayingFileName(playingFileName);
+        driverVirtual = new MucomDriver(this);
 
         driverReal = null;
         if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null && !setting.getYM2608Type()[0].getUseEmu()[0] && !setting.getYM2608Type()[0].getUseEmu()[1]) {
-            driverReal = new MucomDriver();
-            driverReal.setPlayingFileName(playingFileName);
+            driverReal = new MucomDriver(this);
         }
 
         super.prepare();
@@ -48,9 +46,9 @@ public class MucomPlugin extends BasePlugin<MucomDriver> {
     @Override
     protected void initChips() {
         if (fileFormat instanceof MUCFileFormat) {
-            vgmBuf = driverVirtual.compile(vgmBuf);
+            dataBuf = driverVirtual.compile(dataBuf);
         }
-        Class<? extends Chip>[] useChipFromMub = MucomDriver.useChipsFromMub(vgmBuf);
+        Class<? extends Chip>[] useChipFromMub = MucomDriver.useChipsFromMub(dataBuf);
 
         Function<String, Stream> fn = Ym2608Chip::getOPNARyhthmStream;
 
@@ -171,11 +169,11 @@ public class MucomPlugin extends BasePlugin<MucomDriver> {
         chipRegister.chip(Ym2608Chip.class).setSsgVolume((byte) 1, setting.getBalance().getGimicOPNAVolume(), Common.EnmModel.RealModel);
 
 
-        driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel,
+        driverVirtual.init(Common.EnmModel.VirtualModel,
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         if (driverReal != null) {
-            driverReal.init(vgmBuf, this, Common.EnmModel.RealModel,
+            driverReal.init(Common.EnmModel.RealModel,
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         }

@@ -26,10 +26,12 @@ public class AyDriver extends BaseDriver {
 
     private AY ay;
 
+    public AyDriver(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+    }
+
     @Override
-    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     int latency, int waitTime, Object... args) {
-        this.plugin = plugin;
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
         loopCounter = 0;
         curLoop = 0;
         this.model = model;

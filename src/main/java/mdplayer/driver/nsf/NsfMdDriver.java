@@ -29,7 +29,9 @@ public class NsfMdDriver extends BaseDriver implements NsfDriver {
 
     public final Nsf nsf;
 
-    public NsfMdDriver() {
+    public NsfMdDriver(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+
         this.nsf = new Nsf();
         nsf.setOptions = this::setOptions;
         nsf.enq = this::enq;
@@ -42,6 +44,10 @@ public class NsfMdDriver extends BaseDriver implements NsfDriver {
         nsf.getCounter = () -> frameCounter;
         nsf.updateAtDetectLoop = this::updateAtDetectLoop;
         nsf.updateAtDetectSilent = this::updateAtDetectSilent;
+    }
+
+    public NsfMdDriver() {
+        this(null); // gross
     }
 
     @Override
@@ -79,10 +85,7 @@ public class NsfMdDriver extends BaseDriver implements NsfDriver {
     }
 
     @Override
-    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     int latency, int waitTime, Object... args) {
-        this.dataBuf = dataBuf;
-        this.plugin = plugin;
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
         this.model = model;
         this.latency = latency;
         this.waitTime = waitTime;

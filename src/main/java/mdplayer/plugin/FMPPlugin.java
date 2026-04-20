@@ -12,7 +12,6 @@ import java.util.function.Function;
 import dotnet4j.io.Path;
 import dotnet4j.io.Stream;
 import dotnet4j.util.compat.StringUtilities;
-import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.Ppz8Chip;
 import mdplayer.chips.RealChipPlugin;
@@ -45,30 +44,24 @@ public class FMPPlugin extends BasePlugin<FmpDriver> {
         if (!StringUtilities.isNullOrEmpty(ext)) {
             ext = ext.toLowerCase();
             if (ext.length() > 3 && ext.charAt(1) == 'm') {
-                //compile
-                FmpDriver fmp = new FmpDriver();
+                // compile
+                FmpDriver fmp = new FmpDriver(this);
                 fmp.setFileTemp(ft);
-                fmp.setPlayingFileName(playingFileName);
                 fmp.compile();
                 playingFileName = Path.changeExtension(
                         playingFileName,
                         ext.equals(".mpi") ? ".opi" : (ext.equals(".mvi") ? ".ovi" : ".ozi"));
-                vgmBuf = ft.readTemp(playingFileName);
-                //dataBuf = File.readAllBytes(PlayingFileName);
+                dataBuf = ft.readTemp(playingFileName);
             }
         }
 
-        driverVirtual = new FmpDriver();
+        driverVirtual = new FmpDriver(this);
         driverVirtual.setFileTemp(ft);
-        driverVirtual.setPlayingFileName(playingFileName);
-        driverVirtual.setPlayingArcFileName(playingArcFileName);
 
         driverReal = null;
 //        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null && !setting.getYM2608Type()[0].getUseEmu()[0]) {
-//            driverReal = new FmpDriver();
+//            driverReal = new FmpDriver(this);
 //            driverReal.setFileTemp(ft);
-//            driverReal.setPlayingFileName(playingFileName);
-//            driverReal.setPlayingArcFileName(playingArcFileName);
 //        }
 
         super.prepare();
@@ -132,11 +125,11 @@ public class FMPPlugin extends BasePlugin<FmpDriver> {
             driverReal.setSearchPath(setting.getFileSearchPathList());
         }
 
-        driverVirtual.init(vgmBuf, this, EnmModel.VirtualModel,
+        driverVirtual.init(EnmModel.VirtualModel,
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         if (driverReal != null) {
-            driverReal.init(vgmBuf, this, EnmModel.RealModel,
+            driverReal.init(EnmModel.RealModel,
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         }

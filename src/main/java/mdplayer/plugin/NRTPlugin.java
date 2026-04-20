@@ -21,11 +21,11 @@ public class NRTPlugin extends BasePlugin<NrtDriver> {
 
     @Override
     public void prepare() {
-        driverVirtual = new NrtDriver();
+        driverVirtual = new NrtDriver(this);
 
         driverReal = null;
 //        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
-//            driverReal = new NrtDriver();
+//            driverReal = new NrtDriver(this);
 //        }
 
         super.prepare();
@@ -34,7 +34,7 @@ public class NRTPlugin extends BasePlugin<NrtDriver> {
 
     @Override
     protected void initChips() {
-        int r = driverVirtual.checkUseChip(vgmBuf);
+        int r = driverVirtual.checkUseChip(dataBuf);
 logger.log(Level.DEBUG, "used chip: %02x".formatted(r));
 
         chipRegister.chip(Ym2151Chip.class).setFadeout(0, 0);
@@ -99,13 +99,13 @@ logger.log(Level.DEBUG, "used chip: %02x".formatted(r));
 //            chipRegister.chip(Ym2608Chip.class).setSsgVolume(0, setting.getBalance().getGimicOPNAVolume(), EnmModel.RealModel);
 //            chipRegister.chip(Ym2608Chip.class).setSsgVolume(1, setting.getBalance().getGimicOPNAVolume(), EnmModel.RealModel);
 
-        driverVirtual.init(vgmBuf, this, EnmModel.VirtualModel,
+        driverVirtual.init(EnmModel.VirtualModel,
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         driverVirtual.call(0); //
 
         if (driverReal != null) {
-            driverReal.init(vgmBuf, this, EnmModel.RealModel,
+            driverReal.init(EnmModel.RealModel,
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
             driverReal.call(0); //

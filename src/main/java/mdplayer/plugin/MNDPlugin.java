@@ -31,12 +31,12 @@ public class MNDPlugin extends BasePlugin<MnDriver> {
 
     @Override
     public void prepare() {
-        driverVirtual = new MnDriver();
+        driverVirtual = new MnDriver(this);
         driverVirtual.setExtendFile(extendFiles);
 
         driverReal = null;
 //        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
-//            driverReal = new MnDriver();
+//            driverReal = new MnDriver(this);
 //            driverReal.setExtendFile(extendFile);
 //        }
 
@@ -166,11 +166,11 @@ public class MNDPlugin extends BasePlugin<MnDriver> {
         if (contains(Ym2203Chip.class, 1))
             chipRegister.chip(Ym2203Chip.class).setSsgVolume((byte) 1, setting.getBalance().getGimicOPNVolume(), EnmModel.RealModel);
 
-        driverVirtual.init(vgmBuf, this, EnmModel.VirtualModel,
+        driverVirtual.init(EnmModel.VirtualModel,
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         if (driverReal != null) {
-            driverReal.init(vgmBuf, this, EnmModel.RealModel,
+            driverReal.init(EnmModel.RealModel,
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         }

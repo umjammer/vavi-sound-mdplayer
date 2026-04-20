@@ -32,7 +32,9 @@ public class NsfMdDriver2 extends BaseDriver implements NsfDriver {
 
     private final Nsf2 nsf;
 
-    public NsfMdDriver2() {
+    public NsfMdDriver2(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+
         this.nsf = new Nsf2();
         nsf.charset = Common.charset;
         nsf.sampleRate = setting.getOutputDevice().getSampleRate();
@@ -73,10 +75,7 @@ public class NsfMdDriver2 extends BaseDriver implements NsfDriver {
     }
 
     @Override
-    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     int latency, int waitTime, Object... args) {
-        this.dataBuf = dataBuf;
-        this.plugin = plugin;
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
         this.model = model;
         this.latency = latency;
         this.waitTime = waitTime;

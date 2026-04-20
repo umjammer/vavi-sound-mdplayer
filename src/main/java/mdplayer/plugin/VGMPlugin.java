@@ -43,13 +43,13 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
 
     @Override
     public void prepare() {
-        driverVirtual = new VgmDriver();
+        driverVirtual = new VgmDriver(this);
         driverVirtual.vgm.dacControl.chipRegister = chipRegister;
         driverVirtual.vgm.dacControl.model = EnmModel.VirtualModel;
 
         driverReal = null;
 //        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
-//            driverReal = new VgmDriver();
+//            driverReal = new VgmDriver(this);
 //            driverReal.dacControl.chipRegister = chipRegister;
 //            driverReal.dacControl.model = EnmModel.RealModel;
 //        }
@@ -60,12 +60,12 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
 
     @Override
     protected void initChips() {
-        driverVirtual.init(vgmBuf, this, EnmModel.VirtualModel,
+        driverVirtual.init(EnmModel.VirtualModel,
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
 
         if (driverReal != null)
-            driverReal.init(vgmBuf, this, EnmModel.RealModel,
+            driverReal.init(EnmModel.RealModel,
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
 

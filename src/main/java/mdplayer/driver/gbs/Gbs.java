@@ -28,6 +28,14 @@ public class Gbs extends BaseDriver {
     private int breakSp;
     private boolean initFlg = false;
 
+    public Gbs(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+    }
+
+    public Gbs() {
+        this(null); // gross
+    }
+
     @Override
     public MetaData getMetaData(byte[] buf, Object... args) {
         GbsInfo gbsInfo = GbsInfo.factory(buf);
@@ -53,10 +61,10 @@ public class Gbs extends BaseDriver {
      * @param args 0: songNo
      */
     @Override
-    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model, int latency, int waitTime, Object... args) {
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
         getMetaData(dataBuf, 0);
+
         info = GbsInfo.factory(dataBuf);
-        this.plugin = plugin;
         this.model = model;
 
         int s = (int) args[0] - 1;

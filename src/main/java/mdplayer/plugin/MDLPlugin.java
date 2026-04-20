@@ -3,7 +3,6 @@ package mdplayer.plugin;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
-import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.chips.RealChipPlugin;
 import mdplayer.chips.Ym2151Chip;
@@ -29,13 +28,11 @@ public class MDLPlugin extends BasePlugin<MoonDriver> {
 
     @Override
     public void prepare() {
-        driverVirtual = new MoonDriver();
-        driverVirtual.setPlayingFileName(playingFileName);
+        driverVirtual = new MoonDriver(this);
 
         driverReal = null;
 //        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
-//            driverReal = new MoonDriverJava();
-//            driverReal.setExtendFile((extendFile != null && !extendFile.isEmpty()) ? extendFile.get(0) : null);
+//            driverReal = new MoonDriver(this);
 //        }
 
         super.prepare();
@@ -45,7 +42,7 @@ public class MDLPlugin extends BasePlugin<MoonDriver> {
     @Override
     protected void initChips() {
         if (fileFormat instanceof MDLFileFormat) {
-            vgmBuf = driverVirtual.compile(vgmBuf);
+            dataBuf = driverVirtual.compile(dataBuf);
         }
 
         chipRegister.chip(Ym2151Chip.class).setFadeout(0, 0);
@@ -53,7 +50,7 @@ public class MDLPlugin extends BasePlugin<MoonDriver> {
 
         int hiyorimiDeviceFlag = 0;
 
-        byte sndgen = vgmBuf[7];
+        byte sndgen = dataBuf[7];
         boolean EX_OPL3 = ((sndgen & 2) != 0);
         boolean OPL4_NOUSE = ((sndgen & 1) == 0);
 
@@ -103,11 +100,11 @@ logger.log(Level.INFO, "EX_OPL3: " + EX_OPL3 + ", OPL4_NOUSE: " + OPL4_NOUSE);
 //        chipRegister.chip(Ym2203Chip.class).setSsgVolume(0, setting.getBalance().getGimicOPNAVolume(), RnmModel.RealModel);
 //        chipRegister.chip(Ym2203Chip.class).setSsgVolume(1, setting.getBalance().getGimicOPNAVolume(), EnmModel.RealModel);
 
-        driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel,
+        driverVirtual.init(Common.EnmModel.VirtualModel,
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         if (driverReal != null) {
-            driverReal.init(vgmBuf, this, Common.EnmModel.RealModel,
+            driverReal.init(Common.EnmModel.RealModel,
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         }

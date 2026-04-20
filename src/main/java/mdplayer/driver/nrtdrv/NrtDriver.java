@@ -27,7 +27,9 @@ public class NrtDriver extends BaseDriver {
 
     private final NRTDRV nrtdrv;
 
-    public NrtDriver() {
+    public NrtDriver(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+
         this.nrtdrv = new NRTDRV();
         nrtdrv.ctcStep = 4000000.0f / setting.getOutputDevice().getSampleRate();
         nrtdrv.ctc1Step = 4000000.0f / setting.getOutputDevice().getSampleRate();
@@ -36,6 +38,10 @@ public class NrtDriver extends BaseDriver {
         nrtdrv.ay8910WriteV = (a, d) -> plugin.chipRegister.chip(Ay8910Chip.class).write(0, a, d, EnmModel.VirtualModel);
         nrtdrv.loop = l -> curLoop = l;
         nrtdrv.isRealModel = model == EnmModel.RealModel;
+    }
+
+    public NrtDriver() {
+        this(null); // gross
     }
 
     public int checkUseChip(byte[] vgmBuf) {
@@ -47,10 +53,7 @@ public class NrtDriver extends BaseDriver {
     }
 
     @Override
-    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     int latency, int waitTime, Object... args) {
-        this.dataBuf = dataBuf;
-        this.plugin = plugin;
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
         this.model = model;
         this.latency = latency;
         this.waitTime = waitTime;

@@ -33,7 +33,9 @@ public class RcpDriver extends BaseDriver {
 
     private final RCP rcp;
 
-    public RcpDriver() {
+    public RcpDriver(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+
         this.rcp = new RCP();
         rcp.charset = Common.charset;
         rcp.sampleRate = Common.VGMProcSampleRate;
@@ -43,6 +45,10 @@ public class RcpDriver extends BaseDriver {
         rcp.counter = () -> frameCounter = -latency - waitTime;
         rcp.midiCount = () -> plugin.chipRegister.plugin(MidiPlugin.class).getCount();
         rcp.stop = () -> stopped = true;
+    }
+
+    public RcpDriver() {
+        this(null); // gross
     }
 
     public void setExtendFile(List<Tuple<String,byte[]>> extendFiles) {
@@ -85,10 +91,7 @@ public class RcpDriver extends BaseDriver {
     }
 
     @Override
-    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     int latency, int waitTime, Object... args) {
-        this.dataBuf = dataBuf;
-        this.plugin = plugin;
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
         this.model = model;
         this.latency = latency;
         this.waitTime = waitTime;

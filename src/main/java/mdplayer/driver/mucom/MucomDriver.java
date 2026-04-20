@@ -51,20 +51,18 @@ public class MucomDriver extends BaseDriver {
     private ICompiler mucomCompiler = null;
     private IDriver mucomDriver = null;
 
-    private String PlayingFileName;
-
-    public String getPlayingFileName() {
-        return PlayingFileName;
-    }
-
-    public void setPlayingFileName(String value) {
-        PlayingFileName = value;
-    }
-
     public static final int opnaBaseClock = 7987200;
     public static final int opnbBaseClock = 8000000;
     public static final int opmBaseClock = 3579545;
     private MUCOMFileType mType;
+
+    public MucomDriver(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+    }
+
+    public MucomDriver() {
+        super(null); // gross
+    }
 
     @Override
     public MetaData getMetaData(byte[] buf, Object... args) {
@@ -117,7 +115,7 @@ public class MucomDriver extends BaseDriver {
         int p = 0x0022;
         byte[] partCount = new byte[chipsCount];
         byte[][] pageCount = new byte[chipsCount][];
-        Integer[][][] pageLength = new Integer[chipsCount][][];
+        int[][][] pageLength = new int[chipsCount][][];
         for (int i = 0; i < chipsCount; i++) {
             partCount[i] = buf[p + 0x16];
             int instCount = buf[p + 0x17];
@@ -128,7 +126,7 @@ public class MucomDriver extends BaseDriver {
 
         for (int i = 0; i < chipsCount; i++) {
             pageCount[i] = new byte[partCount[i]];
-            pageLength[i] = new Integer[partCount[i]][];
+            pageLength[i] = new int[partCount[i]][];
             for (int j = 0; j < partCount[i]; j++) {
                 pageCount[i][j] = buf[p++];
             }
@@ -136,7 +134,7 @@ public class MucomDriver extends BaseDriver {
 
         for (int i = 0; i < chipsCount; i++) {
             for (int j = 0; j < partCount[i]; j++) {
-                pageLength[i][j] = new Integer[pageCount[i][j]];
+                pageLength[i][j] = new int[pageCount[i][j]];
                 for (int k = 0; k < pageCount[i][j]; k++) {
                     pageLength[i][j][k] = ByteUtil.readLeInt(buf, p);
                     p += 8;
@@ -205,12 +203,9 @@ public class MucomDriver extends BaseDriver {
     }
 
     @Override
-    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     int latency, int waitTime, Object... args) {
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
         metaData = getMetaData(dataBuf);
 
-        this.dataBuf = dataBuf;
-        this.plugin = plugin;
         this.model = model;
         this.latency = latency;
         this.waitTime = waitTime;
@@ -379,7 +374,7 @@ public class MucomDriver extends BaseDriver {
         action = new MucomChipAction(this::writeOPM1, null, null);
         actions.add(action);
         mucomDriver.init(actions, ret, null,
-                notSoundBoard2, isLoadADPCM, loadADPCMOnly, PlayingFileName);
+                notSoundBoard2, isLoadADPCM, loadADPCMOnly, plugin.playingFileName);
 
         mucomDriver.startRendering(Common.VGMProcSampleRate, new Tuple<>("", opnaBaseClock));
         mucomDriver.startMusic(0);
@@ -409,7 +404,7 @@ public class MucomDriver extends BaseDriver {
         action = new MucomChipAction(this::writeOPM1, null, null);
         actions.add(action);
         mucomDriver.init(actions, buf.toArray(MmlDatum[]::new),null,
-                notSoundBoard2, isLoadADPCM, loadADPCMOnly, PlayingFileName);
+                notSoundBoard2, isLoadADPCM, loadADPCMOnly, plugin.playingFileName);
 
         mucomDriver.startRendering(Common.VGMProcSampleRate, new Tuple<>("", opnaBaseClock));
         mucomDriver.startMusic(0);
@@ -483,7 +478,7 @@ public class MucomDriver extends BaseDriver {
 
         // Add additional weight based on size and elapsed time.
         int m = Math.max((int) (size / 20 - elapsed), 0); // 20: threshold (magic number)
-        try { Thread.sleep(m); } catch (InterruptedException e) {}
+        try { Thread.sleep(m); } catch (InterruptedException _) {}
     }
 
     private static class MucomChipAction implements ChipAction {
@@ -543,7 +538,7 @@ public class MucomDriver extends BaseDriver {
 
     private Stream appendFileReaderCallback(String arg) {
 
-        String fn = Path.combine(Path.getDirectoryName(PlayingFileName), arg);
+        String fn = Path.combine(Path.getDirectoryName(plugin.playingFileName), arg);
 
         if (!File.exists(fn)) return null;
 

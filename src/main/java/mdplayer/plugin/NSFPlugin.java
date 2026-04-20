@@ -42,11 +42,11 @@ logger.log(Level.INFO, "songNo: " + songNo);
 
     @Override
     public void prepare() {
-        driverVirtual = new mdplayer.driver.nsf.NsfMdDriver(); // use np driver
+        driverVirtual = new mdplayer.driver.nsf.NsfMdDriver(this); // use np driver
 
         driverReal = null;
 //        if (setting.getoutputDevice().deviceType != Common.DEV_Null) {
-//            driverReal = new mdplayer.driver.nsf.NsfMdDriver();
+//            driverReal = new mdplayer.driver.nsf.NsfMdDriver(this);
 //        }
 
         super.prepare();
@@ -59,12 +59,12 @@ logger.log(Level.INFO, "songNo: " + songNo);
         chipLED.put("PriDMC", 1);
 
         driverVirtual.setSong(songNo);
-        driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel,
+        driverVirtual.init(Common.EnmModel.VirtualModel,
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         if (driverReal != null) {
             driverReal.setSong(songNo);
-            driverReal.init(vgmBuf, this, Common.EnmModel.RealModel,
+            driverReal.init(Common.EnmModel.RealModel,
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         }

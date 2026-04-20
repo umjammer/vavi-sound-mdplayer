@@ -27,7 +27,9 @@ public class MusicaDriver extends BaseDriver {
 
     private final MuSICA musica;
 
-    public MusicaDriver() {
+    public MusicaDriver(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+
         this.musica = new MuSICA();
         musica.k051649Write = (i, a, d) -> plugin.chipRegister.chip(K051649Chip.class).write(i, a, d, model);
         musica.ay8910Write = (a, d) -> plugin.chipRegister.chip(Ay8910Chip.class).write(0, a, d, model);
@@ -35,6 +37,10 @@ public class MusicaDriver extends BaseDriver {
         musica.updateTrackName = this::updateTrackName;
         musica.updateNote = this::updateNote;
         musica.dir = System.getProperty("mdplayer.musica.dir", System.getProperty("user.dir"));
+    }
+
+    public MusicaDriver() {
+        this(null); // gross
     }
 
     @Override
@@ -59,9 +65,7 @@ public class MusicaDriver extends BaseDriver {
     }
 
     @Override
-    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     int latency, int waitTime, Object... args) {
-        this.plugin = plugin;
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
         loopCounter = 0;
         curLoop = 0;
         this.model = model;

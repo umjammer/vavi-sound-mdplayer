@@ -54,13 +54,12 @@ public class MuapDriver extends BaseDriver {
     public byte[] toneBuff;
     public int[] labelAdr;
 
-    public String playingFileName;
-
-    public String getPlayingFileName() {
-        return playingFileName;
+    public MuapDriver(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
     }
 
     public MuapDriver() {
+        this(null); // gross
     }
 
     @Override
@@ -72,12 +71,9 @@ public class MuapDriver extends BaseDriver {
     }
 
     @Override
-    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     int latency, int waitTime, Object... args) {
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
         metaData = getMetaData(dataBuf);
 
-        this.dataBuf = dataBuf;
-        this.plugin = plugin;
         this.model = model;
         this.latency = latency;
         this.waitTime = waitTime;
@@ -193,7 +189,7 @@ public class MuapDriver extends BaseDriver {
 
     private Stream appendFileReaderCallback(String arg) {
 
-        String fn = Path.combine(Path.getDirectoryName(playingFileName), arg);
+        String fn = Path.combine(Path.getDirectoryName(plugin.playingFileName), arg);
 
         if (!File.exists(fn)) return null;
 

@@ -30,7 +30,9 @@ public class MgsDriver extends BaseDriver {
 
     private final MgsDrv mgs;
 
-    public MgsDriver() {
+    public MgsDriver(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+
         mgs = new MgsDrv();
         mgs.k051649Write = (i, a, d) -> plugin.chipRegister.chip(K051649Chip.class).write(i, a, d, model);
         mgs.ay8910Write = (a, d) -> plugin.chipRegister.chip(Ay8910Chip.class).write(0, a, d, model);
@@ -38,8 +40,8 @@ public class MgsDriver extends BaseDriver {
         mgs.dir = System.getProperty("mdplayer.mgs.dir", System.getProperty("user.dir"));
     }
 
-    public void setPlayingFileName(String value) {
-        mgs.playingFileName = value;
+    public MgsDriver() {
+        this(null); // gross
     }
 
     /**
@@ -58,13 +60,13 @@ public class MgsDriver extends BaseDriver {
     }
 
     @Override
-    public void init(byte[] dataBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     int latency, int waitTime, Object... args) {
-        this.plugin = plugin;
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
         loopCounter = 0;
         curLoop = 0;
         this.model = model;
         frameCounter = -latency - waitTime;
+
+        mgs.playingFileName = plugin.playingFileName;
 
         try {
             mgs.run(dataBuf);

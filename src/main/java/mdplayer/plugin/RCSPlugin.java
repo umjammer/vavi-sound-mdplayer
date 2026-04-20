@@ -27,12 +27,12 @@ public class RCSPlugin extends BasePlugin<RcsDriver> {
 
     @Override
     public void prepare() {
-        driverVirtual = new RcsDriver();
+        driverVirtual = new RcsDriver(this);
         driverVirtual.setExtendFile(extendFiles);
 
         driverReal = null;
         if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
-            driverReal = new RcsDriver();
+            driverReal = new RcsDriver(this);
             driverReal.setExtendFile(extendFiles);
         }
 
@@ -78,11 +78,11 @@ public class RCSPlugin extends BasePlugin<RcsDriver> {
         driverVirtual.setSupportFileName((supportFile == null || supportFile.length < 1) ? null : supportFile[0]);
         driverReal.setSupportFileName((supportFile == null || supportFile.length < 1) ? null : supportFile[0]);
 
-        driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel,
+        driverVirtual.init(Common.EnmModel.VirtualModel,
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         if (driverReal != null) {
-            driverReal.init(vgmBuf, this, Common.EnmModel.RealModel,
+            driverReal.init(Common.EnmModel.RealModel,
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         }

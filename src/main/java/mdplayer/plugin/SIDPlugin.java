@@ -22,11 +22,11 @@ public class SIDPlugin extends BasePlugin<SidMdDriver2> implements HasSongNo {
 
     @Override
     public void prepare() {
-        driverVirtual = new SidMdDriver2();
+        driverVirtual = new SidMdDriver2(this);
 
         driverReal = null;
 //        if (setting.getoutputDevice().deviceType != Common.DEV_Null) {
-//            driverReal = new Sid.Sid();
+//            driverReal = new SidMdDriver2(this);
 //        }
 
         super.prepare();
@@ -37,12 +37,12 @@ public class SIDPlugin extends BasePlugin<SidMdDriver2> implements HasSongNo {
     protected void initChips() {
         chipLED.put("priSID", 1);
 
-        driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel,
+        driverVirtual.init(Common.EnmModel.VirtualModel,
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000,
                 songNo + 1);
         if (driverReal != null) {
-            driverReal.init(vgmBuf, this, Common.EnmModel.RealModel,
+            driverReal.init(Common.EnmModel.RealModel,
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000,
                     songNo + 1);
