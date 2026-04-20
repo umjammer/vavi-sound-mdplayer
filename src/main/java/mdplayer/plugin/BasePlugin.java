@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import dotnet4j.util.compat.Tuple;
 import mdplayer.ChipLEDs;
@@ -83,6 +84,10 @@ public abstract class BasePlugin<T extends BaseDriver> implements Plugin {
     /** used chips */
     protected final Map<Class<? extends mdplayer.Chip>, List<Chip>> chips = new HashMap<>();
 
+    public final Set<Class<? extends mdplayer.Chip>> getChips() {
+        return chips.keySet();
+    }
+
     /** put used chips */
     protected void put(Class<? extends mdplayer.Chip> chip, Chip info) {
         if (chips.containsKey(chip)) {
@@ -90,6 +95,11 @@ public abstract class BasePlugin<T extends BaseDriver> implements Plugin {
         } else {
             chips.put(chip, new ArrayList<>(List.of(info)));
         }
+    }
+
+    /** check a chip existence */
+    public boolean contains(Class<? extends mdplayer.Chip> chip) {
+        return chips.get(chip) != null;
     }
 
     /** check a chip existence */

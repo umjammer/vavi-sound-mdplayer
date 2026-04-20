@@ -1,6 +1,7 @@
 package mdplayer.plugin;
 
 import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 
 import mdplayer.Chip;
 import mdplayer.Common;
@@ -55,12 +56,12 @@ public class MDLPlugin extends BasePlugin<MoonDriver> {
         byte sndgen = vgmBuf[7];
         boolean EX_OPL3 = ((sndgen & 2) != 0);
         boolean OPL4_NOUSE = ((sndgen & 1) == 0);
-        Class<? extends Chip>[] useChipFromMdr = new Class[1];
 
         if (OPL4_NOUSE && !EX_OPL3) {
             throw new IllegalArgumentException("The combination of OPL4_NOUSE and EX_OPL3 is invalid.");
         }
 
+logger.log(Level.INFO, "EX_OPL3: " + EX_OPL3 + ", OPL4_NOUSE: " + OPL4_NOUSE);
         if (EX_OPL3 && OPL4_NOUSE) {
             MDSound.Chip chip = new MDSound.Chip();
             chip.id = 0;
@@ -75,7 +76,6 @@ public class MDLPlugin extends BasePlugin<MoonDriver> {
             chipLED.put("PriOPL3", 1);
 
             put(YmF262Chip.class, chip);
-            useChipFromMdr[0] = YmF262Chip.class;
         } else {
             MDSound.Chip chip = new MDSound.Chip();
             chip.id = 0;
@@ -90,7 +90,6 @@ public class MDLPlugin extends BasePlugin<MoonDriver> {
             chipLED.put("PriOPL4", 1);
 
             put(YmF278BChip.class, chip);
-            useChipFromMdr[0] = YmF278BChip.class;
         }
 
         chipRegister.plugin(RealChipPlugin.class).initChip(hiyorimiDeviceFlag);

@@ -259,8 +259,8 @@ logger.log(Level.DEBUG, "type: " + mtype);
 
         List<ChipAction> lca = new ArrayList<>();
         ChipAction ca;
-logger.log(Level.INFO, "useChip: " + plugin.chipRegister.chips());
-        if (plugin.chipRegister.contains(YmF278BChip.class)) {
+logger.log(Level.INFO, "useChip: " + plugin.getChips().stream().map(Class::getSimpleName).toList());
+        if (plugin.contains(YmF278BChip.class)) {
             ca = new MoonDriverChipAction(this::opl4Write, this::opl4WaitSend);
         } else {
             ca = new MoonDriverChipAction(this::opl3Write, this::opl3WaitSend);
