@@ -41,6 +41,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
+import java.util.prefs.Preferences;
 import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.MidiSystem;
@@ -237,7 +238,7 @@ public class frmMain extends JFrame {
 
     private Transmitter midiin = null;
     private static final boolean forcedExit = false;
-    private final YM2612MIDI ym2612MIDI;
+    private YM2612MIDI ym2612MIDI;
     private boolean flgReinit = false;
     public boolean reqAllScreenInit = true;
 
@@ -264,8 +265,8 @@ public class frmMain extends JFrame {
     private final List<String[]> remoteReq = new ArrayList<>();
 
     public frmMain() {
-        logger.log(Level.ERROR, "Startup process begins");
-        logger.log(Level.ERROR, "frmMain<init>:STEP 00");
+        logger.log(Level.INFO, "Startup process begins");
+        logger.log(Level.INFO, "frmMain<init>:STEP 00");
 
         initializeComponent();
         DrawBuff.Init();
@@ -299,7 +300,7 @@ public class frmMain extends JFrame {
         lstForm.add(frmVRC6);
         lstForm.add(frmVRC7);
 
-        logger.log(Level.ERROR, "frmMain<init>:STEP 01");
+        logger.log(Level.INFO, "frmMain<init>:STEP 01");
 
         // Only if arguments are specified, does a process check, and if the same application as itself is running,
         // passes the arguments to it and terminates it.
@@ -316,11 +317,11 @@ public class frmMain extends JFrame {
 //            }
 //        }
 
-        logger.log(Level.ERROR, "frmMain<init>:STEP 02");
+        logger.log(Level.INFO, "frmMain<init>:STEP 02");
 
 //        pbScreen.AllowDrop = true;
 
-        logger.log(Level.ERROR, "frmMain<init>:STEP 03");
+        logger.log(Level.INFO, "frmMain<init>:STEP 03");
         if (setting == null) {
             logger.log(Level.ERROR, "frmMain<init>:setting instanceof null");
         } else {
@@ -335,25 +336,23 @@ public class frmMain extends JFrame {
 //            }
         }
 
-        logger.log(Level.ERROR, "Audio initialization process begins at startup");
+        logger.log(Level.INFO, "Audio initialization process begins at startup");
 
-        audio.plugin.init();
+//        ym2612MIDI = new mdplayer.YM2612MIDI(audio.plugin.chipRegister.plugin(MidiPlugin.class).mds, newParam);
+//        ym2612MIDI.fadeout = this::fadeout;
+//        ym2612MIDI.next = this::next;
+//        ym2612MIDI.ff = this::ff;
+//        ym2612MIDI.pause = this::pause;
+//        ym2612MIDI.play = this::play;
+//        ym2612MIDI.prev = this::prev;
+//        ym2612MIDI.slow = this::slow;
+//        ym2612MIDI.stop = this::stop;
 
-        ym2612MIDI = new mdplayer.YM2612MIDI(audio.plugin.chipRegister.plugin(MidiPlugin.class).mds, newParam);
-        ym2612MIDI.fadeout = this::fadeout;
-        ym2612MIDI.next = this::next;
-        ym2612MIDI.ff = this::ff;
-        ym2612MIDI.pause = this::pause;
-        ym2612MIDI.play = this::play;
-        ym2612MIDI.prev = this::prev;
-        ym2612MIDI.slow = this::slow;
-        ym2612MIDI.stop = this::stop;
+        logger.log(Level.INFO, "Audio initialization process completed at startup");
 
-        logger.log(Level.ERROR, "Audio initialization process completed at startup");
+        startMIDIInMonitoring();
 
-        StartMIDIInMonitoring();
-
-        logger.log(Level.ERROR, "frmMain<init>:STEP 04");
+        logger.log(Level.INFO, "frmMain<init>:STEP 04");
 
         setVisible(true);
     }
@@ -387,7 +386,7 @@ public class frmMain extends JFrame {
     private void frmMain_Load(WindowEvent ev) {
         Runtime.getRuntime().addShutdownHook(new Thread(this::SystemEvents_SessionEnding));
 
-        logger.log(Level.ERROR, "frmMain_Load:STEP 05");
+        logger.log(Level.INFO, "frmMain_Load:STEP 05");
 
         if (!setting.getLocation().getPMain().equals(empty))
             this.setLocation(setting.getLocation().getPMain());
@@ -396,7 +395,7 @@ public class frmMain extends JFrame {
 
         pbRf5c164Screen = new BufferedImage(320, 72, BufferedImage.TYPE_INT_ARGB);
 
-        logger.log(Level.ERROR, "frmMain_Load:STEP 06");
+        logger.log(Level.INFO, "frmMain_Load:STEP 06");
 
         screen = new DoubleBuffer(pbScreen, Resources.getPlaneControl(), 1);
         screen.setting = setting;
@@ -404,7 +403,7 @@ public class frmMain extends JFrame {
         //newParam = new MDChipParams();
         reqAllScreenInit = true;
 
-        logger.log(Level.ERROR, "frmMain_Load:STEP 07");
+        logger.log(Level.INFO, "frmMain_Load:STEP 07");
 
         pWidth = pbScreen.getWidth();
         pHeight = pbScreen.getHeight();
@@ -469,7 +468,7 @@ public class frmMain extends JFrame {
             if (setting.getLocation().getOpenN106()[chipId]) openFormN106(chipId, false);
         }
 
-        logger.log(Level.ERROR, "frmMain_Load:STEP 08");
+        logger.log(Level.INFO, "frmMain_Load:STEP 08");
 
         frameSizeW = this.getWidth() - this.getSize().width;
         frameSizeH = this.getHeight() - this.getSize().height;
@@ -500,9 +499,9 @@ public class frmMain extends JFrame {
                 opeButtonMode
         };
 
-        logger.log(Level.ERROR, "frmMain_Load:STEP 09");
+        logger.log(Level.INFO, "frmMain_Load:STEP 09");
 
-        // //operationフォルダクリア
+        // operation フォルダクリア
         //opeFolder = mdplayer.Common.GetOperationFolder(true);
         //startWatch(opeFolder);
         mmf = new MmfControl(false, "MDPlayer", 1024 * 4);
@@ -1030,7 +1029,7 @@ public class frmMain extends JFrame {
     }
 
     private void frmMain_Shown(WindowEvent ev) {
-        logger.log(Level.ERROR, "frmMain_Shown:STEP 09");
+        logger.log(Level.INFO, "frmMain_Shown:STEP 09");
 
         Thread trd = new Thread(this::screenMainLoop);
         trd.setPriority(Thread.MIN_PRIORITY);
@@ -1044,7 +1043,7 @@ public class frmMain extends JFrame {
             return;
         }
 
-        logger.log(Level.ERROR, "frmMain_Shown:STEP 10");
+        logger.log(Level.INFO, "frmMain_Shown:STEP 10");
 
         try {
 
@@ -1073,8 +1072,8 @@ public class frmMain extends JFrame {
             JOptionPane.showMessageDialog(this, "Failed to read file.");
         }
 
-        logger.log(Level.ERROR, "frmMain_Shown:STEP 11");
-        logger.log(Level.ERROR, "Startup process complete");
+        logger.log(Level.INFO, "frmMain_Shown:STEP 11");
+        logger.log(Level.INFO, "Startup process complete");
     }
 
     private final ComponentListener componentListener = new ComponentAdapter() {
@@ -3526,7 +3525,7 @@ public class frmMain extends JFrame {
         logger.log(Level.ERROR, "Audio initialization process complete");
 
 //        frmVSTeffectList.dispPluginList();
-        StartMIDIInMonitoring();
+        startMIDIInMonitoring();
 
         isInitialOpenFolder = true;
         flgReinit = false;
@@ -3712,7 +3711,7 @@ public class frmMain extends JFrame {
 
             nextFrame += period;
 
-            if (frmPlayList.isPlaying()) {
+            if (frmPlayList != null && frmPlayList.isPlaying()) {
                 if ((setting.getOther().getUseLoopTimes() && audio.plugin.getVgmCurLoopCounter() > setting.getOther().getLoopTimes() - 1)
                         || audio.plugin.getVGMStopped()) {
                     fadeout();
@@ -3752,6 +3751,7 @@ public class frmMain extends JFrame {
     }
 
     private void screenChangeParams() {
+        if (audio.plugin == null) return;
 
         long w = audio.plugin.getCounter();
         double sec = (double) w / (double) mdplayer.Common.VGMProcSampleRate;
@@ -4275,9 +4275,9 @@ public class frmMain extends JFrame {
         //DrawBuff.drawChipName(screen.mainScreen, 9 * 4, 1 * 8, 13,oldParam.chipLED.SecOPLL, chips[128 + 13]);
         //DrawBuff.drawChipName(screen.mainScreen, 71 * 4, 0 * 8, 14,oldParam.chipLED.SecHuC8, chips[128 + 14]);
 
-        DrawBuff.drawFont4(screen.mainScreen, 1, 9, 1, audio.plugin.isDataBlock(EnmModel.VirtualModel) ? "VD" : "  ");
+        DrawBuff.drawFont4(screen.mainScreen, 1, 9, 1, audio.plugin != null && audio.plugin.isDataBlock(EnmModel.VirtualModel) ? "VD" : "  ");
         DrawBuff.drawFont4(screen.mainScreen, 321 - 16, 9, 1, isPcmRAMWrite(EnmModel.VirtualModel) ? "VP" : "  ");
-        DrawBuff.drawFont4(screen.mainScreen, 1, 17, 1, audio.plugin.isDataBlock(EnmModel.RealModel) ? "RD" : "  ");
+        DrawBuff.drawFont4(screen.mainScreen, 1, 17, 1, audio.plugin != null && audio.plugin.isDataBlock(EnmModel.RealModel) ? "RD" : "  ");
         DrawBuff.drawFont4(screen.mainScreen, 321 - 16, 17, 1, isPcmRAMWrite(EnmModel.RealModel) ? "RP" : "  ");
 
         oldParam.Cminutes = -1;
@@ -4324,9 +4324,9 @@ public class frmMain extends JFrame {
 
     public void play() {
 
-        if (audio.isPaused()) {
-            audio.pause();
-        }
+//        if (audio.isPaused()) {
+//            audio.pause();
+//        }
 
         String[] fn;
         Tuple4<Integer, Integer, String, String> playFn;
@@ -4720,6 +4720,8 @@ public class frmMain extends JFrame {
         opeButtonMode.setToolTipText(modeTip[newButtonMode[9]]);
     }
 
+    static final Preferences prefs = Preferences.userNodeForPackage(frmMain.class);
+
     private String[] fileOpen(boolean isMultiSelection) {
         JFileChooser ofd = new JFileChooser();
         Arrays.stream(Resources.getCntSupportFile().split("\\s")).forEach(l -> {
@@ -4736,6 +4738,8 @@ public class frmMain extends JFrame {
                 }
             });
         });
+        String lastPath = prefs.get("mdplayer.lasPath", null);
+        if (lastPath != null) ofd.setCurrentDirectory(new java.io.File(lastPath));
         ofd.setDialogTitle("Select a file");
         ofd.setFileFilter(ofd.getChoosableFileFilters()[setting.getOther().getFilterIndex()]);
 
@@ -4750,6 +4754,7 @@ public class frmMain extends JFrame {
         if (ofd.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
             return null;
         }
+        prefs.put("mdplayer.lasPath", ofd.getCurrentDirectory().getPath());
 
         isInitialOpenFolder = false;
         setting.getOther().setFilterIndex(Common.getFilterIndex(ofd));
@@ -5991,9 +5996,9 @@ public class frmMain extends JFrame {
                 int ops = i * 8;
                 n[i * 7 + 12 + 32 + 5] = (byte) ym2151Register[0x40 + ops + ch]; // DT & ML
                 n[i * 7 + 12 + 32 + 6] = (byte) (ym2151Register[0x60 + ops + ch] & 0x7f); // TL
-                n[i * 7 + 12 + 32 + 7] = (byte) ym2151Register[0x80 + ops + ch]; //KS & AR
-                n[i * 7 + 12 + 32 + 8] = (byte) ym2151Register[0xa0 + ops + ch]; //AME DR
-                n[i * 7 + 12 + 32 + 9] = (byte) ym2151Register[0xc0 + ops + ch]; //SR
+                n[i * 7 + 12 + 32 + 7] = (byte) ym2151Register[0x80 + ops + ch]; // KS & AR
+                n[i * 7 + 12 + 32 + 8] = (byte) ym2151Register[0xa0 + ops + ch]; // AME DR
+                n[i * 7 + 12 + 32 + 9] = (byte) ym2151Register[0xc0 + ops + ch]; // SR
                 n[i * 7 + 12 + 32 + 10] = (byte) ym2151Register[0xe0 + ops + ch]; // SL&RR
                 n[i * 7 + 12 + 32 + 11] = 0; // SSG
 
@@ -7196,7 +7201,7 @@ public class frmMain extends JFrame {
         }
     }
 
-    private void StartMIDIInMonitoring() {
+    private void startMIDIInMonitoring() {
 
         if (setting.getMidiKbd().getMidiInDeviceName().isEmpty()) {
             return;
@@ -7913,7 +7918,7 @@ public class frmMain extends JFrame {
 
     private void opeButtonMode_Click(ActionEvent ev) {
         tsmiPlayMode_Click(null);
-        opeButton_Mouse.mouseEntered(null); // opeButtonMode
+        opeButton_Mouse.mouseEntered(new MouseEvent(opeButtonMode, 0, 0, 0, 0, 0, 0, 0, 0,false, 0)); // opeButtonMode
     }
 
     private void opeButtonOpen_Click(ActionEvent ev) {

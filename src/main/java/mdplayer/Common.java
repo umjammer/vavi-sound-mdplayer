@@ -277,9 +277,9 @@ logger.log(Level.INFO, "metaData: " + metaData);
 
     public static Path getApplicationDataFolder(boolean make /* = false */) {
         try {
-            String appPath = System.getProperty("user.dir");
-            Path fullPath = Path.of(appPath, "./config/kuma", "mdplayer");
-            if (!Files.exists(fullPath)) Files.createDirectory(fullPath);
+            String appPath = System.getProperty("user.home");
+            Path fullPath = Path.of(appPath, ".config/kuma", "mdplayer");
+            if (!Files.exists(fullPath)) Files.createDirectories(fullPath);
 
             return fullPath;
         } catch (Exception e) {

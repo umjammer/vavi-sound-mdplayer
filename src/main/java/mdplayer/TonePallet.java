@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -73,6 +74,9 @@ public class TonePallet implements Serializable, Cloneable {
                 TonePallet pl = Serdes.Util.deserialize(sr, new TonePallet());
                 return pl;
             }
+        } catch (NoSuchFileException e) {
+            logger.log(Level.ERROR, e.toString());
+            return new TonePallet();
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
             return new TonePallet();

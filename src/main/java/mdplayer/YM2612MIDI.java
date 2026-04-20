@@ -162,7 +162,7 @@ public class YM2612MIDI {
     }
 
     private void voiceCopy() {
-        int[][] reg = audio.plugin.chipRegister.chip(Ym2612Chip.class).read(0); // chipRegister.register[0];
+        int[][] reg = (int[][]) audio.plugin.chipRegister.chip(Ym2612Chip.class).getInfo(0).get("register");
         if (reg == null) return;
 
         for (int i = 0; i < 6; i++) {
@@ -309,11 +309,11 @@ public class YM2612MIDI {
         if (chip == Ym2612Chip.class || chip == Ym2608Chip.class || chip == Ym2610Chip.class || chip == Ym2203Chip.class) {
             int[][] srcRegs = null;
             if (chip == Ym2612Chip.class) {
-                srcRegs = audio.plugin.chipRegister.chip(Ym2612Chip.class).read(chipId);
+                srcRegs = (int[][]) audio.plugin.chipRegister.chip(Ym2612Chip.class).getInfo(chipId).get("register");
             } else if (chip == Ym2608Chip.class) {
-                srcRegs = audio.plugin.chipRegister.chip(Ym2608Chip.class).read(chipId);
+                srcRegs = (int[][]) audio.plugin.chipRegister.chip(Ym2608Chip.class).getInfo(chipId).get("register");
             } else if (chip == Ym2610Chip.class) {
-                srcRegs = audio.plugin.chipRegister.chip(Ym2610Chip.class).read(chipId);
+                srcRegs = (int[][]) audio.plugin.chipRegister.chip(Ym2610Chip.class).getInfo(chipId).get("register");
             } else if (chip == Ym2203Chip.class) {
                 int[] sReg = (int[]) audio.plugin.chipRegister.chip(Ym2203Chip.class).getInfo(chipId).get("register");
                 srcRegs = new int[][] {sReg, null};

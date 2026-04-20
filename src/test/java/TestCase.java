@@ -24,7 +24,6 @@ import com.github.kwhat.jnativehook.GlobalScreen;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
 import mdplayer.Audio;
-import mdplayer.PlayList.Music;
 import mdplayer.driver.BaseDriver;
 import mdplayer.format.FileFormat;
 import mdplayer.plugin.BasePlugin;
@@ -153,7 +152,7 @@ Debug.println("filename: " + file);
         FileFormat format = FileFormat.getFileFormat(file);
 Debug.println("format: " + format.getClass().getSimpleName());
         format.load((String) null, file);
-        BasePlugin<? extends BaseDriver> plugin = (BasePlugin<? extends BaseDriver>) format.getPlugin();
+        var plugin = (BasePlugin<? extends BaseDriver>) format.getPlugin();
         plugin.setParams(format, Map.of(
                 "fileName", file,
                 "midiMode", 0,
@@ -265,6 +264,14 @@ Debug.println(music);
             }
         }).toList();
         playMulti(paths);
+    }
+
+    @Test
+    void testX() throws Exception {
+        mdplayer.Program.main(new String[] {file});
+
+        CountDownLatch cdl = new CountDownLatch(1);
+        cdl.await();
     }
 
     /**

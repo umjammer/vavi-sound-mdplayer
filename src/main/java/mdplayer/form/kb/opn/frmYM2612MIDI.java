@@ -241,13 +241,13 @@ public class frmYM2612MIDI extends frmBase {
                 switch (u * 5 + p) {
                 case 0:
                     //logger.log(Level.TRACE, "MONO");
-                    cmdSetMode(0);
+//                    cmdSetMode(0);
                     break;
                 case 1:
                     break;
                 case 2:
                     //logger.log(Level.TRACE, "PANIC");
-                    cmdAllNoteOff();
+//                    cmdAllNoteOff();
                     break;
                 case 3:
                     //logger.log(Level.TRACE, "TP.PUT");
@@ -259,7 +259,7 @@ public class frmYM2612MIDI extends frmBase {
                     break;
                 case 5:
                     //logger.log(Level.TRACE, "POLY");
-                    cmdSetMode(1);
+//                    cmdSetMode(1);
                     break;
                 case 6:
                     parent.setting.getMidiKbd().setUseFormat(parent.setting.getMidiKbd().getUseFormat() + 1);
@@ -267,7 +267,7 @@ public class frmYM2612MIDI extends frmBase {
                     break;
                 case 7:
                     //logger.log(Level.TRACE, "L.CLS");
-                    cmdLogClear();
+//                    cmdLogClear();
                     break;
                 case 8:
                     //logger.log(Level.TRACE, "TP.GET");
@@ -281,7 +281,7 @@ public class frmYM2612MIDI extends frmBase {
             } else if (py < 40) {
                 if ((px / 8) % 13 == 0) {
                     //logger.log(Level.TRACE, "チャンネル選択");
-                    cmdSelectChannel(px / 8 / 13);
+//                    cmdSelectChannel(px / 8 / 13);
                 } else {
                     //logger.log(Level.TRACE, "音色選択(1-3Ch)");
                     cmdSelectTone(px, py, ev);// / 8 / 13, e);
@@ -292,15 +292,15 @@ public class frmYM2612MIDI extends frmBase {
             } else if (py < 104) {
                 if (py < 88 && (px / 8) % 13 == 3) {
                     //logger.log(Level.TRACE, "ログクリア");
-                    cmdLogClear(px / 8 / 13);
+//                    cmdLogClear(px / 8 / 13);
                 } else {
                     //logger.log(Level.TRACE, "ログ->MML変換(1-3Ch)");
-                    cmdLog2MML(px / 8 / 13);
+//                    cmdLog2MML(px / 8 / 13);
                 }
             } else if (py < 112) {
                 if ((px / 8) % 13 == 0) {
                     //logger.log(Level.TRACE, "チャンネル選択");
-                    cmdSelectChannel((px / 8 / 13) + 3);
+//                    cmdSelectChannel((px / 8 / 13) + 3);
                 } else {
                     //logger.log(Level.TRACE, "音色選択(4-6Ch)");
                     cmdSelectTone(px, py, ev);
@@ -311,68 +311,68 @@ public class frmYM2612MIDI extends frmBase {
             } else if (py < 176) {
                 if (py < 160 && (px / 8) % 13 == 3) {
                     //logger.log(Level.TRACE, "ログクリア");
-                    cmdLogClear((px / 8 / 13) + 3);
+//                    cmdLogClear((px / 8 / 13) + 3);
                 } else {
                     //logger.log(Level.TRACE, "ログ->MML変換(4-6Ch)");
-                    cmdLog2MML((px / 8 / 13) + 3);
+//                    cmdLog2MML((px / 8 / 13) + 3);
                 }
             }
         }
     };
 
-    /**
-     * MONO/POLY
-     */
-    private void cmdSetMode(int m) {
-        parent.ym2612Midi_SetMode(m);
-    }
-
-    /**
-     * PANIC
-     */
-    private void cmdAllNoteOff() {
-        parent.ym2612Midi_AllNoteOff();
-    }
-
-    /**
-     * L.CLS
-     */
-    private void cmdLogClear() {
-        parent.ym2612Midi_ClearNoteLog();
-    }
-
-    /**
-     * LogClear
-     */
-    private void cmdLogClear(int ch) {
-        parent.ym2612Midi_ClearNoteLog(ch);
-    }
-
-    /**
-     * MML変換
-     */
-    private void cmdLog2MML(int ch) {
-        parent.ym2612Midi_Log2MML(ch);
-    }
-
-    /**
-     * 
-     */
-    private void cmdSelectChannel(int ch) {
-        parent.ym2612Midi_SelectChannel(ch);
-    }
+//    /**
+//     * MONO/POLY
+//     */
+//    private void cmdSetMode(int m) {
+//        parent.ym2612Midi_SetMode(m);
+//    }
+//
+//    /**
+//     * PANIC
+//     */
+//    private void cmdAllNoteOff() {
+//        parent.ym2612Midi_AllNoteOff();
+//    }
+//
+//    /**
+//     * L.CLS
+//     */
+//    private void cmdLogClear() {
+//        parent.ym2612Midi_ClearNoteLog();
+//    }
+//
+//    /**
+//     * LogClear
+//     */
+//    private void cmdLogClear(int ch) {
+//        parent.ym2612Midi_ClearNoteLog(ch);
+//    }
+//
+//    /**
+//     * MML変換
+//     */
+//    private void cmdLog2MML(int ch) {
+//        parent.ym2612Midi_Log2MML(ch);
+//    }
+//
+//    /**
+//     *
+//     */
+//    private void cmdSelectChannel(int ch) {
+//        parent.ym2612Midi_SelectChannel(ch);
+//    }
 
     private void cmdTPPut() {
-        parent.ym2612Midi_SetTonesToSetting();
+//        parent.ym2612Midi_SetTonesToSetting();
         frmTPPut frmTPPut = new frmTPPut();
         frmTPPut.ShowDialog(parent.setting, parent.tonePallet);
     }
 
     private void cmdTPGet() {
-        parent.ym2612Midi_SetTonesToSetting();
+//        parent.ym2612Midi_SetTonesToSetting();
         frmTPGet frmTPGet = new frmTPGet();
         frmTPGet.ShowDialog(parent.setting, parent.tonePallet);
-        parent.ym2612Midi_SetTonesFromSetting();
+//        parent.ym2612Midi_SetTonesFromSetting();
     }
 
     private boolean IsInitialOpenFolder = true;
@@ -417,7 +417,7 @@ public class frmYM2612MIDI extends frmBase {
         IsInitialOpenFolder = false;
 
         try {
-            parent.ym2612Midi_SaveTonePallet(sfd.getSelectedFile().getPath(), Common.getFilterIndex(sfd) + 1);
+//            parent.ym2612Midi_SaveTonePallet(sfd.getSelectedFile().getPath(), Common.getFilterIndex(sfd) + 1);
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
             JOptionPane.showMessageDialog(null, "ファイルの保存に失敗しました。");
@@ -464,7 +464,7 @@ public class frmYM2612MIDI extends frmBase {
         IsInitialOpenFolder = false;
 
         try {
-            parent.ym2612Midi_LoadTonePallet(ofd.getSelectedFile().getPath(), Common.getFilterIndex(ofd) + 1);
+//            parent.ym2612Midi_LoadTonePallet(ofd.getSelectedFile().getPath(), Common.getFilterIndex(ofd) + 1);
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
             JOptionPane.showMessageDialog(null, "ファイルの読込に失敗しました。");
@@ -511,7 +511,7 @@ public class frmYM2612MIDI extends frmBase {
             }
 
             //logger.log(Level.TRACE, "row=%d col=%d ch=%d n=%d".formatted(row, col, ch, n));
-            parent.ym2612Midi_SetSelectInstParam(ch, n);
+//            parent.ym2612Midi_SetSelectInstParam(ch, n);
             return;
         }
 
@@ -525,28 +525,28 @@ public class frmYM2612MIDI extends frmBase {
         public void keyPressed(KeyEvent e) {
             if (e.isControlDown()) {
                 if (e.getKeyCode() == KeyEvent.VK_C) {
-                    parent.ym2612Midi_CopyToneToClipboard();
+//                    parent.ym2612Midi_CopyToneToClipboard();
                 } else if (e.getKeyCode() == KeyEvent.VK_V) {
-                    parent.ym2612Midi_PasteToneFromClipboard();
+//                    parent.ym2612Midi_PasteToneFromClipboard();
                 }
             } else if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                parent.ym2612Midi_AddSelectInstParam(1);
+//                parent.ym2612Midi_AddSelectInstParam(1);
             } else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-                parent.ym2612Midi_AddSelectInstParam(11);
+//                parent.ym2612Midi_AddSelectInstParam(11);
             }
         }
     };
 
     private void ctsmiCopy_Click(ActionEvent ev) {
-        parent.ym2612Midi_CopyToneToClipboard(Integer.parseInt(cmsMIDIKBD.getActionCommand()));
+//        parent.ym2612Midi_CopyToneToClipboard(Integer.parseInt(cmsMIDIKBD.getActionCommand()));
     }
 
     private void ctsmiPaste_Click(ActionEvent ev) {
-        parent.ym2612Midi_PasteToneFromClipboard(Integer.parseInt(cmsMIDIKBD.getActionCommand()));
+//        parent.ym2612Midi_PasteToneFromClipboard(Integer.parseInt(cmsMIDIKBD.getActionCommand()));
     }
 
     private void frmYM2612MIDI_MouseWheel(MouseWheelEvent ev) {
-        parent.ym2612Midi_ChangeSelectedParamValue((int) Math.signum(ev.getScrollAmount()));
+//        parent.ym2612Midi_ChangeSelectedParamValue((int) Math.signum(ev.getScrollAmount()));
     }
 
     private void initializeComponent() {
