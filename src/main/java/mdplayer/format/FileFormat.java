@@ -28,16 +28,15 @@ public interface FileFormat {
 
     String[] getExtensions();
 
-    MetaData getMetaData(byte[] buf);
+    MetaData getMetaData();
 
     List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */);
 
     List<PlayList.Music> getMusic(PlayList.Music ms, byte[] buf, String zipFile /* = null */);
 
-    /**
-     * @see "frmMain#getExtendFile"
-     */
-    List<Tuple<String, byte[]>> getExtendFile(String fn, byte[] srcBuf, Archive archive /* = null */, Entry entry /* = null */);
+    byte[] getData();
+
+    List<Tuple<String, byte[]>> getExtendFiles();
 
     // TODO move logic from form to here
     String[] getPresetMixerBalance();
@@ -53,17 +52,15 @@ public interface FileFormat {
 
     /**
      * Loads audio file data w/ related files also.
-     *
-     * @return item1: file data bytes, item2: extend file data list
      */
-    Tuple<byte[], List<Tuple<String, byte[]>>> load(String archive, String fn) throws IOException;
+    void load(String archive, String fn) throws IOException;
 
     interface SampledFileFormat {}
 
     interface StreamFileFormat {}
 
     /** for SPI */
-    Tuple<byte[], List<Tuple<String, byte[]>>> load(InputStream is, String fn) throws IOException;
+    void load(InputStream is, String fn) throws IOException;
 
     /** for SPI */
     boolean isSupported(InputStream is) throws IOException;

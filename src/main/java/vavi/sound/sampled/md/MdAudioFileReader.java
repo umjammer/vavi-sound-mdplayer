@@ -15,6 +15,7 @@ import java.lang.System.Logger.Level;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -109,12 +110,12 @@ logger.log(DEBUG, "format: " + fileFormat.getClass().getSimpleName());
             String fn = source != null && source.getScheme().equals("file") ? source.getPath() : null;
             encoding = fileFormat.getEncoding();
             type = fileFormat.getType();
-            var r = fileFormat.load(in, fn);
-            metaData = fileFormat.getMetaData(r.getItem1());
+            fileFormat.load(in, fn);
+            metaData = fileFormat.getMetaData();
             plugin = (BasePlugin<? extends BaseDriver>) fileFormat.getPlugin();
 logger.log(DEBUG, "plugin: " + plugin);
 logger.log(DEBUG, "filename: " + fn);
-            plugin.setBuffer(fileFormat, r.getItem1(), fn, null, 0, 0, r.getItem2());
+            plugin.setParams(fileFormat, fn != null ? Map.of("fileName", fn) : Collections.emptyMap());
 
         } catch (IllegalArgumentException | NoSuchElementException e) {
             bitStream.reset(); // *1

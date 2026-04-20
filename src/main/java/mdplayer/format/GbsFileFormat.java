@@ -38,8 +38,8 @@ public class GbsFileFormat extends BaseFileFormat {
     }
 
     @Override
-    public MetaData getMetaData(byte[] buf) {
-        return new Gbs().getMetaData(buf);
+    public MetaData getMetaData() {
+        return new Gbs().getMetaData(this.srcBuf);
     }
 
     @Override
@@ -47,7 +47,7 @@ public class GbsFileFormat extends BaseFileFormat {
         List<PlayList.Music> musics = new ArrayList<>();
         PlayList.Music music = new PlayList.Music();
 
-        MetaData md = getMetaData(buf);
+        MetaData md = getMetaData();
         int songs = Integer.parseInt(md.getFirst(Tag.NumberOfSongs));
 
         if (md != null) {

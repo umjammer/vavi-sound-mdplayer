@@ -39,15 +39,15 @@ public class SIDFileFormat extends BaseFileFormat {
     }
 
     @Override
-    public MetaData getMetaData(byte[] buf) {
-        return new SidMdDriver2().getMetaData(buf);
+    public MetaData getMetaData() {
+        return new SidMdDriver2().getMetaData(this.srcBuf);
     }
 
     @Override
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
         List<PlayList.Music> musics = new ArrayList<>();
 
-        MetaData metaData = getMetaData(buf);
+        MetaData metaData = getMetaData();
         int songs = Integer.parseInt(metaData.getFirst(Tag.NumberOfSongs));
 
         for (int s = 0; s < songs; s++) {

@@ -109,9 +109,9 @@ public class VGMFileFormat extends BaseFileFormat {
     }
 
     @Override
-    public MetaData getMetaData(byte[] buf) {
-        int vgmGd3 = ByteUtil.readLeInt(buf, 0x14);
-        return new VgmDriver().getMetaData(buf, vgmGd3);
+    public MetaData getMetaData() {
+        int vgmGd3 = ByteUtil.readLeInt(this.srcBuf, 0x14);
+        return new VgmDriver().getMetaData(this.srcBuf, vgmGd3);
     }
 
     @Override

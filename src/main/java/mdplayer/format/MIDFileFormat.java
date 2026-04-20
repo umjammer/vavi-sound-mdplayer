@@ -31,8 +31,8 @@ public class MIDFileFormat extends BaseFileFormat {
     }
 
     @Override
-    public MetaData getMetaData(byte[] buf) {
-        return new MidiDriver().getMetaData(buf);
+    public MetaData getMetaData() {
+        return new MidiDriver().getMetaData(this.srcBuf);
     }
 
     @Override
@@ -40,7 +40,7 @@ public class MIDFileFormat extends BaseFileFormat {
         PlayList.Music music = new PlayList.Music();
 
         music.format = this;
-        MetaData metaData = getMetaData(buf);
+        MetaData metaData = getMetaData();
         if (metaData != null) {
             music.title = metaData.getFirst(Tag.Title);
             music.titleJ = metaData.getFirst(Tag.TitleJ);
@@ -68,7 +68,7 @@ public class MIDFileFormat extends BaseFileFormat {
         PlayList.Music music = new PlayList.Music();
 
         music.format = this;
-        MetaData metaData = getMetaData(buf);
+        MetaData metaData = getMetaData();
         if (metaData != null) {
             music.title = metaData.getFirst(Tag.Title);
             music.titleJ = metaData.getFirst(Tag.TitleJ);

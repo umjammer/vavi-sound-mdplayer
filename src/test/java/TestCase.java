@@ -13,6 +13,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -27,6 +28,7 @@ import mdplayer.PlayList.Music;
 import mdplayer.driver.BaseDriver;
 import mdplayer.format.FileFormat;
 import mdplayer.plugin.BasePlugin;
+import musicDriverInterface.MetaData;
 import vavi.util.Debug;
 import vavi.util.properties.annotation.Property;
 import vavi.util.properties.annotation.PropsEntity;
@@ -150,9 +152,13 @@ Debug.println("settings\n" +
 Debug.println("filename: " + file);
         FileFormat format = FileFormat.getFileFormat(file);
 Debug.println("format: " + format.getClass().getSimpleName());
-        var r = format.load((String) null, file);
+        format.load((String) null, file);
         BasePlugin<? extends BaseDriver> plugin = (BasePlugin<? extends BaseDriver>) format.getPlugin();
-        plugin.setBuffer(format, r.getItem1(), file, null, 0, track - 1, r.getItem2());
+        plugin.setParams(format, Map.of(
+                "fileName", file,
+                "midiMode", 0,
+                "songNo", track - 1)
+        );
 Debug.println("plugin: " + plugin.getClass().getSimpleName());
         audio.init(plugin);
         audio.play();
@@ -237,8 +243,8 @@ Debug.println("stop");
             try {
                 FileFormat format = FileFormat.getFileFormat(p.toString());
 Debug.println(p);
-                var r = format.load((String) null, p.toString());
-                Music music = format.getMusic(null, r.getItem1(), null, null, null).getFirst();
+                format.load((String) null, p.toString());
+                MetaData music = format.getMetaData();
 Debug.println(music);
             } catch (Exception e) {
             }

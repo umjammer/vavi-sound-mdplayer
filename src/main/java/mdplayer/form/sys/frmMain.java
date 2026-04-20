@@ -6337,15 +6337,18 @@ public class frmMain extends JFrame {
                 playingFileName = fn;
                 format = FileFormat.getFileFormat(zfn);
             }
-            var r = format.load(zfn, fn);
-            srcBuf = r.getItem1();
-            extFile = r.getItem2();
+            format.load(zfn, fn);
 
             // Set the volume balance before playback
             loadPresetMixerBalance(playingFileName, playingArcFileName, format);
 
             BasePlugin<? extends BaseDriver> plugin = (BasePlugin<? extends BaseDriver>) format.getPlugin();
-            plugin.setBuffer(format, srcBuf, playingFileName, playingArcFileName, m, songNo, extFile);
+            plugin.setParams(format, Map.of(
+                    "fileName", playingFileName,
+                    "arcFileName", playingArcFileName,
+                    "midiMode", m,
+                    "songNo", songNo)
+            );
             audio.init(plugin);
             newParam.ym2612[0].fileFormat = format;
             newParam.ym2612[1].fileFormat = format;
@@ -6385,7 +6388,12 @@ public class frmMain extends JFrame {
             // Set the volume balance before playback
             loadPresetMixerBalance(playingFileName, playingArcFileName, format);
 
-            audio.plugin.setBuffer(format, srcBuf, playingFileName, playingArcFileName, 0, 0, extFile);
+            audio.plugin.setParams(format, Map.of(
+                    "fileName", playingFileName,
+                    "arcFileName", playingArcFileName,
+                    "midiMode", 0,
+                    "songNo", 0)
+            );
             newParam.ym2612[0].fileFormat = format;
             newParam.ym2612[1].fileFormat = format;
 

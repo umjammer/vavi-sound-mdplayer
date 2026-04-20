@@ -41,8 +41,8 @@ public class FMPFormat extends BaseFileFormat implements FileFormat.SampledFileF
     }
 
     @Override
-    public MetaData getMetaData(byte[] buf) {
-        return new FmpDriver().getMetaData(buf, 0);
+    public MetaData getMetaData() {
+        return new FmpDriver().getMetaData(this.srcBuf, 0);
     }
 
     @Override
@@ -50,7 +50,7 @@ public class FMPFormat extends BaseFileFormat implements FileFormat.SampledFileF
         Music music = new Music();
 
         music.format = this;
-        MetaData metaData = getMetaData(buf);
+        MetaData metaData = getMetaData();
         music.title = metaData.getFirst(Tag.Title).isEmpty() ? Path.getFileName(file) : metaData.getFirst(Tag.Title);
         music.titleJ = metaData.getFirst(Tag.TitleJ).isEmpty() ? Path.getFileName(file) : metaData.getFirst(Tag.TitleJ);
         music.game = metaData.getFirst(Tag.GameTitle);

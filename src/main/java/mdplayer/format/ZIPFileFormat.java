@@ -9,7 +9,6 @@ import java.util.Collections;
 import java.util.List;
 
 import dotnet4j.io.Path;
-import dotnet4j.util.compat.Tuple;
 import mdplayer.Common;
 import mdplayer.M3U;
 import mdplayer.PlayList;
@@ -191,7 +190,7 @@ public class ZIPFileFormat extends BaseFileFormat {
     }
 
     @Override
-    public Tuple<byte[], List<Tuple<String, byte[]>>> load(String archiveFilename, String fn) throws IOException {
+    public void load(String archiveFilename, String fn) throws IOException {
         Archive archive = Archives.getArchive(new java.io.File(archiveFilename));
         Entry entry = archive.getEntry(fn);
 
@@ -200,8 +199,7 @@ public class ZIPFileFormat extends BaseFileFormat {
             String[] arcFn = new String[1];
             byte[] srcBuf = getBytesFromZipFile(archive, entry, arcFn);
             if (!arcFn[0].isEmpty()) fn = arcFn[0];
-            List<Tuple<String, byte[]>> extFile = format.getExtendFile(fn, srcBuf, archive, entry);
-            return new Tuple<>(srcBuf, extFile);
+            this.extendFiles = ((BaseFileFormat) format).getExtendFiles(fn, srcBuf, archive, entry);
         } else {
             throw new FileNotFoundException(fn);
         }

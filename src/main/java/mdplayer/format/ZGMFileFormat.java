@@ -33,8 +33,8 @@ public class ZGMFileFormat extends BaseFileFormat {
     }
 
     @Override
-    public MetaData getMetaData(byte[] buf) {
-        return new Zgm().getMetaData(buf);
+    public MetaData getMetaData() {
+        return new Zgm().getMetaData(this.srcBuf);
     }
 
     @Override

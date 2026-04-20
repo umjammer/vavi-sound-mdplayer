@@ -38,14 +38,14 @@ public class HESFileFormat extends BaseFileFormat {
     }
 
     @Override
-    public MetaData getMetaData(byte[] buf) {
-        return new HesDriver().getMetaData(buf);
+    public MetaData getMetaData() {
+        return new HesDriver().getMetaData(this.srcBuf);
     }
 
     @Override
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
         List<PlayList.Music> musics = new ArrayList<>();
-        MetaData _ = getMetaData(buf);
+        MetaData _ = getMetaData();
 
         for (int s = 0; s < 256; s++) {
             PlayList.Music music = new PlayList.Music();

@@ -44,8 +44,8 @@ public class MDXFileFormat extends BaseFileFormat {
     }
 
     @Override
-    public MetaData getMetaData(byte[] buf) {
-        return new MxDriver().getMetaData(buf);
+    public MetaData getMetaData() {
+        return new MxDriver().getMetaData(this.srcBuf);
     }
 
     @Override
@@ -53,7 +53,7 @@ public class MDXFileFormat extends BaseFileFormat {
         PlayList.Music music = new PlayList.Music();
 
         music.format = this;
-        MetaData metaData = getMetaData(buf);
+        MetaData metaData = getMetaData();
         music.title = metaData.getFirst(Tag.Title).isEmpty() ? Path.getFileName(file) : metaData.getFirst(Tag.Title);
         music.titleJ = metaData.getFirst(Tag.TitleJ).isEmpty() ? Path.getFileName(file) : metaData.getFirst(Tag.TitleJ);
         music.game = metaData.getFirst(Tag.GameTitle);
@@ -74,7 +74,7 @@ public class MDXFileFormat extends BaseFileFormat {
     }
 
     @Override
-    public List<Tuple<String, byte[]>> getExtendFile(String fn, byte[] srcBuf, Archive archive, Entry entry) {
+    public List<Tuple<String, byte[]>> getExtendFiles(String fn, byte[] srcBuf, Archive archive, Entry entry) {
         List<Tuple<String, byte[]>> ret = new ArrayList<>();
         byte[] buf;
 
@@ -106,14 +106,13 @@ public class MDXFileFormat extends BaseFileFormat {
      * @throws IllegalArgumentException sampling late must be set as 44.1kHz.
      */
     @Override
-    public Tuple<byte[], List<Tuple<String, byte[]>>> load(String archive, String fn) throws IOException {
-        var r = super.load(archive, fn);
+    public void load(String archive, String fn) throws IOException {
+        super.load(archive, fn);
         if (Path.getExtension(fn).equalsIgnoreCase(".MDX")) {
             if (Setting.getInstance().getOutputDevice().getSampleRate() != 44100) {
                 throw new IllegalStateException("When playing MDX files, set the sampling rate to 44.1kHz.");
             }
         }
-        return r;
     }
 
     @Override

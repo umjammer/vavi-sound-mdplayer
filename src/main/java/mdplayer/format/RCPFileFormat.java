@@ -40,8 +40,8 @@ public class RCPFileFormat extends BaseFileFormat {
     }
 
     @Override
-    public MetaData getMetaData(byte[] buf) {
-        return new RcpDriver().getMetaData(buf);
+    public MetaData getMetaData() {
+        return new RcpDriver().getMetaData(this.srcBuf);
     }
 
     @Override
@@ -49,7 +49,7 @@ public class RCPFileFormat extends BaseFileFormat {
         PlayList.Music music = new PlayList.Music();
 
         music.format = this;
-        MetaData metaData = getMetaData(buf);
+        MetaData metaData = getMetaData();
         if (metaData != null) {
             music.title = metaData.getFirst(Tag.Title);
             music.titleJ = metaData.getFirst(Tag.TitleJ);
@@ -77,7 +77,7 @@ public class RCPFileFormat extends BaseFileFormat {
         PlayList.Music music = new PlayList.Music();
 
         music.format = this;
-        MetaData metaData = getMetaData(buf);
+        MetaData metaData = getMetaData();
         if (metaData != null) {
             music.title = metaData.getFirst(Tag.Title);
             music.titleJ = metaData.getFirst(Tag.TitleJ);
@@ -101,7 +101,7 @@ public class RCPFileFormat extends BaseFileFormat {
     }
 
     @Override
-    public List<Tuple<String, byte[]>> getExtendFile(String fn, byte[] srcBuf, Archive archive, Entry entry) {
+    public List<Tuple<String, byte[]>> getExtendFiles(String fn, byte[] srcBuf, Archive archive, Entry entry) {
         List<Tuple<String, byte[]>> ret = new ArrayList<>();
         byte[] buf;
 

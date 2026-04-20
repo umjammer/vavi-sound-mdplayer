@@ -39,8 +39,8 @@ public class NSFFileFormat extends BaseFileFormat {
     }
 
     @Override
-    public MetaData getMetaData(byte[] buf) {
-        return new NsfMdDriver().getMetaData(buf);
+    public MetaData getMetaData() {
+        return new NsfMdDriver().getMetaData(this.srcBuf);
     }
 
     @Override
@@ -48,7 +48,7 @@ public class NSFFileFormat extends BaseFileFormat {
         List<PlayList.Music> musics = new ArrayList<>();
         PlayList.Music music = new PlayList.Music();
 
-        MetaData md = getMetaData(buf);
+        MetaData md = getMetaData();
         int songs = Integer.parseInt(md.getFirst(Tag.NumberOfSongs));
 
         if (md != null) {
@@ -91,7 +91,7 @@ public class NSFFileFormat extends BaseFileFormat {
         List<PlayList.Music> musics = new ArrayList<>();
         PlayList.Music music = new PlayList.Music();
 
-        MetaData md = getMetaData(buf);
+        MetaData md = getMetaData();
         int songs = Integer.parseInt(md.getFirst(Tag.NumberOfSongs));
 
         if (md != null) {

@@ -40,11 +40,11 @@ public class XGMFileFormat extends BaseFileFormat {
     }
 
     @Override
-    public MetaData getMetaData(byte[] buf) {
-        if (!Xgm2.checkXGM2(buf)) {
-            return new XgmDriver().getMetaData(buf);
+    public MetaData getMetaData() {
+        if (!Xgm2.checkXGM2(this.srcBuf)) {
+            return new XgmDriver().getMetaData(this.srcBuf);
         } else {
-            return new Xgm2Driver().getMetaData(buf);
+            return new Xgm2Driver().getMetaData(this.srcBuf);
         }
     }
 
@@ -53,7 +53,7 @@ public class XGMFileFormat extends BaseFileFormat {
         PlayList.Music music = new PlayList.Music();
 
         music.format = this;
-        MetaData metaData = getMetaData(buf);
+        MetaData metaData = getMetaData();
         music.title = metaData.getFirst(Tag.Title);
         music.titleJ = metaData.getFirst(Tag.TitleJ);
         music.game = metaData.getFirst(Tag.GameTitle);
@@ -78,7 +78,7 @@ public class XGMFileFormat extends BaseFileFormat {
         PlayList.Music music = new PlayList.Music();
 
         music.format = this;
-        MetaData metaData = getMetaData(buf);
+        MetaData metaData = getMetaData();
         music.title = metaData.getFirst(Tag.Title);
         music.titleJ = metaData.getFirst(Tag.TitleJ);
         music.game = metaData.getFirst(Tag.GameTitle);

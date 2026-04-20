@@ -35,8 +35,8 @@ public class MGSFileFormat extends BaseFileFormat {
     }
 
     @Override
-    public MetaData getMetaData(byte[] buf) {
-        return new MgsDriver().getMetaData(buf, 8);
+    public MetaData getMetaData() {
+        return new MgsDriver().getMetaData(this.srcBuf, 8);
     }
 
     @Override
@@ -44,7 +44,7 @@ public class MGSFileFormat extends BaseFileFormat {
         PlayList.Music music = new PlayList.Music();
 
         music.format = this;
-        MetaData metaData = getMetaData(buf);
+        MetaData metaData = getMetaData();
         music.title = metaData.getFirst(Tag.Title);
         music.titleJ = metaData.getFirst(Tag.TitleJ);
         music.game = "";
@@ -64,7 +64,7 @@ public class MGSFileFormat extends BaseFileFormat {
         PlayList.Music music = new PlayList.Music();
 
         music.format = this;
-        MetaData metaData = getMetaData(buf);
+        MetaData metaData = getMetaData();
         music.title = metaData.getFirst(Tag.Title);
         music.titleJ = metaData.getFirst(Tag.TitleJ);
         music.game = "";

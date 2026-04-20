@@ -1,6 +1,7 @@
 package mdplayer.driver.gbs;
 
 import java.io.File;
+import java.util.Map;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 
@@ -61,9 +62,9 @@ public class GbsWavTestProgram {
         setting.getOther().setWavSwitch(true);
 
         FileFormat format = FileFormat.getFileFormat(filename);
-        var r = format.load((String) null, filename);
+        format.load((String) null, filename);
         BasePlugin<? extends BaseDriver> plugin = (BasePlugin<? extends BaseDriver>) format.getPlugin();
-        plugin.setBuffer(format, r.getItem1(), filename, null, 0, songNo, r.getItem2());
+        plugin.setParams(format, Map.of("fileName", filename, "songNo", songNo));
 
         // Initialize driver and chips without starting the infinite loop in BasePlugin.play()
         plugin.prepare();

@@ -42,13 +42,13 @@ public class MsdFormat extends BaseFileFormat implements FileFormat.SampledFileF
     }
 
     @Override
-    public MetaData getMetaData(byte[] buf) {
+    public MetaData getMetaData() {
         String vcd = Path.changeExtension(filename, ".vcd");
         byte[] vcdBuf = null;
         if (File.exists(vcd)) {
             vcdBuf = File.readAllBytes(vcd);
         }
-        return new MusicaK4Driver().getMetaData(buf, vcdBuf);
+        return new MusicaK4Driver().getMetaData(this.srcBuf, vcdBuf);
     }
 
     @Override
@@ -56,7 +56,7 @@ public class MsdFormat extends BaseFileFormat implements FileFormat.SampledFileF
         Music music = new Music();
 
         music.format = this;
-        MetaData metaData = getMetaData(buf);
+        MetaData metaData = getMetaData();
         if (metaData == null) {
             //logger.log(Level.WARNING, ".MSD compilation failed", "PlayList", MessageBoxButtons.OK, MessageBoxIcon.Error);
             music.title = Path.getFileName(file);

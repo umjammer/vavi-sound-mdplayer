@@ -170,18 +170,18 @@ logger.log(Level.INFO, "stop: " + this.stopped);
         chipRegister.reset();
     }
 
-    /** TODO consider more */
-    public void setBuffer(FileFormat format, byte[] srcBuf, String playingFileName, String playingArcFileName, int midiMode, int songNo, List<Tuple<String, byte[]>> extFile) {
+    /** @param params tags: fileName, arcFileName, midiMode, songNo */
+    public void setParams(FileFormat format, Map<String, Object> params) {
         //stop();
         this.fileFormat = format;
         this.playingFileFormat = format;
-        this.vgmBuf = srcBuf;
-        this.playingFileName = playingFileName; // for WaveWriter
-        this.playingArcFileName = playingArcFileName;
-        chipRegister.plugin(MidiPlugin.class).midiMode = midiMode;
-        this.songNo = songNo;
+        this.vgmBuf = format.getData();
+        this.playingFileName = (String) params.get("fileName"); // for WaveWriter
+        this.playingArcFileName = (String) params.get("arcFileName");
+        chipRegister.plugin(MidiPlugin.class).midiMode = (int) params.getOrDefault("midiMode", 0);
+        this.songNo = (int) params.getOrDefault("songNo", 0);
         chipRegister.plugin(MidiPlugin.class).setFileName(playingFileName); // for ExportMIDI
-        extendFiles = extFile; // Additional files
+        extendFiles = format.getExtendFiles(); // Additional files
         Common.playingFilePath = Path.of(playingFileName).getParent();
     }
 

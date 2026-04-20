@@ -13,11 +13,9 @@ import java.util.List;
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
-import dotnet4j.io.File;
 import dotnet4j.io.Path;
 import mdplayer.PlayList.Music;
 import mdplayer.driver.musica.MusicaDriver;
-import mdplayer.driver.musica.MusicaK4Driver;
 import mdplayer.plugin.MuSICAPlugin;
 import mdplayer.plugin.Plugin;
 import musicDriverInterface.MetaData;
@@ -43,8 +41,8 @@ public class BgmFormat extends BaseFileFormat implements FileFormat.SampledFileF
     }
 
     @Override
-    public MetaData getMetaData(byte[] buf) {
-        return new MusicaDriver().getMetaData(buf);
+    public MetaData getMetaData() {
+        return new MusicaDriver().getMetaData(this.srcBuf);
     }
 
     @Override
@@ -52,7 +50,7 @@ public class BgmFormat extends BaseFileFormat implements FileFormat.SampledFileF
         Music music = new Music();
 
         music.format = this;
-        MetaData metaData = getMetaData(buf);
+        MetaData metaData = getMetaData();
         music.title = metaData.getFirst(Tag.Title).isEmpty() ? Path.getFileName(file) : metaData.getFirst(Tag.Title);
         music.titleJ = metaData.getFirst(Tag.TitleJ).isEmpty() ? Path.getFileName(file) : metaData.getFirst(Tag.TitleJ);
         music.game = "";

@@ -106,7 +106,7 @@ public abstract class BaseFileFormat implements FileFormat {
     }
 
     @Override
-    public MetaData getMetaData(byte[] buf) {
+    public MetaData getMetaData() {
         return null;
     }
 
@@ -115,8 +115,8 @@ public abstract class BaseFileFormat implements FileFormat {
         return File.readAllBytes(filename);
     }
 
-    @Override
-    public List<Tuple<String, byte[]>> getExtendFile(String fn, byte[] srcBuf, Archive archive, Entry entry) {
+    // default
+    protected List<Tuple<String, byte[]>> getExtendFiles(String fn, byte[] srcBuf, Archive archive, Entry entry) {
         return null;
     }
 
@@ -256,16 +256,29 @@ logger.log(Level.DEBUG, result);
         return null;
     }
 
+    protected byte[] srcBuf;
+    protected List<Tuple<String, byte[]>> extendFiles;
+
     @Override
-    public Tuple<byte[], List<Tuple<String, byte[]>>> load(String archive, String fn) throws IOException {
-        byte[] srcBuf = getAllBytes(fn);
-        return new Tuple<>(srcBuf, getExtendFile(fn, srcBuf, null, null));
+    public byte[] getData() {
+        return this.srcBuf;
     }
 
     @Override
-    public Tuple<byte[], List<Tuple<String, byte[]>>> load(InputStream is, String fn) throws IOException {
-        byte[] srcBuf = is.readAllBytes();
-        return new Tuple<>(srcBuf, getExtendFile(fn, srcBuf, null, null));
+    public List<Tuple<String, byte[]>> getExtendFiles() {
+        return extendFiles;
+    }
+
+    @Override
+    public void load(String archive, String fn) throws IOException {
+        this.srcBuf = getAllBytes(fn);
+        this.extendFiles = getExtendFiles(fn, srcBuf, null, null);
+    }
+
+    @Override
+    public void load(InputStream is, String fn) throws IOException {
+        this.srcBuf = is.readAllBytes();
+        this.extendFiles = getExtendFiles(fn, srcBuf, null, null);
     }
 
     @Override

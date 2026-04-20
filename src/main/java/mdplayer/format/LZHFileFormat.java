@@ -9,7 +9,6 @@ import java.util.Collections;
 import java.util.List;
 
 import dotnet4j.io.Path;
-import dotnet4j.util.compat.Tuple;
 import mdplayer.Common;
 import mdplayer.M3U;
 import mdplayer.PlayList;
@@ -192,14 +191,13 @@ public class LZHFileFormat extends BaseFileFormat {
     }
 
     @Override
-    public Tuple<byte[], List<Tuple<String, byte[]>>> load(String archiveFilename, String fn) throws IOException {
+    public void load(String archiveFilename, String fn) throws IOException {
         FileFormat format = FileFormat.getFileFormat(fn);
         if (format != FileFormat.unknown) {
             Archive archive = Archives.getArchive(new java.io.File(archiveFilename));
             Entry entry = archive.getEntry(fn);
             byte[] srcBuf = archive.getInputStream(entry).readAllBytes();
-            List<Tuple<String, byte[]>> extFile = format.getExtendFile(fn, srcBuf, archive, entry);
-            return new Tuple<>(srcBuf, extFile);
+            this.extendFiles = ((BaseFileFormat) format).getExtendFiles(fn, srcBuf, archive, entry);
         } else {
             throw new FileNotFoundException(fn);
         }
