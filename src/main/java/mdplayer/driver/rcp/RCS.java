@@ -1243,7 +1243,7 @@ public class RCS {
         }
     }
 
-    /**  */
+    /** */
     private boolean checkNoteOff(MIDITrack trk, int mode) {
         boolean flg = false;
 

@@ -217,7 +217,7 @@ public class PmdDriver extends BaseDriver {
 //            if (model == EnmModel.VirtualModel) {
 //                JOptionPane.showMessageDialog(null, "Compile error");
 //            }
-            throw new IllegalArgumentException("Compile error: " + info.errorList);
+            throw new IllegalArgumentException("Compile error: " + info.errorList.stream().map(t -> t.getItem1() + ", " + t.getItem2() + ", " + t.getItem3()).toList());
         }
 
         if (pmdDriver == null) pmdDriver = IDriver.factory("pmd.driver.Driver");
