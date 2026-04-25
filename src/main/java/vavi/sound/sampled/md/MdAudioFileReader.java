@@ -95,6 +95,9 @@ logger.log(DEBUG, "enter: available: " + bitStream.available() + ", " + bitStrea
         AudioFileFormat.Type type;
         MetaData metaData;
         try {
+            URI source = SoundUtil.getSource(bitStream);
+            String fn = source != null && source.getScheme().equals("file") ? source.getPath() : null;
+
             bitStream.mark(10); // *1
             InputStream in = Archives.getInputStream(bitStream);
 logger.log(Level.TRACE, "input stream M: " + in + ", " + in.available());
@@ -106,11 +109,9 @@ logger.log(Level.TRACE, "input stream M: " + in + ", " + in.available());
 logger.log(DEBUG, "format: " + fileFormat.getClass().getSimpleName());
             if (fileFormat instanceof UnknownFileFormat) throw new UnsupportedAudioFileException("not supported format");
 
-            URI source = SoundUtil.getSource(bitStream);
-            String fn = source != null && source.getScheme().equals("file") ? source.getPath() : null;
             encoding = fileFormat.getEncoding();
             type = fileFormat.getType();
-            fileFormat.load(in, fn);
+            fileFormat.load(in, null); // TODO archive
             metaData = fileFormat.getMetaData();
             plugin = (BasePlugin<? extends BaseDriver>) fileFormat.getPlugin();
 logger.log(DEBUG, "plugin: " + plugin);

@@ -69,11 +69,11 @@ public class MDRFileFormat extends BaseFileFormat {
     }
 
     @Override
-    public List<Tuple<String, byte[]>> getExtendFiles(String fn, byte[] srcBuf, Archive archive, Entry entry) {
+    public List<Tuple<String, byte[]>> getExtendFiles(byte[] srcBuf, Archive archive, Entry entry) {
         List<Tuple<String, byte[]>> ret = new ArrayList<>();
         byte[] buf;
 
-        buf = getExtendFileAllBytes(fn, Path.getFileNameWithoutExtension(fn) + ".PCM", archive, entry);
+        buf = getExtendFileAllBytes(filename, Path.getFileNameWithoutExtension(filename) + ".PCM", archive, entry);
         if (buf != null) ret.add(new Tuple<>(".PCM", buf));
 
         return ret;

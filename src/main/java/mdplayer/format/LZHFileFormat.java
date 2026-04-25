@@ -191,15 +191,21 @@ public class LZHFileFormat extends BaseFileFormat {
     }
 
     @Override
-    public void load(String archiveFilename, String fn) throws IOException {
-        FileFormat format = FileFormat.getFileFormat(fn);
-        if (format != FileFormat.unknown) {
-            Archive archive = Archives.getArchive(new java.io.File(archiveFilename));
+    public void load(InputStream is, String fn) throws IOException {
+        try {
+            is.mark(2);
+            Archive archive = Archives.getArchive(is);
             Entry entry = archive.getEntry(fn);
-            byte[] srcBuf = archive.getInputStream(entry).readAllBytes();
-            this.extendFiles = ((BaseFileFormat) format).getExtendFiles(fn, srcBuf, archive, entry);
-        } else {
-            throw new FileNotFoundException(fn);
+            this.realFormat = FileFormat.getFileFormat(fn);
+            if (this.realFormat != FileFormat.unknown) {
+                realFormat.load(archive.getInputStream(entry), null);
+                this.filename = fn;
+            } else {
+                throw new FileNotFoundException(fn);
+            }
+        } catch (IOException e) {
+            is.reset();
+            throw e;
         }
     }
 

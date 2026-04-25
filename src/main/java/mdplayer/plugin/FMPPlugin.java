@@ -9,9 +9,7 @@ package mdplayer.plugin;
 import java.lang.System.Logger;
 import java.util.function.Function;
 
-import dotnet4j.io.Path;
 import dotnet4j.io.Stream;
-import dotnet4j.util.compat.StringUtilities;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.Ppz8Chip;
 import mdplayer.chips.RealChipPlugin;
@@ -40,19 +38,13 @@ public class FMPPlugin extends BasePlugin<FmpDriver> {
     @Override
     public void prepare() {
         FileTemp ft = new FileTemp();
-        String ext = playingFileName.substring(playingFileName.lastIndexOf('.') + 1);
-        if (!StringUtilities.isNullOrEmpty(ext)) {
-            ext = ext.toLowerCase();
-            if (ext.length() > 3 && ext.charAt(1) == 'm') {
-                // compile
-                FmpDriver fmp = new FmpDriver(this);
-                fmp.setFileTemp(ft);
-                fmp.compile();
-                playingFileName = Path.changeExtension(
-                        playingFileName,
-                        ext.equals(".mpi") ? ".opi" : (ext.equals(".mvi") ? ".ovi" : ".ozi"));
-                dataBuf = ft.readTemp(playingFileName);
-            }
+        if (this.fileFormat.isMml()) {
+            // compile
+            FmpDriver fmp = new FmpDriver(this);
+            fmp.setFileTemp(ft);
+            fmp.compile();
+            this.playingFileName = fileFormat.getCompiledFilename();
+            this.dataBuf = ft.readTemp(this.playingFileName);
         }
 
         driverVirtual = new FmpDriver(this);

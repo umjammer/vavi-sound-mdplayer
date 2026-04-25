@@ -59,6 +59,9 @@ public class FmpDriver extends BaseDriver {
 
     /** before using ths method, you must do {@link BaseDriver#init} */
     public void compile() {
+        fmp.playingFileName = plugin.playingFileName;
+        fmp.playingArcFileName = plugin.playingArcFileName;
+
         fmp.compile();
     }
 
@@ -83,6 +86,7 @@ public class FmpDriver extends BaseDriver {
 
     @Override
     public void init(EnmModel model, int latency, int waitTime, Object... args) {
+
         MetaData _ = getMetaData(dataBuf, 0);
 
         loopCounter = 0;

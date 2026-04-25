@@ -6342,7 +6342,7 @@ public class frmMain extends JFrame {
                 playingFileName = fn;
                 format = FileFormat.getFileFormat(zfn);
             }
-            format.load(zfn, fn);
+            format.load(Files.newInputStream(java.nio.file.Path.of(fn)), null);
 
             // Set the volume balance before playback
             loadPresetMixerBalance(playingFileName, playingArcFileName, format);

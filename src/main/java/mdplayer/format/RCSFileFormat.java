@@ -101,22 +101,22 @@ public class RCSFileFormat extends BaseFileFormat {
     }
 
     @Override
-    public List<Tuple<String, byte[]>> getExtendFiles(String fn, byte[] srcBuf, Archive archive, Entry entry) {
+    public List<Tuple<String, byte[]>> getExtendFiles(byte[] srcBuf, Archive archive, Entry entry) {
         List<Tuple<String, byte[]>> ret = new ArrayList<>();
         byte[] buf;
 
         String[] cm6 = new String[1], gsd = new String[1], gsd2 = new String[1];
         RCP.getControlFileName(srcBuf, cm6, gsd, gsd2, Common.charset);
         if (cm6[0] != null && !cm6[0].isEmpty()) {
-            buf = getExtendFileAllBytes(fn, cm6[0], archive, entry);
+            buf = getExtendFileAllBytes(filename, cm6[0], archive, entry);
             if (buf != null) ret.add(new Tuple<>(".cm6", buf));
         }
         if (gsd[0] != null && !gsd[0].isEmpty()) {
-            buf = getExtendFileAllBytes(fn, gsd[0], archive, entry);
+            buf = getExtendFileAllBytes(filename, gsd[0], archive, entry);
             if (buf != null) ret.add(new Tuple<>(".gsd", buf));
         }
         if (gsd2[0] != null && !gsd2[0].isEmpty()) {
-            buf = getExtendFileAllBytes(fn, gsd2[0], archive, entry);
+            buf = getExtendFileAllBytes(filename, gsd2[0], archive, entry);
             if (buf != null) ret.add(new Tuple<>(".gsd", buf));
         }
 

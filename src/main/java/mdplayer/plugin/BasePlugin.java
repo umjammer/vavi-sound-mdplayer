@@ -186,17 +186,16 @@ logger.log(Level.INFO, "stop: " + this.stopped);
 
     /** @param params tags: fileName, arcFileName, midiMode, songNo */
     public void setParams(FileFormat format, Map<String, Object> params) {
-        //stop();
         this.fileFormat = format;
         this.playingFileFormat = format;
         this.dataBuf = format.getData();
-        this.playingFileName = (String) params.get("fileName"); // for WaveWriter
+        this.playingFileName = params.get("fileName") != null ? (String) params.get("fileName") : format.getCompiledFilename();
         this.playingArcFileName = (String) params.get("arcFileName");
         chipRegister.plugin(MidiPlugin.class).midiMode = (int) params.getOrDefault("midiMode", 0);
         this.songNo = (int) params.getOrDefault("songNo", 0);
         chipRegister.plugin(MidiPlugin.class).setFileName(playingFileName); // for ExportMIDI
         extendFiles = format.getExtendFiles(); // Additional files
-        Common.playingFilePath = Path.of(playingFileName).getParent();
+        Common.playingFilePath = Path.of(playingFileName).getParent(); // TODO gross
     }
 
     @Override

@@ -160,22 +160,25 @@ logger.log(Level.ERROR, e.getMessage());
     }
 
     public void compile() {
-        var fileNameFMP = "FMP.COM";
-        var fileNameFMC = "FMC.EXE";
+        Path crntDir = Path.of(dir);
+        Path fileNameFMP = crntDir.resolve("FMP.COM");
+        Path fileNameFMC = crntDir.resolve("FMC.EXE");
         int rc = 0;
 
         nise98.init(null, opnaWrite, ft, OngenBoardType.SpeakBoard, sampleRate); // .PC9801_86B); // .SpeakBoard); // .PC9801_26K);
+        nise98.getDos().setSearchPath(searchPaths);
+        nise98.getDos().charset = charset;
 
         // FMP resident
-        nise98.loadRun(fileNameFMP, "s -s", 0x2000);
+        rc = nise98.loadRun(fileNameFMP.toString(), "s -s", 0x2000);
+        if (rc != 0)
+            throw new IllegalArgumentException("fmp return %d".formatted(rc));
         regs = nise98.getRegisters();
 
         // Running FMC
         nise98.getDos().setProgramTerminate(false);
-        if ((rc = nise98.loadRun(fileNameFMC, playingFileName, 0x3000
-                //, true, true, true, 3_000_000, 0
-        )) != 0) {
-            throw new IllegalArgumentException("return %d".formatted(rc));
-        }
+        rc = nise98.loadRun(fileNameFMC.toString(), playingFileName, 0x3000); //, true, true, true, 3_000_000, 0
+        if (rc != 0)
+            throw new IllegalArgumentException("fmc return %d".formatted(rc));
     }
 }

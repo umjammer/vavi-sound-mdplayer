@@ -1,6 +1,8 @@
 package mdplayer.driver.mndrv;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
@@ -52,7 +54,7 @@ public class MndrvWavTestProgram {
         setting.getOther().setWavSwitch(true);
 
         FileFormat format = FileFormat.getFileFormat(filename);
-        format.load((String) null, filename);
+        format.load(Files.newInputStream(Path.of(filename)), null);
         BasePlugin<? extends BaseDriver> plugin = (BasePlugin<? extends BaseDriver>) format.getPlugin();
         plugin.setParams(format, Map.of("fileName", filename));
 

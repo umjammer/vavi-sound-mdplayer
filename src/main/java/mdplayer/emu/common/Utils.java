@@ -10,6 +10,8 @@ import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -24,61 +26,35 @@ public class Utils {
 
     /** */
     public static Path fileExistsIgnoreCase(Path path) {
-logger.log(Level.TRACE, "check existence case insensitive: " + path);
         int p = path.getFileName().toString().lastIndexOf('.');
         String base = path.getFileName().toString().substring(0, p);
         String ext0 = path.getFileName().toString().substring(p).toLowerCase();
         Path parent = path.getParent();
 
+        List<String> trials = new ArrayList<>();
+
         // File.ext
-        String filename = base + ext0;
-        Path trial = parent != null ? parent.resolve(filename) : Path.of(filename);
-        if (Files.exists(trial)) {
-            logger.log(Level.TRACE, "found file: " + trial);
-            return trial;
-        }
-
+        trials.add(base + ext0);
         // File.EXT
-        filename = base + ext0.toUpperCase();
-        trial = parent != null ? parent.resolve(filename) : Path.of(filename);
-        if (Files.exists(trial)) {
-            logger.log(Level.TRACE, "found file: " + trial);
-            return trial;
-        }
-
+        trials.add(base + ext0.toUpperCase());
         // file.ext
-        filename = base.toLowerCase() + ext0;
-        trial = parent != null ? parent.resolve(filename) : Path.of(filename);
-        if (Files.exists(trial)) {
-            logger.log(Level.TRACE, "found file: " + trial);
-            return trial;
-        }
-
+        trials.add(base.toLowerCase() + ext0);
         // file.EXT
-        filename = base.toLowerCase() + ext0.toUpperCase();
-        trial = parent != null ? parent.resolve(filename) : Path.of(filename);
-        if (Files.exists(trial)) {
-            logger.log(Level.TRACE, "found file: " + trial);
-            return trial;
-        }
-
+        trials.add(base.toLowerCase() + ext0.toUpperCase());
         // FILE.ext
-        filename = base.toUpperCase() + ext0;
-        trial = parent != null ? parent.resolve(filename) : Path.of(filename);
-        if (Files.exists(trial)) {
-            logger.log(Level.TRACE, "found file: " + trial);
-            return trial;
-        }
-
+        trials.add(base.toUpperCase() + ext0);
         // FILE.EXT
-        filename = base.toUpperCase() + ext0.toUpperCase();
-        trial = parent != null ? parent.resolve(filename) : Path.of(filename);
-        if (Files.exists(trial)) {
-            logger.log(Level.TRACE, "found file: " + trial);
-            return trial;
-        }
+        trials.add(base.toUpperCase() + ext0.toUpperCase());
 
-logger.log(Level.WARNING, path + " not found");
-        return null;
+        Path r = trials.stream()
+                .map(filename -> parent != null ? parent.resolve(filename) : Path.of(filename))
+                .filter(Files::exists)
+                .findFirst()
+                .orElse(null);
+
+if (r == null) {
+ logger.log(Level.WARNING, path + " not found in " + trials, new Exception(path + " not found in " + trials));
+}
+        return r;
     }
 }

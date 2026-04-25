@@ -711,7 +711,7 @@ public class Ym2608Chip extends BaseChip {
 
             Path chk;
 
-            chk = Common.playingFilePath.resolve(fn);
+            chk = Common.playingFilePath.resolve(fn); // TODO gross
             if (Files.exists(chk))
                 ffn = chk;
             else {

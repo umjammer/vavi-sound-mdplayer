@@ -69,7 +69,7 @@ public class MNDFileFormat extends BaseFileFormat {
     }
 
     @Override
-    public List<Tuple<String, byte[]>> getExtendFiles(String fn, byte[] srcBuf, Archive archive, Entry entry) {
+    public List<Tuple<String, byte[]>> getExtendFiles(byte[] srcBuf, Archive archive, Entry entry) {
         List<Tuple<String, byte[]>> ret = new ArrayList<>();
         byte[] buf;
 
@@ -81,7 +81,7 @@ public class MNDFileFormat extends BaseFileFormat {
             pcmptr[0] += 2;
             for (int i = 0; i < pcmnum; i++) {
                 String mndPcmFn = mdplayer.Common.getNRDString(srcBuf, pcmptr);
-                buf = getExtendFileAllBytes(fn, mndPcmFn, archive, entry);
+                buf = getExtendFileAllBytes(filename, mndPcmFn, archive, entry);
                 if (buf != null) ret.add(new Tuple<>(".PND", buf));
             }
         }

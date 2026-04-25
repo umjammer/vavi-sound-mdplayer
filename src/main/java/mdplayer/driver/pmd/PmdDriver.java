@@ -30,7 +30,6 @@ import mdplayer.driver.BaseDriver;
 import mdplayer.format.FileFormat;
 import mdplayer.format.MMLFileFormat;
 import mdplayer.plugin.BasePlugin;
-import musicDriverInterface.ChipAction;
 import musicDriverInterface.ChipDatum;
 import musicDriverInterface.CompilerInfo;
 import musicDriverInterface.ICompiler;
@@ -45,7 +44,7 @@ import static java.lang.System.getLogger;
  * PMD
  * <p>
  * environment variable
- * <li>{@code mdplayer.pmd.dir} ... </li>
+ * <li>{@code mdplayer.pmd.pmd} ... </li>
  * <li>{@code mdplayer.pmd.opt} ... </li>
  *
  * @author kumatan
@@ -88,7 +87,7 @@ public class PmdDriver extends BaseDriver {
         MetaData metaData;
 
         if (mType == PMDFileType.MML) {
-            envPmd = System.getProperty("mdplayer.pmd.dir", "").split(java.io.File.pathSeparator);
+            envPmd = System.getProperty("mdplayer.pmd.pmd", "").split(java.io.File.pathSeparator);
             envPmdOpt = System.getProperty("mdplayer.pmd.opt", "").split(java.io.File.pathSeparator);
 
             pmdCompiler = ICompiler.factory("pmd.compiler.Compiler");
@@ -232,18 +231,18 @@ public class PmdDriver extends BaseDriver {
         usePPS = setting.getPmd().usePPSDRV;
         usePPZ = setting.getPmd().usePPZ8;
 
-        envPmd = System.getProperty("mdplayer.pmd.dir", "").split(java.io.File.pathSeparator);
+        envPmd = System.getProperty("mdplayer.pmd.pmd", "").split(java.io.File.pathSeparator);
         envPmdOpt = System.getProperty("mdplayer.pmd.opt", "").split(java.io.File.pathSeparator);
 
-        Object[] additionalPDDDotNETOption = {
-                isLoadADPCM, // bool
-                loadADPCMOnly, // bool
+        Object[] driverOption = {
+                isLoadADPCM, // boolean
+                loadADPCMOnly, // boolean
                 setting.getPmd().isAuto, // boolean isAUTO;
-                isVA, // bool
-                isNRM, // bool
-                usePPS, // bool
-                usePPZ, // bool
-                isSPB, // bool
+                isVA, // boolean
+                isNRM, // boolean
+                usePPS, // boolean
+                usePPZ, // boolean
+                isSPB, // boolean
                 envPmd, // String[] Environment variable PMD
                 envPmdOpt, // String[] Environment variable PMDOpt
                 plugin.playingFileName, // String srcFile;
@@ -251,25 +250,73 @@ public class PmdDriver extends BaseDriver {
                 (Function<String, Stream>) this::appendFileReaderCallback
         };
 
-        String[] additionalPMOption = getPMDOption();
-
-        List<ChipAction> lca = new ArrayList<>();
-        PMDChipAction ca = new PMDChipAction(this::writeOPNA1, this::sendOPNAWait);
-        lca.add(ca);
+        String[] commandLineOption = getPMDOption();
 
         pmdDriver.init(
-                lca,
-                // fileName,
-                // oPNAWrite,
-                // oPNAWaitSend,
+                null,
                 ret,
                 null, // This callback is unused
-                additionalPDDDotNETOption, // PMDDotNET option
-                additionalPMOption, // PMD option
+                driverOption, // driver option
+                commandLineOption, // command line option
                 (Function<ChipDatum, Integer>) this::writePPZ8,
                 (Function<ChipDatum, Integer>) this::writePPSDRV,
-                (Function<ChipDatum, Integer>) this::writeP86);
+                (Function<ChipDatum, Integer>) this::writeP86,
+                (Consumer<ChipDatum>) this::writeOPNA1,
+                (BiConsumer<Long, Integer>) this::sendOPNAWait);
 
+
+        pmdDriver.startRendering(Common.VGMProcSampleRate, new Tuple<>("YM2608", baseClock));
+        pmdDriver.startMusic(0);
+    }
+
+    private void initM() {
+        if (pmdDriver == null)
+            pmdDriver = IDriver.factory("pmd.driver.Driver");
+
+        // boolean notSoundBoard2 = false;
+        boolean isLoadADPCM = true;
+        boolean loadADPCMOnly = false;
+        List<MmlDatum> buf = new ArrayList<>();
+        for (byte b : dataBuf)
+            buf.add(new MmlDatum(b & 0xff));
+
+        isNRM = setting.getPmd().soundBoard == 0;
+        isSPB = setting.getPmd().soundBoard == 1;
+        isVA = false;
+        usePPS = setting.getPmd().usePPSDRV;
+        usePPZ = setting.getPmd().usePPZ8;
+
+        envPmd = System.getProperty("mdplayer.pmd.dir", "").split(java.io.File.pathSeparator);
+        envPmdOpt = System.getProperty("mdplayer.pmd.opt", "").split(java.io.File.pathSeparator);
+
+        Object[] driverOption = new Object[] {
+                isLoadADPCM, // boolean
+                loadADPCMOnly, // boolean
+                setting.getPmd().isAuto, // boolean isAUTO;
+                isVA, // boolean
+                isNRM, // boolean
+                usePPS, // boolean
+                usePPZ, // boolean
+                isSPB, // boolean
+                envPmd, // String[] Environment variable PMD
+                envPmdOpt, // String[] Environment variable PMDOpt
+                plugin.playingFileName, // String srcFile;
+                "", // String PPCFileHeader is ignored (no setting required)
+                (Function<String, Stream>) this::appendFileReaderCallback
+        };
+
+        String[] commandLineOption = getPMDOption();
+
+        pmdDriver.init(null,
+                buf.toArray(MmlDatum[]::new),
+                null, // This callback is unused
+                driverOption, // driver option
+                commandLineOption, // command line option
+                (Function<ChipDatum, Integer>) this::writePPZ8,
+                (Function<ChipDatum, Integer>) this::writePPSDRV,
+                (Function<ChipDatum, Integer>) this::writeP86,
+                (Consumer<ChipDatum>) this::writeOPNA1,
+                (BiConsumer<Long, Integer>) this::sendOPNAWait);
 
         pmdDriver.startRendering(Common.VGMProcSampleRate, new Tuple<>("YM2608", baseClock));
         pmdDriver.startMusic(0);
@@ -299,119 +346,6 @@ public class PmdDriver extends BaseDriver {
         // Add additional weight based on size and elapsed time.
         int m = Math.max((int) (size / 20 - elapsed), 0); // 20 Threshold (magic number)
         try { Thread.sleep(m); } catch (InterruptedException _) {}
-    }
-
-    public static class PMDChipAction implements ChipAction {
-        private final Consumer<ChipDatum> oPNAWrite;
-
-        private final BiConsumer<Long, Integer> oPNAWaitSend;
-
-        public PMDChipAction(Consumer<ChipDatum> oPNAWrite, BiConsumer<Long, Integer> oPNAWaitSend) {
-            this.oPNAWrite = oPNAWrite;
-            this.oPNAWaitSend = oPNAWaitSend;
-        }
-
-        @Override
-        public String getChipName() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void waitSend(long t1, int t2) {
-            oPNAWaitSend.accept(t1, t2);
-        }
-
-        @Override
-        public void writePCMData(byte[] data, int startAddress, int endAddress) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void writeRegister(ChipDatum cd) {
-            oPNAWrite.accept(cd);
-        }
-    }
-
-    private void initM() {
-        if (pmdDriver == null)
-            pmdDriver = IDriver.factory("pmd.driver.Driver");
-
-        // boolean notSoundBoard2 = false;
-        boolean isLoadADPCM = true;
-        boolean loadADPCMOnly = false;
-        List<MmlDatum> buf = new ArrayList<>();
-        for (byte b : dataBuf)
-            buf.add(new MmlDatum(b & 0xff));
-
-        isNRM = setting.getPmd().soundBoard == 0;
-        isSPB = setting.getPmd().soundBoard == 1;
-        isVA = false;
-        usePPS = setting.getPmd().usePPSDRV;
-        usePPZ = setting.getPmd().usePPZ8;
-
-        envPmd = System.getProperty("mdplayer.pmd.dir", "").split(java.io.File.pathSeparator);
-        envPmdOpt = System.getProperty("mdplayer.pmd.opt", "").split(java.io.File.pathSeparator);
-
-        Object[] additionalPDDDotNETOption = new Object[] {
-                isLoadADPCM, // boolean
-                loadADPCMOnly, // boolean
-                setting.getPmd().isAuto, // boolean isAUTO;
-                isVA, // boolean
-                isNRM, // boolean
-                usePPS, // boolean
-                usePPZ, // boolean
-                isSPB, // boolean
-                envPmd, // String[] Environment variable PMD
-                envPmdOpt, // String[] Environment variable PMDOpt
-                plugin.playingFileName, // String srcFile;
-                "", // String PPCFileHeader is ignored (no setting required)
-                (Function<String, Stream>) this::appendFileReaderCallback
-        };
-
-        String[] additionalPMDOption = getPMDOption();
-
-        List<ChipAction> lca = new ArrayList<>();
-        PMDChipAction ca = new PMDChipAction(this::writeOPNA1, this::sendOPNAWait);
-        lca.add(ca);
-
-        pmdDriver.init(lca,
-                buf.toArray(MmlDatum[]::new),
-                null, // This callback is unused
-                additionalPDDDotNETOption, // PMDDotNET option
-                additionalPMDOption, // PMD option
-                (Function<ChipDatum, Integer>) this::writePPZ8,
-                (Function<ChipDatum, Integer>) this::writePPSDRV,
-                (Function<ChipDatum, Integer>) this::writeP86);
-
-        pmdDriver.startRendering(Common.VGMProcSampleRate, new Tuple<>("YM2608", baseClock));
-        pmdDriver.startMusic(0);
-    }
-
-    private void chipWaitSend(long elapsed, int size) {
-        if (model == EnmModel.VirtualModel) {
-            //JOptionPane.showMessageDialog(null, "elapsed:%d size:%d".formatted(elapsed, size));
-            //int n = Math.max((int)(size / 20 - elapsed), 0);//20 Threshold (magic number)
-            //Thread.sleep(n);
-            return;
-        }
-
-        // Add additional weight based on size and elapsed time.
-        int m = Math.max((int) (size / 20 - elapsed), 0); // 20 Threshold (magic number)
-        try { Thread.sleep(m); } catch (InterruptedException _) {}
-    }
-
-    private void chipWriteRegister(ChipDatum dat) {
-        if (dat == null)
-            return;
-        if (dat.address == -1)
-            return;
-        if (dat.data == -1)
-            return;
-        if (dat.port == -1)
-            return;
-
-        plugin.chipRegister.chip(Ym2608Chip.class).write(0, dat.port, dat.address, dat.data, model);
-        //logger.log(Level.TRACE, "%d %d".formatted(dat.address, dat.data));
     }
 
     private int writePPSDRV(ChipDatum arg) {
@@ -488,8 +422,8 @@ logger.log(Level.DEBUG, "found pmd additional file: " + fileName.replace("\\", j
             op.addAll(Arrays.asList(envPmdOpt));
 
         // Arguments (optional in the IDE)
-        String[] drvArgs = setting.getPmd().driverArguments.split(" ");
-        if (drvArgs != null && drvArgs.length > 0)
+        String[] drvArgs = setting.getPmd().driverArguments.split("\\s");
+        if (drvArgs.length > 0)
             op.addAll(Arrays.asList(drvArgs));
 
         return op.toArray(String[]::new);

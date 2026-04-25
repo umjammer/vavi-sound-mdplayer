@@ -190,18 +190,21 @@ public class ZIPFileFormat extends BaseFileFormat {
     }
 
     @Override
-    public void load(String archiveFilename, String fn) throws IOException {
-        Archive archive = Archives.getArchive(new java.io.File(archiveFilename));
-        Entry entry = archive.getEntry(fn);
-
-        FileFormat format = FileFormat.getFileFormat(fn);
-        if (format != FileFormat.unknown) {
-            String[] arcFn = new String[1];
-            byte[] srcBuf = getBytesFromZipFile(archive, entry, arcFn);
-            if (!arcFn[0].isEmpty()) fn = arcFn[0];
-            this.extendFiles = ((BaseFileFormat) format).getExtendFiles(fn, srcBuf, archive, entry);
-        } else {
-            throw new FileNotFoundException(fn);
+    public void load(InputStream is, String fn) throws IOException {
+        try {
+            is.mark(2);
+            Archive archive = Archives.getArchive(is);
+            Entry entry = archive.getEntry(fn);
+            this.realFormat = FileFormat.getFileFormat(fn);
+            if (this.realFormat != FileFormat.unknown) {
+                realFormat.load(archive.getInputStream(entry), null);
+                this.filename = fn;
+            } else {
+                throw new FileNotFoundException(fn);
+            }
+        } catch (IOException e) {
+            is.reset();
+            throw e;
         }
     }
 

@@ -74,7 +74,7 @@ public class MDXFileFormat extends BaseFileFormat {
     }
 
     @Override
-    public List<Tuple<String, byte[]>> getExtendFiles(String fn, byte[] srcBuf, Archive archive, Entry entry) {
+    public List<Tuple<String, byte[]>> getExtendFiles(byte[] srcBuf, Archive archive, Entry entry) {
         List<Tuple<String, byte[]>> ret = new ArrayList<>();
         byte[] buf;
 
@@ -82,7 +82,7 @@ public class MDXFileFormat extends BaseFileFormat {
         MxDriver.getPDXFileName(srcBuf, PDX, Common.charset);
         if (PDX[0] != null && !PDX[0].isEmpty()) {
             String pdx = PDX[0].toLowerCase().endsWith(".pdx") ? PDX[0] : PDX[0] + ".pdx";
-            buf = getExtendFileAllBytes(fn, pdx, archive, entry);
+            buf = getExtendFileAllBytes(filename, pdx, archive, entry);
             if (buf != null) ret.add(new Tuple<>(pdx, buf));
         }
 
@@ -106,9 +106,9 @@ public class MDXFileFormat extends BaseFileFormat {
      * @throws IllegalArgumentException sampling late must be set as 44.1kHz.
      */
     @Override
-    public void load(String archive, String fn) throws IOException {
-        super.load(archive, fn);
-        if (Path.getExtension(fn).equalsIgnoreCase(".MDX")) {
+    public void load(InputStream is, String fn) throws IOException {
+        super.load(is, fn);
+        if (Path.getExtension(filename).equalsIgnoreCase(".MDX")) {
             if (Setting.getInstance().getOutputDevice().getSampleRate() != 44100) {
                 throw new IllegalStateException("When playing MDX files, set the sampling rate to 44.1kHz.");
             }

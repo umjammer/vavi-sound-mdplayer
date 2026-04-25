@@ -2,11 +2,13 @@ package mdplayer.emu.nise68;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 
 import dotnet4j.io.File;
 import dotnet4j.io.Path;
+import mdplayer.emu.common.Utils;
 
 import static java.lang.System.getLogger;
 
@@ -41,15 +43,19 @@ public class FileMng {
     }
 
     public boolean existsFile(String vFile) {
+logger.log(Level.TRACE, "vFile: " + vFile);
         // Check if there are files in the virtual drive
         String vFull = Path.combine(VCurrentPath, vFile).toUpperCase();
+logger.log(Level.TRACE, "vFull: " + vFull);
         if (vDrive.containsKey(vFull)) return true;
 
         try {
             // If not present on the virtual drive, check the physical drive
-            String pFull = convertPhysicalFileName(vFull);
-            return File.exists(pFull);
+            String pFull = convertPhysicalFileName(Path.combine(VCurrentPath, vFile)).replace("\\", java.io.File.separator);
+logger.log(Level.TRACE, "pFull: " + pFull);
+            return Utils.fileExistsIgnoreCase(java.nio.file.Path.of(pFull)) != null;
         } catch (Exception e) {
+logger.log(Level.ERROR, e.getMessage(), e);
             return false;
         }
     }
@@ -104,10 +110,11 @@ public class FileMng {
 
         try {
             // If not present on the virtual drive, check the physical drive
-            String pFull = convertPhysicalFileName(vFull);
+            String pFull = convertPhysicalFileName(Path.combine(VCurrentPath, vFilename));
             byte[] body;
             try {
-                body = File.readAllBytes(pFull.replace("\\", java.io.File.separator));
+                java.nio.file.Path p = Utils.fileExistsIgnoreCase(java.nio.file.Path.of(pFull.replace("\\", java.io.File.separator)));
+                body = p != null ? Files.readAllBytes(p) : null;
             } catch (Exception e) {
 logger.log(Level.ERROR, e.getMessage(), e);
                 body = null;

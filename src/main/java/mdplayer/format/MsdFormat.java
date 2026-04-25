@@ -102,12 +102,9 @@ public class MsdFormat extends BaseFileFormat implements FileFormat.SampledFileF
         return 0;
     }
 
-    private String filename;
-
     @Override
     public boolean isSupported(InputStream is) throws IOException {
         if (isCompressedStream(is)) return false;
-        this.filename = java.nio.file.Path.of(SoundUtil.getSource(is)).toString();
-        return Arrays.stream(getExtensions()).anyMatch(e -> filename.toLowerCase().endsWith(e));
+        return Arrays.stream(getExtensions()).anyMatch(e -> java.nio.file.Path.of(SoundUtil.getSource(is)).toString().toLowerCase().endsWith(e));
     }
 }

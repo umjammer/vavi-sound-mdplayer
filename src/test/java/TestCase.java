@@ -151,7 +151,7 @@ Debug.println("settings\n" +
 Debug.println("filename: " + file);
         FileFormat format = FileFormat.getFileFormat(file);
 Debug.println("format: " + format.getClass().getSimpleName());
-        format.load((String) null, file);
+        format.load(Files.newInputStream(Path.of(file)), null);
         var plugin = (BasePlugin<? extends BaseDriver>) format.getPlugin();
         plugin.setParams(format, Map.of(
                 "fileName", file,
@@ -242,10 +242,10 @@ Debug.println("stop");
             try {
                 FileFormat format = FileFormat.getFileFormat(p.toString());
 Debug.println(p);
-                format.load((String) null, p.toString());
+                format.load(Files.newInputStream(p), null);
                 MetaData music = format.getMetaData();
 Debug.println(music);
-            } catch (Exception e) {
+            } catch (Exception _) {
             }
         });
     }

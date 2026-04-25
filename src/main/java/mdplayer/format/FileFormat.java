@@ -7,13 +7,11 @@ import java.lang.System.Logger.Level;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ServiceLoader;
-
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
 import dotnet4j.util.compat.Tuple;
 import mdplayer.PlayList;
-import mdplayer.PlayList.Music;
 import mdplayer.plugin.Plugin;
 import musicDriverInterface.MetaData;
 import vavi.util.archive.Archive;
@@ -34,6 +32,10 @@ public interface FileFormat {
 
     List<PlayList.Music> getMusic(PlayList.Music ms, byte[] buf, String zipFile /* = null */);
 
+    boolean isMml();
+
+    String getCompiledFilename();
+
     byte[] getData();
 
     List<Tuple<String, byte[]>> getExtendFiles();
@@ -50,17 +52,15 @@ public interface FileFormat {
     /** for insert TODO index might not use */
     List<PlayList.Music> addFileLoop(int index, PlayList.Music mc, Archive archive, Entry entry /* = null */) throws IOException;
 
-    /**
-     * Loads audio file data w/ related files also.
-     */
-    void load(String archive, String fn) throws IOException;
-
     interface SampledFileFormat {}
 
     interface StreamFileFormat {}
 
-    /** for SPI */
-    void load(InputStream is, String fn) throws IOException;
+    /**
+     * Loads audio file data w/ related files also.
+     * @param filename sub filename (e.g. inside an archive)
+     */
+    void load(InputStream is, String filename) throws IOException;
 
     /** for SPI */
     boolean isSupported(InputStream is) throws IOException;

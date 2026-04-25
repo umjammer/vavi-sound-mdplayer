@@ -8,6 +8,7 @@ import java.io.UncheckedIOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.lang.reflect.Field;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -22,6 +23,7 @@ import mdplayer.Setting;
 import mdplayer.emu.common.Utils;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
+import vavi.sound.SoundUtil;
 import vavi.util.ByteUtil;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
@@ -90,6 +92,16 @@ public abstract class BaseFileFormat implements FileFormat {
         return musics;
     }
 
+    @Override
+    public boolean isMml() {
+        return false;
+    }
+
+    @Override
+    public String getCompiledFilename() {
+        return filename;
+    }
+
     // default
     protected boolean isMatchFcc(int fcc) {
         return false;
@@ -116,7 +128,7 @@ public abstract class BaseFileFormat implements FileFormat {
     }
 
     // default
-    protected List<Tuple<String, byte[]>> getExtendFiles(String fn, byte[] srcBuf, Archive archive, Entry entry) {
+    protected List<Tuple<String, byte[]>> getExtendFiles(byte[] srcBuf, Archive archive, Entry entry) {
         return null;
     }
 
@@ -258,6 +270,8 @@ logger.log(Level.DEBUG, result);
 
     protected byte[] srcBuf;
     protected List<Tuple<String, byte[]>> extendFiles;
+    protected String filename;
+    protected FileFormat realFormat;
 
     @Override
     public byte[] getData() {
@@ -270,15 +284,11 @@ logger.log(Level.DEBUG, result);
     }
 
     @Override
-    public void load(String archive, String fn) throws IOException {
-        this.srcBuf = getAllBytes(fn);
-        this.extendFiles = getExtendFiles(fn, srcBuf, null, null);
-    }
-
-    @Override
-    public void load(InputStream is, String fn) throws IOException {
+    public void load(InputStream is, String filename) throws IOException {
+        URI source = SoundUtil.getSource(is);
+        this.filename = source != null && source.getScheme().equals("file") ? source.getPath() : null;
         this.srcBuf = is.readAllBytes();
-        this.extendFiles = getExtendFiles(fn, srcBuf, null, null);
+        this.extendFiles = getExtendFiles(srcBuf, null, null);
     }
 
     @Override

@@ -5,6 +5,8 @@ import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -13,9 +15,6 @@ import java.util.function.BiConsumer;
 import java.util.function.IntConsumer;
 import java.util.function.IntSupplier;
 
-import dotnet4j.io.File;
-import dotnet4j.io.FileNotFoundException;
-import dotnet4j.io.Path;
 import dotnet4j.util.compat.Tuple;
 import mdplayer.driver.mxdrv.MXDRV.Pcm8Interface;
 import mdplayer.driver.mxdrv.MXDRV.Pcm8St;
@@ -145,7 +144,7 @@ public class Zms {
                         byte[] zmd = null;
                         if (preData.isEmpty()) {
                             //if (nise68.hmn.fb.containsKey(fnZMD)) zmd = nise68.hmn.fb[fnZMD];
-                            if (fileMng.existsFile(fnZMD)) zmd = fileMng.vReadAllBytes(fnZMD);
+                            if (fileMng.existsFile(fnZMD.toString())) zmd = fileMng.vReadAllBytes(fnZMD.toString());
                         } else {
                             //if (nise68.hmn.fb.containsKey(preData[0])) zmd = nise68.hmn.fb[preData[0]];
                             if (fileMng.existsFile(preData.getFirst())) zmd = fileMng.vReadAllBytes(preData.getFirst());
@@ -190,16 +189,12 @@ public class Zms {
     }
 
     void run(byte[] data) throws IOException {
-        //if (model == EnmModel.RealModel) { return; }
-
         String fn = playingFileName;
-        String withoutExtFn;
-        String dn = java.nio.file.Path.of(fn).getParent() != null ? java.nio.file.Path.of(fn).getParent().toString() : null;
-        if (dn == null || dn.isEmpty()) dn = Path.getDirectoryName(System.getProperty("user.dir"));
-        if (dn != null && !dn.isEmpty()) withoutExtFn = Path.combine(dn, Path.getFileNameWithoutExtension(fn));
-        else withoutExtFn = Path.getFileNameWithoutExtension(fn);
-        String fnZMD = Path.getFileName(withoutExtFn + ".ZMD");
-        String fnZMS = Path.getFileName(withoutExtFn + ".ZMS");
+        String withoutExtFn = fn.substring(0, fn.lastIndexOf('.') > 0 ? fn.lastIndexOf('.') : fn.length());
+        Path dn = Path.of(fn).getParent();
+        if (dn == null) dn = Path.of(System.getProperty("user.dir"));
+        Path fnZMD = dn.resolve(withoutExtFn + ".ZMD");
+        Path fnZMS = dn.resolve(withoutExtFn + ".ZMS");
 
         nise68 = new Nise68();
         nise68.setMPcm(version == 2 ? this::pcm8CallBack : this::mPcmCallBack);
@@ -214,11 +209,11 @@ public class Zms {
             }
 
         } else {
-            fileMng = new FileMng(dn, "C:");
+            fileMng = new FileMng(dn.toString(), "C:");
         }
         nise68.init(dirZPDs, version == 2, fileMng, charset);
 
-        fileMng.setVFile(Path.getFileName(fnZMD), data);
+        fileMng.setVFile(fnZMD.getFileName().toString(), data);
         //nise68.hmn.fb.add(fnZMD, dataBuf);
         //if (format == EnmFileFormat.ZMD) nise68.hmn.fb.add(fnZMD, dataBuf);
         //else {
@@ -235,31 +230,30 @@ public class Zms {
     }
 
     private final List<String> preData = new ArrayList<>();
-    private String fnZMD;
+    private Path fnZMD;
     private int trp = 3 + 32;
     int waitNextPlay = 0;
     private int rc;
 
     private void play() throws IOException {
         String fn = playingFileName;
-        String withoutExtFn;
-        String dn = Path.getDirectoryName(fn);
-        if (dn != null && !dn.isEmpty()) withoutExtFn = Path.combine(dn, Path.getFileNameWithoutExtension(fn));
-        else withoutExtFn = Path.getFileNameWithoutExtension(fn);
-        fnZMD = Path.getFileName(withoutExtFn + ".ZMD");
-        java.nio.file.Path crntDir = java.nio.file.Path.of(dir);
+        String withoutExtFn = fn.substring(0, fn.lastIndexOf('.') > 0 ? fn.lastIndexOf('.') : fn.length());
+        Path dn = Path.of(fn).getParent();
+        if (dn == null) dn = Path.of(System.getProperty("user.dir"));
+        fnZMD = dn.resolve(withoutExtFn + ".ZMD");
+        Path crntDir = Path.of(dir);
 
-        java.nio.file.Path zmsc3 = crntDir.resolve("ZMSC3.X");
+        Path zmsc3 = crntDir.resolve("ZMSC3.X");
         if (!Files.exists(zmsc3)) {
             logger.log(Level.INFO, "File not found : %s".formatted(zmsc3));
-            throw new FileNotFoundException(zmsc3.toString());
+            throw new NoSuchFileException(zmsc3.toString());
         }
         fileMng.setVFile(zmsc3.toString());
 
-        java.nio.file.Path zmusic = crntDir.resolve("ZMUSIC.X"); // ver2
+        Path zmusic = crntDir.resolve("ZMUSIC.X"); // ver2
         if (!Files.exists(zmusic)) {
             logger.log(Level.INFO, "File not found : %s".formatted(zmusic));
-            throw new FileNotFoundException(zmusic.toString());
+            throw new NoSuchFileException(zmusic.toString());
         }
         fileMng.setVFile(zmusic.toString());
 
@@ -274,17 +268,17 @@ public class Zms {
             preData.clear();
             if (supportFileBinaryAndName != null) {
                 for (Tuple<byte[], String> s : supportFileBinaryAndName) {
-                    String ext = Path.getExtension(s.getItem2()).toUpperCase();
+                    String ext = dotnet4j.io.Path.getExtension(s.getItem2()).toUpperCase();
                     if (ext.equals(".ZPD")) {
-                        optionZpd = " -B" + Path.getFileName(s.getItem2());
+                        optionZpd = " -B" + dotnet4j.io.Path.getFileName(s.getItem2());
                         if (!fileMng.existsFile(s.getItem2())) {
                             fileMng.setVFile(s.getItem2(), s.getItem1());
                         }
                     }
                     if (ext.equals(".ZMD") || ext.equals(".ZMS")) {
                         String f = s.getItem2();
-                        f = Path.changeExtension(f, ".ZMD");
-                        optionZmd = " -N" + Path.getFileName(f);
+                        f = dotnet4j.io.Path.changeExtension(f, ".ZMD");
+                        optionZmd = " -N" + dotnet4j.io.Path.getFileName(f);
                         if (!fileMng.existsFile(f)) {
                             fileMng.setVFile(f, s.getItem1());
                             preData.add(f);
@@ -308,20 +302,20 @@ public class Zms {
             // play
             byte[] zmd = null;
             if (preData.isEmpty()) {
-                if (File.exists(fnZMD)) {
-                    zmd = File.readAllBytes(fnZMD);
+                if (Files.exists(fnZMD)) {
+                    zmd = Files.readAllBytes(fnZMD);
                     //if (!nise68.hmn.fb.containsKey(fnZMD)) {
                     //    nise68.hmn.fb.add(fnZMD, zmd);
                     //}
-                    if (!fileMng.existsFile(fnZMD)) {
-                        fileMng.setVFile(fnZMD, zmd);
+                    if (!fileMng.existsFile(fnZMD.toString())) {
+                        fileMng.setVFile(fnZMD.toString(), zmd);
                     }
                 } else {
                     //if (nise68.hmn.fb.containsKey(fnZMD)) {
                     //    zmd = nise68.hmn.fb[fnZMD];
                     //}
-                    if (fileMng.existsFile(Path.getFileName(fnZMD))) {
-                        zmd = fileMng.vReadAllBytes(Path.getFileName(fnZMD));
+                    if (fileMng.existsFile(fnZMD.getFileName().toString())) {
+                        zmd = fileMng.vReadAllBytes(fnZMD.getFileName().toString());
                     }
                 }
             } else {
@@ -392,7 +386,7 @@ public class Zms {
         }
         {
             // play
-            byte[] zmd = fileMng.vReadAllBytes(Path.getFileName(fnZMD)); // nise68.hmn.fb[fnZMD];
+            byte[] zmd = fileMng.vReadAllBytes(fnZMD.getFileName().toString()); // nise68.hmn.fb[fnZMD];
             int fileSize = zmd.length;
             int filePtr = nise68.hmn.memMng.malloc(fileSize);
             for (int i = 0; i < zmd.length; i++) {
@@ -414,18 +408,17 @@ public class Zms {
     }
 
     public boolean compile(byte[] vgmBuf, String fn) {
-        String withoutExtFn;
-        String dn = Path.getDirectoryName(fn);
-        if (dn != null && !dn.isEmpty()) withoutExtFn = Path.combine(dn, Path.getFileNameWithoutExtension(fn));
-        else withoutExtFn = Path.getFileNameWithoutExtension(fn);
-        String fnZMD = Path.getFileName(withoutExtFn + ".ZMD");
-        String fnZMS = Path.getFileName(withoutExtFn + ".ZMS");
-        java.nio.file.Path zmc = java.nio.file.Path.of(dir, "ZMUSIC.X");
+        String withoutExtFn = fn.substring(0, fn.lastIndexOf('.') > 0 ? fn.lastIndexOf('.') : fn.length());
+        Path dn = Path.of(fn).getParent();
+        if (dn == null) dn = Path.of(System.getProperty("user.dir"));
+        Path fnZMD = dn.resolve(withoutExtFn + ".ZMD");
+        Path fnZMS = dn.resolve(withoutExtFn + ".ZMS");
+        Path zmc = Path.of(dir, "ZMC.X");
         if (!Files.exists(zmc)) {
             logger.log(Level.INFO, "File not found : %s".formatted(zmc));
             return false; // throw new FileNotFoundException(zmc);
         }
-        fileMng = new FileMng(dn, "C:"); // Set the path of the music file to the current physical drive. The current virtual drive is "C:" (default).
+        fileMng = new FileMng(dn.toString(), "C:"); // Set the path of the music file to the current physical drive. The current virtual drive is "C:" (default).
         fileMng.setVFile(zmc.toString());
 
         nise68 = new Nise68();
@@ -437,11 +430,11 @@ public class Zms {
 
         // compile
         //nise68.hmn.fb.add(fnZMS, dataBuf);
-        fileMng.setVFile(fnZMS, vgmBuf);
+        fileMng.setVFile(fnZMS.toString(), vgmBuf);
         //if (nise68.LoadRun(zmc, Path.GetFileName(fnZMS), Path.GetDirectoryName(fnZMS), 0x00012000,
         // true, true, true
         // ) != 0)
-        if (nise68.loadRun(zmc.toString(), Path.getFileName(fnZMS), 0x0001_2000,
+        if (nise68.loadRun(zmc.toString(), fnZMS.getFileName().toString(), 0x0001_2000,
                 true, true, true,
                 100_000_000, 0
         ) != 0) {
@@ -449,19 +442,17 @@ public class Zms {
             return false;
         }
         //compiledData = nise68.hmn.fb[fnZMD];
-        compiledData = fileMng.vReadAllBytes(fnZMD);
+        compiledData = fileMng.vReadAllBytes(fnZMD.getFileName().toString());
         return true;
     }
 
     public boolean compileV2(byte[] vgmBuf, String fn) {
-        //String fn = playingFileName;
-        String withoutExtFn;
-        String dn = Path.getDirectoryName(fn);
-        if (dn != null && !dn.isEmpty()) withoutExtFn = Path.combine(dn, Path.getFileNameWithoutExtension(fn));
-        else withoutExtFn = Path.getFileNameWithoutExtension(fn);
-        String fnZMD = Path.getFileName(withoutExtFn + ".ZMD");
-        String fnZMS = Path.getFileName(withoutExtFn + ".ZMS");
-        java.nio.file.Path zmusic = java.nio.file.Path.of(dir, "ZMUSIC.X");
+        String withoutExtFn = fn.substring(0, fn.lastIndexOf('.') > 0 ? fn.lastIndexOf('.') : fn.length());
+        Path dn = Path.of(fn).getParent();
+        if (dn == null) dn = Path.of(System.getProperty("user.dir"));
+        Path fnZMD = dn.resolve(withoutExtFn + ".ZMD");
+        Path fnZMS = dn.resolve(withoutExtFn + ".ZMS");
+        Path zmusic = Path.of(dir, "ZMUSIC.X");
         if (!Files.exists(zmusic)) {
             logger.log(Level.INFO, "File not found : %s".formatted(zmusic));
             return false; // throw new FileNotFoundException(zmc);
@@ -473,18 +464,18 @@ public class Zms {
         nise68.setMidi(this::midiCallBack, frequency);
         nise68.setSCC_A(this::sccCallBack, frequency);
 
-        fileMng = new FileMng(dn, "C:"); // Set the path of the music file to the current physical drive. The current virtual drive is "C:" (default).
+        fileMng = new FileMng(dn.toString(), "C:"); // Set the path of the music file to the current physical drive. The current virtual drive is "C:" (default).
         fileMng.setVFile(zmusic.toString());
 
         nise68.init(null, false, fileMng, charset);
 
         // compile
         //nise68.hmn.fb.add(fnZMS, dataBuf);
-        fileMng.setVFile(fnZMS, vgmBuf);
+        fileMng.setVFile(fnZMS.getFileName().toString(), vgmBuf);
         //if (nise68.loadRun(zmusic, "-C " + Path.getFileName(fnZMS), Path.getDirectoryName(fnZMS), 0x00012000,
         // true, true, true
         //) != 0)
-        if (nise68.loadRun(zmusic.toString(), "-C " + fnZMS, 0x00012000,
+        if (nise68.loadRun(zmusic.toString(), "-C " + fnZMS.getFileName(), 0x00012000,
                 true, true, true,
                 100_000_000, 0
         ) != 0) {
@@ -492,7 +483,7 @@ public class Zms {
             return false;
         }
         //compiledData = nise68.hmn.fb[fnZMD];
-        compiledData = fileMng.vReadAllBytes(Path.getFileName(fnZMD));
+        compiledData = fileMng.vReadAllBytes(fnZMD.getFileName().toString());
 
         return true;
     }

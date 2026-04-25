@@ -145,10 +145,10 @@ public class NiseHuman {
 
     public void loadAndExecuteFile(String filename, String option, int startAddress) {
         logger.log(Level.INFO, "niseHuman: %s %s".formatted(filename, option));
-        logger.log(Level.INFO, "currentWorkPath: %s".formatted(currentWorkPath));
 
         currentWorkPath = fileMng.VCurrentPath;
         if (currentWorkPath == null || currentWorkPath.isEmpty()) currentWorkPath = "C:\\";
+        logger.log(Level.INFO, "currentWorkPath: %s".formatted(currentWorkPath));
 
         byte[] bin = fileMng.vReadAllBytes(filename);
         String fext = Path.getExtension(filename).toUpperCase();
@@ -403,7 +403,7 @@ public class NiseHuman {
         } while (true);
         String text = new String(ByteUtil.toByteArray(msg), charset);
         if (!consoleTextBuf.isEmpty()) {
-            logger.log(Level.INFO, new String(ByteUtil.toByteArray(consoleTextBuf), charset));
+            System.out.print(new String(ByteUtil.toByteArray(consoleTextBuf), charset));
             consoleTextBuf.clear();
         }
         text = text.replace("{", "{{");
@@ -467,13 +467,13 @@ public class NiseHuman {
                     if (code != 0x07)
                         logger.log(Level.INFO, "ascii code %02x", code);
                     else
-                        logger.log(Level.INFO, String.valueOf((char) code));
+                        System.out.print((char) code);
                 } else {
-                    logger.log(Level.INFO, String.valueOf((char) code));
+                    System.out.print((char) code);
                 }
                 break;
             default:
-                throw new UnsupportedOperationException();
+                throw new UnsupportedOperationException("md: " + md);
         }
     }
 
@@ -486,7 +486,7 @@ public class NiseHuman {
             reg.getD()[0] = mem.peekL((intNo & 0xffff) * 4);
             mem.pokeL((intNo & 0xffff) * 4, jobAdr);
         } else {
-            throw new UnsupportedOperationException();
+            throw new UnsupportedOperationException("intNo: %x".formatted(intNo));
         }
     }
 

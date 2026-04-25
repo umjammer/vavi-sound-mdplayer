@@ -188,7 +188,7 @@ public class NiseDos {
                 }
 
                 logger.log(Level.TRACE, "<NiseDos>INT%02xh AH:$%02x".formatted(imm8 & 0xff, regs.getAH() & 0xff));
-                int ptr = imm8 * 4;
+                int ptr = (imm8 & 0xff) * 4;
                 short ip = mem.peekW(ptr);
                 short cs = mem.peekW(ptr + 2);
                 if ((ip | cs) == 0) break;
@@ -718,7 +718,7 @@ logger.log(Level.INFO, "file not found: " + fn);
                 for (String fp : searchPath) {
                     Path sfn = Path.of(fp, f);
                     logger.log(Level.INFO, "Search File: %s".formatted(sfn));
-                    Path realSfn = Utils.fileExistsIgnoreCase(Path.of(playingArcFile));
+                    Path realSfn = Utils.fileExistsIgnoreCase(sfn);
                     if (realSfn != null) {
                         byte[] b = Files.readAllBytes(realSfn);
                         logger.log(Level.INFO, "read data size: %s".formatted(b.length));

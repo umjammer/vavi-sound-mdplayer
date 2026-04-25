@@ -14,6 +14,7 @@ import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
 import dotnet4j.io.Path;
+import dotnet4j.util.compat.StringUtilities;
 import mdplayer.PlayList.Music;
 import mdplayer.driver.fmp.FmpDriver;
 import mdplayer.plugin.FMPPlugin;
@@ -42,7 +43,26 @@ public class FMPFormat extends BaseFileFormat implements FileFormat.SampledFileF
 
     @Override
     public MetaData getMetaData() {
-        return new FmpDriver().getMetaData(this.srcBuf, 0);
+        if (!isMml()) {
+            return new FmpDriver().getMetaData(this.srcBuf, 0);
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public boolean isMml() {
+        if (StringUtilities.isNullOrEmpty(this.filename)) return false;
+        String ext = this.filename.substring(this.filename.lastIndexOf('.'));
+        if (StringUtilities.isNullOrEmpty(ext)) return false;
+        ext = ext.toLowerCase();
+        return ext.length() > 3 && ext.charAt(1) == 'm';
+    }
+
+    public String getCompiledFilename() {
+        String ext = this.filename.substring(this.filename.lastIndexOf('.'));
+        return Path.changeExtension(this.filename,
+                ext.equals(".mpi") ? ".opi" : (ext.equals(".mvi") ? ".ovi" : ".ozi"));
     }
 
     @Override
