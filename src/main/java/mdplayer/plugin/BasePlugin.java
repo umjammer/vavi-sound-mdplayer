@@ -37,6 +37,10 @@ public abstract class BasePlugin<T extends BaseDriver> implements Plugin {
 
     protected final Setting setting = Setting.getInstance();
 
+    public interface Compilable {
+        void compile();
+    }
+
     /** for spi, 0 origin */
     public interface HasSongNo {
         void setSongNo(int songNo);
@@ -145,6 +149,7 @@ logger.log(Level.TRACE, "stop: " + this.stopped + ", " + this.hashCode());
         return 0; // naudioWrap.getAsioLatency(); TODO
     }
 
+    /** {@code super#prepare()} must be called inside inherited this method */
     public void prepare() {
         this.fadeout = false;
         this.fadeoutCounter = 1.0;

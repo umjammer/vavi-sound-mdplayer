@@ -18,6 +18,7 @@ import mdplayer.driver.fmp.FMP;
 import mdplayer.driver.fmp.FmpDriver;
 import mdplayer.driver.pmd.PmdDriver;
 import mdplayer.emu.nise98.FileTemp;
+import mdplayer.plugin.BasePlugin.Compilable;
 import mdsound.MDSound;
 import mdsound.instrument.Ym2608Inst;
 
@@ -31,9 +32,22 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-02-20 nsano initial version <br>
  */
-public class FMPPlugin extends BasePlugin<FmpDriver> {
+public class FMPPlugin extends BasePlugin<FmpDriver> implements Compilable {
 
     private static final Logger logger = getLogger(FMPPlugin.class.getName());
+
+    @Override
+    public void compile() {
+        FileTemp ft = new FileTemp();
+        if (this.fileFormat.isMml()) {
+            // compile
+            FmpDriver fmp = new FmpDriver(this);
+            fmp.setFileTemp(ft);
+            fmp.compile();
+            this.playingFileName = fileFormat.getCompiledFilename();
+            this.dataBuf = ft.readTemp(this.playingFileName);
+        }
+    }
 
     @Override
     public void prepare() {
@@ -111,11 +125,6 @@ public class FMPPlugin extends BasePlugin<FmpDriver> {
         chipRegister.chip(Ym2608Chip.class).writeClock(1, PmdDriver.baseClock, EnmModel.RealModel);
         chipRegister.chip(Ym2608Chip.class).setSsgVolume(0, setting.getBalance().getGimicOPNAVolume(), EnmModel.RealModel);
         chipRegister.chip(Ym2608Chip.class).setSsgVolume(1, setting.getBalance().getGimicOPNAVolume(), EnmModel.RealModel);
-
-        driverVirtual.setSearchPath(setting.getFileSearchPathList());
-        if (driverReal != null) {
-            driverReal.setSearchPath(setting.getFileSearchPathList());
-        }
 
         driverVirtual.init(EnmModel.VirtualModel,
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,

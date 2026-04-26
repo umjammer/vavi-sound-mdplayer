@@ -71,17 +71,17 @@ class SpiTest {
     @Property
     int track;
 
-    @Property
+    @Property(name = "mdplayer.fmp.dir")
     String fmpDir;
-    @Property
+    @Property(name = "mdplayer.fmp.pvi")
     String fmpPvi;
-    @Property
+    @Property(name = "mdplayer.zms.dir")
     String zmsDir;
-    @Property
+    @Property(name = "mdplayer.mgs.dir")
     String mgsDir;
-    @Property
+    @Property(name = "mdplayer.ndp.dir")
     String ndpDir;
-    @Property
+    @Property(name = "mdplayer.musica.dir")
     String musicaDir;
     @Property(name = "muap.dir.dta")
     String muapDirDta;

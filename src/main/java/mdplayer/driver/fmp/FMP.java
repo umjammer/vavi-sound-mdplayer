@@ -148,10 +148,7 @@ logger.log(Level.ERROR, e.getMessage());
         if (pcmDataSendCount != 0) {
             blockWrite.accept(true);
             // Add additional weight based on size and elapsed time.
-            try {
-                Thread.sleep(Math.max(pcmDataSendCount / 20, 0));
-            } catch (InterruptedException ignore) {
-            }
+            try { Thread.sleep(Math.max(pcmDataSendCount / 20, 0)); } catch (InterruptedException _) {}
             blockWrite.accept(false);
             pcmDataSendCount = 0;
         }
@@ -166,6 +163,7 @@ logger.log(Level.ERROR, e.getMessage());
         int rc = 0;
 
         nise98.init(null, opnaWrite, ft, OngenBoardType.SpeakBoard, sampleRate); // .PC9801_86B); // .SpeakBoard); // .PC9801_26K);
+        nise98.getDos().setPath(Path.of(playingFileName).getParent());
         nise98.getDos().setSearchPath(searchPaths);
         nise98.getDos().charset = charset;
 
@@ -177,7 +175,7 @@ logger.log(Level.ERROR, e.getMessage());
 
         // Running FMC
         nise98.getDos().setProgramTerminate(false);
-        rc = nise98.loadRun(fileNameFMC.toString(), playingFileName, 0x3000); //, true, true, true, 3_000_000, 0
+        rc = nise98.loadRun(fileNameFMC.toString(), Path.of(playingFileName).toString(), 0x3000); //, true, true, true, 3_000_000, 0
         if (rc != 0)
             throw new IllegalArgumentException("fmc return %d".formatted(rc));
     }

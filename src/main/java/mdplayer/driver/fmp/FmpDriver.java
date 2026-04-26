@@ -36,6 +36,7 @@ public class FmpDriver extends BaseDriver {
         super(plugin);
 
         fmp = new FMP();
+        fmp.setSearchPath(setting.getFileSearchPathList());
         fmp.sampleRate = Common.VGMProcSampleRate;
         fmp.charset = Common.charset;
         fmp.dir = System.getProperty("mdplayer.fmp.dir", System.getProperty("user.dir"));
@@ -51,10 +52,6 @@ public class FmpDriver extends BaseDriver {
 
     public void setFileTemp(FileTemp ft) {
         fmp.ft = ft;
-    }
-
-    public void setSearchPath(String searchPath) {
-        fmp.setSearchPath(searchPath);
     }
 
     /** before using ths method, you must do {@link BaseDriver#init} */

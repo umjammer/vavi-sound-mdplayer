@@ -87,12 +87,12 @@ public class NiseDos {
 
         mem.pokeW(inDOSFLAGAdr, (short) 1); // 0: Can be used! 1: Resident programs cannot use system calls!!
 
-        // mem.PokeW(0xfd802, 0x2a27); // EPSON machine!!
-        // mem.PokeB(0xfd804, 6); // EPSON PC-286VE
+        // mem.pokeW(0xfd802, 0x2a27); // EPSON machine!!
+        // mem.pokeB(0xfd804, 6); // EPSON PC-286VE
     }
 
     public void loadAndExecuteFile(String filename, String option /* = "" */, int startSegment /* = pspStartAddress >> 4 */) {
-        logger.log(Level.INFO, "niseDOS>%s %s".formatted(filename, option));
+        logger.log(Level.INFO, "niseDOS>%s %s".formatted(filename, Path.of(option).getFileName().toString()));
 
         byte[] bin;
         try {
@@ -293,7 +293,7 @@ public class NiseDos {
         FileStatus fnd;
         switch (regs.getAH()) {
             case 0x04:
-                logger.log(Level.DEBUG, "<NiseDos>  (98)KEY BOARD press check");
+                logger.log(Level.TRACE, "<NiseDos>  (98)KEY BOARD press check");
                 byte keyGroup = regs.getAL();
                 regs.setAH((byte) 0x00); // Nothing is being pressed
                 break;
@@ -362,7 +362,7 @@ public class NiseDos {
                 regs.setES(mem.peekW((regs.getAL() & 0xff) * 4 + 2));
                 break;
             case 0x3c:
-                logger.log(Level.TRACE, "<NiseDos>  Create File Using Handle");
+                logger.log(Level.DEBUG, "<NiseDos>  Create File Using Handle");
                 short attribute = regs.getCX();
                 msg = new ArrayList<>();
                 cnt = 0;
@@ -392,7 +392,7 @@ public class NiseDos {
 
                 break;
             case 0x3d:
-                logger.log(Level.TRACE, "<NiseDos>  FILE OPEN");
+                logger.log(Level.DEBUG, "<NiseDos>  FILE OPEN");
                 msg = new ArrayList<>();
                 cnt = 0;
                 do {
@@ -467,7 +467,7 @@ public class NiseDos {
 
                 break;
             case 0x40:
-                logger.log(Level.TRACE, "<NiseDos>  'WRITE'-WRITE TO FILE OR DEVICE");
+                logger.log(Level.DEBUG, "<NiseDos>  'WRITE'-WRITE TO FILE OR DEVICE");
                 // input:
                 // BX = file handle
                 // CX = number of bytes to write
@@ -499,7 +499,7 @@ logger.log(Level.TRACE, "error message from program");
                         fnd.lstBuf.add(b);
                         c++;
                     }
-                    logger.log(Level.TRACE, "<NiseDos>  WRITE buff length:%d".formatted(c));
+                    logger.log(Level.DEBUG, "<NiseDos>  WRITE buff length:%d".formatted(c));
                     regs.setCF(false);
                     break;
                 }
@@ -611,6 +611,7 @@ logger.log(Level.TRACE, "error message from program");
     }
 
     public void setPath(Path v) {
+logger.log(Level.INFO, "dos path: " + v);
         filePath = v;
     }
 
@@ -633,7 +634,7 @@ logger.log(Level.TRACE, "error message from program");
             fndFilename[0] = filename;
             return true;
         }
-        Path fn = filePath.resolve(filename);
+        Path fn = filePath.resolve(Path.of(filename).getFileName());
         Path realFn = Utils.fileExistsIgnoreCase(fn);
         if (realFn != null || fileTemp.existTemp(fn.toString())) {
             fndFilename[0] = realFn != null ? realFn.toString() : fn.toString();

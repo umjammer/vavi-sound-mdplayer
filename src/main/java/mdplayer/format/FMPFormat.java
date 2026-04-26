@@ -62,7 +62,7 @@ public class FMPFormat extends BaseFileFormat implements FileFormat.SampledFileF
     public String getCompiledFilename() {
         String ext = this.filename.substring(this.filename.lastIndexOf('.'));
         return Path.changeExtension(this.filename,
-                ext.equals(".mpi") ? ".opi" : (ext.equals(".mvi") ? ".ovi" : ".ozi"));
+                ext.equalsIgnoreCase(".mpi") ? ".opi" : (ext.equalsIgnoreCase(".mvi") ? ".ovi" : ".ozi"));
     }
 
     @Override
