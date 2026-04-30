@@ -188,7 +188,7 @@ public class MuSICA_K4 {
 
     private void callEXTBIO(BeforeInstructionFetchEvent args, Z80Processor z80) {
         byte funcType = z80.getRegisters().getD();
-        byte function = z80.getRegisters().getC();
+        byte function = z80.getRegisters().getE();
 
         switch (funcType & 0xff) {
             case 0x04:
@@ -228,7 +228,7 @@ public class MuSICA_K4 {
         switch (function & 0xff) {
             case 2:
                 byteToPrint = z80.getRegisters().getE();
-                System.out.print((char) byteToPrint);
+                System.out.print((char) (byteToPrint & 0xff));
                 break;
             case 9:
                 var messageAddress = z80.getRegisters().getDE();
@@ -330,7 +330,7 @@ public class MuSICA_K4 {
                 break;
             default:
                 logger.log(Level.TRACE, "Call BDOS(0x0005) Reg.C=%02x".formatted(z80.getRegisters().getC() & 0xff));
-                logger.log(Level.WARNING, "unknown 0x%02x".formatted(function));
+                logger.log(Level.WARNING, "unknown 0x%02x".formatted(function & 0xff));
                 debugRegisters(z80);
                 break;
         }
