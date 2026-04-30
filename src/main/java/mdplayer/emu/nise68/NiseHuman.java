@@ -148,7 +148,7 @@ public class NiseHuman {
 
         currentWorkPath = fileMng.VCurrentPath;
         if (currentWorkPath == null || currentWorkPath.isEmpty()) currentWorkPath = "C:\\";
-        logger.log(Level.INFO, "currentWorkPath: %s".formatted(currentWorkPath));
+        logger.log(Level.DEBUG, "currentWorkPath: %s".formatted(currentWorkPath));
 
         byte[] bin = fileMng.vReadAllBytes(filename);
         String fext = Path.getExtension(filename).toUpperCase();
@@ -588,6 +588,7 @@ public class NiseHuman {
 
         if (atr != 0x20) {
             // Read-only support failure
+logger.log(Level.WARNING, "readonly: "  + fn);
             return;
         }
 
@@ -603,13 +604,13 @@ public class NiseHuman {
             fi[i].isopen = true;
             fi[i].filename = fn;
             fi[i].ptr = 0;
-            //fi[i].dat = File.ReadAllBytes(fn);
+            //fi[i].dat = File.readAllBytes(fn);
             byte[] dat;
-            //if (fb.ContainsKey(physicalFn)) {
+            //if (fb.containsKey(physicalFn)) {
             //    dat = fb[physicalFn];
             //} else {
-            //    if (File.Exists(physicalFn)) {
-            //        dat = File.ReadAllBytes(physicalFn);
+            //    if (File.exists(physicalFn)) {
+            //        dat = File.readAllBytes(physicalFn);
             //    } else {
             //        dat= new byte[0];
             //    }
@@ -619,7 +620,10 @@ public class NiseHuman {
             fi[i].memoryStream = new MemoryStream(Objects.requireNonNullElseGet(dat, () -> new byte[0]));
             break;
         }
-        if (fileHandle < 0) return;
+        if (fileHandle < 0) {
+logger.log(Level.WARNING, "fileHandle: "  + fileHandle + ", " + fn);
+            return;
+        }
 
         reg.getD()[0] = fileHandle;
     }
@@ -727,7 +731,7 @@ logger.log(Level.INFO, "file not found: %s".formatted(fn));
         logger.log(Level.TRACE, "<NiseHuman>dos call $FF3F read");
         int fileNo = mem.peekW(reg.getA().get(7) + 0) & 0xffff;
         int dataPtr = mem.peekL(reg.getA().get(7) + 2);
-        int size = mem.peekL(reg.getA().get(7) + 6);
+        long size = mem.peekL(reg.getA().get(7) + 6) & 0xffff_ffffL;
 
         reg.getD()[0] = -1;
         if (fi[fileNo] == null) return;
@@ -742,7 +746,7 @@ logger.log(Level.INFO, "file not found: %s".formatted(fn));
         //    }
         //}
         if (fi[fileNo].memoryStream != null && fi[fileNo].memoryStream.getLength() > 0) {
-            for (; i < size; i++) {
+            for (; (i & 0xffff_ffffL) < size; i++) {
                 if (fi[fileNo].ptr == fi[fileNo].memoryStream.getLength()) break;
                 int b = fi[fileNo].memoryStream.readByte();
                 if (b < 0) break;
@@ -758,7 +762,7 @@ logger.log(Level.INFO, "file not found: %s".formatted(fn));
         logger.log(Level.TRACE, "<NiseHuman>dos call $FF40 write");
         int fileNo = mem.peekW(reg.getA().get(7) + 0) & 0xffff;
         int dataPtr = mem.peekL(reg.getA().get(7) + 2);
-        int size = mem.peekL(reg.getA().get(7) + 6);
+        long size = mem.peekL(reg.getA().get(7) + 6) & 0xffff_ffffL;
 
         reg.getD()[0] = -1;
         if (fi[fileNo] == null) return;
@@ -767,7 +771,7 @@ logger.log(Level.INFO, "file not found: %s".formatted(fn));
         int i = 0;
         List<Byte> data = new ArrayList<>();
 
-        for (; i < size; i++) data.add(mem.peekB(dataPtr + i));
+        for (; (i & 0xffff_ffffL) < size; i++) data.add(mem.peekB(dataPtr + i));
         //String physicalFn = getPhysicalFn(fi[fileno].filename);
 
         //if (fb.containsKey(physicalFn)) {

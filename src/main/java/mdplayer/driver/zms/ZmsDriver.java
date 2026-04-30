@@ -150,6 +150,7 @@ public class ZmsDriver extends BaseDriver {
     }
 
     public void setCompiledData(byte[] value) {
+        this.dataBuf = value; // TODO gross
         zms.compiledData = value;
     }
 

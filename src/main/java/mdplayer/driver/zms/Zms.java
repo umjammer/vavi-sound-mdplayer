@@ -15,6 +15,7 @@ import java.util.function.BiConsumer;
 import java.util.function.IntConsumer;
 import java.util.function.IntSupplier;
 
+import dotnet4j.util.compat.StringUtilities;
 import dotnet4j.util.compat.Tuple;
 import mdplayer.driver.mxdrv.MXDRV.Pcm8Interface;
 import mdplayer.driver.mxdrv.MXDRV.Pcm8St;
@@ -22,6 +23,7 @@ import mdplayer.emu.common.FMTimer;
 import mdplayer.emu.nise68.FileMng;
 import mdplayer.emu.nise68.MemMng;
 import mdplayer.emu.nise68.Nise68;
+import vavi.util.StringUtil;
 
 import static java.lang.System.getLogger;
 
@@ -236,6 +238,7 @@ public class Zms {
     private int rc;
 
     private void play() throws IOException {
+logger.log(Level.INFO, "PLAY " + playingFileName + " --------");
         String fn = playingFileName;
         String withoutExtFn = fn.substring(0, fn.lastIndexOf('.') > 0 ? fn.lastIndexOf('.') : fn.length());
         Path dn = Path.of(fn).getParent();
@@ -245,15 +248,13 @@ public class Zms {
 
         Path zmsc3 = crntDir.resolve("ZMSC3.X");
         if (!Files.exists(zmsc3)) {
-            logger.log(Level.INFO, "File not found : %s".formatted(zmsc3));
-            throw new NoSuchFileException(zmsc3.toString());
+            throw new IllegalStateException("system file not found: %s".formatted(zmsc3));
         }
         fileMng.setVFile(zmsc3.toString());
 
         Path zmusic = crntDir.resolve("ZMUSIC.X"); // ver2
         if (!Files.exists(zmusic)) {
-            logger.log(Level.INFO, "File not found : %s".formatted(zmusic));
-            throw new NoSuchFileException(zmusic.toString());
+            throw new IllegalStateException("system file not found: %s".formatted(zmusic));
         }
         fileMng.setVFile(zmusic.toString());
 
@@ -387,6 +388,8 @@ public class Zms {
         {
             // play
             byte[] zmd = fileMng.vReadAllBytes(fnZMD.getFileName().toString()); // nise68.hmn.fb[fnZMD];
+logger.log(Level.INFO, zmd.length + " bytes\n" + StringUtil.getDump(zmd, 32));
+if (!Arrays.equals(zmd, 1, 7, magic, 0, 6)) { throw new IllegalStateException("output file is not .zmd"); }
             int fileSize = zmd.length;
             int filePtr = nise68.hmn.memMng.malloc(fileSize);
             for (int i = 0; i < zmd.length; i++) {
@@ -408,6 +411,7 @@ public class Zms {
     }
 
     public boolean compile(byte[] vgmBuf, String fn) {
+logger.log(Level.INFO, "COMPILE v3 --------");
         String withoutExtFn = fn.substring(0, fn.lastIndexOf('.') > 0 ? fn.lastIndexOf('.') : fn.length());
         Path dn = Path.of(fn).getParent();
         if (dn == null) dn = Path.of(System.getProperty("user.dir"));
@@ -415,8 +419,7 @@ public class Zms {
         Path fnZMS = dn.resolve(withoutExtFn + ".ZMS");
         Path zmc = Path.of(dir, "ZMC.X");
         if (!Files.exists(zmc)) {
-            logger.log(Level.INFO, "File not found : %s".formatted(zmc));
-            return false; // throw new FileNotFoundException(zmc);
+            throw new IllegalStateException("system file not found: %s".formatted(zmc));
         }
         fileMng = new FileMng(dn.toString(), "C:"); // Set the path of the music file to the current physical drive. The current virtual drive is "C:" (default).
         fileMng.setVFile(zmc.toString());
@@ -443,10 +446,15 @@ public class Zms {
         }
         //compiledData = nise68.hmn.fb[fnZMD];
         compiledData = fileMng.vReadAllBytes(fnZMD.getFileName().toString());
+logger.log(Level.INFO, compiledData.length + " bytes\n" + StringUtil.getDump(compiledData, 32));
+if (!Arrays.equals(compiledData, 1, 7, magic, 0, 6) || compiledData.length <= 80) { logger.log(Level.WARNING, "compile v3: output is not correct .zmd"); return false; }
         return true;
     }
 
+    private static final byte[] magic = {0x5A, 0x6D, 0x75, 0x53, 0x69, 0x43};
+
     public boolean compileV2(byte[] vgmBuf, String fn) {
+logger.log(Level.INFO, "COMPILE v2 --------");
         String withoutExtFn = fn.substring(0, fn.lastIndexOf('.') > 0 ? fn.lastIndexOf('.') : fn.length());
         Path dn = Path.of(fn).getParent();
         if (dn == null) dn = Path.of(System.getProperty("user.dir"));
@@ -454,8 +462,7 @@ public class Zms {
         Path fnZMS = dn.resolve(withoutExtFn + ".ZMS");
         Path zmusic = Path.of(dir, "ZMUSIC.X");
         if (!Files.exists(zmusic)) {
-            logger.log(Level.INFO, "File not found : %s".formatted(zmusic));
-            return false; // throw new FileNotFoundException(zmc);
+            throw new IllegalStateException("system file not found: %s".formatted(zmusic));
         }
 
         nise68 = new Nise68();
@@ -484,6 +491,7 @@ public class Zms {
         }
         //compiledData = nise68.hmn.fb[fnZMD];
         compiledData = fileMng.vReadAllBytes(fnZMD.getFileName().toString());
+if (!Arrays.equals(compiledData, 1, 7, magic, 0, 6) || compiledData.length <= 80) { logger.log(Level.WARNING, "compile v2: output is not correct .zmd"); return false; }
 
         return true;
     }

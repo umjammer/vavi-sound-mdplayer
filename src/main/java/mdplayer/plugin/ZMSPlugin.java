@@ -1,6 +1,7 @@
 package mdplayer.plugin;
 
 import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -153,6 +154,7 @@ public class ZMSPlugin extends BasePlugin<ZmsDriver> {
         if (driverReal != null) driverReal.setSupportFileBinaryAndName(supportFileBinary);
 //        if (driverPianoRoll != null) (driverPianoRoll).supportFileBinaryAndName = supportFileBinary;
 
+logger.log(Level.INFO, "compilePriority: " + compilePriority);
         // In the case of ZMS, compilation is performed in advance
         if (isExt(playingFileName, ".ZMS")) {
             switch (compilePriority) {
@@ -238,19 +240,21 @@ public class ZMSPlugin extends BasePlugin<ZmsDriver> {
 
     private void setVgmBufV3() {
         dataBuf = driverVirtual.getCompiledData();
+        driverVirtual.setCompiledData(dataBuf);
         if (driverReal != null) driverReal.setCompiledData(dataBuf);
 //        if (driverPianoRoll != null) (driverPianoRoll).compiledData = dataBuf;
     }
 
     private void setVgmBufV2() {
         dataBuf = driverVirtual.getCompiledData();
+        driverVirtual.setCompiledData(dataBuf);
         driverVirtual.setVersion(2);
         if (driverReal != null) {
             driverReal.setCompiledData(dataBuf);
             driverReal.setVersion(2);
         }
 //        if (driverPianoRoll != null) {
-//            driverPianoRoll.compiledData = dataBuf;
+//            driverPianoRoll.setCompiledData(dataBuf);
 //            driverPianoRoll.setVersion(2);
 //        }
     }

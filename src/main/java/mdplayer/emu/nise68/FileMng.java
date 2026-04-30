@@ -106,6 +106,8 @@ logger.log(Level.ERROR, e.getMessage(), e);
     public byte[] vReadAllBytes(String vFilename) {
         // Check if there are files in the virtual drive
         String vFull = Path.combine(VCurrentPath, vFilename).toUpperCase();
+logger.log(Level.TRACE, "vDrive: "  + vFull + ", " + vDrive.keySet());
+if (vDrive.containsKey(vFull) && vDrive.get(vFull).body == null) { logger.log(Level.WARNING, vFilename + " body is null"); }
         if (vDrive.containsKey(vFull)) return vDrive.get(vFull).body;
 
         try {
@@ -119,6 +121,7 @@ logger.log(Level.ERROR, e.getMessage(), e);
 logger.log(Level.ERROR, e.getMessage(), e);
                 body = null;
             }
+if (body == null) { logger.log(Level.WARNING, vFilename + " body is null (first time? create?)"); }
             setVFile(vFilename, body);
             return body;
         } catch (Exception e) {
