@@ -2,22 +2,22 @@ package mdplayer;
 
 import java.awt.event.KeyEvent;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.UncheckedIOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.ShortMessage;
 import javax.swing.JOptionPane;
 
-import dotnet4j.io.FileMode;
-import dotnet4j.io.FileStream;
-import dotnet4j.io.StreamReader;
-import dotnet4j.io.StreamWriter;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.chips.Ym2203Chip;
 import mdplayer.chips.Ym2608Chip;
@@ -607,7 +607,7 @@ public class YM2612MIDI {
         Charset enc = StandardCharsets.UTF_8;
         if (tp == 2) enc = Charset.defaultCharset();
 
-        try (StreamWriter sw = new StreamWriter(new FileStream(fn, FileMode.CreateNew), enc)) {
+        try (PrintStream sw = new PrintStream(Files.newOutputStream(Path.of(fn)), true, enc)) {
             int n = 0;
             int row = 10;
             for (Tone t : tonePallet.getLstTone()) {
@@ -622,11 +622,11 @@ public class YM2612MIDI {
 
                 if (tp != 6) {
                     for (String text : toneText) {
-                        sw.writeLine(text);
+                        sw.println(text);
                     }
                 } else {
                     for (String text : toneText) {
-                        sw.writeLine(text.replace("[ROW]", String.valueOf(row)));
+                        sw.println(text.replace("[ROW]", String.valueOf(row)));
                         row += 10;
                     }
                 }
@@ -744,9 +744,10 @@ public class YM2612MIDI {
 
         List<String> tnt = new ArrayList<>();
 
-        try (StreamReader sr = new StreamReader(new FileStream(fn, FileMode.Open))) {
+        try (Scanner sr = new Scanner(Files.newInputStream(Path.of(fn)))) {
             String line;
-            while ((line = sr.readLine()) != null) {
+            while (sr.hasNextLine()) {
+                line = sr.nextLine();
                 tnt.add(line);
             }
         } catch (IOException e) {

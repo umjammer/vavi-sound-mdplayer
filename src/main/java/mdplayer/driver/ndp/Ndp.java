@@ -9,7 +9,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.function.BiConsumer;
 
-import dotnet4j.util.compat.TriConsumer;
 import konamiman.z80.Z80Processor;
 import konamiman.z80.Z80ProcessorImpl;
 import konamiman.z80.events.BeforeInstructionFetchEvent;
@@ -19,6 +18,7 @@ import mdplayer.emu.msx.MsxMemory;
 import mdplayer.emu.msx.MsxPort;
 import mdplayer.emu.msx.Z80Opcode;
 import vavi.util.ByteUtil;
+import vavi.util.compat.TriConsumer;
 
 import static java.lang.System.getLogger;
 

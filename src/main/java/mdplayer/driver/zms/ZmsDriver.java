@@ -5,7 +5,7 @@ import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.util.List;
 
-import dotnet4j.util.compat.Tuple;
+import vavi.util.compat.Tuple;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.MPcmChip;
@@ -275,7 +275,7 @@ public class ZmsDriver extends BaseDriver {
                 frameCounter++;
             }
 
-//            if (SkipSwitchPianoRoll) return;
+//            if (skipSwitchPianoRoll) return;
             zms.clock();
             //curLoop = mm.readShort(reg.a6 + dw.LOOP_COUNTER);
         } catch (Exception ex) {

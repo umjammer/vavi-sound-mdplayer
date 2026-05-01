@@ -5,8 +5,8 @@ import java.lang.System.Logger.Level;
 import java.util.Objects;
 import java.util.function.Function;
 
-import dotnet4j.util.compat.TriConsumer;
 import mdplayer.emu.common.FMTimer;
+import vavi.util.compat.TriConsumer;
 
 import static java.lang.System.getLogger;
 

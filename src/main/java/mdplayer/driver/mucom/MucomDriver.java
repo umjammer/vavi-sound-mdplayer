@@ -1,24 +1,18 @@
 package mdplayer.driver.mucom;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import javax.swing.JOptionPane;
 
-import dotnet4j.io.File;
-import dotnet4j.io.FileAccess;
-import dotnet4j.io.FileMode;
-import dotnet4j.io.FileShare;
-import dotnet4j.io.FileStream;
-import dotnet4j.io.IOException;
-import dotnet4j.io.MemoryStream;
-import dotnet4j.io.Path;
-import dotnet4j.io.Stream;
-import dotnet4j.util.compat.TriConsumer;
-import dotnet4j.util.compat.Tuple;
 import mdplayer.Chip;
 import mdplayer.Chip.Unused;
 import mdplayer.Common;
@@ -31,12 +25,14 @@ import mdplayer.plugin.BasePlugin;
 import musicDriverInterface.ChipAction;
 import musicDriverInterface.ChipDatum;
 import musicDriverInterface.CompilerInfo;
-import musicDriverInterface.MetaData;
 import musicDriverInterface.ICompiler;
 import musicDriverInterface.IDriver;
+import musicDriverInterface.MetaData;
 import musicDriverInterface.MmlDatum;
 import vavi.util.ByteUtil;
 import vavi.util.StringUtil;
+import vavi.util.compat.TriConsumer;
+import vavi.util.compat.Tuple;
 
 import static java.lang.System.getLogger;
 
@@ -277,7 +273,7 @@ public class MucomDriver extends BaseDriver {
         MmlDatum[] ret;
         CompilerInfo info;
         try {
-            try (MemoryStream sourceMML = new MemoryStream(vgmBuf)) {
+            try (InputStream sourceMML = new ByteArrayInputStream(vgmBuf)) {
                 ret = mucomCompiler.compile(sourceMML, this::appendFileReaderCallback);
             }
 
@@ -338,7 +334,7 @@ public class MucomDriver extends BaseDriver {
         MmlDatum[] ret;
         CompilerInfo info;
         try {
-            try (MemoryStream sourceMML = new MemoryStream(dataBuf)) {
+            try (InputStream sourceMML = new ByteArrayInputStream(dataBuf)) {
                 ret = mucomCompiler.compile(sourceMML, this::appendFileReaderCallback);
             }
 
@@ -536,15 +532,15 @@ public class MucomDriver extends BaseDriver {
 //        //logger.log(Level.TRACE, "%d %d".formatted(dat.address, dat.data));
 //    }
 
-    private Stream appendFileReaderCallback(String arg) {
+    private InputStream appendFileReaderCallback(String arg) {
 
-        String fn = Path.combine(Path.getDirectoryName(plugin.playingFileName), arg);
+        Path fn = Path.of(plugin.playingFileName).getParent().resolve(arg);
 
-        if (!File.exists(fn)) return null;
+        if (!Files.exists(fn)) return null;
 
-        FileStream stream;
+        InputStream stream;
         try {
-            stream = new FileStream(fn, FileMode.Open, FileAccess.Read, FileShare.Read);
+            stream = Files.newInputStream(fn);
         } catch (IOException e) {
             logger.log(Level.ERROR, e.getMessage(), e);
             stream = null;

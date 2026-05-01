@@ -1,8 +1,12 @@
-
 package mdplayer.driver.pmd;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -10,16 +14,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import dotnet4j.io.File;
-import dotnet4j.io.FileAccess;
-import dotnet4j.io.FileMode;
-import dotnet4j.io.FileShare;
-import dotnet4j.io.FileStream;
-import dotnet4j.io.IOException;
-import dotnet4j.io.MemoryStream;
-import dotnet4j.io.Path;
-import dotnet4j.io.Stream;
-import dotnet4j.util.compat.Tuple;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.P86Chip;
@@ -36,6 +30,7 @@ import musicDriverInterface.ICompiler;
 import musicDriverInterface.IDriver;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MmlDatum;
+import vavi.util.compat.Tuple;
 
 import static java.lang.System.getLogger;
 
@@ -91,7 +86,7 @@ public class PmdDriver extends BaseDriver {
             envPmdOpt = System.getProperty("mdplayer.pmd.opt", "").split(java.io.File.pathSeparator);
 
             pmdCompiler = ICompiler.factory("pmd.compiler.Compiler");
-            pmdCompiler.setCompileSwitch((Function<String, Stream>) this::appendFileReaderCallback);
+            pmdCompiler.setCompileSwitch((Function<String, InputStream>) this::appendFileReaderCallback);
             metaData = pmdCompiler.getMetaData(buf);
         } else {
             pmdDriver = IDriver.factory("pmd.driver.Driver");
@@ -202,7 +197,7 @@ public class PmdDriver extends BaseDriver {
         try {
             pmdCompiler.setCompileSwitch("PmdOption=%s \"%s\"".formatted(
                     setting.getPmd().compilerArguments, plugin.playingFileName));
-            try (MemoryStream sourceMML = new MemoryStream(dataBuf)) {
+            try (InputStream sourceMML = new ByteArrayInputStream(dataBuf)) {
                 ret = pmdCompiler.compile(sourceMML, this::appendFileReaderCallback);// wrkMUCFullPath, disp);
             }
 
@@ -247,7 +242,7 @@ public class PmdDriver extends BaseDriver {
                 envPmdOpt, // String[] Environment variable PMDOpt
                 plugin.playingFileName, // String srcFile;
                 "", // String PPCFileHeader is ignored (no setting required)
-                (Function<String, Stream>) this::appendFileReaderCallback
+                (Function<String, InputStream>) this::appendFileReaderCallback
         };
 
         String[] commandLineOption = getPMDOption();
@@ -302,7 +297,7 @@ public class PmdDriver extends BaseDriver {
                 envPmdOpt, // String[] Environment variable PMDOpt
                 plugin.playingFileName, // String srcFile;
                 "", // String PPCFileHeader is ignored (no setting required)
-                (Function<String, Stream>) this::appendFileReaderCallback
+                (Function<String, InputStream>) this::appendFileReaderCallback
         };
 
         String[] commandLineOption = getPMDOption();
@@ -387,25 +382,24 @@ public class PmdDriver extends BaseDriver {
         return 0;
     }
 
-    private Stream appendFileReaderCallback(String arg) {
+    private InputStream appendFileReaderCallback(String arg) {
 logger.log(Level.DEBUG, "find pmd additional file: " + arg);
-        String fileName;
-        fileName = arg;
-        String dir = Path.getDirectoryName(arg);
-        if (dir == null || dir.isEmpty())
-            fileName = Path.combine(Path.getDirectoryName(plugin.playingFileName.replace(java.io.File.separator, "\\")), fileName);
+        Path fileName = Path.of(arg).getFileName();
+        Path dir = Path.of(arg).getParent();
+        if (dir == null)
+            fileName = Path.of(plugin.playingFileName).getParent().resolve(fileName);
 
         if (envPmd != null) {
             int i = 0;
-            while (!File.exists(fileName.replace("\\", java.io.File.separator)) && i < envPmd.length) {
-                fileName = Path.combine(envPmd[i++], Path.getFileName(arg));
+            while (!Files.exists(fileName) && i < envPmd.length) {
+                fileName = Path.of(envPmd[i++], Path.of(arg).getFileName().toString());
             }
         }
 
-        FileStream stream;
+        InputStream stream;
         try {
-logger.log(Level.DEBUG, "found pmd additional file: " + fileName.replace("\\", java.io.File.separator));
-            stream = new FileStream(fileName.replace("\\", java.io.File.separator), FileMode.Open, FileAccess.Read, FileShare.Read);
+logger.log(Level.DEBUG, "found pmd additional file: " + fileName);
+            stream = Files.newInputStream(fileName);
         } catch (IOException e) {
             logger.log(Level.ERROR, e.getMessage(), e);
             stream = null;

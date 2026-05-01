@@ -7,10 +7,10 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-import dotnet4j.util.compat.QuadConsumer;
-import dotnet4j.util.compat.TriConsumer;
 import mdplayer.Common;
 import vavi.util.ByteUtil;
+import vavi.util.compat.QuadConsumer;
+import vavi.util.compat.TriConsumer;
 
 import static java.lang.System.getLogger;
 

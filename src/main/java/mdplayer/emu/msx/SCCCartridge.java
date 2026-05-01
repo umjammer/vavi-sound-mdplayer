@@ -1,6 +1,6 @@
 package mdplayer.emu.msx;
 
-import dotnet4j.util.compat.TriConsumer;
+import vavi.util.compat.TriConsumer;
 
 
 public class SCCCartridge implements Cartridge {

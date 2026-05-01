@@ -21,6 +21,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.prefs.Preferences;
 import javax.swing.JFileChooser;
 import javax.swing.JMenu;
@@ -29,8 +31,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.filechooser.FileFilter;
 
-import dotnet4j.io.Directory;
-import mdplayer.Common;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
@@ -404,7 +404,7 @@ public class frmYM2612MIDI extends frmBase {
             @Override public String getDescription() { return "MusicLALFファイル(*.mml)"; }
         });
         sfd.setDialogTitle("TonePalletファイルを保存");
-        if (!parent.setting.getOther().getDefaultDataPath().isEmpty() && Directory.exists(parent.setting.getOther().getDefaultDataPath()) && IsInitialOpenFolder) {
+        if (!parent.setting.getOther().getDefaultDataPath().isEmpty() && Files.exists(Path.of(parent.setting.getOther().getDefaultDataPath())) && IsInitialOpenFolder) {
             sfd.setCurrentDirectory(new File(parent.setting.getOther().getDefaultDataPath()));
         } else {
 //            sfd.RestoreDirectory = true;
@@ -451,7 +451,7 @@ public class frmYM2612MIDI extends frmBase {
             @Override public String getDescription() { return "MusicLALFファイル(*.mml)"; }
         });
         ofd.setDialogTitle("TonePalletファイルの読込");
-        if (!parent.setting.getOther().getDefaultDataPath().isEmpty() && Directory.exists(parent.setting.getOther().getDefaultDataPath()) && IsInitialOpenFolder) {
+        if (!parent.setting.getOther().getDefaultDataPath().isEmpty() && Files.exists(Path.of(parent.setting.getOther().getDefaultDataPath())) && IsInitialOpenFolder) {
             ofd.setCurrentDirectory(new File(parent.setting.getOther().getDefaultDataPath()));
         } else {
 //            ofd.RestoreDirectory = true;

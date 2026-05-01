@@ -22,6 +22,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.prefs.Preferences;
 import javax.swing.JFileChooser;
@@ -33,8 +34,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.filechooser.FileFilter;
 
-import dotnet4j.io.Path;
-import dotnet4j.util.compat.Tuple;
 import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common;
@@ -53,6 +52,7 @@ import mdplayer.chips.NpNesChip.Vrc6Chip;
 import mdplayer.chips.NpNesChip.Vrc7Chip;
 import mdplayer.form.kb.wf.frmHuC6280;
 import mdplayer.properties.Resources;
+import vavi.util.compat.Tuple;
 
 import static java.lang.System.getLogger;
 import static mdsound.MDSound.Chip.MAIN_TAG;
@@ -990,12 +990,12 @@ public class frmMixer2 extends JFrame {
                 @Override public String getDescription() { return " Mixerーバランス(*.mbc)"; }
             });
             sfd.setDialogTitle(" Mixerーバランスを保存");
-            sfd.setCurrentDirectory(new File(Path.getDirectoryName(ms.arcFileName == null || ms.arcFileName.isEmpty() ? ms.fileName : ms.arcFileName)));
+            sfd.setCurrentDirectory(Path.of(ms.arcFileName == null || ms.arcFileName.isEmpty() ? ms.fileName : ms.arcFileName).getParent().toFile());
             if (!parent.setting.getAutoBalance().getSamePositionAsSongData())
                 sfd.setCurrentDirectory(new File((Common.settingFilePath = java.nio.file.Path.of("MixerBalance")).toString()));
 
 //            sfd.RestoreDirectory = false;
-            sfd.setSelectedFile(new File(Path.getFileName(ms.arcFileName == null || ms.arcFileName.isEmpty() ? ms.fileName : ms.arcFileName) + ".mbc"));
+            sfd.setSelectedFile(Path.of(Path.of((ms.arcFileName == null || ms.arcFileName.isEmpty() ? ms.fileName : ms.arcFileName)).getFileName() + ".mbc").toFile());
 //            sfd.CheckPathExists = true;
 
             if (sfd.showSaveDialog(null) != JFileChooser.APPROVE_OPTION) {

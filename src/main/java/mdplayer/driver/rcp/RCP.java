@@ -13,14 +13,14 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.IntSupplier;
 
-import dotnet4j.io.Path;
-import dotnet4j.util.compat.Tuple;
 import mdplayer.driver.rcp.MIDIEvent.MIDIEventType;
 import mdplayer.driver.rcp.MIDIEvent.MIDISpEventType;
 import vavi.util.ByteUtil;
 import vavi.util.StringUtil;
+import vavi.util.compat.Tuple;
 
 import static java.lang.System.getLogger;
+import static vavi.util.compat.Util.getExtension;
 
 
 public class RCP {
@@ -1677,7 +1677,7 @@ logger.log(Level.INFO, "checkHeadString");
     private void getGSD1Buf(List<CtlSysex> dBuf) {
         byte[] buf = null;
         for (Tuple<String, byte[]> trg : extendFile) {
-            if (Path.getExtension(trg.getItem1()).equalsIgnoreCase(".GSD")) {
+            if (getExtension(trg.getItem1()).equalsIgnoreCase(".GSD")) {
                 buf = trg.getItem2();
                 break;
             }
@@ -1688,7 +1688,7 @@ logger.log(Level.INFO, "checkHeadString");
     private void getGSD2Buf(List<CtlSysex> DBuf) {
         byte[] buf = null;
         for (Tuple<String, byte[]> trg : extendFile) {
-            if (Path.getExtension(trg.getItem1()).equalsIgnoreCase(".GSD")) {
+            if (getExtension(trg.getItem1()).equalsIgnoreCase(".GSD")) {
                 buf = trg.getItem2();
             }
         }
@@ -2023,7 +2023,7 @@ logger.log(Level.INFO, "checkHeadString");
 
         byte[] buf = null;
         for (Tuple<String, byte[]> trg : extendFile) {
-            if (Path.getExtension(trg.getItem1()).equalsIgnoreCase(".CM6")) {
+            if (getExtension(trg.getItem1()).equalsIgnoreCase(".CM6")) {
                 buf = trg.getItem2();
             }
         }

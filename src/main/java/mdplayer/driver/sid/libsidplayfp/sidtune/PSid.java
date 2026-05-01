@@ -20,13 +20,13 @@
 
 package mdplayer.driver.sid.libsidplayfp.sidtune;
 
+import java.io.IOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-import dotnet4j.io.IOException;
 import mdplayer.driver.sid.Mem;
 import mdplayer.driver.sid.libsidplayfp.SidMd5;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTune;
@@ -182,7 +182,7 @@ public class PSid extends SidTuneBase {
                 && ((address & 0xff) < 0x80 || (address & 0xff) > 0xdf);
     }
 
-    public static SidTuneBase load(byte[] dataBuf) {
+    public static SidTuneBase load(byte[] dataBuf) throws IOException {
         // File format check
         if (dataBuf.length < 4) {
             return null;
@@ -203,7 +203,7 @@ public class PSid extends SidTuneBase {
         return tune;
     }
 
-    private static void readHeader(byte[] dataBuf, psidHeader header) {
+    private static void readHeader(byte[] dataBuf, psidHeader header) throws IOException {
         // Due to security concerns, input must be at least as long as version 1
         // header plus 16-bit C64 load address. That instanceof the area which will be
         // accessed.
@@ -239,7 +239,7 @@ public class PSid extends SidTuneBase {
         }
     }
 
-    private void tryLoad(psidHeader pHeader) {
+    private void tryLoad(psidHeader pHeader) throws IOException {
         var compatibility = SidTuneInfo.Compatibility.C64;
 
         // Require a valid ID and version number.

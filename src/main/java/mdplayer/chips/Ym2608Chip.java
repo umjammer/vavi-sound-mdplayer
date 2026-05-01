@@ -6,17 +6,14 @@
 
 package mdplayer.chips;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 
-import dotnet4j.io.FileAccess;
-import dotnet4j.io.FileMode;
-import dotnet4j.io.FileShare;
-import dotnet4j.io.FileStream;
-import dotnet4j.io.Stream;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
@@ -705,7 +702,7 @@ public class Ym2608Chip extends BaseChip {
         opnaRamType = searchOpnaRamType(vgmBuf, vgmDataOffset) ? 0x2 : 0x0;
     }
 
-    public static Stream getOPNARyhthmStream(String fn) {
+    public static InputStream getOPNARyhthmStream(String fn) {
         try {
             Path ffn = Path.of(fn);
 
@@ -726,9 +723,9 @@ public class Ym2608Chip extends BaseChip {
 
             logger.log(Level.DEBUG, "rhythm file: " + ffn);
             if (!Files.exists(ffn)) return null;
-            FileStream fs = new FileStream(ffn.toString(), FileMode.Open, FileAccess.Read, FileShare.Read);
+            InputStream fs = Files.newInputStream(ffn);
             return fs;
-        } catch (Exception e) {
+        } catch (IOException e) {
             logger.log(Level.ERROR, e.getMessage(), e);
             return null;
         }

@@ -6,10 +6,10 @@
 
 package mdplayer.plugin;
 
+import java.io.InputStream;
 import java.lang.System.Logger;
 import java.util.function.Function;
 
-import dotnet4j.io.Stream;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.Ppz8Chip;
 import mdplayer.chips.RealChipPlugin;
@@ -88,7 +88,7 @@ public class FMPPlugin extends BasePlugin<FmpDriver> implements Compilable {
             chip.setVolumes.put("ADPCM", ym2608::setVolume);
         }
         chip.clock = FMP.baseClock;
-        Function<String, Stream> fn = Ym2608Chip::getOPNARyhthmStream;
+        Function<String, InputStream> fn = Ym2608Chip::getOPNARyhthmStream;
         chip.option = new Object[] {fn};
         chipLED.put("PriOPNA", 1);
         put(Ym2608Chip.class, chip);

@@ -2,6 +2,7 @@ package mdplayer.format;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -9,8 +10,6 @@ import java.util.List;
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
-import dotnet4j.io.Path;
-import dotnet4j.util.compat.Tuple;
 import mdplayer.Common;
 import mdplayer.PlayList;
 import mdplayer.driver.rcp.RCP;
@@ -24,6 +23,7 @@ import vavi.sound.sampled.md.MdEncoding;
 import vavi.sound.sampled.md.MdFileFormatType;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
+import vavi.util.compat.Tuple;
 
 
 /**
@@ -62,11 +62,11 @@ public class RCSFileFormat extends BaseFileFormat {
             music.converted = metaData.getFirst(Tag.Converter);
             music.notes = metaData.getFirst(Tag.Note);
         } else {
-            music.title = "(%s)".formatted(Path.getFileName(file));
+            music.title = "(%s)".formatted(Path.of(file).getFileName());
         }
 
         if (music.title.isEmpty() && music.titleJ.isEmpty()) {
-            music.title = "(%s)".formatted(Path.getFileName(file));
+            music.title = "(%s)".formatted(Path.of(file).getFileName());
         }
         return Collections.singletonList(music);
     }
@@ -90,10 +90,10 @@ public class RCSFileFormat extends BaseFileFormat {
             music.converted = metaData.getFirst(Tag.Converter);
             music.notes = metaData.getFirst(Tag.Note);
         } else {
-            music.title = "(%s)".formatted(Path.getFileName(ms.fileName));
+            music.title = "(%s)".formatted(Path.of(ms.fileName).getFileName());
         }
         if (music.title.isEmpty() && music.titleJ.isEmpty()) {
-            music.title = "(%s)".formatted(Path.getFileName(ms.fileName));
+            music.title = "(%s)".formatted(Path.of(ms.fileName).getFileName());
         }
 
         musics.add(music);

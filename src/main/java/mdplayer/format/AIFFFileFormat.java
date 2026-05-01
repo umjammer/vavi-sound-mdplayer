@@ -2,10 +2,10 @@ package mdplayer.format;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 
-import dotnet4j.io.Path;
 import mdplayer.PlayList;
 import mdplayer.format.FileFormat.StreamFileFormat;
 import mdplayer.plugin.Plugin;
@@ -32,7 +32,7 @@ public class AIFFFileFormat extends BaseFileFormat implements FileFormat.Sampled
         PlayList.Music music = new PlayList.Music();
 
         music.format = this;
-        music.title = "(%s)".formatted(Path.getFileName(file));
+        music.title = "(%s)".formatted(Path.of(file).getFileName().toString());
 
         return Collections.singletonList(music);
     }

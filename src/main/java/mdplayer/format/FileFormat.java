@@ -10,7 +10,7 @@ import java.util.ServiceLoader;
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
-import dotnet4j.util.compat.Tuple;
+import vavi.util.compat.Tuple;
 import mdplayer.PlayList;
 import mdplayer.plugin.Plugin;
 import musicDriverInterface.MetaData;

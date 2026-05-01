@@ -76,8 +76,8 @@ Debug.println("settings\n" +
     @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
     void test() throws Exception {
 Debug.println("filename: " + zms);
-        Setting.getInstance().getZMusic().compilePriority = 2; // v3 only
-//        Setting.getInstance().getZMusic().compilePriority = 3; // v2 only
+//        Setting.getInstance().getZMusic().compilePriority = 2; // v3 only
+        Setting.getInstance().getZMusic().compilePriority = 3; // v2 only
 
         assertDoesNotThrow(() -> {
             FileFormat format = FileFormat.getFileFormat(zms);

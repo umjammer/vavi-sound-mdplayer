@@ -6,15 +6,16 @@
 
 package mdplayer.plugin;
 
+import java.io.InputStream;
 import java.util.function.Function;
 
-import dotnet4j.io.Stream;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.Cs4231Chip;
 import mdplayer.chips.Ym2608Chip;
 import mdplayer.chips.Ym2612Chip;
 import mdplayer.driver.muap.MuapDriver;
 import mdplayer.driver.mucom.MucomDriver;
+import mdplayer.plugin.BasePlugin.Compilable;
 import mdsound.Instrument;
 import mdsound.MDSound;
 import mdsound.chips.Ym3438Const.Type;
@@ -32,7 +33,12 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-12-29 nsano initial version <br>
  */
-public class MuapPlugin extends BasePlugin<MuapDriver> {
+public class MuapPlugin extends BasePlugin<MuapDriver> implements Compilable {
+
+    @Override
+    public void compile() {
+
+    }
 
     @Override
     public void prepare() {
@@ -75,7 +81,7 @@ public class MuapPlugin extends BasePlugin<MuapDriver> {
             chip.setVolumes.put("RHYTHM", ym2608::setVolume);
             chip.setVolumes.put("ADPCM", ym2608::setVolume);
         }
-        Function<String, Stream> fn = Ym2608Chip::getOPNARyhthmStream;
+        Function<String, InputStream> fn = Ym2608Chip::getOPNARyhthmStream;
         chip.option = new Object[] {fn};
         chipLED.put("PriOPNA", 1);
         put(Ym2608Chip.class, chip);

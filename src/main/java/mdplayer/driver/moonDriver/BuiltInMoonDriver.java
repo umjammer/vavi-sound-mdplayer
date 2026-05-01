@@ -3,7 +3,7 @@ package mdplayer.driver.moonDriver;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
-import dotnet4j.util.compat.Tuple;
+import vavi.util.compat.Tuple;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.YmF262Chip;

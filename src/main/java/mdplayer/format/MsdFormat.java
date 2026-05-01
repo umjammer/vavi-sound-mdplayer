@@ -8,13 +8,14 @@ package mdplayer.format;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
-import dotnet4j.io.File;
-import dotnet4j.io.Path;
 import mdplayer.PlayList.Music;
 import mdplayer.driver.musica.MusicaK4Driver;
 import mdplayer.plugin.MuSICAPlugin;
@@ -26,6 +27,8 @@ import vavi.sound.sampled.md.MdEncoding;
 import vavi.sound.sampled.md.MdFileFormatType;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
+
+import static vavi.util.compat.Util.changeExtension;
 
 
 /**
@@ -43,10 +46,14 @@ public class MsdFormat extends BaseFileFormat implements FileFormat.SampledFileF
 
     @Override
     public MetaData getMetaData() {
-        String vcd = Path.changeExtension(filename, ".vcd");
+        String vcd = changeExtension(filename, ".vcd");
         byte[] vcdBuf = null;
-        if (File.exists(vcd)) {
-            vcdBuf = File.readAllBytes(vcd);
+        if (Files.exists(Path.of(vcd))) {
+            try {
+                vcdBuf = Files.readAllBytes(Path.of(vcd));
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
         }
         return new MusicaK4Driver().getMetaData(this.srcBuf, vcdBuf);
     }
@@ -59,12 +66,12 @@ public class MsdFormat extends BaseFileFormat implements FileFormat.SampledFileF
         MetaData metaData = getMetaData();
         if (metaData == null) {
             //logger.log(Level.WARNING, ".MSD compilation failed", "PlayList", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            music.title = Path.getFileName(file);
-            music.titleJ = Path.getFileName(file);
+            music.title = Path.of(file).getFileName().toString();
+            music.titleJ = Path.of(file).getFileName().toString();
             music.notes = "";
         } else {
-            music.title = metaData.getFirst(Tag.Title).isEmpty() ? Path.getFileName(file) : metaData.getFirst(Tag.Title);
-            music.titleJ = metaData.getFirst(Tag.TitleJ).isEmpty() ? Path.getFileName(file) : metaData.getFirst(Tag.TitleJ);
+            music.title = metaData.getFirst(Tag.Title).isEmpty() ? Path.of(file).getFileName().toString() : metaData.getFirst(Tag.Title);
+            music.titleJ = metaData.getFirst(Tag.TitleJ).isEmpty() ? Path.of(file).getFileName().toString() : metaData.getFirst(Tag.TitleJ);
             music.notes = metaData.getFirst(Tag.Note);
         }
         music.game = "";

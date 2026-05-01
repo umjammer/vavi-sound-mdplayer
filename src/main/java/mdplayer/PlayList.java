@@ -14,14 +14,12 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 import java.util.StringJoiner;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import javax.swing.JOptionPane;
 
-import dotnet4j.io.FileMode;
-import dotnet4j.io.FileStream;
-import dotnet4j.io.StreamReader;
 import mdplayer.Common.EnmArcType;
 import mdplayer.format.FileFormat;
 import vavi.util.archive.Archive;
@@ -185,9 +183,10 @@ public class PlayList implements Serializable, Cloneable {
         try {
             PlayList pl = new PlayList();
 
-            try (StreamReader sr = new StreamReader(new FileStream(filename, FileMode.Open), charset)) {
+            try (Scanner sr = new Scanner(Files.newInputStream(Path.of(filename)), charset)) {
                 String line;
-                while ((line = sr.readLine()) != null) {
+                while (sr.hasNextLine()) {
+                    line = sr.nextLine();
                     line = line.trim();
                     if (line.isEmpty()) continue;
                     if (line.charAt(0) == '#') continue;

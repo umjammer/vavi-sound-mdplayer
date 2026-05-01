@@ -2,18 +2,21 @@ package mdplayer.emu.nise68;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-import dotnet4j.io.File;
-import dotnet4j.io.MemoryStream;
-import dotnet4j.io.Path;
-import dotnet4j.io.SeekOrigin;
+import kotlin.collections.ArrayDeque;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
+import static vavi.util.compat.Util.getExtension;
+import static vavi.util.compat.Util.getFileNameWithoutExtension;
 
 
 public class NiseHuman {
@@ -151,7 +154,7 @@ public class NiseHuman {
         logger.log(Level.DEBUG, "currentWorkPath: %s".formatted(currentWorkPath));
 
         byte[] bin = fileMng.vReadAllBytes(filename);
-        String fext = Path.getExtension(filename).toUpperCase();
+        String fext = getExtension(filename).toUpperCase();
         loadRunner(bin, fext.equals(".R"), option, startAddress);
     }
 
@@ -522,9 +525,9 @@ public class NiseHuman {
         logger.log(Level.TRACE, "Filename:[%s]", fn);
         fn = fileMng.vGetFullFilename(fn);
         try {
-            String path = Path.getDirectoryName(fn);
-            String filename = Path.getFileNameWithoutExtension(fn);
-            String extension = Path.getExtension(fn);
+            String path = Path.of(fn).getParent().toString();
+            String filename = getFileNameWithoutExtension(fn);
+            String extension = getExtension(fn);
 
             // Drive Letter (dummy)
             mem.pokeB(buffer + 0, (byte) path.charAt(0));
@@ -609,15 +612,16 @@ logger.log(Level.WARNING, "readonly: "  + fn);
             //if (fb.containsKey(physicalFn)) {
             //    dat = fb[physicalFn];
             //} else {
-            //    if (File.exists(physicalFn)) {
-            //        dat = File.readAllBytes(physicalFn);
+            //    if (Files.exists(physicalFn)) {
+            //        dat = Files.readAllBytes(physicalFn);
             //    } else {
             //        dat= new byte[0];
             //    }
             //    fb.add(physicalFn, dat);
             //}
             dat = fileMng.vReadAllBytes(fn);
-            fi[i].memoryStream = new MemoryStream(Objects.requireNonNullElseGet(dat, () -> new byte[0]));
+            fi[i].memoryStream = new ArrayList<>();
+            if (dat != null) for (byte b : dat) fi[i].memoryStream.add(b);
             break;
         }
         if (fileHandle < 0) {
@@ -677,7 +681,8 @@ logger.log(Level.INFO, "file not found: %s".formatted(fn));
             //    fb.add(physicalFn, dat);
             //}
             dat = fileMng.vReadAllBytes(fn);
-            fi[i].memoryStream = new MemoryStream(dat);
+            fi[i].memoryStream = new ArrayList<>();
+            if (dat != null) for (byte b : dat) fi[i].memoryStream.add(b);
             break;
         }
         if (fileHandle < 0) return;
@@ -686,28 +691,28 @@ logger.log(Level.INFO, "file not found: %s".formatted(fn));
     }
 
     private String getPhysicalFn(String fn) {
-        String physicalFn;
+        Path physicalFn;
         if (fn.toUpperCase().indexOf("C:\\") == 0) {
-            physicalFn = Path.combine(currentWorkPath, fn.substring(3));
+            physicalFn = Path.of(currentWorkPath, fn.substring(3));
         } else {
-            physicalFn = Path.combine(currentWorkPath, fn);
+            physicalFn = Path.of(currentWorkPath, fn);
         }
 
-        if (!File.exists(physicalFn)) {
-            if (Path.getExtension(physicalFn).equalsIgnoreCase(".ZPD") && envZPDs != null && !envZPDs.isEmpty()) {
-                String f = Path.getFileName(physicalFn);
+        if (!Files.exists(physicalFn)) {
+            if (getExtension(physicalFn.toString()).equalsIgnoreCase(".ZPD") && envZPDs != null && !envZPDs.isEmpty()) {
+                String f = physicalFn.getFileName().toString();
                 for (String s : envZPDs) {
-                    if (!File.exists(Path.combine(s, f))) {
+                    if (!Files.exists(Path.of(s, f))) {
 logger.log(Level.INFO, "file not found: %s".formatted(fn));
                         continue;
                     }
-                    physicalFn = Path.combine(s, f);
+                    physicalFn = Path.of(s, f);
                 }
             }
         }
 
         logger.log(Level.TRACE, "PhysicalFilename:[%s] ", physicalFn);
-        return physicalFn;
+        return physicalFn.toString();
     }
 
     private void close() {
@@ -745,11 +750,10 @@ logger.log(Level.INFO, "file not found: %s".formatted(fn));
         //        fi[fileno].ptr++;
         //    }
         //}
-        if (fi[fileNo].memoryStream != null && fi[fileNo].memoryStream.getLength() > 0) {
+        if (fi[fileNo].memoryStream != null && !fi[fileNo].memoryStream.isEmpty()) {
             for (; (i & 0xffff_ffffL) < size; i++) {
-                if (fi[fileNo].ptr == fi[fileNo].memoryStream.getLength()) break;
-                int b = fi[fileNo].memoryStream.readByte();
-                if (b < 0) break;
+                if (fi[fileNo].ptr == fi[fileNo].memoryStream.size()) break;
+                int b = fi[fileNo].memoryStream.get(fi[fileNo].ptr) & 0xff;
                 mem.pokeB(dataPtr + i, (byte) b);
                 fi[fileNo].ptr++;
             }
@@ -827,17 +831,13 @@ logger.log(Level.INFO, "file not found: %s".formatted(fn));
 
         switch (mode) {
             case 0: // begin
-                fi[fileNo].memoryStream.seek(offset, SeekOrigin.Begin);
                 fi[fileNo].ptr = 0 + offset;
                 break;
             case 1: // seek
-                fi[fileNo].memoryStream.seek(offset, SeekOrigin.Current);
                 fi[fileNo].ptr += offset;
                 break;
             case 2: // end
-                fi[fileNo].memoryStream.seek(offset, SeekOrigin.End);
-                //fi[fileNo].ptr = fi[fileNo].dat.length + offset;
-                fi[fileNo].ptr = (int) (fi[fileNo].memoryStream.getLength() + offset);
+                fi[fileNo].ptr = fi[fileNo].memoryStream.size() + offset;
                 break;
             default:
                 throw new UnsupportedOperationException();
@@ -913,7 +913,7 @@ logger.log(Level.INFO, "file not found: %s".formatted(fn));
         switch (md) {
             case 0:
                 logger.log(Level.TRACE, "<NiseHuman>in:  md:0 fil:%s op:%s p2:%08x ", fn, op, p2);
-                if (!Path.getFileNameWithoutExtension(fn).equalsIgnoreCase("ZMC")) {
+                if (!getFileNameWithoutExtension(fn).equalsIgnoreCase("ZMC")) {
                     throw new UnsupportedOperationException("Only ZMC is supported in exec, got: " + fn);
                 }
 
@@ -1076,7 +1076,7 @@ logger.log(Level.INFO, "file not found: %s".formatted(fn));
             fi[i].isopen = true;
             fi[i].filename = fn;
             fi[i].ptr = 0;
-            fi[i].memoryStream = new MemoryStream();
+            fi[i].memoryStream = new ArrayList<>();
             break;
         }
         if (fileHandle < 0) {

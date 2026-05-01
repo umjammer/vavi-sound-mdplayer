@@ -20,6 +20,7 @@ import java.io.UncheckedIOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,7 +57,6 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
-import dotnet4j.io.Directory;
 import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.Common.EnmInstFormat;
@@ -2243,7 +2243,7 @@ public class frmSetting extends JDialog {
         ofd.setDialogTitle("Select a file");
         ofd.setFileFilter(ofd.getChoosableFileFilters()[setting.getOther().getFilterIndex()]);
 
-        if (!setting.getOther().getDefaultDataPath().isEmpty() && Directory.exists(setting.getOther().getDefaultDataPath()) && IsInitialOpenFolder) {
+        if (!setting.getOther().getDefaultDataPath().isEmpty() && Files.exists(Path.of(setting.getOther().getDefaultDataPath())) && IsInitialOpenFolder) {
             ofd.setCurrentDirectory(new File(setting.getOther().getDefaultDataPath()));
 //        } else {
 //            ofd.RestoreDirectory = true;

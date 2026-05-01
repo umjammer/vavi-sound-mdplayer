@@ -7,8 +7,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import dotnet4j.util.compat.TriConsumer;
 import vavi.util.ByteUtil;
+import vavi.util.compat.TriConsumer;
 
 import static java.lang.System.getLogger;
 

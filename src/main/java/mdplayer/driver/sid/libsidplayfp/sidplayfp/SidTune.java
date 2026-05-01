@@ -22,6 +22,7 @@
 
 package mdplayer.driver.sid.libsidplayfp.sidplayfp;
 
+import java.io.IOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
@@ -128,7 +129,7 @@ public class SidTune {
             tune = tune.load(fileName, fileNameExtensions, separatorIsSlash);
             status = true;
             statusString = MSG_NO_ERRORS;
-        } catch (dotnet4j.io.IOException e) {
+        } catch (IOException e) {
             logger.log(Level.ERROR, e.getMessage(), e);
             status = false;
             statusString = e.getMessage();
@@ -146,7 +147,7 @@ public class SidTune {
             tune = tune.read(sourceBuffer, bufferLen);
             status = true;
             statusString = MSG_NO_ERRORS;
-        } catch (dotnet4j.io.IOException e) {
+        } catch (IOException e) {
             logger.log(Level.ERROR, e.getMessage(), e);
             status = false;
             statusString = e.getMessage();

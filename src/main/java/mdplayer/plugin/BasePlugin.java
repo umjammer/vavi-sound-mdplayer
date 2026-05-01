@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import dotnet4j.util.compat.Tuple;
 import mdplayer.ChipLEDs;
 import mdplayer.ChipRegister;
 import mdplayer.Common;
@@ -21,6 +20,7 @@ import mdplayer.driver.BaseDriver;
 import mdplayer.format.FileFormat;
 import mdsound.MDSound;
 import mdsound.MDSound.Chip;
+import vavi.util.compat.Tuple;
 
 import static java.lang.System.getLogger;
 

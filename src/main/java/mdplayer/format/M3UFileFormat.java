@@ -2,11 +2,11 @@ package mdplayer.format;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import dotnet4j.io.Path;
 import mdplayer.M3U;
 import mdplayer.PlayList;
 import mdplayer.plugin.Plugin;
@@ -46,7 +46,7 @@ public class M3UFileFormat extends BaseFileFormat {
     @Override
     public List<PlayList.Music> addFileLoop(PlayList.Music mc, Archive archive, Entry entry /* = null */) {
 
-        String rootPath = Path.getDirectoryName(mc.fileName);
+        String rootPath = Path.of(mc.fileName).getParent().toString();
         PlayList pl;
         if (entry == null) pl = M3U.loadM3U(mc.fileName, rootPath);
         else pl = M3U.loadM3U(archive, entry, mc.arcFileName);
@@ -61,7 +61,7 @@ public class M3UFileFormat extends BaseFileFormat {
     @Override
     public List<PlayList.Music> addFileLoop(int index, PlayList.Music mc, Archive archive, Entry entry /* = null */) {
 
-        String rootPath = Path.getDirectoryName(mc.fileName);
+        String rootPath = Path.of(mc.fileName).getParent().toString();
         PlayList pl;
         if (entry == null) pl = M3U.loadM3U(mc.fileName, rootPath);
         else pl = M3U.loadM3U(archive, entry, mc.arcFileName);

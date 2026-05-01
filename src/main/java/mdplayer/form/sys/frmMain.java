@@ -26,11 +26,16 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.io.UncheckedIOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.WatchEvent;
 import java.time.Instant;
@@ -66,17 +71,6 @@ import com.github.kwhat.jnativehook.GlobalScreen;
 import com.github.kwhat.jnativehook.NativeHookException;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
-import dotnet4j.io.Directory;
-import dotnet4j.io.File;
-import dotnet4j.io.FileAccess;
-import dotnet4j.io.FileMode;
-import dotnet4j.io.FileNotFoundException;
-import dotnet4j.io.FileStream;
-import dotnet4j.io.IOException;
-import dotnet4j.io.Path;
-import dotnet4j.io.StreamWriter;
-import dotnet4j.util.compat.Tuple;
-import dotnet4j.util.compat.Tuple4;
 import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common;
@@ -149,6 +143,8 @@ import mdplayer.properties.Resources;
 import mdsound.np.chip.NesN106;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
+import vavi.util.compat.Tuple;
+import vavi.util.compat.Tuple4;
 
 import static java.lang.System.getLogger;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
@@ -536,12 +532,12 @@ public class frmMain extends JFrame {
 //    }
 
     private void watcher_Changed(WatchEvent<?> e) {
-        String trgFile = Path.combine(opeFolder, "ope.txt");
+        String trgFile = Path.of(opeFolder, "ope.txt").toString();
 
         synchronized (remoteLockObj) {
             if (remoteBusy) {
                 try {
-                    File.delete(trgFile);
+                    Files.delete(Path.of(trgFile));
                 } catch (Exception deleteEx) {
                     logger.log(Level.ERROR, deleteEx.getMessage(), deleteEx);
                 }
@@ -557,7 +553,7 @@ public class frmMain extends JFrame {
                 long n = Instant.now().toEpochMilli() / 1_000_000L;
                 if (now == n) {
                     try {
-                        File.delete(trgFile);
+                        Files.delete(Path.of(trgFile));
                     } catch (Exception deleteEx) {
                         logger.log(Level.ERROR, deleteEx.getMessage(), deleteEx);
                     }
@@ -565,7 +561,7 @@ public class frmMain extends JFrame {
                 }
                 now = n;
 
-                if (!File.exists(trgFile)) return;
+                if (!Files.exists(Path.of(trgFile))) return;
                 List<String> lins = null;
                 int retry = 30;
                 while (retry > 0) {
@@ -580,7 +576,7 @@ public class frmMain extends JFrame {
                 }
 
                 try {
-                    File.delete(trgFile);
+                    Files.delete(Path.of(trgFile));
                 } catch (Exception deleteEx) {
                     logger.log(Level.ERROR, deleteEx.getMessage(), deleteEx);
                 }
@@ -3595,7 +3591,7 @@ public class frmMain extends JFrame {
 //        e.Effect = DragDropEffects.All;
 //    }
 
-    private void pbScreen_DragDrop(List<java.io.File> files) {
+    private void pbScreen_DragDrop(List<File> files) {
         String filename = files.getFirst().getPath();
 
         try {
@@ -4391,7 +4387,7 @@ public class frmMain extends JFrame {
             reqAllScreenInit = true;
 
             if (setting.getOther().getWavSwitch()) {
-                if (!Directory.exists(setting.getOther().getWavPath())) {
+                if (!Files.exists(Path.of(setting.getOther().getWavPath()))) {
                     int res = JOptionPane.showConfirmDialog(this,
                             "The path set for the wav file output destination does not exist. Create it and continue playing?",
                             "Confirmation of Path Creation",
@@ -4400,7 +4396,7 @@ public class frmMain extends JFrame {
                         throw new IllegalStateException("cancel");
                     }
                     try {
-                        Directory.createDirectory(setting.getOther().getWavPath());
+                        Files.createDirectory(Path.of(setting.getOther().getWavPath()));
                     } catch (Exception e) {
                         JOptionPane.showMessageDialog(this,
                                 "Failed to create path. Stop playing.", "Creation failed", JOptionPane.ERROR_MESSAGE);
@@ -4728,7 +4724,7 @@ public class frmMain extends JFrame {
             String[] p = l.split("\\|");
             ofd.setFileFilter(new FileFilter() {
                 @Override
-                public boolean accept(java.io.File f) {
+                public boolean accept(File f) {
                     return f.getName().toLowerCase().endsWith(p[1]);
                 }
 
@@ -4739,12 +4735,12 @@ public class frmMain extends JFrame {
             });
         });
         String lastPath = prefs.get("mdplayer.lasPath", null);
-        if (lastPath != null) ofd.setCurrentDirectory(new java.io.File(lastPath));
+        if (lastPath != null) ofd.setCurrentDirectory(new File(lastPath));
         ofd.setDialogTitle("Select a file");
         ofd.setFileFilter(ofd.getChoosableFileFilters()[setting.getOther().getFilterIndex()]);
 
-        if (!setting.getOther().getDefaultDataPath().isEmpty() && Directory.exists(setting.getOther().getDefaultDataPath()) && isInitialOpenFolder) {
-            ofd.setCurrentDirectory(new java.io.File(setting.getOther().getDefaultDataPath()));
+        if (!setting.getOther().getDefaultDataPath().isEmpty() && Files.exists(Path.of(setting.getOther().getDefaultDataPath())) && isInitialOpenFolder) {
+            ofd.setCurrentDirectory(new File(setting.getOther().getDefaultDataPath()));
 //        } else {
 //            ofd.RestoreDirectory = true;
         }
@@ -5027,7 +5023,7 @@ public class frmMain extends JFrame {
         } catch (IndexOutOfBoundsException e) {
             logger.log(Level.ERROR, e.getMessage(), e);
             logger.log(Level.TRACE, "Message too long");
-        } catch (FileNotFoundException e) {
+        } catch (UncheckedIOException e) {
             logger.log(Level.ERROR, e.getMessage(), e);
             JOptionPane.showMessageDialog(this, "Could not find shared memory for mml2vgm");
         }
@@ -5639,10 +5635,10 @@ public class frmMain extends JFrame {
 
         JFileChooser sfd = new JFileChooser();
 
-        sfd.setSelectedFile(new java.io.File("Tone file.tfi"));
+        sfd.setSelectedFile(new File("Tone file.tfi"));
         sfd.setFileFilter(new FileFilter() {
             @Override
-            public boolean accept(java.io.File f) {
+            public boolean accept(File f) {
                 return f.getName().toLowerCase().endsWith(".tfi");
             }
 
@@ -5659,12 +5655,11 @@ public class frmMain extends JFrame {
             return;
         }
 
-        try (FileStream fs = new FileStream(
-                sfd.getSelectedFile().getName(),
-                FileMode.Create,
-                FileAccess.Write)) {
+        try (OutputStream fs = Files.newOutputStream(Path.of(sfd.getSelectedFile().getName()))) {
 
             fs.write(n, 0, n.length);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -5749,10 +5744,10 @@ public class frmMain extends JFrame {
 
         JFileChooser sfd = new JFileChooser();
 
-        sfd.setSelectedFile(new java.io.File("Tone file.dmp"));
+        sfd.setSelectedFile(new File("Tone file.dmp"));
         sfd.setFileFilter(new FileFilter() {
             @Override
-            public boolean accept(java.io.File f) {
+            public boolean accept(File f) {
                 return f.getName().toLowerCase().endsWith(".dmp");
             }
 
@@ -5769,12 +5764,11 @@ public class frmMain extends JFrame {
             return;
         }
 
-        try (FileStream fs = new FileStream(
-                sfd.getSelectedFile().getName(),
-                FileMode.Create,
-                FileAccess.Write)) {
+        try (OutputStream fs = Files.newOutputStream(Path.of(sfd.getSelectedFile().getName()))) {
 
             fs.write(n, 0, n.length);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -5913,10 +5907,10 @@ public class frmMain extends JFrame {
 
         JFileChooser sfd = new JFileChooser();
 
-        sfd.setSelectedFile(new java.io.File("{patch_Name}.rym2612"));
+        sfd.setSelectedFile(new File("{patch_Name}.rym2612"));
         sfd.setFileFilter(new FileFilter() {
             @Override
-            public boolean accept(java.io.File f) {
+            public boolean accept(File f) {
                 return f.getName().toLowerCase().endsWith(".rym2612");
             }
 
@@ -5933,15 +5927,10 @@ public class frmMain extends JFrame {
             return;
         }
 
-        try (FileStream fs = new FileStream(
-                sfd.getSelectedFile().getName(),
-                FileMode.Create,
-                FileAccess.Write)) {
-            try (StreamWriter sw = new StreamWriter(fs)) {
-                sw.write(buf.toString());
-            } catch (java.io.IOException e) {
-                throw new UncheckedIOException(e);
-            }
+        try (var sw = new PrintWriter(Files.newOutputStream(Path.of(sfd.getSelectedFile().getName())))) {
+            sw.write(buf.toString());
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -6008,10 +5997,10 @@ public class frmMain extends JFrame {
 
         JFileChooser sfd = new JFileChooser();
 
-        sfd.setSelectedFile(new java.io.File("Tone file.opni"));
+        sfd.setSelectedFile(new File("Tone file.opni"));
         sfd.setFileFilter(new FileFilter() {
             @Override
-            public boolean accept(java.io.File f) {
+            public boolean accept(File f) {
                 return f.getName().toLowerCase().endsWith(".opni");
             }
 
@@ -6028,12 +6017,10 @@ public class frmMain extends JFrame {
             return;
         }
 
-        try (FileStream fs = new FileStream(
-                sfd.getSelectedFile().getName(),
-                FileMode.Create,
-                FileAccess.Write)) {
-
+        try (OutputStream fs = Files.newOutputStream(Path.of(sfd.getSelectedFile().getName()))) {
             fs.write(n, 0, n.length);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -6150,10 +6137,10 @@ public class frmMain extends JFrame {
 
         JFileChooser sfd = new JFileChooser();
 
-        sfd.setSelectedFile(new java.io.File("Tone file.opli"));
+        sfd.setSelectedFile(new File("Tone file.opli"));
         sfd.setFileFilter(new FileFilter() {
             @Override
-            public boolean accept(java.io.File f) {
+            public boolean accept(File f) {
                 return f.getName().toLowerCase().endsWith(".opli");
             }
 
@@ -6170,12 +6157,11 @@ public class frmMain extends JFrame {
             return;
         }
 
-        try (FileStream fs = new FileStream(
-                sfd.getSelectedFile().getName(),
-                FileMode.Create,
-                FileAccess.Write)) {
+        try (OutputStream fs = Files.newOutputStream(Path.of(sfd.getSelectedFile().getName()))) {
 
             fs.write(n, 0, n.length);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -6342,7 +6328,7 @@ public class frmMain extends JFrame {
                 playingFileName = fn;
                 format = FileFormat.getFileFormat(zfn);
             }
-            format.load(Files.newInputStream(java.nio.file.Path.of(fn)), null);
+            format.load(Files.newInputStream(Path.of(fn)), null);
 
             // Set the volume balance before playback
             loadPresetMixerBalance(playingFileName, playingArcFileName, format);
@@ -7375,7 +7361,7 @@ public class frmMain extends JFrame {
 
         try {
             Setting.Balance balance;
-            java.nio.file.Path fullPath = mdplayer.Common.settingFilePath;
+            Path fullPath = mdplayer.Common.settingFilePath;
             fullPath = fullPath.resolve("MixerBalance");
             if (!Files.exists(fullPath)) Files.createDirectory(fullPath);
             String fn = "";
@@ -7384,14 +7370,14 @@ public class frmMain extends JFrame {
             // Song-specific preset loading mode
             if (setting.getAutoBalance().getLoadSongBalance()) {
                 if (setting.getAutoBalance().getSamePositionAsSongData()) {
-                    fullPath = java.nio.file.Path.of(playingFileName).getParent();
+                    fullPath = Path.of(playingFileName).getParent();
                     if (playingArcFileName != null && playingArcFileName.isEmpty()) {
-                        fullPath = java.nio.file.Path.of(playingArcFileName).getParent();
+                        fullPath = Path.of(playingArcFileName).getParent();
                     }
                 }
-                fn = Path.getFileName(playingFileName);
+                fn = Path.of(playingFileName).getFileName().toString();
                 if (playingArcFileName != null && playingArcFileName.isEmpty()) {
-                    fn = Path.getFileName(playingArcFileName);
+                    fn = Path.of(playingArcFileName).getFileName().toString();
                 }
                 fn += ".mbc";
                 if (!Files.exists(fullPath.resolve(fn))) {
@@ -7437,7 +7423,7 @@ public class frmMain extends JFrame {
         if (!setting.getAutoBalance().getUseThis()) return;
 
         try {
-            java.nio.file.Path fullPath = mdplayer.Common.settingFilePath;
+            Path fullPath = mdplayer.Common.settingFilePath;
             fullPath = fullPath.resolve("MixerBalance");
             if (!Files.exists(fullPath)) Files.createDirectory(fullPath);
             String fn = "";

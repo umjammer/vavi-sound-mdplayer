@@ -12,6 +12,8 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.ImageIcon;
@@ -30,8 +32,6 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 
-import dotnet4j.io.Directory;
-import dotnet4j.io.Path;
 import mdplayer.Audio;
 import mdplayer.Setting;
 import mdplayer.chips.RealChipPlugin;
@@ -73,7 +73,7 @@ public class frmVSTeffectList extends JFrame {
         ofd.setDialogTitle("Select a file");
         ofd.setFileFilter(ofd.getChoosableFileFilters()[setting.getOther().getFilterIndex()]);
 
-        if (!setting.getVst().getDefaultPath().isEmpty() && Directory.exists(setting.getVst().getDefaultPath()) && isInitialOpenFolder) {
+        if (!setting.getVst().getDefaultPath().isEmpty() && Files.exists(Path.of(setting.getVst().getDefaultPath())) && isInitialOpenFolder) {
             ofd.setCurrentDirectory(new File(setting.getVst().getDefaultPath()));
 //        } else {
 //            ofd.RestoreDirectory = true;
@@ -85,7 +85,7 @@ public class frmVSTeffectList extends JFrame {
             return;
         }
 
-        setting.getVst().setDefaultPath(Path.getDirectoryName(ofd.getSelectedFile().getName()));
+        setting.getVst().setDefaultPath(Path.of(ofd.getSelectedFile().getName()).getParent().toString());
         parent.stop();
         while (!audio.plugin.chipRegister.plugin(RealChipPlugin.class).isThreadStopped()) {
             Thread.yield();

@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import dotnet4j.io.Path;
 import mdplayer.Common;
 import mdplayer.M3U;
 import mdplayer.PlayList;
@@ -16,6 +15,9 @@ import mdplayer.plugin.Plugin;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Archives;
 import vavi.util.archive.Entry;
+
+import static vavi.util.compat.Util.changeExtension;
+import static vavi.util.compat.Util.getExtension;
 
 
 /**
@@ -74,8 +76,8 @@ public class ZIPFileFormat extends BaseFileFormat {
             }
             if (!found && FileFormat.getFileFormat(zm) instanceof VGMFileFormat) {
                 String vzm;
-                if (Path.getExtension(zm).equalsIgnoreCase(".vgm")) vzm = Path.changeExtension(zm, ".vgz");
-                else vzm = Path.changeExtension(zm, ".vgm");
+                if (getExtension(zm).equalsIgnoreCase(".vgm")) vzm = changeExtension(zm, ".vgz");
+                else vzm = changeExtension(zm, ".vgm");
                 for (PlayList.Music m : mMember) {
                     if (m.fileName.equals(vzm)) {
                         found = true;
@@ -97,10 +99,10 @@ public class ZIPFileFormat extends BaseFileFormat {
         for (Entry ent : archive.entries()) {
             for (PlayList.Music m : mMember) {
                 String vzm = "";
-                if (Path.getExtension(m.fileName).equalsIgnoreCase(".vgm"))
-                    vzm = Path.changeExtension(m.fileName, ".vgz");
-                else if (Path.getExtension(m.fileName).equalsIgnoreCase(".vgz"))
-                    vzm = Path.changeExtension(m.fileName, ".Vgm");
+                if (getExtension(m.fileName).equalsIgnoreCase(".vgm"))
+                    vzm = changeExtension(m.fileName, ".vgz");
+                else if (getExtension(m.fileName).equalsIgnoreCase(".vgz"))
+                    vzm = changeExtension(m.fileName, ".Vgm");
 
                 if (ent.getName().equals(m.fileName) || ent.getName().equals(vzm)) {
                     m.format = FileFormat.getFileFormat(m.fileName);
@@ -145,8 +147,8 @@ public class ZIPFileFormat extends BaseFileFormat {
             }
             if (!found && FileFormat.getFileFormat(zm) instanceof VGMFileFormat) {
                 String vzm;
-                if (Path.getExtension(zm).equalsIgnoreCase(".vgm")) vzm = Path.changeExtension(zm, ".vgz");
-                else vzm = Path.changeExtension(zm, ".vgm");
+                if (getExtension(zm).equalsIgnoreCase(".vgm")) vzm = changeExtension(zm, ".vgz");
+                else vzm = changeExtension(zm, ".vgm");
                 for (PlayList.Music m : mMember) {
                     if (m.fileName.equals(vzm)) {
                         found = true;
@@ -168,10 +170,10 @@ public class ZIPFileFormat extends BaseFileFormat {
         for (Entry ent : archive.entries()) {
             for (PlayList.Music m : mMember) {
                 String vzm = "";
-                if (Path.getExtension(m.fileName).equalsIgnoreCase(".vgm"))
-                    vzm = Path.changeExtension(m.fileName, ".vgz");
-                else if (Path.getExtension(m.fileName).equalsIgnoreCase(".vgz"))
-                    vzm = Path.changeExtension(m.fileName, ".Vgm");
+                if (getExtension(m.fileName).equalsIgnoreCase(".vgm"))
+                    vzm = changeExtension(m.fileName, ".vgz");
+                else if (getExtension(m.fileName).equalsIgnoreCase(".vgz"))
+                    vzm = changeExtension(m.fileName, ".Vgm");
 
                 if (ent.getName().equals(m.fileName) || ent.getName().equals(vzm)) {
                     m.format = FileFormat.getFileFormat(m.fileName);

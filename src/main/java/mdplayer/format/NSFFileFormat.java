@@ -2,14 +2,14 @@ package mdplayer.format;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
-import dotnet4j.io.File;
-import dotnet4j.io.Path;
 import mdplayer.Common.EnmArcType;
 import mdplayer.PlayList;
 import mdplayer.driver.nsf.NsfMdDriver;
@@ -79,7 +79,7 @@ public class NSFFileFormat extends BaseFileFormat {
             music.arcFileName = zipFile;
             music.game = "unknown";
             music.type = "-";
-            music.title = "(%s)".formatted(Path.getFileName(file));
+            music.title = "(%s)".formatted(Path.of(file).getFileName());
             musics.add(music);
         }
 
@@ -138,7 +138,7 @@ public class NSFFileFormat extends BaseFileFormat {
             music.arcFileName = zipFile;
             music.game = "unknown";
             music.type = "-";
-            music.title = "(%s)".formatted(Path.getFileName(ms.fileName));
+            music.title = "(%s)".formatted(Path.of(ms.fileName).getFileName().toString());
         }
 
         musics.add(music);
@@ -162,7 +162,7 @@ public class NSFFileFormat extends BaseFileFormat {
     public List<PlayList.Music> addFileLoop(PlayList.Music mc, Archive archive, Entry entry /* = null */) throws IOException {
         byte[] buf;
         if (entry == null) {
-            buf = File.readAllBytes(mc.fileName);
+            buf = Files.readAllBytes(Path.of(mc.fileName));
         } else {
             try (InputStream reader = archive.getInputStream(entry)) {
                 buf = reader.readAllBytes();
@@ -195,7 +195,7 @@ public class NSFFileFormat extends BaseFileFormat {
     public List<PlayList.Music> addFileLoop(int index, PlayList.Music mc, Archive archive, Entry entry/* = null*/) throws IOException {
         byte[] buf;
         if (entry == null) {
-            buf = File.readAllBytes(mc.fileName);
+            buf = Files.readAllBytes(Path.of(mc.fileName));
         } else {
             try (InputStream reader = archive.getInputStream(entry)) {
                 buf = reader.readAllBytes();

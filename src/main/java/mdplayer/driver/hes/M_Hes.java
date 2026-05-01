@@ -4,9 +4,9 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import dotnet4j.util.compat.TriConsumer;
 import mdplayer.driver.hes.KmEvent.Event;
 import vavi.util.ByteUtil;
+import vavi.util.compat.TriConsumer;
 
 
 /*

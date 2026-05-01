@@ -6,13 +6,12 @@
 
 package mdplayer.chips;
 
+import java.io.OutputStream;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
-import dotnet4j.io.FileAccess;
-import dotnet4j.io.FileMode;
-import dotnet4j.io.FileStream;
-import dotnet4j.io.Path;
 import mdplayer.Chip;
 import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
@@ -58,8 +57,8 @@ public abstract class BaseChip implements Chip {
 
         try {
 
-            String fn = Path.combine(setting.getOther().getDumpPath(), "%2$s_%3$s_%1$03d.bin".formatted(dumpCounter++, chipName, context.getDriver().metaData.getFirst(Tag.Title).replace("*", "").replace("?", "").replace(" ", "").replace("\"", "").replace("/", "")));
-            try (FileStream fs = new FileStream(fn, FileMode.OpenOrCreate, FileAccess.Write)) {
+            Path fn = Path.of(setting.getOther().getDumpPath(), "%2$s_%3$s_%1$03d.bin".formatted(dumpCounter++, chipName, context.getDriver().metaData.getFirst(Tag.Title).replace("*", "").replace("?", "").replace(" ", "").replace("\"", "").replace("/", "")));
+            try (OutputStream fs = Files.newOutputStream(fn)) {
                 fs.write(rom, adr, len);
             }
         } catch (Exception e) {

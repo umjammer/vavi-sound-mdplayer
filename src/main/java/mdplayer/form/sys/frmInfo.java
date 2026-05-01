@@ -24,12 +24,12 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.Timer;
 
-import dotnet4j.util.compat.Tuple3;
 import mdplayer.Audio;
 import mdplayer.Setting;
 import mdplayer.properties.Resources;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
+import vavi.util.compat.Tuple3;
 
 import static java.lang.System.getLogger;
 

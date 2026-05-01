@@ -1,15 +1,16 @@
 package mdplayer.plugin;
 
+import java.io.InputStream;
 import java.lang.System.Logger;
 import java.util.function.Function;
 
-import dotnet4j.io.Stream;
 import mdplayer.Common;
 import mdplayer.chips.P86Chip;
 import mdplayer.chips.PpsChip;
 import mdplayer.chips.Ppz8Chip;
 import mdplayer.chips.Ym2608Chip;
 import mdplayer.driver.pmd.PmdDriver;
+import mdplayer.plugin.BasePlugin.Compilable;
 import mdsound.MDSound;
 import mdsound.instrument.Ym2608Inst;
 
@@ -23,9 +24,14 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-08 nsano initial version <br>
  */
-public class PMDPlugin extends BasePlugin<PmdDriver> {
+public class PMDPlugin extends BasePlugin<PmdDriver> implements Compilable {
 
     private static final Logger logger = getLogger(PMDPlugin.class.getName());
+
+    @Override
+    public void compile() {
+
+    }
 
     @Override
     public void prepare() {
@@ -54,7 +60,7 @@ public class PMDPlugin extends BasePlugin<PmdDriver> {
             chip.setVolumes.put("RHYTHM", ym2608::setVolume);
             chip.setVolumes.put("ADPCM", ym2608::setVolume);
         }
-        Function<String, Stream> fn = Ym2608Chip::getOPNARyhthmStream;
+        Function<String, InputStream> fn = Ym2608Chip::getOPNARyhthmStream;
         chip.option = new Object[] {fn};
         put(Ym2608Chip.class, chip);
         chipRegister.chip(Ym2608Chip.class).clock = PmdDriver.baseClock;

@@ -9,15 +9,14 @@ import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
-import dotnet4j.io.File;
-import dotnet4j.io.Path;
-import dotnet4j.util.compat.Tuple;
 import mdplayer.PlayList;
 import mdplayer.Setting;
 import mdplayer.emu.common.Utils;
@@ -28,8 +27,8 @@ import vavi.util.ByteUtil;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 import vavi.util.archive.zip.JdkZipEntry;
+import vavi.util.compat.Tuple;
 
-import static dotnet4j.io.Path.getDirectoryName;
 import static java.lang.System.getLogger;
 
 
@@ -124,7 +123,11 @@ public abstract class BaseFileFormat implements FileFormat {
 
     @Override
     public byte[] getAllBytes(String filename) {
-        return File.readAllBytes(filename);
+        try {
+            return Files.readAllBytes(Path.of(filename));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     // default
@@ -141,10 +144,9 @@ logger.log(Level.DEBUG, "try: " + extFn);
                         .filter(p -> Utils.fileExistsIgnoreCase(p) != null).findFirst()
                         .map(Utils::fileExistsIgnoreCase)
                         .map(Object::toString)
-                        .map(File::readAllBytes).orElse(null);
+                        .map(this::getAllBytes).orElse(null);
             } else {
-                String trgFn = Path.combine(getDirectoryName(srcFn), extFn);
-                trgFn = trgFn.replace("\\", "/").trim();
+                String trgFn = Path.of(srcFn).getParent().resolve(extFn).toString().trim();
 
                 if (entry instanceof JdkZipEntry) {
                     String[] arcFn = new String[1];
@@ -183,7 +185,7 @@ logger.log(Level.DEBUG, result);
         arcFn[0] = entry.getName();
         try (InputStream reader = archive.getInputStream(entry)) {
             buf = reader.readAllBytes();
-        } catch (java.io.IOException e) {
+        } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
 
@@ -210,8 +212,8 @@ logger.log(Level.DEBUG, result);
         byte[] buf;
         if (entry == null) {
             try {
-                buf = File.readAllBytes(mc.fileName);
-            } catch (Exception ex) {
+                buf = Files.readAllBytes(Path.of(mc.fileName));
+            } catch (IOException ex) {
                 logger.log(Level.ERROR, ex.getMessage(), ex);
                 buf = null;
             }
@@ -241,8 +243,8 @@ logger.log(Level.DEBUG, result);
         byte[] buf;
         if (entry == null) {
             try {
-                buf = File.readAllBytes(mc.fileName);
-            } catch (Exception ex) {
+                buf = Files.readAllBytes(Path.of(mc.fileName));
+            } catch (IOException ex) {
                 logger.log(Level.ERROR, ex.getMessage(), ex);
                 buf = null;
             }

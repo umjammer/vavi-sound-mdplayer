@@ -13,8 +13,6 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-import dotnet4j.util.compat.TriConsumer;
-import dotnet4j.util.compat.Tuple;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.Sn76489Chip;
@@ -26,6 +24,8 @@ import musicDriverInterface.ChipDatum;
 import musicDriverInterface.IDriver;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MmlDatum;
+import vavi.util.compat.TriConsumer;
+import vavi.util.compat.Tuple;
 
 import static java.lang.System.getLogger;
 

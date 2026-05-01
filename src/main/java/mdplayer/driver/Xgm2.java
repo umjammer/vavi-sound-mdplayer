@@ -6,9 +6,9 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 
-import dotnet4j.util.compat.TriConsumer;
 import mdplayer.driver.Xgm.XGMSampleID;
 import vavi.util.ByteUtil;
+import vavi.util.compat.TriConsumer;
 
 import static java.lang.System.getLogger;
 

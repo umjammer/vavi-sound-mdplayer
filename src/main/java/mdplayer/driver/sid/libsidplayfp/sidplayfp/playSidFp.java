@@ -22,7 +22,8 @@
 
 package mdplayer.driver.sid.libsidplayfp.sidplayfp;
 
-import dotnet4j.io.FileStream;
+import java.io.OutputStream;
+
 import mdplayer.driver.sid.libsidplayfp.Player;
 
 
@@ -142,7 +143,7 @@ public class playSidFp {
      * @param enable enable/disable debugging.
      * @param out    the file where to redirect the debug info.
      */
-    public void debug(boolean enable, FileStream out) {
+    public void debug(boolean enable, OutputStream out) {
         sidPlayer.debug(enable, out);
     }
 

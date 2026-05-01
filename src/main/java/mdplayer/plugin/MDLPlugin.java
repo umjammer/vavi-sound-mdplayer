@@ -10,6 +10,7 @@ import mdplayer.chips.YmF262Chip;
 import mdplayer.chips.YmF278BChip;
 import mdplayer.driver.moonDriver.MoonDriver;
 import mdplayer.format.MDLFileFormat;
+import mdplayer.plugin.BasePlugin.Compilable;
 import mdsound.MDSound;
 
 import static java.lang.System.getLogger;
@@ -22,9 +23,19 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-08 nsano initial version <br>
  */
-public class MDLPlugin extends BasePlugin<MoonDriver> {
+public class MDLPlugin extends BasePlugin<MoonDriver> implements Compilable {
 
     private static final Logger logger = getLogger(MDLPlugin.class.getName());
+
+
+    @Override
+    public void compile() {
+        if (fileFormat instanceof MDLFileFormat) {
+logger.log(Level.INFO, "compiling");
+            dataBuf = driverVirtual.compile(dataBuf);
+if (dataBuf == null) { logger.log(Level.WARNING, "compiling failure"); }
+        }
+    }
 
     @Override
     public void prepare() {
@@ -42,7 +53,9 @@ public class MDLPlugin extends BasePlugin<MoonDriver> {
     @Override
     protected void initChips() {
         if (fileFormat instanceof MDLFileFormat) {
+logger.log(Level.INFO, "compiling");
             dataBuf = driverVirtual.compile(dataBuf);
+if (dataBuf == null) { logger.log(Level.WARNING, "compiling failure"); }
         }
 
         chipRegister.chip(Ym2151Chip.class).setFadeout(0, 0);

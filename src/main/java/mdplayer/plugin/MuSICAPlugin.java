@@ -6,11 +6,13 @@
 
 package mdplayer.plugin;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
-import dotnet4j.io.File;
-import dotnet4j.io.Path;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.Ay8910Chip;
 import mdplayer.chips.K051649Chip;
@@ -18,11 +20,13 @@ import mdplayer.chips.Ym2413Chip;
 import mdplayer.driver.musica.MuSICA;
 import mdplayer.driver.musica.MusicaDriver;
 import mdplayer.driver.musica.MusicaK4Driver;
+import mdplayer.plugin.BasePlugin.Compilable;
 import mdsound.MDSound;
 import mdsound.instrument.MameAy8910Inst;
 
 import static java.lang.System.getLogger;
 import static mdsound.MDSound.Chip.MAIN_TAG;
+import static vavi.util.compat.Util.changeExtension;
 
 
 /**
@@ -31,18 +35,27 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-02-20 nsano initial version <br>
  */
-public class MuSICAPlugin extends BasePlugin<MusicaDriver> {
+public class MuSICAPlugin extends BasePlugin<MusicaDriver> implements Compilable {
 
     private static final Logger logger = getLogger(MuSICAPlugin.class.getName());
+
+    @Override
+    public void compile() {
+
+    }
 
     @Override
     public void prepare() {
         if (playingFileName.toLowerCase().endsWith(".msd")) {
 
-            String vcd = Path.changeExtension(playingFileName, ".vcd");
+            String vcd = changeExtension(playingFileName, ".vcd");
             byte[] vcdBuf = null;
-            if (File.exists(vcd)) {
-                vcdBuf = File.readAllBytes(vcd);
+            if (Files.exists(Path.of(vcd))) {
+                try {
+                    vcdBuf = Files.readAllBytes(Path.of(vcd));
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
             }
 
             MusicaK4Driver driverVirtual = new MusicaK4Driver();

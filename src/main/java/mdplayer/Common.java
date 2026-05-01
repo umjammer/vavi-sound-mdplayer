@@ -388,7 +388,7 @@ logger.log(Level.DEBUG, "delete attributes: " + dir);
         try {
             return (String) clip.getData(DataFlavor.stringFlavor);
         } catch (UnsupportedFlavorException | IOException e) {
-            throw new dotnet4j.io.IOException(e);
+            throw new IllegalStateException(e);
         }
     }
 

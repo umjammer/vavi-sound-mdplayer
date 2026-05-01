@@ -2,13 +2,13 @@ package mdplayer.format;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
-import dotnet4j.io.Path;
 import mdplayer.PlayList;
 import mdplayer.driver.zms.ZmsDriver;
 import mdplayer.plugin.Plugin;
@@ -47,8 +47,8 @@ public class ZMSFileFormat extends BaseFileFormat {
 
         music.format = this;
         MetaData metaData = getMetaData();
-        music.title = metaData.getFirst(Tag.Title).isEmpty() ? Path.getFileName(file) : metaData.getFirst(Tag.Title);
-        music.titleJ = metaData.getFirst(Tag.TitleJ).isEmpty() ? Path.getFileName(file) : metaData.getFirst(Tag.TitleJ);
+        music.title = metaData.getFirst(Tag.Title).isEmpty() ? Path.of(file).getFileName().toString() : metaData.getFirst(Tag.Title);
+        music.titleJ = metaData.getFirst(Tag.TitleJ).isEmpty() ? Path.of(file).getFileName().toString() : metaData.getFirst(Tag.TitleJ);
         music.game = metaData.getFirst(Tag.GameTitle);
         music.gameJ = metaData.getFirst(Tag.GameTitleJ);
         music.composer = metaData.getFirst(Tag.Composer);
@@ -67,8 +67,8 @@ public class ZMSFileFormat extends BaseFileFormat {
 
         music.format = this;
         MetaData metaData = getMetaData();
-        music.title = metaData.getFirst(Tag.Title).isEmpty() ? Path.getFileName(zipFile) : metaData.getFirst(Tag.Title);
-        music.titleJ = metaData.getFirst(Tag.TitleJ).isEmpty() ? Path.getFileName(zipFile) : metaData.getFirst(Tag.TitleJ);
+        music.title = metaData.getFirst(Tag.Title).isEmpty() ? Path.of(zipFile).getFileName().toString() : metaData.getFirst(Tag.Title);
+        music.titleJ = metaData.getFirst(Tag.TitleJ).isEmpty() ? Path.of(zipFile).getFileName().toString() : metaData.getFirst(Tag.TitleJ);
         music.game = metaData.getFirst(Tag.GameTitle);
         music.gameJ = metaData.getFirst(Tag.GameTitleJ);
         music.composer = metaData.getFirst(Tag.Composer);
@@ -100,8 +100,6 @@ public class ZMSFileFormat extends BaseFileFormat {
     public int getMarkSize() {
         return 0;
     }
-
-    private String filename;
 
     @Override
     public boolean isSupported(InputStream is) throws IOException {

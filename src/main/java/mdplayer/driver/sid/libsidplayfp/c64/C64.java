@@ -22,12 +22,11 @@
 
 package mdplayer.driver.sid.libsidplayfp.c64;
 
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import dotnet4j.util.compat.Tuple;
-import dotnet4j.io.FileStream;
 import mdplayer.driver.sid.libsidplayfp.EventScheduler;
 import mdplayer.driver.sid.libsidplayfp.EventScheduler.EventPhase;
 import mdplayer.driver.sid.libsidplayfp.SidMemory;
@@ -37,6 +36,7 @@ import mdplayer.driver.sid.libsidplayfp.c64.banks.ExtraSidBank;
 import mdplayer.driver.sid.libsidplayfp.c64.banks.IOBank;
 import mdplayer.driver.sid.libsidplayfp.c64.banks.SidBank;
 import mdplayer.driver.sid.libsidplayfp.c64.vic_ii.Mos656X;
+import vavi.util.compat.Tuple;
 
 
 /**
@@ -181,7 +181,7 @@ public class C64 extends C64Env {
         eventScheduler.clock();
     }
 
-    public void debug(boolean enable, FileStream out_) {
+    public void debug(boolean enable, OutputStream out_) {
         cpu.debug(enable, out_);
     }
 

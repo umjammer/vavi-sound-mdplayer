@@ -3,6 +3,7 @@ package mdplayer.format;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.System.Logger;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -10,8 +11,6 @@ import java.util.List;
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
-import dotnet4j.io.Path;
-import dotnet4j.util.compat.Tuple;
 import mdplayer.Common;
 import mdplayer.PlayList;
 import mdplayer.Setting;
@@ -26,6 +25,9 @@ import vavi.sound.sampled.md.MdEncoding;
 import vavi.sound.sampled.md.MdFileFormatType;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
+import vavi.util.compat.Tuple;
+
+import static vavi.util.compat.Util.getExtension;
 
 
 /**
@@ -54,8 +56,8 @@ public class MDXFileFormat extends BaseFileFormat {
 
         music.format = this;
         MetaData metaData = getMetaData();
-        music.title = metaData.getFirst(Tag.Title).isEmpty() ? Path.getFileName(file) : metaData.getFirst(Tag.Title);
-        music.titleJ = metaData.getFirst(Tag.TitleJ).isEmpty() ? Path.getFileName(file) : metaData.getFirst(Tag.TitleJ);
+        music.title = metaData.getFirst(Tag.Title).isEmpty() ? Path.of(file).getFileName().toString() : metaData.getFirst(Tag.Title);
+        music.titleJ = metaData.getFirst(Tag.TitleJ).isEmpty() ? Path.of(file).getFileName().toString() : metaData.getFirst(Tag.TitleJ);
         music.game = metaData.getFirst(Tag.GameTitle);
         music.gameJ = metaData.getFirst(Tag.GameTitleJ);
         music.composer = metaData.getFirst(Tag.Composer);
@@ -108,7 +110,7 @@ public class MDXFileFormat extends BaseFileFormat {
     @Override
     public void load(InputStream is, String fn) throws IOException {
         super.load(is, fn);
-        if (Path.getExtension(filename).equalsIgnoreCase(".MDX")) {
+        if (getExtension(filename).equalsIgnoreCase(".MDX")) {
             if (Setting.getInstance().getOutputDevice().getSampleRate() != 44100) {
                 throw new IllegalStateException("When playing MDX files, set the sampling rate to 44.1kHz.");
             }

@@ -3,14 +3,12 @@ package mdplayer;
 import java.io.File;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-import dotnet4j.io.FileMode;
-import dotnet4j.io.FileStream;
-import dotnet4j.io.Path;
-import dotnet4j.io.StreamReader;
 import mdplayer.format.FileFormat;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Archives;
@@ -28,11 +26,10 @@ public class M3U {
         try {
             PlayList pl = new PlayList();
 
-            try (StreamReader sr = new StreamReader(new FileStream(filename, FileMode.Open), charset)) {
+            try (var sr = new Scanner(Files.newInputStream(Path.of(filename)), charset)) {
                 String line;
-                while ((line = sr.readLine()) != null) {
-
-                    line = line.trim();
+                while (sr.hasNextLine()) {
+                    line = sr.nextLine().trim();
                     if (line.isEmpty()) continue;
                     if (line.charAt(0) == '#') continue;
 
@@ -56,7 +53,7 @@ public class M3U {
         try {
             PlayList pl = new PlayList();
 
-            try (Scanner sr = new Scanner(archive.getInputStream(entry))) {
+            try (Scanner sr = new Scanner(archive.getInputStream(entry), charset)) {
                 String line;
                 while (sr.hasNextLine()) {
                     line = sr.nextLine();
@@ -112,8 +109,8 @@ public class M3U {
             // If there is no "::", the whole file will be treated as a file name and processing will end.
             if (!line.contains("::")) {
                 ms.fileName = line;
-                if (!Path.isPathRooted(ms.fileName) && rootPath.isEmpty()) {
-                    ms.fileName = Path.combine(rootPath, ms.fileName);
+                if (!Path.of(ms.fileName).isAbsolute() && rootPath.isEmpty()) {
+                    ms.fileName = Path.of(rootPath, ms.fileName).toString();
                 }
 
                 return ms;
@@ -122,8 +119,8 @@ public class M3U {
             String[] buf = line.split("::");
 
             ms.fileName = buf[0].trim();
-            if (!Path.isPathRooted(ms.fileName) && !rootPath.isEmpty()) {
-                ms.fileName = Path.combine(rootPath, ms.fileName);
+            if (!Path.of(ms.fileName).isAbsolute() && !rootPath.isEmpty()) {
+                ms.fileName = Path.of(rootPath, ms.fileName).toString();
             }
             if (buf.length < 1) return ms;
 

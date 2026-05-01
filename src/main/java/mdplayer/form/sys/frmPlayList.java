@@ -24,6 +24,7 @@ import java.io.UncheckedIOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,11 +48,6 @@ import javax.swing.Timer;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableModel;
 
-import dotnet4j.io.Directory;
-import dotnet4j.io.File;
-import dotnet4j.io.Path;
-import dotnet4j.util.compat.Tuple;
-import dotnet4j.util.compat.Tuple4;
 import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.Common.EnmArcType;
@@ -61,8 +57,12 @@ import mdplayer.Setting;
 import mdplayer.format.FileFormat;
 import mdplayer.properties.Resources;
 import vavi.awt.dnd.BasicDTListener;
+import vavi.util.compat.Tuple;
+import vavi.util.compat.Tuple4;
 
 import static java.lang.System.getLogger;
+import static vavi.util.compat.Util.getExtension;
+import static vavi.util.compat.Util.getFileNameWithoutExtension;
 
 
 public class frmPlayList extends JFrame {
@@ -538,7 +538,7 @@ loopEx:
             @Override public String getDescription() { return "M3Uファイル(*.m3u)"; }
         });
         ofd.setDialogTitle("プレイリストファイルを選択");
-        if (!frmMain.setting.getOther().getDefaultDataPath().isEmpty() && Directory.exists(frmMain.setting.getOther().getDefaultDataPath()) && IsInitialOpenFolder) {
+        if (!frmMain.setting.getOther().getDefaultDataPath().isEmpty() && Files.exists(Path.of(frmMain.setting.getOther().getDefaultDataPath())) && IsInitialOpenFolder) {
             ofd.setCurrentDirectory(new java.io.File(frmMain.setting.getOther().getDefaultDataPath()));
 //        } else {
 //            ofd.RestoreDirectory = true;
@@ -594,7 +594,7 @@ loopEx:
             @Override public String getDescription() { return "M3Uファイル(*.m3u)"; }
         });
         sfd.setDialogTitle("プレイリストファイルを保存");
-        if (!frmMain.setting.getOther().getDefaultDataPath().isEmpty() && Directory.exists(frmMain.setting.getOther().getDefaultDataPath()) && IsInitialOpenFolder) {
+        if (!frmMain.setting.getOther().getDefaultDataPath().isEmpty() && Files.exists(Path.of(frmMain.setting.getOther().getDefaultDataPath())) && IsInitialOpenFolder) {
             sfd.setCurrentDirectory(new java.io.File(frmMain.setting.getOther().getDefaultDataPath()));
 //        } else {
 //            sfd.RestoreDirectory = true;
@@ -610,13 +610,13 @@ loopEx:
 
         switch (Common.getFilterIndex(sfd)) {
         case 1:
-            if (Path.getExtension(filename).isEmpty()) {
-                filename = Path.combine(filename, ".m3u");
+            if (getExtension(filename).isEmpty()) {
+                filename = Path.of(filename + ".m3u").toString();
             }
             break;
         case 0:
-            if (Path.getExtension(filename).isEmpty()) {
-                filename = Path.combine(filename, ".xml");
+            if (getExtension(filename).isEmpty()) {
+                filename = Path.of(filename + ".xml").toString();
             }
             break;
         }
@@ -646,7 +646,7 @@ loopEx:
         ofd.setDialogTitle("Select a file");
         ofd.setFileFilter(ofd.getChoosableFileFilters()[setting.getOther().getFilterIndex()]);
 
-        if (!frmMain.setting.getOther().getDefaultDataPath().isEmpty() && Directory.exists(frmMain.setting.getOther().getDefaultDataPath()) && IsInitialOpenFolder) {
+        if (!frmMain.setting.getOther().getDefaultDataPath().isEmpty() && Files.exists(Path.of(frmMain.setting.getOther().getDefaultDataPath())) && IsInitialOpenFolder) {
             ofd.setCurrentDirectory(new java.io.File(frmMain.setting.getOther().getDefaultDataPath()));
 //        } else {
 //            ofd.RestoreDirectory = true;
@@ -685,7 +685,7 @@ loopEx:
         JFileChooser fbd = new JFileChooser();
         fbd.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         fbd.setDialogTitle("フォルダーを指定してください。");
-        if (!frmMain.setting.getOther().getDefaultDataPath().isEmpty() && Directory.exists(frmMain.setting.getOther().getDefaultDataPath())) {
+        if (!frmMain.setting.getOther().getDefaultDataPath().isEmpty() && Files.exists(Path.of(frmMain.setting.getOther().getDefaultDataPath()))) {
             fbd.setSelectedFile(new java.io.File(frmMain.setting.getOther().getDefaultDataPath()));
         }
 
@@ -695,9 +695,9 @@ loopEx:
 
         stop();
 
-        try {
-            Files.list(Paths.get(fbd.getSelectedFile().getPath())).forEach(p -> {
-                String ext = Path.getExtension(p.getFileName().toString()).toUpperCase();
+        try (var s = Files.list(Paths.get(fbd.getSelectedFile().getPath()))) {
+            s.forEach(p -> {
+                String ext = getExtension(p.getFileName().toString()).toUpperCase();
                 if (Arrays.asList(_exts).contains(ext)) {
                     playList.addFile(p.toFile().getAbsolutePath());
                 }
@@ -927,15 +927,15 @@ loopEx:
 
     private static void getTrueFileNameList(List<String> res, List<String> files) {
         for (String f : files) {
-            if (File.exists(f)) {
+            if (Files.exists(Path.of(f))) {
                 if (!res.contains(f)) {
-                    String ext = Path.getExtension(f).toLowerCase();
+                    String ext = getExtension(f).toLowerCase();
                     if (Arrays.asList(sext).contains(ext)) res.add(f);
                 }
             } else {
-                if (Directory.exists(f)) {
-                    try {
-                        List<String> fs = Files.list(Paths.get(f)).map(java.nio.file.Path::toString).collect(Collectors.toList());
+                if (Files.exists(Path.of(f))) {
+                    try (var s = Files.list(Paths.get(f))) {
+                        List<String> fs = s.map(java.nio.file.Path::toString).collect(Collectors.toList());
                         getTrueFileNameList(res, fs);
                     } catch (IOException ev) {
                         throw new UncheckedIOException(ev);
@@ -973,38 +973,38 @@ loopEx:
         exts[1] = setting.getOther().getMMLExt().split(";");
         exts[2] = setting.getOther().getImageExt().split(";");
 
-        String bfn = Path.combine(Path.getDirectoryName(ofn), Path.getFileNameWithoutExtension(ofn));
-        String bfnFld = Path.combine(Path.getDirectoryName(ofn), Path.getFileName(Path.getDirectoryName(ofn)));
+        String bfn = Path.of(ofn).getParent().resolve(getFileNameWithoutExtension(ofn)).toString();
+        String bfnFld = Path.of(ofn).getParent().resolve(Path.of(ofn).getParent().getFileName()).toString();
 
         text = "";
         for (String ext : exts[0]) {
-            if (File.exists(bfn + "." + ext)) {
+            if (Files.exists(Path.of(bfn + "." + ext))) {
                 text = bfn + "." + ext;
                 break;
             }
-            if (File.exists(bfnFld + "." + ext)) {
+            if (Files.exists(Path.of(bfnFld + "." + ext))) {
                 text = bfnFld + "." + ext;
                 break;
             }
         }
         mml = "";
         for (String ext : exts[1]) {
-            if (File.exists(bfn + "." + ext)) {
+            if (Files.exists(Path.of(bfn + "." + ext))) {
                 mml = bfn + "." + ext;
                 break;
             }
-            if (File.exists(bfnFld + "." + ext)) {
+            if (Files.exists(Path.of(bfnFld + "." + ext))) {
                 mml = bfnFld + "." + ext;
                 break;
             }
         }
         img = "";
         for (String ext : exts[2]) {
-            if (File.exists(bfn + "." + ext)) {
+            if (Files.exists(Path.of(bfn + "." + ext))) {
                 img = bfn + "." + ext;
                 break;
             }
-            if (File.exists(bfnFld + "." + ext)) {
+            if (Files.exists(Path.of(bfnFld + "." + ext))) {
                 img = bfnFld + "." + ext;
                 break;
             }
@@ -1055,7 +1055,7 @@ loopEx:
     private void tsmiOpenFolder_Click(ActionEvent ev) {
         try {
             String path = (String) dgvList.getValueAt(dgvList.getSelectedRows()[0], cols.clmFileName.ordinal());
-            path = Path.getDirectoryName(path);
+            path = Path.of(path).getParent().toString();
             new ProcessBuilder(path).start();
         } catch (IOException e) {
             throw new UncheckedIOException(e);

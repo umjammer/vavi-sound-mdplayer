@@ -11,10 +11,6 @@ import java.lang.System.Logger.Level;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-import dotnet4j.io.File;
-import dotnet4j.io.FileAccess;
-import dotnet4j.io.FileMode;
-import dotnet4j.io.FileStream;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.SidChip;
 import mdplayer.driver.BaseDriver;
@@ -125,25 +121,6 @@ public class SidMdDriver2 extends BaseDriver implements SidDriver {
         metaData = getMetaData(dataBuf);
 
         sid.song = (int) args[0];
-
-        byte[] aryKernel;
-        byte[] aryBasic;
-        byte[] aryCharacter;
-        if (File.exists(setting.getSid().romKernalPath))
-            try (FileStream fs = new FileStream(setting.getSid().romKernalPath, FileMode.Open, FileAccess.Read)) {
-                aryKernel = new byte[(int) fs.getLength()];
-                fs.read(aryKernel, 0, aryKernel.length);
-            }
-        if (File.exists(setting.getSid().romBasicPath))
-            try (FileStream fs = new FileStream(setting.getSid().romBasicPath, FileMode.Open, FileAccess.Read)) {
-                aryBasic = new byte[(int) fs.getLength()];
-                fs.read(aryBasic, 0, aryBasic.length);
-            }
-        if (File.exists(setting.getSid().romCharacterPath))
-            try (FileStream fs = new FileStream(setting.getSid().romCharacterPath, FileMode.Open, FileAccess.Read)) {
-                aryCharacter = new byte[(int) fs.getLength()];
-                fs.read(aryCharacter, 0, aryCharacter.length);
-            }
 
         sid.init(dataBuf, setting.getOutputDevice().getSampleRate());
 

@@ -12,16 +12,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
-import dotnet4j.util.compat.StringUtilities;
-import dotnet4j.util.compat.TriConsumer;
 import mdplayer.emu.nise98.FileTemp;
 import mdplayer.emu.nise98.Memory98;
 import mdplayer.emu.nise98.Nise98;
 import mdplayer.emu.nise98.Nise98.OngenBoardType;
 import mdplayer.emu.nise98.NiseDos;
 import mdplayer.emu.nise98.Register286;
+import vavi.util.compat.TriConsumer;
 
 import static java.lang.System.getLogger;
+import static vavi.util.compat.Util.isNullOrEmpty;
 
 
 /**
@@ -57,12 +57,12 @@ public class FMP {
             String pvi = "";
             try {
                 pvi = System.getProperty("mdplayer.fmp.pvi");
-                if (!StringUtilities.isNullOrEmpty(pvi)) searchPath += (searchPath.isEmpty() ? "" : ";") + pvi;
+                if (!isNullOrEmpty(pvi)) searchPath += (searchPath.isEmpty() ? "" : ";") + pvi;
             } catch (Exception e) {
 logger.log(Level.ERROR, e.getMessage());
             }
             searchPaths = Arrays.stream(searchPath.split(";"))
-                    .filter(path -> !StringUtilities.isNullOrEmpty(path)).toList();
+                    .filter(path -> !isNullOrEmpty(path)).toList();
             for (String path : searchPaths)
                 logger.log(Level.INFO, "Search Path: %s".formatted(path));
         } catch (Exception e) {

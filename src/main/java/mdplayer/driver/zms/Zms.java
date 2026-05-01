@@ -5,7 +5,6 @@ import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,8 +14,6 @@ import java.util.function.BiConsumer;
 import java.util.function.IntConsumer;
 import java.util.function.IntSupplier;
 
-import dotnet4j.util.compat.StringUtilities;
-import dotnet4j.util.compat.Tuple;
 import mdplayer.driver.mxdrv.MXDRV.Pcm8Interface;
 import mdplayer.driver.mxdrv.MXDRV.Pcm8St;
 import mdplayer.emu.common.FMTimer;
@@ -24,8 +21,11 @@ import mdplayer.emu.nise68.FileMng;
 import mdplayer.emu.nise68.MemMng;
 import mdplayer.emu.nise68.Nise68;
 import vavi.util.StringUtil;
+import vavi.util.compat.Tuple;
 
 import static java.lang.System.getLogger;
+import static vavi.util.compat.Util.changeExtension;
+import static vavi.util.compat.Util.getExtension;
 
 
 /**
@@ -269,17 +269,17 @@ logger.log(Level.INFO, "PLAY " + playingFileName + " --------");
             preData.clear();
             if (supportFileBinaryAndName != null) {
                 for (Tuple<byte[], String> s : supportFileBinaryAndName) {
-                    String ext = dotnet4j.io.Path.getExtension(s.getItem2()).toUpperCase();
+                    String ext = getExtension(s.getItem2()).toUpperCase();
                     if (ext.equals(".ZPD")) {
-                        optionZpd = " -B" + dotnet4j.io.Path.getFileName(s.getItem2());
+                        optionZpd = " -B" + Path.of(s.getItem2()).getFileName();
                         if (!fileMng.existsFile(s.getItem2())) {
                             fileMng.setVFile(s.getItem2(), s.getItem1());
                         }
                     }
                     if (ext.equals(".ZMD") || ext.equals(".ZMS")) {
                         String f = s.getItem2();
-                        f = dotnet4j.io.Path.changeExtension(f, ".ZMD");
-                        optionZmd = " -N" + dotnet4j.io.Path.getFileName(f);
+                        f = changeExtension(f, ".ZMD");
+                        optionZmd = " -N" + Path.of(f).getFileName();
                         if (!fileMng.existsFile(f)) {
                             fileMng.setVFile(f, s.getItem1());
                             preData.add(f);
@@ -293,7 +293,7 @@ logger.log(Level.INFO, "PLAY " + playingFileName + " --------");
             //if (nise68.loadRun(zmusic, "-P9212 -T2048" + optionZpd + optionZmd, Path.GetDirectoryName(fnZMD), 0x00012000,
             // true, true, true
             //) != 0) throw new Exception("zmusic regident Error");
-            if ((rc = nise68.loadRun(zmusic.toString(), "-P9212 -T2048" + optionZpd + optionZmd, 0x0001_2000,
+            if ((rc = nise68.loadRun(zmusic.getFileName().toString(), "-P9212 -T2048" + optionZpd + optionZmd, 0x0001_2000,
                     true, true, true,
                     100_000_000, 0
             )) != 0) throw new IllegalStateException("zmusic resident Error: " + rc);
@@ -308,8 +308,8 @@ logger.log(Level.INFO, "PLAY " + playingFileName + " --------");
                     //if (!nise68.hmn.fb.containsKey(fnZMD)) {
                     //    nise68.hmn.fb.add(fnZMD, zmd);
                     //}
-                    if (!fileMng.existsFile(fnZMD.toString())) {
-                        fileMng.setVFile(fnZMD.toString(), zmd);
+                    if (!fileMng.existsFile(fnZMD.getFileName().toString())) {
+                        fileMng.setVFile(fnZMD.getFileName().toString(), zmd);
                     }
                 } else {
                     //if (nise68.hmn.fb.containsKey(fnZMD)) {
@@ -350,7 +350,7 @@ logger.log(Level.INFO, "PLAY " + playingFileName + " --------");
         //if (nise68.loadRun(zmsc3, "-w", Path.getDirectoryName(fnZMD), 0x0001_2000,
         //      true, true, true
         //) != 0) throw new IllegalStateException("zmsc3 resident Error");
-        if ((rc = nise68.loadRun(zmsc3.toString(), "-w", 0x0001_2000,
+        if ((rc = nise68.loadRun(zmsc3.getFileName().toString(), "-w", 0x0001_2000,
                 true, true, true,
                 100_000_000, 0
         )) != 0) throw new IllegalStateException("zmsc3 resident Error: " + rc);
@@ -437,7 +437,7 @@ logger.log(Level.INFO, "COMPILE v3 --------");
         //if (nise68.LoadRun(zmc, Path.GetFileName(fnZMS), Path.GetDirectoryName(fnZMS), 0x00012000,
         // true, true, true
         // ) != 0)
-        if (nise68.loadRun(zmc.toString(), fnZMS.getFileName().toString(), 0x0001_2000,
+        if (nise68.loadRun(zmc.getFileName().toString(), fnZMS.getFileName().toString(), 0x0001_2000,
                 true, true, true,
                 100_000_000, 0
         ) != 0) {
@@ -482,7 +482,7 @@ logger.log(Level.INFO, "COMPILE v2 --------");
         //if (nise68.loadRun(zmusic, "-C " + Path.getFileName(fnZMS), Path.getDirectoryName(fnZMS), 0x00012000,
         // true, true, true
         //) != 0)
-        if (nise68.loadRun(zmusic.toString(), "-C " + fnZMS.getFileName(), 0x00012000,
+        if (nise68.loadRun(zmusic.getFileName().toString(), "-C " + fnZMS.getFileName(), 0x00012000,
                 true, true, true,
                 100_000_000, 0
         ) != 0) {

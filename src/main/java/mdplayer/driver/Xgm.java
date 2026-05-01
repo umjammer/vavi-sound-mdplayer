@@ -4,8 +4,8 @@ import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.util.function.IntConsumer;
 
-import dotnet4j.util.compat.TriConsumer;
 import vavi.util.ByteUtil;
+import vavi.util.compat.TriConsumer;
 
 import static java.lang.System.getLogger;
 

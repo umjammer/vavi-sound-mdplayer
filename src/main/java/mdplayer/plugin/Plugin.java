@@ -1,5 +1,6 @@
 package mdplayer.plugin;
 
+import java.io.IOException;
 import java.util.NoSuchElementException;
 import java.util.ServiceLoader;
 

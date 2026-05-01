@@ -2,7 +2,7 @@ package mdplayer.driver.hes;
 
 import java.util.function.BiFunction;
 
-import dotnet4j.util.compat.TriConsumer;
+import vavi.util.compat.TriConsumer;
 
 
 public class Km6280 {

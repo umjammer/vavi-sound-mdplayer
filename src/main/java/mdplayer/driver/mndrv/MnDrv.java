@@ -5,12 +5,12 @@ import java.lang.System.Logger.Level;
 import java.util.List;
 import java.util.function.BiConsumer;
 
-import dotnet4j.util.compat.QuadConsumer;
-import dotnet4j.util.compat.Tuple;
-import mdplayer.emu.common.FMTimer;
-import mdplayer.emu.nise68.XMemory;
 import mdplayer.driver.zms.Zms.MPCMSt;
 import mdplayer.driver.zms.Zms.MPcmInterface;
+import mdplayer.emu.common.FMTimer;
+import mdplayer.emu.nise68.XMemory;
+import vavi.util.compat.QuadConsumer;
+import vavi.util.compat.Tuple;
 
 import static java.lang.System.getLogger;
 

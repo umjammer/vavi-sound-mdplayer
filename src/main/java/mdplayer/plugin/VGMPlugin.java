@@ -1,11 +1,11 @@
 package mdplayer.plugin;
 
+import java.io.InputStream;
 import java.lang.System.Logger;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import dotnet4j.io.Stream;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.*;
@@ -326,7 +326,7 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
                 chip.samplingRate = 55467; // (int) setting.getoutputDevice().getSampleRate();
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2608Chip.class);
                 chip.clock = driverVirtual.vgm.ym2608ClockValue;
-                Function<String, Stream> fn = Ym2608Chip::getOPNARyhthmStream;
+                Function<String, InputStream> fn = Ym2608Chip::getOPNARyhthmStream;
                 chip.option = new Object[] {fn};
                 hiyorimiDeviceFlag |= 0x2;
 

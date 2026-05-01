@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.io.UncheckedIOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.nio.file.Files;
@@ -56,7 +57,7 @@ public class TonePallet implements Serializable, Cloneable {
         try (OutputStream sw = Files.newOutputStream(fullPath)) {
             Serdes.Util.serialize(this, sw);
         } catch (IOException e) {
-            throw new dotnet4j.io.IOException(e);
+            throw new UncheckedIOException(e);
         }
     }
 

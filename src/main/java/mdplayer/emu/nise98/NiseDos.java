@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import dotnet4j.util.compat.StringUtilities;
 import mdplayer.emu.common.Utils;
 import vavi.util.ByteUtil;
 import vavi.util.archive.Archive;
@@ -21,6 +20,7 @@ import vavi.util.archive.Archives;
 import vavi.util.archive.Entry;
 
 import static java.lang.System.getLogger;
+import static vavi.util.compat.Util.isNullOrEmpty;
 
 
 public class NiseDos {
@@ -219,7 +219,7 @@ public class NiseDos {
             // Setup PSP https://programmer.main.jp/assembler2/7_5.html
 
             // 0x80 Number of characters in the argument
-            if (StringUtilities.isNullOrEmpty(option)) {
+            if (isNullOrEmpty(option)) {
                 mem.pokeB(ptr + 0x80, (byte) 0);
             } else {
                 byte[] optAry = (option + "\r").getBytes(charset);
@@ -263,7 +263,7 @@ public class NiseDos {
             ptr -= 0x100;
 
             // 0x80 Number of characters in the argument
-            if (StringUtilities.isNullOrEmpty(option)) {
+            if (isNullOrEmpty(option)) {
                 mem.pokeB(ptr + 0x80, (byte) 0);
             } else {
                 byte[] optAry = (option + "\r").getBytes(charset);
@@ -448,7 +448,7 @@ public class NiseDos {
                     regs.setCF(true);
                     break;
                 }
-                if (StringUtilities.isNullOrEmpty(fnd.name.toString())) {
+                if (isNullOrEmpty(fnd.name.toString())) {
                     regs.setCF(true);
                     break;
                 }
@@ -611,7 +611,7 @@ logger.log(Level.TRACE, "error message from program");
     }
 
     public void setPath(Path v) {
-logger.log(Level.INFO, "dos path: " + v);
+logger.log(Level.DEBUG, "dos path: " + v);
         filePath = v;
     }
 
@@ -632,24 +632,26 @@ logger.log(Level.INFO, "dos path: " + v);
     private boolean checkFileExist(String filename, /* out */ String[] fndFilename) {
         if (Files.exists(Path.of(filename)) || fileTemp.existTemp(filename)) {
             fndFilename[0] = filename;
+logger.log(Level.INFO, "file found: '" + filename + "' as '" + fndFilename[0] + "', in temp: " + fileTemp.existTemp(filename));
             return true;
         }
         Path fn = filePath.resolve(Path.of(filename).getFileName());
         Path realFn = Utils.fileExistsIgnoreCase(fn);
         if (realFn != null || fileTemp.existTemp(fn.toString())) {
             fndFilename[0] = realFn != null ? realFn.toString() : fn.toString();
+logger.log(Level.INFO, "file found: '" + filename + "' as '" + fndFilename[0] + "', in temp: " + fileTemp.existTemp(filename));
             return true;
         }
 
         if (!searchPath.isEmpty()) {
-            String f = fn.getFileName().toString().replace("\\", File.separator);
+            String f = fn.getFileName().toString();
             for (String fp : searchPath) {
                 Path sfn = Path.of(fp, f);
                 logger.log(Level.INFO, "Search File: %s".formatted(sfn));
                 Path realSfn = Utils.fileExistsIgnoreCase(sfn);
                 if (realSfn != null) {
                     fndFilename[0] = realSfn.toString();
-logger.log(Level.INFO, "file found: " + fn);
+logger.log(Level.INFO, "file found in searchPath: " + filename + " as " + fndFilename[0]);
                     return true;
                 }
             }
@@ -657,12 +659,12 @@ logger.log(Level.INFO, "file found: " + fn);
 
         if (playingArcFileExist(filename)) {
             fndFilename[0] = fn.toString();
-logger.log(Level.INFO, "arc file found: " + fn);
+logger.log(Level.INFO, "file found in arc: " + filename + " as " + fndFilename[0]);
             return true;
         }
 
         fndFilename[0] = "";
-logger.log(Level.INFO, "file not found: " + fn);
+logger.log(Level.INFO, "file not found: " + filename);
         return false;
     }
 

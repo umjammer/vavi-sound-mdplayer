@@ -53,7 +53,7 @@ public class Utils {
                 .orElse(null);
 
 if (r == null) {
- logger.log(Level.WARNING, path + " not found in " + trials /*, new Exception(path + " not found in " + trials) */);
+ logger.log(Level.TRACE, path + " not found in " + trials /*, new Exception(path + " not found in " + trials) */);
 }
         return r;
     }

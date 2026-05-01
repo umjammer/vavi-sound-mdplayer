@@ -26,8 +26,8 @@ package mdplayer.driver.sid.libsidplayfp.utils.md5;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-import dotnet4j.util.compat.TriFunction;
 import mdplayer.driver.sid.Mem;
+import vavi.util.compat.TriFunction;
 
 
 /**
