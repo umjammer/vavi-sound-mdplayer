@@ -23,6 +23,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.condition.EnabledIf;
 
 
 /**
@@ -31,6 +32,7 @@ import org.junit.jupiter.api.Timeout;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-04-27 nsano initial version <br>
  */
+@EnabledIf("localPropertiesExists")
 @PropsEntity(url = "file:local.properties")
 public class TestCase {
 
