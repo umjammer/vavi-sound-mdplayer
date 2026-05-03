@@ -23,11 +23,11 @@ public class HESPlugin extends BasePlugin<HesDriver> {
 
     @Override
     public void prepare() {
-        driverVirtual = new HesDriver();
+        driverVirtual = new HesDriver(this);
 
         driverReal = null;
 //        if (setting.getoutputDevice().deviceType != Common.DEV_Null) {
-//            driverReal = new HesDriver();
+//            driverReal = new HesDriver(this);
 //        }
 
         super.prepare();
@@ -47,16 +47,15 @@ public class HESPlugin extends BasePlugin<HesDriver> {
         chip.clock = 3579545;
         chip.option = null;
         put(HuC6280Chip.class, chip);
-        driverVirtual.c6280 = chip;
 
         mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, flatten());
 
-        driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel,
+        driverVirtual.init(Common.EnmModel.VirtualModel,
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000,
                 songNo);
         if (driverReal != null) {
-            driverReal.init(vgmBuf, this, Common.EnmModel.RealModel,
+            driverReal.init(Common.EnmModel.RealModel,
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000,
                     songNo);

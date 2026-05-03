@@ -23,7 +23,7 @@
 
 package mdplayer.driver.sid.libsidplayfp.c64.cia;
 
-import mdplayer.driver.sid.libsidplayfp.c64.cia.InterruptSource.INTERRUPT;
+import mdplayer.driver.sid.libsidplayfp.c64.cia.InterruptSource.Interrupt;
 
 
 public class SerialPort {
@@ -31,14 +31,14 @@ public class SerialPort {
     private final InterruptSource interruptSource;
     private int count;
     private boolean buffered;
-    private byte out_;
+    private byte out;
 
     public SerialPort(InterruptSource intSource) {
         interruptSource = intSource;
     }
 
     public void reset() {
-        out_ = 0;
+        out = 0;
         count = 0;
         buffered = false;
     }
@@ -49,11 +49,11 @@ public class SerialPort {
 
     public void handle(byte serialDataReg) {
         if (count != 0 && --count == 0) {
-            interruptSource.trigger((byte) INTERRUPT.INTERRUPT_SP.v);
+            interruptSource.trigger((byte) Interrupt.SP.v);
         }
 
         if (count == 0 && buffered) {
-            out_ = serialDataReg;
+            out = serialDataReg;
             buffered = false;
             count = 16;
             // Output rate 8 bits at ta / 2

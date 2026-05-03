@@ -6,16 +6,14 @@
 
 package mdplayer.chips;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
 
-import dotnet4j.io.FileAccess;
-import dotnet4j.io.FileMode;
-import dotnet4j.io.FileShare;
-import dotnet4j.io.FileStream;
-import dotnet4j.io.Stream;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
@@ -552,31 +550,15 @@ public class Ym2608Chip extends BaseChip {
         }
     }
 
-    public int[] getVolume(int chipId) {
-        return volume[chipId];
-    }
-
-    public int[][] getRhythmVolume(int chipId) {
-        return rhythmVolume[chipId];
-    }
-
-    public int[] getCh3SlotVolume(int chipId) {
-//        if (ctYM2612.UseScci) {
-        return ch3SlotVolume[chipId];
-//        }
-//        return context.mds.inst(inst[chipId]).readFMCh3SlotVolume();
-    }
-
-    public int[] getAdpcmVolume(int chipId) {
-        return adpcmVolume[chipId];
-    }
-
-    public int[][] read(int chipId) {
-        return register[chipId];
-    }
-
-    public int[] getKeyOn(int chipId) {
-        return keyOn[chipId];
+    public Map<String, Object> getInfo(int chipId) {
+        return Map.of(
+                "volume", volume[chipId],
+                "rythmVolume", rhythmVolume[chipId],
+                "ch3SlotVolume", /* ctYM2612.UseScci ? */ ch3SlotVolume[chipId] /* : context.mds.inst(inst[chipId]).readFMCh3SlotVolume(); */,
+                "adpcmVolume", adpcmVolume[chipId],
+                "register", register[chipId],
+                "keyOn", keyOn[chipId]
+        );
     }
 
     public void setMask(int chipId, int ch) {
@@ -720,13 +702,13 @@ public class Ym2608Chip extends BaseChip {
         opnaRamType = searchOpnaRamType(vgmBuf, vgmDataOffset) ? 0x2 : 0x0;
     }
 
-    public static Stream getOPNARyhthmStream(String fn) {
+    public static InputStream getOPNARyhthmStream(String fn) {
         try {
             Path ffn = Path.of(fn);
 
             Path chk;
 
-            chk = Common.playingFilePath.resolve(fn);
+            chk = Common.playingFilePath.resolve(fn); // TODO gross
             if (Files.exists(chk))
                 ffn = chk;
             else {
@@ -741,9 +723,9 @@ public class Ym2608Chip extends BaseChip {
 
             logger.log(Level.DEBUG, "rhythm file: " + ffn);
             if (!Files.exists(ffn)) return null;
-            FileStream fs = new FileStream(ffn.toString(), FileMode.Open, FileAccess.Read, FileShare.Read);
+            InputStream fs = Files.newInputStream(ffn);
             return fs;
-        } catch (Exception e) {
+        } catch (IOException e) {
             logger.log(Level.ERROR, e.getMessage(), e);
             return null;
         }

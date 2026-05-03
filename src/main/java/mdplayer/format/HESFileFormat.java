@@ -2,15 +2,14 @@ package mdplayer.format;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
-import dotnet4j.io.File;
-import dotnet4j.io.Path;
 import mdplayer.Common.EnmArcType;
 import mdplayer.PlayList;
 import mdplayer.driver.hes.HesDriver;
@@ -39,9 +38,14 @@ public class HESFileFormat extends BaseFileFormat {
     }
 
     @Override
+    public MetaData getMetaData() {
+        return new HesDriver().getMetaData(this.srcBuf);
+    }
+
+    @Override
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
         List<PlayList.Music> musics = new ArrayList<>();
-        MetaData _ = new HesDriver().getMetaData(buf);
+        MetaData _ = getMetaData();
 
         for (int s = 0; s < 256; s++) {
             PlayList.Music music = new PlayList.Music();
@@ -51,8 +55,8 @@ public class HESFileFormat extends BaseFileFormat {
             music.arcType = EnmArcType.unknown;
             if (zipFile != null && zipFile.isEmpty())
                 music.arcType = zipFile.toLowerCase().lastIndexOf(".zip") != -1 ? EnmArcType.ZIP : EnmArcType.LZH;
-            music.title = "%s - Trk %d".formatted(Path.getFileName(file), s + 1);
-            music.titleJ = "%s - Trk %d".formatted(Path.getFileName(file), s + 1);
+            music.title = "%s - Trk %d".formatted(Path.of(file).getFileName().toString(), s + 1);
+            music.titleJ = "%s - Trk %d".formatted(Path.of(file).getFileName().toString(), s + 1);
             music.game = "";
             music.gameJ = "";
             music.composer = "";
@@ -90,7 +94,7 @@ public class HESFileFormat extends BaseFileFormat {
     public List<PlayList.Music> addFileLoop(PlayList.Music mc, Archive archive, Entry entry/* = null*/) throws IOException {
         byte[] buf;
         if (entry == null) {
-            buf = File.readAllBytes(mc.fileName);
+            buf = Files.readAllBytes(Path.of(mc.fileName));
         } else {
             try (InputStream reader = archive.getInputStream(entry)) {
                 buf = reader.readAllBytes();
@@ -120,10 +124,10 @@ public class HESFileFormat extends BaseFileFormat {
     }
 
     @Override
-    public List<PlayList.Music> addFileLoop(int index, PlayList.Music mc, Archive archive, Entry entry/* = null*/) throws IOException {
+    public List<PlayList.Music> addFileLoop(int index, PlayList.Music mc, Archive archive, Entry entry /* = null */) throws IOException {
         byte[] buf;
         if (entry == null) {
-            buf = File.readAllBytes(mc.fileName);
+            buf = Files.readAllBytes(Path.of(mc.fileName));
         } else {
             try (InputStream reader = archive.getInputStream(entry)) {
                 buf = reader.readAllBytes();

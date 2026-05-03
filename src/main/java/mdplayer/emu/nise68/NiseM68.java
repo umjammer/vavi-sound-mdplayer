@@ -2304,12 +2304,12 @@ public class NiseM68 {
     }
 
     private int corEaDnb(short n) {
-        String[] nimo = new String[] {""};
+        StringBuilder nimo = new StringBuilder();
 //#if DEBUG
-        nimo[0] = "OR.b ";
+        nimo.append("OR.b ");
 //#endif
 
-        int[] cycle = new int[] {0};
+        int[] cycle = {0};
         int sm = (n & 0x0038) >> 3;
         int sr = (n & 0x0007);
         int dr = (n & 0x0e00) >> 9;
@@ -2327,7 +2327,7 @@ public class NiseM68 {
         cycle[0] = Cycle.OrEaDn_b[cycle[0]];
         after = (byte) (val | before);
 //#if DEBUG
-        nimo[0] += ",D%d".formatted(dr);
+        nimo.append(",D%d".formatted(dr));
 //#endif
 
         reg.setDb(dr, after);
@@ -2340,19 +2340,19 @@ public class NiseM68 {
         reg.setC(false);
 
 //#if DEBUG
-        logger.log(Level.TRACE, nimo[0]);
+        logger.log(Level.TRACE, nimo.toString());
 //#endif
 
         return cycle[0];
     }
 
     private int corEaDnw(short n) {
-        String[] nimo = new String[] {""};
+        StringBuilder nimo = new StringBuilder();
 //#if DEBUG
-        nimo[0] = "OR.w ";
+        nimo.append("OR.w ");
 //#endif
 
-        int[] cycle = new int[] {0};
+        int[] cycle = {0};
         int sm = (n & 0x0038) >> 3;
         int sr = (n & 0x0007);
         int dr = (n & 0x0e00) >> 9;
@@ -2367,7 +2367,7 @@ public class NiseM68 {
         cycle[0] = Cycle.OrEaDn_w[cycle[0]];
         after = val | before;
 //#if DEBUG
-        nimo[0] += ",D%d".formatted(dr);
+        nimo.append(",D%d".formatted(dr));
 //#endif
 
         reg.setDw(dr, (short) after);
@@ -2380,19 +2380,19 @@ public class NiseM68 {
         reg.setC(false);
 
 //#if DEBUG
-        logger.log(Level.TRACE, nimo[0]);
+        logger.log(Level.TRACE, nimo.toString());
 //#endif
 
         return cycle[0];
     }
 
     private int corEaDnl(short n) {
-        String[] nimo = new String[] {""};
+        StringBuilder nimo = new StringBuilder();
 //#if DEBUG
-        nimo[0] = "OR.l ";
+        nimo.append("OR.l ");
 //#endif
 
-        int[] cycle = new int[] {0};
+        int[] cycle = {0};
         int sm = (n & 0x0038) >> 3;
         int sr = (n & 0x0007);
         int dr = (n & 0x0e00) >> 9;
@@ -2406,7 +2406,7 @@ public class NiseM68 {
         cycle[0] = Cycle.OrEaDn_l[cycle[0]];
         after = val | before;
 //#if DEBUG
-        nimo[0] += ",D%d".formatted(dr);
+        nimo.append(",D%d".formatted(dr));
 //#endif
 
         reg.setDl(dr, after);
@@ -2419,7 +2419,7 @@ public class NiseM68 {
         reg.setC(false);
 
 //#if DEBUG
-        logger.log(Level.TRACE, nimo[0]);
+        logger.log(Level.TRACE, nimo.toString());
 //#endif
 
         return cycle[0];
@@ -4883,12 +4883,12 @@ public class NiseM68 {
     }
 
     private int cmoveaw(short n) {
-        String[] nimo = new String[] {""};
+        StringBuilder nimo = new StringBuilder();
 //#if DEBUG
-        nimo[0] = "MOVEA.w ";
+        nimo.append("MOVEA.w ");
 //#endif
 
-        int[] cycle = new int[] {0};
+        int[] cycle = {0};
 
         int dr = (n & 0x0e00) >> 9;
         int sm = (n & 0x0038) >> 3;
@@ -4899,7 +4899,7 @@ public class NiseM68 {
 
         reg.setAw(dr, (short) val);
 //#if DEBUG
-        nimo[0] += ",A%s".formatted(dr);
+        nimo.append(",A%s".formatted(dr));
 //#endif
 
         cycle[0] = Cycle.Movea_w[cycle[0]];
@@ -4908,19 +4908,19 @@ public class NiseM68 {
         // Everything remains unchanged
 
 //#if DEBUG
-        logger.log(Level.TRACE, nimo[0]);
+        logger.log(Level.TRACE, nimo.toString());
 //#endif
 
         return cycle[0];
     }
 
     private int cmoveal(short n) {
-        String[] nimo = new String[] {""};
+        StringBuilder nimo = new StringBuilder();
 //#if DEBUG
-        nimo[0] = "MOVEA.l ";
+        nimo.append("MOVEA.l ");
 //#endif
 
-        int[] cycle = new int[] {0};
+        int[] cycle = {0};
 
         int dr = (n & 0x0e00) >> 9;
         int sm = (n & 0x0038) >> 3;
@@ -4931,7 +4931,7 @@ public class NiseM68 {
 
         reg.getA().set(dr, val);
 //#if DEBUG
-        nimo[0] += ",A%s".formatted(dr);
+        nimo.append(",A%s".formatted(dr));
 //#endif
 
         cycle[0] = Cycle.Movea_l[cycle[0]];
@@ -4940,7 +4940,7 @@ public class NiseM68 {
         // Everything remains unchanged
 
 //#if DEBUG
-        logger.log(Level.TRACE, nimo[0]);
+        logger.log(Level.TRACE, nimo.toString());
 //#endif
 
         return cycle[0];
@@ -5064,12 +5064,12 @@ public class NiseM68 {
             return cnot(n);
         }
 
-        String[] nimo = new String[] {""};
+        StringBuilder nimo = new StringBuilder();
 //#if DEBUG
-        nimo[0] = "MOVE.w ";
+        nimo.append("MOVE.w ");
 //#endif
 
-        int[] cycle = new int[] {0};
+        int[] cycle = {0};
 
         int sm = (n & 0x0038) >> 3;
         int sr = (n & 0x0007);
@@ -5078,17 +5078,17 @@ public class NiseM68 {
         short val = (short) srcAddressingWord(/* ref */ nimo, /* ref */ cycle, sm, sr, 0xfff, true);
 
 //#if DEBUG
-        nimo[0] += ",sr";
+        nimo.append(",sr");
 //#endif
 
         cycle[0] = Cycle.MoveToSr_w[cycle[0]];
 
         // dst
         // flag
-        reg.setSR((short) (((reg.getSR() & ~0b1010_0111_0001_1111) | (val & 0xffff)) & 0xffff));
+        reg.setSR((short) ((reg.getSR() & 0b1010_0111_0001_1111) | (val & 0xffff)));
 
 //#if DEBUG
-        logger.log(Level.TRACE, nimo[0]);
+        logger.log(Level.TRACE, nimo.toString());
 //#endif
 
         return cycle[0];
@@ -5123,12 +5123,12 @@ public class NiseM68 {
     }
 
     private int cmoveb(short n) {
-        String[] nimo = new String[] {""};
+        StringBuilder nimo = new StringBuilder();
 //#if DEBUG
-        nimo[0] = "MOVE.b ";
+        nimo.append("MOVE.b ");
 //#endif
 
-        int[] cycle = new int[] {0};
+        int[] cycle = {0};
 
         int dr = (n & 0x0e00) >> 9;
         int dm = (n & 0x01c0) >> 6;
@@ -5146,7 +5146,7 @@ public class NiseM68 {
         byte val = (byte) srcAddressingByte(/* ref */ nimo, /* ref */ cycle, sm, sr, 0xfff, true);
 
 //#if DEBUG
-        nimo[0] += ",";
+        nimo.append(",");
 //#endif
 
         // dst
@@ -5154,7 +5154,7 @@ public class NiseM68 {
             case 0: // Dn
                 reg.setDb(dr, val);
 //#if DEBUG
-                nimo[0] += "D%d".formatted(dr);
+                nimo.append("D%d".formatted(dr));
 //#endif
 
                 cycle[0] = Cycle.Move_b[cycle[0]][0];
@@ -5162,7 +5162,7 @@ public class NiseM68 {
             case 2: // (An)
                 mem.pokeB(reg.getA().get(dr), val);
 //#if DEBUG
-                nimo[0] += "(A%d)".formatted(dr);
+                nimo.append("(A%d)".formatted(dr));
 //#endif
 
                 cycle[0] = Cycle.Move_b[cycle[0]][1];
@@ -5172,7 +5172,7 @@ public class NiseM68 {
                 reg.getA().set(dr, reg.getA().get(dr) + 1);
                 if (dr == 7) reg.getA().set(dr, reg.getA().get(dr) + 1);
 //#if DEBUG
-                nimo[0] += "(A%d)+".formatted(dr);
+                nimo.append("(A%d)+".formatted(dr));
 //#endif
 
                 cycle[0] = Cycle.Move_b[cycle[0]][2];
@@ -5182,7 +5182,7 @@ public class NiseM68 {
                 if (dr == 7) reg.getA().set(dr, reg.getA().get(dr) - 1);
                 mem.pokeB(reg.getA().get(dr), val);
 //#if DEBUG
-                nimo[0] += "-(A%d)".formatted(dr);
+                nimo.append("-(A%d)".formatted(dr));
 //#endif
 
                 cycle[0] = Cycle.Move_b[cycle[0]][3];
@@ -5191,7 +5191,7 @@ public class NiseM68 {
                 short d16 = fetchW(); // signed
                 mem.pokeB(reg.getA().get(dr) + d16, val);
 //#if DEBUG
-                nimo[0] += "$%04x(A%d)".formatted(d16, dr);
+                nimo.append("$%04x(A%d)".formatted(d16, dr));
 //#endif
 
                 cycle[0] = Cycle.Move_b[cycle[0]][4];
@@ -5203,7 +5203,7 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo[0] += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo.append("$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w"));
 //#endif
 
                 if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
@@ -5216,7 +5216,7 @@ public class NiseM68 {
                     case 0: // Abs.W
                         ptr = fetchW();
 //#if DEBUG
-                        nimo[0] += "$%04x".formatted(ptr);
+                        nimo.append("$%04x".formatted(ptr));
 //#endif
 
                         mem.pokeB(ptr, val);
@@ -5225,7 +5225,7 @@ public class NiseM68 {
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo[0] += "$%08x".formatted(ptr);
+                        nimo.append("$%08x".formatted(ptr));
 //#endif
 
                         mem.pokeB(ptr, val);
@@ -5242,19 +5242,19 @@ public class NiseM68 {
         reg.setC(false);
 
 //#if DEBUG
-        logger.log(Level.TRACE, nimo[0]);
+        logger.log(Level.TRACE, nimo.toString());
 //#endif
 
         return cycle[0];
     }
 
     private int cmovew(short n) {
-        String[] nimo = new String[] {""};
+        StringBuilder nimo = new StringBuilder();
 //#if DEBUG
-        nimo[0] = "MOVE.w ";
+        nimo.append("MOVE.w ");
 //#endif
 
-        int[] cycle = new int[] {0};
+        int[] cycle = {0};
 
         int dr = (n & 0x0e00) >> 9;
         int dm = (n & 0x01c0) >> 6;
@@ -5272,7 +5272,7 @@ public class NiseM68 {
         short val = (short) srcAddressingWord(/* ref */ nimo, /* ref */ cycle, sm, sr, 0xfff, true);
 
 //#if DEBUG
-        nimo[0] += ",";
+        nimo.append(",");
 //#endif
 
         // dst
@@ -5280,7 +5280,7 @@ public class NiseM68 {
             case 0: // Dn
                 reg.setDw(dr, val);
 //#if DEBUG
-                nimo[0] += "D%d".formatted(dr);
+                nimo.append("D%d".formatted(dr));
 //#endif
 
                 cycle[0] = Cycle.Move_w[cycle[0]][0];
@@ -5288,7 +5288,7 @@ public class NiseM68 {
             case 2: // (An)
                 mem.pokeW(reg.getA().get(dr), val);
 //#if DEBUG
-                nimo[0] += "(A%d)".formatted(dr);
+                nimo.append("(A%d)".formatted(dr));
 //#endif
 
                 cycle[0] = Cycle.Move_w[cycle[0]][1];
@@ -5297,7 +5297,7 @@ public class NiseM68 {
                 mem.pokeW(reg.getA().get(dr), val);
                 reg.getA().set(dr, reg.getA().get(dr) + 2);
 //#if DEBUG
-                nimo[0] += "(A%d)+".formatted(dr);
+                nimo.append("(A%d)+".formatted(dr));
 //#endif
 
                 cycle[0] = Cycle.Move_w[cycle[0]][2];
@@ -5306,7 +5306,7 @@ public class NiseM68 {
                 reg.getA().set(dr, reg.getA().get(dr) - 2);
                 mem.pokeW(reg.getA().get(dr), val);
 //#if DEBUG
-                nimo[0] += "-(A%d)".formatted(dr);
+                nimo.append("-(A%d)".formatted(dr));
 //#endif
 
                 cycle[0] = Cycle.Move_w[cycle[0]][3];
@@ -5315,7 +5315,7 @@ public class NiseM68 {
                 short d16 = fetchW(); // signed
                 mem.pokeW(reg.getA().get(dr) + d16, val);
 //#if DEBUG
-                nimo[0] += "$%04x(A%d)".formatted(d16, dr);
+                nimo.append("$%04x(A%d)".formatted(d16, dr));
 //#endif
 
                 cycle[0] = Cycle.Move_w[cycle[0]][4];
@@ -5327,7 +5327,7 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo[0] += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo.append("$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w"));
 //#endif
 
                 if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
@@ -5340,7 +5340,7 @@ public class NiseM68 {
                     case 0: // Abs.W
                         ptr = fetchW();
 //#if DEBUG
-                        nimo [0]+= "$%04x".formatted(ptr);
+                        nimo.append("$%04x".formatted(ptr));
 //#endif
 
                         mem.pokeW(ptr, val);
@@ -5349,7 +5349,7 @@ public class NiseM68 {
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo[0] += "$%08x".formatted(ptr);
+                        nimo.append("$%08x".formatted(ptr));
 //#endif
 
                         mem.pokeW(ptr, val);
@@ -5366,19 +5366,19 @@ public class NiseM68 {
         reg.setC(false);
 
 //#if DEBUG
-        logger.log(Level.TRACE, nimo[0]);
+        logger.log(Level.TRACE, nimo.toString());
 //#endif
 
         return cycle[0];
     }
 
     private int cmovel(short n) {
-        String[] nimo = new String[] {""};
+        StringBuilder nimo = new StringBuilder();
 //#if DEBUG
-        nimo[0] = "MOVE.l ";
+        nimo.append("MOVE.l ");
 //#endif
 
-        int[] cycle = new int[] {0};
+        int[] cycle = {0};
 
         int dr = (n & 0x0e00) >> 9;
         int dm = (n & 0x01c0) >> 6;
@@ -5396,7 +5396,7 @@ public class NiseM68 {
         int val = srcAddressingLong(/* ref */ nimo, /* ref */ cycle, sm, sr, 0xfff, true, 0);
 
 //#if DEBUG
-        nimo[0] += ",";
+        nimo.append(",");
 //#endif
 
         // dst
@@ -5404,7 +5404,7 @@ public class NiseM68 {
             case 0: // Dn
                 reg.getD()[dr] = val;
 //#if DEBUG
-                nimo[0] += "D%d".formatted(dr);
+                nimo.append("D%d".formatted(dr));
 //#endif
 
                 cycle[0] = Cycle.Move_l[cycle[0]][0];
@@ -5412,7 +5412,7 @@ public class NiseM68 {
             case 2: // (An)
                 mem.pokeL(reg.getA().get(dr), val);
 //#if DEBUG
-                nimo[0] += "(A%d)".formatted(dr);
+                nimo.append("(A%d)".formatted(dr));
 //#endif
 
                 cycle[0] = Cycle.Move_l[cycle[0]][1];
@@ -5421,7 +5421,7 @@ public class NiseM68 {
                 mem.pokeL(reg.getA().get(dr), val);
                 reg.getA().set(dr, reg.getA().get(dr) + 4);
 //#if DEBUG
-                nimo[0] += "(A%d)+".formatted(dr);
+                nimo.append("(A%d)+".formatted(dr));
 //#endif
 
                 cycle[0] = Cycle.Move_l[cycle[0]][2];
@@ -5430,7 +5430,7 @@ public class NiseM68 {
                 reg.getA().set(dr, reg.getA().get(dr) - 4);
                 mem.pokeL(reg.getA().get(dr), val);
 //#if DEBUG
-                nimo[0] += "-(A%d)".formatted(dr);
+                nimo.append("-(A%d)".formatted(dr));
 //#endif
 
                 cycle[0] = Cycle.Move_l[cycle[0]][3];
@@ -5439,7 +5439,7 @@ public class NiseM68 {
                 short d16 = fetchW(); // signed
                 mem.pokeL(reg.getA().get(dr) + d16, val);
 //#if DEBUG
-                nimo[0] += "$%04x(A%d)".formatted(d16, dr);
+                nimo.append("$%04x(A%d)".formatted(d16, dr));
 //#endif
 
                 cycle[0] = Cycle.Move_l[cycle[0]][4];
@@ -5451,7 +5451,7 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo[0] += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo.append("$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w"));
 //#endif
 
                 if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
@@ -5464,7 +5464,7 @@ public class NiseM68 {
                     case 0: // Abs.W
                         ptr = fetchW();
 //#if DEBUG
-                        nimo[0] += "($%04x)".formatted(ptr);
+                        nimo.append("($%04x)".formatted(ptr));
 //#endif
 
                         mem.pokeL(ptr, val);
@@ -5473,7 +5473,7 @@ public class NiseM68 {
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo[0] += "($%08x)".formatted(ptr);
+                        nimo.append("($%08x)".formatted(ptr));
 //#endif
 
                         mem.pokeL(ptr, val);
@@ -5490,7 +5490,7 @@ public class NiseM68 {
         reg.setC(false);
 
 //#if DEBUG
-        logger.log(Level.TRACE, nimo[0]);
+        logger.log(Level.TRACE, nimo.toString());
 //#endif
 
         return cycle[0];
@@ -6117,12 +6117,12 @@ public class NiseM68 {
             return cneg(n);
         }
 
-        String[] nimo = new String[] {""};
+        StringBuilder nimo = new StringBuilder();
 //#if DEBUG
-        nimo[0] = "MOVE.w ";
+        nimo.append("MOVE.w ");
 //#endif
 
-        int[] cycle = new int[] {0};
+        int[] cycle = {0};
 
         int sm = (n & 0x0038) >> 3;
         int sr = (n & 0x0007);
@@ -6131,14 +6131,14 @@ public class NiseM68 {
         short val = (short) srcAddressingWord(/* ref */ nimo, /* ref */ cycle, sm, sr, 0xfff, true);
 
 //#if DEBUG
-        nimo[0] += ",ccr";
+        nimo.append(",ccr");
 //#endif
 
         cycle[0] = Cycle.MoveToCcr_w[cycle[0]];
 
         reg.setCCR((byte) val);
 //#if DEBUG
-        logger.log(Level.TRACE, nimo[0]);
+        logger.log(Level.TRACE, nimo.toString());
 //#endif
 
         return cycle[0];
@@ -6163,12 +6163,12 @@ public class NiseM68 {
             throw new UnsupportedOperationException("Not implemented!! [%04x]".formatted(n));
         }
 
-        String[] nimo = new String[] {""};
+        StringBuilder nimo = new StringBuilder();
 //#if DEBUG
-        nimo[0] = "PEA.l ";
+        nimo.append("PEA.l ");
 //#endif
 
-        int[] cycle = new int[] {0};
+        int[] cycle = {0};
 
         // src
         int sm = (n & 0x0038) >> 3;
@@ -6185,7 +6185,7 @@ public class NiseM68 {
         cycle[0] = Cycle.Pea_l[cycle[0]];
 
 //#if DEBUG
-        logger.log(Level.TRACE, nimo[0]);
+        logger.log(Level.TRACE, nimo.toString());
 //#endif
 
         return cycle[0];
@@ -6611,12 +6611,12 @@ public class NiseM68 {
     }
 
     private int cmovemToReg_l(short n) {
-        int[] cycle = new int[] {0};
+        int[] cycle = {0};
         int cyc = 0;
 
-        String[] nimo = new String[] {""};
+        StringBuilder nimo = new StringBuilder();
 //#if DEBUG
-        nimo[0] = "MOVEM.l ";
+        nimo.append("MOVEM.l ");
 //#endif
 
         int sm = (n & 0x0038) >> 3;
@@ -6677,13 +6677,13 @@ public class NiseM68 {
         }
 
 //#if DEBUG
-        nimo[0] += "," + dnimo;
+        nimo.append("," + dnimo);
 //#endif
 
         cycle[0] = Cycle.MovemToReg_l0[cycle[0]] + cyc;
 
 //#if DEBUG
-        logger.log(Level.TRACE, nimo[0]);
+        logger.log(Level.TRACE, nimo.toString());
 //#endif
 
         return cycle[0];
@@ -6693,20 +6693,16 @@ public class NiseM68 {
         int size = (n & 0x00c0) >> 6;
 
         return switch (size) {
-            case 0 -> // byte
-                    cnegb(n);
-            case 1 -> // word
-                    cnegw(n);
-            case 2 -> // long
-                    cnegl(n);
+            case 0 -> cnegb(n); // byte
+            case 1 -> cnegw(n); // word
+            case 2 -> cnegl(n); // long
             default -> throw new UnsupportedOperationException("dummy");
         };
-
     }
 
     private int cnegb(short n) {
 //#if DEBUG
-        String nimo = "NEG.b ";
+        StringBuilder nimo = new StringBuilder("NEG.b ");
 //#endif
 
         int cycle = 0;
@@ -6728,7 +6724,7 @@ public class NiseM68 {
             case 0: // Dn
                 val = reg.getDb(dr);
 //#if DEBUG
-                nimo += "D%d".formatted(dr);
+                nimo.append("D%d".formatted(dr));
 //#endif
 
                 ans = (byte) (-val & 0xff);
@@ -6740,7 +6736,7 @@ public class NiseM68 {
             case 2: // (An)
                 val = mem.peekB(reg.getA().get(dr));
 //#if DEBUG
-                nimo += "(A%d)".formatted(dr);
+                nimo.append("(A%d)".formatted(dr));
 //#endif
 
                 ans = (byte) (-val & 0xff);
@@ -6754,7 +6750,7 @@ public class NiseM68 {
                 reg.getA().set(dr, reg.getA().get(dr) + 1);
                 if (dr == 7) reg.getA().set(dr, reg.getA().get(dr) + 1);
 //#if DEBUG
-                nimo += "(A%d)+".formatted(dr);
+                nimo.append("(A%d)+".formatted(dr));
 //#endif
 
                 cycle = Cycle.Neg_b[2];
@@ -6766,7 +6762,7 @@ public class NiseM68 {
                 ans = (byte) (-val & 0xff);
                 mem.pokeB(reg.getA().get(dr), ans);
 //#if DEBUG
-                nimo += "-(A%d)".formatted(dr);
+                nimo.append("-(A%d)".formatted(dr));
 //#endif
 
                 cycle = Cycle.Neg_b[3];
@@ -6777,7 +6773,7 @@ public class NiseM68 {
                 ans = (byte) -(byte) val;
                 mem.pokeB(reg.getA().get(dr) + d16, ans);
 //#if DEBUG
-                nimo += "$%04x(A%d)".formatted(d16, dr);
+                nimo.append("$%04x(A%d)".formatted(d16, dr));
 //#endif
 
                 cycle = Cycle.Neg_b[4];
@@ -6789,7 +6785,7 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo.append("$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w"));
 //#endif
 
                 if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
@@ -6804,7 +6800,7 @@ public class NiseM68 {
                     case 0: // Abs.W
                         ptr = fetchW();
 //#if DEBUG
-                        nimo += "($%04x)".formatted(ptr);
+                        nimo.append("($%04x)".formatted(ptr));
 //#endif
 
                         val = mem.peekB(ptr);
@@ -6815,7 +6811,7 @@ public class NiseM68 {
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "($%08x)".formatted(ptr);
+                        nimo.append("($%08x)".formatted(ptr));
 //#endif
 
                         val = mem.peekB(ptr);
@@ -6835,7 +6831,7 @@ public class NiseM68 {
         reg.setX(reg.getC());
 
 //#if DEBUG
-        logger.log(Level.TRACE, nimo);
+        logger.log(Level.TRACE, nimo.toString());
 //#endif
 
         return cycle;
@@ -9347,12 +9343,12 @@ public class NiseM68 {
     }
 
     private int csubb(short n) {
-        String[] nimo = new String[] {""};
+        StringBuilder nimo = new StringBuilder();
 //#if DEBUG
-        nimo[0] = "SUB.b ";
+        nimo.append("SUB.b ");
 //#endif
 
-        int[] cycle = new int[] {0};
+        int[] cycle = {0};
 
         int dr = (n & 0x0e00) >> 9;
         int sm = (n & 0x0038) >> 3;
@@ -9362,13 +9358,13 @@ public class NiseM68 {
         int src = srcAddressingByte(/* ref */ nimo, /* ref */ cycle, sm, sr, 0xfff, true);
 
 //#if DEBUG
-        nimo[0] += ",";
+        nimo.append(",");
 //#endif
 
         // dst
         short dst = (short) (reg.getDb(dr) & 0xff);
 //#if DEBUG
-        nimo[0] += "D%d".formatted(dr);
+        nimo.append("D%d".formatted(dr));
 //#endif
 
         // compute
@@ -9386,19 +9382,19 @@ public class NiseM68 {
         cycle[0] = Cycle.Sub_b[cycle[0]];
 
 //#if DEBUG
-        logger.log(Level.TRACE, nimo[0]);
+        logger.log(Level.TRACE, nimo.toString());
 //#endif
 
         return cycle[0];
     }
 
     private int csubw(short n) {
-        String[] nimo = new String[] {""};
+        StringBuilder nimo = new StringBuilder();
 //#if DEBUG
-        nimo[0] = "SUB.w ";
+        nimo.append("SUB.w ");
 //#endif
 
-        int[] cycle = new int[] {0};
+        int[] cycle = {0};
 
         int dr = (n & 0x0e00) >> 9;
         int sm = (n & 0x0038) >> 3;
@@ -9408,13 +9404,13 @@ public class NiseM68 {
         int src = srcAddressingWord(/* ref */ nimo, /* ref */ cycle, sm, sr, 0xfff, true);
 
 //#if DEBUG
-        nimo[0] += ",";
+        nimo.append(",");
 //#endif
 
         // dst
         int dst = reg.getDw(dr) & 0xffff;
 //#if DEBUG
-        nimo[0] += "D%d".formatted(dr);
+        nimo.append("D%d".formatted(dr));
 //#endif
 
         // compute
@@ -9432,19 +9428,19 @@ public class NiseM68 {
         cycle[0] = Cycle.Sub_w[cycle[0]];
 
 //#if DEBUG
-        logger.log(Level.TRACE, nimo[0]);
+        logger.log(Level.TRACE, nimo.toString());
 //#endif
 
         return cycle[0];
     }
 
     private int csubl(short n) {
-        String[] nimo = new String[] {""};
+        StringBuilder nimo = new StringBuilder();
 //#if DEBUG
-        nimo[0] = "SUB.l ";
+        nimo.append("SUB.l ");
 //#endif
 
-        int[] cycle = new int[] {0};
+        int[] cycle = {0};
         int dr = (n & 0x0e00) >> 9;
         int sm = (n & 0x0038) >> 3;
         int sr = (n & 0x0007);
@@ -9452,13 +9448,13 @@ public class NiseM68 {
         // src
         int src = srcAddressingLong(/* ref */ nimo, /* ref */ cycle, sm, sr, 0xfff, true, 0);
 //#if DEBUG
-        nimo[0] += ",";
+        nimo.append(",");
 //#endif
 
         // dst
         long dst = reg.getD()[dr] & 0xffff_ffffL;
 //#if DEBUG
-        nimo[0] += "D%d".formatted(dr);
+        nimo.append("D%d".formatted(dr));
 //#endif
 
 
@@ -9477,19 +9473,19 @@ public class NiseM68 {
         cycle[0] = Cycle.Sub_l[cycle[0]];
 
 //#if DEBUG
-        logger.log(Level.TRACE, nimo[0]);
+        logger.log(Level.TRACE, nimo.toString());
 //#endif
 
         return cycle[0];
     }
 
     private int csubaw(short n) {
-        String[] nimo = new String[] {""};
+        StringBuilder nimo = new StringBuilder();
 //#if DEBUG
-        nimo[0] = "SUBA.w ";
+        nimo.append("SUBA.w ");
 //#endif
 
-        int[] cycle = new int[] {0};
+        int[] cycle = {0};
 
         int dr = (n & 0x0e00) >> 9;
         int sm = (n & 0x0038) >> 3;
@@ -9499,13 +9495,13 @@ public class NiseM68 {
         int val = (short) srcAddressingWord(/* ref */ nimo, /* ref */ cycle, sm, sr, 0xfff, true);
 
 //#if DEBUG
-        nimo[0] += ",";
+        nimo.append(",");
 //#endif
 
         // compute
         reg.getA().set(dr, reg.getA().get(dr) - val);
 //#if DEBUG
-        nimo[0] += "A%s".formatted(dr);
+        nimo.append("A%s".formatted(dr));
 //#endif
 
         // flag
@@ -9515,19 +9511,19 @@ public class NiseM68 {
         cycle[0] = Cycle.Suba_w[cycle[0]];
 
 //#if DEBUG
-        logger.log(Level.TRACE, nimo[0]);
+        logger.log(Level.TRACE, nimo.toString());
 //#endif
 
         return cycle[0];
     }
 
     private int csubal(short n) {
-        String[] nimo = new String[] {""};
+        StringBuilder nimo = new StringBuilder();
 //#if DEBUG
-        nimo[0] = "SUBA.l ";
+        nimo.append("SUBA.l ");
 //#endif
 
-        int[] cycle = new int[] {0};
+        int[] cycle = {0};
 
         int dr = (n & 0x0e00) >> 9;
         int sm = (n & 0x0038) >> 3;
@@ -9537,13 +9533,13 @@ public class NiseM68 {
         int val = srcAddressingLong(/* ref */ nimo, /* ref */ cycle, sm, sr, 0xfff, true, 0);
 
 //#if DEBUG
-        nimo[0] += ",";
+        nimo.append(",");
 //#endif
 
         // compute
         reg.getA().set(dr, reg.getA().get(dr) - val);
 //#if DEBUG
-        nimo[0] += "A%s".formatted(dr);
+        nimo.append("A%s".formatted(dr));
 //#endif
 
         // flag
@@ -9553,7 +9549,7 @@ public class NiseM68 {
         cycle[0] = Cycle.Suba_l[cycle[0]];
 
 //#if DEBUG
-        logger.log(Level.TRACE, nimo[0]);
+        logger.log(Level.TRACE, nimo.toString());
 //#endif
 
         return cycle[0];
@@ -9916,10 +9912,10 @@ public class NiseM68 {
     }
 
     private int ccmp_l(short n) {
-        int[] cycle = new int[] {0};
-        String[] nimo = new String[] {""};
+        int[] cycle = {0};
+        StringBuilder nimo = new StringBuilder();
 //#if DEBUG
-        nimo[0] = "CMP.l ";
+        nimo.append("CMP.l ");
 //#endif
 
         int rn = (n & 0x0e00) >> 9;
@@ -9937,7 +9933,7 @@ public class NiseM68 {
         after = dst - src;
 
 //#if DEBUG
-        nimo[0] += ",D%d".formatted(rn);
+        nimo.append(",D%d".formatted(rn));
 //#endif
 
         // flag
@@ -9947,7 +9943,7 @@ public class NiseM68 {
         reg.setCcmp(src, dst, after);
 
 //#if DEBUG
-        logger.log(Level.TRACE, nimo[0]);
+        logger.log(Level.TRACE, nimo.toString());
 //#endif
 
         return cycle[0];
@@ -9958,10 +9954,10 @@ public class NiseM68 {
     }
 
     private int ccmpa_l(short n) {
-        int[] cycle = new int[] {0};
-        String[] nimo = new String[] {""};
+        int[] cycle = {0};
+        StringBuilder nimo = new StringBuilder();
 //#if DEBUG
-        nimo[0] = "CMPA.l ";
+        nimo.append("CMPA.l ");
 //#endif
 
         int rn = (n & 0x0e00) >> 9;
@@ -9980,7 +9976,7 @@ public class NiseM68 {
         after = val - before;
 
 //#if DEBUG
-        nimo[0] += ",A%s".formatted(rn);
+        nimo.append(",A%s".formatted(rn));
 //#endif
 
         // flag
@@ -9990,7 +9986,7 @@ public class NiseM68 {
         reg.setCcmp(val, before, after);
 
 //#if DEBUG
-        logger.log(Level.TRACE, nimo[0]);
+        logger.log(Level.TRACE, nimo.toString());
 //#endif
 
         return cycle[0];
@@ -10040,12 +10036,12 @@ public class NiseM68 {
     }
 
     private int cmuls(short n) {
-        String[] nimo = new String[] {""};
+        StringBuilder nimo = new StringBuilder();
 //#if DEBUG
-        nimo[0] = "MULS.w ";
+        nimo.append("MULS.w ");
 //#endif
 
-        int[] cycle = new int[] {0};
+        int[] cycle = {0};
 
         int dr = (n & 0x0e00) >> 9;
         // int dm = (n & 0x01c0) >> 6;
@@ -10053,10 +10049,10 @@ public class NiseM68 {
         int sr = (n & 0x0007);
 
         // src
-        int sval = srcAddressingWord(/* ref */ nimo, /* ref */ cycle, sm, sr, 0xfff, true);
+        int sval = (short) srcAddressingWord(/* ref */ nimo, /* ref */ cycle, sm, sr, 0xfff, true);
 
 //#if DEBUG
-        nimo[0] += ",";
+        nimo.append(",");
 //#endif
 
         // dst
@@ -10067,20 +10063,20 @@ public class NiseM68 {
         reg.getD()[dr] = ans;
 
 //#if DEBUG
-        nimo[0] += "D%d".formatted(dr);
+        nimo.append("D%d".formatted(dr));
 //#endif
 
         cycle[0] = Cycle.Muls_w[cycle[0]];
 
         // flag
         // reg.X -
-        reg.setN((ans & 0x8000_000) != 0);
+        reg.setN((ans & 0x8000_0000) != 0);
         reg.setZ(ans == 0);
         reg.setV(false);
         reg.setC(false);
 
 //#if DEBUG
-        logger.log(Level.TRACE, nimo[0]);
+        logger.log(Level.TRACE, nimo.toString());
 //#endif
 
         return cycle[0];
@@ -10092,12 +10088,12 @@ public class NiseM68 {
             return cand(n);
         }
 
-        String[] nimo = new String[] {""};
+        StringBuilder nimo = new StringBuilder();
 //#if DEBUG
-        nimo[0] = "MULU.w ";
+        nimo.append("MULU.w ");
 //#endif
 
-        int[] cycle = new int[] {0};
+        int[] cycle = {0};
 
         int dr = (n & 0x0e00) >> 9;
         // int dm = (n & 0x01c0) >> 6;
@@ -10108,7 +10104,7 @@ public class NiseM68 {
         int sval = srcAddressingWord(/* ref */ nimo, /* ref */ cycle, sm, sr, 0xfff, true) & 0xffff;
 
 //#if DEBUG
-        nimo[0] += ",";
+        nimo.append(",");
 //#endif
 
         // dst
@@ -10119,20 +10115,20 @@ public class NiseM68 {
         reg.getD()[dr] = ans;
 
 //#if DEBUG
-        nimo[0] += "D%d".formatted(dr);
+        nimo.append("D%d".formatted(dr));
 //#endif
 
         cycle[0] = Cycle.Mulu_w[cycle[0]];
 
         // flag
         // reg.X -
-        reg.setN((ans & 0x8000_000) != 0);
+        reg.setN((ans & 0x8000_0000) != 0);
         reg.setZ(ans == 0);
         reg.setV(false);
         reg.setC(false);
 
 //#if DEBUG
-        logger.log(Level.TRACE, nimo[0]);
+        logger.log(Level.TRACE, nimo.toString());
 //#endif
 
         return cycle[0];
@@ -10140,12 +10136,12 @@ public class NiseM68 {
 
     private int cdivs(short n) {
 
-        String[] nimo = new String[] {""};
+        StringBuilder nimo = new StringBuilder();
 //#if DEBUG
-        nimo[0] = "DIVS.w ";
+        nimo.append("DIVS.w ");
 //#endif
 
-        int[] cycle = new int[] {0};
+        int[] cycle = {0};
 
         int dr = (n & 0x0e00) >> 9;
         // int dm = (n & 0x01c0) >> 6;
@@ -10153,10 +10149,10 @@ public class NiseM68 {
         int sr = (n & 0x0007);
 
         // src
-        int sval = srcAddressingWord(/* ref */ nimo, /* ref */ cycle, sm, sr, 0xfff, true);
+        int sval = (short) srcAddressingWord(/* ref */ nimo, /* ref */ cycle, sm, sr, 0xfff, true);
 
 //#if DEBUG
-        nimo[0] += ",";
+        nimo.append(",");
 //#endif
 
         // dst
@@ -10177,7 +10173,7 @@ public class NiseM68 {
         reg.getD()[dr] = (ans & 0xffff) | ((mod & 0xffff) * 0x10000);
 
 //#if DEBUG
-        nimo[0] += "D%d".formatted(dr);
+        nimo.append("D%d".formatted(dr));
 //#endif
 
         cycle[0] = Cycle.Divs_w[cycle[0]];
@@ -10190,7 +10186,7 @@ public class NiseM68 {
         reg.setC(false);
 
 //#if DEBUG
-        logger.log(Level.TRACE, nimo[0]);
+        logger.log(Level.TRACE, nimo.toString());
 //#endif
 
         return cycle[0];
@@ -10198,12 +10194,12 @@ public class NiseM68 {
 
     private int cdivu(short n) {
 
-        String[] nimo = new String[] {""};
+        StringBuilder nimo = new StringBuilder();
 //#if DEBUG
-        nimo[0] = "DIVU.w ";
+        nimo.append("DIVU.w ");
 //#endif
 
-        int[] cycle = new int[] {0};
+        int[] cycle = {0};
 
         int dr = (n & 0x0e00) >> 9;
         // int dm = (n & 0x01c0) >> 6;
@@ -10214,7 +10210,7 @@ public class NiseM68 {
         int sval = srcAddressingWord(/* ref */ nimo, /* ref */ cycle, sm, sr, 0xfff, true) & 0xffff;
 
 //#if DEBUG
-        nimo[0] += ",";
+        nimo.append(",");
 //#endif
 
         // dst
@@ -10235,7 +10231,7 @@ public class NiseM68 {
         reg.getD()[dr] = (ans & 0xffff) | ((mod & 0xffff) * 0x10000);
 
 //#if DEBUG
-        nimo[0] += "D%d".formatted(dr);
+        nimo.append("D%d".formatted(dr));
 //#endif
 
         cycle[0] = Cycle.Divu_w[cycle[0]];
@@ -10248,7 +10244,7 @@ public class NiseM68 {
         reg.setC(false);
 
 //#if DEBUG
-        logger.log(Level.TRACE, nimo[0]);
+        logger.log(Level.TRACE, nimo.toString());
 //#endif
 
         return cycle[0];
@@ -10808,12 +10804,12 @@ public class NiseM68 {
     }
 
     private int cadd0B(short n) {
-        String[] nimo = new String[] {""};
+        StringBuilder nimo = new StringBuilder();
 //#if DEBUG
-        nimo[0] = "ADD.b ";
+        nimo.append("ADD.b ");
 //#endif
 
-        int[] cycle = new int[] {0};
+        int[] cycle = {0};
 
         int dr = (n & 0x0e00) >> 9;
         // int dm = (n & 0x01c0) >> 6;
@@ -10824,7 +10820,7 @@ public class NiseM68 {
         int sval = srcAddressingByte(/* ref */ nimo, /* ref */ cycle, sm, sr, 0xfff, true);
 
 //#if DEBUG
-        nimo[0] += ",";
+        nimo.append(",");
 //#endif
 
 
@@ -10836,7 +10832,7 @@ public class NiseM68 {
         reg.setDb(dr, (byte) ans);
 
 //#if DEBUG
-        nimo[0] += "D%d".formatted(dr);
+        nimo.append("D%d".formatted(dr));
 //#endif
 
         cycle[0] = Cycle.Add0_b[cycle[0]];
@@ -10849,19 +10845,19 @@ public class NiseM68 {
         reg.setX(reg.getC());
 
 //#if DEBUG
-        logger.log(Level.TRACE, nimo[0]);
+        logger.log(Level.TRACE, nimo.toString());
 //#endif
 
         return cycle[0];
     }
 
     private int cadd0w(short n) {
-        String[] nimo = new String[] {""};
+        StringBuilder nimo = new StringBuilder();
 //#if DEBUG
-        nimo[0] = "ADD.w ";
+        nimo.append("ADD.w ");
 //#endif
 
-        int[] cycle = new int[] {0};
+        int[] cycle = {0};
 
         int dr = (n & 0x0e00) >> 9;
         // int dm = (n & 0x01c0) >> 6;
@@ -10872,7 +10868,7 @@ public class NiseM68 {
         int sval = srcAddressingWord(/* ref */ nimo, /* ref */ cycle, sm, sr, 0xfff, true);
 
 //#if DEBUG
-        nimo[0] += ",";
+        nimo.append(",");
 //#endif
 
         // dst
@@ -10883,7 +10879,7 @@ public class NiseM68 {
         reg.setDw(dr, (short) ans);
 
 //#if DEBUG
-        nimo[0] += "D%d".formatted(dr);
+        nimo.append("D%d".formatted(dr));
 //#endif
 
         cycle[0] = Cycle.Add0_w[cycle[0]];
@@ -10896,19 +10892,19 @@ public class NiseM68 {
         reg.setX(reg.getC());
 
 //#if DEBUG
-        logger.log(Level.TRACE, nimo[0]);
+        logger.log(Level.TRACE, nimo.toString());
 //#endif
 
         return cycle[0];
     }
 
     private int cadd0l(short n) {
-        String[] nimo = new String[] {""};
+        StringBuilder nimo = new StringBuilder();
 //#if DEBUG
-        nimo[0] = "ADD.l ";
+        nimo.append("ADD.l ");
 //#endif
 
-        int[] cycle = new int[] {0};
+        int[] cycle = {0};
 
         int dr = (n & 0x0e00) >> 9;
         // int dm = (n & 0x01c0) >> 6;
@@ -10919,7 +10915,7 @@ public class NiseM68 {
         long sval = srcAddressingLong(/* ref */ nimo, /* ref */ cycle, sm, sr, 0xfff, true, 0);
 
 //#if DEBUG
-        nimo[0] += ",";
+        nimo.append(",");
 //#endif
 
         // dst
@@ -10930,7 +10926,7 @@ public class NiseM68 {
         reg.getD()[dr] = (int) ans;
 
 //#if DEBUG
-        nimo[0] += "D%d".formatted(dr);
+        nimo.append("D%d".formatted(dr));
 //#endif
 
         cycle[0] = Cycle.Add0_l[cycle[0]];
@@ -10943,7 +10939,7 @@ public class NiseM68 {
         reg.setX(reg.getC());
 
 //#if DEBUG
-        logger.log(Level.TRACE, nimo[0]);
+        logger.log(Level.TRACE, nimo.toString());
 //#endif
 
         return cycle[0];
@@ -11359,12 +11355,12 @@ public class NiseM68 {
     }
 
     private int caddaw(short n) {
-        String[] nimo = new String[] {""};
+        StringBuilder nimo = new StringBuilder();
 //#if DEBUG
-        nimo[0] = "ADDA.w ";
+        nimo.append("ADDA.w ");
 //#endif
 
-        int[] cycle = new int[] {0};
+        int[] cycle = {0};
 
         int dr = (n & 0x0e00) >> 9;
         // int dm = (n & 0x01c0) >> 6;
@@ -11375,7 +11371,7 @@ public class NiseM68 {
         int sval = (short) srcAddressingWord(/* ref */ nimo, /* ref */ cycle, sm, sr, 0xfff, true);
 
 //#if DEBUG
-        nimo[0] += ",";
+        nimo.append(",");
 //#endif
 
         // dst
@@ -11386,7 +11382,7 @@ public class NiseM68 {
         reg.getA().set(dr, ans);
 
 //#if DEBUG
-        nimo[0] += "A%s".formatted(dr);
+        nimo.append("A%s".formatted(dr));
 //#endif
 
         cycle[0] = Cycle.Adda_w[cycle[0]];
@@ -11398,19 +11394,19 @@ public class NiseM68 {
         //reg.SetCadd((short)sval, (short)dval, (short)ans);
 
 //#if DEBUG
-        logger.log(Level.TRACE, nimo[0]);
+        logger.log(Level.TRACE, nimo.toString());
 //#endif
 
         return cycle[0];
     }
 
     private int caddal(short n) {
-        String[] nimo = new String[] {""};
+        StringBuilder nimo = new StringBuilder();
 //#if DEBUG
-        nimo[0] = "ADDA.l ";
+        nimo.append("ADDA.l ");
 //#endif
 
-        int[] cycle = new int[] {0};
+        int[] cycle = {0};
 
         int dr = (n & 0x0e00) >> 9;
         // int dm = (n & 0x01c0) >> 6;
@@ -11421,7 +11417,7 @@ public class NiseM68 {
         long sval = srcAddressingLong(/* ref */ nimo, /* ref */ cycle, sm, sr, 0xfff, true, 0);
 
 //#if DEBUG
-        nimo[0] += ",";
+        nimo.append(",");
 //#endif
 
         // dst
@@ -11432,7 +11428,7 @@ public class NiseM68 {
         reg.getA().set(dr, (int) ans);
 
 //#if DEBUG
-        nimo[0] += "A%s".formatted(dr);
+        nimo.append("A%s".formatted(dr));
 //#endif
 
         cycle[0] = Cycle.Adda_l[cycle[0]];
@@ -11444,7 +11440,7 @@ public class NiseM68 {
         //reg.SetCadd((int) sval, (int) dval, (int) ans);
 
 //#if DEBUG
-        logger.log(Level.TRACE, nimo[0]);
+        logger.log(Level.TRACE, nimo.toString());
 //#endif
 
         return cycle[0];
@@ -12069,14 +12065,14 @@ public class NiseM68 {
 
         cycle += 2 * cnt;
 
-        int bv = reg.getDb(dr);
+        int bv = reg.getDb(dr) & 0xff;
         int av = bv << cnt;
         reg.setDb(dr, (byte) av); // >> Logical shift >>= Arithmetic shift
 
         reg.setC((cnt == 0) ? false : ((bv & (0x80 >> cnt)) != 0));
         if (cnt != 0) reg.setX(reg.getC());
-        reg.setN(av);
-        reg.setZ(av);
+        reg.setN((byte) av);
+        reg.setZ((byte) av);
         reg.setV(false);
 
 //#if DEBUG
@@ -12101,14 +12097,14 @@ public class NiseM68 {
 //#endif
 
         cycle += 2 * cnt;
-        int bv = reg.getDb(d);
+        int bv = reg.getDb(d) & 0xff;
         int av = bv << cnt;
         reg.setDb(d, (byte) av); // >> Logical shift >>= Arithmetic shift
 
         reg.setX((bv & (0x80 >> cnt)) != 0);
         reg.setC(reg.getX());
-        reg.setN((short) av);
-        reg.setZ((short) av);
+        reg.setN((byte) av);
+        reg.setZ((byte) av);
         reg.setV(false);
 
 //#if DEBUG
@@ -12134,14 +12130,14 @@ public class NiseM68 {
 
         cycle += 2 * cnt;
 
-        int bv = reg.getDw(dr);
+        int bv = reg.getDw(dr) & 0xffff;
         int av = bv << cnt;
         reg.setDw(dr, (short) av); // >> Logical shift >>= Arithmetic shift
 
         reg.setC((cnt == 0) ? false : ((bv & (0x8000 >> cnt)) != 0));
         if (cnt != 0) reg.setX(reg.getC());
-        reg.setN(av);
-        reg.setZ(av);
+        reg.setN((short) av);
+        reg.setZ((short) av);
         reg.setV(false);
 
 //#if DEBUG
@@ -12166,7 +12162,7 @@ public class NiseM68 {
 //#endif
 
         cycle += 2 * cnt;
-        int bv = reg.getDw(d);
+        int bv = reg.getDw(d) & 0xffff;
         int av = bv << cnt;
         reg.setDw(d, (short) av); // >> Logical shift >>= Arithmetic shift
 
@@ -12249,15 +12245,15 @@ public class NiseM68 {
     }
 
     private int clsl_w_ea(short n) {
-        String[] nimo = new String[] {""};
+        StringBuilder nimo = new StringBuilder();
 
-        int[] cycle = new int[] {0};
+        int[] cycle = {0};
 
         int cnt = 1;
         int dm = (n & 0x0038) >> 3;
         int dr = (n & 0x0007);
 //#if DEBUG
-        nimo[0] = "LSL.w ";
+        nimo.append("LSL.w ");
 //#endif
 
         // dst
@@ -12274,7 +12270,7 @@ public class NiseM68 {
         reg.setV(false);
 
 //#if DEBUG
-        logger.log(Level.TRACE, nimo[0]);
+        logger.log(Level.TRACE, nimo.toString());
 //#endif
 
         return cycle[0];
@@ -12302,8 +12298,8 @@ public class NiseM68 {
 
         reg.setC((cnt == 0) ? false : ((bv & (0x01 << (cnt - 1))) != 0));
         if (cnt != 0) reg.setX(reg.getC());
-        reg.setN(av);
-        reg.setZ(av);
+        reg.setN((byte) av);
+        reg.setZ((byte) av);
         reg.setV(false);
 
 //#if DEBUG
@@ -12367,8 +12363,8 @@ public class NiseM68 {
 
         reg.setC((cnt == 0) ? false : ((bv & (0x0001 << (cnt - 1))) != 0));
         if (cnt != 0) reg.setX(reg.getC());
-        reg.setN(av);
-        reg.setZ(av);
+        reg.setN((short) av);
+        reg.setZ((short) av);
         reg.setV(false);
 
 //#if DEBUG
@@ -12476,15 +12472,15 @@ public class NiseM68 {
     }
 
     private int clsr_w_ea(short n) {
-        String[] nimo = new String[] {""};
+        StringBuilder nimo = new StringBuilder();
 
-        int[] cycle = new int[] {0};
+        int[] cycle = {0};
 
         int cnt = 1;
         int dm = (n & 0x0038) >> 3;
         int dr = (n & 0x0007);
 //#if DEBUG
-        nimo[0] = "LSR.w ";
+        nimo.append("LSR.w ");
 //#endif
 
         // dst
@@ -12502,7 +12498,7 @@ public class NiseM68 {
         reg.setV(false);
 
 //#if DEBUG
-        logger.log(Level.TRACE, nimo[0]);
+        logger.log(Level.TRACE, nimo.toString());
 //#endif
 
         return cycle[0];
@@ -12642,7 +12638,7 @@ public class NiseM68 {
 
         cycle += 2 * cnt;
         byte bv = reg.getDb(d);
-        byte av = (byte) ((bv >>> cnt) | (bv << (8 - cnt)));
+        byte av = (byte) (((bv & 0xff) >>> cnt) | ((bv & 0xff) << (8 - cnt)));
         // int av = (bv << cnt) | (bv >>> (16 - cnt));
         reg.setDb(d, av);
 
@@ -12679,7 +12675,7 @@ public class NiseM68 {
 
         cycle += 2 * cnt;
         short bv = reg.getDw(d);
-        short av = (short) ((bv >>> cnt) | (bv << (16 - cnt)));
+        short av = (short) (((bv & 0xffff) >>> cnt) | ((bv & 0xffff) << (16 - cnt)));
         // int av = (bv << cnt) | (bv >>> (16 - cnt));
         reg.setDw(d, av);
 
@@ -12877,7 +12873,7 @@ public class NiseM68 {
         return cycle;
     }
 
-    private int srcAddressingByte(/* ref */ String[] nimo, /* ref */ int[] cycle, int sm, int sr, int support /* = 0xfff */, boolean nimoSw /* = true */) {
+    private int srcAddressingByte(/* ref */ StringBuilder nimo, /* ref */ int[] cycle, int sm, int sr, int support /* = 0xfff */, boolean nimoSw /* = true */) {
         short vw;
         boolean isA;
         int ni;
@@ -12891,7 +12887,7 @@ public class NiseM68 {
             case 0: // Dn
                 if ((support & (1 << 0)) == 0) throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
 //#if DEBUG
-                if (nimoSw) nimo[0] += "D%d".formatted(sr);
+                if (nimoSw) nimo.append("D%d".formatted(sr));
 //#endif
 
                 val = (byte) reg.getD()[sr];
@@ -12908,7 +12904,7 @@ public class NiseM68 {
             case 2: // (An)
                 if ((support & (1 << 2)) == 0) throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
 //#if DEBUG
-                if (nimoSw) nimo[0] += "(A%d)".formatted(sr);
+                if (nimoSw) nimo.append("(A%d)".formatted(sr));
 //#endif
 
                 val = mem.peekB(reg.getA().get(sr));
@@ -12916,7 +12912,7 @@ public class NiseM68 {
             case 3: // (An)+
                 if ((support & (1 << 3)) == 0) throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
 //#if DEBUG
-                if (nimoSw) nimo[0] += "(A%d)+".formatted(sr);
+                if (nimoSw) nimo.append("(A%d)+".formatted(sr));
 //#endif
 
                 val = mem.peekB(reg.getA().get(sr));
@@ -12926,7 +12922,7 @@ public class NiseM68 {
             case 4: // -(An)
                 if ((support & (1 << 4)) == 0) throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
 //#if DEBUG
-                if (nimoSw) nimo[0] += "-(A%d)".formatted(sr);
+                if (nimoSw) nimo.append("-(A%d)".formatted(sr));
 //#endif
 
                 reg.getA().set(sr, reg.getA().get(sr) - 1);
@@ -12937,7 +12933,7 @@ public class NiseM68 {
                 if ((support & (1 << 5)) == 0) throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
                 short d16 = fetchW(); // signed
 //#if DEBUG
-                if (nimoSw) nimo[0] += "$%04x(A%d)".formatted(d16, sr);
+                if (nimoSw) nimo.append("$%04x(A%d)".formatted(d16, sr));
 //#endif
 
                 val = mem.peekB(reg.getA().get(sr) + d16);
@@ -12951,7 +12947,7 @@ public class NiseM68 {
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
                 if (nimoSw)
-                    nimo[0] += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, sr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                    nimo.append("$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, sr, isA ? "A" : "D", ni, isL ? "l" : "w"));
 //#endif
 
                 if (!isL) ptr = reg.getA().get(sr) + (byte) vw + (short) (IX & 0xffff);
@@ -12964,7 +12960,7 @@ public class NiseM68 {
                         if ((support & (1 << 7)) == 0) throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
                         ptr = fetchW();
 //#if DEBUG
-                        if (nimoSw) nimo[0] += "$%04x".formatted(ptr);
+                        if (nimoSw) nimo.append("$%04x".formatted(ptr));
 //#endif
 
                         val = mem.peekB(ptr);
@@ -12973,7 +12969,7 @@ public class NiseM68 {
                         if ((support & (1 << 8)) == 0) throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
                         ptr = fetchL();
 //#if DEBUG
-                        if (nimoSw) nimo[0] += "$%08x".formatted(ptr);
+                        if (nimoSw) nimo.append("$%08x".formatted(ptr));
 //#endif
 
                         val = mem.peekB(ptr);
@@ -12983,7 +12979,7 @@ public class NiseM68 {
                         if ((support & (1 << 9)) == 0) throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
                         ptr = fetchW();
 //#if DEBUG
-                        if (nimoSw) nimo[0] += "$%04x(PC)".formatted(ptr & 0xffff);
+                        if (nimoSw) nimo.append("$%04x(PC)".formatted(ptr & 0xffff));
 //#endif
 
                         val = mem.peekB(ptr + reg.pc - 2);
@@ -12996,7 +12992,7 @@ public class NiseM68 {
                         ni = (vw & 0x7000) >> 12;
                         isL = (vw & 0x0800) != 0;
 //#if DEBUG
-                        nimo[0] += "$%02x(PC,%s%s.%s)".formatted(vw & 0xff, isA ? "A" : "D", ni, isL ? "l" : "w");
+                        nimo.append("$%02x(PC,%s%s.%s)".formatted(vw & 0xff, isA ? "A" : "D", ni, isL ? "l" : "w"));
 //#endif
 
                         if (isL) {
@@ -13014,7 +13010,7 @@ public class NiseM68 {
                         if ((support & (1 << 11)) == 0) throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
                         val = (byte) fetchW();
 //#if DEBUG
-                        if (nimoSw) nimo[0] += "#$%02x".formatted(val);
+                        if (nimoSw) nimo.append("#$%02x".formatted(val));
 //#endif
 
                         cycle[0] = 11;
@@ -13026,7 +13022,7 @@ public class NiseM68 {
         return val & 0xff;
     }
 
-    private int srcAddressingWord(/* ref */ String[] nimo, /* ref */ int[] cycle, int sm, int sr, int support /* = 0xfff */, boolean nimoSw /* = true */) {
+    private int srcAddressingWord(/* ref */ StringBuilder nimo, /* ref */ int[] cycle, int sm, int sr, int support /* = 0xfff */, boolean nimoSw /* = true */) {
         short vw;
         boolean isA;
         int ni;
@@ -13040,7 +13036,7 @@ public class NiseM68 {
             case 0: // Dn
                 if ((support & (1 << 0)) == 0) throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
 //#if DEBUG
-                if (nimoSw) nimo[0] += "D%d".formatted(sr);
+                if (nimoSw) nimo.append("D%d".formatted(sr));
 //#endif
 
                 val = (short) reg.getD()[sr];
@@ -13048,7 +13044,7 @@ public class NiseM68 {
             case 1: // An
                 if ((support & (1 << 1)) == 0) throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
 //#if DEBUG
-                if (nimoSw) nimo[0] += "A%s".formatted(sr);
+                if (nimoSw) nimo.append("A%s".formatted(sr));
 //#endif
 
                 val = (short) reg.getA().get(sr);
@@ -13056,7 +13052,7 @@ public class NiseM68 {
             case 2: // (An)
                 if ((support & (1 << 2)) == 0) throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
 //#if DEBUG
-                if (nimoSw) nimo[0] += "(A%d)".formatted(sr);
+                if (nimoSw) nimo.append("(A%d)".formatted(sr));
 //#endif
 
                 val = mem.peekW(reg.getA().get(sr));
@@ -13064,7 +13060,7 @@ public class NiseM68 {
             case 3: // (An)+
                 if ((support & (1 << 3)) == 0) throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
 //#if DEBUG
-                if (nimoSw) nimo[0] += "(A%d)+".formatted(sr);
+                if (nimoSw) nimo.append("(A%d)+".formatted(sr));
 //#endif
 
                 val = mem.peekW(reg.getA().get(sr));
@@ -13073,7 +13069,7 @@ public class NiseM68 {
             case 4: // -(An)
                 if ((support & (1 << 4)) == 0) throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
 //#if DEBUG
-                if (nimoSw) nimo[0] += "-(A%d)".formatted(sr);
+                if (nimoSw) nimo.append("-(A%d)".formatted(sr));
 //#endif
 
                 reg.getA().set(sr, reg.getA().get(sr) - 2);
@@ -13083,7 +13079,7 @@ public class NiseM68 {
                 if ((support & (1 << 5)) == 0) throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
                 short d16 = fetchW(); // signed
 //#if DEBUG
-                if (nimoSw) nimo[0] += "$%04x(A%d)".formatted(d16, sr);
+                if (nimoSw) nimo.append("$%04x(A%d)".formatted(d16, sr));
 //#endif
 
                 val = mem.peekW(reg.getA().get(sr) + d16);
@@ -13097,7 +13093,7 @@ public class NiseM68 {
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
                 if (nimoSw)
-                    nimo[0] += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, sr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                    nimo.append("$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, sr, isA ? "A" : "D", ni, isL ? "l" : "w"));
 //#endif
 
                 if (!isL) ptr = reg.getA().get(sr) + (byte) vw + (short) (IX & 0xffff);
@@ -13110,7 +13106,7 @@ public class NiseM68 {
                         if ((support & (1 << 7)) == 0) throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
                         ptr = fetchW();
 //#if DEBUG
-                        if (nimoSw) nimo[0] += "$%04x".formatted(ptr & 0xffff);
+                        if (nimoSw) nimo.append("$%04x".formatted(ptr & 0xffff));
 //#endif
 
                         val = mem.peekW(ptr);
@@ -13119,7 +13115,7 @@ public class NiseM68 {
                         if ((support & (1 << 8)) == 0) throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
                         ptr = fetchL();
 //#if DEBUG
-                        if (nimoSw) nimo[0] += "$%08x".formatted(ptr);
+                        if (nimoSw) nimo.append("$%08x".formatted(ptr));
 //#endif
 
                         val = mem.peekW(ptr);
@@ -13129,7 +13125,7 @@ public class NiseM68 {
                         if ((support & (1 << 9)) == 0) throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
                         ptr = fetchW();
 //#if DEBUG
-                        if (nimoSw) nimo[0] += "$%04x(PC)".formatted(ptr & 0xffff);
+                        if (nimoSw) nimo.append("$%04x(PC)".formatted(ptr & 0xffff));
 //#endif
 
                         val = mem.peekW(ptr + reg.pc - 2);
@@ -13142,7 +13138,7 @@ public class NiseM68 {
                         ni = (vw & 0x7000) >> 12;
                         isL = (vw & 0x0800) != 0;
 //#if DEBUG
-                        nimo[0] += "$%02x(PC,%s%s.%s)".formatted(vw & 0xff, isA ? "A" : "D", ni, isL ? "l" : "w");
+                        nimo.append("$%02x(PC,%s%s.%s)".formatted(vw & 0xff, isA ? "A" : "D", ni, isL ? "l" : "w"));
 //#endif
 
                         if (isL) {
@@ -13160,7 +13156,7 @@ public class NiseM68 {
                         if ((support & (1 << 11)) == 0) throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
                         val = fetchW();
 //#if DEBUG
-                        if (nimoSw) nimo[0] += "#$%04x".formatted(val);
+                        if (nimoSw) nimo.append("#$%04x".formatted(val));
 //#endif
 
                         cycle[0] = 11;
@@ -13172,7 +13168,7 @@ public class NiseM68 {
         return val & 0xffff;
     }
 
-    private int srcAddressingLong(/* ref */ String[] nimo, /* ref */ int[] cycle, int sm, int sr, int support /* = 0xfff */, boolean nimoSw /* = true */, int shift /* = 0 */) {
+    private int srcAddressingLong(/* ref */ StringBuilder nimo, /* ref */ int[] cycle, int sm, int sr, int support /* = 0xfff */, boolean nimoSw /* = true */, int shift /* = 0 */) {
         short vw;
         boolean isA;
         int ni;
@@ -13186,7 +13182,7 @@ public class NiseM68 {
             case 0: // Dn
                 if ((support & (1 << 0)) == 0) throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
 //#if DEBUG
-                if (nimoSw) nimo[0] += "D%d".formatted(sr);
+                if (nimoSw) nimo.append("D%d".formatted(sr));
 //#endif
 
                 val = reg.getD()[sr];
@@ -13194,7 +13190,7 @@ public class NiseM68 {
             case 1: // An
                 if ((support & (1 << 1)) == 0) throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
 //#if DEBUG
-                if (nimoSw) nimo[0] += "A%s".formatted(sr);
+                if (nimoSw) nimo.append("A%s".formatted(sr));
 //#endif
 
                 val = reg.getA().get(sr);
@@ -13202,7 +13198,7 @@ public class NiseM68 {
             case 2: // (An)
                 if ((support & (1 << 2)) == 0) throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
 //#if DEBUG
-                if (nimoSw) nimo[0] += "(A%d)".formatted(sr);
+                if (nimoSw) nimo.append("(A%d)".formatted(sr));
 //#endif
 
                 val = mem.peekL(reg.getA().get(sr) + shift);
@@ -13210,7 +13206,7 @@ public class NiseM68 {
             case 3: // (An)+
                 if ((support & (1 << 3)) == 0) throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
 //#if DEBUG
-                if (nimoSw) nimo[0] += "(A%d)+".formatted(sr);
+                if (nimoSw) nimo.append("(A%d)+".formatted(sr));
 //#endif
 
                 val = mem.peekL(reg.getA().get(sr));
@@ -13219,7 +13215,7 @@ public class NiseM68 {
             case 4: // -(An)
                 if ((support & (1 << 4)) == 0) throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
 //#if DEBUG
-                if (nimoSw) nimo[0] += "-(A%d)".formatted(sr);
+                if (nimoSw) nimo.append("-(A%d)".formatted(sr));
 //#endif
 
                 reg.getA().set(sr, reg.getA().get(sr) - 4);
@@ -13229,7 +13225,7 @@ public class NiseM68 {
                 if ((support & (1 << 5)) == 0) throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
                 short d16 = fetchW(); // signed
 //#if DEBUG
-                if (nimoSw) nimo[0] += "$%04x(A%d)".formatted(d16, sr);
+                if (nimoSw) nimo.append("$%04x(A%d)".formatted(d16, sr));
 //#endif
 
                 val = mem.peekL(reg.getA().get(sr) + d16 + shift);
@@ -13243,7 +13239,7 @@ public class NiseM68 {
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
                 if (nimoSw)
-                    nimo[0] += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, sr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                    nimo.append("$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, sr, isA ? "A" : "D", ni, isL ? "l" : "w"));
 //#endif
 
                 if (!isL) ptr = reg.getA().get(sr) + (byte) vw + (short) (IX & 0xffff);
@@ -13256,7 +13252,7 @@ public class NiseM68 {
                         if ((support & (1 << 7)) == 0) throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
                         ptr = fetchW();
 //#if DEBUG
-                        if (nimoSw) nimo[0] += "($%04x)".formatted(ptr & 0xffff);
+                        if (nimoSw) nimo.append("($%04x)".formatted(ptr & 0xffff));
 //#endif
 
                         val = mem.peekL(ptr + shift);
@@ -13265,7 +13261,7 @@ public class NiseM68 {
                         if ((support & (1 << 8)) == 0) throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
                         ptr = fetchL();
 //#if DEBUG
-                        if (nimoSw) nimo[0] += "($%08x)".formatted(ptr);
+                        if (nimoSw) nimo.append("($%08x)".formatted(ptr));
 //#endif
 
                         val = mem.peekL(ptr + shift);
@@ -13275,7 +13271,7 @@ public class NiseM68 {
                         if ((support & (1 << 9)) == 0) throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
                         ptr = fetchW();
 //#if DEBUG
-                        if (nimoSw) nimo[0] += "$%04x(PC)".formatted(ptr & 0xffff);
+                        if (nimoSw) nimo.append("$%04x(PC)".formatted(ptr & 0xffff));
 //#endif
 
                         val = mem.peekL(ptr + reg.pc - 2 + shift);
@@ -13289,7 +13285,7 @@ public class NiseM68 {
                         isL = (vw & 0x0800) != 0;
 //#if DEBUG
                         if (nimoSw)
-                            nimo[0] += "$%02x(PC,%s%s.%s)".formatted(vw & 0xff, isA ? "A" : "D", ni, isL ? "l" : "w");
+                            nimo.append("$%02x(PC,%s%s.%s)".formatted(vw & 0xff, isA ? "A" : "D", ni, isL ? "l" : "w"));
 //#endif
 
                         if (isL) {
@@ -13306,7 +13302,7 @@ public class NiseM68 {
                         if ((support & (1 << 11)) == 0) throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
                         val = fetchL();
 //#if DEBUG
-                        if (nimoSw) nimo[0] += "#$%08x".formatted(val);
+                        if (nimoSw) nimo.append("#$%08x".formatted(val));
 //#endif
 
                         cycle[0] = 11;
@@ -13318,7 +13314,7 @@ public class NiseM68 {
         return val;
     }
 
-    private int srcAddressingLongLea(/* ref */ String[] nimo, /* ref */ int[] cycle, int sm, int sr) {
+    private int srcAddressingLongLea(/* ref */ StringBuilder nimo, /* ref */ int[] cycle, int sm, int sr) {
         short vw;
         boolean isA;
         int ni;
@@ -13336,7 +13332,7 @@ public class NiseM68 {
                 throw new UnsupportedOperationException("LEA Invalid addressing mode %04x".formatted(sm));
             case 2: // (An)
 //#if DEBUG
-                nimo[0] += "(A%d)".formatted(sr);
+                nimo.append("(A%d)".formatted(sr));
 //#endif
 
                 val = reg.getA().get(sr);
@@ -13344,7 +13340,7 @@ public class NiseM68 {
             case 5: // d16(An)
                 short d16 = fetchW(); // signed
 //#if DEBUG
-                nimo[0] += "$%04x(A%d)".formatted(d16, sr);
+                nimo.append("$%04x(A%d)".formatted(d16, sr));
 //#endif
 
                 val = reg.getA().get(sr) + d16;
@@ -13356,7 +13352,7 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo[0] += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, sr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo.append("$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, sr, isA ? "A" : "D", ni, isL ? "l" : "w"));
 //#endif
 
                 if (!isL) ptr = reg.getA().get(sr) + (byte) vw + (short) (IX & 0xffff);
@@ -13368,7 +13364,7 @@ public class NiseM68 {
                     case 0: // Abs.W
                         ptr = fetchW();
 //#if DEBUG
-                        nimo[0] += "$%04x".formatted(ptr & 0xffff);
+                        nimo.append("$%04x".formatted(ptr & 0xffff));
 //#endif
 
                         val = ptr;
@@ -13376,7 +13372,7 @@ public class NiseM68 {
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo[0] += "$%08x".formatted(ptr);
+                        nimo.append("$%08x".formatted(ptr));
 //#endif
 
                         val = ptr;
@@ -13385,7 +13381,7 @@ public class NiseM68 {
                     case 2: // d16(PC)
                         ptr = fetchW();
 //#if DEBUG
-                        nimo[0] += "$%04x(PC)".formatted(ptr & 0xffff);
+                        nimo.append("$%04x(PC)".formatted(ptr & 0xffff));
 //#endif
 
                         val = ptr + reg.pc - 2;
@@ -13398,7 +13394,7 @@ public class NiseM68 {
                         isL = (vw & 0x0800) != 0;
 
 //#if DEBUG
-                        nimo[0] += "$%02x(PC,%s%s.%s)".formatted(vw & 0xff, isA ? "A" : "D", ni, isL ? "l" : "w");
+                        nimo.append("$%02x(PC,%s%s.%s)".formatted(vw & 0xff, isA ? "A" : "D", ni, isL ? "l" : "w"));
 //#endif
 
                         if (isL) {

@@ -20,8 +20,8 @@ import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.Tables;
-import mdplayer.chips.NesChip;
-import mdplayer.chips.NesChip.Vrc6Chip;
+import mdplayer.chips.NpNesChip;
+import mdplayer.chips.NpNesChip.Vrc6Chip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
@@ -157,7 +157,7 @@ public class frmVRC6 extends frmBase {
     }
 
     public void screenChangeParams() {
-        BasicTrackInfo[] info = (BasicTrackInfo[]) audio.plugin.chipRegister.chip(NesChip.Vrc6Chip.class).readVrc6(0);
+        BasicTrackInfo[] info = (BasicTrackInfo[]) audio.plugin.chipRegister.chip(NpNesChip.Vrc6Chip.class).readVrc6(0);
         if (info == null) return;
 
         MDChipParams.Channel nyc;

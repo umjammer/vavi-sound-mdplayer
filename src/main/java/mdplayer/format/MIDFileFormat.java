@@ -2,11 +2,11 @@ package mdplayer.format;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import dotnet4j.io.Path;
 import mdplayer.PlayList;
 import mdplayer.driver.mid.MidiDriver;
 import mdplayer.plugin.MIDPlugin;
@@ -31,11 +31,16 @@ public class MIDFileFormat extends BaseFileFormat {
     }
 
     @Override
+    public MetaData getMetaData() {
+        return new MidiDriver().getMetaData(this.srcBuf);
+    }
+
+    @Override
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
         PlayList.Music music = new PlayList.Music();
 
         music.format = this;
-        MetaData metaData = new MidiDriver().getMetaData(buf);
+        MetaData metaData = getMetaData();
         if (metaData != null) {
             music.title = metaData.getFirst(Tag.Title);
             music.titleJ = metaData.getFirst(Tag.TitleJ);
@@ -48,10 +53,10 @@ public class MIDFileFormat extends BaseFileFormat {
             music.converted = metaData.getFirst(Tag.Converter);
             music.notes = metaData.getFirst(Tag.Note);
         } else {
-            music.title = "(%s)".formatted(Path.getFileName(file));
+            music.title = "(%s)".formatted(Path.of(file).getFileName());
         }
         if (music.title.isEmpty() && music.titleJ.isEmpty()) {
-            music.title = "(%s)".formatted(Path.getFileName(file));
+            music.title = "(%s)".formatted(Path.of(file).getFileName());
         }
 
         return Collections.singletonList(music);
@@ -63,7 +68,7 @@ public class MIDFileFormat extends BaseFileFormat {
         PlayList.Music music = new PlayList.Music();
 
         music.format = this;
-        MetaData metaData = new MidiDriver().getMetaData(buf);
+        MetaData metaData = getMetaData();
         if (metaData != null) {
             music.title = metaData.getFirst(Tag.Title);
             music.titleJ = metaData.getFirst(Tag.TitleJ);
@@ -76,11 +81,11 @@ public class MIDFileFormat extends BaseFileFormat {
             music.converted = metaData.getFirst(Tag.Converter);
             music.notes = metaData.getFirst(Tag.Note);
         } else {
-            music.title = "(%s)".formatted(Path.getFileName(ms.fileName));
+            music.title = "(%s)".formatted(Path.of(ms.fileName).getFileName());
         }
 
         if (music.title.isEmpty() && music.titleJ.isEmpty()) {
-            music.title = "(%s)".formatted(Path.getFileName(ms.fileName));
+            music.title = "(%s)".formatted(Path.of(ms.fileName).getFileName());
         }
 
         musics.add(music);

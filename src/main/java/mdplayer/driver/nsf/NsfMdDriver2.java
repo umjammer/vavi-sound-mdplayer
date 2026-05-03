@@ -9,11 +9,10 @@ package mdplayer.driver.nsf;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
+import mdplayer.Common;
 import mdplayer.Common.EnmModel;
-import mdplayer.chips.NesChip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.plugin.BasePlugin;
-import mdsound.MDSound;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 import vavi.util.ByteUtil;
@@ -22,7 +21,7 @@ import static java.lang.System.getLogger;
 
 
 /**
- * NsfMdDriver2.
+ * Nsf Driver powered by NsfPlayer.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-04-01 nsano initial version <br>
@@ -33,8 +32,11 @@ public class NsfMdDriver2 extends BaseDriver implements NsfDriver {
 
     private final Nsf2 nsf;
 
-    public NsfMdDriver2() {
+    public NsfMdDriver2(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+
         this.nsf = new Nsf2();
+        nsf.charset = Common.charset;
         nsf.sampleRate = setting.getOutputDevice().getSampleRate();
     }
 
@@ -56,6 +58,8 @@ public class NsfMdDriver2 extends BaseDriver implements NsfDriver {
             return null;
         }
 
+        nsf.initInfo(buf);
+
         MetaData md = new MetaData();
         md.set(Tag.GameTitle, nsf.title);
         md.set(Tag.GameTitleJ, nsf.title);
@@ -65,20 +69,16 @@ public class NsfMdDriver2 extends BaseDriver implements NsfDriver {
         md.set(Tag.TitleJ, nsf.title);
         md.set(Tag.GameSystem, nsf.copyright);
         md.set(Tag.GameSystemJ, nsf.copyright);
+        md.set(Tag.NumberOfSongs, String.valueOf(nsf.songs));
 
         return md;
     }
 
     @Override
-    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     int latency, int waitTime, Object... args) {
-        this.dataBuf = vgmBuf;
-        this.plugin = plugin;
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
         this.model = model;
         this.latency = latency;
         this.waitTime = waitTime;
-
-        nsf.chip = plugin.chipRegister.chip(NesChip.class);
 
         if (model == EnmModel.RealModel) {
             stopped = true;
@@ -95,9 +95,9 @@ public class NsfMdDriver2 extends BaseDriver implements NsfDriver {
         speed = 1;
         speedCounter = 0;
 
-        metaData = getMetaData(vgmBuf);
+        metaData = getMetaData(dataBuf);
 
-        nsf.init(vgmBuf);
+        nsf.init(dataBuf);
     }
 
     @Override
@@ -136,51 +136,11 @@ public class NsfMdDriver2 extends BaseDriver implements NsfDriver {
     }
 
     @Override
-    public void setApu(MDSound.Chip chip) {
-        nsf.cAPU = chip;
-    }
-
-    @Override
-    public void setDmc(MDSound.Chip chip) {
-        nsf.cDMC = chip;
-    }
-
-    @Override
-    public void setFds(MDSound.Chip chip) {
-        nsf.cFDS = chip;
-    }
-
-    @Override
-    public void setMmc5(MDSound.Chip chip) {
-        nsf.cMMC5 = chip;
-    }
-
-    @Override
-    public void setN160(MDSound.Chip chip) {
-        nsf.cN160 = chip;
-    }
-
-    @Override
-    public void setVrc6(MDSound.Chip chip) {
-        nsf.cVRC6 = chip;
-    }
-
-    @Override
-    public void setVrc7(MDSound.Chip chip) {
-        nsf.cVRC7 = chip;
-    }
-
-    @Override
-    public void setFme7(MDSound.Chip chip) {
-        nsf.cFME7 = chip;
-    }
-
-    @Override
     public void processOneFrame() {
     }
 
-    int CC;
-    static final int INTERVAL = 1024;
+int CC;
+static final int INTERVAL = 1024;
 
     @Override
     public int render(short[] buffer, int offset, int sampleCount) {
@@ -190,20 +150,20 @@ public class NsfMdDriver2 extends BaseDriver implements NsfDriver {
         for (int i = 0; i < r; i++) {
             buffer[i * 2 + 0] = b[i];
             buffer[i * 2 + 1] = b[i];
-            if (CC++ % INTERVAL == 0) {
-                logger.log(Level.DEBUG, "NSF: %d, %d".formatted(b[i], b[i]));
-            }
+if (CC++ % INTERVAL == 0) { logger.log(Level.DEBUG, "NSF: %d, %d".formatted(b[i], b[i])); }
         }
         return r * 2;
     }
 
     @Override
     public void copyWaveBuffer(short[][] dest) {
-        nsf.visWaveBufferCopy(dest);
+        visWB.copy(dest);
     }
 
     @Override
     public boolean isNotRenderingOnPause() {
         return true;
     }
+
+    private final mdsound.VisWaveBuffer visWB = new mdsound.VisWaveBuffer();
 }

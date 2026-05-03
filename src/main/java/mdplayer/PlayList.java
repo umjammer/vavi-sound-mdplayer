@@ -3,38 +3,40 @@ package mdplayer;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 import java.util.StringJoiner;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import javax.swing.JOptionPane;
-import javax.swing.JTable;
-import javax.swing.table.DefaultTableModel;
 
-import dotnet4j.io.FileMode;
-import dotnet4j.io.FileStream;
-import dotnet4j.io.StreamReader;
 import mdplayer.Common.EnmArcType;
 import mdplayer.format.FileFormat;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
+import vavi.util.serdes.Element;
 import vavi.util.serdes.Serdes;
 
 import static java.lang.System.getLogger;
 import static mdplayer.Common.charset;
 
 
+@Serdes
 public class PlayList implements Serializable, Cloneable {
 
     private static final Logger logger = getLogger(PlayList.class.getName());
 
+    @Serdes
     public static class Music {
         public FileFormat format;
         public String playingNow;
@@ -97,6 +99,10 @@ public class PlayList implements Serializable, Cloneable {
         }
     }
 
+    @Element(sequence = 1)
+    int size;
+
+    @Element(sequence = 2, value = "$1")
     private List<Music> musics = new ArrayList<>();
 
     public List<Music> getMusics() {
@@ -124,8 +130,9 @@ public class PlayList implements Serializable, Cloneable {
             fullPath = Path.of(fileName);
         }
 
-        try (ObjectOutputStream sw = new ObjectOutputStream(Files.newOutputStream(fullPath))) {
-            sw.writeObject(this);
+        try (OutputStream sw = Files.newOutputStream(fullPath)) {
+            this.size = musics.size();
+            Serdes.Util.serialize(this, sw);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -148,7 +155,7 @@ public class PlayList implements Serializable, Cloneable {
         }
     }
 
-    public static PlayList Load(String fileName) {
+    public static PlayList load(String fileName) {
         try {
             Path fullPath;
             if (fileName == null || fileName.isEmpty()) {
@@ -163,19 +170,23 @@ public class PlayList implements Serializable, Cloneable {
                 Serdes.Util.deserialize(sr, pl);
                 return pl;
             }
+        } catch (NoSuchFileException ex) {
+            logger.log(Level.ERROR, ex.toString());
+            return new PlayList();
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
             return new PlayList();
         }
     }
 
-    public static PlayList LoadM3U(String filename) {
+    public static PlayList loadM3U(String filename) {
         try {
             PlayList pl = new PlayList();
 
-            try (StreamReader sr = new StreamReader(new FileStream(filename, FileMode.Open), charset)) {
+            try (Scanner sr = new Scanner(Files.newInputStream(Path.of(filename)), charset)) {
                 String line;
-                while ((line = sr.readLine()) != null) {
+                while (sr.hasNextLine()) {
+                    line = sr.nextLine();
                     line = line.trim();
                     if (line.isEmpty()) continue;
                     if (line.charAt(0) == '#') continue;
@@ -227,11 +238,8 @@ public class PlayList implements Serializable, Cloneable {
         return ret;
     }
 
-    private JTable dgvList;
-
-    public void setDGV(JTable dgv) {
-        dgvList = dgv;
-    }
+    public BiConsumer<Integer, Object[]> setRow;
+    public Consumer<Object[]> addRow;
 
     public void addFile(String filename) {
         try {
@@ -272,7 +280,7 @@ public class PlayList implements Serializable, Cloneable {
 
             List<Object[]> rows = makeRow(musics);
             for (Object[] row : rows)
-                ((DefaultTableModel) dgvList.getModel()).addRow(row);
+                addRow.accept(row);
             this.musics.addAll(musics);
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
@@ -286,7 +294,7 @@ public class PlayList implements Serializable, Cloneable {
 
             List<Object[]> rows = makeRow(musics);
             for (Object[] row : rows)
-                ((DefaultTableModel) dgvList.getModel()).insertRow(index[0], row);
+                setRow.accept(index[0], row);
             this.musics.addAll(index[0], musics);
             index[0] += rows.size();
         } catch (Exception ex) {

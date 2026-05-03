@@ -1,17 +1,22 @@
 package mdplayer.driver.sid;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.function.Function;
 
-import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.SidChip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTuneInfo.Model;
 import mdplayer.plugin.BasePlugin;
+import mdsound.VisWaveBuffer;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 import vavi.util.ByteUtil;
@@ -30,7 +35,9 @@ public class SidMdDriver extends BaseDriver implements SidDriver {
 
     private final Sid sid;
 
-    public SidMdDriver() {
+    public SidMdDriver(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+
         this.sid = new Sid();
     }
 
@@ -78,6 +85,7 @@ public class SidMdDriver extends BaseDriver implements SidDriver {
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
         }
+        md.set(Tag.NumberOfSongs, String.valueOf(sid.songs));
 
         return md;
     }
@@ -86,10 +94,7 @@ public class SidMdDriver extends BaseDriver implements SidDriver {
      * @param args 0: songNo
      */
     @Override
-    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     int latency, int waitTime, Object... args) {
-        this.dataBuf = vgmBuf;
-        this.plugin = plugin;
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
         this.model = model;
         this.latency = latency;
         this.waitTime = waitTime;
@@ -109,10 +114,46 @@ public class SidMdDriver extends BaseDriver implements SidDriver {
         speed = 1;
         speedCounter = 0;
 
-        metaData = getMetaData(vgmBuf);
+        metaData = getMetaData(dataBuf);
 
         setSong((int) args[0]);
-        sid.init(vgmBuf, setting);
+
+        byte[] aryKernel = null;
+        byte[] aryBasic = null;
+        byte[] aryCharacter = null;
+        try {
+            Path p = Path.of(setting.getSid().romKernalPath);
+            if (Files.exists(p)) {
+                try (InputStream fs = Files.newInputStream(p)) {
+                    aryKernel = fs.readAllBytes();
+                }
+            }
+            p = Path.of(setting.getSid().romBasicPath);
+            if (Files.exists(p)) {
+                try (InputStream fs = Files.newInputStream(p)) {
+                    aryBasic = fs.readAllBytes();
+                }
+            }
+            p = Path.of(setting.getSid().romCharacterPath);
+            if (Files.exists(p)) {
+                try (InputStream fs = Files.newInputStream(p)) {
+                    aryCharacter = fs.readAllBytes();
+                }
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+
+        sid.init(dataBuf,
+                aryKernel, aryBasic, aryCharacter,
+                setting.getSid().outputBufferSize,
+                setting.getOutputDevice().getSampleRate(),
+                setting.getSid().quality,
+                setting.getSid().c64model,
+                setting.getSid().sidModel,
+                setting.getSid().c64modelForce,
+                setting.getSid().sidmodelForce
+                );
         sid.initial = true;
     }
 
@@ -129,7 +170,7 @@ public class SidMdDriver extends BaseDriver implements SidDriver {
                     frameCounter++;
                 }
             }
-            //Stopped = !isPlaying();
+            //stopped = !isPlaying();
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
         }
@@ -163,7 +204,7 @@ public class SidMdDriver extends BaseDriver implements SidDriver {
         }
         for (int i = 0; i < length / 2; i++) {
             processOneFrame();
-            if (i * 2 + 1 < length) sid.visWB.enq(b[offset + i * 2], b[offset + i * 2 + 1]);
+            if (i * 2 + 1 < length) this.visWB.enq(b[offset + i * 2], b[offset + i * 2 + 1]);
         }
 
         return length;
@@ -171,7 +212,7 @@ public class SidMdDriver extends BaseDriver implements SidDriver {
 
     @Override
     public void copyWaveBuffer(short[][] dest) {
-        sid.visWB.copy(dest);
+        this.visWB.copy(dest);
     }
 
     @Override
@@ -210,4 +251,6 @@ public class SidMdDriver extends BaseDriver implements SidDriver {
     public int getSongs() {
         return sid.songs;
     }
+
+    final VisWaveBuffer visWB = new VisWaveBuffer();
 }

@@ -2,11 +2,11 @@ package mdplayer.format;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import dotnet4j.io.Path;
 import mdplayer.PlayList;
 import mdplayer.driver.zgm.Zgm;
 import mdplayer.plugin.Plugin;
@@ -33,6 +33,11 @@ public class ZGMFileFormat extends BaseFileFormat {
     }
 
     @Override
+    public MetaData getMetaData() {
+        return new Zgm().getMetaData(this.srcBuf);
+    }
+
+    @Override
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
         PlayList.Music music = new PlayList.Music();
 
@@ -50,7 +55,7 @@ public class ZGMFileFormat extends BaseFileFormat {
         music.notes = metaData.getFirst(Tag.Note);
 
         if (music.title.isEmpty() && music.titleJ.isEmpty() && music.game.isEmpty() && music.gameJ.isEmpty() && music.composer.isEmpty() && music.composerJ.isEmpty()) {
-            music.title = "(%s)".formatted(Path.getFileName(file));
+            music.title = "(%s)".formatted(Path.of(file).getFileName());
         }
 
         return Collections.singletonList(music);
@@ -82,6 +87,6 @@ public class ZGMFileFormat extends BaseFileFormat {
     @Override
     public boolean isSupported(InputStream is) throws IOException {
         if (isCompressedStream(is)) return false;
-        return Arrays.stream(getExtensions()).anyMatch(e -> java.nio.file.Path.of(SoundUtil.getSource(is)).toString().toLowerCase().endsWith(e));
+        return Arrays.stream(getExtensions()).anyMatch(e -> Path.of(SoundUtil.getSource(is)).toString().toLowerCase().endsWith(e));
     }
 }

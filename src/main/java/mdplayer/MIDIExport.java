@@ -2,16 +2,17 @@ package mdplayer;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import dotnet4j.io.File;
-import dotnet4j.io.Path;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.chips.Ym2612Chip;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
+import static vavi.util.compat.Util.changeExtension;
 
 
 public class MIDIExport {
@@ -133,7 +134,7 @@ public class MIDIExport {
             if (setting.getMidiExport().getUseYM2151Export()) for (List<Byte> dat : midi2151.data) buf.addAll(dat);
             if (setting.getMidiExport().getUseYM2612Export()) for (List<Byte> dat : midi2612.data) buf.addAll(dat);
 
-            File.writeAllBytes(Path.combine(setting.getMidiExport().getExportPath(), Path.changeExtension(Path.getFileName(fn), ".mid")), ByteUtil.toByteArray(buf));
+            Files.write(Path.of(setting.getMidiExport().getExportPath()).resolve(changeExtension(Path.of(fn).getFileName().toString(), ".mid")), ByteUtil.toByteArray(buf));
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
         }

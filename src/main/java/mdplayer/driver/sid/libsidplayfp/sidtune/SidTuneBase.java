@@ -22,6 +22,8 @@
 
 package mdplayer.driver.sid.libsidplayfp.sidtune;
 
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.io.UncheckedIOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
@@ -30,11 +32,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import dotnet4j.io.FileAccess;
-import dotnet4j.io.FileMode;
-import dotnet4j.io.FileStream;
-import dotnet4j.io.IOException;
-import dotnet4j.io.SeekOrigin;
 import mdplayer.driver.sid.libsidplayfp.SidEndian;
 import mdplayer.driver.sid.libsidplayfp.SidMemory;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTuneInfo;
@@ -108,7 +105,7 @@ public class SidTuneBase {
     /**
      * Petscii to Ascii conversion table (0x01 = no Output).
      */
-    private static final byte[] CHR_tab = new byte[] {
+    private static final byte[] CHR_tab = {
             0x00, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x0d, 0x01, 0x01,
             0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
             0x20, 0x21, 0x01, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2a, 0x2b, 0x2c, 0x2d, 0x2e, 0x2f,
@@ -152,9 +149,9 @@ public class SidTuneBase {
      * @param fileNameExt
      * @param separatorIsSlash
      * @return the Sid tune
-     * @throws dotnet4j.io.IOException
+     * @throws IOException
      */
-    public SidTuneBase load(String fileName, String[] fileNameExt, boolean separatorIsSlash) {
+    public SidTuneBase load(String fileName, String[] fileNameExt, boolean separatorIsSlash) throws IOException {
         if (fileName == null)
             return null;
 
@@ -173,9 +170,9 @@ public class SidTuneBase {
      * @param sourceBuffer
      * @param bufferLen
      * @return the Sid tune
-     * @throws dotnet4j.io.IOException
+     * @throws IOException
      */
-    public SidTuneBase read(byte[] sourceBuffer, int bufferLen) {
+    public SidTuneBase read(byte[] sourceBuffer, int bufferLen) throws IOException {
         return getFromBuffer(sourceBuffer, bufferLen);
     }
 
@@ -255,14 +252,14 @@ public class SidTuneBase {
      *
      * @param fileName
      * @param bufferRef
-     * @throws dotnet4j.io.IOException
+     * @throws IOException
      */
-    protected void loadFile(String fileName, List<Byte> bufferRef) {
-        try (FileStream inFile = new FileStream(fileName, FileMode.Open, FileAccess.Read)) {
-            inFile.seek(0, SeekOrigin.End);
-            long fileLen = inFile.position();
-            if (fileLen < 0) throw new dotnet4j.io.IOException(ERR_EMPTY);
-            inFile.seek(0, SeekOrigin.Begin);
+    protected void loadFile(String fileName, List<Byte> bufferRef) throws IOException {
+        try (RandomAccessFile inFile = new RandomAccessFile(fileName, "r")) {
+            inFile.seek(0);
+            long fileLen = inFile.getFilePointer();
+            if (fileLen < 0) throw new IOException(ERR_EMPTY);
+            inFile.seek(0);
 
             byte[] fileBuf = new byte[(int) fileLen];
             inFile.read(fileBuf, 0, (int) fileLen);
@@ -300,13 +297,13 @@ public class SidTuneBase {
     /**
      * Try to retrieve single-file sidtune from specified buffer.
      */
-    private static SidTuneBase getFromBuffer(byte[] buffer, int bufferLen) {
+    private static SidTuneBase getFromBuffer(byte[] buffer, int bufferLen) throws IOException {
         if (buffer == null || bufferLen == 0) {
-            throw new dotnet4j.io.IOException(ERR_EMPTY);
+            throw new IOException(ERR_EMPTY);
         }
 
         if (bufferLen > MAX_FILELEN) {
-            throw new dotnet4j.io.IOException(ERR_FILE_TOO_LONG);
+            throw new IOException(ERR_FILE_TOO_LONG);
         }
 
         byte[] buf1 = buffer;
@@ -314,7 +311,7 @@ public class SidTuneBase {
         // Here test for the possible single file formats.
         SidTuneBase s = PSid.load(buf1);
         if (s == null) s = (new MUS()).load(buf1, true);
-        if (s == null) throw new dotnet4j.io.IOException(ERR_UNRECOGNIZED_FORMAT);
+        if (s == null) throw new IOException(ERR_UNRECOGNIZED_FORMAT);
 
         List<Byte> lstBuf1 = ByteUtil.toList(buf1);
         s.acceptSidTune("-", "-", lstBuf1, false);
@@ -336,9 +333,9 @@ public class SidTuneBase {
      *                          correctly.
      *                          You do not need these extra functions if your systems file
      *                          separator instanceof the forward slash.
-     * @throws dotnet4j.io.IOException
+     * @throws IOException
      */
-    protected void acceptSidTune(String dataFileName, String infoFileName, List<Byte> buf, boolean isSlashedFileName) {
+    protected void acceptSidTune(String dataFileName, String infoFileName, List<Byte> buf, boolean isSlashedFileName) throws IOException {
         // Make a copy of the data file name and path, if available.
         if (dataFileName != null) {
             int fileNamePos = (int) (isSlashedFileName ?
@@ -414,7 +411,7 @@ public class SidTuneBase {
 
     // Initializing the Object based upon what we find : the specified file.
 
-    private SidTuneBase getFromFiles(String fileName, String[] fileNameExtensions, boolean separatorIsSlash) {
+    private SidTuneBase getFromFiles(String fileName, String[] fileNameExtensions, boolean separatorIsSlash) throws IOException {
         List<Byte> fileBuf1 = new ArrayList<>();
 
         loadFile(fileName, fileBuf1);
@@ -456,7 +453,7 @@ public class SidTuneBase {
                             }
                             // The first tune loaded ok, so ignore errors on the
                             // second tune, may find an ok one later
-                        } catch (dotnet4j.io.IOException e) {
+                        } catch (IOException e) {
                             logger.log(Level.ERROR, e.getMessage(), e);
                         }
                     }
@@ -466,7 +463,7 @@ public class SidTuneBase {
         }
         if (s == null) s = P00.load(fileName, aryFileBuf1);
         if (s == null) s = Prg.load(fileName, aryFileBuf1);
-        if (s == null) throw new dotnet4j.io.IOException(ERR_UNRECOGNIZED_FORMAT);
+        if (s == null) throw new IOException(ERR_UNRECOGNIZED_FORMAT);
 
         s.acceptSidTune(fileName, null, fileBuf1, separatorIsSlash);
         return s;
@@ -542,7 +539,7 @@ public class SidTuneBase {
      *
      * @param c64data
      */
-    protected void resolveAddrs(List<Byte> c64data, int ptr/* = 0*/) {
+    protected void resolveAddrs(List<Byte> c64data, int ptr/* = 0*/) throws IOException {
         // Originally used as a first attempt at an RSID
         // style format. Now reserved for future use
         if (info.playAddress == (short) 0xffff) {
@@ -552,7 +549,7 @@ public class SidTuneBase {
         // loadAddr = 0 means, the address instanceof stored : front of the C64 data.
         if (info.loadAddress == 0) {
             if (info.c64DataLen < 2) {
-                throw new dotnet4j.io.IOException(ERR_CORRUPT);
+                throw new IOException(ERR_CORRUPT);
             }
 
             info.loadAddress = SidEndian.to16(c64data.get(ptr + 1), c64data.get(ptr + 0));
@@ -562,7 +559,7 @@ public class SidTuneBase {
 
         if (info.compatibility == SidTuneInfo.Compatibility.BASIC) {
             if (info.initAddress != 0) {
-                throw new dotnet4j.io.IOException(ERR_BAD_ADDR);
+                throw new IOException(ERR_BAD_ADDR);
             }
         } else if (info.initAddress == 0) {
             info.initAddress = info.loadAddress;

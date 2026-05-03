@@ -44,6 +44,4 @@ public class StilDefs {
 
     // Default HVSC path to BUGlist.
     public static final String DEFAULT_PATH_TO_BUGLIST = "/DOCUMENTS/BUGlist.txt";
-
-
 }

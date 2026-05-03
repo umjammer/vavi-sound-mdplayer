@@ -7,7 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import dotnet4j.util.compat.Tuple;
+import vavi.util.compat.Tuple;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.Pcm8Chip;
@@ -37,10 +37,12 @@ public class MxDriver extends BaseDriver {
 
     private Tuple<String, byte[]> extendFile = null;
 
-    public MxDriver() {
+    public MxDriver(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+
         this.mxdrv = new MXDRV();
         // called the same timing as mdxPcm.getPcm
-        mxdrv.ym2151Write = (a, d) -> plugin.chipRegister.chip(Ym2151Chip.class).write(0, 0, a, d, model, plugin.chipRegister.chip(Ym2151Chip.class).ym2151Hosei[0], frameCounter);
+        mxdrv.ym2151Write = (a, d) -> plugin.chipRegister.chip(Ym2151Chip.class).write(0, 0, a, d, model, plugin.chipRegister.chip(Ym2151Chip.class).corrections[0], frameCounter);
         mxdrv.isFromDF = Pcm8Chip::isFromDF;
         mxdrv.isFromPTM = Pcm8Chip::isFromPTM;
         mxdrv.mdxPCM = new MdxPcmInterface() {
@@ -125,6 +127,10 @@ public class MxDriver extends BaseDriver {
                 plugin.chipRegister.chip(Pcm8Chip.class).abort(0);
             }
         };
+    }
+
+    public MxDriver() {
+        this(null); // gross
     }
 
     public void setExtendFile(Tuple<String,byte[]> extendFile) {
@@ -259,14 +265,12 @@ public class MxDriver extends BaseDriver {
     }
 
     @Override
-    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model, int latency, int waitTime, Object... args) {
-        this.dataBuf = vgmBuf;
-        this.plugin = plugin;
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
         this.model = model;
         this.latency = latency;
         this.waitTime = waitTime;
 
-        metaData = getMetaData(vgmBuf);
+        metaData = getMetaData(dataBuf);
         counter = 0;
         totalCounter = 0;
         loopCounter = 0;
@@ -275,14 +279,14 @@ public class MxDriver extends BaseDriver {
         frameCounter = -latency - waitTime;
         speed = 1;
 
-        plugin.chipRegister.chip(Ym2151Chip.class).setYm2151Hosei(model, 4000000);
+        plugin.chipRegister.chip(Ym2151Chip.class).setCorrection(model, 4000000);
 
         byte[][] mdx = new byte[1][];
         int[] mdxSize = new int[1];
         byte[][] pdx = new byte[1][];
         int[] pdxSize = new int[1];
         String[] pdxFileName = new String[1];
-        makeMdxBuf(vgmBuf, mdx, mdxSize, pdxFileName);
+        makeMdxBuf(dataBuf, mdx, mdxSize, pdxFileName);
         makePdxBuf(pdxFileName[0], pdx, pdxSize);
         if ((pdxFileName[0] != null && !pdxFileName[0].isEmpty()) && pdx[0] == null) {
             logger.log(Level.WARNING, "pdxFileName: %s, pdx: %s".formatted(pdxFileName[0], pdx[0]));

@@ -5,7 +5,7 @@ import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.List;
 
-import dotnet4j.util.compat.Tuple;
+import vavi.util.compat.Tuple;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.MidiOutInfo;
@@ -33,14 +33,22 @@ public class RcpDriver extends BaseDriver {
 
     private final RCP rcp;
 
-    public RcpDriver() {
+    public RcpDriver(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+
         this.rcp = new RCP();
-        int vstDelta = plugin.chipRegister.plugin(VstPlugin.class).vstDelta;
-        rcp.midiSend = (l, d) -> plugin.chipRegister.plugin(MidiPlugin.class).send(model, l, d, vstDelta);
-        rcp.lyric = l -> plugin.chipRegister.plugin(MidiPlugin.class).params[0].Lyric = l;
+        rcp.charset = Common.charset;
+        rcp.sampleRate = Common.VGMProcSampleRate;
+        rcp.musicStep = Common.VGMProcSampleRate / 60.0;
+        rcp.midiSend = (l, d) -> plugin.chipRegister.plugin(MidiPlugin.class).send(model, l, d, plugin.chipRegister.plugin(VstPlugin.class).vstDelta);
+        rcp.lyric = l -> plugin.chipRegister.plugin(MidiPlugin.class).params[0].lyric = l;
         rcp.counter = () -> frameCounter = -latency - waitTime;
         rcp.midiCount = () -> plugin.chipRegister.plugin(MidiPlugin.class).getCount();
         rcp.stop = () -> stopped = true;
+    }
+
+    public RcpDriver() {
+        this(null); // gross
     }
 
     public void setExtendFile(List<Tuple<String,byte[]>> extendFiles) {
@@ -50,7 +58,7 @@ public class RcpDriver extends BaseDriver {
     @Override
     public MetaData getMetaData(byte[] buf, Object... args) {
         if (buf == null) return null;
-        Boolean ret = RCP.checkHeadString(buf);
+        Boolean ret = RCP.checkHeadString(buf, Common.charset);
         if (ret == null) return null;
         boolean isG36 = ret;
 
@@ -83,10 +91,7 @@ public class RcpDriver extends BaseDriver {
     }
 
     @Override
-    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     int latency, int waitTime, Object... args) {
-        this.dataBuf = vgmBuf;
-        this.plugin = plugin;
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
         this.model = model;
         this.latency = latency;
         this.waitTime = waitTime;
@@ -102,7 +107,7 @@ public class RcpDriver extends BaseDriver {
         speed = 1;
         speedCounter = 0;
 
-        metaData = getMetaData(vgmBuf);
+        metaData = getMetaData(dataBuf);
         //if (Gd3 == null) return false;
 
         if (!rcp.getInformationHeader()) {
@@ -119,7 +124,7 @@ public class RcpDriver extends BaseDriver {
             plugin.chipRegister.chip(Ym2612Chip.class).setSyncWait((byte) 1, 1);
         }
 
-        rcp.data = vgmBuf;
+        rcp.data = dataBuf;
     }
 
     @Override

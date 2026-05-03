@@ -13,6 +13,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
@@ -106,27 +107,27 @@ public class frmOKIM6295 extends frmBase {
     };
 
     public void screenChangeParams() {
-        OkiM6295.ChannelInfo info = audio.plugin.chipRegister.chip(OkiM6295Chip.class).read(chipId);
+        Map<String, Object> info = audio.plugin.chipRegister.chip(OkiM6295Chip.class).getInfo(chipId);
         if (info == null) return;
 
         for (int c = 0; c < 4; c++) {
             MDChipParams.Channel nyc = newParam.channels[c];
 
-            if (info.keyon[c]) {
+            if ((boolean) info.get("channels." + c + ".keyon")) {
                 nyc.volume = 19;
             } else {
                 nyc.volume -= (nyc.volume > 0) ? 1 : 0;
             }
-            nyc.sadr = info.chInfo[c].stAdr;
-            nyc.eadr = info.chInfo[c].edAdr;
+            nyc.sadr = (int) info.get("channels." + c + ".sadr");
+            nyc.eadr = (int) info.get("channels." + c + ".eadr");
         }
 
-        newParam.masterClock = info.masterClock;
-        newParam.pin7State = info.pin7State;
-        newParam.nmkBank[0] = info.nmkBank[0];
-        newParam.nmkBank[1] = info.nmkBank[1];
-        newParam.nmkBank[2] = info.nmkBank[2];
-        newParam.nmkBank[3] = info.nmkBank[3];
+        newParam.masterClock = (int) info.get("masterClock");
+        newParam.pin7State = (int) info.get("pin7State");
+        newParam.nmkBank[0] = (int) info.get("nmkBank.0");
+        newParam.nmkBank[1] = (int) info.get("nmkBank.1");
+        newParam.nmkBank[2] = (int) info.get("nmkBank.2");
+        newParam.nmkBank[3] = (int) info.get("nmkBank.3");
     }
 
     public void screenDrawParams() {

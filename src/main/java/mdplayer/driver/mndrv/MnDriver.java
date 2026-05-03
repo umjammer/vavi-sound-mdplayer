@@ -5,7 +5,7 @@ import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.List;
 
-import dotnet4j.util.compat.Tuple;
+import vavi.util.compat.Tuple;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.MPcmChip;
@@ -33,10 +33,12 @@ public class MnDriver extends BaseDriver {
 
     private final MnDrv mndrv;
 
-    public MnDriver() {
+    public MnDriver(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+
         this.mndrv = new MnDrv();
         mndrv.ym2608Write = (c, p, a, d) -> plugin.chipRegister.chip(Ym2608Chip.class).write(c, p, a, d, model);
-        mndrv.ym2151Write = (a, d) -> plugin.chipRegister.chip(Ym2151Chip.class).write(0, 0, a, d, model, plugin.chipRegister.chip(Ym2151Chip.class).ym2151Hosei[0], 0);
+        mndrv.ym2151Write = (a, d) -> plugin.chipRegister.chip(Ym2151Chip.class).write(0, 0, a, d, model, plugin.chipRegister.chip(Ym2151Chip.class).corrections[0], 0);
         mndrv.stop = () -> stopped = true;
         mndrv.mpcm = new MPcmInterface() {
             @Override
@@ -90,20 +92,21 @@ public class MnDriver extends BaseDriver {
         };
     }
 
+    public MnDriver() {
+        this(null); // gross
+    }
+
     public void setExtendFile(List<Tuple<String,byte[]>> extendFile) {
         mndrv.extendFile = extendFile;
     }
 
     @Override
-    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     int latency, int waitTime, Object... args) {
-        this.dataBuf = vgmBuf;
-        this.plugin = plugin;
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
         this.model = model;
         this.latency = latency;
         this.waitTime = waitTime;
 
-        metaData = getMetaData(vgmBuf);
+        metaData = getMetaData(dataBuf);
         counter = 0;
         totalCounter = 0;
         loopCounter = 0;
@@ -112,9 +115,9 @@ public class MnDriver extends BaseDriver {
         frameCounter = -latency - waitTime;
         speed = 1;
 
-        plugin.chipRegister.chip(Ym2151Chip.class).setYm2151Hosei(model, 4000000);
+        plugin.chipRegister.chip(Ym2151Chip.class).setCorrection(model, 4000000);
 
-        mndrv.init(vgmBuf, model == EnmModel.RealModel);
+        mndrv.init(dataBuf, model == EnmModel.RealModel, Common.VGMProcSampleRate);
     }
 
     @Override

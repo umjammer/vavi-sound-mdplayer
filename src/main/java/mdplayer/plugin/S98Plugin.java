@@ -1,11 +1,10 @@
 package mdplayer.plugin;
 
+import java.io.InputStream;
 import java.lang.System.Logger;
 import java.util.List;
 import java.util.function.Function;
 
-import dotnet4j.io.Stream;
-import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.Ay8910Chip;
 import mdplayer.chips.Ym2151Chip;
@@ -41,11 +40,11 @@ public class S98Plugin extends BasePlugin<S98Driver> {
 
     @Override
     public void prepare() {
-        driverVirtual = new S98Driver();
+        driverVirtual = new S98Driver(this);
 
         driverReal = null;
 //        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
-//            driverReal = new S98Driver();
+//            driverReal = new S98Driver(this);
 //        }
 
         super.prepare();
@@ -54,11 +53,11 @@ public class S98Plugin extends BasePlugin<S98Driver> {
 
     @Override
     protected void initChips() {
-        driverVirtual.init(vgmBuf, this, EnmModel.VirtualModel,
+        driverVirtual.init(EnmModel.VirtualModel,
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         if (driverReal != null) {
-            driverReal.init(vgmBuf, this, EnmModel.RealModel,
+            driverReal.init(EnmModel.RealModel,
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         }
@@ -159,7 +158,7 @@ public class S98Plugin extends BasePlugin<S98Driver> {
                     chip.setVolumes.put("RHYTHM", ym2608::setVolume);
                     chip.setVolumes.put("ADPCM", ym2608::setVolume);
                 }
-                Function<String, Stream> fn = Ym2608Chip::getOPNARyhthmStream;
+                Function<String, InputStream> fn = Ym2608Chip::getOPNARyhthmStream;
                 chip.option = new Object[] {fn};
                 put(Ym2608Chip.class, chip);
 
@@ -340,8 +339,8 @@ public class S98Plugin extends BasePlugin<S98Driver> {
             chipRegister.chip(YmF262Chip.class).writeClock((byte) 1, YMF262ClockValue, EnmModel.RealModel);
         }
 
-        chipRegister.chip(Ym2151Chip.class).setYm2151Hosei(EnmModel.VirtualModel, YM2151ClockValue);
-        if (driverReal != null) chipRegister.chip(Ym2151Chip.class).setYm2151Hosei(EnmModel.RealModel, YM2151ClockValue);
+        chipRegister.chip(Ym2151Chip.class).setCorrection(EnmModel.VirtualModel, YM2151ClockValue);
+        if (driverReal != null) chipRegister.chip(Ym2151Chip.class).setCorrection(EnmModel.RealModel, YM2151ClockValue);
 
         if (driverReal == null || driverReal.getSSGVolumeFromTAG() == -1) {
             if (contains(Ym2203Chip.class, 0))

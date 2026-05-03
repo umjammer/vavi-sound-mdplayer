@@ -1,9 +1,9 @@
 package mdplayer.plugin;
 
+import java.io.InputStream;
 import java.lang.System.Logger;
 import java.util.function.Function;
 
-import dotnet4j.io.Stream;
 import mdplayer.Chip;
 import mdplayer.Chip.Unused;
 import mdplayer.Common;
@@ -12,6 +12,7 @@ import mdplayer.chips.Ym2608Chip;
 import mdplayer.chips.Ym2610Chip;
 import mdplayer.driver.mucom.MucomDriver;
 import mdplayer.format.MUCFileFormat;
+import mdplayer.plugin.BasePlugin.Compilable;
 import mdsound.MDSound;
 import mdsound.instrument.Ym2608Inst;
 import mdsound.instrument.Ym2610Inst;
@@ -26,19 +27,22 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-08 nsano initial version <br>
  */
-public class MucomPlugin extends BasePlugin<MucomDriver> {
+public class MucomPlugin extends BasePlugin<MucomDriver> implements Compilable {
 
     private static final Logger logger = getLogger(MucomPlugin.class.getName());
 
     @Override
+    public void compile() {
+
+    }
+
+    @Override
     public void prepare() {
-        driverVirtual = new MucomDriver();
-        driverVirtual.setPlayingFileName(playingFileName);
+        driverVirtual = new MucomDriver(this);
 
         driverReal = null;
         if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null && !setting.getYM2608Type()[0].getUseEmu()[0] && !setting.getYM2608Type()[0].getUseEmu()[1]) {
-            driverReal = new MucomDriver();
-            driverReal.setPlayingFileName(playingFileName);
+            driverReal = new MucomDriver(this);
         }
 
         super.prepare();
@@ -48,11 +52,11 @@ public class MucomPlugin extends BasePlugin<MucomDriver> {
     @Override
     protected void initChips() {
         if (fileFormat instanceof MUCFileFormat) {
-            vgmBuf = driverVirtual.compile(vgmBuf);
+            dataBuf = driverVirtual.compile(dataBuf);
         }
-        Class<? extends Chip>[] useChipFromMub = MucomDriver.useChipsFromMub(vgmBuf);
+        Class<? extends Chip>[] useChipFromMub = MucomDriver.useChipsFromMub(dataBuf);
 
-        Function<String, Stream> fn = Ym2608Chip::getOPNARyhthmStream;
+        Function<String, InputStream> fn = Ym2608Chip::getOPNARyhthmStream;
 
         if (useChipFromMub[0] != Unused.class) {
             MDSound.Chip chip = new MDSound.Chip();
@@ -171,11 +175,11 @@ public class MucomPlugin extends BasePlugin<MucomDriver> {
         chipRegister.chip(Ym2608Chip.class).setSsgVolume((byte) 1, setting.getBalance().getGimicOPNAVolume(), Common.EnmModel.RealModel);
 
 
-        driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel,
+        driverVirtual.init(Common.EnmModel.VirtualModel,
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         if (driverReal != null) {
-            driverReal.init(vgmBuf, this, Common.EnmModel.RealModel,
+            driverReal.init(Common.EnmModel.RealModel,
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         }

@@ -12,9 +12,7 @@ import java.lang.System.Logger.Level;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.DmgChip;
-import mdplayer.chips.HuC6280Chip;
 import mdplayer.driver.gbs.Gbs;
-import mdplayer.driver.hes.HesDriver;
 import mdplayer.plugin.BasePlugin.HasSongNo;
 import mdsound.MDSound;
 
@@ -32,7 +30,7 @@ public class GbsPlugin extends BasePlugin<Gbs> implements HasSongNo {
 
     private static final Logger logger = getLogger(GbsPlugin.class.getName());
 
-    /** for spi */
+    @Override
     public void setSongNo(int songNo) {
 logger.log(Level.INFO, "songNo: " + songNo);
         this.songNo = songNo;
@@ -40,11 +38,11 @@ logger.log(Level.INFO, "songNo: " + songNo);
 
     @Override
     public void prepare() {
-        driverVirtual = new Gbs();
+        driverVirtual = new Gbs(this);
 
         driverReal = null;
 //        if (setting.getoutputDevice().deviceType != Common.DEV_Null) {
-//            driverReal = new Gbs();
+//            driverReal = new Gbs(this);
 //        }
 
         super.prepare();
@@ -76,12 +74,12 @@ logger.log(Level.INFO, "songNo: " + songNo);
 //        chipRegister.chip(DmgChip.class).write(0, 0x14, 0x77, EnmModel.PianoRollModel, 0);
 //        chipRegister.chip(DmgChip.class).write(0, 0x15, 0xf7, EnmModel.PianoRollModel, 0);
 
-        driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel,
+        driverVirtual.init(Common.EnmModel.VirtualModel,
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000,
                 songNo);
         if (driverReal != null) {
-            driverReal.init(vgmBuf, this, Common.EnmModel.RealModel,
+            driverReal.init(Common.EnmModel.RealModel,
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000,
                     songNo);

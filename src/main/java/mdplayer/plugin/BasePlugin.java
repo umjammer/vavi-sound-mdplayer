@@ -8,8 +8,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-import dotnet4j.util.compat.Tuple;
 import mdplayer.ChipLEDs;
 import mdplayer.ChipRegister;
 import mdplayer.Common;
@@ -20,6 +20,7 @@ import mdplayer.driver.BaseDriver;
 import mdplayer.format.FileFormat;
 import mdsound.MDSound;
 import mdsound.MDSound.Chip;
+import vavi.util.compat.Tuple;
 
 import static java.lang.System.getLogger;
 
@@ -36,6 +37,11 @@ public abstract class BasePlugin<T extends BaseDriver> implements Plugin {
 
     protected final Setting setting = Setting.getInstance();
 
+    public interface Compilable {
+        void compile();
+    }
+
+    /** for spi, 0 origin */
     public interface HasSongNo {
         void setSongNo(int songNo);
     }
@@ -52,7 +58,7 @@ public abstract class BasePlugin<T extends BaseDriver> implements Plugin {
     // view
     public final ChipLEDs chipLED = new ChipLEDs();
 
-    protected byte[] vgmBuf = null;
+    protected byte[] dataBuf = null;
     protected double speed;
 
     public boolean oneTimeReset = false;
@@ -79,8 +85,16 @@ public abstract class BasePlugin<T extends BaseDriver> implements Plugin {
     // TODO variable?
     public static final int BUFFER_SIZE = 1024;
 
+    public byte[] getData() {
+        return dataBuf;
+    }
+
     /** used chips */
     protected final Map<Class<? extends mdplayer.Chip>, List<Chip>> chips = new HashMap<>();
+
+    public final Set<Class<? extends mdplayer.Chip>> getChips() {
+        return chips.keySet();
+    }
 
     /** put used chips */
     protected void put(Class<? extends mdplayer.Chip> chip, Chip info) {
@@ -89,6 +103,11 @@ public abstract class BasePlugin<T extends BaseDriver> implements Plugin {
         } else {
             chips.put(chip, new ArrayList<>(List.of(info)));
         }
+    }
+
+    /** check a chip existence */
+    public boolean contains(Class<? extends mdplayer.Chip> chip) {
+        return chips.get(chip) != null;
     }
 
     /** check a chip existence */
@@ -130,6 +149,7 @@ logger.log(Level.TRACE, "stop: " + this.stopped + ", " + this.hashCode());
         return 0; // naudioWrap.getAsioLatency(); TODO
     }
 
+    /** {@code super#prepare()} must be called inside inherited this method */
     public void prepare() {
         this.fadeout = false;
         this.fadeoutCounter = 1.0;
@@ -145,24 +165,6 @@ logger.log(Level.TRACE, "stop: " + this.stopped + ", " + this.hashCode());
         chipRegister.clearFadeoutVolume();
         chipLED.clear();
         masterVolume = setting.getBalance().getMasterVolume();
-    }
-
-    public void changeChipSampleRate(MDSound.Chip chip, int newSmplRate) {
-
-        if (chip.samplingRate == newSmplRate)
-            return;
-
-        // quick and dirty hack to make sample rate changes work
-        chip.samplingRate = newSmplRate;
-        if (chip.samplingRate < setting.getOutputDevice().getSampleRate())
-            chip.resampler = 0x01;
-        else if (chip.samplingRate == setting.getOutputDevice().getSampleRate())
-            chip.resampler = 0x02;
-        else if (chip.samplingRate > setting.getOutputDevice().getSampleRate())
-            chip.resampler = 0x03;
-        chip.smpP = 1;
-        chip.smpNext -= chip.smpLast;
-        chip.smpLast = 0x00;
     }
 
     @Override
@@ -187,19 +189,18 @@ logger.log(Level.INFO, "stop: " + this.stopped);
         chipRegister.reset();
     }
 
-    /** TODO consider more */
-    public void setBuffer(FileFormat format, byte[] srcBuf, String playingFileName, String playingArcFileName, int midiMode, int songNo, List<Tuple<String, byte[]>> extFile) {
-        //stop();
+    /** @param params tags: fileName, arcFileName, midiMode, songNo */
+    public void setParams(FileFormat format, Map<String, Object> params) {
         this.fileFormat = format;
         this.playingFileFormat = format;
-        this.vgmBuf = srcBuf;
-        this.playingFileName = playingFileName; // for WaveWriter
-        this.playingArcFileName = playingArcFileName;
-        chipRegister.plugin(MidiPlugin.class).midiMode = midiMode;
-        this.songNo = songNo;
+        this.dataBuf = format.getData();
+        this.playingFileName = params.get("fileName") != null ? (String) params.get("fileName") : format.getCompiledFilename();
+        this.playingArcFileName = (String) params.get("arcFileName");
+        chipRegister.plugin(MidiPlugin.class).midiMode = (int) params.getOrDefault("midiMode", 0);
+        this.songNo = (int) params.getOrDefault("songNo", 0);
         chipRegister.plugin(MidiPlugin.class).setFileName(playingFileName); // for ExportMIDI
-        extendFiles = extFile; // Additional files
-        Common.playingFilePath = Path.of(playingFileName).getParent();
+        extendFiles = format.getExtendFiles(); // Additional files
+        Common.playingFilePath = Path.of(playingFileName).getParent(); // TODO gross
     }
 
     @Override
@@ -362,11 +363,5 @@ logger.log(Level.INFO, "close enter");
     public void setMasterVolume(boolean isAbs, int volume) {
         masterVolume = Common.range((isAbs ? 0 : setting.getBalance().getMasterVolume()) + volume, -192, 20);
         setting.getBalance().setMasterVolume(masterVolume);
-    }
-
-    boolean emuOnly;
-
-    public boolean isEmuOnly() {
-        return emuOnly;
     }
 }

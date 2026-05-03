@@ -2,6 +2,7 @@ package mdplayer.format;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -9,8 +10,6 @@ import java.util.List;
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
-import dotnet4j.io.Path;
-import dotnet4j.util.compat.Tuple;
 import mdplayer.PlayList;
 import mdplayer.driver.mndrv.MnDriver;
 import mdplayer.plugin.MNDPlugin;
@@ -23,6 +22,7 @@ import vavi.sound.sampled.md.MdEncoding;
 import vavi.sound.sampled.md.MdFileFormatType;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
+import vavi.util.compat.Tuple;
 
 
 /**
@@ -39,13 +39,18 @@ public class MNDFileFormat extends BaseFileFormat {
     }
 
     @Override
+    public MetaData getMetaData() {
+        return new MnDriver().getMetaData(this.srcBuf);
+    }
+
+    @Override
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
         PlayList.Music music = new PlayList.Music();
 
         music.format = this;
-        MetaData metaData = new MnDriver().getMetaData(buf);
-        music.title = metaData.getFirst(Tag.Title).isEmpty() ? Path.getFileName(file) : metaData.getFirst(Tag.Title);
-        music.titleJ = metaData.getFirst(Tag.TitleJ).isEmpty() ? Path.getFileName(file) : metaData.getFirst(Tag.TitleJ);
+        MetaData metaData = getMetaData();
+        music.title = metaData.getFirst(Tag.Title).isEmpty() ? Path.of(file).getFileName().toString() : metaData.getFirst(Tag.Title);
+        music.titleJ = metaData.getFirst(Tag.TitleJ).isEmpty() ? Path.of(file).getFileName().toString() : metaData.getFirst(Tag.TitleJ);
         music.game = metaData.getFirst(Tag.GameTitle);
         music.gameJ = metaData.getFirst(Tag.GameTitleJ);
         music.composer = metaData.getFirst(Tag.Composer);
@@ -64,7 +69,7 @@ public class MNDFileFormat extends BaseFileFormat {
     }
 
     @Override
-    public List<Tuple<String, byte[]>> getExtendFile(String fn, byte[] srcBuf, Archive archive, Entry entry) {
+    public List<Tuple<String, byte[]>> getExtendFiles(byte[] srcBuf, Archive archive, Entry entry) {
         List<Tuple<String, byte[]>> ret = new ArrayList<>();
         byte[] buf;
 
@@ -76,7 +81,7 @@ public class MNDFileFormat extends BaseFileFormat {
             pcmptr[0] += 2;
             for (int i = 0; i < pcmnum; i++) {
                 String mndPcmFn = mdplayer.Common.getNRDString(srcBuf, pcmptr);
-                buf = getExtendFileAllBytes(fn, mndPcmFn, archive, entry);
+                buf = getExtendFileAllBytes(filename, mndPcmFn, archive, entry);
                 if (buf != null) ret.add(new Tuple<>(".PND", buf));
             }
         }

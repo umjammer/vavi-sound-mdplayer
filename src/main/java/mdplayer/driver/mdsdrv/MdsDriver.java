@@ -13,8 +13,6 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-import dotnet4j.util.compat.TriConsumer;
-import dotnet4j.util.compat.Tuple;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.Sn76489Chip;
@@ -26,6 +24,8 @@ import musicDriverInterface.ChipDatum;
 import musicDriverInterface.IDriver;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MmlDatum;
+import vavi.util.compat.TriConsumer;
+import vavi.util.compat.Tuple;
 
 import static java.lang.System.getLogger;
 
@@ -42,17 +42,15 @@ public class MdsDriver extends BaseDriver {
 
     private IDriver mdsDriver = null;
 
-    private String PlayingFileName;
-
-    public String getPlayingFileName() {
-        return PlayingFileName;
-    }
-
-    public void setPlayingFileName(String value) {
-        PlayingFileName = value;
-    }
-
     public static final int opmBaseClock = 3579545;
+
+    public MdsDriver(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+    }
+
+    public MdsDriver() {
+        this(null); // gross
+    }
 
     @Override
     public MetaData getMetaData(byte[] buf, Object... args) {
@@ -65,12 +63,9 @@ public class MdsDriver extends BaseDriver {
     }
 
     @Override
-    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     int latency, int waitTime, Object... args) {
-        metaData = getMetaData(vgmBuf);
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
+        metaData = getMetaData(dataBuf);
 
-        this.dataBuf = vgmBuf;
-        this.plugin = plugin;
         this.model = model;
         this.latency = latency;
         this.waitTime = waitTime;
@@ -126,8 +121,7 @@ public class MdsDriver extends BaseDriver {
         actions.add(action);
         action = new MdsChipAction(this::writePSG, null, null);
         actions.add(action);
-        mdsDriver.init(actions, buf.toArray(MmlDatum[]::new),null,
-                PlayingFileName);
+        mdsDriver.init(actions, buf.toArray(MmlDatum[]::new),null, plugin.playingFileName);
 
         mdsDriver.startRendering(Common.VGMProcSampleRate, new Tuple<>("", opmBaseClock));
         mdsDriver.startMusic(0);

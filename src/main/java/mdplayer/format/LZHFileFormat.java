@@ -8,8 +8,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import dotnet4j.io.Path;
-import dotnet4j.util.compat.Tuple;
 import mdplayer.Common;
 import mdplayer.M3U;
 import mdplayer.PlayList;
@@ -17,6 +15,9 @@ import mdplayer.plugin.Plugin;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Archives;
 import vavi.util.archive.Entry;
+
+import static vavi.util.compat.Util.changeExtension;
+import static vavi.util.compat.Util.getExtension;
 
 
 /**
@@ -76,8 +77,8 @@ public class LZHFileFormat extends BaseFileFormat {
             }
             if (!found && FileFormat.getFileFormat(zm) instanceof VGMFileFormat) {
                 String vzm;
-                if (Path.getExtension(zm).equalsIgnoreCase(".vgm")) vzm = Path.changeExtension(zm, ".vgz");
-                else vzm = Path.changeExtension(zm, ".vgm");
+                if (getExtension(zm).equalsIgnoreCase(".vgm")) vzm = changeExtension(zm, ".vgz");
+                else vzm = changeExtension(zm, ".vgm");
                 for (PlayList.Music m : mMember) {
                     if (m.fileName.equals(vzm)) {
                         found = true;
@@ -99,10 +100,10 @@ public class LZHFileFormat extends BaseFileFormat {
         for (Entry e : archive.entries()) {
             for (PlayList.Music m : mMember) {
                 String vzm = "";
-                if (Path.getExtension(m.fileName).equalsIgnoreCase(".vgm"))
-                    vzm = Path.changeExtension(m.fileName, ".vgz");
-                else if (Path.getExtension(m.fileName).equalsIgnoreCase(".vgz"))
-                    vzm = Path.changeExtension(m.fileName, ".Vgm");
+                if (getExtension(m.fileName).equalsIgnoreCase(".vgm"))
+                    vzm = changeExtension(m.fileName, ".vgz");
+                else if (getExtension(m.fileName).equalsIgnoreCase(".vgz"))
+                    vzm = changeExtension(m.fileName, ".Vgm");
 
                 if (e.getName().equals(m.fileName) || e.getName().equals(vzm)) {
                     m.format = FileFormat.getFileFormat(m.fileName);
@@ -148,8 +149,8 @@ public class LZHFileFormat extends BaseFileFormat {
             }
             if (!found && FileFormat.getFileFormat(zm) instanceof VGMFileFormat) {
                 String vzm;
-                if (Path.getExtension(zm).equalsIgnoreCase(".vgm")) vzm = Path.changeExtension(zm, ".vgz");
-                else vzm = Path.changeExtension(zm, ".vgm");
+                if (getExtension(zm).equalsIgnoreCase(".vgm")) vzm = changeExtension(zm, ".vgz");
+                else vzm = changeExtension(zm, ".vgm");
                 for (PlayList.Music m : mMember) {
                     if (m.fileName.equals(vzm)) {
                         found = true;
@@ -171,10 +172,10 @@ public class LZHFileFormat extends BaseFileFormat {
         for (Entry ent : archive.entries()) {
             for (PlayList.Music m : mMember) {
                 String vzm = "";
-                if (Path.getExtension(m.fileName).equalsIgnoreCase(".vgm"))
-                    vzm = Path.changeExtension(m.fileName, ".vgz");
-                else if (Path.getExtension(m.fileName).equalsIgnoreCase(".vgz"))
-                    vzm = Path.changeExtension(m.fileName, ".Vgm");
+                if (getExtension(m.fileName).equalsIgnoreCase(".vgm"))
+                    vzm = changeExtension(m.fileName, ".vgz");
+                else if (getExtension(m.fileName).equalsIgnoreCase(".vgz"))
+                    vzm = changeExtension(m.fileName, ".Vgm");
 
                 if (ent.getName().equals(m.fileName) || ent.getName().equals(vzm)) {
                     m.format = FileFormat.getFileFormat(m.fileName);
@@ -192,16 +193,21 @@ public class LZHFileFormat extends BaseFileFormat {
     }
 
     @Override
-    public Tuple<byte[], List<Tuple<String, byte[]>>> load(String archiveFilename, String fn) throws IOException {
-        FileFormat format = FileFormat.getFileFormat(fn);
-        if (format != FileFormat.unknown) {
-            Archive archive = Archives.getArchive(new java.io.File(archiveFilename));
+    public void load(InputStream is, String fn) throws IOException {
+        try {
+            is.mark(2);
+            Archive archive = Archives.getArchive(is);
             Entry entry = archive.getEntry(fn);
-            byte[] srcBuf = archive.getInputStream(entry).readAllBytes();
-            List<Tuple<String, byte[]>> extFile = format.getExtendFile(fn, srcBuf, archive, entry);
-            return new Tuple<>(srcBuf, extFile);
-        } else {
-            throw new FileNotFoundException(fn);
+            this.realFormat = FileFormat.getFileFormat(fn);
+            if (this.realFormat != FileFormat.unknown) {
+                realFormat.load(archive.getInputStream(entry), null);
+                this.filename = fn;
+            } else {
+                throw new FileNotFoundException(fn);
+            }
+        } catch (IOException e) {
+            is.reset();
+            throw e;
         }
     }
 

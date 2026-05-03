@@ -22,7 +22,7 @@ import javax.swing.JRadioButton;
 import javax.swing.JSeparator;
 import javax.swing.Timer;
 
-import dotnet4j.util.compat.Tuple;
+import vavi.util.compat.Tuple;
 import mdplayer.form.frmBase;
 import mdplayer.properties.Resources;
 import vavi.util.SplitRadixFft;

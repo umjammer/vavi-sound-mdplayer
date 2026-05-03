@@ -98,7 +98,8 @@ public class Nise286 {
                 OR_EB_GB();
                 break;
             case 0x09:
-                throw new UnsupportedOperationException(Integer.toHexString(op & 0xff));
+                OR_EW_GW();
+                break;
             case 0x0a:
                 OR_GB_EB();
                 break;
@@ -1299,6 +1300,64 @@ public class Nise286 {
         }
 
         regs.setSZPFb(ic);
+        regs.setOF(false);
+        regs.setCF(false);
+        regs.setAF(false); // TBD
+    }
+
+    // 0x09
+    private void OR_EW_GW() {
+        byte modRw = fetch();
+        logger.log(Level.TRACE, "OR EW,gw modRw:$%02x".formatted(modRw & 0xff));
+
+        byte reg = (byte) ((modRw & 0x38) >> 3);
+        byte rm = (byte) (modRw & 7);
+        int mod = (modRw & 0xff) >> 6;
+
+        short a;
+        short b;
+        int c;
+        short ic = 0;
+
+        short gw;
+        gw = regs.eRegs[reg];
+        int ptr;
+
+        switch (mod) {
+            case 0:
+                ptr = getMod00RwAdr(rm, false);
+                a = mem.peekW(ptr);
+                b = gw;
+                c = (a & 0xffff) | (b & 0xffff);
+                ic = (short) c;
+                mem.pokeW(ptr, ic);
+                break;
+            case 1:
+                ptr = getMod01RwAdr(rm, false);
+                a = mem.peekW(ptr);
+                b = gw;
+                c = (a & 0xffff) | (b & 0xffff);
+                ic = (short) c;
+                mem.pokeW(ptr, ic);
+                break;
+            case 2:
+                ptr = getMod02RwAdr(rm, false);
+                a = mem.peekW(ptr);
+                b = gw;
+                c = (a & 0xffff) | (b & 0xffff);
+                ic = (short) c;
+                mem.pokeW(ptr, ic);
+                break;
+            case 3:
+                a = regs.eRegs[rm];
+                b = gw;
+                c = (a & 0xffff) | (b & 0xffff);
+                ic = (short) c;
+                regs.eRegs[rm] = ic;
+                break;
+        }
+
+        regs.setSZPFw(ic);
         regs.setOF(false);
         regs.setCF(false);
         regs.setAF(false); // TBD

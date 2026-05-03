@@ -6,9 +6,10 @@
 
 package mdplayer.chips;
 
+import java.util.Map;
+
 import mdplayer.Common.EnmModel;
 import mdsound.Instrument;
-import mdsound.chips.Rf5C68;
 import mdsound.instrument.Rf5C68Inst;
 
 
@@ -72,8 +73,8 @@ public class Rf5C68Chip extends BaseChip {
             context.mds.inst(Rf5C68Inst.class).writeMemory(chipId, offset, data);
     }
 
-    public Rf5C68 read(int chipId) {
-        return context.mds.inst(Rf5C68Inst.class).getChip(chipId);
+    public Map<String, Object> getInfo(int chipId) {
+        return context.mds.inst(Rf5C68Inst.class).getInfo(chipId);
     }
 
     public void setMask(int chipId, int ch) {

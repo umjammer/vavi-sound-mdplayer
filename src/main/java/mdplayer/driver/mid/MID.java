@@ -2,27 +2,23 @@ package mdplayer.driver.mid;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 
-import dotnet4j.util.compat.QuadConsumer;
-import dotnet4j.util.compat.TriConsumer;
 import mdplayer.Common;
 import mdplayer.driver.rcp.RCP;
 import vavi.util.ByteUtil;
+import vavi.util.compat.QuadConsumer;
+import vavi.util.compat.TriConsumer;
 
 import static java.lang.System.getLogger;
-import static mdplayer.Common.charset;
 
 
 public class MID {
 
     private static final Logger logger = getLogger(MID.class.getName());
-
-    public MID() {
-        musicStep = Common.VGMProcSampleRate / 60.0;
-    }
 
     public static final int FCC_MID = 0x6468544d;
     public static final int FCC_TRK = 0x6b72544d;
@@ -31,7 +27,7 @@ public class MID {
     public int reso = 196;
 
     private double oneSyncTime = 0.0001;
-    private double musicStep;
+    double musicStep;
     private double musicDownCounter = 0.0;
 
     List<RCP.CtlSysex>[] beforeSend = null;
@@ -63,6 +59,7 @@ public class MID {
     BiConsumer<Integer, String> lyric;
     Runnable stop;
     Runnable counter;
+    Charset charset;
 
     void getInformationHeader(byte[] data) {
         if (data == null) throw new IllegalArgumentException("null buffer");

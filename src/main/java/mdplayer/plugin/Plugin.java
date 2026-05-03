@@ -1,5 +1,6 @@
 package mdplayer.plugin;
 
+import java.io.IOException;
 import java.util.NoSuchElementException;
 import java.util.ServiceLoader;
 
@@ -30,6 +31,11 @@ public interface Plugin {
     /** for SPI */
     BaseDriver getDriver();
 
-    /** prepare to play */
+    /**
+     * prepare to play
+     * <p>
+     * <li>instantiate drivers</li>
+     * <li>init chips</li>
+     */
     void prepare();
 }

@@ -4,7 +4,7 @@ package mdplayer;
 import java.util.ArrayList;
 import java.util.List;
 
-import dotnet4j.util.compat.Tuple;
+import vavi.util.compat.Tuple;
 import mdplayer.form.sys.frmMain;
 
 

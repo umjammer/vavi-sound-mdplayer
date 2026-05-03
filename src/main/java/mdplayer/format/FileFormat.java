@@ -7,13 +7,13 @@ import java.lang.System.Logger.Level;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ServiceLoader;
-
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
-import dotnet4j.util.compat.Tuple;
+import vavi.util.compat.Tuple;
 import mdplayer.PlayList;
 import mdplayer.plugin.Plugin;
+import musicDriverInterface.MetaData;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 
@@ -26,15 +26,21 @@ public interface FileFormat {
 
     String[] getExtensions();
 
+    MetaData getMetaData();
+
     List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */);
 
     List<PlayList.Music> getMusic(PlayList.Music ms, byte[] buf, String zipFile /* = null */);
 
-    /**
-     * @see "frmMain#getExtendFile"
-     */
-    List<Tuple<String, byte[]>> getExtendFile(String fn, byte[] srcBuf, Archive archive /* = null */, Entry entry /* = null */);
+    boolean isMml();
 
+    String getCompiledFilename();
+
+    byte[] getData();
+
+    List<Tuple<String, byte[]>> getExtendFiles();
+
+    // TODO move logic from form to here
     String[] getPresetMixerBalance();
 
     byte[] getAllBytes(String filename);
@@ -46,19 +52,15 @@ public interface FileFormat {
     /** for insert TODO index might not use */
     List<PlayList.Music> addFileLoop(int index, PlayList.Music mc, Archive archive, Entry entry /* = null */) throws IOException;
 
-    /**
-     * Loads audio file data w/ related files also.
-     *
-     * @return item1: file data bytes, item2: extend file data list
-     */
-    Tuple<byte[], List<Tuple<String, byte[]>>> load(String archive, String fn) throws IOException;
-
     interface SampledFileFormat {}
 
     interface StreamFileFormat {}
 
-    /** for SPI */
-    Tuple<byte[], List<Tuple<String, byte[]>>> load(InputStream is, String fn) throws IOException;
+    /**
+     * Loads audio file data w/ related files also.
+     * @param filename sub filename (e.g. inside an archive)
+     */
+    void load(InputStream is, String filename) throws IOException;
 
     /** for SPI */
     boolean isSupported(InputStream is) throws IOException;

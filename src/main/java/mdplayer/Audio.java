@@ -358,4 +358,10 @@ logger.log(Level.DEBUG, "stop: " + plugin.stopped);
             }
         }
     }
+
+    boolean emuOnly;
+
+    public boolean isEmuOnly() {
+        return emuOnly;
+    }
 }

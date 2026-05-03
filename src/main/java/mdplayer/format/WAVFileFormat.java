@@ -2,11 +2,10 @@ package mdplayer.format;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 
-import dotnet4j.io.Path;
 import mdplayer.PlayList;
 import mdplayer.format.FileFormat.StreamFileFormat;
 import mdplayer.plugin.Plugin;
@@ -30,10 +29,9 @@ public class WAVFileFormat extends BaseFileFormat implements FileFormat.SampledF
 
     @Override
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
-        List<PlayList.Music> musics = new ArrayList<>();
         PlayList.Music music = new PlayList.Music();
         music.format = this;
-        music.title = "(%s)".formatted(Path.getFileName(file));
+        music.title = "(%s)".formatted(Path.of(file).getFileName().toString());
         return Collections.singletonList(music);
     }
 

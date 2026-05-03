@@ -14,25 +14,17 @@ public abstract class BaseDriver {
     protected static final Setting setting = Setting.getInstance();
 
     public double speed = 1;
-
     protected double speedCounter;
-
     public long counter = 0;
-
     public long totalCounter = 0;
-
     public long loopCounter = 0;
-
     public int curLoop = 0;
-
     public boolean stopped = false;
-
     public int frameCounter;
 
     public MetaData metaData = new MetaData();
 
     protected String version = "";
-
     protected String usedChips = "";
 
     public boolean isDataBlock = false;
@@ -44,16 +36,15 @@ public abstract class BaseDriver {
     protected EnmModel model = EnmModel.VirtualModel;
 
     protected int latency = 1000;
-
     protected int waitTime = 0;
 
+    protected BaseDriver(BasePlugin<? extends BaseDriver> plugin) {
+        this.plugin = plugin;
+        this.dataBuf = plugin != null ? plugin.getData() : null; // gross
+    }
+
     /** */
-    public abstract void init(byte[] vgmBuf,
-                              BasePlugin<? extends BaseDriver> plugin,
-                              EnmModel model,
-                              int latency,
-                              int waitTime,
-                              Object... args);
+    public abstract void init(EnmModel model, int latency, int waitTime, Object... args);
 
     /** advances the clock */
     public abstract void processOneFrame();

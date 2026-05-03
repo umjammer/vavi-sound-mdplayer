@@ -22,8 +22,8 @@
 
 package mdplayer.driver.sid.libsidplayfp.c64.cpu;
 
-import dotnet4j.io.FileStream;
-import jdk.jfr.Unsigned;
+import java.io.OutputStream;
+
 import mdplayer.driver.sid.libsidplayfp.EventCallback;
 import mdplayer.driver.sid.libsidplayfp.EventScheduler;
 import mdplayer.driver.sid.libsidplayfp.EventScheduler.EventPhase;
@@ -114,20 +114,20 @@ public class Mos6510 {
     private final Flags flags = new Flags();
 
     // data regarding current instruction
-    private @Unsigned short registerProgramCounter;
-    private @Unsigned short cycleEffectiveAddress;
-    private @Unsigned short cyclePointer;
+    private short registerProgramCounter;
+    private short cycleEffectiveAddress;
+    private short cyclePointer;
 
     /** unsigned */
-    private @Unsigned byte cycleData;
+    private byte cycleData;
     /** unsigned */
-    private @Unsigned byte registerStackPointer;
+    private byte registerStackPointer;
     /** unsigned */
-    private @Unsigned byte registerAccumulator;
+    private byte registerAccumulator;
     /** unsigned */
-    private @Unsigned byte registerX;
+    private byte registerX;
     /** unsigned */
-    private @Unsigned byte registerY;
+    private byte registerY;
 
 //#if DEBUG
     // Debug info
@@ -202,7 +202,7 @@ public class Mos6510 {
      * Based on tests on a couple of chips at
      * http://visual6502.org/wiki/index.php?title=6502_Opcode_8B_(XAA,_ANE)
      * the value of magic for the MOS 6510 instanceof FF.
-     * However the Lorentz test suite assumes this to be EE.
+     * However, the Lorentz test suite assumes this to be EE.
      */
     public static final byte magic = (byte) 0xff;
 
@@ -2488,7 +2488,7 @@ public class Mos6510 {
         """;
     }
 
-    public void debug(boolean enable, FileStream out_) {
+    public void debug(boolean enable, OutputStream out_) {
 //#if DEBUG
 //            dodump = enable;
         //if (!(out_ != null && enable))

@@ -8,26 +8,27 @@ import java.io.UncheckedIOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.lang.reflect.Field;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
-import dotnet4j.io.File;
-import dotnet4j.io.Path;
-import dotnet4j.util.compat.Tuple;
-import mdplayer.Common;
 import mdplayer.PlayList;
 import mdplayer.Setting;
+import mdplayer.emu.common.Utils;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
+import vavi.sound.SoundUtil;
 import vavi.util.ByteUtil;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 import vavi.util.archive.zip.JdkZipEntry;
+import vavi.util.compat.Tuple;
 
-import static dotnet4j.io.Path.getDirectoryName;
 import static java.lang.System.getLogger;
 
 
@@ -90,6 +91,16 @@ public abstract class BaseFileFormat implements FileFormat {
         return musics;
     }
 
+    @Override
+    public boolean isMml() {
+        return false;
+    }
+
+    @Override
+    public String getCompiledFilename() {
+        return filename;
+    }
+
     // default
     protected boolean isMatchFcc(int fcc) {
         return false;
@@ -101,17 +112,26 @@ public abstract class BaseFileFormat implements FileFormat {
     }
 
     // default
-    protected MetaData getMetaData(byte[] buf, int vgmGd3) {
+    protected MetaData getMetaData(byte[] buf, Object... args) {
+        return null;
+    }
+
+    @Override
+    public MetaData getMetaData() {
         return null;
     }
 
     @Override
     public byte[] getAllBytes(String filename) {
-        return File.readAllBytes(filename);
+        try {
+            return Files.readAllBytes(Path.of(filename));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
-    @Override
-    public List<Tuple<String, byte[]>> getExtendFile(String fn, byte[] srcBuf, Archive archive, Entry entry) {
+    // default
+    protected List<Tuple<String, byte[]>> getExtendFiles(byte[] srcBuf, Archive archive, Entry entry) {
         return null;
     }
 
@@ -121,13 +141,12 @@ public abstract class BaseFileFormat implements FileFormat {
 logger.log(Level.DEBUG, "try: " + extFn);
                 return BaseFileFormat.getFileSearchPathList(srcFn).stream()
                         .map(dirPath -> dirPath.resolve(extFn))
-                        .filter(p -> Common.fileExistsIgnoreCase(p) != null).findFirst()
-                        .map(Common::fileExistsIgnoreCase)
+                        .filter(p -> Utils.fileExistsIgnoreCase(p) != null).findFirst()
+                        .map(Utils::fileExistsIgnoreCase)
                         .map(Object::toString)
-                        .map(File::readAllBytes).orElse(null);
+                        .map(this::getAllBytes).orElse(null);
             } else {
-                String trgFn = Path.combine(getDirectoryName(srcFn), extFn);
-                trgFn = trgFn.replace("\\", "/").trim();
+                String trgFn = Path.of(srcFn).getParent().resolve(extFn).toString().trim();
 
                 if (entry instanceof JdkZipEntry) {
                     String[] arcFn = new String[1];
@@ -166,7 +185,7 @@ logger.log(Level.DEBUG, result);
         arcFn[0] = entry.getName();
         try (InputStream reader = archive.getInputStream(entry)) {
             buf = reader.readAllBytes();
-        } catch (java.io.IOException e) {
+        } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
 
@@ -193,8 +212,8 @@ logger.log(Level.DEBUG, result);
         byte[] buf;
         if (entry == null) {
             try {
-                buf = File.readAllBytes(mc.fileName);
-            } catch (Exception ex) {
+                buf = Files.readAllBytes(Path.of(mc.fileName));
+            } catch (IOException ex) {
                 logger.log(Level.ERROR, ex.getMessage(), ex);
                 buf = null;
             }
@@ -224,8 +243,8 @@ logger.log(Level.DEBUG, result);
         byte[] buf;
         if (entry == null) {
             try {
-                buf = File.readAllBytes(mc.fileName);
-            } catch (Exception ex) {
+                buf = Files.readAllBytes(Path.of(mc.fileName));
+            } catch (IOException ex) {
                 logger.log(Level.ERROR, ex.getMessage(), ex);
                 buf = null;
             }
@@ -251,16 +270,27 @@ logger.log(Level.DEBUG, result);
         return null;
     }
 
+    protected byte[] srcBuf;
+    protected List<Tuple<String, byte[]>> extendFiles;
+    protected String filename;
+    protected FileFormat realFormat;
+
     @Override
-    public Tuple<byte[], List<Tuple<String, byte[]>>> load(String archive, String fn) throws IOException {
-        byte[] srcBuf = getAllBytes(fn);
-        return new Tuple<>(srcBuf, getExtendFile(fn, srcBuf, null, null));
+    public byte[] getData() {
+        return this.srcBuf;
     }
 
     @Override
-    public Tuple<byte[], List<Tuple<String, byte[]>>> load(InputStream is, String fn) throws IOException {
-        byte[] srcBuf = is.readAllBytes();
-        return new Tuple<>(srcBuf, getExtendFile(fn, srcBuf, null, null));
+    public List<Tuple<String, byte[]>> getExtendFiles() {
+        return extendFiles;
+    }
+
+    @Override
+    public void load(InputStream is, String filename) throws IOException {
+        URI source = SoundUtil.getSource(is);
+        this.filename = source != null && source.getScheme().equals("file") ? source.getPath() : null;
+        this.srcBuf = is.readAllBytes();
+        this.extendFiles = getExtendFiles(srcBuf, null, null);
     }
 
     @Override

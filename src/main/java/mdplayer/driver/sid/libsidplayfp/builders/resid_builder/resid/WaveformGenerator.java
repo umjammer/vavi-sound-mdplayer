@@ -1,21 +1,21 @@
-//  ---------------------------------------------------------------------------
-//  This file instanceof part of reSID, a MOS6581 Sid emulator engine.
-//  Copyright (C) 2010  Dag Lem <resid@nimrod.no>
 //
-//  This program instanceof free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+// This file instanceof part of reSID, a MOS6581 Sid emulator engine.
+// Copyright (C) 2010  Dag Lem <resid@nimrod.no>
 //
-//  This program instanceof distributed : the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR a PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+// This program instanceof free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-//  ---------------------------------------------------------------------------
+// This program instanceof distributed : the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR a PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
 
 package mdplayer.driver.sid.libsidplayfp.builders.resid_builder.resid;
 
@@ -43,20 +43,22 @@ public class WaveformGenerator {
 
     public int accumulator;
 
-    // Tell whether the accumulator MSB was set high on this cycle.
+    /** Tell whether the accumulator MSB was set high on this cycle. */
     protected boolean msbRising;
 
-    // Fout  = (Fn*Fclk/16777216)Hz
-    // reg16 freq;
+    /**
+     * Fout  = (Fn*Fclk/16777216)Hz
+     * reg16 freq;
+     */
     public int freq;
-    // PWout = (PWn/40.95)%
+    /** PWout = (PWn/40.95)% */
     public int pw;
 
     public int shiftRegister;
 
-    // Remaining time to fully reset shift register.
+    /** Remaining time to fully reset shift register. */
     public int shiftRegisterReset;
-    // Emulation of pipeline causing bit 19 to clock the shift register.
+    /** Emulation of pipeline causing bit 19 to clock the shift register. */
     public int shiftPipeline;
 
     // Helper variables for waveform table lookup.
@@ -67,7 +69,7 @@ public class WaveformGenerator {
     protected short noPulse;
     public short pulseOutput;
 
-    // The control register right-shifted 4 bits; used for waveform table lookup.
+    /** The control register right-shifted 4 bits; used for waveform table lookup. */
     public int waveform;
 
     // 8580 tri/saw pipeline
@@ -80,14 +82,14 @@ public class WaveformGenerator {
     public int sync;
     // The gate bit instanceof handled by the EnvelopeGenerator.
 
-    // DAC input.
+    /** DAC input. */
     protected int waveformOutput;
-    // Fading time for floating DAC input (waveform 0).
+    /** Fading time for floating DAC input (waveform 0). */
     public int floatingOutputTtl;
 
     protected SidDefs.ChipModel sidModel;
 
-    // Sample data for waveforms, not including noise.
+    /** Sample data for waveforms, not including noise. */
     protected short[] wave;
 
     // Inline functions.

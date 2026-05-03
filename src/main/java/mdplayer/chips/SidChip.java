@@ -6,6 +6,9 @@
 
 package mdplayer.chips;
 
+import java.util.Collections;
+import java.util.Map;
+
 import mdplayer.driver.sid.SidDriver;
 import mdsound.Instrument;
 
@@ -26,10 +29,8 @@ public class SidChip extends BaseChip {
         return new Class[0];
     }
 
-    public Integer[] read(int chipId) {
-        if (sid == null)
-            return null;
-        return sid.getRegisterFromSid()[chipId];
+    public Map<String, Object> getInfo(int chipId) {
+        return sid != null ? Map.of("register",  sid.getRegisterFromSid()[chipId]) : Collections.emptyMap();
     }
 
     public void setDriver(SidDriver driver) {

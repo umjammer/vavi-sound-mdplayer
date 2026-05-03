@@ -29,15 +29,22 @@ public class MidiDriver extends BaseDriver {
 
     private final MID midi;
 
-    public MidiDriver() {
+    public MidiDriver(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+
         this.midi = new MID();
-        int vstDelta = plugin.chipRegister.plugin(VstPlugin.class).vstDelta;
-        midi.send0 = (n, d) -> plugin.chipRegister.plugin(MidiPlugin.class).send(model, n, d, vstDelta);
-        midi.send2 = (n, d1, d2) -> plugin.chipRegister.plugin(MidiPlugin.class).send(model, n, d1, d2, vstDelta);
-        midi.send3 = (n, d1, d2, d) -> plugin.chipRegister.plugin(MidiPlugin.class).send(model, n, d1, d2, d, vstDelta);
-        midi.lyric = (n, l) -> plugin.chipRegister.plugin(MidiPlugin.class).params[n].Lyric = l;
+        midi.charset = Common.charset;
+        midi.musicStep = Common.VGMProcSampleRate / 60.0;;
+        midi.send0 = (n, d) -> plugin.chipRegister.plugin(MidiPlugin.class).send(model, n, d, plugin.chipRegister.plugin(VstPlugin.class).vstDelta);
+        midi.send2 = (n, d1, d2) -> plugin.chipRegister.plugin(MidiPlugin.class).send(model, n, d1, d2, plugin.chipRegister.plugin(VstPlugin.class).vstDelta);
+        midi.send3 = (n, d1, d2, d) -> plugin.chipRegister.plugin(MidiPlugin.class).send(model, n, d1, d2, d, plugin.chipRegister.plugin(VstPlugin.class).vstDelta);
+        midi.lyric = (n, l) -> plugin.chipRegister.plugin(MidiPlugin.class).params[n].lyric = l;
         midi.stop = () -> stopped = true;
         midi.counter = () -> frameCounter = -latency - waitTime;
+    }
+
+    public MidiDriver() {
+        this(null); // gross
     }
 
     @Override
@@ -137,10 +144,7 @@ public class MidiDriver extends BaseDriver {
     }
 
     @Override
-    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     int latency, int waitTime, Object... args) {
-        this.dataBuf = vgmBuf;
-        this.plugin = plugin;
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
         this.model = model;
         this.latency = latency;
         this.waitTime = waitTime;
@@ -156,10 +160,10 @@ public class MidiDriver extends BaseDriver {
         speed = 1;
         speedCounter = 0;
 
-        metaData = getMetaData(vgmBuf);
-        //if (Gd3 == null) return false;
+        metaData = getMetaData(dataBuf);
+        //if (metaData == null) return false;
 
-        midi.getInformationHeader(vgmBuf);
+        midi.getInformationHeader(dataBuf);
 
         // Create a command to send in advance for each port
         makeBeforeSendCommand();
@@ -185,7 +189,7 @@ public class MidiDriver extends BaseDriver {
                     frameCounter++;
                 }
             }
-            //Stopped = !IsPlaying();
+            //stopped = !isPlaying();
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
         }

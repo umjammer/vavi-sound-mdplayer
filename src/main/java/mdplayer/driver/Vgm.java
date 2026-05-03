@@ -15,7 +15,6 @@ import java.util.function.Supplier;
 import mdplayer.ChipRegister;
 import mdplayer.Common.EnmModel;
 import mdplayer.DacControl;
-import mdplayer.Setting;
 import mdplayer.chips.*;
 import vavi.util.ByteUtil;
 
@@ -153,8 +152,6 @@ public class Vgm {
     ChipRegister chipRegister; // TODO mdp class
     IntSupplier frameCounter;
     Consumer<Boolean> dataBlock;
-    Setting setting;
-    int[] ym2151Hosei;
     LongSupplier getTotalCounter;
     LongConsumer setTotalCounter;
     LongConsumer setLoopCounter;
@@ -601,7 +598,7 @@ public class Vgm {
     }
 
     private void vcYM2151() {
-        chipRegister.chip(Ym2151Chip.class).write((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model, (vgmBuf[vgmAdr] & 0x80) == 0 ? ym2151Hosei[0] : ym2151Hosei[1], frameCounter.getAsInt());
+        chipRegister.chip(Ym2151Chip.class).write((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model, vgmBuf[vgmAdr] & 0x80, frameCounter.getAsInt());
         vgmAdr += 3;
     }
 

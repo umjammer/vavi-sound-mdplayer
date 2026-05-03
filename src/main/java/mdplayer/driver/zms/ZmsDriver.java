@@ -1,10 +1,11 @@
 package mdplayer.driver.zms;
 
+import java.io.IOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.util.List;
 
-import dotnet4j.util.compat.Tuple;
+import vavi.util.compat.Tuple;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.MPcmChip;
@@ -41,11 +42,13 @@ public class ZmsDriver extends BaseDriver {
 
     private final Zms zms;
 
-    public ZmsDriver() {
+    public ZmsDriver(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+
         this.zms = new Zms();
         zms.charset = Common.charset;
         zms.frequency = Common.VGMProcSampleRate;
-        zms.ym2151Write = (a, d) -> plugin.chipRegister.chip(Ym2151Chip.class).write(0, 0, a, d, model, plugin.chipRegister.chip(Ym2151Chip.class).hosei[0], frameCounter);
+        zms.ym2151Write = (a, d) -> plugin.chipRegister.chip(Ym2151Chip.class).write(0, 0, a, d, model, plugin.chipRegister.chip(Ym2151Chip.class).corrections[0], frameCounter);
         zms.midiSend = (l, d) -> plugin.chipRegister.plugin(MidiPlugin.class).send(model, l, d, 0);
         zms.loop = l -> curLoop = l;
         zms.stop = () -> stopped = true;
@@ -126,6 +129,10 @@ public class ZmsDriver extends BaseDriver {
         zms.zpd = System.getProperty("mdplayer.zms.zpd");
     }
 
+    public ZmsDriver() {
+        this(null); // gross
+    }
+
     public int getVersion() {
         return zms.version;
     }
@@ -138,19 +145,12 @@ public class ZmsDriver extends BaseDriver {
         zms.supportFileBinaryAndName = supportFileBinary;
     }
 
-    public void setPlayingFileName(String value) {
-        zms.playingFileName = value;
-    }
-
-    public void setPlayingArcFileName(String value) {
-        zms.playingArcFileName = value;
-    }
-
     public byte[] getCompiledData() {
         return zms.compiledData;
     }
 
     public void setCompiledData(byte[] value) {
+        this.dataBuf = value; // TODO gross
         zms.compiledData = value;
     }
 
@@ -162,11 +162,15 @@ public class ZmsDriver extends BaseDriver {
         return zms.compileV2(vgmBuf, fn);
     }
 
+    /**
+     * @param args 0: offset, 1: filename
+     */
     @Override
     public MetaData getMetaData(byte[] buf, Object... args) {
-        if (zms.playingFileName.toUpperCase().endsWith(".ZMS")) {
+        String filename = args.length > 1 ? (String) args[1] : plugin.playingFileName;
+        if (filename.toUpperCase().endsWith(".ZMS")) {
             return getMetaDataZMS(buf);
-        } else if (zms.playingFileName.toUpperCase().endsWith(".ZMD")) {
+        } else if (filename.toUpperCase().endsWith(".ZMD")) {
             return getMetaDataZMD(buf);
         } else {
             return new MetaData();
@@ -209,7 +213,7 @@ public class ZmsDriver extends BaseDriver {
             }
         }
 
-        String cmt = "";
+        String cmt = null;
         try {
             if (zms.version == 3) {
                 int ptr = (buf[9 * 4 + 0] & 0xFF) * 0x100_0000 + (buf[9 * 4 + 1] & 0xFF) * 0x1_0000 +
@@ -234,21 +238,22 @@ public class ZmsDriver extends BaseDriver {
     }
 
     @Override
-    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     int latency, int waitTime, Object... args) {
-        metaData = getMetaData(vgmBuf, 0);
-        this.plugin = plugin;
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
+        metaData = getMetaData(dataBuf, 0);
         loopCounter = 0;
         curLoop = 0;
         this.model = model;
+
         frameCounter = -latency - waitTime;
         speed = 1;
+
         zms.setZPDSearchPath();
+        zms.playingFileName = plugin.playingFileName;
+        zms.playingArcFileName = plugin.playingArcFileName;
 
         try {
-            zms.run(vgmBuf);
-        } catch (Exception e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
+            zms.run(dataBuf);
+        } catch (IOException e) {
             throw new IllegalStateException(e);
         }
     }
@@ -270,7 +275,7 @@ public class ZmsDriver extends BaseDriver {
                 frameCounter++;
             }
 
-//            if (SkipSwitchPianoRoll) return;
+//            if (skipSwitchPianoRoll) return;
             zms.clock();
             //curLoop = mm.readShort(reg.a6 + dw.LOOP_COUNTER);
         } catch (Exception ex) {

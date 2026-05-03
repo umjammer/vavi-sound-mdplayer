@@ -196,7 +196,7 @@ public class SidBuilder {
         }
     }
 
-    public <T> void Delete(T s) {
+    public <T> void delete(T s) {
         s = null;
     }
 

@@ -27,7 +27,9 @@ public class MusicaDriver extends BaseDriver {
 
     private final MuSICA musica;
 
-    public MusicaDriver() {
+    public MusicaDriver(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+
         this.musica = new MuSICA();
         musica.k051649Write = (i, a, d) -> plugin.chipRegister.chip(K051649Chip.class).write(i, a, d, model);
         musica.ay8910Write = (a, d) -> plugin.chipRegister.chip(Ay8910Chip.class).write(0, a, d, model);
@@ -37,11 +39,18 @@ public class MusicaDriver extends BaseDriver {
         musica.dir = System.getProperty("mdplayer.musica.dir", System.getProperty("user.dir"));
     }
 
+    public MusicaDriver() {
+        this(null); // gross
+    }
+
     @Override
     public MetaData getMetaData(byte[] buf, Object... args) {
         MetaData md = new MetaData();
         if (buf != null && buf.length > 8) {
             try {
+                musica.k051649Write = (i, a, d) -> {};
+                musica.ay8910Write = (a, d) -> {};
+                musica.ym2413Write = (a, d) -> {};
                 musica.run(buf);
             } catch (Exception ex) {
                 logger.log(Level.ERROR, ex.getMessage(), ex);
@@ -56,16 +65,14 @@ public class MusicaDriver extends BaseDriver {
     }
 
     @Override
-    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     int latency, int waitTime, Object... args) {
-        this.plugin = plugin;
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
         loopCounter = 0;
         curLoop = 0;
         this.model = model;
         frameCounter = -latency - waitTime;
 
         try {
-            musica.run(vgmBuf);
+            musica.run(dataBuf);
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }

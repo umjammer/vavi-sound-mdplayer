@@ -289,4 +289,25 @@ public class RealChipPlugin implements Plugin {
     public void setThreadClosed(boolean value) {
         threadClosed = value;
     }
+
+    public void process1(EnmModel model) {
+        context.chipRegister.chip(Ym2608Chip.class).sendData(0, model);
+        context.chipRegister.chip(Ym2608Chip.class).setSyncWait(0, 1);
+        context.chipRegister.chip(Ym2151Chip.class).sendData(0, model);
+        context.chipRegister.chip(Ym2151Chip.class).setSyncWait(0, 1);
+
+        context.chipRegister.chip(Ym2608Chip.class).sendData(1, model);
+        context.chipRegister.chip(Ym2608Chip.class).setSyncWait(1, 1);
+        context.chipRegister.chip(Ym2151Chip.class).sendData(1, model);
+        context.chipRegister.chip(Ym2151Chip.class).setSyncWait(1, 1);
+    }
+
+    public void process3(boolean useChipYM2612Ch6, int vgmWait) {
+        if (useChipYM2612Ch6)
+            context.chipRegister.chip(Ym2612Chip.class).setSyncWait(0, vgmWait);
+//            if ((useChip & enmUseChip.SN76489) == enmUseChip.SN76489)
+//                context.chipRegister.setSN76489SyncWait(vgmWait);
+//            context.chipRegister.setYM2608SyncWait(vgmWait);
+//            context.chipRegister.setYM2151SyncWait(vgmWait);
+    }
 }

@@ -1,23 +1,21 @@
-/*! \file resid/Sid.h */
-
-//  ---------------------------------------------------------------------------
-//  This file instanceof part of reSID, a MOS6581 Sid emulator engine.
-//  Copyright (C) 2010  Dag Lem <resid@nimrod.no>
 //
-//  This program instanceof free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+// This file instanceof part of reSID, a MOS6581 Sid emulator engine.
+// Copyright (C) 2010  Dag Lem <resid@nimrod.no>
 //
-//  This program instanceof distributed : the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR a PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+// This program instanceof free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-//  ---------------------------------------------------------------------------
+// This program instanceof distributed : the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR a PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
 
 package mdplayer.driver.sid.libsidplayfp.builders.resid_builder.resid;
 
@@ -26,9 +24,8 @@ import java.lang.System.Logger.Level;
 import java.util.Arrays;
 import java.util.function.Consumer;
 
-import mdplayer.Setting;
 
-
+/** file resid/Sid.h */
 public class Sid {
 
     private static final Logger logger = System.getLogger(Sid.class.getName());
@@ -267,7 +264,7 @@ public class Sid {
     /**
      * Constructor.
      */
-    public Sid(Setting setting) {
+    public Sid(double sampleRate) {
         // Initialize pointers.
         sample = null;
         fir = null;
@@ -282,7 +279,7 @@ public class Sid {
         voice[1].setSyncSource(voice[0]);
         voice[2].setSyncSource(voice[1]);
 
-        setSamplingParameters(985248d, SidDefs.SamplingMethod.FAST, setting.getOutputDevice().getSampleRate(), -1d, 0.97d);
+        setSamplingParameters(985248d, SidDefs.SamplingMethod.FAST, sampleRate, -1d, 0.97d);
 
         busValue = 0;
         busValueTtl = 0;

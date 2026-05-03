@@ -10,14 +10,14 @@ import mdplayer.form.sys.frmMain;
 import static java.lang.System.getLogger;
 
 
-class Program {
+public class Program {
 
     private static final Logger logger = getLogger(Program.class.getName());
 
     /**
      * The main entry point for the application.
      */
-    static void main(String[] args) {
+    public static void main(String[] args) {
         Common.setCommandLineArgs(args);
 
         String fn = checkFiles();

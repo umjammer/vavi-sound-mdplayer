@@ -3,7 +3,7 @@ package mdplayer.driver.moonDriver;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
-import dotnet4j.util.compat.Tuple;
+import vavi.util.compat.Tuple;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.YmF262Chip;
@@ -48,16 +48,13 @@ public class BuiltInMoonDriver extends BaseDriver {
     }
 
     @Override
-    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     int latency, int waitTime, Object... args) {
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
 
-        this.dataBuf = vgmBuf;
-        this.plugin = plugin;
         this.model = model;
         this.latency = latency;
         this.waitTime = waitTime;
 
-        metaData = getMetaData(vgmBuf);
+        metaData = getMetaData(dataBuf);
         counter = 0;
         totalCounter = 0;
         loopCounter = 0;
@@ -68,14 +65,14 @@ public class BuiltInMoonDriver extends BaseDriver {
 
         try {
             a = 0;
-            for (int i = 0; i < vgmBuf.length; i++) {
+            for (int i = 0; i < dataBuf.length; i++) {
                 if (i % 0x4000 == 0) {
                     int af = a;
                     changePage3();
                     a = (byte) af;
                     a += 2;
                 }
-                writeMemory((0x8000 + (i % 0x4000)) & 0xffff, vgmBuf[i] & 0xff);
+                writeMemory((0x8000 + (i % 0x4000)) & 0xffff, dataBuf[i] & 0xff);
             }
         } catch (Exception ex) {
 logger.log(Level.DEBUG, ex.getMessage(), ex);
@@ -154,7 +151,9 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         }
     }
 
-    public BuiltInMoonDriver() {
+    public BuiltInMoonDriver(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+
         seq_jmptable = new dlgSeqFunc[] {
                 this::seq_drumnote,   // $e0 : Set drum note
                 this::seq_drumbit,    // $e1 : Set drum bits

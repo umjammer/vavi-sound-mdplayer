@@ -2,6 +2,7 @@ package mdplayer.format;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -9,8 +10,7 @@ import java.util.List;
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
-import dotnet4j.io.Path;
-import dotnet4j.util.compat.Tuple;
+import mdplayer.Common;
 import mdplayer.PlayList;
 import mdplayer.driver.rcp.RCP;
 import mdplayer.driver.rcp.RcsDriver;
@@ -23,6 +23,7 @@ import vavi.sound.sampled.md.MdEncoding;
 import vavi.sound.sampled.md.MdFileFormatType;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
+import vavi.util.compat.Tuple;
 
 
 /**
@@ -39,11 +40,16 @@ public class RCSFileFormat extends BaseFileFormat {
     }
 
     @Override
+    public MetaData getMetaData() {
+        return new RcsDriver().getMetaData(this.srcBuf);
+    }
+
+    @Override
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
         PlayList.Music music = new PlayList.Music();
 
         music.format = this;
-        MetaData metaData = new RcsDriver().getMetaData(buf);
+        MetaData metaData = getMetaData();
         if (metaData != null) {
             music.title = metaData.getFirst(Tag.Title);
             music.titleJ = metaData.getFirst(Tag.TitleJ);
@@ -56,11 +62,11 @@ public class RCSFileFormat extends BaseFileFormat {
             music.converted = metaData.getFirst(Tag.Converter);
             music.notes = metaData.getFirst(Tag.Note);
         } else {
-            music.title = "(%s)".formatted(Path.getFileName(file));
+            music.title = "(%s)".formatted(Path.of(file).getFileName());
         }
 
         if (music.title.isEmpty() && music.titleJ.isEmpty()) {
-            music.title = "(%s)".formatted(Path.getFileName(file));
+            music.title = "(%s)".formatted(Path.of(file).getFileName());
         }
         return Collections.singletonList(music);
     }
@@ -71,7 +77,7 @@ public class RCSFileFormat extends BaseFileFormat {
         PlayList.Music music = new PlayList.Music();
 
         music.format = this;
-        MetaData metaData = new RcsDriver().getMetaData(buf);
+        MetaData metaData = getMetaData();
         if (metaData != null) {
             music.title = metaData.getFirst(Tag.Title);
             music.titleJ = metaData.getFirst(Tag.TitleJ);
@@ -84,10 +90,10 @@ public class RCSFileFormat extends BaseFileFormat {
             music.converted = metaData.getFirst(Tag.Converter);
             music.notes = metaData.getFirst(Tag.Note);
         } else {
-            music.title = "(%s)".formatted(Path.getFileName(ms.fileName));
+            music.title = "(%s)".formatted(Path.of(ms.fileName).getFileName());
         }
         if (music.title.isEmpty() && music.titleJ.isEmpty()) {
-            music.title = "(%s)".formatted(Path.getFileName(ms.fileName));
+            music.title = "(%s)".formatted(Path.of(ms.fileName).getFileName());
         }
 
         musics.add(music);
@@ -95,22 +101,22 @@ public class RCSFileFormat extends BaseFileFormat {
     }
 
     @Override
-    public List<Tuple<String, byte[]>> getExtendFile(String fn, byte[] srcBuf, Archive archive, Entry entry) {
+    public List<Tuple<String, byte[]>> getExtendFiles(byte[] srcBuf, Archive archive, Entry entry) {
         List<Tuple<String, byte[]>> ret = new ArrayList<>();
         byte[] buf;
 
         String[] cm6 = new String[1], gsd = new String[1], gsd2 = new String[1];
-        RCP.getControlFileName(srcBuf, cm6, gsd, gsd2);
+        RCP.getControlFileName(srcBuf, cm6, gsd, gsd2, Common.charset);
         if (cm6[0] != null && !cm6[0].isEmpty()) {
-            buf = getExtendFileAllBytes(fn, cm6[0], archive, entry);
+            buf = getExtendFileAllBytes(filename, cm6[0], archive, entry);
             if (buf != null) ret.add(new Tuple<>(".cm6", buf));
         }
         if (gsd[0] != null && !gsd[0].isEmpty()) {
-            buf = getExtendFileAllBytes(fn, gsd[0], archive, entry);
+            buf = getExtendFileAllBytes(filename, gsd[0], archive, entry);
             if (buf != null) ret.add(new Tuple<>(".gsd", buf));
         }
         if (gsd2[0] != null && !gsd2[0].isEmpty()) {
-            buf = getExtendFileAllBytes(fn, gsd2[0], archive, entry);
+            buf = getExtendFileAllBytes(filename, gsd2[0], archive, entry);
             if (buf != null) ret.add(new Tuple<>(".gsd", buf));
         }
 

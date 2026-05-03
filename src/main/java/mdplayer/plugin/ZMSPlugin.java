@@ -1,12 +1,14 @@
 package mdplayer.plugin;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import dotnet4j.io.File;
-import dotnet4j.io.Path;
-import dotnet4j.util.compat.Tuple;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.MPcmChip;
@@ -14,12 +16,15 @@ import mdplayer.chips.MidiPlugin;
 import mdplayer.chips.Pcm8Chip;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.driver.zms.ZmsDriver;
+import mdplayer.plugin.BasePlugin.Compilable;
 import mdsound.MDSound;
 import mdsound.instrument.X68kYm2151Inst;
 import mdsound.x68sound.SoundIocs;
+import vavi.util.compat.Tuple;
 
 import static java.lang.System.getLogger;
 import static mdsound.MDSound.Chip.MAIN_TAG;
+import static vavi.util.compat.Util.getExtension;
 
 
 /**
@@ -28,19 +33,22 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-07-12 nsano initial version <br>
  */
-public class ZMSPlugin extends BasePlugin<ZmsDriver> {
+public class ZMSPlugin extends BasePlugin<ZmsDriver> implements Compilable {
 
     private static final Logger logger = getLogger(ZMSPlugin.class.getName());
 
     @Override
+    public void compile() {
+
+    }
+
+    @Override
     public void prepare() {
-        driverVirtual = new ZmsDriver();
-        driverVirtual.setPlayingFileName(playingFileName);
-        driverVirtual.setPlayingArcFileName(playingArcFileName);
+        driverVirtual = new ZmsDriver(this);
 
         driverReal = null;
         if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
-//            driverReal = new ZmsDriver();
+//            driverReal = new ZmsDriver(this);
         }
 
         super.prepare();
@@ -99,125 +107,130 @@ public class ZMSPlugin extends BasePlugin<ZmsDriver> {
         if (contains(Ym2151Chip.class, 0))
             chipRegister.chip(Ym2151Chip.class).writeClock(0, 4000000, EnmModel.RealModel);
 
-        chipRegister.chip(Ym2151Chip.class).hosei[0] = 4000000;
-        chipRegister.chip(Ym2151Chip.class).hosei[1] = 4000000;
+        chipRegister.chip(Ym2151Chip.class).corrections[0] = 4000000;
+        chipRegister.chip(Ym2151Chip.class).corrections[1] = 4000000;
 
         chipLED.put("PriPCM8", 0);
         chipLED.put("PriMPCMX68k", 0);
 
-        // Compiler usage priority
-        int compilePriority = setting.getZMusic().compilePriority;
-        if (useCompiler != null) {
-            if (useCompiler.equals("zmusic v2")) compilePriority = 3; // 3: v2 only
-            else if (useCompiler.equals("zmusic v3")) compilePriority = 2; // 2: v3 only
-        }
-        // Loading/compiling support files
-        List<Tuple<byte[], String>> supportFileBinary = new ArrayList<>();
-        if (supportFile != null) {
-            for (String sf : supportFile) {
-                byte[] buf;
-                if (isExt(sf, ".ZMS")) {
-                    buf = File.readAllBytes(sf);
-                    switch (compilePriority) {
-                        case 0:
-                            // Version 3 is preferred
-                            if (driverVirtual.compile(buf, sf)) buf = driverVirtual.getCompiledData();
-                            else if (driverVirtual.compileV2(buf, sf)) buf = driverVirtual.getCompiledData();
-                            else throw new IllegalArgumentException("Compile Error.Check console log.");
-                            break;
-                        case 1:
-                            // Version 2 is preferred
-                            if (driverVirtual.compileV2(buf, sf)) buf = driverVirtual.getCompiledData();
-                            else if (driverVirtual.compile(vgmBuf, sf))
-                                buf = driverVirtual.getCompiledData();
-                            else throw new IllegalArgumentException("Compile Error.Check console log.");
-                            break;
-                        case 2:
-                            // Version 3 only
-                            if (driverVirtual.compile(buf, sf)) buf = driverVirtual.getCompiledData();
-                            else throw new IllegalArgumentException("Compile Error.Check console log.");
-                            break;
-                        case 3:
-                            // Version 2 only
-                            if (driverVirtual.compileV2(buf, sf)) buf = driverVirtual.getCompiledData();
-                            else throw new IllegalArgumentException("Compile Error.Check console log.");
-                            break;
+        try {
+            // Compiler usage priority
+            int compilePriority = setting.getZMusic().compilePriority;
+            if (useCompiler != null) {
+                if (useCompiler.equals("zmusic v2")) compilePriority = 3; // 3: v2 only
+                else if (useCompiler.equals("zmusic v3")) compilePriority = 2; // 2: v3 only
+            }
+            // Loading/compiling support files
+            List<Tuple<byte[], String>> supportFileBinary = new ArrayList<>();
+            if (supportFile != null) {
+                for (String sf : supportFile) {
+                    byte[] buf;
+                    if (isExt(sf, ".ZMS")) {
+                        buf = Files.readAllBytes(Path.of(sf));
+                        switch (compilePriority) {
+                            case 0:
+                                // Version 3 is preferred
+                                if (driverVirtual.compile(buf, sf)) buf = driverVirtual.getCompiledData();
+                                else if (driverVirtual.compileV2(buf, sf)) buf = driverVirtual.getCompiledData();
+                                else throw new IllegalArgumentException("Compile Error.Check console log.");
+                                break;
+                            case 1:
+                                // Version 2 is preferred
+                                if (driverVirtual.compileV2(buf, sf)) buf = driverVirtual.getCompiledData();
+                                else if (driverVirtual.compile(dataBuf, sf))
+                                    buf = driverVirtual.getCompiledData();
+                                else throw new IllegalArgumentException("Compile Error.Check console log.");
+                                break;
+                            case 2:
+                                // Version 3 only
+                                if (driverVirtual.compile(buf, sf)) buf = driverVirtual.getCompiledData();
+                                else throw new IllegalArgumentException("Compile Error.Check console log.");
+                                break;
+                            case 3:
+                                // Version 2 only
+                                if (driverVirtual.compileV2(buf, sf)) buf = driverVirtual.getCompiledData();
+                                else throw new IllegalArgumentException("Compile Error.Check console log.");
+                                break;
+                        }
+                        supportFileBinary.add(new Tuple<>(buf, Path.of(sf).getFileName().toString()));
+                        continue;
                     }
-                    supportFileBinary.add(new Tuple<>(buf, Path.getFileName(sf)));
-                    continue;
+                    buf = Files.readAllBytes(Path.of(sf));
+                    supportFileBinary.add(new Tuple<>(buf, Path.of(sf).getFileName().toString()));
                 }
-                buf = File.readAllBytes(sf);
-                supportFileBinary.add(new Tuple<>(buf, Path.getFileName(sf)));
             }
-        }
 
-        driverVirtual.setSupportFileBinaryAndName(supportFileBinary);
-        if (driverReal != null) driverReal.setSupportFileBinaryAndName(supportFileBinary);
-//        if (driverPianoRoll != null) (driverPianoRoll).supportFileBinaryAndName = supportFileBinary;
+            driverVirtual.setSupportFileBinaryAndName(supportFileBinary);
+            if (driverReal != null) driverReal.setSupportFileBinaryAndName(supportFileBinary);
+//            if (driverPianoRoll != null) (driverPianoRoll).supportFileBinaryAndName = supportFileBinary;
 
-        // In the case of ZMS, compilation is performed in advance
-        if (isExt(playingFileName, ".ZMS")) {
-            switch (compilePriority) {
-                case 0:
-                    // Version 3 is preferred
-                    if (driverVirtual.compile(vgmBuf, playingFileName)) {
-                        setVgmBufV3();
-                        chipLED.put("PriMPCMX68k", 1);
-                    } else if (driverVirtual.compileV2(vgmBuf, playingFileName)) {
-                        setVgmBufV2();
-                        chipLED.put("PriPCM8", 1);
-                    } else {
-                        // compile error
-                        throw new IllegalArgumentException("Compile Error.Check console log.");
-                    }
-                    break;
-                case 1:
-                    // Version 2 is preferred
-                    if (driverVirtual.compileV2(vgmBuf, playingFileName)) {
-                        setVgmBufV2();
-                        chipLED.put("PriPCM8", 1);
-                    } else if (driverVirtual.compile(vgmBuf, playingFileName)) {
-                        setVgmBufV3();
-                        chipLED.put("PriMPCMX68k", 1);
-                    } else {
-                        // compile error
-                        throw new IllegalArgumentException("Compile Error.Check console log.");
-                    }
-                    break;
-                case 2:
-                    // Version 3 only
-                    if (driverVirtual.compile(vgmBuf, playingFileName)) {
-                        setVgmBufV3();
-                        chipLED.put("PriMPCMX68k", 1);
-                        //logger.log("c:\\temp\\ge.zmd", dataBuf);
-                    } else {
-                        // compile error
-                        throw new IllegalArgumentException("Compile Error.Check console log.");
-                    }
-                    break;
-                case 3:
-                    // Version 2 only
-                    if (driverVirtual.compileV2(vgmBuf, playingFileName)) {
-                        setVgmBufV2();
-                        chipLED.put("PriPCM8", 1);
-                    } else {
-                        // compile error
-                        throw new IllegalArgumentException("Compile Error.Check console log.");
-                    }
-                    break;
+logger.log(Level.INFO, "compilePriority: " + compilePriority);
+            // In the case of ZMS, compilation is performed in advance
+            if (isExt(playingFileName, ".ZMS")) {
+                switch (compilePriority) {
+                    case 0:
+                        // Version 3 is preferred
+                        if (driverVirtual.compile(dataBuf, playingFileName)) {
+                            setVgmBufV3();
+                            chipLED.put("PriMPCMX68k", 1);
+                        } else if (driverVirtual.compileV2(dataBuf, playingFileName)) {
+                            setVgmBufV2();
+                            chipLED.put("PriPCM8", 1);
+                        } else {
+                            // compile error
+                            throw new IllegalArgumentException("Compile Error.Check console log.");
+                        }
+                        break;
+                    case 1:
+                        // Version 2 is preferred
+                        if (driverVirtual.compileV2(dataBuf, playingFileName)) {
+                            setVgmBufV2();
+                            chipLED.put("PriPCM8", 1);
+                        } else if (driverVirtual.compile(dataBuf, playingFileName)) {
+                            setVgmBufV3();
+                            chipLED.put("PriMPCMX68k", 1);
+                        } else {
+                            // compile error
+                            throw new IllegalArgumentException("Compile Error.Check console log.");
+                        }
+                        break;
+                    case 2:
+                        // Version 3 only
+                        if (driverVirtual.compile(dataBuf, playingFileName)) {
+                            setVgmBufV3();
+                            chipLED.put("PriMPCMX68k", 1);
+                            //logger.log("c:\\temp\\ge.zmd", dataBuf);
+                        } else {
+                            // compile error
+                            throw new IllegalArgumentException("Compile Error.Check console log.");
+                        }
+                        break;
+                    case 3:
+                        // Version 2 only
+                        if (driverVirtual.compileV2(dataBuf, playingFileName)) {
+                            setVgmBufV2();
+                            chipLED.put("PriPCM8", 1);
+                        } else {
+                            // compile error
+                            throw new IllegalArgumentException("Compile Error.Check console log.");
+                        }
+                        break;
+                }
+            } else {
+                driverVirtual.getMetaData(dataBuf, 0);
             }
-        } else {
-            driverVirtual.getMetaData(vgmBuf, 0);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
 
         if (driverVirtual.getVersion() != 2) {
             // Check the sound source composition used from ZMD
-            boolean useFM = vgmBuf[0x48] != 0;
-            boolean useMPCM = vgmBuf[0x49] != 0;
-            boolean useMIDI1 = vgmBuf[0x4a] != 0;
-            boolean useMIDI2 = vgmBuf[0x4b] != 0;
-            boolean useMIDI3 = vgmBuf[0x4c] != 0;
-            boolean useMIDI4 = vgmBuf[0x4d] != 0;
+            boolean useFM = dataBuf[0x48] != 0;
+            boolean useMPCM = dataBuf[0x49] != 0;
+            boolean useMIDI1 = dataBuf[0x4a] != 0;
+            boolean useMIDI2 = dataBuf[0x4b] != 0;
+            boolean useMIDI3 = dataBuf[0x4c] != 0;
+            boolean useMIDI4 = dataBuf[0x4d] != 0;
             chipLED.put("PriOPM", useFM ? 1 : 0);
             chipLED.put("PriMID", useMIDI1 ? 1 : 0);
             chipLED.put("SecMID", useMIDI2 ? 1 : 0);
@@ -228,36 +241,38 @@ public class ZMSPlugin extends BasePlugin<ZmsDriver> {
             chipLED.put("PriPCM8", 1);
         }
 
-        driverVirtual.init(vgmBuf, this, EnmModel.VirtualModel,
+        driverVirtual.init(EnmModel.VirtualModel,
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         if (driverReal != null) {
-            driverReal.init(vgmBuf, this, EnmModel.RealModel,
+            driverReal.init(EnmModel.RealModel,
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         }
     }
 
     private void setVgmBufV3() {
-        vgmBuf = driverVirtual.getCompiledData();
-        if (driverReal != null) driverReal.setCompiledData(vgmBuf);
+        dataBuf = driverVirtual.getCompiledData();
+        driverVirtual.setCompiledData(dataBuf);
+        if (driverReal != null) driverReal.setCompiledData(dataBuf);
 //        if (driverPianoRoll != null) (driverPianoRoll).compiledData = dataBuf;
     }
 
     private void setVgmBufV2() {
-        vgmBuf = driverVirtual.getCompiledData();
+        dataBuf = driverVirtual.getCompiledData();
+        driverVirtual.setCompiledData(dataBuf);
         driverVirtual.setVersion(2);
         if (driverReal != null) {
-            driverReal.setCompiledData(vgmBuf);
+            driverReal.setCompiledData(dataBuf);
             driverReal.setVersion(2);
         }
 //        if (driverPianoRoll != null) {
-//            driverPianoRoll.compiledData = dataBuf;
+//            driverPianoRoll.setCompiledData(dataBuf);
 //            driverPianoRoll.setVersion(2);
 //        }
     }
 
     static boolean isExt(String filename, String ext) {
-        return Path.getExtension(filename).toUpperCase().equals(ext);
+        return getExtension(filename).toUpperCase().equals(ext);
     }
 }

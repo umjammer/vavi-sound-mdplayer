@@ -6,9 +6,10 @@
 
 package mdplayer.chips;
 
+import java.util.Map;
+
 import mdplayer.Common.EnmModel;
 import mdsound.Instrument;
-import mdsound.chips.PPZ8;
 import mdsound.instrument.Ppz8Inst;
 
 
@@ -31,8 +32,8 @@ public class Ppz8Chip extends BaseChip {
         return new Class[] {Ppz8Inst.class};
     }
 
-    public PPZ8.Channel[] read(int chipId) {
-        return context.mds.inst(Ppz8Inst.class).readStatus(chipId);
+    public Map<String, Object> getInfo(int chipId) {
+        return context.mds.inst(Ppz8Inst.class).getInfo(chipId);
     }
 
     public void writePcm(int chipId, int bank, int mode, byte[][] pcmData, EnmModel model) {

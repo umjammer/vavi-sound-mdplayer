@@ -21,13 +21,13 @@ package mdplayer.driver.sid.libsidplayfp.utils;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
-import dotnet4j.util.compat.Tuple;
-import dotnet4j.io.FileMode;
-import dotnet4j.io.FileStream;
-import dotnet4j.io.StreamReader;
+import vavi.util.compat.Tuple;
 
 import static java.lang.System.getLogger;
 
@@ -68,10 +68,11 @@ public class IniParser {
         Tuple<String, List<Tuple<String, String>>> it = null;
 
         try {
-            try (StreamReader iniFile = new StreamReader(new FileStream(fileName, FileMode.Open))) {
+            try (Scanner iniFile = new Scanner(Files.newInputStream(Path.of(fileName)))) {
 
                 String buffer;
-                while ((buffer = iniFile.readLine()) != null) {
+                while (iniFile.hasNextLine()) {
+                    buffer = iniFile.nextLine();
 
                     if (buffer.trim().isEmpty())
                         continue;

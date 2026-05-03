@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Common;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
@@ -130,7 +129,7 @@ public class frmYMF262 extends frmBase {
     }
 
     public void screenChangeParams() {
-        int[][] ymf262Register = audio.plugin.chipRegister.chip(YmF262Chip.class).read(chipId);
+        int[][] ymf262Register = (int[][]) audio.plugin.chipRegister.chip(YmF262Chip.class).getInfo(chipId).get("register");
         MDChipParams.Channel nyc;
         int slot;
         int slotP;

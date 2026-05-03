@@ -15,6 +15,7 @@ import java.lang.System.Logger.Level;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -29,6 +30,8 @@ import mdplayer.driver.BaseDriver;
 import mdplayer.format.FileFormat;
 import mdplayer.format.UnknownFileFormat;
 import mdplayer.plugin.BasePlugin;
+import musicDriverInterface.MetaData;
+import musicDriverInterface.MetaData.Tag;
 import vavi.sound.SoundUtil;
 import vavi.util.archive.Archives;
 
@@ -90,9 +93,13 @@ logger.log(DEBUG, "enter: available: " + bitStream.available() + ", " + bitStrea
         float samplingRate = 44100;
         int channels = 2;
         AudioFileFormat.Type type;
+        MetaData metaData;
         try {
+            URI source = SoundUtil.getSource(bitStream);
+            String fn = source != null && source.getScheme().equals("file") ? source.getPath() : null;
+
             bitStream.mark(10); // *1
-            InputStream in = Archives.getInputStream(bitStream); // TODO 2nd time doesn't work well
+            InputStream in = Archives.getInputStream(bitStream);
 logger.log(Level.TRACE, "input stream M: " + in + ", " + in.available());
             if (!in.markSupported()) {
                 in = new BufferedInputStream(in, 20 * 1024 * 1024);
@@ -102,15 +109,14 @@ logger.log(Level.TRACE, "input stream M: " + in + ", " + in.available());
 logger.log(DEBUG, "format: " + fileFormat.getClass().getSimpleName());
             if (fileFormat instanceof UnknownFileFormat) throw new UnsupportedAudioFileException("not supported format");
 
-            URI source = SoundUtil.getSource(bitStream);
-            String fn = source != null && source.getScheme().equals("file") ? source.getPath() : null;
             encoding = fileFormat.getEncoding();
             type = fileFormat.getType();
-            var r = fileFormat.load(in, fn);
+            fileFormat.load(in, null); // TODO archive
+            metaData = fileFormat.getMetaData();
             plugin = (BasePlugin<? extends BaseDriver>) fileFormat.getPlugin();
 logger.log(DEBUG, "plugin: " + plugin);
 logger.log(DEBUG, "filename: " + fn);
-            plugin.setBuffer(fileFormat, r.getItem1(), fn, null, 0, 0, r.getItem2());
+            plugin.setParams(fileFormat, fn != null ? Map.of("fileName", fn) : Collections.emptyMap());
 
         } catch (IllegalArgumentException | NoSuchElementException e) {
             bitStream.reset(); // *1
@@ -120,8 +126,18 @@ logger.log(TRACE, e.getMessage(), e);
         }
         Map<String, Object> props = new HashMap<>();
         props.put("vavi.sound.sampled.md", plugin);
+        fillProps(props, metaData);
         AudioFormat format = new AudioFormat(encoding, samplingRate, NOT_SPECIFIED, channels, NOT_SPECIFIED, NOT_SPECIFIED, false, props);
         return new AudioFileFormat(type, format, NOT_SPECIFIED);
+    }
+
+    private static void fillProps(Map<String, Object> props, MetaData metaData) {
+        if (metaData != null) {
+            props.put("md.title", metaData.getFirst(Tag.Title));
+            props.put("md.artist", metaData.getFirst(Tag.Maker));
+            props.put("md.composer", metaData.getFirst(Tag.Composer));
+            props.put("md.album", metaData.getFirst(Tag.GameTitle));
+        }
     }
 
     @Override

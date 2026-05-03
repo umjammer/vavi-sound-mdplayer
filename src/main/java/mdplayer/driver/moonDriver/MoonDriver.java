@@ -1,22 +1,17 @@
 package mdplayer.driver.moonDriver;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-import dotnet4j.io.File;
-import dotnet4j.io.FileAccess;
-import dotnet4j.io.FileMode;
-import dotnet4j.io.FileShare;
-import dotnet4j.io.FileStream;
-import dotnet4j.io.IOException;
-import dotnet4j.io.MemoryStream;
-import dotnet4j.io.Path;
-import dotnet4j.io.Stream;
-import dotnet4j.util.compat.Tuple;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.YmF262Chip;
@@ -31,6 +26,7 @@ import musicDriverInterface.IDriver;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MmlDatum;
 import vavi.util.ByteUtil;
+import vavi.util.compat.Tuple;
 
 import static java.lang.System.getLogger;
 
@@ -46,10 +42,12 @@ public class MoonDriver extends BaseDriver {
     private IDriver moonDriverDriver = null;
     private MoonDriverFileType mtype;
 
-    private String playingFileName;
+    public MoonDriver(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+    }
 
-    public void setPlayingFileName(String value) {
-        playingFileName = value;
+    public MoonDriver() {
+        this(null); // gross
     }
 
     @Override
@@ -70,12 +68,9 @@ logger.log(Level.DEBUG, "type: " + mtype);
     }
 
     @Override
-    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     int latency, int waitTime, Object... args) {
-        metaData = getMetaData(vgmBuf, 0);
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
+        metaData = getMetaData(dataBuf, 0);
 
-        this.dataBuf = vgmBuf;
-        this.plugin = plugin;
         this.model = model;
         this.latency = latency;
         this.waitTime = waitTime;
@@ -139,12 +134,12 @@ logger.log(Level.DEBUG, "type: " + mtype);
         moonDriverCompiler.init();
         moonDriverCompiler.setCompileSwitch("SRC");
         moonDriverCompiler.setCompileSwitch("MoonDriverOption=-i");
-        moonDriverCompiler.setCompileSwitch("MoonDriverOption=%s".formatted(playingFileName));
+        moonDriverCompiler.setCompileSwitch("MoonDriverOption=%s".formatted(plugin.playingFileName));
 
         MmlDatum[] ret;
         CompilerInfo info;
         try {
-            try (MemoryStream sourceMML = new MemoryStream(vgmBuf)) {
+            try (InputStream sourceMML = new ByteArrayInputStream(vgmBuf)) {
                 ret = moonDriverCompiler.compile(sourceMML, this::appendFileReaderCallback);
             }
 
@@ -184,10 +179,10 @@ logger.log(Level.DEBUG, "type: " + mtype);
             return MoonDriverFileType.unknown;
         }
 
-        if (buf[0] == 'M'
-                && buf[1] == 'D'
-                && buf[2] == 'R'
-                && buf[3] == 'V') {
+        if (buf[0] == 'M' &&
+                buf[1] == 'D' &&
+                buf[2] == 'R' &&
+                buf[3] == 'V') {
             return MoonDriverFileType.MDR;
         }
 
@@ -200,7 +195,7 @@ logger.log(Level.DEBUG, "type: " + mtype);
         MmlDatum[] ret;
         CompilerInfo info;
         try {
-            try (MemoryStream sourceMML = new MemoryStream(dataBuf)) {
+            try (InputStream sourceMML = new ByteArrayInputStream(dataBuf)) {
                 ret = moonDriverCompiler.compile(sourceMML, this::appendFileReaderCallback);
             }
 
@@ -223,10 +218,10 @@ logger.log(Level.DEBUG, "type: " + mtype);
         //boolean isLoadADPCM = true;
         //boolean loadADPCMOnly = false;
 
-        ////mucomDriver.Init(playingFileName,chipWriteRegister,chipWaitSend,
-        //         notSoundBoard2
-        //       , isLoadADPCM
-        //       , loadADPCMOnly
+        ////mucomDriver.init(playingFileName,chipWriteRegister,chipWaitSend,
+        //         notSoundBoard2,
+        //         isLoadADPCM,
+        //         loadADPCMOnly
         //   );
         //List<ChipRunnable> lca = new ArrayList<ChipRunnable>();
         //mucomChipAction ca;
@@ -235,11 +230,11 @@ logger.log(Level.DEBUG, "type: " + mtype);
         //ca = new mucomChipAction(OPNB1Write, WriteOPNB1PCMData, null); lca.add(ca);
         //ca = new mucomChipAction(OPNB2Write, WriteOPNB2PCMData, null); lca.add(ca);
         //ca = new mucomChipAction(OPM1Write, null, null); lca.add(ca);
-        //moonDriverDriver.Init(
+        //moonDriverDriver.init(
         //    lca,
-        //    ret
-        //    , null
-        //    , new Object[] {
+        //    ret,
+        //    null,
+        //    new Object[] {
         //          notSoundBoard2
         //        , isLoadADPCM
         //        , loadADPCMOnly
@@ -259,8 +254,8 @@ logger.log(Level.DEBUG, "type: " + mtype);
 
         List<ChipAction> lca = new ArrayList<>();
         ChipAction ca;
-logger.log(Level.INFO, "useChip: " + plugin.chipRegister.chips());
-        if (plugin.chipRegister.contains(YmF278BChip.class)) {
+logger.log(Level.INFO, "useChip: " + plugin.getChips().stream().map(Class::getSimpleName).toList());
+        if (plugin.contains(YmF278BChip.class)) {
             ca = new MoonDriverChipAction(this::opl4Write, this::opl4WaitSend);
         } else {
             ca = new MoonDriverChipAction(this::opl3Write, this::opl3WaitSend);
@@ -271,21 +266,21 @@ logger.log(Level.INFO, "useChip: " + plugin.chipRegister.chips());
                 lca,
                 buf.toArray(MmlDatum[]::new),
                 this::appendFileReaderCallback,
-                playingFileName, (double) 44100, 0);
+                plugin.playingFileName, (double) 44100, 0);
 
         moonDriverDriver.startRendering(Common.VGMProcSampleRate, new Tuple<>("YMF278B", 33868800));
         moonDriverDriver.startMusic(0);
     }
 
-    private Stream appendFileReaderCallback(String arg) {
+    private InputStream appendFileReaderCallback(String arg) {
 
-        String fn = Path.combine(Path.getDirectoryName(playingFileName), arg);
+        Path fn = Path.of(plugin.playingFileName).getParent().resolve(arg);
 
-        if (!File.exists(fn)) return null;
+        if (!Files.exists(fn)) return null;
 
-        FileStream strm;
+        InputStream strm;
         try {
-            strm = new FileStream(fn, FileMode.Open, FileAccess.Read, FileShare.Read);
+            strm = Files.newInputStream(fn);
         } catch (IOException e) {
             logger.log(Level.ERROR, e.getMessage(), e);
             strm = null;

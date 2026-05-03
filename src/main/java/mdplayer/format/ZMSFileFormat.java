@@ -2,13 +2,13 @@ package mdplayer.format;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
-import dotnet4j.io.Path;
 import mdplayer.PlayList;
 import mdplayer.driver.zms.ZmsDriver;
 import mdplayer.plugin.Plugin;
@@ -36,14 +36,19 @@ public class ZMSFileFormat extends BaseFileFormat {
     }
 
     @Override
+    public MetaData getMetaData() {
+        ZmsDriver zms = new ZmsDriver();
+        return zms.getMetaData(this.srcBuf, 8, filename);
+    }
+
+    @Override
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
         PlayList.Music music = new PlayList.Music();
 
         music.format = this;
-        int index = 8;
-        MetaData metaData = new ZmsDriver().getMetaData(buf, index);
-        music.title = metaData.getFirst(Tag.Title).isEmpty() ? Path.getFileName(file) : metaData.getFirst(Tag.Title);
-        music.titleJ = metaData.getFirst(Tag.TitleJ).isEmpty() ? Path.getFileName(file) : metaData.getFirst(Tag.TitleJ);
+        MetaData metaData = getMetaData();
+        music.title = metaData.getFirst(Tag.Title).isEmpty() ? Path.of(file).getFileName().toString() : metaData.getFirst(Tag.Title);
+        music.titleJ = metaData.getFirst(Tag.TitleJ).isEmpty() ? Path.of(file).getFileName().toString() : metaData.getFirst(Tag.TitleJ);
         music.game = metaData.getFirst(Tag.GameTitle);
         music.gameJ = metaData.getFirst(Tag.GameTitleJ);
         music.composer = metaData.getFirst(Tag.Composer);
@@ -61,10 +66,9 @@ public class ZMSFileFormat extends BaseFileFormat {
         PlayList.Music music = new PlayList.Music();
 
         music.format = this;
-        int index = 8;
-        MetaData metaData = new ZmsDriver().getMetaData(buf, index);
-        music.title = metaData.getFirst(Tag.Title).isEmpty() ? Path.getFileName(zipFile) : metaData.getFirst(Tag.Title);
-        music.titleJ = metaData.getFirst(Tag.TitleJ).isEmpty() ? Path.getFileName(zipFile) : metaData.getFirst(Tag.TitleJ);
+        MetaData metaData = getMetaData();
+        music.title = metaData.getFirst(Tag.Title).isEmpty() ? Path.of(zipFile).getFileName().toString() : metaData.getFirst(Tag.Title);
+        music.titleJ = metaData.getFirst(Tag.TitleJ).isEmpty() ? Path.of(zipFile).getFileName().toString() : metaData.getFirst(Tag.TitleJ);
         music.game = metaData.getFirst(Tag.GameTitle);
         music.gameJ = metaData.getFirst(Tag.GameTitleJ);
         music.composer = metaData.getFirst(Tag.Composer);

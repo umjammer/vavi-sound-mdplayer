@@ -12,6 +12,7 @@ import java.util.Arrays;
 import static java.lang.System.getLogger;
 
 
+//  MemoryMappedFile
 public class MmfControl {
 
     private static final Logger logger = getLogger(MmfControl.class.getName());
@@ -36,7 +37,7 @@ public class MmfControl {
             mmfBuf = new byte[mmfSize];
 
             synchronized (lockObj) {
-                _map = ((FileChannel) Files.newByteChannel(Paths.get(mmfName))).map(FileChannel.MapMode.READ_ONLY, 0, mmfSize);
+//                _map = ((FileChannel) Files.newByteChannel(Paths.get(mmfName))).map(FileChannel.MapMode.READ_ONLY, 0, mmfSize);
             }
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);

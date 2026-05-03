@@ -6,11 +6,13 @@
 
 package mdplayer.plugin;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
-import dotnet4j.io.File;
-import dotnet4j.io.Path;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.Ay8910Chip;
 import mdplayer.chips.K051649Chip;
@@ -18,11 +20,13 @@ import mdplayer.chips.Ym2413Chip;
 import mdplayer.driver.musica.MuSICA;
 import mdplayer.driver.musica.MusicaDriver;
 import mdplayer.driver.musica.MusicaK4Driver;
+import mdplayer.plugin.BasePlugin.Compilable;
 import mdsound.MDSound;
 import mdsound.instrument.MameAy8910Inst;
 
 import static java.lang.System.getLogger;
 import static mdsound.MDSound.Chip.MAIN_TAG;
+import static vavi.util.compat.Util.changeExtension;
 
 
 /**
@@ -31,33 +35,41 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-02-20 nsano initial version <br>
  */
-public class MuSICAPlugin extends BasePlugin<MusicaDriver> {
+public class MuSICAPlugin extends BasePlugin<MusicaDriver> implements Compilable {
 
     private static final Logger logger = getLogger(MuSICAPlugin.class.getName());
+
+    @Override
+    public void compile() {
+
+    }
 
     @Override
     public void prepare() {
         if (playingFileName.toLowerCase().endsWith(".msd")) {
 
-            String vcd = Path.changeExtension(playingFileName, ".vcd");
+            String vcd = changeExtension(playingFileName, ".vcd");
             byte[] vcdBuf = null;
-            if (File.exists(vcd)) {
-                vcdBuf = File.readAllBytes(vcd);
+            if (Files.exists(Path.of(vcd))) {
+                try {
+                    vcdBuf = Files.readAllBytes(Path.of(vcd));
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
             }
 
             MusicaK4Driver driverVirtual = new MusicaK4Driver();
-            driverVirtual.init(vgmBuf, this, null, -1, -1);
-            driverVirtual.compile(vgmBuf, vcdBuf);
+            driverVirtual.init(null, -1, -1);
+            driverVirtual.compile(dataBuf, vcdBuf);
 
-            vgmBuf = driverVirtual.getBgmBin();
+            dataBuf = driverVirtual.getBgmBin();
         }
 
-        driverVirtual = new MusicaDriver();
+        driverVirtual = new MusicaDriver(this);
 
         driverReal = null;
 //        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
-//            driverReal = new MuSICA();
-//            driverReal.setPlayingFileName(playingFileName);
+//            driverReal = new MusicaDriver(this);
 //        }
 
         super.prepare();
@@ -68,7 +80,7 @@ public class MuSICAPlugin extends BasePlugin<MusicaDriver> {
     protected void initChips() {
         int[] trkOffsets = new int[17];
         for (int t = 0; t < trkOffsets.length; t++) {
-            trkOffsets[t] = (vgmBuf[8 + t * 2] & 0xff) + (vgmBuf[9 + t * 2] & 0xff) * 0x100;
+            trkOffsets[t] = (dataBuf[8 + t * 2] & 0xff) + (dataBuf[9 + t * 2] & 0xff) * 0x100;
         }
         boolean useAY = ((trkOffsets[9] + trkOffsets[10] + trkOffsets[11]) != 0);
         boolean useSCC = ((trkOffsets[12] + trkOffsets[13] + trkOffsets[14] + trkOffsets[15] + trkOffsets[16]) != 0);
@@ -131,11 +143,11 @@ logger.log(Level.INFO, "MuSICA: AY: %b, SCC: %b, OPLL: %b".formatted(useAY, useS
             chipRegister.chip(Ym2413Chip.class).write(0, 14, 32, EnmModel.VirtualModel);
         }
 
-        driverVirtual.init(vgmBuf, this, EnmModel.VirtualModel,
+        driverVirtual.init(EnmModel.VirtualModel,
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         if (driverReal != null) {
-            driverReal.init(vgmBuf, this, EnmModel.RealModel,
+            driverReal.init(EnmModel.RealModel,
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         }

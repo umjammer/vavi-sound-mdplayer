@@ -1,6 +1,7 @@
 package mdplayer.format;
 
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -8,7 +9,6 @@ import java.util.List;
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
-import dotnet4j.io.Path;
 import mdplayer.PlayList;
 import mdplayer.driver.s98.S98Driver;
 import mdplayer.plugin.Plugin;
@@ -37,10 +37,15 @@ public class S98FileFormat extends BaseFileFormat {
     }
 
     @Override
+    public MetaData getMetaData() {
+        return new S98Driver().getMetaData(this.srcBuf);
+    }
+
+    @Override
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
         PlayList.Music music = new PlayList.Music();
         music.format = this;
-        MetaData metaData = new S98Driver().getMetaData(buf);
+        MetaData metaData = getMetaData();
         if (metaData != null) {
             music.title = metaData.getFirst(Tag.Title);
             music.titleJ = metaData.getFirst(Tag.TitleJ);
@@ -53,7 +58,7 @@ public class S98FileFormat extends BaseFileFormat {
             music.converted = metaData.getFirst(Tag.Converter);
             music.notes = metaData.getFirst(Tag.Note);
         } else {
-            music.title = "(%s)".formatted(Path.getFileName(file));
+            music.title = "(%s)".formatted(Path.of(file).getFileName());
         }
         return Collections.singletonList(music);
     }
@@ -64,7 +69,7 @@ public class S98FileFormat extends BaseFileFormat {
         PlayList.Music music = new PlayList.Music();
 
         music.format = this;
-        MetaData metaData = new S98Driver().getMetaData(buf);
+        MetaData metaData = getMetaData();
         if (metaData != null) {
             music.title = metaData.getFirst(Tag.Title);
             music.titleJ = metaData.getFirst(Tag.TitleJ);
@@ -77,7 +82,7 @@ public class S98FileFormat extends BaseFileFormat {
             music.converted = metaData.getFirst(Tag.Converter);
             music.notes = metaData.getFirst(Tag.Note);
         } else {
-            music.title = "(%s)".formatted(Path.getFileName(ms.fileName));
+            music.title = "(%s)".formatted(Path.of(ms.fileName).getFileName());
         }
 
         musics.add(music);

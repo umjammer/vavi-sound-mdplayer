@@ -1,24 +1,19 @@
 package mdplayer.format;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
-import dotnet4j.io.File;
-import dotnet4j.io.FileAccess;
-import dotnet4j.io.FileMode;
-import dotnet4j.io.FileStream;
-import dotnet4j.io.MemoryStream;
-import dotnet4j.io.Path;
-import dotnet4j.io.compression.CompressionMode;
-import dotnet4j.io.compression.GZipStream;
 import mdplayer.PlayList;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.VgmDriver;
@@ -32,6 +27,9 @@ import vavi.util.ByteUtil;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Archives;
 import vavi.util.archive.Entry;
+
+import static vavi.util.compat.Util.changeExtension;
+import static vavi.util.compat.Util.getExtension;
 
 
 /**
@@ -71,21 +69,13 @@ public class VGMFileFormat extends BaseFileFormat {
             return buf;
         }
 
-        int num;
-        buf = new byte[1024]; // Process 1Kbytes at a time
-
-        try (FileStream inStream = new FileStream(filename, FileMode.Open, FileAccess.Read); // Input Stream
-             GZipStream decompStream = new GZipStream( // Decompressed Stream
-                     inStream, // Specify the input source stream
-                     CompressionMode.Decompress); // Specify decompression (uncompression)
-             MemoryStream outStream = new MemoryStream() // Output Stream
+        try (InputStream inStream = Archives.getInputStream(Files.newInputStream(Path.of(filename))); // Input Stream
+             ByteArrayOutputStream outStream = new ByteArrayOutputStream() // Output Stream
         ) {
-            while ((num = decompStream.read(buf, 0, buf.length)) > 0) {
-                outStream.write(buf, 0, num);
-            }
+            inStream.transferTo(outStream);
 
-            return outStream.getBuffer();
-        } catch (java.io.IOException e) {
+            return outStream.toByteArray();
+        } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }
@@ -109,8 +99,14 @@ public class VGMFileFormat extends BaseFileFormat {
     }
 
     @Override
-    protected MetaData getMetaData(byte[] buf, int vgmGd3) {
-        return new VgmDriver().getMetaData(buf, vgmGd3);
+    public MetaData getMetaData() {
+        int vgmGd3 = ByteUtil.readLeInt(this.srcBuf, 0x14);
+        return new VgmDriver().getMetaData(this.srcBuf, vgmGd3);
+    }
+
+    @Override
+    protected MetaData getMetaData(byte[] buf, Object... args) {
+        return new VgmDriver().getMetaData(buf, args);
     }
 
     @Override
@@ -133,13 +129,13 @@ public class VGMFileFormat extends BaseFileFormat {
 
     @Override
     protected byte[] addFileLoopInternal(PlayList.Music mc) {
-        if (Path.getExtension(mc.fileName).equalsIgnoreCase(".vgm")) {
-            mc.fileName = Path.changeExtension(mc.fileName, ".vgz");
+        if (getExtension(mc.fileName).equalsIgnoreCase(".vgm")) {
+            mc.fileName = changeExtension(mc.fileName, ".vgz");
         } else {
-            mc.fileName = Path.changeExtension(mc.fileName, ".Vgm");
+            mc.fileName = changeExtension(mc.fileName, ".Vgm");
         }
         try {
-            return File.readAllBytes(mc.fileName);
+            return Files.readAllBytes(Path.of(mc.fileName));
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
             return null;

@@ -3,16 +3,14 @@ package mdplayer.format;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.System.Logger;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
-import dotnet4j.io.Path;
-import dotnet4j.util.compat.Tuple;
 import mdplayer.Common;
 import mdplayer.PlayList;
 import mdplayer.Setting;
@@ -27,6 +25,9 @@ import vavi.sound.sampled.md.MdEncoding;
 import vavi.sound.sampled.md.MdFileFormatType;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
+import vavi.util.compat.Tuple;
+
+import static vavi.util.compat.Util.getExtension;
 
 
 /**
@@ -45,13 +46,18 @@ public class MDXFileFormat extends BaseFileFormat {
     }
 
     @Override
+    public MetaData getMetaData() {
+        return new MxDriver().getMetaData(this.srcBuf);
+    }
+
+    @Override
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
         PlayList.Music music = new PlayList.Music();
 
         music.format = this;
-        MetaData metaData = new MxDriver().getMetaData(buf);
-        music.title = metaData.getFirst(Tag.Title).isEmpty() ? Path.getFileName(file) : metaData.getFirst(Tag.Title);
-        music.titleJ = metaData.getFirst(Tag.TitleJ).isEmpty() ? Path.getFileName(file) : metaData.getFirst(Tag.TitleJ);
+        MetaData metaData = getMetaData();
+        music.title = metaData.getFirst(Tag.Title).isEmpty() ? Path.of(file).getFileName().toString() : metaData.getFirst(Tag.Title);
+        music.titleJ = metaData.getFirst(Tag.TitleJ).isEmpty() ? Path.of(file).getFileName().toString() : metaData.getFirst(Tag.TitleJ);
         music.game = metaData.getFirst(Tag.GameTitle);
         music.gameJ = metaData.getFirst(Tag.GameTitleJ);
         music.composer = metaData.getFirst(Tag.Composer);
@@ -70,7 +76,7 @@ public class MDXFileFormat extends BaseFileFormat {
     }
 
     @Override
-    public List<Tuple<String, byte[]>> getExtendFile(String fn, byte[] srcBuf, Archive archive, Entry entry) {
+    public List<Tuple<String, byte[]>> getExtendFiles(byte[] srcBuf, Archive archive, Entry entry) {
         List<Tuple<String, byte[]>> ret = new ArrayList<>();
         byte[] buf;
 
@@ -78,7 +84,7 @@ public class MDXFileFormat extends BaseFileFormat {
         MxDriver.getPDXFileName(srcBuf, PDX, Common.charset);
         if (PDX[0] != null && !PDX[0].isEmpty()) {
             String pdx = PDX[0].toLowerCase().endsWith(".pdx") ? PDX[0] : PDX[0] + ".pdx";
-            buf = getExtendFileAllBytes(fn, pdx, archive, entry);
+            buf = getExtendFileAllBytes(filename, pdx, archive, entry);
             if (buf != null) ret.add(new Tuple<>(pdx, buf));
         }
 
@@ -102,14 +108,13 @@ public class MDXFileFormat extends BaseFileFormat {
      * @throws IllegalArgumentException sampling late must be set as 44.1kHz.
      */
     @Override
-    public Tuple<byte[], List<Tuple<String, byte[]>>> load(String archive, String fn) throws IOException {
-        var r = super.load(archive, fn);
-        if (Path.getExtension(fn).equalsIgnoreCase(".MDX")) {
+    public void load(InputStream is, String fn) throws IOException {
+        super.load(is, fn);
+        if (getExtension(filename).equalsIgnoreCase(".MDX")) {
             if (Setting.getInstance().getOutputDevice().getSampleRate() != 44100) {
                 throw new IllegalStateException("When playing MDX files, set the sampling rate to 44.1kHz.");
             }
         }
-        return r;
     }
 
     @Override

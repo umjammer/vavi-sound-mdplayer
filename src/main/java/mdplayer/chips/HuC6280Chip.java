@@ -6,13 +6,11 @@
 
 package mdplayer.chips;
 
-import mdplayer.Chip;
+import java.util.Map;
+
 import mdplayer.Common.EnmModel;
 import mdplayer.Setting;
-import mdplayer.driver.BaseDriver;
-import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
-import mdsound.chips.OotakeHuC6280;
 import mdsound.instrument.HuC6280Inst;
 
 
@@ -80,8 +78,8 @@ public class HuC6280Chip extends BaseChip {
         this.mask[chipId][ch] = mask;
     }
 
-    public OotakeHuC6280 getChip(int chipId) {
-        return context.mds.inst(HuC6280Inst.class).getChip(chipId);
+    public Map<String, Object> getInfo(int chipId) {
+        return context.mds.inst(HuC6280Inst.class).getInfo(chipId);
     }
 
     public void setMask(int chipId, int ch) {

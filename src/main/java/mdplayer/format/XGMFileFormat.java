@@ -2,6 +2,7 @@ package mdplayer.format;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -9,7 +10,6 @@ import java.util.List;
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
-import dotnet4j.io.Path;
 import mdplayer.PlayList;
 import mdplayer.driver.Xgm2;
 import mdplayer.driver.Xgm2Driver;
@@ -40,16 +40,20 @@ public class XGMFileFormat extends BaseFileFormat {
     }
 
     @Override
+    public MetaData getMetaData() {
+        if (!Xgm2.checkXGM2(this.srcBuf)) {
+            return new XgmDriver().getMetaData(this.srcBuf);
+        } else {
+            return new Xgm2Driver().getMetaData(this.srcBuf);
+        }
+    }
+
+    @Override
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
         PlayList.Music music = new PlayList.Music();
 
         music.format = this;
-        MetaData metaData;
-        if (!Xgm2.checkXGM2(buf)) {
-            metaData = new XgmDriver().getMetaData(buf);
-        } else {
-            metaData = new Xgm2Driver().getMetaData(buf);
-        }
+        MetaData metaData = getMetaData();
         music.title = metaData.getFirst(Tag.Title);
         music.titleJ = metaData.getFirst(Tag.TitleJ);
         music.game = metaData.getFirst(Tag.GameTitle);
@@ -62,7 +66,7 @@ public class XGMFileFormat extends BaseFileFormat {
         music.notes = metaData.getFirst(Tag.Note);
 
         if (music.title.isEmpty() && music.titleJ.isEmpty() && music.game.isEmpty() && music.gameJ.isEmpty() && music.composer.isEmpty() && music.composerJ.isEmpty()) {
-            music.title = "(%s)".formatted(Path.getFileName(file));
+            music.title = "(%s)".formatted(Path.of(file).getFileName());
         }
 
         return Collections.singletonList(music);
@@ -74,12 +78,7 @@ public class XGMFileFormat extends BaseFileFormat {
         PlayList.Music music = new PlayList.Music();
 
         music.format = this;
-        MetaData metaData;
-        if (!Xgm2.checkXGM2(buf)) {
-            metaData = new XgmDriver().getMetaData(buf, 0);
-        } else {
-            metaData = new Xgm2Driver().getMetaData(buf, 0);
-        }
+        MetaData metaData = getMetaData();
         music.title = metaData.getFirst(Tag.Title);
         music.titleJ = metaData.getFirst(Tag.TitleJ);
         music.game = metaData.getFirst(Tag.GameTitle);
@@ -92,7 +91,7 @@ public class XGMFileFormat extends BaseFileFormat {
         music.notes = metaData.getFirst(Tag.Note);
 
         if (music.title.isEmpty() && music.titleJ.isEmpty() && music.game.isEmpty() && music.gameJ.isEmpty() && music.composer.isEmpty() && music.composerJ.isEmpty()) {
-            music.title = "(%s)".formatted(Path.getFileName(ms.fileName));
+            music.title = "(%s)".formatted(Path.of(ms.fileName).getFileName());
         }
 
         musics.add(music);

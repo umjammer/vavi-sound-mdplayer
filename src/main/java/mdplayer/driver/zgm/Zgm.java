@@ -43,6 +43,14 @@ public class Zgm extends BaseDriver {
 
     private final Map<Integer, RefRunnable<Byte, Integer>> vgmCmdTbl = new HashMap<>();
 
+    public Zgm(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+    }
+
+    public Zgm() {
+        this(null); // gross
+    }
+
     @Override
     public MetaData getMetaData(byte[] buf, Object... args) {
         getZGMGD3Info(buf);
@@ -50,10 +58,7 @@ public class Zgm extends BaseDriver {
     }
 
     @Override
-    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     int latency, int waitTime, Object... args) {
-        this.dataBuf = vgmBuf;
-        this.plugin = plugin;
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
         this.model = model;
         this.latency = latency;
         this.waitTime = waitTime;
@@ -67,7 +72,7 @@ public class Zgm extends BaseDriver {
         speed = 1;
         speedCounter = 0;
 
-        getZGMInfo(vgmBuf);
+        getZGMInfo(dataBuf);
     }
 
     @Override

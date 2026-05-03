@@ -6,7 +6,6 @@
 
 package mdplayer.driver.nsf;
 
-import mdsound.MDSound.Chip;
 import musicDriverInterface.MetaData;
 
 
@@ -31,22 +30,6 @@ public interface NsfDriver {
     boolean useVrc6();
 
     boolean useVrc7();
-
-    void setApu(Chip chip);
-
-    void setDmc(Chip chip);
-
-    void setFds(Chip chip);
-
-    void setMmc5(Chip chip);
-
-    void setN160(Chip chip);
-
-    void setVrc6(Chip chip);
-
-    void setVrc7(Chip chip);
-
-    void setFme7(Chip chip);
 
     MetaData getMetaData(byte[] buf, Object... args);
 

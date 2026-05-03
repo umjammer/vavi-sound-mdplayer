@@ -13,20 +13,22 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Predicate;
 
 import com.github.kwhat.jnativehook.GlobalScreen;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
 import mdplayer.Audio;
-import mdplayer.PlayList.Music;
 import mdplayer.driver.BaseDriver;
 import mdplayer.format.FileFormat;
 import mdplayer.plugin.BasePlugin;
+import musicDriverInterface.MetaData;
 import vavi.util.Debug;
 import vavi.util.properties.annotation.Property;
 import vavi.util.properties.annotation.PropsEntity;
@@ -34,6 +36,7 @@ import vavi.util.properties.annotation.PropsEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIf;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 
@@ -43,6 +46,7 @@ import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-06-03 nsano initial version <br>
  */
+@EnabledIf("localPropertiesExists")
 @PropsEntity(url = "file:local.properties")
 public class TestCase {
 
@@ -56,20 +60,21 @@ public class TestCase {
     @Property
     String file;
 
+    /** 1 origin */
     @Property
     int track;
 
-    @Property
+    @Property(name = "mdplayer.fmp.dir")
     String fmpDir;
-    @Property
+    @Property(name = "mdplayer.fmp.pvi")
     String fmpPvi;
-    @Property
+    @Property(name = "mdplayer.zms.dir")
     String zmsDir;
-    @Property
+    @Property(name = "mdplayer.mgs.dir")
     String mgsDir;
-    @Property
+    @Property(name = "mdplayer.ndp.dir")
     String ndpDir;
-    @Property
+    @Property(name = "mdplayer.musica.dir")
     String musicaDir;
     @Property(name = "muap.dir.dta")
     String muapDirDta;
@@ -142,16 +147,20 @@ Debug.println("settings\n" +
         "mdplayer.variant.ymf262: " + System.getProperty("mdplayer.variant.ymf262"));
     }
 
-    private Audio audio = Audio.getInstance();
+    private final Audio audio = Audio.getInstance();
 
     /** */
     void play() throws Exception {
 Debug.println("filename: " + file);
         FileFormat format = FileFormat.getFileFormat(file);
 Debug.println("format: " + format.getClass().getSimpleName());
-        var r = format.load((String) null, file);
-        BasePlugin<? extends BaseDriver> plugin = (BasePlugin) format.getPlugin();
-        plugin.setBuffer(format, r.getItem1(), file, null, 0, track, r.getItem2());
+        format.load(Files.newInputStream(Path.of(file)), null);
+        var plugin = (BasePlugin<? extends BaseDriver>) format.getPlugin();
+        plugin.setParams(format, Map.of(
+                "fileName", file,
+                "midiMode", 0,
+                "songNo", track - 1)
+        );
 Debug.println("plugin: " + plugin.getClass().getSimpleName());
         audio.init(plugin);
         audio.play();
@@ -177,22 +186,27 @@ Debug.println("not on ide");
     @DisplayName("play random one in local.properties")
     @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
     void test2() throws Exception {
-        List<String> files = new ArrayList<>();
+
+        playMulti(listFilesInLocalProperties());
+    }
+
+    /** files in local.properties includes commented out also */
+    static List<Path> listFilesInLocalProperties() throws IOException {
+        List<Path> paths = new ArrayList<>();
         Files.readAllLines(Paths.get("local.properties")).forEach(line -> {
             if (line.matches("^#?file\\s*?=.*$")) {
                 String file = line.substring(line.indexOf("=") + 1);
 //System.err.println(file);
                 Path path = Path.of(file);
                 if (Files.exists(path) && !Files.isDirectory(path))
-                    files.add(file);
+                    paths.add(path);
             }
         });
-
-        playMulti(files);
+        return paths;
     }
 
-    /** */
-    void playMulti(List<String> files) throws Exception {
+    /** play list, nexting by hitting ^n */
+    void playMulti(List<Path> files) throws Exception {
         AtomicReference<CountDownLatch> cdl = new AtomicReference<>();
         Random random = new Random(System.currentTimeMillis());
 
@@ -210,7 +224,7 @@ Debug.print("countdown");
         });
 
         while (true) {
-            this.file = files.get(random.nextInt(files.size()));
+            this.file = files.get(random.nextInt(files.size())).toString();
             cdl.set(new CountDownLatch(1));
 Debug.print("play: " + file + " ---------------------------------------------------------------------");
             ExecutorService es = Executors.newSingleThreadExecutor();
@@ -225,21 +239,35 @@ Debug.println("stop");
         }
     }
 
+    /**
+     * @param dir separated by ';'
+     * @param ext separated by ','
+     */
+    static List<Path> listFilesUnderDirFilteredByExt(String dir, String ext) {
+Debug.println("dir: " + dir);
+Debug.println("ext: " + ext);
+        Predicate<Path> x = p -> Arrays.stream(ext.split(",")).anyMatch(e -> p.getFileName().toString().toUpperCase().endsWith(e));
+        return Arrays.stream(dir.split(File.pathSeparator)).flatMap(d -> {
+            try {
+                return Files.walk(Paths.get(d)).filter(x);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        }).toList();
+    }
+
     @Test
     @DisplayName("show meta data in the dir filtered by ext")
     @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
     void test3() throws Exception {
-        List<Path> paths = Files.walk(Paths.get(dir))
-                .filter(p -> p.getFileName().toString().toUpperCase().endsWith(ext))
-                .toList();
-        paths.forEach(p -> {
+        listFilesUnderDirFilteredByExt(dir, ext).forEach(p -> {
             try {
                 FileFormat format = FileFormat.getFileFormat(p.toString());
 Debug.println(p);
-                var r = format.load((String) null, p.toString());
-                Music music = format.getMusic(null, r.getItem1(), null, null, null).getFirst();
+                format.load(Files.newInputStream(p), null);
+                MetaData music = format.getMetaData();
 Debug.println(music);
-            } catch (Exception e) {
+            } catch (Exception _) {
             }
         });
     }
@@ -248,16 +276,15 @@ Debug.println(music);
     @DisplayName("play random one in the dir filtered by ext")
     @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
     void test4() throws Exception {
-        List<String> paths = Arrays.stream(dir.split(File.pathSeparator)).flatMap(d -> {
-            try {
-                return Files.walk(Paths.get(d))
-                            .filter(p -> Arrays.stream(ext.split(",")).anyMatch(e -> p.getFileName().toString().toUpperCase().endsWith(e)))
-                            .map(Path::toString);
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
-        }).toList();
-        playMulti(paths);
+        playMulti(listFilesUnderDirFilteredByExt(dir, ext));
+    }
+
+    @Test
+    void testX() throws Exception {
+        mdplayer.Program.main(new String[] {file});
+
+        CountDownLatch cdl = new CountDownLatch(1);
+        cdl.await();
     }
 
     /**

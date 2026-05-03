@@ -20,10 +20,11 @@
 
 package mdplayer.driver.sid.libsidplayfp.sidtune;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 
-import dotnet4j.io.IOException;
 import mdplayer.driver.sid.libsidplayfp.SidEndian;
 import mdplayer.driver.sid.libsidplayfp.SidMemory;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTuneInfo;
@@ -937,8 +938,12 @@ public class MUS extends SidTuneBase {
 
     @Override
     protected void acceptSidTune(String dataFileName, String infoFileName, List<Byte> buf, boolean isSlashedFileName) {
-        setPlayerAddress();
-        super.acceptSidTune(dataFileName, infoFileName, buf, isSlashedFileName);
+        try {
+            setPlayerAddress();
+            super.acceptSidTune(dataFileName, infoFileName, buf, isSlashedFileName);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     @Override
@@ -948,7 +953,7 @@ public class MUS extends SidTuneBase {
     }
 
     // TODO OUT
-    private boolean mergeParts(byte[] musBuf, byte[] strBuf) {
+    private boolean mergeParts(byte[] musBuf, byte[] strBuf) throws IOException {
         int mergeLen = musBuf.length + strBuf.length;
 
         // Sanity check. I do not trust those MUS/STR files around.
@@ -1000,12 +1005,12 @@ public class MUS extends SidTuneBase {
         }
     }
 
-    public SidTuneBase load(byte[] musBuf, boolean init /*= false*/) {
+    public SidTuneBase load(byte[] musBuf, boolean init /* = false */) throws IOException {
         byte[] empty = new byte[0];
         return load(musBuf, empty, 0, init);
     }
 
-    public SidTuneBase load(byte[] musBuf, byte[] strBuf, int fileOffset, boolean init/* = false*/) {
+    public SidTuneBase load(byte[] musBuf, byte[] strBuf, int fileOffset, boolean init/* = false */) throws IOException {
         int[] voice3Index = {0};
         if (!detect(ByteBuffer.wrap(musBuf, fileOffset, musBuf.length - fileOffset), voice3Index))
             return null;
@@ -1017,7 +1022,7 @@ public class MUS extends SidTuneBase {
         return tune;
     }
 
-    private void tryLoad(byte[] musBuf, byte[] strBuf, int fileOffset, int[] voice3Index, boolean init) {
+    private void tryLoad(byte[] musBuf, byte[] strBuf, int fileOffset, int[] voice3Index, boolean init) throws IOException {
         if (init) {
             info.songs = 1;
             info.startSong = 1;

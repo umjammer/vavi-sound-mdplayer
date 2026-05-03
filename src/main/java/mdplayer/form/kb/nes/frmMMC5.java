@@ -19,8 +19,8 @@ import javax.swing.JPanel;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
-import mdplayer.chips.NesChip;
-import mdplayer.chips.NesChip.Mmc5Chip;
+import mdplayer.chips.NpNesChip;
+import mdplayer.chips.NpNesChip.Mmc5Chip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
@@ -110,7 +110,7 @@ public class frmMMC5 extends frmBase {
         final double LOG_2 = 0.69314718055994530941723212145818;
         final int NOTE_440HZ = 12 * 4 + 9;
 
-        byte[] reg = audio.plugin.chipRegister.chip(NesChip.Mmc5Chip.class).readMmc5(chipId);
+        byte[] reg = audio.plugin.chipRegister.chip(NpNesChip.Mmc5Chip.class).readMmc5(chipId);
         int freq;
         int vol;
         int note;

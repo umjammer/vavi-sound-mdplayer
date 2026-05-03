@@ -1,7 +1,11 @@
 package mdplayer.driver.rcp;
 
+import java.io.IOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -12,10 +16,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.IntSupplier;
 
-import dotnet4j.io.File;
-import dotnet4j.io.Path;
-import dotnet4j.util.compat.Tuple;
-import mdplayer.Common;
 import mdplayer.driver.mxdrv.MXDRV.Pcm8St;
 import mdplayer.driver.rcp.MIDIEvent.MIDIEventType;
 import mdplayer.driver.rcp.MIDIEvent.MIDISpEventType;
@@ -23,22 +23,21 @@ import mdplayer.driver.zms.Zms.MPCMSt;
 import mdsound.instrument.Pcm8PPInst;
 import mdsound.instrument.X68kYm2151Inst;
 import vavi.util.ByteUtil;
+import vavi.util.compat.Tuple;
 
 import static java.lang.System.getLogger;
-import static mdplayer.Common.charset;
+import static vavi.util.compat.Util.getExtension;
 
 
 public class RCS {
 
     private static final Logger logger = getLogger(RCS.class.getName());
 
-    public RCS() {
-        musicStep = Common.VGMProcSampleRate / 60.0;
-    }
-
     private double oneSyncTime = 0.009;
-    private double musicStep = 1; // setting.outputDevice.SampleRate / 60.0;
+    double musicStep;
     private double musicDownCounter = 0.0;
+    Charset charset;
+    int sampleRate;
 
     List<CtlSysex>[] beforeSend = null;
     int[] sendControlDelta = null;
@@ -71,14 +70,14 @@ public class RCS {
 
     public List<Tuple<String, byte[]>> extendFiles = null;
 
-    public static void getControlFileName(
+    public void getControlFileName(
             String fn,
             String supportfile,
             byte[] buf,
             /* out */ String[] sRCP,
             /* out */ String[] CM6,
             /* out */ String[] GSD,
-            /* out */String[] GSD2) {
+            /* out */String[] GSD2) throws IOException {
         sRCP[0] = null;
         CM6[0] = null;
         GSD[0] = null;
@@ -162,21 +161,26 @@ public class RCS {
         }
 
         // Get RCP filename
-        byte[] dmy = new byte[55];
-        System.arraycopy(buf, 9, dmy, 0, 55);
-        rcpFilename[0] = (new String(dmy)).trim().replace("\0", "");
-        if (supportfile == null) {
-            if (rcpBuf[0] == null) {
-                if (filename != null && !filename.isEmpty()) {
-                    rcpFilename[0] = Path.combine(Path.getDirectoryName(filename), rcpFilename[0]);
+        try {
+            byte[] dmy = new byte[55];
+            System.arraycopy(buf, 9, dmy, 0, 55);
+            rcpFilename[0] = (new String(dmy)).trim().replace("\0", "");
+            if (supportfile == null) {
+                if (rcpBuf[0] == null) {
+                    if (filename != null && !filename.isEmpty()) {
+                        rcpFilename[0] = Path.of(filename).getParent().resolve(rcpFilename[0]).toString();
+                    }
+                    if (Files.exists(Path.of(rcpFilename[0]))) rcpBuf[0] = Files.readAllBytes(Path.of(rcpFilename[0]));
                 }
-                if (File.exists(rcpFilename[0])) rcpBuf[0] = File.readAllBytes(rcpFilename[0]);
+            } else {
+                if (Files.exists(Path.of(supportfile))) rcpBuf[0] = Files.readAllBytes(Path.of(supportfile));
             }
-        } else {
-            if (File.exists(supportfile)) rcpBuf[0] = File.readAllBytes(supportfile);
+        } catch (IOException e) {
+            logger.log(Level.ERROR, e.getMessage(), e);
+            return false;
         }
 
-        //Get PCM Information
+        // Get PCM Information
         pcmInfos[0] = new PcmInfo[127];
         for (int i = 0; i < pcmInfos.length; i++) {
             pcmInfos[0][i] = new PcmInfo();
@@ -413,7 +417,14 @@ public class RCS {
             }
         }
         if (supportFileName != null) {
-            if (File.exists(supportFileName)) rcpBuf = File.readAllBytes(supportFileName);
+            if (Files.exists(Path.of(supportFileName))) {
+                try {
+                    rcpBuf = Files.readAllBytes(Path.of(supportFileName));
+                } catch (IOException e) {
+                    logger.log(Level.ERROR, e.getMessage(), e);
+                    return false;
+                }
+            }
         }
 
         if (isVirtualModel) {
@@ -1153,7 +1164,7 @@ public class RCS {
 
     void oneFrameMain() {
         try {
-            musicStep = Common.VGMProcSampleRate * oneSyncTime;
+            musicStep = sampleRate * oneSyncTime;
 
             if (musicDownCounter <= 0.0) {
                 if (beforeSend != null) {
@@ -1246,7 +1257,7 @@ public class RCS {
         }
     }
 
-    /**  */
+    /** */
     private boolean checkNoteOff(MIDITrack trk, int mode) {
         boolean flg = false;
 
@@ -1858,7 +1869,7 @@ public class RCS {
     private void getGSD1Buf(/* ref */ List<CtlSysex> DBuf) {
         byte[] buf = null;
         for (Tuple<String, byte[]> trg : extendFiles) {
-            if (Path.getExtension(trg.getItem1()).equalsIgnoreCase(".GSD")) {
+            if (getExtension(trg.getItem1()).equalsIgnoreCase(".GSD")) {
                 buf = trg.getItem2();
                 break;
             }
@@ -1869,7 +1880,7 @@ public class RCS {
     private void getGSD2Buf(/* ref */ List<CtlSysex> DBuf) {
         byte[] buf = null;
         for (Tuple<String, byte[]> trg : extendFiles) {
-            if (Path.getExtension(trg.getItem1()).equalsIgnoreCase(".GSD")) {
+            if (getExtension(trg.getItem1()).equalsIgnoreCase(".GSD")) {
                 buf = trg.getItem2();
             }
         }
@@ -2202,7 +2213,7 @@ public class RCS {
 
         byte[] buf = null;
         for (Tuple<String, byte[]> trg : extendFiles) {
-            if (Path.getExtension(trg.getItem1()).equalsIgnoreCase(".CM6")) {
+            if (getExtension(trg.getItem1()).equalsIgnoreCase(".CM6")) {
                 buf = trg.getItem2();
             }
         }

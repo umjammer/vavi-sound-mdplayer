@@ -82,13 +82,12 @@ public class RomBank implements IBank {
     }
 
     /**
-     * //Read from ROM.
+     * Read from ROM.
      */
     @Override
     public byte peek(int address) {
         return rom.get(address & (N - 1));
     }
-
 
     /**
      * Kernal ROM
@@ -144,9 +143,9 @@ public class RomBank implements IBank {
         }
 
         /**
-         * //Change the RESET vector.
+         * Change the RESET vector.
          * <p>
-         * //@param addr the new addres to point to
+         * @param addr the new addres to point to
          */
         public void installResetHook(short addr) {
             setVal((short) 0xfffc, SidEndian.to16lo8(addr));
@@ -195,9 +194,9 @@ public class RomBank implements IBank {
         }
 
         /**
-         * //Set BASIC Warm Start address.
+         * Set BASIC Warm Start address.
          * <p>
-         * //@param addr
+         * @param addr
          */
         public void installTrap(short addr) {
             setVal((short) 0xa7ae, (byte) OpCodes.JMPw);

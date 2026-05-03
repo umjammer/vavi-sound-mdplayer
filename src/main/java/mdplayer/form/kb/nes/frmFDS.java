@@ -13,14 +13,15 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
-import mdplayer.chips.NesChip;
 import mdplayer.chips.NesChip.FdsChip;
+import mdplayer.chips.NpNesChip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
@@ -108,13 +109,13 @@ public class frmFDS extends frmBase {
         final double LOG_2 = 0.69314718055994530941723212145818;
         final int NOTE_440HZ = 12 * 4 + 9;
 
-        mdsound.np.NpNesFds reg = audio.plugin.chipRegister.chip(NesChip.FdsChip.class).readFds(chipId);
+        Map<String, Object> reg = audio.plugin.chipRegister.chip(NpNesChip.FdsChip.class).readFds(chipId);
         int freq;
         int vol;
         int note;
         if (reg != null) {
-            freq = reg.lastFreq;
-            vol = reg.lastVol;
+            freq = (int) reg.get("lastFreq");
+            vol = (int) reg.get("lastVol");
             note = -15 + (int) ((12 * (Math.log(freq) / LOG_2 - LOG2_440) + NOTE_440HZ + 0.5));
             note = note < 0 ? -1 : (note > 120 ? -1 : note);
             note = vol == 0 ? -1 : note;
@@ -122,31 +123,32 @@ public class frmFDS extends frmBase {
             newParam.channel.note = note;
             newParam.channel.volume = Math.min((int) ((vol) * 0.5), 19);
 
+            int[][] wave = (int[][]) reg.get("wave");
             for (int i = 0; i < 32; i++) {
-                newParam.wave[i] = (reg.wave[1][i * 2 + 0] + reg.wave[1][i * 2 + 1]) >> 2;
-                newParam.mod[i] = (reg.wave[0][i * 2 + 0] + reg.wave[0][i * 2 + 1]) << 1;
+                newParam.wave[i] = (wave[1][i * 2 + 0] + wave[1][i * 2 + 1]) >> 2;
+                newParam.mod[i] = (wave[0][i * 2 + 0] + wave[0][i * 2 + 1]) << 1;
             }
 
-            newParam.VolDir = reg.envMode[1];
-            newParam.VolSpd = reg.envSpeed[1];
-            newParam.VolGain = reg.envOut[1];
-            newParam.VolDi = reg.envHalt;
-            newParam.VolFrq = reg.freq[1];
-            newParam.VolHlR = reg.wavHalt;
+            newParam.VolDir = (boolean) reg.get("VolDir");
+            newParam.VolSpd = (int) reg.get("VolSpd");
+            newParam.VolGain = (int) reg.get("VolGain");
+            newParam.VolDi = (boolean) reg.get("VolDi");
+            newParam.VolFrq = (int) reg.get("VolFrq");
+            newParam.VolHlR = (boolean) reg.get("VolHlR");
 
-            newParam.ModDir = reg.envMode[0];
-            newParam.ModSpd = reg.envSpeed[0];
-            newParam.ModGain = reg.envOut[0];
-            newParam.ModDi = reg.modHalt;
-            newParam.ModFrq = reg.freq[0];
-            newParam.ModCnt = reg.modPos;
+            newParam.ModDir = (boolean) reg.get("ModDir");
+            newParam.ModSpd = (int) reg.get("ModSpd");
+            newParam.ModGain = (int) reg.get("ModGain");
+            newParam.ModDi = (boolean) reg.get("ModDi");
+            newParam.ModFrq = (int) reg.get("ModFrq");
+            newParam.ModCnt = (int) reg.get("ModCnt");
 
-            newParam.EnvSpd = (int) reg.masterEnvSpeed;
-            newParam.EnvVolSw = !reg.envDisable[1];
-            newParam.EnvModSw = !reg.envDisable[0];
+            newParam.EnvSpd = (int) reg.get("EnvSpd");
+            newParam.EnvVolSw = (boolean) reg.get("EnvVolSw");
+            newParam.EnvModSw = (boolean) reg.get("EnvModSw");
 
-            newParam.MasterVol = reg.masterVol;
-            newParam.WE = reg.wavWrite;
+            newParam.MasterVol = (int) reg.get("MasterVol");
+            newParam.WE = (boolean) reg.get("WE");
         }
     }
 

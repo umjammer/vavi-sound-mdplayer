@@ -32,8 +32,12 @@ public class FmpDriver extends BaseDriver {
 
     private final FMP fmp;
 
-    public FmpDriver() {
+    public FmpDriver(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+
         fmp = new FMP();
+        fmp.setSearchPath(setting.getFileSearchPathList());
+        fmp.sampleRate = Common.VGMProcSampleRate;
         fmp.charset = Common.charset;
         fmp.dir = System.getProperty("mdplayer.fmp.dir", System.getProperty("user.dir"));
         fmp.blockWrite = b -> this.isDataBlock = b;
@@ -42,24 +46,19 @@ public class FmpDriver extends BaseDriver {
         fmp.opnaWrite = this::opnaWrite;
     }
 
+    public FmpDriver() {
+        this(null); // gross
+    }
+
     public void setFileTemp(FileTemp ft) {
         fmp.ft = ft;
     }
 
-    public void setSearchPath(String searchPath) {
-        fmp.setSearchPath(searchPath);
-    }
-
-    public void setPlayingFileName(String playingFileName) {
-        fmp.playingFileName = playingFileName;
-    }
-
-    public void setPlayingArcFileName(String playingArcFileName) {
-        fmp.playingArcFileName = playingArcFileName;
-    }
-
-    /** before using ths method, you must set playingFileName by {@link #setPlayingFileName} */
+    /** before using ths method, you must do {@link BaseDriver#init} */
     public void compile() {
+        fmp.playingFileName = plugin.playingFileName;
+        fmp.playingArcFileName = plugin.playingArcFileName;
+
         fmp.compile();
     }
 
@@ -83,18 +82,20 @@ public class FmpDriver extends BaseDriver {
     }
 
     @Override
-    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     int latency, int waitTime, Object... args) {
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
 
-        MetaData _ = getMetaData(vgmBuf, 0);
-        this.plugin = plugin;
+        MetaData _ = getMetaData(dataBuf, 0);
+
         loopCounter = 0;
         curLoop = 0;
         this.model = model;
         frameCounter = -latency - waitTime;
 
+        fmp.playingFileName = plugin.playingFileName;
+        fmp.playingArcFileName = plugin.playingArcFileName;
+
         try {
-            fmp.run(vgmBuf);
+            fmp.run(dataBuf);
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }

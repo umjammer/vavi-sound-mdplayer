@@ -6,12 +6,10 @@
 
 package mdplayer.chips;
 
-import mdplayer.Chip;
+import java.util.Map;
+
 import mdplayer.Common.EnmModel;
-import mdplayer.driver.BaseDriver;
-import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
-import mdsound.chips.OkiM6258;
 import mdsound.instrument.OkiM6258Inst;
 
 
@@ -65,12 +63,10 @@ public class OkiM6258Chip extends BaseChip {
         }
     }
 
-    public OkiM6258 read(int chipId) {
-        return context.mds.inst(OkiM6258Inst.class).getChip(chipId);
-    }
-
-    public boolean getKeyOn(int chipId) {
-        return keyOn[chipId];
+    public Map<String, Object> getInfo(int chipId) {
+        Map<String, Object> info = context.mds.inst(OkiM6258Inst.class).getInfo(chipId);
+        info.put("keyOn", keyOn[chipId]);
+        return info;
     }
 
     public void resetKeyOn(int chipId) {

@@ -21,11 +21,11 @@ public class ZGMPlugin extends BasePlugin<Zgm> {
 
     @Override
     public void prepare() {
-        driverVirtual = new Zgm();
+        driverVirtual = new Zgm(this);
 
         driverReal = null;
         if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
-            driverReal = new Zgm();
+            driverReal = new Zgm(this);
         }
 
         super.prepare();
@@ -37,7 +37,7 @@ public class ZGMPlugin extends BasePlugin<Zgm> {
         // Sealed until MIDI is supported
 //        startTrdVgmReal();
 
-        driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel,
+        driverVirtual.init(Common.EnmModel.VirtualModel,
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
 

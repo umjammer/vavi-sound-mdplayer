@@ -24,7 +24,9 @@ public class Xgm2Driver extends XgmDriver {
 
     private final Xgm2 xgm2;
 
-    public Xgm2Driver() {
+    public Xgm2Driver(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+
         this.xgm2 = new Xgm2();
         xgm2.pcmStep = setting.getOutputDevice().getSampleRate() / 13300.0;
         xgm2.version = v -> version = v;
@@ -33,6 +35,10 @@ public class Xgm2Driver extends XgmDriver {
         xgm2.loop = l -> curLoop = l;
         xgm2.ym2612Write = (p, a, d) -> plugin.chipRegister.chip(Ym2612Chip.class).write(0, p, a, d, model, frameCounter);
         xgm2.sn76489Write = v -> plugin.chipRegister.chip(Sn76489Chip.class).write(0, v, model /*, frameCounter */);
+    }
+
+    public Xgm2Driver() {
+        this(null); // gross
     }
 
     private void tag(boolean existGD3, int gd3DataBlockAddr) {
@@ -50,10 +56,7 @@ public class Xgm2Driver extends XgmDriver {
     }
 
     @Override
-    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     int latency, int waitTime, Object... args) {
-        this.dataBuf = vgmBuf;
-        this.plugin = plugin;
+    public void init(EnmModel model,int  latency, int waitTime, Object... args) {
         this.model = model;
         this.latency = latency;
         this.waitTime = waitTime;
@@ -67,7 +70,7 @@ public class Xgm2Driver extends XgmDriver {
         speed = 1;
         speedCounter = 0;
 
-        xgm2.getXGM2Info(vgmBuf);
+        xgm2.getXGM2Info(dataBuf);
 
         if (model == EnmModel.RealModel) {
             plugin.chipRegister.chip(Ym2612Chip.class).setSyncWait(0, 1);
@@ -77,7 +80,7 @@ public class Xgm2Driver extends XgmDriver {
         // initialize Driver
         xgm2.init();
 
-        xgm2.vgmBuf = vgmBuf;
+        xgm2.xgmBuf = dataBuf;
     }
 
     @Override

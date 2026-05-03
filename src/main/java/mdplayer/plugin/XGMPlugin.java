@@ -31,14 +31,14 @@ public class XGMPlugin extends BasePlugin<XgmDriver> {
 
     @Override
     public void prepare() {
-        if (!checkXGM2(vgmBuf))
-            driverVirtual = new XgmDriver();
+        if (!checkXGM2(dataBuf))
+            driverVirtual = new XgmDriver(this);
         else
-            driverVirtual = new Xgm2Driver();
+            driverVirtual = new Xgm2Driver(this);
 
         driverReal = null;
 //        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
-//            audio.driverReal = new Xgm();
+//            audio.driverReal = new XgmDriver(this);
 //        }
 
         super.prepare();
@@ -91,11 +91,11 @@ public class XGMPlugin extends BasePlugin<XgmDriver> {
 //        chipRegister.chip(Ym2203Chip.class).setSsgVolume(0, setting.getBalance().getGimicOPNAVolume(), EnmModel.RealModel);
 //        chipRegister.chip(Ym2203Chip.class).setSsgVolume(1, setting.getBalance().getGimicOPNAVolume(), EnmModel.RealModel);
 
-        driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel,
+        driverVirtual.init(Common.EnmModel.VirtualModel,
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         if (driverReal != null) {
-            driverReal.init(vgmBuf, this, Common.EnmModel.RealModel,
+            driverReal.init(Common.EnmModel.RealModel,
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         }

@@ -4,9 +4,8 @@ import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.util.function.IntConsumer;
 
-import dotnet4j.util.compat.TriConsumer;
-import mdplayer.Common;
 import vavi.util.ByteUtil;
+import vavi.util.compat.TriConsumer;
 
 import static java.lang.System.getLogger;
 
@@ -17,10 +16,6 @@ import static java.lang.System.getLogger;
 public class Xgm {
 
     private static final Logger logger = getLogger(Xgm.class.getName());
-
-    public Xgm() {
-        musicStep = Common.VGMProcSampleRate / 60.0; // setting.getoutputDevice().SampleRate / 60.0;
-    }
 
     public static final int FCC_XGM = 0x204d4758; // "XGM "
     public static final int FCC_GD3 = 0x20336447; // "Gd3 "
@@ -42,21 +37,23 @@ public class Xgm {
     private boolean multiTrackFile = false;
     int gd3InfoStartAddr = 0;
 
-    byte[] vgmBuf;
+    byte[] xgmBuf;
     Runnable stop;
-    Runnable tag;
+    Runnable updateMetaData;
     Runnable loop;
     TriConsumer<Integer, Integer, Integer> ym2612Write;
     IntConsumer sn76489Write;
+    int sampleRate;
 
     void init() {
         musicPtr = musicDataBlockAddr;
-        xgmpcm = new XgmPcm[] {new XgmPcm(), new XgmPcm(), new XgmPcm(), new XgmPcm()};
+        xgmPcm = new XgmPcm[] {new XgmPcm(), new XgmPcm(), new XgmPcm(), new XgmPcm()};
         DACEnable = 0;
+        this.musicStep = sampleRate / 60.0; // setting.getoutputDevice().SampleRate / 60.0;
     }
 
     void clock(boolean stopped) {
-        pcmSpeedCounter++; // = (double)Common.VGMProcSampleRate / setting.getoutputDevice().SampleRate * speed;
+        pcmSpeedCounter++; // = (double) sampleRate / setting.getoutputDevice().SampleRate * speed;
         while (pcmSpeedCounter >= 1.0 && !stopped) {
             pcmSpeedCounter -= 1.0;
             onePCMFrameMain();
@@ -64,39 +61,30 @@ public class Xgm {
     }
 
     /** @throws IllegalArgumentException parse error */
-    void getXGMInfo(byte[] vgmBuf) {
-        if (vgmBuf == null) throw new IllegalArgumentException("null buffer");
+    void getXGMInfo(byte[] dataBuf) {
+        if (dataBuf == null) throw new IllegalArgumentException("null buffer");
 
         try {
-            if (ByteUtil.readLeInt(vgmBuf, 0) != FCC_XGM) throw new IllegalArgumentException("not xgm data");
+            if (ByteUtil.readLeInt(dataBuf, 0) != FCC_XGM) throw new IllegalArgumentException("not xgm data");
 
             for (int i = 0; i < 63; i++) {
                 sampleID[i] = new XGMSampleID();
-                sampleID[i].addr = ((int) ByteUtil.readLeShort(vgmBuf, i * 4 + 4) * 256);
-                sampleID[i].size = ((int) ByteUtil.readLeShort(vgmBuf, i * 4 + 6) * 256);
+                sampleID[i].addr = ((int) ByteUtil.readLeShort(dataBuf, i * 4 + 4) * 256);
+                sampleID[i].size = ((int) ByteUtil.readLeShort(dataBuf, i * 4 + 6) * 256);
             }
 
-            sampleDataBlockSize = ByteUtil.readLeShort(vgmBuf, 0x100);
-
-            versionInformation = vgmBuf[0x102] & 0xff;
-
-            dataInformation = vgmBuf[0x103] & 0xff;
-
+            sampleDataBlockSize = ByteUtil.readLeShort(dataBuf, 0x100);
+            versionInformation = dataBuf[0x102] & 0xff;
+            dataInformation = dataBuf[0x103] & 0xff;
             isNTSC = (dataInformation & 0x1) == 0;
-
             existGD3 = (dataInformation & 0x2) != 0;
-
             multiTrackFile = (dataInformation & 0x4) != 0;
-
             sampleDataBlockAddr = 0x104;
-
-            musicDataBlockSize = ByteUtil.readLeInt(vgmBuf, sampleDataBlockAddr + sampleDataBlockSize * 256);
-
+            musicDataBlockSize = ByteUtil.readLeInt(dataBuf, sampleDataBlockAddr + sampleDataBlockSize * 256);
             musicDataBlockAddr = sampleDataBlockAddr + sampleDataBlockSize * 256 + 4;
-
             gd3InfoStartAddr = musicDataBlockAddr + musicDataBlockSize;
 
-            tag.run();
+            updateMetaData.run();
 
             if (musicDataBlockSize == 0) {
                 throw new IllegalArgumentException("illegal block size");
@@ -110,8 +98,8 @@ public class Xgm {
         return true;
     }
 
-    private double musicStep;// setting.getoutputDevice().SampleRate / 60.0;
-    double pcmStep;// setting.getoutputDevice().SampleRate / 14000.0;
+    private double musicStep; // setting.getoutputDevice().SampleRate / 60.0;
+    double pcmStep; // setting.getoutputDevice().SampleRate / 14000.0;
     private double musicDownCounter = 0.0;
     private double pcmDownCounter = 0.0;
     private int musicPtr = 0;
@@ -121,7 +109,7 @@ public class Xgm {
         try {
             //if (model == EnmModel.RealModel) return;
 
-            musicStep = Common.VGMProcSampleRate / (isNTSC ? 60.0 : 50.0);
+            musicStep = sampleRate / (isNTSC ? 60.0 : 50.0);
 
             if (musicDownCounter <= 0.0) {
                 // process xgm
@@ -159,14 +147,14 @@ public class Xgm {
     private void oneFrameXGM() {
         while (true) {
 
-            int cmd = vgmBuf[musicPtr++] & 0xff;
+            int cmd = xgmBuf[musicPtr++] & 0xff;
 
             // wait
             if (cmd == 0) break;
 
             // loop command
             if (cmd == 0x7e) {
-                musicPtr = musicDataBlockAddr + ByteUtil.readLe24(vgmBuf, musicPtr);
+                musicPtr = musicDataBlockAddr + ByteUtil.readLe24(xgmBuf, musicPtr);
                 loop.run();
                 continue;
             }
@@ -201,15 +189,15 @@ public class Xgm {
 
     private void writePSG(int X) {
         for (int i = 0; i < X + 1; i++) {
-            int data = vgmBuf[musicPtr++] & 0xff;
+            int data = xgmBuf[musicPtr++] & 0xff;
             sn76489Write.accept(data);
         }
     }
 
     private void writeYM2612P0(int X) {
         for (int i = 0; i < X + 1; i++) {
-            int adr = vgmBuf[musicPtr++] & 0xff;
-            int val = vgmBuf[musicPtr++] & 0xff;
+            int adr = xgmBuf[musicPtr++] & 0xff;
+            int val = xgmBuf[musicPtr++] & 0xff;
             if (adr == 0x2b) DACEnable = val & 0x80;
             ym2612Write.accept(0, adr, val);
         }
@@ -217,15 +205,15 @@ public class Xgm {
 
     private void writeYM2612P1(int X) {
         for (int i = 0; i < X + 1; i++) {
-            int adr = vgmBuf[musicPtr++] & 0xff;
-            int val = vgmBuf[musicPtr++] & 0xff;
+            int adr = xgmBuf[musicPtr++] & 0xff;
+            int val = xgmBuf[musicPtr++] & 0xff;
             ym2612Write.accept(1, adr, val);
         }
     }
 
     private void writeYM2612Key(int X) {
         for (int i = 0; i < X + 1; i++) {
-            int val = vgmBuf[musicPtr++] & 0xff;
+            int val = xgmBuf[musicPtr++] & 0xff;
             ym2612Write.accept(0, 0x28, val);
         }
     }
@@ -240,31 +228,31 @@ public class Xgm {
         public int data = 0;
     }
 
-    public XgmPcm[] xgmpcm = null;
+    public XgmPcm[] xgmPcm = null;
     private double pcmSpeedCounter;
 
     private void playPCM(int X) {
         int priority = X & 0xc;
         int channel = X & 0x3;
-        int id = vgmBuf[musicPtr++] & 0xff;
+        int id = xgmBuf[musicPtr++] & 0xff;
 
         // Can only be played if priority is high or if muted
-        if (xgmpcm[channel].priority <= priority || !xgmpcm[channel].isPlaying) {
+        if (xgmPcm[channel].priority <= priority || !xgmPcm[channel].isPlaying) {
             if (id == 0 || sampleID[id - 1].size == 0) {
                 // If the ID is 0 or an undefined ID is specified, the sound will stop.
-                xgmpcm[channel].priority = 0;
+                xgmPcm[channel].priority = 0;
 //                xgmPcm[channel].startAddr = 0;
 //                xgmPcm[channel].endAddr = 0;
 //                xgmPcm[channel].addr = 0;
 //                xgmPcm[channel].inst = id;
-                xgmpcm[channel].isPlaying = false;
+                xgmPcm[channel].isPlaying = false;
             } else {
-                xgmpcm[channel].priority = priority;
-                xgmpcm[channel].startAddr = sampleDataBlockAddr + sampleID[id - 1].addr;
-                xgmpcm[channel].endAddr = sampleDataBlockAddr + sampleID[id - 1].addr + sampleID[id - 1].size;
-                xgmpcm[channel].addr = sampleDataBlockAddr + sampleID[id - 1].addr;
-                xgmpcm[channel].inst = id;
-                xgmpcm[channel].isPlaying = true;
+                xgmPcm[channel].priority = priority;
+                xgmPcm[channel].startAddr = sampleDataBlockAddr + sampleID[id - 1].addr;
+                xgmPcm[channel].endAddr = sampleDataBlockAddr + sampleID[id - 1].addr + sampleID[id - 1].size;
+                xgmPcm[channel].addr = sampleDataBlockAddr + sampleID[id - 1].addr;
+                xgmPcm[channel].inst = id;
+                xgmPcm[channel].isPlaying = true;
             }
         }
     }
@@ -275,13 +263,13 @@ public class Xgm {
         int o = 0;
 
         for (int i = 0; i < 4; i++) {
-            if (!xgmpcm[i].isPlaying) continue;
-            byte d = vgmBuf[xgmpcm[i].addr++]; // signed
+            if (!xgmPcm[i].isPlaying) continue;
+            byte d = xgmBuf[xgmPcm[i].addr++]; // signed
             o += d;
-            xgmpcm[i].data = Math.abs(d);
-            if (xgmpcm[i].addr >= xgmpcm[i].endAddr) {
-                xgmpcm[i].isPlaying = false;
-                xgmpcm[i].data = 0;
+            xgmPcm[i].data = Math.abs(d);
+            if (xgmPcm[i].addr >= xgmPcm[i].endAddr) {
+                xgmPcm[i].isPlaying = false;
+                xgmPcm[i].data = 0;
             }
         }
         o = (short) Math.clamp(o, Byte.MIN_VALUE + 1, Byte.MAX_VALUE);

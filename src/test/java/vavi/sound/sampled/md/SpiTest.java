@@ -67,20 +67,21 @@ class SpiTest {
     @Property(name = "vgm")
     String inFile = "src/test/resources/test.vgm";
 
+    /** 1 origin */
     @Property
     int track;
 
-    @Property
+    @Property(name = "mdplayer.fmp.dir")
     String fmpDir;
-    @Property
+    @Property(name = "mdplayer.fmp.pvi")
     String fmpPvi;
-    @Property
+    @Property(name = "mdplayer.zms.dir")
     String zmsDir;
-    @Property
+    @Property(name = "mdplayer.mgs.dir")
     String mgsDir;
-    @Property
+    @Property(name = "mdplayer.ndp.dir")
     String ndpDir;
-    @Property
+    @Property(name = "mdplayer.musica.dir")
     String musicaDir;
     @Property(name = "muap.dir.dta")
     String muapDirDta;
@@ -126,11 +127,14 @@ class SpiTest {
 //            System.setProperty("muap.dir.sud", muapDirSud);
         }
 
-        // disable other vgm conversion spi
+        // disable other conflicted reader spi
         System.setProperty("vavi.sound.sampled.spi.emu.vgm", "false");
         System.setProperty("vavi.sound.sampled.spi.emu.gbs", "false");
+        System.setProperty("vavi.sound.sampled.spi.emu.nsf", "false");
+        System.setProperty("vavi.sound.sampled.spi.mod.sid", "false");
         System.setProperty("vavi.sound.sampled.spi.ymfm", "false");
 
+        // chip variant settings
         System.setProperty("mdplayer.variant.pcm8", String.valueOf(variantPcm8));
         System.setProperty("mdplayer.variant.mpcm", String.valueOf(variantMpcm));
         System.setProperty("mdplayer.variant.ym2151", String.valueOf(variantYm2151));
@@ -207,6 +211,11 @@ Debug.println(inFile);
 
         AudioFormat inAudioFormat = sourceAis.getFormat();
 Debug.println("IN: " + inAudioFormat + ", " + inAudioFormat.getEncoding().getClass().getName());
+Debug.println("\n" +
+ "artist:   " + inAudioFormat.getProperty("md.artist") + "\n" +
+ "album:    " + inAudioFormat.getProperty("md.album") + "\n" +
+ "title:    " + inAudioFormat.getProperty("md.title") + "\n" +
+ "composer: " + inAudioFormat.getProperty("md.composer"));
 
         assertInstanceOf(MdEncoding.class, inAudioFormat.getEncoding());
 
@@ -299,7 +308,7 @@ Debug.println(e.getMessage());
     }
 
     @Test
-    @DisplayName("just test")
+    @DisplayName("simulate inside spi")
     void test7() throws IOException {
 Debug.println(inFile);
         Path path = Paths.get(inFile);

@@ -12,17 +12,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
-import dotnet4j.util.compat.StringUtilities;
-import dotnet4j.util.compat.TriConsumer;
-import mdplayer.Common;
 import mdplayer.emu.nise98.FileTemp;
 import mdplayer.emu.nise98.Memory98;
 import mdplayer.emu.nise98.Nise98;
 import mdplayer.emu.nise98.Nise98.OngenBoardType;
 import mdplayer.emu.nise98.NiseDos;
 import mdplayer.emu.nise98.Register286;
+import vavi.util.compat.TriConsumer;
 
 import static java.lang.System.getLogger;
+import static vavi.util.compat.Util.isNullOrEmpty;
 
 
 /**
@@ -39,6 +38,7 @@ public class FMP {
 
     Charset charset;
     String dir;
+    int sampleRate;
 
     public static final int baseClock = 7987200;
     private int step = 0;
@@ -57,12 +57,12 @@ public class FMP {
             String pvi = "";
             try {
                 pvi = System.getProperty("mdplayer.fmp.pvi");
-                if (!StringUtilities.isNullOrEmpty(pvi)) searchPath += (searchPath.isEmpty() ? "" : ";") + pvi;
+                if (!isNullOrEmpty(pvi)) searchPath += (searchPath.isEmpty() ? "" : ";") + pvi;
             } catch (Exception e) {
 logger.log(Level.ERROR, e.getMessage());
             }
             searchPaths = Arrays.stream(searchPath.split(";"))
-                    .filter(path -> !StringUtilities.isNullOrEmpty(path)).toList();
+                    .filter(path -> !isNullOrEmpty(path)).toList();
             for (String path : searchPaths)
                 logger.log(Level.INFO, "Search Path: %s".formatted(path));
         } catch (Exception e) {
@@ -103,7 +103,7 @@ logger.log(Level.ERROR, e.getMessage());
         Path crntDir = Path.of(dir);
         Path fileNameFMP = crntDir.resolve("FMP.COM");
         logger.log(Level.DEBUG, fileNameFMP);
-        nise98.init(null, opnaWrite, ft, OngenBoardType.SpeakBoard, Common.VGMProcSampleRate); // .PC9801_86B); // .SpeakBoard); // .PC9801_26K);
+        nise98.init(null, opnaWrite, ft, OngenBoardType.SpeakBoard, sampleRate); // .PC9801_86B); // .SpeakBoard); // .PC9801_26K);
         nise98.getDos().setArcFile(playingArcFileName);
         nise98.getDos().setSearchPath(searchPaths);
         nise98.getDos().charset = charset;
@@ -148,10 +148,7 @@ logger.log(Level.ERROR, e.getMessage());
         if (pcmDataSendCount != 0) {
             blockWrite.accept(true);
             // Add additional weight based on size and elapsed time.
-            try {
-                Thread.sleep(Math.max(pcmDataSendCount / 20, 0));
-            } catch (InterruptedException ignore) {
-            }
+            try { Thread.sleep(Math.max(pcmDataSendCount / 20, 0)); } catch (InterruptedException _) {}
             blockWrite.accept(false);
             pcmDataSendCount = 0;
         }
@@ -160,22 +157,26 @@ logger.log(Level.ERROR, e.getMessage());
     }
 
     public void compile() {
-        var fileNameFMP = "FMP.COM";
-        var fileNameFMC = "FMC.EXE";
+        Path crntDir = Path.of(dir);
+        Path fileNameFMP = crntDir.resolve("FMP.COM");
+        Path fileNameFMC = crntDir.resolve("FMC.EXE");
         int rc = 0;
 
-        nise98.init(null, opnaWrite, ft, OngenBoardType.SpeakBoard, Common.VGMProcSampleRate); // .PC9801_86B); // .SpeakBoard); // .PC9801_26K);
+        nise98.init(null, opnaWrite, ft, OngenBoardType.SpeakBoard, sampleRate); // .PC9801_86B); // .SpeakBoard); // .PC9801_26K);
+        nise98.getDos().setPath(Path.of(playingFileName).getParent());
+        nise98.getDos().setSearchPath(searchPaths);
+        nise98.getDos().charset = charset;
 
         // FMP resident
-        nise98.loadRun(fileNameFMP, "s -s", 0x2000);
+        rc = nise98.loadRun(fileNameFMP.toString(), "s -s", 0x2000);
+        if (rc != 0)
+            throw new IllegalArgumentException("fmp return %d".formatted(rc));
         regs = nise98.getRegisters();
 
         // Running FMC
         nise98.getDos().setProgramTerminate(false);
-        if ((rc = nise98.loadRun(fileNameFMC, playingFileName, 0x3000
-                //, true, true, true, 3_000_000, 0
-        )) != 0) {
-            throw new IllegalArgumentException("return %d".formatted(rc));
-        }
+        rc = nise98.loadRun(fileNameFMC.toString(), Path.of(playingFileName).toString(), 0x3000); //, true, true, true, 3_000_000, 0
+        if (rc != 0)
+            throw new IllegalArgumentException("fmc return %d".formatted(rc));
     }
 }

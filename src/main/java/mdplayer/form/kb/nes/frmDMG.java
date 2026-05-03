@@ -13,6 +13,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
@@ -24,7 +25,6 @@ import mdplayer.chips.DmgChip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
-import mdsound.chips.GbSound;
 
 
 public class frmDMG extends frmBase {
@@ -105,94 +105,93 @@ public class frmDMG extends frmBase {
     };
 
     public void screenChangeParams() {
-        GbSound dat = audio.plugin.chipRegister.chip(DmgChip.class).read(chipId);
+        Map<String, Object> dat = audio.plugin.chipRegister.chip(DmgChip.class).getInfo(chipId);
         if (dat == null) return;
 
         // pan
-        newParam.channels[0].pan = (dat.controller.mode1Left * 2) + dat.controller.mode1Right;
-        newParam.channels[1].pan = (dat.controller.mode2Left * 2) + dat.controller.mode2Right;
-        newParam.channels[2].pan = (dat.controller.mode3Left * 2) + dat.controller.mode3Right;
-        newParam.channels[3].pan = (dat.controller.mode4Left * 2) + dat.controller.mode4Right;
+        newParam.channels[0].pan = (int) dat.get("channels.0.pan");
+        newParam.channels[1].pan = (int) dat.get("channels.1.pan");
+        newParam.channels[2].pan = (int) dat.get("channels.2.pan");
+        newParam.channels[3].pan = (int) dat.get("channels.3.pan");
 
         // freq
-        newParam.channels[0].freq = dat.sound1.frequency;
-        newParam.channels[1].freq = dat.sound2.frequency;
-        newParam.channels[2].freq = dat.sound3.frequency;
-        newParam.channels[3].freq = dat.sound4.registers[3] & 0x7; // pfq
-        newParam.channels[3].bit[47] = (dat.sound4.registers[3] & 0x8) != 0; // poly
-        newParam.channels[3].srcFreq = (dat.sound4.registers[3] & 0xf0) >> 4; // pc
+        newParam.channels[0].freq = (int) dat.get("channels.0.freq");
+        newParam.channels[1].freq = (int) dat.get("channels.1.freq");
+        newParam.channels[2].freq = (int) dat.get("channels.2.freq");
+        newParam.channels[3].freq = (int) dat.get("channels.3.freq");
+        newParam.channels[3].bit[47] = (boolean) dat.get("channels.3.bit.47");
+        newParam.channels[3].srcFreq = (int) dat.get("channels.3.srcFreq");
 
         // CC
-        newParam.channels[0].bit[0] = dat.sound1.lengthEnabled;
-        newParam.channels[1].bit[0] = dat.sound2.lengthEnabled;
-        newParam.channels[2].bit[0] = dat.sound3.lengthEnabled;
-        newParam.channels[3].bit[0] = dat.sound4.lengthEnabled;
+        newParam.channels[0].bit[0] = (boolean) dat.get("channels.0.bit.0");
+        newParam.channels[1].bit[0] = (boolean) dat.get("channels.1.bit.0");
+        newParam.channels[2].bit[0] = (boolean) dat.get("channels.2.bit.0");
+        newParam.channels[3].bit[0] = (boolean) dat.get("channels.3.bit.0");
 
         // Ini
-        newParam.channels[0].bit[1] = (dat.sound1.registers[4] & 0x80) != 0;
-        newParam.channels[1].bit[1] = (dat.sound2.registers[4] & 0x80) != 0;
-        newParam.channels[2].bit[1] = (dat.sound3.registers[4] & 0x80) != 0;
-        newParam.channels[3].bit[1] = (dat.sound4.registers[4] & 0x80) != 0;
+        newParam.channels[0].bit[1] = (boolean) dat.get("channels.0.bit.1");
+        newParam.channels[1].bit[1] = (boolean) dat.get("channels.1.bit.1");
+        newParam.channels[2].bit[1] = (boolean) dat.get("channels.2.bit.1");
+        newParam.channels[3].bit[1] = (boolean) dat.get("channels.3.bit.1");
 
         // Env.Dir
-        newParam.channels[0].bit[2] = dat.sound1.envelopeDirection == 1;
-        newParam.channels[1].bit[2] = dat.sound2.envelopeDirection == 1;
-        // newParam.channels[2].bit[2] = nothing
-        newParam.channels[3].bit[2] = dat.sound4.envelopeDirection == 1;
+        newParam.channels[0].bit[2] = (boolean) dat.get("channels.0.bit.2");
+        newParam.channels[1].bit[2] = (boolean) dat.get("channels.1.bit.2");
+        //newParam.channels[2].bit[2] = nothing
+        newParam.channels[3].bit[2] = (boolean) dat.get("channels.3.bit.2");
 
         // Sweep Dec
-        newParam.channels[0].bit[3] = dat.sound1.sweepDirection == -1;
+        newParam.channels[0].bit[3] = (boolean) dat.get("channels.0.bit.3");
 
         // Env.Spd
-        newParam.channels[0].inst[0] = dat.sound1.envelopeTime;
-        newParam.channels[1].inst[0] = dat.sound2.envelopeTime;
-        // newParam.channels[2].inst[0] = nothing
-        newParam.channels[3].inst[0] = dat.sound4.envelopeTime;
+        newParam.channels[0].inst[0] = (int) dat.get("channels.0.inst.0");
+        newParam.channels[1].inst[0] = (int) dat.get("channels.1.inst.0");
+        //newParam.channels[2].inst[0] = nothing
+        newParam.channels[3].inst[0] = (int) dat.get("channels.3.inst.0");
 
         // Env.Vol
-        newParam.channels[0].inst[1] = dat.sound1.envelopeValue;
-        newParam.channels[1].inst[1] = dat.sound2.envelopeValue;
-        // newParam.channels[2].inst[1] = nothing
-        newParam.channels[3].inst[1] = dat.sound4.envelopeValue;
+        newParam.channels[0].inst[1] = (int) dat.get("channels.0.inst.1");
+        newParam.channels[1].inst[1] = (int) dat.get("channels.1.inst.1");
+        //newParam.channels[2].inst[1] = nothing
+        newParam.channels[3].inst[1] = (int) dat.get("channels.3.inst.1");
 
         // Len
-        newParam.channels[0].inst[2] = dat.sound1.length;
-        newParam.channels[1].inst[2] = dat.sound2.length;
-        // newParam.channels[2].inst[2] = nothing
-        newParam.channels[3].inst[2] = dat.sound4.length;
+        newParam.channels[0].inst[2] = (int) dat.get("channels.0.inst.2");
+        newParam.channels[1].inst[2] = (int) dat.get("channels.1.inst.2");
+        //newParam.channels[2].inst[2] = nothing
+        newParam.channels[3].inst[2] = (int) dat.get("channels.3.inst.2");
 
         // Duty
-        newParam.channels[0].inst[3] = dat.sound1.duty;
-        newParam.channels[1].inst[3] = dat.sound2.duty;
+        newParam.channels[0].inst[3] = (int) dat.get("channels.0.inst.3");
+        newParam.channels[1].inst[3] = (int) dat.get("channels.1.inst.3");
         // newParam.channels[2].inst[3] = nothing
         // newParam.channels[3].inst[3] = nothing
 
         // Sweep time
-        newParam.channels[0].inst[4] = dat.sound1.sweepTime;
+        newParam.channels[0].inst[4] = (int) dat.get("channels.0.inst.4");
         // Sweep shift
-        newParam.channels[0].inst[5] = dat.sound1.sweepShift;
+        newParam.channels[0].inst[5] = (int) dat.get("channels.0.inst.5");
 
         // Len
-        newParam.channels[2].inst[4] = dat.sound3.length;
+        newParam.channels[2].inst[4] = (int) dat.get("channels.2.inst.4");
         // Vol
-        newParam.channels[2].inst[5] = dat.sound3.level;
+        newParam.channels[2].inst[5] = (int) dat.get("channels.2.inst.5");
 
         // wf
         for (int i = 0; i < 16; i++) {
-            newParam.wf[i * 2] = (byte) ((dat.registers[0x20 + i] >> 4) & 0xf);
-            newParam.wf[i * 2 + 1] = (byte) (dat.registers[0x20 + i] & 0xf);
+            newParam.wf[i * 2] = (byte) dat.get("wf." + i * 2);
+            newParam.wf[i * 2 + 1] = (byte) dat.get("wf." + i * 2 + 1);
         }
 
         int r = 10;
-        newParam.channels[0].volumeL = Math.min((dat.sound1.envelopeValue * dat.controller.mode1Left) * 16 / r, 19);
-        newParam.channels[0].volumeR = Math.min((dat.sound1.envelopeValue * dat.controller.mode1Right) * 16 / r, 19);
-        newParam.channels[1].volumeL = Math.min((dat.sound2.envelopeValue * dat.controller.mode2Left) * 16 / r, 19);
-        newParam.channels[1].volumeR = Math.min((dat.sound2.envelopeValue * dat.controller.mode2Right) * 16 / r, 19);
-        int lvl = dat.sound3.level == 0 ? 0 : (19 >> (dat.sound3.level - 1));
-        newParam.channels[2].volumeL = Math.min(lvl * dat.controller.mode3Left * 19 / r, 19);
-        newParam.channels[2].volumeR = Math.min(lvl * dat.controller.mode3Right * 19 / r, 19);
-        newParam.channels[3].volumeL = Math.min((dat.sound4.envelopeValue * dat.controller.mode4Left) * 16 / r, 19);
-        newParam.channels[3].volumeR = Math.min((dat.sound4.envelopeValue * dat.controller.mode4Right) * 16 / r, 19);
+        newParam.channels[0].volumeL = (int) dat.get("channels.0.volumeL");
+        newParam.channels[0].volumeR = (int) dat.get("channels.0.volumeR");
+        newParam.channels[1].volumeL = (int) dat.get("channels.1.volumeL");
+        newParam.channels[1].volumeR = (int) dat.get("channels.1.volumeR");
+        newParam.channels[2].volumeL = (int) dat.get("channels.2.volumeL");
+        newParam.channels[2].volumeR = (int) dat.get("channels.2.volumeR");
+        newParam.channels[3].volumeL = (int) dat.get("channels.3.volumeL");
+        newParam.channels[3].volumeR = (int) dat.get("channels.3.volumeR");
 
         float ftone;
 

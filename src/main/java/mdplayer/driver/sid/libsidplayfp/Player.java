@@ -22,18 +22,18 @@
 
 package mdplayer.driver.sid.libsidplayfp;
 
+import java.io.OutputStream;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.List;
 
-import dotnet4j.io.FileStream;
 import mdplayer.driver.sid.libsidplayfp.c64.C64;
+import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidBuilder;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidConfig;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidInfo;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTune;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTuneInfo;
-import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidBuilder;
 
 import static java.lang.System.getLogger;
 
@@ -87,7 +87,7 @@ public class Player {
         return c64.getTime();
     }
 
-    public void debug(boolean enable, FileStream out) {
+    public void debug(boolean enable, OutputStream out) {
         c64.debug(enable, out);
     }
 

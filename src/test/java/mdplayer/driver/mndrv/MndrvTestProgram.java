@@ -1,5 +1,8 @@
 package mdplayer.driver.mndrv;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Map;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.SourceDataLine;
@@ -41,9 +44,9 @@ public class MndrvTestProgram {
         int samplingRate = setting.getOutputDevice().getSampleRate();
 
         FileFormat format = FileFormat.getFileFormat(filename);
-        var r = format.load((String) null, filename);
+        format.load(Files.newInputStream(Path.of(filename)), null);
         BasePlugin<? extends BaseDriver> plugin = (BasePlugin<? extends BaseDriver>) format.getPlugin();
-        plugin.setBuffer(format, r.getItem1(), filename, null, 0, 0, r.getItem2());
+        plugin.setParams(format, Map.of("fileName", filename));
         audio.init(plugin);
         audio.play();
 

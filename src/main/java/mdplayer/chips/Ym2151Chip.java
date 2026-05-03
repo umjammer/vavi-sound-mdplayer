@@ -6,7 +6,8 @@
 
 package mdplayer.chips;
 
-import mdplayer.Common;
+import java.util.Map;
+
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
@@ -56,7 +57,7 @@ public class Ym2151Chip extends BaseChip {
         return use4MYM2151scci;
     }
 
-    public final int[] hosei = {0, 0};
+    public final int[] corrections = {0, 0};
 
     @Override
     @SuppressWarnings("unchecked")
@@ -114,8 +115,10 @@ public class Ym2151Chip extends BaseChip {
                       int addr,
                       int data,
                       EnmModel model,
-                      int correction,
+                      int hosei,
                       long frameCounter) {
+        int correction = hosei == 0 ? this.corrections[0] : this.corrections[1];
+
         if (chipId == 0)
             context.chipLED.put("PriOPM", 2);
         else
@@ -334,24 +337,14 @@ public class Ym2151Chip extends BaseChip {
         }
     }
 
-    public int[] getVolume(int chipId) {
-        return volume[chipId];
-    }
-
-    public int[] read(int chipId) {
-        return register[chipId];
-    }
-
-    public int[] getKeyOn(int chipId) {
-        return keyOn[chipId];
-    }
-
-    public int getPmd(int chipId) {
-        return pmd[chipId];
-    }
-
-    public int getAmd(int chipId) {
-        return amd[chipId];
+    public Map<String, Object> getInfo(int chipId) {
+        return Map.of(
+                "volume", volume[chipId],
+                "register", register[chipId],
+                "keyOn", keyOn[chipId],
+                "pmd", pmd[chipId],
+                "amd", amd[chipId]
+        );
     }
 
     public void setMask(int chipId, int ch) {
@@ -374,27 +367,23 @@ public class Ym2151Chip extends BaseChip {
         setFadeout(1, 0);
     }
 
-    public final int[] ym2151Hosei = new int[] {
-            0, 0
-    };
-
-    public void setYm2151Hosei(EnmModel model, float ym2151ClockValue) {
+    public void setCorrection(EnmModel model, float clockValue) {
         for (int chipId = 0; chipId < 2; chipId++) {
-            ym2151Hosei[chipId] = getYM2151Hosei(ym2151ClockValue, 3579545);
+            corrections[chipId] = getCorrection(clockValue, 3579545);
             if (model == EnmModel.RealModel) {
-                ym2151Hosei[chipId] = 0;
+                corrections[chipId] = 0;
                 int clock = context.chipRegister.chip(Ym2151Chip.class).getClock(chipId);
                 if (clock != -1) {
-                    ym2151Hosei[chipId] = getYM2151Hosei(ym2151ClockValue, clock);
+                    corrections[chipId] = getCorrection(clockValue, clock);
                 }
             }
         }
     }
 
-    private static int getYM2151Hosei(float ym2151ClockValue, float baseClock) {
+    private static int getCorrection(float clockValue, float baseClock) {
         int ret = 0;
 
-        float delta = ym2151ClockValue / baseClock;
+        float delta = clockValue / baseClock;
         float d;
         float oldD = Float.MAX_VALUE;
         for (int i = 0; i < Tables.pcmMulTbl.length; i++) {

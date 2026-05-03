@@ -1,26 +1,23 @@
 package mdplayer.plugin;
 
+import java.io.InputStream;
 import java.lang.System.Logger;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import dotnet4j.io.Stream;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.*;
 import mdplayer.chips.NesChip.DmcChip;
 import mdplayer.chips.NesChip.FdsChip;
 import mdplayer.driver.VgmDriver;
-import mdsound.Instrument;
 import mdsound.MDSound;
 import mdsound.chips.C352;
 import mdsound.chips.Ym3438Const;
 import mdsound.instrument.C140Inst;
 import mdsound.instrument.C352Inst;
 import mdsound.instrument.MameAy8910Inst;
-import mdsound.instrument.NesInst;
-import mdsound.instrument.OkiM6258Inst;
-import mdsound.instrument.OkiM6295Inst;
 import mdsound.instrument.Sn76496Inst;
 import mdsound.instrument.Ym2203Inst;
 import mdsound.instrument.Ym2608Inst;
@@ -46,13 +43,13 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
 
     @Override
     public void prepare() {
-        driverVirtual = new VgmDriver();
+        driverVirtual = new VgmDriver(this);
         driverVirtual.vgm.dacControl.chipRegister = chipRegister;
         driverVirtual.vgm.dacControl.model = EnmModel.VirtualModel;
 
         driverReal = null;
 //        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
-//            driverReal = new VgmDriver();
+//            driverReal = new VgmDriver(this);
 //            driverReal.dacControl.chipRegister = chipRegister;
 //            driverReal.dacControl.model = EnmModel.RealModel;
 //        }
@@ -63,12 +60,12 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
 
     @Override
     protected void initChips() {
-        driverVirtual.init(vgmBuf, this, EnmModel.VirtualModel,
+        driverVirtual.init(EnmModel.VirtualModel,
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
 
         if (driverReal != null)
-            driverReal.init(vgmBuf, this, EnmModel.RealModel,
+            driverReal.init(EnmModel.RealModel,
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
 
@@ -261,10 +258,12 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, OkiM6258Chip.class);
             chip.clock = driverVirtual.vgm.okiM6258ClockValue;
-            chip.option = new Object[] {driverVirtual.vgm.okiM6258Type};
-//            chip.option = new Object[1] { 6 };
-            if (chip.instrument instanceof OkiM6258Inst okim6258)
-                okim6258.setCallback(0, this::changeChipSampleRate, chip);
+            BiConsumer<Integer, Integer> fn = chip::changeChipSampleRate;
+            chip.option = new Object[] {
+                    driverVirtual.vgm.okiM6258Type,
+                    fn,
+                    setting.getOutputDevice().getSampleRate()
+            };
 
             hiyorimiDeviceFlag |= 0x2;
 
@@ -281,9 +280,11 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, OkiM6295Chip.class);
                 chip.clock = driverVirtual.vgm.okiM6295ClockValue;
-                chip.option = null;
-                if (chip.instrument instanceof OkiM6295Inst okim6295)
-                    okim6295.setCallback(i, this::changeChipSampleRate, chip);
+                BiConsumer<Integer, Integer> fn = chip::changeChipSampleRate;
+                chip.option = new Object[] {
+                        fn,
+                        setting.getOutputDevice().getSampleRate()
+                };
 
                 hiyorimiDeviceFlag |= 0x2;
 
@@ -325,7 +326,7 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
                 chip.samplingRate = 55467; // (int) setting.getoutputDevice().getSampleRate();
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2608Chip.class);
                 chip.clock = driverVirtual.vgm.ym2608ClockValue;
-                Function<String, Stream> fn = Ym2608Chip::getOPNARyhthmStream;
+                Function<String, InputStream> fn = Ym2608Chip::getOPNARyhthmStream;
                 chip.option = new Object[] {fn};
                 hiyorimiDeviceFlag |= 0x2;
 
@@ -827,11 +828,9 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
 
             for (int i = 0; i < (driverVirtual.vgm.nesDualChipFlag ? 2 : 1); i++) {
 
-                Instrument nes = chipRegister.chip(NesChip.class).instrument(i);
-
                 MDSound.Chip chip = new MDSound.Chip();
                 chip.id = i;
-                chip.instrument = nes;
+                chip.instrument = chipRegister.chip(NesChip.class).instrument(i);
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, NesChip.class);
                 chip.clock = driverVirtual.vgm.nesClockValue;
@@ -843,11 +842,10 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
 
                 chip = new MDSound.Chip();
                 chip.id = i;
-                chip.instrument = nes;
+                chip.instrument = chipRegister.chip(DmcChip.class).instrument(i);
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                chip.volume = setting.getBalance().getVolume("DMC", NesChip.class);
+                chip.volume = setting.getBalance().getVolume(MAIN_TAG, DmcChip.class);
                 chip.clock = driverVirtual.vgm.nesClockValue;
-                chip.setVolumes.put("DMC", chip.mainWrappedSetVolume(((NesInst) nes)::setVolume));
                 chip.option = null;
                 if (i == 0) chipLED.put("PriDMC", 1);
                 else chipLED.put("SecDMC", 1);
@@ -856,11 +854,10 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
 
                 chip = new MDSound.Chip();
                 chip.id = i;
-                chip.instrument = nes;
+                chip.instrument = chipRegister.chip(FdsChip.class).instrument(i);
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                chip.volume = setting.getBalance().getVolume("FDS", NesChip.class);
+                chip.volume = setting.getBalance().getVolume(MAIN_TAG, FdsChip.class);
                 chip.clock = driverVirtual.vgm.nesClockValue;
-                chip.setVolumes.put("DMC", chip.mainWrappedSetVolume(((NesInst) nes)::setVolume));
                 chip.option = null;
                 if (i == 0) chipLED.put("PriFDS", 1);
                 else chipLED.put("SecFDS", 1);
@@ -1001,7 +998,7 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
                 chipRegister.chip(Ym2608Chip.class).setSsgVolume((byte) 1, SSGVolumeFromTAG, EnmModel.RealModel);
         }
 
-        chipRegister.chip(Ym2151Chip.class).setYm2151Hosei(EnmModel.VirtualModel, driverVirtual.vgm.ym2151ClockValue);
-        if (driverReal != null) chipRegister.chip(Ym2151Chip.class).setYm2151Hosei(EnmModel.RealModel, driverReal.vgm.ym2151ClockValue);
+        chipRegister.chip(Ym2151Chip.class).setCorrection(EnmModel.VirtualModel, driverVirtual.vgm.ym2151ClockValue);
+        if (driverReal != null) chipRegister.chip(Ym2151Chip.class).setCorrection(EnmModel.RealModel, driverReal.vgm.ym2151ClockValue);
     }
 }

@@ -6,6 +6,8 @@
 
 package mdplayer.chips;
 
+import java.util.Map;
+
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RC86ctlSoundChip;
 import mdplayer.RealChip.RSoundChip;
@@ -325,23 +327,13 @@ public class Ym2203Chip extends BaseChip {
         }
     }
 
-    public int[] getVolume(int chipId) {
-        return fmVolume[chipId];
-    }
-
-    public int[] getCh3SlotVolume(int chipId) {
-//        if (ctYM2612.UseScci) {
-        return fmCh3SlotVolume[chipId];
-//        }
-//        return context.mds.inst(inst[chipId]).readFMCh3SlotVolume();
-    }
-
-    public int[] read(int chipId) {
-        return fmRegister[chipId];
-    }
-
-    public int[] getKeyOn(int chipId) {
-        return fmKeyOn[chipId];
+    public Map<String, Object> getInfo(int chipId) {
+        return Map.of(
+                "volume", fmVolume[chipId],
+                "ch3SlotVolume", /* ctYM2612.UseScci ? */ fmCh3SlotVolume[chipId] /*, context.mds.inst(inst[chipId]).readFMCh3SlotVolume(); */,
+                "register", fmRegister[chipId],
+                "keyOn", fmKeyOn[chipId]
+        );
     }
 
     public void setMask(int chipId, int ch) {

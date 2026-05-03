@@ -8,21 +8,20 @@ package mdplayer.driver.nsf;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
-import mdplayer.chips.NesChip;
 import vavi.util.ByteUtil;
 import zdream.nsfplayer.nsf.audio.NsfAudio;
 import zdream.nsfplayer.nsf.audio.NsfAudioFactory;
 import zdream.nsfplayer.nsf.renderer.NsfRenderer;
 
 import static java.lang.System.getLogger;
-import static mdplayer.Common.charset;
 
 
 /**
- * Nsf2.
+ * Nsf player powered by NsfPlay.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-02-16 nsano initial version <br>
@@ -39,9 +38,7 @@ public class Nsf2 {
     private int load_address;
     private int initAddress;
     private int playAddress;
-    private String filename;
     // margin 64 chars.
-    private String printTitle;
     private String title_nsf;
     private String artist_nsf;
     private String copyrightNsf;
@@ -68,32 +65,15 @@ public class Nsf2 {
     private final byte[] extra = new byte[4];
     private byte[] body;
     private int bodySize;
-    private byte[] nsfeImage;
-    public int[] nsfePlst;
-    public int nsfePlstSize;
-    private static final int NSFE_ENTRIES = 256;
     NsfAudioFactory factory;
     NsfAudio nsf;
     NsfRenderer renderer;
-    byte[] frames = new byte[1600];
-    int frameSize;
-    int framePointer;
+    Charset charset;
 
     /**
      * Currently selected track number
      */
     public int song;
-
-    mdsound.MDSound.Chip cAPU = null;
-    mdsound.MDSound.Chip cDMC = null;
-    mdsound.MDSound.Chip cFDS = null;
-    mdsound.MDSound.Chip cMMC5 = null;
-    mdsound.MDSound.Chip cN160 = null;
-    mdsound.MDSound.Chip cVRC6 = null;
-    mdsound.MDSound.Chip cVRC7 = null;
-    mdsound.MDSound.Chip cFME7 = null;
-
-    NesChip chip;
 
     int sampleRate;
 
@@ -176,10 +156,4 @@ public class Nsf2 {
         renderer = new NsfRenderer();
         renderer.ready(nsf, song);
     }
-
-    public void visWaveBufferCopy(short[][] dest) {
-        visWB.copy(dest);
-    }
-
-    private final mdsound.VisWaveBuffer visWB = new mdsound.VisWaveBuffer();
 }

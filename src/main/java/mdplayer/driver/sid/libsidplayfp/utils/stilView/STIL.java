@@ -21,17 +21,16 @@
 
 package mdplayer.driver.sid.libsidplayfp.utils.stilView;
 
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import dotnet4j.util.compat.Tuple;
-import dotnet4j.io.FileMode;
-import dotnet4j.io.FileStream;
-import dotnet4j.io.SeekOrigin;
 import mdplayer.driver.sid.Ptr;
+import vavi.util.compat.Tuple;
 
 
 /**
@@ -194,7 +193,7 @@ public class STIL {
     private final String[] resultBug = {null};
 
     // final ios_base::openmode STILopenFlags = ios::in | ios::binary;
-    public final FileMode STILopenFlags = FileMode.Open; // | ios::binary;
+    public final String STILopenFlags = "r"; // | ios::binary;
 
     public static final float VERSION_NO = 3.0f;
 
@@ -320,7 +319,7 @@ public class STIL {
      * @return - false - Problem opening or parsing STIL/BUGlist
      * - true  - All okay
      */
-    public boolean setBaseDir(String pathToHVSC) {
+    public boolean setBaseDir(String pathToHVSC) throws IOException {
         // Temporary placeholder for STIL.txt's version number.
         float tempSTILVersion = version;
 
@@ -356,9 +355,9 @@ public class STIL {
         convertSlashes(tempName);
 
         // ifstream stilFile(tempName, STILopenFlags);
-        FileStream stilFile;
+        RandomAccessFile stilFile;
         try {
-            stilFile = new FileStream(tempName, STILopenFlags);
+            stilFile = new RandomAccessFile(tempName, STILopenFlags);
         } catch (Exception e)
         // if (stilFile.fail())
         {
@@ -377,9 +376,9 @@ public class STIL {
         convertSlashes(tempName);
 
         // ifstream bugFile(tempName.c_str(), STILopenFlags);
-        FileStream bugFile = null;
+        RandomAccessFile bugFile = null;
         try {
-            bugFile = new FileStream(tempName, STILopenFlags);
+            bugFile = new RandomAccessFile(tempName, STILopenFlags);
             logger.fine("setBaseDir(): open succeeded for " + tempName + "\n");
         } catch (Exception e)
         // if (bugFile.fail())
@@ -466,7 +465,7 @@ public class STIL {
      * Same as #getEntry, but with an absolute path given
      * given : your machine's format.
      */
-    public String getAbsEntry(String absPathToEntry, int tuneNo/* = 0*/, Field field/* = Field.all*/) {
+    public String getAbsEntry(String absPathToEntry, int tuneNo/* = 0*/, Field field/* = Field.all*/) throws IOException {
         lastError = Error.NO_STIL_ERROR;
 
         logger.fine("getAbsEntry() called, absPathToEntry=" + absPathToEntry + "\n");
@@ -532,7 +531,7 @@ public class STIL {
      * to an private structure, but I trust you. :)
      * - NULL if there's absolutely no STIL entry for the tune
      */
-    public String getEntry(String relPathToEntry, int tuneNo/* = 0*/, Field field /*= Field.All*/) {
+    public String getEntry(String relPathToEntry, int tuneNo/* = 0*/, Field field /*= Field.All*/) throws IOException {
         lastError = Error.NO_STIL_ERROR;
 
         logger.fine("getEntry() called, relPath=" + relPathToEntry + ", rest=" + tuneNo + "," + field + "\n");
@@ -575,9 +574,9 @@ public class STIL {
             tempName += pathToStil;
             convertSlashes(tempName);
 
-            FileStream stilFile = null;
+            RandomAccessFile stilFile = null;
             try {
-                stilFile = new FileStream(tempName, STILopenFlags);
+                stilFile = new RandomAccessFile(tempName, STILopenFlags);
             } catch (Exception e)
             // if (stilFile.fail())
             {
@@ -612,7 +611,7 @@ public class STIL {
      * Same as #getBug, but with an absolute path
      * given : your machine's format.
      */
-    public String getAbsBug(String absPathToEntry, int tuneNo/* = 0*/) {
+    public String getAbsBug(String absPathToEntry, int tuneNo/* = 0*/) throws IOException {
         lastError = Error.NO_STIL_ERROR;
 
         logger.fine("getAbsBug() called, absPathToEntry=" + absPathToEntry + "\n");
@@ -657,7 +656,7 @@ public class STIL {
      * to an private structure, but I trust you. :)
      * - NULL if there's absolutely no BUG entry for the tune
      */
-    public String getBug(String relPathToEntry, int tuneNo/* = 0*/) {
+    public String getBug(String relPathToEntry, int tuneNo/* = 0*/) throws IOException {
         lastError = Error.NO_STIL_ERROR;
 
         logger.fine("getBug() called, relPath=" + relPathToEntry + ", rest=" + tuneNo + "\n");
@@ -694,9 +693,9 @@ public class STIL {
             convertSlashes(tempName);
 
             // ifstream bugFile(tempName, STILopenFlags);
-            FileStream bugFile = null;
+            RandomAccessFile bugFile = null;
             try {
-                bugFile = new FileStream(tempName, STILopenFlags);
+                bugFile = new RandomAccessFile(tempName, STILopenFlags);
             } catch (Exception e)
             // if (bugFile.fail())
             {
@@ -729,7 +728,7 @@ public class STIL {
      * Same as #getGlobalComment, but with an absolute path
      * given : your machine's format.
      */
-    public String getAbsGlobalComment(String absPathToEntry) {
+    public String getAbsGlobalComment(String absPathToEntry) throws IOException {
         lastError = Error.NO_STIL_ERROR;
 
         logger.fine("getAbsGC() called, absPathToEntry=" + absPathToEntry + "\n");
@@ -769,7 +768,7 @@ public class STIL {
      * - NULL if there's absolutely no section-global comment
      * for the tune
      */
-    public String getGlobalComment(String relPathToEntry) {
+    public String getGlobalComment(String relPathToEntry) throws IOException {
         lastError = Error.NO_STIL_ERROR;
 
         logger.fine("getGC() called, relPath=" + relPathToEntry + "\n");
@@ -810,9 +809,9 @@ public class STIL {
             convertSlashes(tempName);
 
             // ifstream stilFile(tempName.c_str(), STILopenFlags);
-            FileStream stilFile;
+            RandomAccessFile stilFile;
             try {
-                stilFile = new FileStream(tempName, STILopenFlags);
+                stilFile = new RandomAccessFile(tempName, STILopenFlags);
             } catch (Exception e)
             // if (stilFile.fail())
             {
@@ -853,7 +852,7 @@ public class STIL {
      * @return - false - something went wrong
      * - true  - everything instanceof okay
      */
-    private boolean determineEOL(FileStream stilFile) {
+    private boolean determineEOL(RandomAccessFile stilFile) throws IOException {
         logger.fine("detEOL() called" + "\n");
 
         if (stilFile == null) {
@@ -861,7 +860,7 @@ public class STIL {
             return false;
         }
 
-        stilFile.seek(0, SeekOrigin.Begin);
+        //stilFile.seek(0, SeekOrigin.Begin);
 
         STIL_EOL = 0;
         STIL_EOL2 = 0;
@@ -870,12 +869,12 @@ public class STIL {
         // (it can be different from OS to OS).
 
         int c;
-        while ((c = stilFile.readByte()) != -1) {
+        while ((c = stilFile.read()) != -1) {
             if ((c == '\n') || (c == '\r')) {
                 STIL_EOL = (byte) c;
 
                 if (c == '\r') {
-                    if (stilFile.readByte() == '\n')
+                    if (stilFile.read() == '\n')
                         STIL_EOL2 = (byte) '\n';
                 }
                 break;
@@ -906,12 +905,12 @@ public class STIL {
      * inFile
      * - true  - everything instanceof okay
      */
-    private boolean getDirs(FileStream inFile, List<Tuple<String, Integer>> dirs, boolean isSTILFile) {
+    private boolean getDirs(RandomAccessFile inFile, List<Tuple<String, Integer>> dirs, boolean isSTILFile) throws IOException {
         boolean newDir = !isSTILFile;
 
         logger.fine("getDirs() called" + "\n");
 
-        inFile.seek(0, SeekOrigin.Begin);
+//        inFile.seek(0, SeekOrigin.Begin);
 
         while (inFile != null) {
             String line = getStilLine(inFile);
@@ -965,7 +964,7 @@ public class STIL {
 
                 // Store the info
                 if (newDir) {
-                    int position = (int) (inFile.position() - line.length() - 1L);
+                    int position = (int) (inFile.getFilePointer() - line.length() - 1L);
 
                     logger.fine("getDirs() dirName=" + dirName + ", pos=" + position + "\n");
 
@@ -999,10 +998,10 @@ public class STIL {
      * @return - true - if successful
      * - false - otherwise
      */
-    private boolean positionToEntry(ByteBuffer entryStr, FileStream inFile, List<Tuple<String, Integer>> dirs) {
+    private boolean positionToEntry(ByteBuffer entryStr, RandomAccessFile inFile, List<Tuple<String, Integer>> dirs) throws IOException {
         logger.fine("pos2Entry() called, entryStr=" + entryStr + "\n");
 
-        inFile.seek(0, SeekOrigin.Begin);
+        inFile.seek(0);
 
         // Get the dirpath.
 
@@ -1038,7 +1037,7 @@ public class STIL {
         }
 
         // Jump to the first entry of this section.
-        inFile.seek(elem.getItem2(), SeekOrigin.Begin);
+        inFile.seek(elem.getItem2());
         boolean foundIt = false;
 
         // Now find the desired entry
@@ -1048,7 +1047,7 @@ public class STIL {
         do {
             line = getStilLine(inFile);
 
-            if (inFile.getLength() == inFile.position()) {
+            if (inFile.length() == inFile.getFilePointer()) {
                 break;
             }
 
@@ -1080,7 +1079,7 @@ public class STIL {
 
         if (foundIt) {
             // Reposition the file pointer back to the start of the entry.
-            inFile.seek(inFile.position() - line.length() - 1L, SeekOrigin.Begin);
+            inFile.seek(inFile.getFilePointer() - line.length() - 1L);
             logger.fine("pos2Entry() entry found" + "\n");
             return true;
         } else {
@@ -1096,7 +1095,7 @@ public class STIL {
      * @param inFile filehandle of file to read from
      * @param buffer where to put the result to TODO OUT
      */
-    private String readEntry(FileStream inFile, String buffer) {
+    private String readEntry(RandomAccessFile inFile, String buffer) throws IOException {
         String line = "";
 
         StringBuilder bufferBuilder = new StringBuilder(buffer);
@@ -1121,12 +1120,10 @@ public class STIL {
      *
      * @param result where to put the resulting String to (if any)
      * @param buffer pointer to the first char of what to search for
-     *               the field. Should be a buffer : standard STIL
-     *               format.
+     *               the field. Should be a buffer : standard STIL format.
      * @param tuneNo song number within the song (default=0)
      * @param field  which field to retrieve (default=all).
-     * @return - false - if nothing was put into 'result'
-     * - true  - 'result' has the resulting field
+     * @return false: if nothing was put into 'result', true: 'result' has the resulting field
      */
     private static boolean getField(String[] result, String buffer, int tuneNo /* = 0 */, Field field /* = Field.all */) {
         logger.fine("getField() called, buffer=" + buffer + ", rest=" + tuneNo + "," + field + "\n");
@@ -1472,16 +1469,16 @@ public class STIL {
      *               to the start of the desired line)
      * @return line char array to put the line into
      */
-    private String getStilLine(FileStream infile) {
+    private String getStilLine(RandomAccessFile infile) throws IOException {
         if (STIL_EOL2 != '\0') {
             // If there was a remaining EOL char from the previous read, eat it up.
 
-            int temp = infile.readByte();
+            int temp = infile.read();
 
             if ((temp == 0x0d) || (temp == 0x0a)) {
                 // infile.get(temp);
             } else {
-                infile.seek(-1, SeekOrigin.Current);
+                infile.seek(infile.getFilePointer() - 1L);
             }
         }
 
@@ -1489,7 +1486,7 @@ public class STIL {
         String line = "";
         int ch = 0;
         StringBuilder lineBuilder = new StringBuilder(line);
-        while ((ch = infile.readByte()) != -1 && ch != STIL_EOL) {
+        while ((ch = infile.read()) != -1 && ch != STIL_EOL) {
             lineBuilder.append((char) ch);
         }
         line = lineBuilder.toString();

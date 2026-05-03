@@ -25,7 +25,6 @@ package mdplayer.driver.sid.libsidplayfp.builders.resid_builder;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
-import mdplayer.Setting;
 import mdplayer.driver.sid.libsidplayfp.SidEmu;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidBuilder;
 
@@ -39,12 +38,12 @@ public class ReSidBuilder extends SidBuilder {
 
     private static final Logger logger = getLogger(ReSidBuilder.class.getName());
 
-    private final Setting setting;
+    private final double sampleRate;
 
-    public ReSidBuilder(String name, Setting setting) {
+    public ReSidBuilder(String name, double sampleRate) {
         super(name);
 
-        this.setting = setting;
+        this.sampleRate = sampleRate;
     }
 
     /**
@@ -70,7 +69,7 @@ public class ReSidBuilder extends SidBuilder {
 
         for (count = 0; count < sids; count++) {
             try {
-                sidobjs.add(new ReSid(this, setting));
+                sidobjs.add(new ReSid(this, sampleRate));
             }
             // Memory alloc failed?
             catch (Exception e) {

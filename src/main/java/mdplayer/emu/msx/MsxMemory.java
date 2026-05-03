@@ -1,7 +1,7 @@
 package mdplayer.emu.msx;
 
-import dotnet4j.util.compat.TriConsumer;
 import konamiman.z80.interfaces.Memory;
+import vavi.util.compat.TriConsumer;
 
 
 public class MsxMemory implements Memory {

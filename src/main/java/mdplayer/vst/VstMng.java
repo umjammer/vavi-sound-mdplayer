@@ -8,13 +8,13 @@ import java.util.EventObject;
 import java.util.List;
 import java.util.Map;
 
-import dotnet4j.util.compat.EventHandler;
 import mdplayer.Common.EnmModel;
 import mdplayer.MIDIParam;
-import mdplayer.Setting;
 import mdplayer.MidiOutInfo;
+import mdplayer.Setting;
 import org.urish.jnavst.AEffect;
 import org.urish.jnavst.VstPlugin;
+import vavi.util.event.GenericListener;
 
 import static java.lang.System.getLogger;
 
@@ -627,10 +627,10 @@ public class VstMng {
         /**
          * Raised when one of the methods instanceof called.
          */
-        public EventHandler<PluginCalledEventArgs> PluginCalled;
+        public GenericListener PluginCalled;
 
         private void RaisePluginCalled(String message) {
-            EventHandler<PluginCalledEventArgs> handler = PluginCalled;
+            GenericListener handler = PluginCalled;
 
             if (handler != null) {
 //                handler(this, new PluginCalledEventArgs(message));

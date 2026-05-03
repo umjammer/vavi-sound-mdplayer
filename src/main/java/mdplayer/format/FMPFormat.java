@@ -8,12 +8,12 @@ package mdplayer.format;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
-import dotnet4j.io.Path;
 import mdplayer.PlayList.Music;
 import mdplayer.driver.fmp.FmpDriver;
 import mdplayer.plugin.FMPPlugin;
@@ -25,6 +25,9 @@ import vavi.sound.sampled.md.MdEncoding;
 import vavi.sound.sampled.md.MdFileFormatType;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
+
+import static vavi.util.compat.Util.changeExtension;
+import static vavi.util.compat.Util.isNullOrEmpty;
 
 
 /**
@@ -41,14 +44,37 @@ public class FMPFormat extends BaseFileFormat implements FileFormat.SampledFileF
     }
 
     @Override
+    public MetaData getMetaData() {
+        if (!isMml()) {
+            return new FmpDriver().getMetaData(this.srcBuf, 0);
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public boolean isMml() {
+        if (isNullOrEmpty(this.filename)) return false;
+        String ext = this.filename.substring(this.filename.lastIndexOf('.'));
+        if (isNullOrEmpty(ext)) return false;
+        ext = ext.toLowerCase();
+        return ext.length() > 3 && ext.charAt(1) == 'm';
+    }
+
+    public String getCompiledFilename() {
+        String ext = this.filename.substring(this.filename.lastIndexOf('.'));
+        return changeExtension(this.filename,
+                ext.equalsIgnoreCase(".mpi") ? ".opi" : (ext.equalsIgnoreCase(".mvi") ? ".ovi" : ".ozi"));
+    }
+
+    @Override
     public List<Music> getMusic(String file, byte[] buf, String zipFile, Archive archive, Entry entry) {
         Music music = new Music();
 
         music.format = this;
-        int index = 0;
-        MetaData metaData = new FmpDriver().getMetaData(buf, index);
-        music.title = metaData.getFirst(Tag.Title).isEmpty() ? Path.getFileName(file) : metaData.getFirst(Tag.Title);
-        music.titleJ = metaData.getFirst(Tag.TitleJ).isEmpty() ? Path.getFileName(file) : metaData.getFirst(Tag.TitleJ);
+        MetaData metaData = getMetaData();
+        music.title = metaData.getFirst(Tag.Title).isEmpty() ? Path.of(file).getFileName().toString() : metaData.getFirst(Tag.Title);
+        music.titleJ = metaData.getFirst(Tag.TitleJ).isEmpty() ? Path.of(file).getFileName().toString() : metaData.getFirst(Tag.TitleJ);
         music.game = metaData.getFirst(Tag.GameTitle);
         music.gameJ = metaData.getFirst(Tag.GameTitleJ);
         music.composer = metaData.getFirst(Tag.Composer);

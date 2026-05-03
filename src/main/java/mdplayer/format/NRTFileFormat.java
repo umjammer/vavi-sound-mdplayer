@@ -36,12 +36,16 @@ public class NRTFileFormat extends BaseFileFormat {
     }
 
     @Override
+    public MetaData getMetaData() {
+        return new NrtDriver().getMetaData(this.srcBuf, 42);
+    }
+
+    @Override
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
         PlayList.Music music = new PlayList.Music();
 
         music.format = this;
-        int index = 42;
-        MetaData metaData = new NrtDriver().getMetaData(buf, index);
+        MetaData metaData = getMetaData();
         music.title = metaData.getFirst(Tag.Title);
         music.titleJ = metaData.getFirst(Tag.TitleJ);
         music.game = metaData.getFirst(Tag.GameTitle);
@@ -61,8 +65,7 @@ public class NRTFileFormat extends BaseFileFormat {
         PlayList.Music music = new PlayList.Music();
 
         music.format = this;
-        int index = 42;
-        MetaData metaData = new NrtDriver().getMetaData(buf, index);
+        MetaData metaData = getMetaData();
         music.title = metaData.getFirst(Tag.Title);
         music.titleJ = metaData.getFirst(Tag.TitleJ);
         music.game = metaData.getFirst(Tag.GameTitle);

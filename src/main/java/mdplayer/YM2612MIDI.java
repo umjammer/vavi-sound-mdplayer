@@ -2,22 +2,22 @@ package mdplayer;
 
 import java.awt.event.KeyEvent;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.UncheckedIOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.ShortMessage;
 import javax.swing.JOptionPane;
 
-import dotnet4j.io.FileMode;
-import dotnet4j.io.FileStream;
-import dotnet4j.io.StreamReader;
-import dotnet4j.io.StreamWriter;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.chips.Ym2203Chip;
 import mdplayer.chips.Ym2608Chip;
@@ -162,7 +162,7 @@ public class YM2612MIDI {
     }
 
     private void voiceCopy() {
-        int[][] reg = audio.plugin.chipRegister.chip(Ym2612Chip.class).read(0); // chipRegister.register[0];
+        int[][] reg = (int[][]) audio.plugin.chipRegister.chip(Ym2612Chip.class).getInfo(0).get("register");
         if (reg == null) return;
 
         for (int i = 0; i < 6; i++) {
@@ -309,13 +309,13 @@ public class YM2612MIDI {
         if (chip == Ym2612Chip.class || chip == Ym2608Chip.class || chip == Ym2610Chip.class || chip == Ym2203Chip.class) {
             int[][] srcRegs = null;
             if (chip == Ym2612Chip.class) {
-                srcRegs = audio.plugin.chipRegister.chip(Ym2612Chip.class).read(chipId);
+                srcRegs = (int[][]) audio.plugin.chipRegister.chip(Ym2612Chip.class).getInfo(chipId).get("register");
             } else if (chip == Ym2608Chip.class) {
-                srcRegs = audio.plugin.chipRegister.chip(Ym2608Chip.class).read(chipId);
+                srcRegs = (int[][]) audio.plugin.chipRegister.chip(Ym2608Chip.class).getInfo(chipId).get("register");
             } else if (chip == Ym2610Chip.class) {
-                srcRegs = audio.plugin.chipRegister.chip(Ym2610Chip.class).read(chipId);
+                srcRegs = (int[][]) audio.plugin.chipRegister.chip(Ym2610Chip.class).getInfo(chipId).get("register");
             } else if (chip == Ym2203Chip.class) {
-                int[] sReg = audio.plugin.chipRegister.chip(Ym2203Chip.class).read(chipId);
+                int[] sReg = (int[]) audio.plugin.chipRegister.chip(Ym2203Chip.class).getInfo(chipId).get("register");
                 srcRegs = new int[][] {sReg, null};
             }
             for (int i = 0; i < 6; i++) {
@@ -324,7 +324,7 @@ public class YM2612MIDI {
                 }
             }
         } else if (chip == Ym2151Chip.class) {
-            int[] reg = audio.plugin.chipRegister.chip(Ym2151Chip.class).read(chipId);
+            int[] reg = (int[]) audio.plugin.chipRegister.chip(Ym2151Chip.class).getInfo(chipId).get("register");
             for (int i = 0; i < 6; i++) {
                 if (setting.getMidiKbd().getUseChannel()[i]) {
                     voiceCopyChFromOPM(ch, i, reg);
@@ -607,7 +607,7 @@ public class YM2612MIDI {
         Charset enc = StandardCharsets.UTF_8;
         if (tp == 2) enc = Charset.defaultCharset();
 
-        try (StreamWriter sw = new StreamWriter(new FileStream(fn, FileMode.CreateNew), enc)) {
+        try (PrintStream sw = new PrintStream(Files.newOutputStream(Path.of(fn)), true, enc)) {
             int n = 0;
             int row = 10;
             for (Tone t : tonePallet.getLstTone()) {
@@ -622,11 +622,11 @@ public class YM2612MIDI {
 
                 if (tp != 6) {
                     for (String text : toneText) {
-                        sw.writeLine(text);
+                        sw.println(text);
                     }
                 } else {
                     for (String text : toneText) {
-                        sw.writeLine(text.replace("[ROW]", String.valueOf(row)));
+                        sw.println(text.replace("[ROW]", String.valueOf(row)));
                         row += 10;
                     }
                 }
@@ -744,9 +744,10 @@ public class YM2612MIDI {
 
         List<String> tnt = new ArrayList<>();
 
-        try (StreamReader sr = new StreamReader(new FileStream(fn, FileMode.Open))) {
+        try (Scanner sr = new Scanner(Files.newInputStream(Path.of(fn)))) {
             String line;
-            while ((line = sr.readLine()) != null) {
+            while (sr.hasNextLine()) {
+                line = sr.nextLine();
                 tnt.add(line);
             }
         } catch (IOException e) {

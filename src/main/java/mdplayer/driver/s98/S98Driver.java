@@ -40,7 +40,9 @@ public class S98Driver extends BaseDriver {
 
     private final S98 s98;
 
-    public S98Driver() {
+    public S98Driver(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+
         this.s98 = new S98();
         s98.isRealModel = model == EnmModel.RealModel;
         s98.musicStep = setting.getOutputDevice().getSampleRate() / 60.0;
@@ -51,13 +53,17 @@ public class S98Driver extends BaseDriver {
         s98.writeYM2203 = (chipId, adr, data) -> plugin.chipRegister.chip(Ym2203Chip.class).write(chipId, adr, data, model);
         s98.writeYM2612 = (chipId, port, adr, data) -> plugin.chipRegister.chip(Ym2612Chip.class).write(chipId, port, adr, data, model, 0);
         s98.writeYM2608 = (chipId, port, adr, data) -> plugin.chipRegister.chip(Ym2608Chip.class).write(chipId, port, adr, data, model);
-        s98.writeYM2151 = (chipId, port, adr, data) -> plugin.chipRegister.chip(Ym2151Chip.class).write(chipId, port, adr, data, model, plugin.chipRegister.chip(Ym2151Chip.class).ym2151Hosei[chipId], 0);
+        s98.writeYM2151 = (chipId, port, adr, data) -> plugin.chipRegister.chip(Ym2151Chip.class).write(chipId, port, adr, data, model, plugin.chipRegister.chip(Ym2151Chip.class).corrections[chipId], 0);
         s98.writeYM2413 = (chipId, adr, data) -> plugin.chipRegister.chip(Ym2413Chip.class).write(chipId, adr, data, model);
         s98.writeYM3526 = (chipId, adr, data) -> plugin.chipRegister.chip(Ym3526Chip.class).write(chipId, adr, data, model);
         s98.writeYM3812 = (chipId, adr, data) -> plugin.chipRegister.chip(Ym3812Chip.class).write(chipId, adr, data, model);
         s98.writeAY8910 = (chipId, adr, data) -> plugin.chipRegister.chip(Ay8910Chip.class).write(chipId, adr, data, model);
         s98.writeSN76489 = (chipId, data) -> plugin.chipRegister.chip(Sn76489Chip.class).write(chipId, data, model);
         s98.writeYMF262 = (chipId, port, adr, data) -> plugin.chipRegister.chip(YmF262Chip.class).write(chipId, port, adr, data, model);
+    }
+
+    public S98Driver() {
+        this(null); // gross
     }
 
     public int getSSGVolumeFromTAG() {
@@ -185,10 +191,7 @@ public class S98Driver extends BaseDriver {
     }
 
     @Override
-    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     int latency, int waitTime, Object... args) {
-        this.dataBuf = vgmBuf;
-        this.plugin = plugin;
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
         this.model = model;
         this.latency = latency;
         this.waitTime = waitTime;
@@ -202,10 +205,10 @@ public class S98Driver extends BaseDriver {
         speed = 1;
         speedCounter = 0;
 
-        metaData = getMetaData(vgmBuf);
+        metaData = getMetaData(dataBuf);
         //if (Gd3 == null) return false;
 
-        if (!s98.getInformationHeader(vgmBuf)) throw new IllegalArgumentException("not valid header");
+        if (!s98.getInformationHeader(dataBuf)) throw new IllegalArgumentException("not valid header");
 
         if (model == EnmModel.RealModel) {
             plugin.chipRegister.chip(Ym2612Chip.class).setSyncWait((byte) 0, 1);

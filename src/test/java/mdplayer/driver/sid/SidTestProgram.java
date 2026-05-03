@@ -8,15 +8,21 @@ package mdplayer.driver.sid;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.SourceDataLine;
 
+import com.github.kwhat.jnativehook.GlobalScreen;
+import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
+import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
 import mdplayer.Setting;
 import mdplayer.driver.sid.libsidplayfp.builders.resid_builder.ReSidBuilder;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidConfig;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTune;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.playSidFp;
+import vavi.util.Debug;
 
 import org.mockito.Mockito;
 
@@ -35,7 +41,7 @@ public class SidTestProgram {
 
     private static final int SamplingRate = 44100;
 
-    private SourceDataLine audioOutput = null;
+    private SourceDataLine line = null;
     private Thread playbackThread;
     private volatile boolean isPlaying = false;
 
@@ -61,28 +67,45 @@ public class SidTestProgram {
 
         init(fileBuffer, song);
 
-        audioOutput = AudioSystem.getSourceDataLine(new AudioFormat(SamplingRate, 16, 2, true, false));
-        audioOutput.open();
-        volume(audioOutput, Double.parseDouble(System.getProperty("mdsound.volume", "0.2")));
-        audioOutput.start();
+        AtomicReference<CountDownLatch> cdl = new AtomicReference<>(new CountDownLatch(1));
+        GlobalScreen.registerNativeHook();
+        GlobalScreen.addNativeKeyListener(new NativeKeyListener() {
+            @Override
+            public void nativeKeyReleased(NativeKeyEvent event) {
+                int keyCode = event.getKeyCode();
+//Debug.println("keyTyped: " + keyCode + ", " + ((event.getModifiers() & NativeKeyEvent.CTRL_MASK) != 0));
+                if (keyCode == NativeKeyEvent.VC_ENTER) {
+Debug.print("countdown");
+                    cdl.get().countDown();
+                }
+            }
+        });
+
+        AudioFormat format = new AudioFormat(SamplingRate, 16, 2, true, false);
+        line = AudioSystem.getSourceDataLine(format);
+        line.open(format);
+        if (!"#WaveOut Mixer".equals(System.getProperty("javax.sound.sampled.SourceDataLine")))
+            volume(line, Double.parseDouble(System.getProperty("mdsound.volume", "0.2")));
+        line.start();
 
         isPlaying = true;
         playbackThread = new Thread(this::playbackLoop);
         playbackThread.start();
 
-        System.out.println("Playing " + filename + " song " + song);
-        System.out.println("Press Enter to stop...");
-        System.in.read();
+        Debug.println("Playing " + filename + " song " + song);
+        Debug.println("Press Enter to stop...");
+        cdl.get().await();
 
         isPlaying = false;
         playbackThread.join();
-        audioOutput.close();
+        line.close();
 
         if (validBuffers == 0) {
             throw new RuntimeException("FAILURE: No valid audio signal detected at all! (RMS > 50 and Peak > 2000 not met)");
         }
-        
-        System.out.println("SUCCESS: Audio signal detected.");
+
+        Debug.println("SUCCESS: Audio signal detected.");
+        playbackThread.join();
     }
 
     private void init(byte[] buf, int song) {
@@ -93,7 +116,7 @@ public class SidTestProgram {
         engine = new playSidFp(SamplingRate);
         engine.setRoms(null, null, null); // No ROMs for now
 
-        ReSidBuilder rs = new ReSidBuilder("ReSid", setting);
+        ReSidBuilder rs = new ReSidBuilder("ReSid", setting.getOutputDevice().getSampleRate());
         rs.create(1); // Create 1 SID
 
         tune = new SidTune(buf, buf.length);
@@ -161,7 +184,7 @@ public class SidTestProgram {
 
             if (produced > 0) {
 
-                audioOutput.write(audioBuffer, 0, produced * 2);
+                line.write(audioBuffer, 0, produced * 2);
             } else {
                 try {
                     Thread.sleep(10);

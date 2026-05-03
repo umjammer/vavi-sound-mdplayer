@@ -29,13 +29,11 @@ public class NDPPlugin extends BasePlugin<NdpDriver> {
 
     @Override
     public void prepare() {
-        driverVirtual = new NdpDriver();
-//        driverVirtual.setPlayingFileName(playingFileName);
+        driverVirtual = new NdpDriver(this);
 
         driverReal = null;
 //        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
-//            driverReal = new NdpDriver();
-//            driverReal.setPlayingFileName(playingFileName);
+//            driverReal = new NdpDriver(this);
 //        }
 
         super.prepare();
@@ -99,11 +97,11 @@ public class NDPPlugin extends BasePlugin<NdpDriver> {
             chipRegister.chip(Ym2413Chip.class).write(0, 14, 32, EnmModel.VirtualModel);
         }
 
-        driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel,
+        driverVirtual.init(Common.EnmModel.VirtualModel,
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         if (driverReal != null) {
-            driverReal.init(vgmBuf, this, Common.EnmModel.RealModel,
+            driverReal.init(Common.EnmModel.RealModel,
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         }

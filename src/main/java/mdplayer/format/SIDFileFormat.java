@@ -2,19 +2,25 @@ package mdplayer.format;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import javax.sound.sampled.AudioFileFormat.Type;
+import javax.sound.sampled.AudioFormat.Encoding;
 
-import dotnet4j.io.File;
 import mdplayer.Common.EnmArcType;
 import mdplayer.PlayList;
-import mdplayer.driver.sid.SidDriver;
 import mdplayer.driver.sid.SidMdDriver2;
 import mdplayer.plugin.Plugin;
 import mdplayer.plugin.SIDPlugin;
 import mdplayer.properties.Resources;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
+import vavi.sound.SoundUtil;
+import vavi.sound.sampled.md.MdEncoding;
+import vavi.sound.sampled.md.MdFileFormatType;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 
@@ -33,12 +39,18 @@ public class SIDFileFormat extends BaseFileFormat {
     }
 
     @Override
+    public MetaData getMetaData() {
+        return new SidMdDriver2().getMetaData(this.srcBuf);
+    }
+
+    @Override
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
         List<PlayList.Music> musics = new ArrayList<>();
 
-        SidDriver sid = new SidMdDriver2();
-        MetaData metaData = sid.getMetaData(buf);
-        for (int s = 0; s < sid.getSongs(); s++) {
+        MetaData metaData = getMetaData();
+        int songs = Integer.parseInt(metaData.getFirst(Tag.NumberOfSongs));
+
+        for (int s = 0; s < songs; s++) {
             PlayList.Music music = new PlayList.Music();
             music.format = this;
             music.fileName = file;
@@ -85,7 +97,7 @@ public class SIDFileFormat extends BaseFileFormat {
     public List<PlayList.Music> addFileLoop(PlayList.Music mc, Archive archive, Entry entry /* = null */) throws IOException {
         byte[] buf;
         if (entry == null) {
-            buf = File.readAllBytes(mc.fileName);
+            buf = Files.readAllBytes(Path.of(mc.fileName));
         } else {
             try (InputStream reader = archive.getInputStream(entry)) {
                 buf = reader.readAllBytes();
@@ -118,7 +130,7 @@ public class SIDFileFormat extends BaseFileFormat {
     public List<PlayList.Music> addFileLoop(int index, PlayList.Music mc, Archive archive, Entry entry/* = null*/) throws IOException {
         byte[] buf;
         if (entry == null) {
-            buf = File.readAllBytes(mc.fileName);
+            buf = Files.readAllBytes(Path.of(mc.fileName));
         } else {
             try (InputStream reader = archive.getInputStream(entry)) {
                 buf = reader.readAllBytes();
@@ -148,14 +160,23 @@ public class SIDFileFormat extends BaseFileFormat {
     }
 
     @Override
+    public Encoding getEncoding() {
+        return new MdEncoding("SID", "sid");
+    }
+
+    @Override
+    public Type getType() {
+        return new MdFileFormatType("SID", "sid");
+    }
+
+    @Override
     public int getMarkSize() {
         return 0;
     }
 
     @Override
     public boolean isSupported(InputStream is) throws IOException {
-//        if (isCompressedStream(is)) return false;
-//        return Arrays.stream(getExtensions()).anyMatch(e -> java.nio.file.Path.of(SoundUtil.getSource(is)).toString().toLowerCase().endsWith(e));
-        return false;
+        if (isCompressedStream(is)) return false;
+        return Arrays.stream(getExtensions()).anyMatch(e -> java.nio.file.Path.of(SoundUtil.getSource(is)).toString().toLowerCase().endsWith(e));
     }
 }

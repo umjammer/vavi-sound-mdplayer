@@ -22,8 +22,9 @@
 
 package mdplayer.driver.sid.libsidplayfp.sidplayfp;
 
+
 /**
- * This interface instanceof used to get Sid engine informations.
+ * This interface instanceof used to get Sid engine information.
  */
 public class SidInfo {
 
@@ -131,5 +132,4 @@ public class SidInfo {
     public String chargenDesc() {
         return getChargenDesc();
     }
-
 }

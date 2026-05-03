@@ -1,7 +1,12 @@
 package mdplayer.driver.muap;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -9,17 +14,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import dotnet4j.io.File;
-import dotnet4j.io.FileAccess;
-import dotnet4j.io.FileMode;
-import dotnet4j.io.FileShare;
-import dotnet4j.io.FileStream;
-import dotnet4j.io.IOException;
-import dotnet4j.io.MemoryStream;
-import dotnet4j.io.Path;
-import dotnet4j.io.Stream;
-import dotnet4j.util.compat.TriConsumer;
-import dotnet4j.util.compat.Tuple;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.Cs4231Chip;
@@ -40,6 +34,8 @@ import musicDriverInterface.IDriver;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MmlDatum;
 import vavi.util.ByteUtil;
+import vavi.util.compat.TriConsumer;
+import vavi.util.compat.Tuple;
 
 
 /**
@@ -54,13 +50,12 @@ public class MuapDriver extends BaseDriver {
     public byte[] toneBuff;
     public int[] labelAdr;
 
-    public String playingFileName;
-
-    public String getPlayingFileName() {
-        return playingFileName;
+    public MuapDriver(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
     }
 
     public MuapDriver() {
+        this(null); // gross
     }
 
     @Override
@@ -72,12 +67,9 @@ public class MuapDriver extends BaseDriver {
     }
 
     @Override
-    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     int latency, int waitTime, Object... args) {
-        metaData = getMetaData(vgmBuf);
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
+        metaData = getMetaData(dataBuf);
 
-        this.dataBuf = vgmBuf;
-        this.plugin = plugin;
         this.model = model;
         this.latency = latency;
         this.waitTime = waitTime;
@@ -142,7 +134,7 @@ public class MuapDriver extends BaseDriver {
         MmlDatum[] ret;
         CompilerInfo info = null;
         try {
-            try (MemoryStream sourceMML = new MemoryStream(vgmBuf)) {
+            try (InputStream sourceMML = new ByteArrayInputStream(vgmBuf)) {
                 ret = muapCompiler.compile(sourceMML, this::appendFileReaderCallback); // wrkMUCFullPath, disp);
             }
 
@@ -191,15 +183,15 @@ public class MuapDriver extends BaseDriver {
         return ByteUtil.toByteArray(dest);
     }
 
-    private Stream appendFileReaderCallback(String arg) {
+    private InputStream appendFileReaderCallback(String arg) {
 
-        String fn = Path.combine(Path.getDirectoryName(playingFileName), arg);
+        Path fn = Path.of(plugin.playingFileName).getParent().resolve(arg);
 
-        if (!File.exists(fn)) return null;
+        if (!Files.exists(fn)) return null;
 
-        FileStream strm;
+        InputStream strm;
         try {
-            strm = new FileStream(fn, FileMode.Open, FileAccess.Read, FileShare.Read);
+            strm = Files.newInputStream(fn);
         } catch (IOException e) {
             strm = null;
         }
@@ -224,7 +216,7 @@ public class MuapDriver extends BaseDriver {
         String pfn = plugin.playingFileName;
         String _ = plugin.playingArcFileName;
         if (pfn != null && !pfn.isEmpty()) {
-            pfn = Path.getDirectoryName(Path.getFullPath(pfn));
+            pfn = Path.of(pfn).toAbsolutePath().getParent().toString();
         }
         muapDriver.init(
                 lca,

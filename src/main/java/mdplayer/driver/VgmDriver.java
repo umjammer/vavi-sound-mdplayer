@@ -5,8 +5,7 @@ import java.lang.System.Logger.Level;
 
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
-import mdplayer.chips.Ym2151Chip;
-import mdplayer.chips.Ym2608Chip;
+import mdplayer.chips.RealChipPlugin;
 import mdplayer.chips.Ym2612Chip;
 import mdplayer.plugin.BasePlugin;
 import musicDriverInterface.MetaData;
@@ -26,7 +25,9 @@ public class VgmDriver extends BaseDriver {
 
     public final Vgm vgm;
 
-    public VgmDriver() {
+    public VgmDriver(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+
         this.vgm = new Vgm();
         vgm.frameCounter = () -> frameCounter;
         vgm.dataBlock = b -> isDataBlock = b;
@@ -41,11 +42,12 @@ public class VgmDriver extends BaseDriver {
         vgm.updateMetaData = (b, o) -> metaData = getMetaData(b, o);
     }
 
+    public VgmDriver() {
+        this(null);
+    }
+
     @Override
-    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     int latency, int waitTime, Object... args) {
-        this.dataBuf = vgmBuf;
-        this.plugin = plugin;
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
         this.model = model;
         this.latency = latency;
         this.waitTime = waitTime;
@@ -59,11 +61,9 @@ public class VgmDriver extends BaseDriver {
         stopped = false;
         isDataBlock = false;
 
-        vgm.vgmBuf = vgmBuf;
+        vgm.vgmBuf = dataBuf;
         vgm.model = model;
         vgm.chipRegister = plugin.chipRegister;
-        vgm.setting = setting;
-        vgm.ym2151Hosei = plugin.chipRegister.chip(Ym2151Chip.class).ym2151Hosei;
 
         vgm.init();
 
@@ -141,15 +141,7 @@ public class VgmDriver extends BaseDriver {
             if (countNum > 100) {
                 if (model == EnmModel.RealModel && countNum % 100 == 0) {
                     isDataBlock = true;
-                    plugin.chipRegister.chip(Ym2608Chip.class).sendData(0, model);
-                    plugin.chipRegister.chip(Ym2608Chip.class).setSyncWait(0, 1);
-                    plugin.chipRegister.chip(Ym2151Chip.class).sendData(0, model);
-                    plugin.chipRegister.chip(Ym2151Chip.class).setSyncWait(0, 1);
-
-                    plugin.chipRegister.chip(Ym2608Chip.class).sendData(1, model);
-                    plugin.chipRegister.chip(Ym2608Chip.class).setSyncWait(1, 1);
-                    plugin.chipRegister.chip(Ym2151Chip.class).sendData(1, model);
-                    plugin.chipRegister.chip(Ym2151Chip.class).setSyncWait(1, 1);
+                    plugin.chipRegister.plugin(RealChipPlugin.class).process1(model);
                 }
             }
         }
@@ -163,12 +155,7 @@ public class VgmDriver extends BaseDriver {
         // Send wait
         if (model == EnmModel.RealModel) {
             if (speed == 1) { // Apply weight only when speed is constant
-                if (vgm.useChipYM2612Ch6)
-                    plugin.chipRegister.chip(Ym2612Chip.class).setSyncWait(0, vgm.vgmWait);
-//                if ((useChip & enmUseChip.SN76489) == enmUseChip.SN76489)
-//                    plugin.chipRegister.setSN76489SyncWait(vgmWait);
-//                plugin.chipRegister.setYM2608SyncWait(vgmWait);
-//                plugin.chipRegister.setYM2151SyncWait(vgmWait);
+                plugin.chipRegister.plugin(RealChipPlugin.class).process3(vgm.useChipYM2612Ch6, vgm.vgmWait);
             }
         }
 

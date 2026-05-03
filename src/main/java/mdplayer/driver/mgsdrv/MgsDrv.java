@@ -3,7 +3,6 @@ package mdplayer.driver.mgsdrv;
 import java.io.IOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -11,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 
-import dotnet4j.util.compat.TriConsumer;
 import konamiman.z80.Z80Processor;
 import konamiman.z80.Z80ProcessorImpl;
 import konamiman.z80.events.BeforeInstructionFetchEvent;
@@ -20,6 +18,7 @@ import mdplayer.emu.msx.MapperRamCartridge;
 import mdplayer.emu.msx.MsxMemory;
 import mdplayer.emu.msx.MsxPort;
 import vavi.util.ByteUtil;
+import vavi.util.compat.TriConsumer;
 
 import static java.lang.System.getLogger;
 
@@ -62,7 +61,7 @@ public class MgsDrv {
         return z80.getRegisters().getD() & 0xff;
     }
 
-    void run(byte[] vgmBuf) throws IOException, URISyntaxException {
+    void run(byte[] vgmBuf) throws IOException {
         Path fileName = Path.of(dir, "MGSDRV.COM");
 
         z80 = new Z80ProcessorImpl();
@@ -74,8 +73,8 @@ public class MgsDrv {
 
         mapper = new Mapper((MapperRamCartridge) ((MsxMemory) z80.getMemory()).slot.slots[3][1], (MsxMemory) z80.getMemory());
 
-        //Stopwatch sw = new Stopwatch();
-        //sw.Start();
+        //StopWatch sw = new StopWatch();
+        //sw.start();
 
         z80.reset();
 
@@ -91,8 +90,8 @@ public class MgsDrv {
 
         z80.continue_();
 
-        //sw.Stop();
-        //logger.log(Level.TRACE, "Elapsed time: %d".formatted(sw.Elapsed));
+        //sw.stop();
+        //logger.log(Level.TRACE, "Elapsed time: %d".formatted(sw.elapsed));
 
         // Switch to the segment where MGSDRV exists
         ((MsxMemory) z80.getMemory()).changePage(3, 1, 1); // slot3-1 to Page1
@@ -214,7 +213,7 @@ public class MgsDrv {
                 z80.getRegisters().getIX() & 0xffff, z80.getRegisters().getIY() & 0xffff));
     }
 
-    private void callEXTBIO(BeforeInstructionFetchEvent args, Z80Processor z80) {
+    private static void callEXTBIO(BeforeInstructionFetchEvent args, Z80Processor z80) {
         byte funcType = z80.getRegisters().getD();
         byte function = z80.getRegisters().getE();
 
@@ -235,7 +234,7 @@ public class MgsDrv {
         z80.executeRet();
     }
 
-    private void extbioMemorymapper(BeforeInstructionFetchEvent args, Z80Processor z80, byte function) {
+    private static void extbioMemorymapper(BeforeInstructionFetchEvent args, Z80Processor z80, byte function) {
         switch (function) {
         case 0x02:
             z80.getRegisters().setA((byte) 0);

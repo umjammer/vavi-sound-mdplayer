@@ -14,6 +14,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
@@ -148,43 +149,39 @@ public class frmHuC6280 extends frmBase {
 
     public void screenChangeParams() {
 
-        OotakeHuC6280 chip = audio.plugin.chipRegister.chip(HuC6280Chip.class).getChip(chipId);
+        Map<String, Object> chip = audio.plugin.chipRegister.chip(HuC6280Chip.class).getInfo(chipId);
         if (chip == null) return;
 
         //logger.log(Level.TRACE, "%d  %d".formatted(chips.MainVolumeL,chips.MainVolumeR));
         for (int ch = 0; ch < 6; ch++) {
-            OotakeHuC6280.Psg psg = chip.getPsg(ch);
-            if (psg == null) continue;
+            if (chip.get("channels." + ch + ".volumeL") == null) continue;
             MDChipParams.Channel channel = newParam.channels[ch];
             //logger.log(Level.TRACE, "%d  %d".formatted(psg.outVolumeL, psg.outVolumeR));
-            channel.volumeL = psg.outVolumeL >> 10;
-            channel.volumeR = psg.outVolumeR >> 10;
+            channel.volumeL = (int) chip.get("channels." + ch + ".outVolumeL");
+            channel.volumeR = (int) chip.get("channels." + ch + ".outVolumeR");
             channel.volumeL = Math.min(channel.volumeL, 19);
             channel.volumeR = Math.min(channel.volumeR, 19);
 
-            channel.pan = (psg.volumeL & 0xf) | ((psg.volumeR & 0xf) << 4);
+            channel.pan = (int) chip.get("channels." + ch + ".pan");
 
-            channel.inst = psg.wave;
+            channel.inst = (int[]) chip.get("channels." + ch + ".wave");
 
-            channel.dda = psg.dda;
+            channel.dda = (boolean) chip.get("channels." + ch + ".dda");
 
-            int tp = psg.frq;
-            if (tp == 0) tp = 1;
-
-            float ftone = 3579545.0f / 32.0f / (float) tp;
+            float ftone = (float) chip.get("channels." + ch + ".ftone");
             channel.note = searchSSGNote(ftone);
             if (channel.volumeL == 0 && channel.volumeR == 0) channel.note = -1;
 
             if (ch < 4) continue;
 
-            channel.noise = psg.bNoiseOn;
-            channel.nfrq = psg.noiseFrq;
+            channel.noise = (boolean) chip.get("channels." + ch + ".bNoiseOn");
+            channel.nfrq = (int) chip.get("channels." + ch + ".noiseFrq");
         }
 
-        newParam.mvolL = chip.mainVolumeL;
-        newParam.mvolR = chip.mainVolumeR;
-        newParam.LfoCtrl = chip.lfoControl;
-        newParam.LfoFrq = chip.lfoFreq;
+        newParam.mvolL = (int) chip.get("mainVolumeL");
+        newParam.mvolR = (int) chip.get("mainVolumeR");
+        newParam.LfoCtrl = (int) chip.get("lfoControl");
+        newParam.LfoFrq = (int) chip.get("lfoFreq");
     }
 
     public void screenDrawParams() {

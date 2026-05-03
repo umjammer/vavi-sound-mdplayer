@@ -6,6 +6,8 @@
 
 package mdplayer.chips;
 
+import java.util.Map;
+
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
@@ -193,16 +195,13 @@ public class Sn76489Chip extends BaseChip {
         }
     }
 
-    public int[][] getVolumes(int chipId) {
-        return volumes[chipId];
-    }
-
-    public int[] read(int chipId) {
-        return register[chipId];
-    }
-
-    public int getPan(int chipId) {
-        return pan[chipId];
+    public Map<String, Object> getInfo(int chipId) {
+        return Map.of(
+                "volumes", volumes[chipId],
+                "register", register[chipId],
+                "pan", pan[chipId],
+                "flag", ngpFlag
+        );
     }
 
     public void setMask(int chipId, int ch) {
@@ -224,10 +223,6 @@ public class Sn76489Chip extends BaseChip {
     }
 
     public boolean ngpFlag = false;
-
-    public boolean getFlag() {
-        return ngpFlag;
-    }
 
     @Override
     public void clearFadeout() {

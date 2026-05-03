@@ -20,12 +20,12 @@
 
 package mdplayer.driver.sid.libsidplayfp.sidtune;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
-import dotnet4j.io.IOException;
-import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTuneInfo;
 import mdplayer.driver.sid.Mem;
+import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTuneInfo;
 
 
 public class P00 extends SidTuneBase {
@@ -90,7 +90,7 @@ public class P00 extends SidTuneBase {
      * @return pointer to a SidTune or 0 if not a PC64 file
      * @throws IOException if PC64 file instanceof corrupt
      */
-    public static SidTuneBase load(String fileName, byte[] dataBuf) {
+    public static SidTuneBase load(String fileName, byte[] dataBuf) throws IOException {
         String ext = SidTuneTools.fileExtOfPath(fileName);
 
         // Combined extension & magic field identification

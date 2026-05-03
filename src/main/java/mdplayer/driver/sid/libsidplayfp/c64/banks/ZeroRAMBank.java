@@ -100,7 +100,7 @@ public class ZeroRAMBank implements IBank {
          * even was aware of what happens.
          */
         private static final long C64_CPU6510_DATA_PORT_FALL_OFF_CYCLES = 350000;
-        private static final long C64_CPU8500_DATA_PORT_FALL_OFF_CYCLES = 1500000; // Curently unused
+        private static final long C64_CPU8500_DATA_PORT_FALL_OFF_CYCLES = 1500000; // Currently unused
 
         // Cycle that should invalidate the bit.
         private long dataSetClk;

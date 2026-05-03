@@ -4,11 +4,9 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
-import dotnet4j.io.Path;
 import mdplayer.Common.EnmArcType;
 import mdplayer.PlayList;
 import mdplayer.PlayList.Music;
@@ -39,42 +37,36 @@ public class GbsFileFormat extends BaseFileFormat {
     }
 
     @Override
+    public MetaData getMetaData() {
+        return new Gbs().getMetaData(this.srcBuf);
+    }
+
+    @Override
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
         List<PlayList.Music> musics = new ArrayList<>();
-        PlayList.Music music = new PlayList.Music();
 
-        Gbs gbs = new Gbs();
-        MetaData md = gbs.getMetaData(buf);
+        MetaData md = getMetaData();
+        int songs = Integer.parseInt(md.getFirst(Tag.NumberOfSongs));
 
-        if (md != null) {
-            for (int s = 0; s < gbs.songs; s++) {
-                music = new PlayList.Music();
-                music.format = this;
-                music.fileName = file;
-                music.arcFileName = zipFile;
-                music.arcType = EnmArcType.unknown;
-                if (zipFile != null && zipFile.isEmpty())
-                    music.arcType = zipFile.toLowerCase().lastIndexOf(".zip") != -1 ? EnmArcType.ZIP : EnmArcType.LZH;
-                music.title = "%s - Trk %d".formatted(md.getFirst(Tag.Title), s + 1);
-                music.titleJ = "%s - Trk %d".formatted(md.getFirst(Tag.TitleJ), s + 1);
-                music.game = md.getFirst(Tag.GameTitle);
-                music.gameJ = md.getFirst(Tag.GameTitleJ);
-                music.composer = md.getFirst(Tag.Composer);
-                music.composerJ = md.getFirst(Tag.ComposerJ);
-                music.vgmby = md.getFirst(Tag.Maker);
-                music.converted = md.getFirst(Tag.Converter);
-                music.notes = md.getFirst(Tag.Note);
-                music.songNo = s;
-
-                musics.add(music);
-            }
-        } else {
+        for (int s = 0; s < songs; s++) {
+            PlayList.Music music = new PlayList.Music();
             music.format = this;
             music.fileName = file;
             music.arcFileName = zipFile;
-            music.game = "unknown";
-            music.type = "-";
-            music.title = "(%s)".formatted(Path.getFileName(file));
+            music.arcType = EnmArcType.unknown;
+            if (zipFile != null && zipFile.isEmpty())
+                music.arcType = zipFile.toLowerCase().lastIndexOf(".zip") != -1 ? EnmArcType.ZIP : EnmArcType.LZH;
+            music.title = "%s - Trk %d".formatted(md.getFirst(Tag.Title), s + 1);
+            music.titleJ = "%s - Trk %d".formatted(md.getFirst(Tag.TitleJ), s + 1);
+            music.game = md.getFirst(Tag.GameTitle);
+            music.gameJ = md.getFirst(Tag.GameTitleJ);
+            music.composer = md.getFirst(Tag.Composer);
+            music.composerJ = md.getFirst(Tag.ComposerJ);
+            music.vgmby = md.getFirst(Tag.Maker);
+            music.converted = md.getFirst(Tag.Converter);
+            music.notes = md.getFirst(Tag.Note);
+            music.songNo = s;
+
             musics.add(music);
         }
 

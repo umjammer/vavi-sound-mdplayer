@@ -8,11 +8,12 @@ package mdplayer.chips;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-import dotnet4j.io.File;
-import dotnet4j.io.Path;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
@@ -20,7 +21,6 @@ import mdplayer.Tables;
 import mdplayer.driver.BaseDriver;
 import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
-import mdsound.chips.SegaPcm;
 import mdsound.instrument.SegaPcmInst;
 import musicDriverInterface.MetaData.Tag;
 import vavi.util.ByteUtil;
@@ -143,16 +143,11 @@ public class SegaPcmChip extends BaseChip {
         }
     }
 
-    public byte[] read(int chipId) {
-        return register[chipId];
-    }
-
-    public boolean[] getKeyOn(int chipId) {
-        return keyOn[chipId];
-    }
-
-    public SegaPcm getChip(int chipId) {
-        return context.mds.inst(SegaPcmInst.class).getChip(chipId);
+    public Map<String, Object> getInfo(int chipId) {
+        Map<String, Object> info = context.mds.inst(SegaPcmInst.class).getInfo(chipId);
+        info.put("register", register[chipId]);
+        info.put("keyOn", keyOn[chipId]);
+        return info;
     }
 
     public void setMask(int chipId, int ch) {
@@ -168,7 +163,7 @@ public class SegaPcmChip extends BaseChip {
         if (!setting.getOther().getDumpSwitch()) return;
 
         try {
-            String dFn = Path.combine(setting.getOther().getDumpPath(), "%2$s_%3$s_%1$03d.wav".formatted(dumpCounter++, chipName, context.driverReal.metaData.getFirst(Tag.Title).replace("*", "").replace("?", "").replace(" ", "").replace("\"", "")));
+            String dFn = Path.of(setting.getOther().getDumpPath(), "%2$s_%3$s_%1$03d.wav".formatted(dumpCounter++, chipName, context.driverReal.metaData.getFirst(Tag.Title).replace("*", "").replace("?", "").replace(" ", "").replace("\"", ""))).toString();
             List<Byte> des = new ArrayList<>();
 
             // 'RIFF'
@@ -237,7 +232,7 @@ public class SegaPcmChip extends BaseChip {
             }
 
             // output
-            File.writeAllBytes(dFn, ByteUtil.toByteArray(des));
+            Files.write(Path.of(dFn), ByteUtil.toByteArray(des));
 
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);

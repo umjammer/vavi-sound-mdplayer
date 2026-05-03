@@ -13,6 +13,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
@@ -23,7 +24,6 @@ import mdplayer.chips.K051649Chip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
-import mdsound.chips.K051649;
 import mdsound.instrument.K051649Inst;
 
 import static mdplayer.Common.searchSSGNote;
@@ -142,21 +142,20 @@ public class frmK051649 extends frmBase {
     };
 
     public void screenChangeParams() {
-        K051649 chip = audio.plugin.chipRegister.chip(K051649Chip.class).getChip(chipId);
+        Map<String, Object> chip = audio.plugin.chipRegister.chip(K051649Chip.class).getInfo(chipId);
         if (chip == null) return;
 
         for (int ch = 0; ch < 5; ch++) {
-            K051649.Channel psg = chip.getChannel(ch);
-            if (psg == null) continue;
+            if (chip.get("channels." + ch + ".freq") == null) continue;
 
             MDChipParams.Channel channel = newParam.channels[ch];
-            for (int i = 0; i < 32; i++) channel.inst[i] = chip.getWaveRam(ch, i);
-            float fTone = audio.plugin.mds.getChipInfo(K051649Inst.class).clock / (8.0f * (float) psg.frequency);
-            channel.freq = psg.frequency;
-            channel.volume = psg.key != 0 ? (int) (psg.volume * 1.33) : 0;
-            channel.volumeL = psg.volume;
-            channel.note = (psg.key != 0 && channel.volume != 0) ? searchSSGNote(fTone) : -1;
-            channel.dda = psg.key != 0;
+            for (int i = 0; i < 32; i++) channel.inst[i] = (int) chip.get("channels." + ch + ".inst." + i);
+            float fTone = audio.plugin.mds.getChipInfo(K051649Inst.class).clock / (8.0f * (float) chip.get("channels." + ch + ".frequency"));
+            channel.freq = (int) chip.get("channels." + ch + ".frequency");
+            channel.volume = (int) chip.get("channels." + ch + ".volume");
+            channel.volumeL = (int) chip.get("channels." + ch + ".volumeL");
+            channel.note = ((int) chip.get("channels." + ch + ".key") != 0 && channel.volume != 0) ? searchSSGNote(fTone) : -1;
+            channel.dda = (boolean) chip.get("channels." + ch + ".dda");
         }
     }
 

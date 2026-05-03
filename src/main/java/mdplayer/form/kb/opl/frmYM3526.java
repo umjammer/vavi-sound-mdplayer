@@ -17,7 +17,6 @@ import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
 import mdplayer.Chip.ChipKeyInfo;
-import mdplayer.Common;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
@@ -125,7 +124,7 @@ public class frmYM3526 extends frmBase {
     private static final byte[] rhythmAdr = new byte[] {0x53, 0x54, 0x52, 0x55, 0x51};
 
     public void screenChangeParams() {
-        int[] ym3526Register = audio.plugin.chipRegister.chip(Ym3526Chip.class).read(chipId);
+        int[] ym3526Register = (int[]) audio.plugin.chipRegister.chip(Ym3526Chip.class).getInfo(chipId).get("register");
         MDChipParams.Channel nyc;
         int slot = 0;
         ChipKeyInfo ki = audio.plugin.chipRegister.chip(Ym3526Chip.class).getKeyInfo(chipId);

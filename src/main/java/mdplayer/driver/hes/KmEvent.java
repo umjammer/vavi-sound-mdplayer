@@ -1,6 +1,6 @@
 package mdplayer.driver.hes;
 
-import dotnet4j.util.compat.TriConsumer;
+import vavi.util.compat.TriConsumer;
 
 
 /**

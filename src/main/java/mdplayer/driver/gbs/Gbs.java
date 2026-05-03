@@ -28,6 +28,14 @@ public class Gbs extends BaseDriver {
     private int breakSp;
     private boolean initFlg = false;
 
+    public Gbs(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+    }
+
+    public Gbs() {
+        this(null); // gross
+    }
+
     @Override
     public MetaData getMetaData(byte[] buf, Object... args) {
         GbsInfo gbsInfo = GbsInfo.factory(buf);
@@ -42,6 +50,7 @@ public class Gbs extends BaseDriver {
         metaData.set(Tag.TitleJ, gbsInfo.title);
         metaData.set(Tag.GameSystem, gbsInfo.copyright);
         metaData.set(Tag.GameSystemJ, gbsInfo.copyright);
+        metaData.set(Tag.NumberOfSongs, String.valueOf(gbsInfo.nums));
 
         this.metaData = metaData;
 
@@ -52,10 +61,10 @@ public class Gbs extends BaseDriver {
      * @param args 0: songNo
      */
     @Override
-    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model, int latency, int waitTime, Object... args) {
-        getMetaData(vgmBuf, 0);
-        info = GbsInfo.factory(vgmBuf);
-        this.plugin = plugin;
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
+        getMetaData(dataBuf, 0);
+
+        info = GbsInfo.factory(dataBuf);
         this.model = model;
 
         int s = (int) args[0] - 1;

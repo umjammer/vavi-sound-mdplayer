@@ -6,12 +6,10 @@
 
 package mdplayer.chips;
 
-import mdplayer.Chip;
+import java.util.Map;
+
 import mdplayer.Common.EnmModel;
-import mdplayer.driver.BaseDriver;
-import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
-import mdsound.chips.GbSound;
 import mdsound.instrument.DmgInst;
 
 
@@ -67,9 +65,9 @@ public class DmgChip extends BaseChip {
         return context.mds.inst(DmgInst.class).read(chipId, addr);
     }
 
-    public GbSound read(int chipId) {
+    public Map<String, Object> getInfo(int chipId) {
         if (chipId == 1) return null;
 
-        return context.mds.inst(DmgInst.class).getChip(chipId);
+        return context.mds.inst(DmgInst.class).getInfo(chipId);
     }
 }

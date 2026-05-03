@@ -6,7 +6,8 @@
 
 package mdplayer.chips;
 
-import mdplayer.Chip;
+import java.util.Map;
+
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
@@ -141,8 +142,8 @@ public class K051649Chip extends BaseChip {
         }
     }
 
-    public K051649 getChip(int chipId) {
-        return context.mds.inst(K051649Inst.class).getChip(chipId);
+    public Map<String, Object> getInfo(int chipId) {
+        return context.mds.inst(K051649Inst.class).getInfo(chipId);
     }
 
     @Override

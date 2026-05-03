@@ -6,13 +6,10 @@
 
 package mdplayer.plugin;
 
+import java.io.InputStream;
 import java.lang.System.Logger;
 import java.util.function.Function;
 
-import dotnet4j.io.Path;
-import dotnet4j.io.Stream;
-import dotnet4j.util.compat.StringUtilities;
-import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.Ppz8Chip;
 import mdplayer.chips.RealChipPlugin;
@@ -21,6 +18,7 @@ import mdplayer.driver.fmp.FMP;
 import mdplayer.driver.fmp.FmpDriver;
 import mdplayer.driver.pmd.PmdDriver;
 import mdplayer.emu.nise98.FileTemp;
+import mdplayer.plugin.BasePlugin.Compilable;
 import mdsound.MDSound;
 import mdsound.instrument.Ym2608Inst;
 
@@ -34,41 +32,42 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-02-20 nsano initial version <br>
  */
-public class FMPPlugin extends BasePlugin<FmpDriver> {
+public class FMPPlugin extends BasePlugin<FmpDriver> implements Compilable {
 
     private static final Logger logger = getLogger(FMPPlugin.class.getName());
 
     @Override
+    public void compile() {
+        FileTemp ft = new FileTemp();
+        if (this.fileFormat.isMml()) {
+            // compile
+            FmpDriver fmp = new FmpDriver(this);
+            fmp.setFileTemp(ft);
+            fmp.compile();
+            this.playingFileName = fileFormat.getCompiledFilename();
+            this.dataBuf = ft.readTemp(this.playingFileName);
+        }
+    }
+
+    @Override
     public void prepare() {
         FileTemp ft = new FileTemp();
-        String ext = playingFileName.substring(playingFileName.lastIndexOf('.') + 1);
-        if (!StringUtilities.isNullOrEmpty(ext)) {
-            ext = ext.toLowerCase();
-            if (ext.length() > 3 && ext.charAt(1) == 'm') {
-                //compile
-                FmpDriver fmp = new FmpDriver();
-                fmp.setFileTemp(ft);
-                fmp.setPlayingFileName(playingFileName);
-                fmp.compile();
-                playingFileName = Path.changeExtension(
-                        playingFileName,
-                        ext.equals(".mpi") ? ".opi" : (ext.equals(".mvi") ? ".ovi" : ".ozi"));
-                vgmBuf = ft.readTemp(playingFileName);
-                //dataBuf = File.readAllBytes(PlayingFileName);
-            }
+        if (this.fileFormat.isMml()) {
+            // compile
+            FmpDriver fmp = new FmpDriver(this);
+            fmp.setFileTemp(ft);
+            fmp.compile();
+            this.playingFileName = fileFormat.getCompiledFilename();
+            this.dataBuf = ft.readTemp(this.playingFileName);
         }
 
-        driverVirtual = new FmpDriver();
+        driverVirtual = new FmpDriver(this);
         driverVirtual.setFileTemp(ft);
-        driverVirtual.setPlayingFileName(playingFileName);
-        driverVirtual.setPlayingArcFileName(playingArcFileName);
 
         driverReal = null;
 //        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null && !setting.getYM2608Type()[0].getUseEmu()[0]) {
-//            driverReal = new FmpDriver();
+//            driverReal = new FmpDriver(this);
 //            driverReal.setFileTemp(ft);
-//            driverReal.setPlayingFileName(playingFileName);
-//            driverReal.setPlayingArcFileName(playingArcFileName);
 //        }
 
         super.prepare();
@@ -89,7 +88,7 @@ public class FMPPlugin extends BasePlugin<FmpDriver> {
             chip.setVolumes.put("ADPCM", ym2608::setVolume);
         }
         chip.clock = FMP.baseClock;
-        Function<String, Stream> fn = Ym2608Chip::getOPNARyhthmStream;
+        Function<String, InputStream> fn = Ym2608Chip::getOPNARyhthmStream;
         chip.option = new Object[] {fn};
         chipLED.put("PriOPNA", 1);
         put(Ym2608Chip.class, chip);
@@ -127,16 +126,11 @@ public class FMPPlugin extends BasePlugin<FmpDriver> {
         chipRegister.chip(Ym2608Chip.class).setSsgVolume(0, setting.getBalance().getGimicOPNAVolume(), EnmModel.RealModel);
         chipRegister.chip(Ym2608Chip.class).setSsgVolume(1, setting.getBalance().getGimicOPNAVolume(), EnmModel.RealModel);
 
-        driverVirtual.setSearchPath(setting.getFileSearchPathList());
-        if (driverReal != null) {
-            driverReal.setSearchPath(setting.getFileSearchPathList());
-        }
-
-        driverVirtual.init(vgmBuf, this, EnmModel.VirtualModel,
+        driverVirtual.init(EnmModel.VirtualModel,
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         if (driverReal != null) {
-            driverReal.init(vgmBuf, this, EnmModel.RealModel,
+            driverReal.init(EnmModel.RealModel,
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         }

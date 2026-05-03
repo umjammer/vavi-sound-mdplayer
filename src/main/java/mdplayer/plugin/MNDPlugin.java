@@ -1,10 +1,9 @@
 package mdplayer.plugin;
 
+import java.io.InputStream;
 import java.lang.System.Logger;
 import java.util.function.Function;
 
-import dotnet4j.io.Stream;
-import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.MPcmChip;
 import mdplayer.chips.RealChipPlugin;
@@ -32,12 +31,12 @@ public class MNDPlugin extends BasePlugin<MnDriver> {
 
     @Override
     public void prepare() {
-        driverVirtual = new MnDriver();
+        driverVirtual = new MnDriver(this);
         driverVirtual.setExtendFile(extendFiles);
 
         driverReal = null;
 //        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
-//            driverReal = new MnDriver();
+//            driverReal = new MnDriver(this);
 //            driverReal.setExtendFile(extendFile);
 //        }
 
@@ -75,7 +74,7 @@ public class MNDPlugin extends BasePlugin<MnDriver> {
                 chip.setVolumes.put("RHYTHM", opna::setVolume);
                 chip.setVolumes.put("ADPCM", opna::setVolume);
             }
-            Function<String, Stream> fn = Ym2608Chip::getOPNARyhthmStream;
+            Function<String, InputStream> fn = Ym2608Chip::getOPNARyhthmStream;
             chip.option = new Object[] {fn};
             put(Ym2608Chip.class, chip);
             chipRegister.chip(Ym2608Chip.class).clock = 8000000;
@@ -94,7 +93,7 @@ public class MNDPlugin extends BasePlugin<MnDriver> {
                 chip.setVolumes.put("RHYTHM", opna::setVolume);
                 chip.setVolumes.put("ADPCM", opna::setVolume);
             }
-            Function<String, Stream> fn = Ym2608Chip::getOPNARyhthmStream;
+            Function<String, InputStream> fn = Ym2608Chip::getOPNARyhthmStream;
             chip.option = new Object[] {fn};
 //            chip.option = new Object[] {Common.getApplicationFolder()};
             put(Ym2608Chip.class, chip);
@@ -159,19 +158,19 @@ public class MNDPlugin extends BasePlugin<MnDriver> {
         if (contains(Ym2151Chip.class, 1))
             chipRegister.chip(Ym2151Chip.class).writeClock((byte) 1, 4000000, EnmModel.RealModel);
 
-        chipRegister.chip(Ym2151Chip.class).setYm2151Hosei(EnmModel.VirtualModel, 4000000);
-        if (driverReal != null) chipRegister.chip(Ym2151Chip.class).setYm2151Hosei(EnmModel.RealModel, 4000000);
+        chipRegister.chip(Ym2151Chip.class).setCorrection(EnmModel.VirtualModel, 4000000);
+        if (driverReal != null) chipRegister.chip(Ym2151Chip.class).setCorrection(EnmModel.RealModel, 4000000);
 
         if (contains(Ym2203Chip.class, 0))
             chipRegister.chip(Ym2203Chip.class).setSsgVolume((byte) 0, setting.getBalance().getGimicOPNVolume(), EnmModel.RealModel);
         if (contains(Ym2203Chip.class, 1))
             chipRegister.chip(Ym2203Chip.class).setSsgVolume((byte) 1, setting.getBalance().getGimicOPNVolume(), EnmModel.RealModel);
 
-        driverVirtual.init(vgmBuf, this, EnmModel.VirtualModel,
+        driverVirtual.init(EnmModel.VirtualModel,
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         if (driverReal != null) {
-            driverReal.init(vgmBuf, this, EnmModel.RealModel,
+            driverReal.init(EnmModel.RealModel,
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         }

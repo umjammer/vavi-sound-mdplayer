@@ -22,7 +22,6 @@
 
 package mdplayer.driver.sid.libsidplayfp.builders.resid_builder;
 
-import mdplayer.Setting;
 import mdplayer.driver.sid.libsidplayfp.Const;
 import mdplayer.driver.sid.libsidplayfp.EventScheduler;
 import mdplayer.driver.sid.libsidplayfp.SidEmu;
@@ -75,9 +74,9 @@ public class ReSid extends SidEmu {
         return credits;
     }
 
-    public ReSid(SidBuilder builder, Setting setting) {
+    public ReSid(SidBuilder builder, double sampleRate) {
         super(builder);
-        sid = new Sid(setting);
+        sid = new Sid(sampleRate);
         voiceMask = 0x07;
         buffer = new short[(int) Output.outputBufferSize];
         reset((byte) 0);

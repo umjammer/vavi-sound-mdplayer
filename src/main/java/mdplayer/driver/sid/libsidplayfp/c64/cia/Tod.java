@@ -49,10 +49,10 @@ public class Tod extends Event {
         }
     }
 
-    // Event scheduler.
+    /** Event scheduler. */
     private final EventScheduler eventScheduler;
 
-    // Pointer to the Mos6526 which this Timer belongs to.
+    /** Pointer to the Mos6526 which this Timer belongs to. */
     private final Mos6526 parent;
 
     private final byte cra;

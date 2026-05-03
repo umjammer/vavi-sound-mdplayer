@@ -13,14 +13,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import dotnet4j.util.compat.StringUtilities;
-import mdplayer.Common;
+import mdplayer.emu.common.Utils;
 import vavi.util.ByteUtil;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Archives;
 import vavi.util.archive.Entry;
 
 import static java.lang.System.getLogger;
+import static vavi.util.compat.Util.isNullOrEmpty;
 
 
 public class NiseDos {
@@ -87,12 +87,12 @@ public class NiseDos {
 
         mem.pokeW(inDOSFLAGAdr, (short) 1); // 0: Can be used! 1: Resident programs cannot use system calls!!
 
-        // mem.PokeW(0xfd802, 0x2a27); // EPSON machine!!
-        // mem.PokeB(0xfd804, 6); // EPSON PC-286VE
+        // mem.pokeW(0xfd802, 0x2a27); // EPSON machine!!
+        // mem.pokeB(0xfd804, 6); // EPSON PC-286VE
     }
 
     public void loadAndExecuteFile(String filename, String option /* = "" */, int startSegment /* = pspStartAddress >> 4 */) {
-        logger.log(Level.INFO, "niseDOS>%s %s".formatted(filename, option));
+        logger.log(Level.INFO, "niseDOS>%s %s".formatted(filename, Path.of(option).getFileName().toString()));
 
         byte[] bin;
         try {
@@ -188,7 +188,7 @@ public class NiseDos {
                 }
 
                 logger.log(Level.TRACE, "<NiseDos>INT%02xh AH:$%02x".formatted(imm8 & 0xff, regs.getAH() & 0xff));
-                int ptr = imm8 * 4;
+                int ptr = (imm8 & 0xff) * 4;
                 short ip = mem.peekW(ptr);
                 short cs = mem.peekW(ptr + 2);
                 if ((ip | cs) == 0) break;
@@ -219,7 +219,7 @@ public class NiseDos {
             // Setup PSP https://programmer.main.jp/assembler2/7_5.html
 
             // 0x80 Number of characters in the argument
-            if (StringUtilities.isNullOrEmpty(option)) {
+            if (isNullOrEmpty(option)) {
                 mem.pokeB(ptr + 0x80, (byte) 0);
             } else {
                 byte[] optAry = (option + "\r").getBytes(charset);
@@ -263,7 +263,7 @@ public class NiseDos {
             ptr -= 0x100;
 
             // 0x80 Number of characters in the argument
-            if (StringUtilities.isNullOrEmpty(option)) {
+            if (isNullOrEmpty(option)) {
                 mem.pokeB(ptr + 0x80, (byte) 0);
             } else {
                 byte[] optAry = (option + "\r").getBytes(charset);
@@ -293,7 +293,7 @@ public class NiseDos {
         FileStatus fnd;
         switch (regs.getAH()) {
             case 0x04:
-                logger.log(Level.DEBUG, "<NiseDos>  (98)KEY BOARD press check");
+                logger.log(Level.TRACE, "<NiseDos>  (98)KEY BOARD press check");
                 byte keyGroup = regs.getAL();
                 regs.setAH((byte) 0x00); // Nothing is being pressed
                 break;
@@ -362,7 +362,7 @@ public class NiseDos {
                 regs.setES(mem.peekW((regs.getAL() & 0xff) * 4 + 2));
                 break;
             case 0x3c:
-                logger.log(Level.TRACE, "<NiseDos>  Create File Using Handle");
+                logger.log(Level.DEBUG, "<NiseDos>  Create File Using Handle");
                 short attribute = regs.getCX();
                 msg = new ArrayList<>();
                 cnt = 0;
@@ -392,7 +392,7 @@ public class NiseDos {
 
                 break;
             case 0x3d:
-                logger.log(Level.TRACE, "<NiseDos>  FILE OPEN");
+                logger.log(Level.DEBUG, "<NiseDos>  FILE OPEN");
                 msg = new ArrayList<>();
                 cnt = 0;
                 do {
@@ -448,7 +448,7 @@ public class NiseDos {
                     regs.setCF(true);
                     break;
                 }
-                if (StringUtilities.isNullOrEmpty(fnd.name.toString())) {
+                if (isNullOrEmpty(fnd.name.toString())) {
                     regs.setCF(true);
                     break;
                 }
@@ -467,7 +467,7 @@ public class NiseDos {
 
                 break;
             case 0x40:
-                logger.log(Level.TRACE, "<NiseDos>  'WRITE'-WRITE TO FILE OR DEVICE");
+                logger.log(Level.DEBUG, "<NiseDos>  'WRITE'-WRITE TO FILE OR DEVICE");
                 // input:
                 // BX = file handle
                 // CX = number of bytes to write
@@ -499,7 +499,7 @@ logger.log(Level.TRACE, "error message from program");
                         fnd.lstBuf.add(b);
                         c++;
                     }
-                    logger.log(Level.TRACE, "<NiseDos>  WRITE buff length:%d".formatted(c));
+                    logger.log(Level.DEBUG, "<NiseDos>  WRITE buff length:%d".formatted(c));
                     regs.setCF(false);
                     break;
                 }
@@ -611,6 +611,7 @@ logger.log(Level.TRACE, "error message from program");
     }
 
     public void setPath(Path v) {
+logger.log(Level.DEBUG, "dos path: " + v);
         filePath = v;
     }
 
@@ -631,24 +632,26 @@ logger.log(Level.TRACE, "error message from program");
     private boolean checkFileExist(String filename, /* out */ String[] fndFilename) {
         if (Files.exists(Path.of(filename)) || fileTemp.existTemp(filename)) {
             fndFilename[0] = filename;
+logger.log(Level.INFO, "file found: '" + filename + "' as '" + fndFilename[0] + "', in temp: " + fileTemp.existTemp(filename));
             return true;
         }
-        Path fn = filePath.resolve(filename);
-        Path realFn = Common.fileExistsIgnoreCase(fn);
+        Path fn = filePath.resolve(Path.of(filename).getFileName());
+        Path realFn = Utils.fileExistsIgnoreCase(fn);
         if (realFn != null || fileTemp.existTemp(fn.toString())) {
             fndFilename[0] = realFn != null ? realFn.toString() : fn.toString();
+logger.log(Level.INFO, "file found: '" + filename + "' as '" + fndFilename[0] + "', in temp: " + fileTemp.existTemp(filename));
             return true;
         }
 
         if (!searchPath.isEmpty()) {
-            String f = fn.getFileName().toString().replace("\\", File.separator);
+            String f = fn.getFileName().toString();
             for (String fp : searchPath) {
                 Path sfn = Path.of(fp, f);
                 logger.log(Level.INFO, "Search File: %s".formatted(sfn));
-                Path realSfn = Common.fileExistsIgnoreCase(sfn);
+                Path realSfn = Utils.fileExistsIgnoreCase(sfn);
                 if (realSfn != null) {
                     fndFilename[0] = realSfn.toString();
-logger.log(Level.INFO, "file found: " + fn);
+logger.log(Level.INFO, "file found in searchPath: " + filename + " as " + fndFilename[0]);
                     return true;
                 }
             }
@@ -656,18 +659,18 @@ logger.log(Level.INFO, "file found: " + fn);
 
         if (playingArcFileExist(filename)) {
             fndFilename[0] = fn.toString();
-logger.log(Level.INFO, "arc file found: " + fn);
+logger.log(Level.INFO, "file found in arc: " + filename + " as " + fndFilename[0]);
             return true;
         }
 
         fndFilename[0] = "";
-logger.log(Level.INFO, "file not found: " + fn);
+logger.log(Level.INFO, "file not found: " + filename);
         return false;
     }
 
     private boolean playingArcFileExist(String fn) {
         if (playingArcFile.isEmpty()) return false;
-        Path realPath = Common.fileExistsIgnoreCase(Path.of(playingArcFile));
+        Path realPath = Utils.fileExistsIgnoreCase(Path.of(playingArcFile));
         if (realPath == null) return false;
 
         try {
@@ -685,7 +688,7 @@ logger.log(Level.INFO, "file not found: " + fn);
 
     private byte[] readAllByteFromArcFile(String fs) {
         if (playingArcFile.isEmpty()) return null;
-        Path realPath = Common.fileExistsIgnoreCase(Path.of(playingArcFile));
+        Path realPath = Utils.fileExistsIgnoreCase(Path.of(playingArcFile));
         if (realPath == null) return null;
 
         try {
@@ -709,7 +712,7 @@ logger.log(Level.INFO, "file not found: " + fn);
             if (fileTemp.existTemp(p.toString()))
                 return fileTemp.readTemp(fn);
 
-            Path realPath = Common.fileExistsIgnoreCase(p);
+            Path realPath = Utils.fileExistsIgnoreCase(p);
             if (realPath != null)
                 return Files.readAllBytes(realPath);
 
@@ -718,7 +721,7 @@ logger.log(Level.INFO, "file not found: " + fn);
                 for (String fp : searchPath) {
                     Path sfn = Path.of(fp, f);
                     logger.log(Level.INFO, "Search File: %s".formatted(sfn));
-                    Path realSfn = Common.fileExistsIgnoreCase(Path.of(playingArcFile));
+                    Path realSfn = Utils.fileExistsIgnoreCase(sfn);
                     if (realSfn != null) {
                         byte[] b = Files.readAllBytes(realSfn);
                         logger.log(Level.INFO, "read data size: %s".formatted(b.length));

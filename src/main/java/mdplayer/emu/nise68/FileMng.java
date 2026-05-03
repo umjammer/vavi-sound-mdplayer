@@ -1,12 +1,16 @@
 package mdplayer.emu.nise68;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
-import dotnet4j.io.File;
-import dotnet4j.io.Path;
+import mdplayer.emu.common.Utils;
 
 import static java.lang.System.getLogger;
 
@@ -31,25 +35,29 @@ public class FileMng {
     public FileMng(String physicalPath, String virtualPath /* = "C:" */) {
         String p = physicalPath;
         String v = virtualPath.toUpperCase();
-        if (p.charAt(p.length() - 1) == java.io.File.separatorChar) p = p.substring(0, p.length() - 1);
-        if (v.charAt(v.length() - 1) == java.io.File.separatorChar) v = v.substring(0, v.length() - 1);
+        if (p.charAt(p.length() - 1) == File.separatorChar) p = p.substring(0, p.length() - 1);
+        if (v.charAt(v.length() - 1) == File.separatorChar) v = v.substring(0, v.length() - 1);
 
-        this.pDir = p; // .split(java.io.File.separatorChar);
-        this.vDir = v; // .split(java.io.File.separatorChar);
+        this.pDir = p; // .split(File.separatorChar);
+        this.vDir = v; // .split(File.separatorChar);
         this.VCurrentPath = v;
         vDrive.clear();
     }
 
     public boolean existsFile(String vFile) {
+logger.log(Level.TRACE, "vFile: " + vFile);
         // Check if there are files in the virtual drive
-        String vFull = Path.combine(VCurrentPath, vFile).toUpperCase();
+        String vFull = Path.of(VCurrentPath, vFile).toString().toUpperCase();
+logger.log(Level.TRACE, "vFull: " + vFull);
         if (vDrive.containsKey(vFull)) return true;
 
         try {
             // If not present on the virtual drive, check the physical drive
-            String pFull = convertPhysicalFileName(vFull);
-            return File.exists(pFull);
+            String pFull = convertPhysicalFileName(Path.of(VCurrentPath, vFile).toString());
+logger.log(Level.TRACE, "pFull: " + pFull);
+            return Utils.fileExistsIgnoreCase(Path.of(pFull)) != null;
         } catch (Exception e) {
+logger.log(Level.ERROR, e.getMessage(), e);
             return false;
         }
     }
@@ -61,12 +69,12 @@ public class FileMng {
      * @param body      File body
      */
     public void setVFile(String vFilename, byte[] body) {
-        String vFull = Path.combine(VCurrentPath, vFilename).toUpperCase();
+        String vFull = Path.of(VCurrentPath, vFilename).toString().toUpperCase();
         if (vDrive.containsKey(vFull)) {
             vDrive.get(vFull).body = body;
         } else {
             vFileInfo fileInfo = new vFileInfo();
-            fileInfo.name = Path.getFileName(vFull);
+            fileInfo.name = Path.of(vFull).getFileName().toString();
             fileInfo.body = body;
             vDrive.put(vFull, fileInfo);
         }
@@ -79,14 +87,13 @@ public class FileMng {
      *                 as the current file on the virtual drive
      */
     public void setVFile(String pFilename) {
-        byte[] body = null;
+        byte[] body;
         try {
-            if (File.exists(pFilename)) body = File.readAllBytes(pFilename);
-            else body = null;
-        } catch (Exception e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
+            body = Files.readAllBytes(Path.of(pFilename));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
-        setVFile(Path.getFileName(pFilename), body);
+        setVFile(Path.of(pFilename).getFileName().toString(), body);
     }
 
     /**
@@ -99,19 +106,23 @@ public class FileMng {
      */
     public byte[] vReadAllBytes(String vFilename) {
         // Check if there are files in the virtual drive
-        String vFull = Path.combine(VCurrentPath, vFilename).toUpperCase();
+        String vFull = Path.of(VCurrentPath, vFilename).toString().toUpperCase();
+logger.log(Level.TRACE, "vDrive: "  + vFull + ", " + vDrive.keySet() + ", " + vDrive.containsKey(vFull) + ", " + (vDrive.containsKey(vFull) ? vDrive.get(vFull).body != null ? vDrive.get(vFull).body.length : "null" : "n/a"));
+if (vDrive.containsKey(vFull) && vDrive.get(vFull).body == null) { logger.log(Level.WARNING, vFilename + " body is null"); }
         if (vDrive.containsKey(vFull)) return vDrive.get(vFull).body;
 
         try {
             // If not present on the virtual drive, check the physical drive
-            String pFull = convertPhysicalFileName(vFull);
+            String pFull = convertPhysicalFileName(Path.of(VCurrentPath, vFilename).toString());
             byte[] body;
             try {
-                body = File.readAllBytes(pFull.replace("\\", java.io.File.separator));
+                Path p = Utils.fileExistsIgnoreCase(Path.of(pFull.replace("\\", File.separator)));
+                body = p != null ? Files.readAllBytes(p) : null;
             } catch (Exception e) {
 logger.log(Level.ERROR, e.getMessage(), e);
                 body = null;
             }
+if (body == null) { logger.log(Level.WARNING, vFilename + " body is null (first time? create?)"); }
             setVFile(vFilename, body);
             return body;
         } catch (Exception e) {
@@ -121,12 +132,12 @@ logger.log(Level.ERROR, e.getMessage(), e);
     }
 
     public String vGetFullFilename(String vFilename) {
-        String vFull = Path.combine(VCurrentPath, vFilename).toUpperCase();
+        String vFull = Path.of(VCurrentPath, vFilename).toString().toUpperCase();
         return vFull;
     }
 
     private String convertPhysicalFileName(String vFull) {
-        String vPath = Path.getDirectoryName(vFull);
+        String vPath = Path.of(vFull).getParent().toString();
         if (vPath.indexOf(vDir) != 0) {
             if (!vPath.equals("\\")) {
                 throw new IndexOutOfBoundsException("Referencing an out of range path");
@@ -134,9 +145,9 @@ logger.log(Level.ERROR, e.getMessage(), e);
         }
         String pFull;
         if (!vPath.equals("\\")) {
-            pFull = Path.combine(vPath.replace(vDir, pDir), Path.getFileName(vFull));
+            pFull = Path.of(vPath.replace(vDir, pDir), Path.of(vFull).getFileName().toString()).toString();
         } else {
-            pFull = Path.combine(pDir, Path.getFileName(vFull));
+            pFull = Path.of(pDir, Path.of(vFull).getFileName().toString()).toString();
         }
 
         return pFull;

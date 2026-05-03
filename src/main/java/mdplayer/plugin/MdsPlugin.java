@@ -34,13 +34,11 @@ public class MdsPlugin extends BasePlugin<MdsDriver> {
 
     @Override
     public void prepare() {
-        driverVirtual = new MdsDriver();
-        driverVirtual.setPlayingFileName(playingFileName);
+        driverVirtual = new MdsDriver(this);
 
         driverReal = null;
 //        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
-//            driverReal = new MdsDrv();
-//            driverReal.setPlayingFileName(playingFileName);
+//            driverReal = new MdsDrv(this);
 //        }
 
         super.prepare();
@@ -89,11 +87,11 @@ public class MdsPlugin extends BasePlugin<MdsDriver> {
         setVolume(MAIN_TAG, Ym2612Chip.class, true, setting.getBalance().getVolume(MAIN_TAG, Ym2612Chip.class));
         setVolume(MAIN_TAG, Sn76489Chip.class, true, setting.getBalance().getVolume(MAIN_TAG, Sn76489Chip.class));
 
-        driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel,
+        driverVirtual.init(Common.EnmModel.VirtualModel,
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         if (driverReal != null) {
-            driverReal.init(vgmBuf, this, Common.EnmModel.RealModel,
+            driverReal.init(Common.EnmModel.RealModel,
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         }

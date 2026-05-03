@@ -20,7 +20,7 @@
 
 package mdplayer.driver.sid.libsidplayfp.sidtune;
 
-import dotnet4j.io.IOException;
+import java.io.IOException;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTuneInfo;
 
 
@@ -44,7 +44,7 @@ public class Prg extends SidTuneBase {
      * @return pointer to a SidTune or 0 if not a Prg file
      * @throws IOException if Prg file instanceof corrupt
      */
-    public static SidTuneBase load(String fileName, byte[] dataBuf) {
+    public static SidTuneBase load(String fileName, byte[] dataBuf) throws IOException {
         String ext = SidTuneTools.fileExtOfPath(fileName);
         if (!ext.equalsIgnoreCase(".prg") && !ext.equalsIgnoreCase(".c64")) {
             return null;

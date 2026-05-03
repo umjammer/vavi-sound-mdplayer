@@ -15,6 +15,7 @@ import mdplayer.Common.EnmModel;
 import mdplayer.chips.SidChip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.plugin.BasePlugin;
+import mdsound.VisWaveBuffer;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 import vavi.util.ByteUtil;
@@ -34,8 +35,14 @@ public class SidMdDriver2 extends BaseDriver implements SidDriver {
 
     private final Sid2 sid;
 
-    public SidMdDriver2() {
+    public SidMdDriver2(BasePlugin<? extends BaseDriver> plugin) {
+        super(plugin);
+
         this.sid = new Sid2();
+    }
+
+    public SidMdDriver2() {
+        this(null); // gross
     }
 
     @Override
@@ -82,6 +89,7 @@ public class SidMdDriver2 extends BaseDriver implements SidDriver {
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
         }
+        md.set(Tag.NumberOfSongs, String.valueOf(sid.songs));
 
         return md;
     }
@@ -90,10 +98,7 @@ public class SidMdDriver2 extends BaseDriver implements SidDriver {
      * @param args 0: songNo
      */
     @Override
-    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
-                     int latency, int waitTime, Object... args) {
-        this.dataBuf = vgmBuf;
-        this.plugin = plugin;
+    public void init(EnmModel model, int latency, int waitTime, Object... args) {
         this.model = model;
         this.latency = latency;
         this.waitTime = waitTime;
@@ -113,10 +118,11 @@ public class SidMdDriver2 extends BaseDriver implements SidDriver {
         speed = 1;
         speedCounter = 0;
 
-        metaData = getMetaData(vgmBuf);
+        metaData = getMetaData(dataBuf);
 
         sid.song = (int) args[0];
-        sid.init(vgmBuf, setting);
+
+        sid.init(dataBuf, setting.getOutputDevice().getSampleRate());
 
         plugin.chipRegister.chip(SidChip.class).setDriver(this);
     }
@@ -175,7 +181,7 @@ static final int INTERVAL = 1024;
 if (CC++ % INTERVAL == 0) {
  logger.log(Level.DEBUG, "SID: %d, %d".formatted(buffer[c + 0], buffer[c + 1]));
 }
-                sid.visWB.enq(buffer[c + 0], buffer[c + 1]);
+                this.visWB.enq(buffer[c + 0], buffer[c + 1]);
                 c += 2;
             }
         } catch (InterruptedException e) {
@@ -187,11 +193,13 @@ if (CC++ % INTERVAL == 0) {
 
     @Override
     public void copyWaveBuffer(short[][] dest) {
-        sid.visWB.copy(dest);
+        this.visWB.copy(dest);
     }
 
     @Override
     public boolean isNotRenderingOnPause() {
         return true;
     }
+
+    final VisWaveBuffer visWB = new VisWaveBuffer();
 }
