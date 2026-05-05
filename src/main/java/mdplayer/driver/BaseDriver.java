@@ -29,7 +29,7 @@ public abstract class BaseDriver {
 
     public boolean isDataBlock = false;
 
-    protected byte[] dataBuf = null;
+    protected byte[] dataBuf;
 
     protected BasePlugin<? extends BaseDriver> plugin;
 

@@ -9,6 +9,7 @@ import mdplayer.driver.rcp.MIDIEvent.MIDISpEventType;
 
 
 public class MIDIPart implements Serializable {
+
     private Integer beforeIndex = null;
     private Integer afterIndex = null;
     private int number = 0;
@@ -19,7 +20,6 @@ public class MIDIPart implements Serializable {
     private Integer eStartIndex = null;
     private Integer eEndIndex = null;
     private Integer eNowIndex = 0;
-
 
     public void setBeforeIndex(Integer value) {
         beforeIndex = value;

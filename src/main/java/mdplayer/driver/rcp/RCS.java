@@ -294,7 +294,7 @@ public class RCS {
                     pcm8St[ch].tablePtr = pcmInfos[0][key].ptr;
                     pcm8St[ch].mode = mode;
                     pcm8St[ch].length = pcmInfos[key].length;
-                    pcm8St[ch].Keyon = true;
+                    pcm8St[ch].keyOn = true;
                 }
             }
         }

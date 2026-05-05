@@ -110,6 +110,8 @@ public class RcpDriver extends BaseDriver {
         metaData = getMetaData(dataBuf);
         //if (Gd3 == null) return false;
 
+        rcp.data = dataBuf;
+
         if (!rcp.getInformationHeader()) {
             throw new IllegalArgumentException("invalid header");
         }
@@ -123,8 +125,6 @@ public class RcpDriver extends BaseDriver {
             plugin.chipRegister.chip(Ym2612Chip.class).setSyncWait((byte) 0, 1);
             plugin.chipRegister.chip(Ym2612Chip.class).setSyncWait((byte) 1, 1);
         }
-
-        rcp.data = dataBuf;
     }
 
     @Override
