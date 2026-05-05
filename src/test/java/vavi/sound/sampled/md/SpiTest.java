@@ -152,7 +152,12 @@ Debug.println("settings\n" +
         "mdplayer.musica.dir: " + System.getProperty("mdplayer.musica.dir") + "\n" +
         "muap.dir.dta: " + System.getProperty("muap.dir.dta") + "\n" +
         "muap.dir.pcm: " + System.getProperty("muap.dir.pcm") + "\n" +
-        "mdplayer.variant.ymf262: " + System.getProperty("mdplayer.variant.ymf262"));
+        "mdplayer.variant.pcm8: " + System.getProperty("mdplayer.variant.pcm8") + "\n" +
+        "mdplayer.variant.mpcm: " + System.getProperty("mdplayer.variant.mpcm") + "\n" +
+        "mdplayer.variant.ay8910: " + System.getProperty("mdplayer.variant.ay8910") + "\n" +
+        "mdplayer.variant.ym2413: " + System.getProperty("mdplayer.variant.ym2413") + "\n" +
+        "mdplayer.variant.ymf262: " + System.getProperty("mdplayer.variant.ymf262") + "\n" +
+        "mdplayer.variant.ym2151: " + System.getProperty("mdplayer.variant.ym2151"));
     }
 
     @Test

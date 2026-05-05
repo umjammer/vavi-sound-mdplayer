@@ -575,10 +575,10 @@ public class MXDRV {
         MXDRV_(reg);
     }
 
-    public Object MXDRV_GetWork(int i) {
-        return switch (MXDRV_WORK.values()[i]) {
-            case FM -> MXWORK_CHBUF_FM[0];
-            case PCM -> MXWORK_CHBUF_PCM[0];
+    public Object MXDRV_GetWork(MXDRV_WORK i) {
+        return switch (i) {
+            case FM -> MXWORK_CHBUF_FM;
+            case PCM -> MXWORK_CHBUF_PCM;
             case GLOBAL -> G; // MXWORK_GLOBALBUF;
             case KEY -> KEY; // MXWORK_KEYBUF;
             case OPM -> OPMBUF; // MXWORK_OPMBUF;
