@@ -1,10 +1,8 @@
 package mdplayer.format;
 
 import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UncheckedIOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.nio.file.Files;
@@ -59,26 +57,6 @@ public class VGMFileFormat extends BaseFileFormat {
     }
 
     static final int FCC_VGM = 0x206D6756; // "Vgm "
-
-    @Override
-    public byte[] getAllBytes(String filename) {
-        // For .VGM, check the header and the header of the file after decompression with Gzip
-        byte[] buf = super.getAllBytes(filename);
-        int vgm = ByteUtil.readLeInt(buf);
-        if (vgm == FCC_VGM) {
-            return buf;
-        }
-
-        try (InputStream inStream = Archives.getInputStream(Files.newInputStream(Path.of(filename))); // Input Stream
-             ByteArrayOutputStream outStream = new ByteArrayOutputStream() // Output Stream
-        ) {
-            inStream.transferTo(outStream);
-
-            return outStream.toByteArray();
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-    }
 
     @Override
     public String[] getPresetMixerBalance() {

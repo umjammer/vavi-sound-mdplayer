@@ -43,8 +43,6 @@ public interface FileFormat {
     // TODO move logic from form to here
     String[] getPresetMixerBalance();
 
-    byte[] getAllBytes(String filename);
-
     Plugin getPlugin();
 
     List<PlayList.Music> addFileLoop(PlayList.Music mc, Archive archive, Entry entry /* = null */) throws IOException;

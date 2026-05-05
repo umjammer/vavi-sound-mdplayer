@@ -40,10 +40,7 @@ public class WAVFileFormat extends BaseFileFormat implements FileFormat.SampledF
         return getMusicCommon(ms, buf, zipFile);
     }
 
-    @Override
-    public byte[] getAllBytes(String filename) {
-        return new byte[] {(byte) 'W', (byte) 'A', (byte) 'V'};
-    }
+//        return new byte[] {(byte) 'W', (byte) 'A', (byte) 'V'};
 
     @Override
     public Plugin getPlugin() {

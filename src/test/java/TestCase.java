@@ -4,6 +4,7 @@
  * Programmed by Naohide Sano
  */
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -30,6 +31,7 @@ import mdplayer.format.FileFormat;
 import mdplayer.plugin.BasePlugin;
 import musicDriverInterface.MetaData;
 import vavi.util.Debug;
+import vavi.util.archive.Archives;
 import vavi.util.properties.annotation.Property;
 import vavi.util.properties.annotation.PropsEntity;
 
@@ -154,7 +156,7 @@ Debug.println("settings\n" +
 Debug.println("filename: " + file);
         FileFormat format = FileFormat.getFileFormat(file);
 Debug.println("format: " + format.getClass().getSimpleName());
-        format.load(Files.newInputStream(Path.of(file)), null);
+        format.load(Archives.getInputStream(new BufferedInputStream(Files.newInputStream(Path.of(file)))), null);
         var plugin = (BasePlugin<? extends BaseDriver>) format.getPlugin();
         plugin.setParams(format, Map.of(
                 "fileName", file,
