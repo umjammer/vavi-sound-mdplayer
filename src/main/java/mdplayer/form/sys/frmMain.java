@@ -497,7 +497,7 @@ public class frmMain extends JFrame {
 
         logger.log(Level.INFO, "frmMain_Load:STEP 09");
 
-        // operation フォルダクリア
+        // Operation: Clear folder
         //opeFolder = mdplayer.Common.GetOperationFolder(true);
         //startWatch(opeFolder);
         mmf = new MmfControl(false, "MDPlayer", 1024 * 4);
@@ -3595,7 +3595,7 @@ public class frmMain extends JFrame {
         String filename = files.getFirst().getPath();
 
         try {
-            // 曲を停止
+            // Stop the song
             frmPlayList.stop();
             this.stop();
 //            while (!audio.isStopped())
@@ -6104,7 +6104,7 @@ public class frmMain extends JFrame {
             op[i] = (op[i] % 6) + 8 * (op[i] / 6);
         }
 
-        //OPLIはop1<->op2  op3<->op4がそれぞれ逆(?)
+        // OPLI has op1<->op2 and op3<->op4 reversed (?)
         for (int i = 0; i < 2; i++) {
             int s = op[i * 2];
             op[i * 2] = op[i * 2 + 1];

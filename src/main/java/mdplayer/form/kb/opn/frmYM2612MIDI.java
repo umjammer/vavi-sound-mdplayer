@@ -221,13 +221,13 @@ public class frmYM2612MIDI extends frmBase {
             int px = ev.getX() / parent.setting.getOther().getZoom();
             int py = ev.getY() / parent.setting.getOther().getZoom();
 
-            //上部ラベル
+            // Top label
             if (py < 8) return;
 
             if (py < 16) {
-                //logger.log(Level.TRACE, "鍵盤");
+                //logger.log(Level.TRACE, "Keyboard");
             } else if (py < 32) {
-                //logger.log(Level.TRACE, "各機能メニュー");
+                //logger.log(Level.TRACE, "Each Function Menu");
                 int u = (py - 16) / 8;
                 int p = -1;
                 if (px >= 1 * 8 && px < 6 * 8) p = 0;
@@ -280,40 +280,40 @@ public class frmYM2612MIDI extends frmBase {
                 }
             } else if (py < 40) {
                 if ((px / 8) % 13 == 0) {
-                    //logger.log(Level.TRACE, "チャンネル選択");
+                    //logger.log(Level.TRACE, "Channel selection");
 //                    cmdSelectChannel(px / 8 / 13);
                 } else {
-                    //logger.log(Level.TRACE, "音色選択(1-3Ch)");
+                    //logger.log(Level.TRACE, "Tone selection(1-3Ch)");
                     cmdSelectTone(px, py, ev);// / 8 / 13, e);
                 }
             } else if (py < 80) {
-                //logger.log(Level.TRACE, "音色選択(1-3Ch)");
+                //logger.log(Level.TRACE, "Tone selection(1-3Ch)");
                 cmdSelectTone(px, py, ev);
             } else if (py < 104) {
                 if (py < 88 && (px / 8) % 13 == 3) {
-                    //logger.log(Level.TRACE, "ログクリア");
+                    //logger.log(Level.TRACE, "Log Clear");
 //                    cmdLogClear(px / 8 / 13);
                 } else {
-                    //logger.log(Level.TRACE, "ログ->MML変換(1-3Ch)");
+                    //logger.log(Level.TRACE, "Log -> MML conversion(1-3Ch)");
 //                    cmdLog2MML(px / 8 / 13);
                 }
             } else if (py < 112) {
                 if ((px / 8) % 13 == 0) {
-                    //logger.log(Level.TRACE, "チャンネル選択");
+                    //logger.log(Level.TRACE, "Channel selection");
 //                    cmdSelectChannel((px / 8 / 13) + 3);
                 } else {
-                    //logger.log(Level.TRACE, "音色選択(4-6Ch)");
+                    //logger.log(Level.TRACE, "Tone selection(4-6Ch)");
                     cmdSelectTone(px, py, ev);
                 }
             } else if (py < 152) {
-                //logger.log(Level.TRACE, "音色選択(4-6Ch)");
+                //logger.log(Level.TRACE, "Tone selection(4-6Ch)");
                 cmdSelectTone(px, py, ev);
             } else if (py < 176) {
                 if (py < 160 && (px / 8) % 13 == 3) {
-                    //logger.log(Level.TRACE, "ログクリア");
+                    //logger.log(Level.TRACE, "Log Clear");
 //                    cmdLogClear((px / 8 / 13) + 3);
                 } else {
-                    //logger.log(Level.TRACE, "ログ->MML変換(4-6Ch)");
+                    //logger.log(Level.TRACE, "Log -> MML conversion(4-6Ch)");
 //                    cmdLog2MML((px / 8 / 13) + 3);
                 }
             }
@@ -349,7 +349,7 @@ public class frmYM2612MIDI extends frmBase {
 //    }
 //
 //    /**
-//     * MML変換
+//     * MML conversion
 //     */
 //    private void cmdLog2MML(int ch) {
 //        parent.ym2612Midi_Log2MML(ch);
@@ -381,29 +381,29 @@ public class frmYM2612MIDI extends frmBase {
         JFileChooser sfd = new JFileChooser();
         sfd.addChoosableFileFilter(new FileFilter() {
             @Override public boolean accept(File f) { return f.getName().toLowerCase().endsWith(".xml"); }
-            @Override public String getDescription() { return "XMLファイル(*.xml)"; }
+            @Override public String getDescription() { return "XML file(*.xml)"; }
         });
         sfd.addChoosableFileFilter(new FileFilter() {
             @Override public boolean accept(File f) { return f.getName().toLowerCase().endsWith(".gwi"); }
-            @Override public String getDescription() { return "MML2VGMファイル(*.gwi)"; }
+            @Override public String getDescription() { return "MML2VGM file(*.gwi)"; }
         });
         sfd.addChoosableFileFilter(new FileFilter() {
             @Override public boolean accept(File f) { return f.getName().toLowerCase().endsWith(".mwi"); }
-            @Override public String getDescription() { return "FMP7ファイル(*.mwi)"; }
+            @Override public String getDescription() { return "FMP7 file(*.mwi)"; }
         });
         sfd.addChoosableFileFilter(new FileFilter() {
             @Override public boolean accept(File f) { return f.getName().toLowerCase().endsWith(".mml"); }
-            @Override public String getDescription() { return "NRTDRVファイル(*.mml)"; }
+            @Override public String getDescription() { return "NRTDRV file(*.mml)"; }
         });
         sfd.addChoosableFileFilter(new FileFilter() {
             @Override public boolean accept(File f) { return f.getName().toLowerCase().endsWith(".mml"); }
-            @Override public String getDescription() { return "MXDRVファイル(*.mml)"; }
+            @Override public String getDescription() { return "MXDRV file(*.mml)"; }
         });
         sfd.addChoosableFileFilter(new FileFilter() {
             @Override public boolean accept(File f) { return f.getName().toLowerCase().endsWith(".mml"); }
-            @Override public String getDescription() { return "MusicLALFファイル(*.mml)"; }
+            @Override public String getDescription() { return "MusicLALF file(*.mml)"; }
         });
-        sfd.setDialogTitle("TonePalletファイルを保存");
+        sfd.setDialogTitle("Save TonePallet files");
         if (!parent.setting.getOther().getDefaultDataPath().isEmpty() && Files.exists(Path.of(parent.setting.getOther().getDefaultDataPath())) && IsInitialOpenFolder) {
             sfd.setCurrentDirectory(new File(parent.setting.getOther().getDefaultDataPath()));
         } else {
@@ -420,7 +420,7 @@ public class frmYM2612MIDI extends frmBase {
 //            parent.ym2612Midi_SaveTonePallet(sfd.getSelectedFile().getPath(), Common.getFilterIndex(sfd) + 1);
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
-            JOptionPane.showMessageDialog(null, "ファイルの保存に失敗しました。");
+            JOptionPane.showMessageDialog(null, "File saving failed.");
         }
     }
 
@@ -428,29 +428,29 @@ public class frmYM2612MIDI extends frmBase {
         JFileChooser ofd = new JFileChooser();
         ofd.addChoosableFileFilter(new FileFilter() {
             @Override public boolean accept(File f) { return f.getName().toLowerCase().endsWith(".xml"); }
-            @Override public String getDescription() { return "XMLファイル(*.xml)"; }
+            @Override public String getDescription() { return "XML file(*.xml)"; }
         });
         ofd.addChoosableFileFilter(new FileFilter() {
             @Override public boolean accept(File f) { return f.getName().toLowerCase().endsWith(".gwi"); }
-            @Override public String getDescription() { return "MML2VGMファイル(*.gwi)"; }
+            @Override public String getDescription() { return "MML2VGM file(*.gwi)"; }
         });
         ofd.addChoosableFileFilter(new FileFilter() {
             @Override public boolean accept(File f) { return f.getName().toLowerCase().endsWith(".mwi"); }
-            @Override public String getDescription() { return "FMP7ファイル(*.mwi)"; }
+            @Override public String getDescription() { return "FMP7 file(*.mwi)"; }
         });
         ofd.addChoosableFileFilter(new FileFilter() {
             @Override public boolean accept(File f) { return f.getName().toLowerCase().endsWith(".mml"); }
-            @Override public String getDescription() { return "NRTDRVファイル(*.mml)"; }
+            @Override public String getDescription() { return "NRTDRV file(*.mml)"; }
         });
         ofd.addChoosableFileFilter(new FileFilter() {
             @Override public boolean accept(File f) { return f.getName().toLowerCase().endsWith(".mml"); }
-            @Override public String getDescription() { return "MXDRVファイル(*.mml)"; }
+            @Override public String getDescription() { return "MXDRV file(*.mml)"; }
         });
         ofd.addChoosableFileFilter(new FileFilter() {
             @Override public boolean accept(File f) { return f.getName().toLowerCase().endsWith(".mml"); }
-            @Override public String getDescription() { return "MusicLALFファイル(*.mml)"; }
+            @Override public String getDescription() { return "MusicLALF file(*.mml)"; }
         });
-        ofd.setDialogTitle("TonePalletファイルの読込");
+        ofd.setDialogTitle("Read TonePallet file");
         if (!parent.setting.getOther().getDefaultDataPath().isEmpty() && Files.exists(Path.of(parent.setting.getOther().getDefaultDataPath())) && IsInitialOpenFolder) {
             ofd.setCurrentDirectory(new File(parent.setting.getOther().getDefaultDataPath()));
         } else {
@@ -467,7 +467,7 @@ public class frmYM2612MIDI extends frmBase {
 //            parent.ym2612Midi_LoadTonePallet(ofd.getSelectedFile().getPath(), Common.getFilterIndex(ofd) + 1);
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
-            JOptionPane.showMessageDialog(null, "ファイルの読込に失敗しました。");
+            JOptionPane.showMessageDialog(null, "Failed to load file.");
         }
     }
 
@@ -581,14 +581,14 @@ public class frmYM2612MIDI extends frmBase {
         //
         this.ctsmiCopy.setName("ctsmiCopy");
         this.ctsmiCopy.setPreferredSize(new Dimension(130, 22));
-        this.ctsmiCopy.setText("コピー(&C)");
+        this.ctsmiCopy.setText("Copy (&C)");
         this.ctsmiCopy.addActionListener(this::ctsmiCopy_Click);
         //
         // ctsmiPaste
         //
         this.ctsmiPaste.setName("ctsmiPaste");
         this.ctsmiPaste.setPreferredSize(new Dimension(130, 22));
-        this.ctsmiPaste.setText("貼り付け(&p)");
+        this.ctsmiPaste.setText("Paste (&p)");
         this.ctsmiPaste.addActionListener(this::ctsmiPaste_Click);
         //
         // frmYM2612MIDI

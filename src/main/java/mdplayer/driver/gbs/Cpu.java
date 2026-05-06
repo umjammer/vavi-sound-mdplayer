@@ -2867,7 +2867,7 @@ public class Cpu {
         return c;
     }
 
-    // 0xd3なし (no op)
+    // 0xd3 is not present (no op)
 
     int CALL_NC_a16() {
         int d = mem.peekW(reg.pc);

@@ -252,9 +252,9 @@ public class frmPlayList extends JFrame {
 
             if (e.getButton() == MouseEvent.BUTTON2) {
                 if (dgvList.getSelectedRowCount() > 1) {
-                    tsmiDelThis.setText("選択した曲を除去");
+                    tsmiDelThis.setText("Remove the selected song.");
                 } else {
-                    tsmiDelThis.setText("この曲を除去");
+                    tsmiDelThis.setText("Remove this song");
                 }
                 cmsPlayList.setLocation(new Point(e.getX(), e.getY()));
                 cmsPlayList.setVisible(true);
@@ -334,14 +334,14 @@ public class frmPlayList extends JFrame {
         String fn, zfn;
 
         switch (mode) {
-        case 0: // 通常
+        case 0: // normal
             if (dgvList.getRowCount() <= playIndex + 1) return;
             pi++;
             break;
-        case 1: // ランダム
+        case 1: // random
 
             if (pi != -1) {
-                // 再生履歴の更新
+                // Updating playback history
                 fn = (String) dgvList.getValueAt(pi, cols.clmFileName.ordinal());
                 zfn = (String) dgvList.getValueAt(pi, cols.clmZipFileName.ordinal());
 
@@ -352,13 +352,13 @@ public class frmPlayList extends JFrame {
 
             pi = rand.nextInt(dgvList.getRowCount());
             break;
-        case 2: // 全曲ループ
+        case 2: // All songs loop
             pi++;
             if (pi >= dgvList.getRowCount()) {
                 pi = 0;
             }
             break;
-        case 3: // １曲ループ
+        case 3: // One song loop
             break;
         }
 
@@ -515,7 +515,7 @@ loopEx:
 
     private void tsmiDelAllMusic_Click(ActionEvent ev) {
 
-        int res = JOptionPane.showConfirmDialog(null, "プレイリストの全ての曲が除去されます。よろしいですか。", "PlayList",
+        int res = JOptionPane.showConfirmDialog(null, "All songs in the playlist will be removed. Is that okay?", "PlayList",
                 JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
         if (res != JFileChooser.APPROVE_OPTION) return;
 
@@ -531,13 +531,13 @@ loopEx:
         JFileChooser ofd = new JFileChooser();
         ofd.addChoosableFileFilter(new FileFilter() {
             @Override public boolean accept(java.io.File f) { return f.getName().toLowerCase().endsWith(".xml"); }
-            @Override public String getDescription() { return "XMLファイル(*.xml)"; }
+            @Override public String getDescription() { return "XML file(*.xml)"; }
         });
         ofd.addChoosableFileFilter(new FileFilter() {
             @Override public boolean accept(java.io.File f) { return f.getName().toLowerCase().endsWith(".m3u"); }
-            @Override public String getDescription() { return "M3Uファイル(*.m3u)"; }
+            @Override public String getDescription() { return "M3U file(*.m3u)"; }
         });
-        ofd.setDialogTitle("プレイリストファイルを選択");
+        ofd.setDialogTitle("Select a playlist file");
         if (!frmMain.setting.getOther().getDefaultDataPath().isEmpty() && Files.exists(Path.of(frmMain.setting.getOther().getDefaultDataPath())) && IsInitialOpenFolder) {
             ofd.setCurrentDirectory(new java.io.File(frmMain.setting.getOther().getDefaultDataPath()));
 //        } else {
@@ -578,7 +578,7 @@ loopEx:
 
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
-            JOptionPane.showMessageDialog(null, "ファイルの読み込みに失敗しました。");
+            JOptionPane.showMessageDialog(null, "File loading failed.");
         }
     }
 
@@ -587,13 +587,13 @@ loopEx:
         JFileChooser sfd = new JFileChooser();
         sfd.addChoosableFileFilter(new FileFilter() {
             @Override public boolean accept(java.io.File f) { return f.getName().toLowerCase().endsWith(".xml"); }
-            @Override public String getDescription() { return "XMLファイル(*.xml)"; }
+            @Override public String getDescription() { return "XML file(*.xml)"; }
         });
         sfd.addChoosableFileFilter(new FileFilter() {
             @Override public boolean accept(java.io.File f) { return f.getName().toLowerCase().endsWith(".m3u"); }
-            @Override public String getDescription() { return "M3Uファイル(*.m3u)"; }
+            @Override public String getDescription() { return "M3U file(*.m3u)"; }
         });
-        sfd.setDialogTitle("プレイリストファイルを保存");
+        sfd.setDialogTitle("Save the playlist file");
         if (!frmMain.setting.getOther().getDefaultDataPath().isEmpty() && Files.exists(Path.of(frmMain.setting.getOther().getDefaultDataPath())) && IsInitialOpenFolder) {
             sfd.setCurrentDirectory(new java.io.File(frmMain.setting.getOther().getDefaultDataPath()));
 //        } else {
@@ -629,7 +629,7 @@ loopEx:
 
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
-            JOptionPane.showMessageDialog(null, "ファイルの保存に失敗しました。");
+            JOptionPane.showMessageDialog(null, "File saving failed.");
         }
     }
 
@@ -684,7 +684,7 @@ loopEx:
     private void tsbAddFolder_Click(ActionEvent ev) {
         JFileChooser fbd = new JFileChooser();
         fbd.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        fbd.setDialogTitle("フォルダーを指定してください。");
+        fbd.setDialogTitle("Please specify the folder.");
         if (!frmMain.setting.getOther().getDefaultDataPath().isEmpty() && Files.exists(Path.of(frmMain.setting.getOther().getDefaultDataPath()))) {
             fbd.setSelectedFile(new java.io.File(frmMain.setting.getOther().getDefaultDataPath()));
         }
@@ -870,11 +870,11 @@ loopEx:
 //
 //                String[] filename = ((String[]) e.Data.GetData(DataFormats.FileDrop));
 //
-//                // ドロップされたアイテムがフォルダーの場合は下位フォルダー内も含めた
-//                // 実際のファイルのリストを取得する
+//                // If the dropped item is a folder, retrieve a list of the actual files,
+//                // including those in subfolders.
 //                List<String> result = new ArrayList<>();
 //                GetTrueFileNameList(result, Arrays.asList(filename));
-//                // 重複を取り除く
+//                // Remove duplicates
 //                filename = result.stream().distinct().toArray(String[]::new);
 //
 //                int i = playList.getMusics().size();
@@ -884,7 +884,7 @@ loopEx:
 //                    if (hti.RowIndex < playList.getMusics().size()) i = hti.RowIndex;
 //                }
 //
-//                // 曲を停止
+//                // Stop the song
 //                stop();
 //                frmMain.stop();
 //                while (!audio.isStopped())
@@ -899,7 +899,7 @@ loopEx:
 //                }
 //                i = buIndex;
 //
-//                // 選択位置の曲を再生する
+//                // Play the song at the selected position.
 //                String fn = playList.getMusics().get(i).fileName;
 //                if (fn.toLowerCase().lastIndexOf(".lzh") == -1
 //                                && fn.toLowerCase().lastIndexOf(".zip") == -1
@@ -913,7 +913,7 @@ loopEx:
 //                }
 //            } catch (Exception ex) {
 //                Log.forcedWrite(ex);
-//                JOptionPane.showMessageDialog(null, "ファイルの読み込みに失敗しました。");
+//                JOptionPane.showMessageDialog(null, "File loading failed.");
 //            } finally {
 //                this.setEnabled(true);
 //                this.timer1.start();

@@ -186,7 +186,7 @@ public class frmYM3812 extends frmBase {
             double fmus = (double) nyc.inst[12] / (1 << 19) * (masterClock / 72.0) * (1 << nyc.inst[11]);
             nyc.note = SegaPcmChip.searchSegaPCMNote(fmus / 523.3);// 523.3 -> c4
 
-            // 詳細はfrmVRC7の該当箇所を参照
+            // For details, please refer to the relevant section of frmVRC7.
 
             if (ki.on[c]) {
                 int tl1 = nyc.inst[5 + 0 * 17];
@@ -301,7 +301,7 @@ public class frmYM3812 extends frmBase {
                 return;
             }
 
-            // 鍵盤 FM & RHM
+            // Keyboard FM & RHM
             ch = (py / 8) - 1;
             if (ch < 0) return;
 

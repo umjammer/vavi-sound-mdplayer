@@ -965,12 +965,12 @@ public class frmMixer2 extends JFrame {
         try {
             String retMsg = parent.SaveDriverBalance(parent.setting.getBalance().clone());
             if (!retMsg.isEmpty()) {
-                JOptionPane.showMessageDialog(null, "ドライバーの Mixerーバランス[%s]を設定フォルダーに保存しました。".formatted(retMsg), "保存", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(null, "The driver's Mixer-Balance [%s] has been saved to the settings folder.".formatted(retMsg), "Save", JOptionPane.INFORMATION_MESSAGE);
             }
 
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
-            JOptionPane.showMessageDialog(null, "%s".formatted(ex.getMessage()), "保存失敗", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "%s".formatted(ex.getMessage()), "Save failed", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -979,17 +979,17 @@ public class frmMixer2 extends JFrame {
             Setting.Balance bln = parent.setting.getBalance().clone();
             PlayList.Music ms = parent.GetPlayingMusicInfo();
             if (ms == null) {
-                JOptionPane.showMessageDialog(null, "演奏情報が取得できませんでした。\n演奏中又は演奏完了直後に再度お試しください。",
-                        "情報取得失敗", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, "Performance information could not be retrieved.\nPlease try again during or immediately after the performance.",
+                        "Information acquisition failure", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
             JFileChooser sfd = new JFileChooser();
             sfd.setFileFilter(new FileFilter() {
                 @Override public boolean accept(File f) { return f.getName().toLowerCase().endsWith(".mbc"); }
-                @Override public String getDescription() { return " Mixerーバランス(*.mbc)"; }
+                @Override public String getDescription() { return " Mixer - Balance(*.mbc)"; }
             });
-            sfd.setDialogTitle(" Mixerーバランスを保存");
+            sfd.setDialogTitle(" Mixer - Save Balance");
             sfd.setCurrentDirectory(Path.of(ms.arcFileName == null || ms.arcFileName.isEmpty() ? ms.fileName : ms.arcFileName).getParent().toFile());
             if (!parent.setting.getAutoBalance().getSamePositionAsSongData())
                 sfd.setCurrentDirectory(new File((Common.settingFilePath = java.nio.file.Path.of("MixerBalance")).toString()));
@@ -1005,7 +1005,7 @@ public class frmMixer2 extends JFrame {
             bln.save(java.nio.file.Path.of(sfd.getSelectedFile().getPath()));
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
-            JOptionPane.showMessageDialog(null, "%s".formatted(ex.getMessage()), "保存失敗", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "%s".formatted(ex.getMessage()), "Save failed", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -1050,7 +1050,7 @@ public class frmMixer2 extends JFrame {
         this.tsmiLoadDriverBalance.setEnabled(false);
         this.tsmiLoadDriverBalance.setName("tsmiLoadDriverBalance");
         this.tsmiLoadDriverBalance.setPreferredSize(new Dimension(223, 22));
-        this.tsmiLoadDriverBalance.setText("読込　ドライバー Mixerーバランス");
+        this.tsmiLoadDriverBalance.setText("Load Driver Mixer - Balance");
         this.tsmiLoadDriverBalance.addActionListener(this::tsmiLoadDriverBalance_Click);
         //
         // tsmiLoadSongBalance
@@ -1058,7 +1058,7 @@ public class frmMixer2 extends JFrame {
         this.tsmiLoadSongBalance.setEnabled(false);
         this.tsmiLoadSongBalance.setName("tsmiLoadSongBalance");
         this.tsmiLoadSongBalance.setPreferredSize(new Dimension(223, 22));
-        this.tsmiLoadSongBalance.setText("読込　ソング Mixerーバランス");
+        this.tsmiLoadSongBalance.setText("Load Song Mixer - Balance");
         this.tsmiLoadSongBalance.addActionListener(this::tsmiLoadSongBalance_Click);
         //
         // toolStripSeparator1
@@ -1070,14 +1070,14 @@ public class frmMixer2 extends JFrame {
         //
         this.tsmiSaveDriverBalance.setName("tsmiSaveDriverBalance");
         this.tsmiSaveDriverBalance.setPreferredSize(new Dimension(223, 22));
-        this.tsmiSaveDriverBalance.setText("保存　ドライバー Mixerーバランス");
+        this.tsmiSaveDriverBalance.setText("Save Driver Mixer - Balance");
         this.tsmiSaveDriverBalance.addActionListener(this::tsmiSaveDriverBalance_Click);
         //
         // tsmiSaveSongBalance
         //
         this.tsmiSaveSongBalance.setName("tsmiSaveSongBalance");
         this.tsmiSaveSongBalance.setPreferredSize(new Dimension(223, 22));
-        this.tsmiSaveSongBalance.setText("保存　ソング Mixerーバランス");
+        this.tsmiSaveSongBalance.setText("Save Song Mixer - Balance");
         this.tsmiSaveSongBalance.addActionListener(this::tsmiSaveSongBalance_Click);
         //
         // frmMixer2

@@ -2188,8 +2188,8 @@ public class frmSetting extends JDialog {
 
     private void btnResetPosition_Click(ActionEvent ev) {
         int res = JOptionPane.showConfirmDialog(null,
-                "表示位置を全てリセットします。よろしいですか。(現在開いているウィンドウの位置はリセットできません。)",
-                "確認", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                "Reset all display positions. Are you sure? (The position of currently open windows cannot be reset.)",
+                "Confirm", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
         if (res == JOptionPane.NO_OPTION) return;
 
         setting.setLocation(new Setting.Location());
@@ -2237,7 +2237,7 @@ public class frmSetting extends JDialog {
 
             @Override
             public String getDescription() {
-                return "VST Pluginファイル(*.dll)";
+                return "VST Plugin file(*.dll)";
             }
         });
         ofd.setDialogTitle("Select a file");
@@ -2354,7 +2354,7 @@ public class frmSetting extends JDialog {
 
             @Override
             public String getDescription() {
-                return "VST Pluginファイル(*.dll)";
+                return "VST Plugin file(*.dll)";
             }
         });
         ofd.setDialogTitle("Select a file");
@@ -2504,7 +2504,7 @@ public class frmSetting extends JDialog {
         btOK = btnOK;
         btStopSet.setEnabled(false);
         btnOK.setEnabled(false);
-        lblKey.setText("入力待ち");
+        lblKey.setText("Waiting for input");
         lblKey.setForeground(Color.red);
 
         lblNotice = lblKeyBoardHookNotice;
@@ -2520,7 +2520,7 @@ public class frmSetting extends JDialog {
         btClr = btPauseClr;
         btPauseSet.setEnabled(false);
         btnOK.setEnabled(false);
-        lblKey.setText("入力待ち");
+        lblKey.setText("Waiting for input");
         lblKey.setForeground(Color.red);
 
         lblNotice = lblKeyBoardHookNotice;
@@ -2536,7 +2536,7 @@ public class frmSetting extends JDialog {
         btOK = btnOK;
         btFadeoutSet.setEnabled(false);
         btnOK.setEnabled(false);
-        lblKey.setText("入力待ち");
+        lblKey.setText("Waiting for input");
         lblKey.setForeground(Color.red);
 
         lblNotice = lblKeyBoardHookNotice;
@@ -2552,7 +2552,7 @@ public class frmSetting extends JDialog {
         btOK = btnOK;
         btPrevSet.setEnabled(false);
         btnOK.setEnabled(false);
-        lblKey.setText("入力待ち");
+        lblKey.setText("Waiting for input");
         lblKey.setForeground(Color.red);
 
         lblNotice = lblKeyBoardHookNotice;
@@ -2568,7 +2568,7 @@ public class frmSetting extends JDialog {
         btOK = btnOK;
         btSlowSet.setEnabled(false);
         btnOK.setEnabled(false);
-        lblKey.setText("入力待ち");
+        lblKey.setText("Waiting for input");
         lblKey.setForeground(Color.red);
 
         lblNotice = lblKeyBoardHookNotice;
@@ -2584,7 +2584,7 @@ public class frmSetting extends JDialog {
         btOK = btnOK;
         btPlaySet.setEnabled(false);
         btnOK.setEnabled(false);
-        lblKey.setText("入力待ち");
+        lblKey.setText("Waiting for input");
         lblKey.setForeground(Color.red);
 
         lblNotice = lblKeyBoardHookNotice;
@@ -2600,7 +2600,7 @@ public class frmSetting extends JDialog {
         btOK = btnOK;
         btFastSet.setEnabled(false);
         btnOK.setEnabled(false);
-        lblKey.setText("入力待ち");
+        lblKey.setText("Waiting for input");
         lblKey.setForeground(Color.red);
 
         lblNotice = lblKeyBoardHookNotice;
@@ -2616,7 +2616,7 @@ public class frmSetting extends JDialog {
         btOK = btnOK;
         btNextSet.setEnabled(false);
         btnOK.setEnabled(false);
-        lblKey.setText("入力待ち");
+        lblKey.setText("Waiting for input");
         lblKey.setForeground(Color.red);
 
         lblNotice = lblKeyBoardHookNotice;

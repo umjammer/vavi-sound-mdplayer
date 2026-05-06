@@ -28,11 +28,11 @@ public class Visualizer extends JPanel {
     private Map<String, Integer>[] fmChannels;
     private Map<String, Integer>[] pcmChannels;
 
-    /** OPM レジスタに書き込んだ値のコピー */
+    /** Copy of the value written to the OPM register */
     private int[] m_opmRegs;
-    /** OPM レジスタに更新があったか？ */
+    /** Has there been an update to the OPM register? */
     private boolean[] m_opmRegsUpdated = new boolean[0x100];
-    /** KeyOn の状態 */
+    /** KeyOn state */
     private boolean[] m_keyOnFlagsForFm = new boolean[8];
     private boolean[] m_logicalSumOfKeyOnFlagsForFm = new boolean[8];
     private boolean[] m_logicalSumOfKeyOnFlagsForPcm = new boolean[8];
@@ -112,11 +112,11 @@ public class Visualizer extends JPanel {
 
         if (fmChannels == null) return;
 
-        // 画面消去
+        // Screen erase
         g.setColor(Color.black);
         g.fillRect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-        // OPM レジスタの可視化
+        // Visualization of OPM registers
         {
             int regIndex, bit;
             for (regIndex = 0; regIndex < 256; regIndex++) {
@@ -139,7 +139,7 @@ public class Visualizer extends JPanel {
             }
         }
 
-        // KEY の可視化
+        // Visualization of KEY
         {
             int i;
 
