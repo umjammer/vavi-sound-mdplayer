@@ -45,13 +45,6 @@ public class SidTune {
     private String statusString;
     private boolean status;
 
-    private SidTune(SidTune s) {
-    }
-
-    private static SidTune opeEquel(SidTune s) {
-        return null;
-    }
-
     private static final String MSG_NO_ERRORS = "No errors";
 
     // Default sidtune file name extensions. This selection can be overridden

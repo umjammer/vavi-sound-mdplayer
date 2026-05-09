@@ -168,7 +168,7 @@ Debug.print("countdown");
             if (bufferCount % 10 == 0 && totalSamples > 0) { // Check every ~0.9s
                 double rms = Math.sqrt((double) totalSquared / totalSamples);
 //                System.err.printf("Stats: RMS=%.2f Peak=%d Samples=%d%n", rms, peak, totalSamples);
-                
+
                 // Strict assertion: expect significant signal (RMS > 50, Peak > 2000)
                 // Ignore first few buffers to avoid transients/clicks (user requirement)
                 if (bufferCount > 20) {

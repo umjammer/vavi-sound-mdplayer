@@ -898,7 +898,7 @@ public class Mos6510 {
         int s = cycleData & 0xff;
         int regAC2 = a - s - c;
 
-        flags.setC(regAC2 < 0x100);
+        flags.setC((regAC2 & 0xffff) < 0x100);
         flags.setV(((regAC2 ^ a) & 0x80) != 0 && ((a ^ s) & 0x80) == 0);
         flags.setNZ((byte) regAC2);
 
@@ -1119,12 +1119,12 @@ public class Mos6510 {
     private void lsrInstr() {
         putEffAddrDataByte();
         flags.setC((cycleData & 0x01) != 0);
-        flags.setNZ(cycleData >>= 1);
+        flags.setNZ(cycleData = (byte) ((cycleData & 0xff) >>> 1));
     }
 
     private void lsraInstr() {
         flags.setC((registerAccumulator & 0x01) != 0);
-        flags.setNZ(registerAccumulator >>= 1);
+        flags.setNZ(registerAccumulator = (byte) ((registerAccumulator & 0xff) >>> 1));
         interruptsAndNextOpcode();
     }
 
@@ -1166,7 +1166,7 @@ public class Mos6510 {
     private void rorInstr() {
         byte newC = (byte) (cycleData & 0x01);
         putEffAddrDataByte();
-        cycleData >>= 1;
+        cycleData = (byte) ((cycleData & 0xff) >>> 1);
         if (flags.getC())
             cycleData |= 0x80;
         flags.setNZ(cycleData);
@@ -1175,7 +1175,7 @@ public class Mos6510 {
 
     private void roraInstr() {
         byte newC = (byte) (registerAccumulator & 0x01);
-        registerAccumulator >>= 1;
+        registerAccumulator = (byte) ((registerAccumulator & 0xff) >>> 1);
         if (flags.getC())
             registerAccumulator |= 0x80;
         flags.setNZ(registerAccumulator);
@@ -1184,9 +1184,9 @@ public class Mos6510 {
     }
 
     private void sbxInstr() {
-        int tmp = (registerX & registerAccumulator) - cycleData;
+        int tmp = ((registerX & registerAccumulator) & 0xff) - (cycleData & 0xff);
         flags.setNZ(registerX = (byte) (tmp & 0xff));
-        flags.setC(tmp < 0x100);
+        flags.setC((tmp & 0xffff) < 0x100);
         interruptsAndNextOpcode();
     }
 
@@ -1253,7 +1253,7 @@ public class Mos6510 {
     private void alrInstr() {
         registerAccumulator &= cycleData;
         flags.setC((registerAccumulator & 0x01) != 0);
-        flags.setNZ(registerAccumulator >>= 1);
+        flags.setNZ(registerAccumulator = (byte) ((registerAccumulator & 0xff) >>> 1));
         interruptsAndNextOpcode();
     }
 
@@ -1275,7 +1275,7 @@ public class Mos6510 {
      */
     private void arrInstr() {
         byte data = (byte) (cycleData & registerAccumulator);
-        registerAccumulator = (byte) (data >> 1);
+        registerAccumulator = (byte) ((data & 0xff) >>> 1);
         if (flags.getC())
             registerAccumulator |= 0x80;
 
@@ -1359,7 +1359,7 @@ public class Mos6510 {
     private void lseInstr() {
         putEffAddrDataByte();
         flags.setC((cycleData & 0x01) != 0);
-        cycleData >>= 1;
+        cycleData = (byte) ((cycleData & 0xff) >>> 1);
         flags.setNZ(registerAccumulator ^= cycleData);
     }
 
@@ -1393,7 +1393,7 @@ public class Mos6510 {
     private void rraInstr() {
         byte newC = (byte) (cycleData & 0x01);
         putEffAddrDataByte();
-        cycleData >>= 1;
+        cycleData = (byte) ((cycleData & 0xff) >>> 1);
         if (flags.getC())
             cycleData |= 0x80;
         flags.setC(newC != 0);

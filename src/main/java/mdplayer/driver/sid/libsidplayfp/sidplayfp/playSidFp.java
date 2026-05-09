@@ -41,7 +41,6 @@ public class playSidFp {
         return this.sidPlayer.getSidRegister();
     }
 
-
     public playSidFp(int sampleRate) {
         sidPlayer = new Player(sampleRate);
     }
@@ -163,7 +162,7 @@ public class playSidFp {
      * @param basic     pointer to Basic ROM, generally needed only for BASIC tunes.
      * @param character pointer to character generator ROM.
      */
-    public void setRoms(byte[] kernel, byte[] basic/* = null*/, byte[] character /*= null*/) {
+    public void setRoms(byte[] kernel, byte[] basic /* = null */, byte[] character /* = null */) {
         sidPlayer.setRoms(kernel, basic, character);
     }
 

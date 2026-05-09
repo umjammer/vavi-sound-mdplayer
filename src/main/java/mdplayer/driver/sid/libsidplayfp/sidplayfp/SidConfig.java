@@ -33,7 +33,7 @@ import mdplayer.driver.sid.libsidplayfp.Mixer;
  */
 public class SidConfig {
 
-   // Playback mode
+    // Playback mode
     public enum Playback {
         MONO(1),
         STEREO(2);
@@ -93,7 +93,7 @@ public class SidConfig {
     public boolean forceSidModel;
 
     /**
-     * Playbak mode.
+     * Playback mode.
      * - MONO
      * - STEREO
      */
