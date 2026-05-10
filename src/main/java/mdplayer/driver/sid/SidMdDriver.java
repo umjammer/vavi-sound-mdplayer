@@ -118,26 +118,26 @@ public class SidMdDriver extends BaseDriver implements SidDriver {
 
         setSong((int) args[0]);
 
-        byte[] aryKernel = null;
-        byte[] aryBasic = null;
-        byte[] aryCharacter = null;
+        byte[] kernelRom = null;
+        byte[] basicRom = null;
+        byte[] characterRom = null;
         try {
             Path p = Path.of(setting.getSid().romKernalPath);
-            if (Files.exists(p)) {
+            if (!Files.isDirectory(p) && Files.exists(p)) {
                 try (InputStream fs = Files.newInputStream(p)) {
-                    aryKernel = fs.readAllBytes();
+                    kernelRom = fs.readAllBytes();
                 }
             }
             p = Path.of(setting.getSid().romBasicPath);
-            if (Files.exists(p)) {
+            if (!Files.isDirectory(p) && Files.exists(p)) {
                 try (InputStream fs = Files.newInputStream(p)) {
-                    aryBasic = fs.readAllBytes();
+                    basicRom = fs.readAllBytes();
                 }
             }
             p = Path.of(setting.getSid().romCharacterPath);
-            if (Files.exists(p)) {
+            if (!Files.isDirectory(p) && Files.exists(p)) {
                 try (InputStream fs = Files.newInputStream(p)) {
-                    aryCharacter = fs.readAllBytes();
+                    characterRom = fs.readAllBytes();
                 }
             }
         } catch (IOException e) {
@@ -145,7 +145,7 @@ public class SidMdDriver extends BaseDriver implements SidDriver {
         }
 
         sid.init(dataBuf,
-                aryKernel, aryBasic, aryCharacter,
+                kernelRom, basicRom, characterRom,
                 setting.getSid().outputBufferSize,
                 setting.getOutputDevice().getSampleRate(),
                 setting.getSid().quality,
@@ -176,6 +176,10 @@ public class SidMdDriver extends BaseDriver implements SidDriver {
         }
     }
 
+    private final short[] internalBuffer = new short[4096];
+    private int internalProduced = 0;
+    private int internalConsumed = 0;
+
     @Override
     public int render(short[] b, int offset, int length) {
         if (!sid.initial) {
@@ -185,29 +189,31 @@ public class SidMdDriver extends BaseDriver implements SidDriver {
             frameCounter += length / 2;
             return length;
         }
-//        vstDelta = 0;
 
         plugin.chipRegister.chip(SidChip.class).sid = this;
-        sid.engine.fastForward(100);
+        //sid.engine.fastForward(100);
 
-        if (sid.blockBuffer == null || sid.blockBuffer.length < length) {
-            sid.blockBuffer = new short[length];
+        int written = 0;
+        while (written < length) {
+            if (internalConsumed >= internalProduced) {
+                internalProduced = sid.engine.play(internalBuffer, internalBuffer.length);
+                internalConsumed = 0;
+                if (internalProduced <= 0) break;
+            }
+
+            int toCopy = Math.min(length - written, internalProduced - internalConsumed);
+            System.arraycopy(internalBuffer, internalConsumed, b, offset + written, toCopy);
+            
+            for (int i = 0; i < toCopy / 2; i++) {
+                processOneFrame();
+                this.visWB.enq(b[offset + written + i * 2], b[offset + written + i * 2 + 1]);
+            }
+
+            written += toCopy;
+            internalConsumed += toCopy;
         }
 
-        int produced = Math.max(0, sid.engine.play(sid.blockBuffer, length));
-        int toCopy = Math.min(length, produced);
-        if (toCopy > 0) {
-            System.arraycopy(sid.blockBuffer, 0, b, offset, toCopy);
-        }
-        for (int i = toCopy; i < length; i++) {
-            b[offset + i] = 0;
-        }
-        for (int i = 0; i < length / 2; i++) {
-            processOneFrame();
-            if (i * 2 + 1 < length) this.visWB.enq(b[offset + i * 2], b[offset + i * 2 + 1]);
-        }
-
-        return length;
+        return written;
     }
 
     @Override
@@ -238,6 +244,7 @@ public class SidMdDriver extends BaseDriver implements SidDriver {
 
     private void setSong(int songNo) {
         sid.song = songNo;
+logger.log(Level.INFO, "songNo: " + sid.song + " / " + sid.songs);
         if (sid.tune != null) {
             sid.tune.selectSong(sid.song);
             sid.tuneInfo = sid.tune.getInfo();

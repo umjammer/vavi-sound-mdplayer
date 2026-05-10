@@ -528,11 +528,6 @@ public class Player {
         mixer.clearSids();
     }
 
-    /**
-     * Create the Sid emulation(s).
-     *
-     * @throws ConfigError
-     */
     private void sidCreate(SidBuilder builder, SidConfig.SidModel defaultModel,
                            boolean forced, List<Integer> extraSidAddresses) {
         if (builder != null) {
@@ -573,14 +568,6 @@ public class Player {
         }
     }
 
-    /**
-     * Set the Sid emulation parameters.
-     *
-     * @param cpuFreq the CPU clock frequency
-     * @param frequency the Output sampling frequency
-     * @param sampling the sampling method to use
-     * @param fastSampling true to enable fast low quality resampling (only for reSID)
-     */
     private void sidParams(double cpuFreq, int frequency,
                            SidConfig.SamplingMethod sampling, boolean fastSampling) {
         for (int i = 0; ; i++) {
@@ -592,10 +579,10 @@ public class Player {
         }
     }
 
-//# ifdef PC64_TESTSUITE
+//#ifdef PC64_TESTSUITE
 //    @Override
 //    public void load(String file) {
-//        String name = "$enable_testsuite";// PC64_TESTSUITE;
+//        String name = "$enable_testsuite"; // PC64_TESTSUITE;
 //        name += file;
 //        name += ".Prg";
 //
