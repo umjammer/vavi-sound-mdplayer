@@ -68,7 +68,7 @@ Debug.println("volume: " + volume + ", player.volume: " + System.getProperty("md
     private Audio audio;
 
     @Test
-    @DisplayName("play mdx")
+    @DisplayName("play mdx w/ visualizer")
     void test() throws Exception {
 Debug.println("filename: " + mdx);
         FileFormat format = FileFormat.getFileFormat(mdx);
@@ -85,6 +85,7 @@ Debug.println("filename: " + mdx);
         audio.init(plugin);
         audio.addGenericListener(visualizer::update);
         audio.play();
+        audio.close();
         frame.setVisible(false);
         frame.dispose();
     }

@@ -203,7 +203,7 @@ Debug.println("not on ide");
     static List<Path> listFilesInLocalProperties() throws IOException {
         List<Path> paths = new ArrayList<>();
         Files.readAllLines(Paths.get("local.properties")).forEach(line -> {
-            if (line.matches("^#?file\\s*?=.*$")) {
+            if (line.matches("^#?\\w+\\s*?=.*$")) {
                 String file = line.substring(line.indexOf("=") + 1);
 //System.err.println(file);
                 Path path = Path.of(file);
@@ -289,6 +289,7 @@ Debug.println(music);
     }
 
     @Test
+    @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
     void testX() throws Exception {
         mdplayer.Program.main(new String[] {file});
 
