@@ -33,6 +33,7 @@ import vavi.util.Debug;
 import vavi.util.properties.annotation.Property;
 import vavi.util.properties.annotation.PropsEntity;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
@@ -57,6 +58,12 @@ class SpiTest {
 
     static boolean localPropertiesExists() {
         return Files.exists(Paths.get("local.properties"));
+    }
+
+    @BeforeAll
+    static void setupAll() {
+        // on github workflow, this line is needed.
+        System.setProperty("javax.sound.sampled.SourceDataLine", "#Default Audio Device");
     }
 
     static final boolean onIde = System.getProperty("vavi.test", "").equals("ide");
