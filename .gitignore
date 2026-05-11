@@ -243,3 +243,4 @@ src/main/resources/mdplayer/resources/
 local.properties
 AGENTS.md
 mgsdrv.properties
+mxdrv.properties
