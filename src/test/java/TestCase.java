@@ -4,6 +4,7 @@
  * Programmed by Naohide Sano
  */
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -30,6 +31,7 @@ import mdplayer.format.FileFormat;
 import mdplayer.plugin.BasePlugin;
 import musicDriverInterface.MetaData;
 import vavi.util.Debug;
+import vavi.util.archive.Archives;
 import vavi.util.properties.annotation.Property;
 import vavi.util.properties.annotation.PropsEntity;
 
@@ -144,17 +146,24 @@ Debug.println("settings\n" +
         "mdplayer.musica.dir: " + System.getProperty("mdplayer.musica.dir") + "\n" +
         "muap.dir.dta: " + System.getProperty("muap.dir.dta") + "\n" +
         "muap.dir.pcm: " + System.getProperty("muap.dir.pcm") + "\n" +
-        "mdplayer.variant.ymf262: " + System.getProperty("mdplayer.variant.ymf262"));
+        "mdplayer.variant.pcm8: " + System.getProperty("mdplayer.variant.pcm8") + "\n" +
+        "mdplayer.variant.mpcm: " + System.getProperty("mdplayer.variant.mpcm") + "\n" +
+        "mdplayer.variant.ay8910: " + System.getProperty("mdplayer.variant.ay8910") + "\n" +
+        "mdplayer.variant.ym2413: " + System.getProperty("mdplayer.variant.ym2413") + "\n" +
+        "mdplayer.variant.ymf262: " + System.getProperty("mdplayer.variant.ymf262") + "\n" +
+        "mdplayer.variant.ym2151: " + System.getProperty("mdplayer.variant.ym2151"));
+
+        audio = Audio.getInstance(); // ⚠️ caution settings and system properties race condition
     }
 
-    private final Audio audio = Audio.getInstance();
+    private Audio audio;
 
     /** */
     void play() throws Exception {
 Debug.println("filename: " + file);
         FileFormat format = FileFormat.getFileFormat(file);
 Debug.println("format: " + format.getClass().getSimpleName());
-        format.load(Files.newInputStream(Path.of(file)), null);
+        format.load(Archives.getInputStream(new BufferedInputStream(Files.newInputStream(Path.of(file)))), null);
         var plugin = (BasePlugin<? extends BaseDriver>) format.getPlugin();
         plugin.setParams(format, Map.of(
                 "fileName", file,
@@ -194,7 +203,7 @@ Debug.println("not on ide");
     static List<Path> listFilesInLocalProperties() throws IOException {
         List<Path> paths = new ArrayList<>();
         Files.readAllLines(Paths.get("local.properties")).forEach(line -> {
-            if (line.matches("^#?file\\s*?=.*$")) {
+            if (line.matches("^#?\\w+\\s*?=.*$")) {
                 String file = line.substring(line.indexOf("=") + 1);
 //System.err.println(file);
                 Path path = Path.of(file);
@@ -280,6 +289,7 @@ Debug.println(music);
     }
 
     @Test
+    @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
     void testX() throws Exception {
         mdplayer.Program.main(new String[] {file});
 

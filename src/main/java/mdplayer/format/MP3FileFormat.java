@@ -40,10 +40,7 @@ public class MP3FileFormat extends BaseFileFormat implements FileFormat.SampledF
         return getMusicCommon(ms, buf, zipFile);
     }
 
-    @Override
-    public byte[] getAllBytes(String filename) {
-        return new byte[] {(byte) 'M', (byte) 'P', (byte) '3'};
-    }
+//        return new byte[] {(byte) 'M', (byte) 'P', (byte) '3'};
 
     @Override
     public Plugin getPlugin() {

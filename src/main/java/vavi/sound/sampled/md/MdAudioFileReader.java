@@ -114,7 +114,7 @@ logger.log(DEBUG, "format: " + fileFormat.getClass().getSimpleName());
             fileFormat.load(in, null); // TODO archive
             metaData = fileFormat.getMetaData();
             plugin = (BasePlugin<? extends BaseDriver>) fileFormat.getPlugin();
-logger.log(DEBUG, "plugin: " + plugin);
+logger.log(DEBUG, "plugin: " + plugin.getClass().getSimpleName());
 logger.log(DEBUG, "filename: " + fn);
             plugin.setParams(fileFormat, fn != null ? Map.of("fileName", fn) : Collections.emptyMap());
 

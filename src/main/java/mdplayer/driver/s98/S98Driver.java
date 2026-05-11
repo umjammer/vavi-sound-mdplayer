@@ -36,7 +36,7 @@ import static mdplayer.Common.charset;
  */
 public class S98Driver extends BaseDriver {
 
-    private static final Logger logger = getLogger(S98.class.getName());
+    private static final Logger logger = getLogger(S98Driver.class.getName());
 
     private final S98 s98;
 

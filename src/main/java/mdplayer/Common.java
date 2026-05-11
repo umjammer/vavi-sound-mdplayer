@@ -124,7 +124,7 @@ String x = null;
             byte[] bLyric = Common.getByteArray(buf, adr_);
             if (bLyric != null) {
 x = new String(bLyric);
-logger.log(Level.TRACE, "lyric: " + StringUtil.getDump(bLyric));
+logger.log(Level.TRACE, "\nlyric: " + StringUtil.getDump(bLyric));
                 int i = 0;
                 int st = 0;
                 while (i < bLyric.length) {

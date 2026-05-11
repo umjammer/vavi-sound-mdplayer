@@ -423,13 +423,13 @@ public class frmYMF262 extends frmBase {
                 return;
             }
 
-            //鍵盤 FM & RHM
+            // Keyboard FM & RHM
             ch = (py / 8) - 1;
             if (ch < 0) return;
 
             if (ch > 18) {
                 if (ch >= 20 && ch < 38) {
-                    //音色欄をクリック
+                    // Click on the tone selection field.
                     // Copying a tone to the clipboard
                     if (ev.getButton() == MouseEvent.BUTTON1)
                         parent.getInstCh(YmF262Chip.class, ch - 20, chipId);

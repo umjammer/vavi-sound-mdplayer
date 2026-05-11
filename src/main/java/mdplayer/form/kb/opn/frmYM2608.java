@@ -467,7 +467,7 @@ public class frmYM2608 extends frmBase {
                 return;
             }
 
-            // 音色表示欄の判定
+            // Judgment in the tone display field
 
             int h = (py - 15 * 8) / (6 * 8);
             int w = Math.min(px / (13 * 8), 2);

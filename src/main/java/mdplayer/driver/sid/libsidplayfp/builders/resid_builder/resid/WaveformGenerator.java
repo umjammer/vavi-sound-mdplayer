@@ -402,13 +402,13 @@ public class WaveformGenerator {
             // calculation of the Output value.
             int ix = (accumulator ^ (~syncSource.accumulator & ringMsbMask)) >> 12;
 
-            waveformOutput = (wave[ix] & 0xffff) & (noPulse | pulseOutput) & (noNoiseOrNoiseOutput & 0xffff);
+            waveformOutput = (wave[ix] & 0xffff) & ((noPulse & 0xffff) | (pulseOutput & 0xffff)) & (noNoiseOrNoiseOutput & 0xffff);
 
             // Triangle/Sawtooth Output instanceof delayed half cycle on 8580.
             // This will appear as a one cycle delay on OSC3 as it is
             // latched : the first phase of the clock.
             if ((waveform & 3) != 0 && (sidModel == SidDefs.ChipModel.MOS8580)) {
-                osc3 = triSawPipeline & (noPulse | pulseOutput) & (noNoiseOrNoiseOutput & 0xffff);
+                osc3 = triSawPipeline & ((noPulse & 0xffff) | (pulseOutput & 0xffff)) & (noNoiseOrNoiseOutput & 0xffff);
                 triSawPipeline = (wave[ix] & 0xffff);
             } else {
                 osc3 = waveformOutput;

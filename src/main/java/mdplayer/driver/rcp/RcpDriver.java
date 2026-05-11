@@ -5,7 +5,6 @@ import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.List;
 
-import vavi.util.compat.Tuple;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.MidiOutInfo;
@@ -17,6 +16,7 @@ import mdplayer.plugin.BasePlugin;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 import vavi.util.ByteUtil;
+import vavi.util.compat.Tuple;
 
 import static java.lang.System.getLogger;
 import static mdplayer.Common.charset;
@@ -29,7 +29,7 @@ import static mdplayer.Common.charset;
  */
 public class RcpDriver extends BaseDriver {
 
-    private static final Logger logger = getLogger(RCP.class.getName());
+    private static final Logger logger = getLogger(RcpDriver.class.getName());
 
     private final RCP rcp;
 
@@ -110,6 +110,8 @@ public class RcpDriver extends BaseDriver {
         metaData = getMetaData(dataBuf);
         //if (Gd3 == null) return false;
 
+        rcp.data = dataBuf;
+
         if (!rcp.getInformationHeader()) {
             throw new IllegalArgumentException("invalid header");
         }
@@ -123,8 +125,6 @@ public class RcpDriver extends BaseDriver {
             plugin.chipRegister.chip(Ym2612Chip.class).setSyncWait((byte) 0, 1);
             plugin.chipRegister.chip(Ym2612Chip.class).setSyncWait((byte) 1, 1);
         }
-
-        rcp.data = dataBuf;
     }
 
     @Override

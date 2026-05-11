@@ -62,7 +62,7 @@ public class MXDRV {
         public int tablePtr = 0;
         public int mode = 0;
         public int length = 0;
-        public boolean Keyon = false;
+        public boolean keyOn = false;
     }
 
     private final Pcm8St[] pcm8St = {
@@ -70,7 +70,7 @@ public class MXDRV {
             new Pcm8St(), new Pcm8St(), new Pcm8St(), new Pcm8St()
     };
 
-    interface MXWORK_CH {
+    public interface MXWORK_CH {
         int S0000 = 0; // Ptr
         int S0004_b = 4; // PCM bank
         int S0004 = 5; // voice ptr
@@ -248,7 +248,7 @@ public class MXDRV {
         ini();
     }
 
-    // private double deltaCnt = 0;
+    //private double deltaCnt = 0;
     private XMemory mm = null;
     private int timerA = 0, timerB = 0;
 
@@ -259,7 +259,7 @@ public class MXDRV {
     IntFunction<Boolean> isFromDF;
     IntFunction<Boolean> isFromPTM;
 
-    // Contents of OPM register $1B
+    /** Contents of OPM register $1B */
     private byte opmReg1B;
 
     private static final String MXWORK_CREDIT = """
@@ -575,10 +575,10 @@ public class MXDRV {
         MXDRV_(reg);
     }
 
-    public Object MXDRV_GetWork(int i) {
-        return switch (MXDRV_WORK.values()[i]) {
-            case FM -> MXWORK_CHBUF_FM[0];
-            case PCM -> MXWORK_CHBUF_PCM[0];
+    public Object MXDRV_GetWork(MXDRV_WORK i) {
+        return switch (i) {
+            case FM -> MXWORK_CHBUF_FM;
+            case PCM -> MXWORK_CHBUF_PCM;
             case GLOBAL -> G; // MXWORK_GLOBALBUF;
             case KEY -> KEY; // MXWORK_KEYBUF;
             case OPM -> OPMBUF; // MXWORK_OPMBUF;
@@ -729,7 +729,7 @@ public class MXDRV {
             pcm8St[ch].tablePtr = A1;
             pcm8St[ch].mode = D1;
             pcm8St[ch].length = D2;
-            pcm8St[ch].Keyon = true;
+            pcm8St[ch].keyOn = true;
             break;
         case 0x0100:
             switch (D0 & 0xffff) {
@@ -738,7 +738,7 @@ public class MXDRV {
                 pcm8St[ch].tablePtr = 0;
                 pcm8St[ch].mode = 0;
                 pcm8St[ch].length = 0;
-                pcm8St[ch].Keyon = false;
+                pcm8St[ch].keyOn = false;
                 pcm8pp.keyOff(D0 & 0xff); // Stop the specified channel
                 break;
             case 0x0101:

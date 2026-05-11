@@ -48,27 +48,27 @@ public class Player {
         STOPPING
     }
 
-    // Commodore 64 emulator
+    /** Commodore 64 emulator */
     private final C64 c64 = new C64();
 
-    // Mixer
+    /** Mixer */
     private final Mixer mixer = new Mixer();
 
-    // Emulator info
+    /** Emulator info */
     private SidTune tune;
 
-    // User Configuration Settings
+    /** User Configuration Settings */
     private final SidInfoImpl info = new SidInfoImpl();
 
-    // User Configuration Settings
+    /** User Configuration Settings */
     private SidConfig config;
 
-    // Error message
+    /** Error message */
     private String errorString;
 
     private volatile State isPlaying;
 
-    // PAL/NTSC switch value
+    /** PAL/NTSC switch value */
     private byte videoSwitch;
 
     public SidConfig config() {
@@ -144,7 +144,7 @@ public class Player {
         errorString = ERR_NA;
         isPlaying = State.STOPPED;
 //# ifdef PC64_TESTSUITE
-//            m_c64.setTestEnv(this);
+//        m_c64.setTestEnv(this);
 //#endif
 
         c64.setRoms(null, null, null);
@@ -332,7 +332,7 @@ public class Player {
         }
     }
 
-    public boolean config(SidConfig cfg, boolean force /*= false*/) {
+    public boolean config(SidConfig cfg, boolean force /* = false */) {
         // Check if configuration have been changed or forced
         if (!force && !config.compare(cfg)) {
             return true;
@@ -528,11 +528,6 @@ public class Player {
         mixer.clearSids();
     }
 
-    /**
-     * Create the Sid emulation(s).
-     *
-     * @throws ConfigError
-     */
     private void sidCreate(SidBuilder builder, SidConfig.SidModel defaultModel,
                            boolean forced, List<Integer> extraSidAddresses) {
         if (builder != null) {
@@ -573,14 +568,6 @@ public class Player {
         }
     }
 
-    /**
-     * Set the Sid emulation parameters.
-     *
-     * @param cpuFreq the CPU clock frequency
-     * @param frequency the Output sampling frequency
-     * @param sampling the sampling method to use
-     * @param fastSampling true to enable fast low quality resampling (only for reSID)
-     */
     private void sidParams(double cpuFreq, int frequency,
                            SidConfig.SamplingMethod sampling, boolean fastSampling) {
         for (int i = 0; ; i++) {
@@ -592,10 +579,10 @@ public class Player {
         }
     }
 
-//# ifdef PC64_TESTSUITE
+//#ifdef PC64_TESTSUITE
 //    @Override
 //    public void load(String file) {
-//        String name = "$enable_testsuite";// PC64_TESTSUITE;
+//        String name = "$enable_testsuite"; // PC64_TESTSUITE;
 //        name += file;
 //        name += ".Prg";
 //

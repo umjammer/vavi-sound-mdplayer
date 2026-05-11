@@ -1,7 +1,6 @@
 package mdplayer.driver.sid;
 
 import java.lang.System.Logger;
-import java.lang.System.Logger.Level;
 
 import mdplayer.driver.sid.libsidplayfp.SidEmu;
 import mdplayer.driver.sid.libsidplayfp.builders.resid_builder.ReSidBuilder;
@@ -24,33 +23,32 @@ public class Sid {
 
     playSidFp engine;
     SidTune tune;
-    short[] blockBuffer;
     boolean initial = false;
 
     SidConfig cfg;
     SidTuneInfo tuneInfo;
 
-    void init(byte[] vgmBuf,
-              byte[] aryKernel, byte[] aryBasic, byte[] aryCharacter,
+    void init(byte[] dataBuf,
+              byte[] kernelRom, byte[] basicRom, byte[] characterRom,
               int outputBufferSize, int sampleRate,
-              int quality, int c64model, int sidModel, boolean c64modelForce, boolean sidmodelForce) {
+              int quality, int c64model, int sidModel, boolean c64modelForce, boolean sidModelForce) {
         SidEmu.Output.outputBufferSize = outputBufferSize;
 
         engine = new playSidFp(sampleRate);
         engine.debug(false, null);
-        engine.setRoms(aryKernel, aryBasic, aryCharacter);
+        engine.setRoms(kernelRom, basicRom, characterRom);
 
         ReSidBuilder rs = new ReSidBuilder("ReSid", sampleRate);
         rs.create(engine.info().maxsids());
 
-        tune = new SidTune(vgmBuf, vgmBuf.length);
+        tune = new SidTune(dataBuf, dataBuf.length);
         tune.selectSong(song);
-        tuneInfo = tune.getInfo();
 
         if (!engine.load(tune)) {
-            logger.log(Level.TRACE, "Error: " + engine.error());
-            return;
+            throw new IllegalStateException(engine.error());
         }
+
+        tuneInfo = tune.getInfo();
 
         cfg = new SidConfig(sampleRate);
         cfg.frequency = sampleRate;
@@ -69,14 +67,12 @@ public class Sid {
                 ? SidConfig.SidModel.MOS8580
                 : SidConfig.SidModel.MOS6581;
         cfg.forceC64Model = c64modelForce;
-        cfg.forceSidModel = sidmodelForce;
+        cfg.forceSidModel = sidModelForce;
 
         cfg.sidEmulation = rs;
 
         if (!engine.config(cfg)) {
-            logger.log(Level.TRACE, "Error: " + engine.error());
+            throw new IllegalStateException(engine.error());
         }
-
-        blockBuffer = null;
     }
 }

@@ -4,7 +4,7 @@ import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
 import mdplayer.Common;
-import mdplayer.driver.sid.SidMdDriver2;
+import mdplayer.driver.sid.SidMdDriver;
 import mdplayer.plugin.BasePlugin.HasSongNo;
 
 import static java.lang.System.getLogger;
@@ -16,17 +16,17 @@ import static java.lang.System.getLogger;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-08 nsano initial version <br>
  */
-public class SIDPlugin extends BasePlugin<SidMdDriver2> implements HasSongNo {
+public class SIDPlugin extends BasePlugin<SidMdDriver> implements HasSongNo {
 
     private static final Logger logger = getLogger(SIDPlugin.class.getName());
 
     @Override
     public void prepare() {
-        driverVirtual = new SidMdDriver2(this);
+        driverVirtual = new SidMdDriver(this);
 
         driverReal = null;
 //        if (setting.getoutputDevice().deviceType != Common.DEV_Null) {
-//            driverReal = new SidMdDriver2(this);
+//            driverReal = new SidMdDriver(this);
 //        }
 
         super.prepare();

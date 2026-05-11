@@ -181,7 +181,7 @@ public class frmVisWave extends frmBase {
         fft.fft(true, (int) (Math.log(sdata.length) / Math.log(2)), fftsample);
 
         for (int i = 0; i < sdata.length; i++) {
-            sdata[i] = (float) Math.sqrt(fftsample[i].getItem1() * fftsample[i].getItem1() + fftsample[i].getItem2() * fftsample[i].getItem2()); // パワースペクトル
+            sdata[i] = (float) Math.sqrt(fftsample[i].getItem1() * fftsample[i].getItem1() + fftsample[i].getItem2() * fftsample[i].getItem2()); // Power Spectrum
         }
     }
 

@@ -570,7 +570,7 @@ if (!Arrays.equals(compiledData, 1, 7, magic, 0, 6) || compiledData.length <= 80
                 pcm8St[ch].tablePtr = nise68.reg.getAl(1);
                 pcm8St[ch].mode = nise68.reg.getDl(1);
                 pcm8St[ch].length = nise68.reg.getDl(2);
-                pcm8St[ch].Keyon = true;
+                pcm8St[ch].keyOn = true;
                 break;
             case 0x0100:
                 switch (n & 0xffff) {
@@ -579,7 +579,7 @@ if (!Arrays.equals(compiledData, 1, 7, magic, 0, 6) || compiledData.length <= 80
                         pcm8St[ch].tablePtr = 0;
                         pcm8St[ch].mode = 0;
                         pcm8St[ch].length = 0;
-                        pcm8St[ch].Keyon = false;
+                        pcm8St[ch].keyOn = false;
                         pcm8.keyOff(n & 0xff); // Stop the specified channel
                         break;
                     case 0x0101:

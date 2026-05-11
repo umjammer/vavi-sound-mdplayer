@@ -335,7 +335,7 @@ public class frmYM2612 extends frmBase {
                 int tp6 = tp;
                 int tp6v = tp;
                 if (tp6 == 1 && parent.setting.getYM2612Type()[0].getRealChipInfo()[0].getOnlyPCMEmulation()) {
-                    tp6v = newParam.channels[5].pcmMode == 0 ? 1 : 0; // volumeのみモードの判定を行う
+                    tp6v = newParam.channels[5].pcmMode == 0 ? 1 : 0; // The mode is determined based on volume only.
 //                    tp6 = 0;
                 }
 
@@ -417,7 +417,7 @@ public class frmYM2612 extends frmBase {
                 return;
             }
 
-            //鍵盤
+            // keyboard
             if (py < 10 * 8) {
                 int ch = (py / 8) - 1;
                 if (ch < 0) return;
@@ -439,10 +439,10 @@ public class frmYM2612 extends frmBase {
                 return;
             }
 
-            //音色で右クリックした場合は何もしない
+            // Right-clicking on the sound does nothing.
             if (ev.getButton() == MouseEvent.BUTTON2) return;
 
-            // 音色表示欄の判定
+            // Judgment in the tone display field
             int h = (py - 10 * 8) / (6 * 8);
             int w = Math.min(px / (29 * 4), 2);
             int instCh = h * 3 + w;

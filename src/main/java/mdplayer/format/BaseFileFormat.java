@@ -121,8 +121,7 @@ public abstract class BaseFileFormat implements FileFormat {
         return null;
     }
 
-    @Override
-    public byte[] getAllBytes(String filename) {
+    private static byte[] getAllBytes(String filename) {
         try {
             return Files.readAllBytes(Path.of(filename));
         } catch (IOException e) {
@@ -144,7 +143,7 @@ logger.log(Level.DEBUG, "try: " + extFn);
                         .filter(p -> Utils.fileExistsIgnoreCase(p) != null).findFirst()
                         .map(Utils::fileExistsIgnoreCase)
                         .map(Object::toString)
-                        .map(this::getAllBytes).orElse(null);
+                        .map(BaseFileFormat::getAllBytes).orElse(null);
             } else {
                 String trgFn = Path.of(srcFn).getParent().resolve(extFn).toString().trim();
 

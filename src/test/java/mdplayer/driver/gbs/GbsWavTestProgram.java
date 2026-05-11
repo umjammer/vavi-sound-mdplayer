@@ -13,6 +13,8 @@ import mdplayer.driver.BaseDriver;
 import mdplayer.format.FileFormat;
 import mdplayer.plugin.BasePlugin;
 
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -28,9 +30,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 public class GbsWavTestProgram {
 
-    static {
+    @BeforeAll
+    static void setupAll() {
         System.setProperty("mdplayer.variant.ymf262", "0");
         System.setProperty("javax.sound.sampled.SourceDataLine", "#WaveOut Mixer");
+    }
+
+    @AfterAll
+    static void tearDownAll() {
+        System.setProperty("javax.sound.sampled.SourceDataLine", "");
     }
 
     /** duration to render in seconds (matching reference wav) */

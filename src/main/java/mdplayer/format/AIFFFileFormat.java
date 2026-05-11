@@ -42,10 +42,7 @@ public class AIFFFileFormat extends BaseFileFormat implements FileFormat.Sampled
         return getMusicCommon(ms, buf, zipFile);
     }
 
-    @Override
-    public byte[] getAllBytes(String filename) {
-        return new byte[] {(byte) 'A', (byte) 'I', (byte) 'F', (byte) 'F'};
-    }
+//        return new byte[] {(byte) 'A', (byte) 'I', (byte) 'F', (byte) 'F'};
 
     @Override
     public Plugin getPlugin() {

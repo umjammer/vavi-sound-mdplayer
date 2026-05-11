@@ -265,7 +265,7 @@ public class frmYM2203 extends frmBase {
                 int ct = ym2203Register[0x01 + ch * 2];
                 int tp = (ct << 8) | ft;
                 if (tp == 0) tp = 1;
-                float ftone = 7987200.0f / (64.0f * (float) tp) * ssgMul; // 7987200 = MasterClock(↓のメソッドが7987200を基準としたテーブルの為)
+                float ftone = 7987200.0f / (64.0f * (float) tp) * ssgMul; // 7987200 = MasterClock (The method below uses a table based on 7987200)
                 channel.note = Common.searchSSGNote(ftone);
             }
         }
@@ -396,7 +396,7 @@ public class frmYM2203 extends frmBase {
                 return;
             }
 
-            //鍵盤
+            // keyboard
             if (py < 10 * 8) {
                 int ch = (py / 8) - 1;
                 if (ch < 0) return;
@@ -415,10 +415,10 @@ public class frmYM2203 extends frmBase {
                 return;
             }
 
-            //音色で右クリックした場合は何もしない
+            // Right-clicking on the sound does nothing.
             if (ev.getButton() == MouseEvent.BUTTON2) return;
 
-            // 音色表示欄の判定
+            // Judgment in the tone display field
             int instCh = Math.min(px / (13 * 8), 2);
 
             if (instCh < 3) {

@@ -7,6 +7,8 @@ import mdplayer.chips.RealChipPlugin;
 import mdplayer.chips.VstPlugin;
 import mdplayer.plugin.BasePlugin;
 import musicDriverInterface.MetaData;
+import vavi.util.event.GenericListener;
+import vavi.util.event.GenericSupport;
 
 
 public abstract class BaseDriver {
@@ -29,7 +31,7 @@ public abstract class BaseDriver {
 
     public boolean isDataBlock = false;
 
-    protected byte[] dataBuf = null;
+    protected byte[] dataBuf;
 
     protected BasePlugin<? extends BaseDriver> plugin;
 
@@ -89,5 +91,11 @@ public abstract class BaseDriver {
 
     public boolean isNotRenderingOnPause() {
         return setting.getOther().getNonRenderingForPause();
+    }
+
+    protected final GenericSupport genericSupport = new GenericSupport();
+
+    public void addGenericListener(GenericListener listener) {
+        genericSupport.addGenericListener(listener);
     }
 }

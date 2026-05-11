@@ -159,8 +159,8 @@ public class RCP {
     private MIDITrack[] tracks = null;
     private MIDIPart[] parts = null;
 
-    // private int trkTick = 0;
-    // private int meaTick = 0;
+    //private int trkTick = 0;
+    //private int meaTick = 0;
     private int meaInd = 0;
     private boolean endTrack = false;
     private Map<Byte, Byte> taiDic = null;
@@ -187,7 +187,7 @@ public class RCP {
     private double relativeTempoChangeTickSlice;
     private boolean relativeTempoChangeSW = false;
 
-    /** @return tri-state (nullable boolean) */
+    /** @return true: v2, false: v3: null: not match */
     static Boolean checkHeadString(byte[] buf, Charset charset) {
         if (buf == null || buf.length < 32) {
 logger.log(Level.INFO, "buf is null or buf.length < 32");
@@ -1934,7 +1934,7 @@ logger.log(Level.INFO, "checkHeadString");
                 (byte) 0x84})));
     }
 
-    private void makeGSDBufPtn_3(List<CtlSysex> DBuf, byte[] buf, int adr, int adr2) {
+    private void makeGSDBufPtn_3(List<CtlSysex> dBuf, byte[] buf, int adr, int adr2) {
         List<Byte> level = new ArrayList<>();
         List<Byte> panpot = new ArrayList<>();
         List<Byte> reverb = new ArrayList<>();
@@ -1976,20 +1976,20 @@ logger.log(Level.INFO, "checkHeadString");
         byte[] pac0 = new byte[128 + 9], pac1 = new byte[128 + 9];
 
         makeGSDBufPtn_4(level, (byte) (0x02 + adr2), pac0, pac1);
-        DBuf.add(new CtlSysex(5, getSysEx(pac0)));
-        DBuf.add(new CtlSysex(5, getSysEx(pac1)));
+        dBuf.add(new CtlSysex(5, getSysEx(pac0)));
+        dBuf.add(new CtlSysex(5, getSysEx(pac1)));
 
         makeGSDBufPtn_4(panpot, (byte) (0x06 + adr2), pac0, pac1);
-        DBuf.add(new CtlSysex(5, getSysEx(pac0)));
-        DBuf.add(new CtlSysex(5, getSysEx(pac1)));
+        dBuf.add(new CtlSysex(5, getSysEx(pac0)));
+        dBuf.add(new CtlSysex(5, getSysEx(pac1)));
 
         makeGSDBufPtn_4(reverb, (byte) (0x08 + adr2), pac0, pac1);
-        DBuf.add(new CtlSysex(5, getSysEx(pac0)));
-        DBuf.add(new CtlSysex(5, getSysEx(pac1)));
+        dBuf.add(new CtlSysex(5, getSysEx(pac0)));
+        dBuf.add(new CtlSysex(5, getSysEx(pac1)));
 
         makeGSDBufPtn_4(chorus, (byte) (0x0a + adr2), pac0, pac1);
-        DBuf.add(new CtlSysex(5, getSysEx(pac0)));
-        DBuf.add(new CtlSysex(5, getSysEx(pac1)));
+        dBuf.add(new CtlSysex(5, getSysEx(pac0)));
+        dBuf.add(new CtlSysex(5, getSysEx(pac1)));
     }
 
     private void makeGSDBufPtn_4(List<Byte> s, byte iAdr_mm, byte[] pac0, byte[] pac1) {

@@ -247,7 +247,7 @@ public class frmYMF278B extends frmBase {
             boolean fouropChannel = cadr < 6;
             boolean fouropControl = fouropChannel && cadr % 2 == 0;
 
-            // 4opのフラグはキーボードの並びと異なる
+            // The 4op flag is different from the keyboard layout.
             MDChipParams.Channel ccnt = fouropChannel ? newParam.channels[(p * 3) + (cadr / 2)] : null;
             MDChipParams.Channel csub = fouropControl ? newParam.channels[c + 1] : null;
             boolean fouropMode = ccnt != null && ccnt.dda;
@@ -266,7 +266,7 @@ public class frmYMF278B extends frmBase {
                         int tl3 = csub.inst[5 + 0 * 17];
                         int tl4 = csub.inst[5 + 1 * 17];
 
-                        // cnt == 0はTL4
+                        // cnt == 0 is TL4
                         int tl = tl4;
 
                         int cnt = (n << 1) + cnt2;
@@ -378,7 +378,7 @@ public class frmYMF278B extends frmBase {
             // F-Num
             nyc.inst[14] = (ymf278bRegister[2][0x20 + (c - 23)] >> 1) + ((ymf278bRegister[2][0x38 + (c - 23)] & 0x7) << 7);
             if (mdPCMKey == null) {
-                // moonDriver以外
+                // Other than moonDriver
                 // Volume
                 if (pcmKey[c - 23] == 1) {
                     // note
@@ -396,7 +396,7 @@ public class frmYMF278B extends frmBase {
                     if (nyc.volumeR < 0) nyc.volumeR = 0;
                 }
             } else {
-                // moonDriverの場合
+                // In the case of moonDriver
                 if (mdPCMKey[c - 23] > -1) {
                     // note
                     nyc.note = mdPCMKey[c - 23];
@@ -564,7 +564,7 @@ public class frmYMF278B extends frmBase {
                 return;
             }
 
-            // 鍵盤 FM & RHM
+            // Keyboard FM & RHM
             ch = (py / 8) - 1;
             if (ch < 0) return;
 
