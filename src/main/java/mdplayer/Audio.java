@@ -7,10 +7,14 @@ import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import javax.sound.midi.MidiDevice.Info;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.DataLine;
+import javax.sound.sampled.Line;
 import javax.sound.sampled.LineEvent;
 import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.Mixer;
 import javax.sound.sampled.SourceDataLine;
 
 import mdplayer.Common.EnmModel;
@@ -20,6 +24,7 @@ import mdplayer.chips.VstPlugin;
 import mdplayer.driver.BaseDriver;
 import mdplayer.plugin.BasePlugin;
 import mdplayer.plugin.SampledPlugin;
+import vavi.sound.SoundUtil;
 import vavi.util.event.GenericListener;
 
 import static java.lang.System.getLogger;
@@ -57,10 +62,11 @@ public final class Audio {
         try {
             int sampleRate = setting.getOutputDevice().getSampleRate();
             AudioFormat format = new AudioFormat(sampleRate, 16, 2, true, false);
-            line = AudioSystem.getSourceDataLine(format);
+            // for hijack datasource, we need to retrieve target DtaSourceLine by name
+            line = SoundUtil.getLine("#Default Audio Device", SourceDataLine.class);
 logger.log(Level.DEBUG, format);
             line.addLineListener(Audio::lineListener);
-            line.open();
+            line.open(format);
             volume(line, Double.parseDouble(System.getProperty("mdplayer.volume", "0.2")));
             line.start();
         } catch (LineUnavailableException e) {
