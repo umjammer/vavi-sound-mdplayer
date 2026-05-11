@@ -39,11 +39,13 @@ public class Visualizer extends JPanel {
 
     /** */
     public void update(GenericEvent event) {
-        m_opmRegs = (int[]) event.getArguments()[0];
-        fmChannels = (Map<String, Integer>[]) event.getArguments()[1];
-        pcmChannels = (Map<String, Integer>[]) event.getArguments()[2];
-        if (m_opmRegs == null || fmChannels == null || pcmChannels == null) return;
-        repaint();
+        if (event.getName().equals("mxdrv")) {
+            m_opmRegs = (int[]) event.getArguments()[0];
+            fmChannels = (Map<String, Integer>[]) event.getArguments()[1];
+            pcmChannels = (Map<String, Integer>[]) event.getArguments()[2];
+            if (m_opmRegs == null || fmChannels == null || pcmChannels == null) return;
+            repaint();
+        }
     }
 
     private boolean getOpmReg(
