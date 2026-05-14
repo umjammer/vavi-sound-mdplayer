@@ -194,7 +194,7 @@ public class YmF278BChip extends BaseChip {
         if (model == EnmModel.VirtualModel)
             context.mds.inst(YmF278BInst.class).writePcm(chipId, buf, offset, length, srcOffset, romSize);
 
-        dumpData(model, "YMF278B_PCMData", srcOffset, buf, length);
+        dumpData(model, "PCMData", srcOffset, buf, length);
     }
 
     public void writeRam(int chipId, int romSize, int offset, int length, byte[] buf, int srcOffset, EnmModel model) {
@@ -206,7 +206,7 @@ public class YmF278BChip extends BaseChip {
         if (model == EnmModel.VirtualModel)
             context.mds.inst(YmF278BInst.class).writeRam(chipId, romSize, offset, length, buf, srcOffset);
 
-        dumpData(model, "YMF278B_PCMRAMData", srcOffset,buf, length);
+        dumpData(model, "PCMRAMData", srcOffset,buf, length);
     }
 
     public Map<String, Object> getInfo(int chipId) {

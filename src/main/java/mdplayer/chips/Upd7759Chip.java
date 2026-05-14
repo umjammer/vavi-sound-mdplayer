@@ -47,6 +47,6 @@ public class Upd7759Chip extends BaseChip {
         } else {
         }
 
-        dumpData(model, "uPD7759_PCMData", srcOffset, buf, length);
+        dumpData(model, "PCMData", srcOffset, buf, length);
     }
 }

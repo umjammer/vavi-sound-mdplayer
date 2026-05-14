@@ -2454,7 +2454,7 @@ public class frmMain extends JFrame {
         frmYM2612[chipId] = null;
     }
 
-    private void OpenFormOKIM6258(int chipId, boolean force/* = false*/) {
+    private void OpenFormOKIM6258(int chipId, boolean force /* = false */) {
         if (frmOKIM6258[chipId] != null) {
             if (!force) {
                 CloseFormOKIM6258(chipId);
@@ -2495,7 +2495,7 @@ public class frmMain extends JFrame {
         frmOKIM6258[chipId] = null;
     }
 
-    private void OpenFormOKIM6295(int chipId, boolean force/* = false*/) {
+    private void OpenFormOKIM6295(int chipId, boolean force /* = false */) {
         if (frmOKIM6295[chipId] != null) {
             if (!force) {
                 CloseFormOKIM6295(chipId);

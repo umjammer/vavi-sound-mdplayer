@@ -78,7 +78,7 @@ public class YmZ280BChip extends BaseChip {
         if (model == EnmModel.VirtualModel)
             context.mds.inst(YmZ280BInst.class).writePcm(chipId, buf, offset, length, srcOffset, romSize);
 
-        dumpData(model, "YMZ280B_PCMData", srcOffset, buf, length);
+        dumpData(model, "PCMData", srcOffset, buf, length);
     }
 
     public Map<String, Object> getInfo(int chipId) {

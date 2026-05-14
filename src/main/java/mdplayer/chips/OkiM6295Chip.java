@@ -53,7 +53,7 @@ public class OkiM6295Chip extends BaseChip {
         if (model == EnmModel.VirtualModel)
             context.mds.inst(OkiM6295Inst.class).writePcm(chipId, buf, offset, length, srcOffset, romSize);
 
-        dumpData(model, "OKIM6295_PCMData", srcOffset, buf, length);
+        dumpData(model, "PCMData", srcOffset, buf, length);
     }
 
     public void write(int chipId, int port, int data, EnmModel model) {

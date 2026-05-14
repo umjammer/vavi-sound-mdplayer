@@ -504,7 +504,7 @@ public class Ym2608Chip extends BaseChip {
         if (model != EnmModel.VirtualModel)
             sendData(chipId, model);
 
-        dumpData(model, "YM2608_ADPCM",ofs, buf, len);
+        dumpData(model, "ADPCM",ofs, buf, len);
     }
 
     public void setFadeout(int chipId, int v) {

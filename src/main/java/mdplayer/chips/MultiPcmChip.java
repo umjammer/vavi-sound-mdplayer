@@ -69,6 +69,6 @@ public class MultiPcmChip extends BaseChip {
         if (model == EnmModel.VirtualModel)
             context.mds.inst(MultiPcmInst.class).writePcm(chipId, buf, offset, length, srcOffset, romSize);
 
-        dumpData(model, "MultiPCM_PCMData", srcOffset, buf, length);
+        dumpData(model, "PCMData", srcOffset, buf, length);
     }
 }

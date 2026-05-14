@@ -96,7 +96,7 @@ public class QSoundChip extends BaseChip {
             context.mds.inst(_inst(chipId)).writePcm(chipId, romData, dataStart, dataLength, srcStartAdr, romSize);
         }
 
-        dumpData(model, "QSound_PCMData", srcStartAdr, romData, dataLength);
+        dumpData(model, "PCMData", srcStartAdr, romData, dataLength);
     }
 
     public void setMask(int chipId, int ch) {

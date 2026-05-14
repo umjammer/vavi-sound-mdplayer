@@ -49,7 +49,7 @@ public class Rf5C68Chip extends BaseChip {
         if (model == EnmModel.VirtualModel)
             context.mds.inst(Rf5C68Inst.class).writePcm(chipId, buf, offset, length, srcOffset);
 
-        dumpData(model, "RF5C68_PCMData(8BitMonoSigned)", srcOffset, buf, length);
+        dumpData(model, "PCMData(8BitMonoSigned)", srcOffset, buf, length);
     }
 
     public void write(int chipId, int adr, int data, EnmModel model) {

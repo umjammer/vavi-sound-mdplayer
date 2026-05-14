@@ -44,6 +44,6 @@ public class K054539Chip extends BaseChip {
         if (model == EnmModel.VirtualModel)
             context.mds.inst(K054539Inst.class).writePcm(chipId, buf, offset, length, srcOffset, romSize);
 
-        dumpData(model, "K054539_PCMData", srcOffset, buf, length);
+        dumpData(model, "PCMData", srcOffset, buf, length);
     }
 }

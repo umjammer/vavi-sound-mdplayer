@@ -49,6 +49,6 @@ public class Es5503Chip extends BaseChip {
         } else {
         }
 
-        dumpData(model, "ES5503_PCMData", srcOffset, buf, length);
+        dumpData(model, "PCMData", srcOffset, buf, length);
     }
 }

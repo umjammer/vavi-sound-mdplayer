@@ -72,7 +72,7 @@ public class MusicaK4Driver extends BaseDriver {
     }
 
     public void compile(byte[] vgmBuf, byte[] vcdBuf) {
-        logger.log(Level.INFO, vgmBuf.length + " bytes\n" + StringUtil.getDump(vgmBuf, 32));
+        logger.log(Level.TRACE, vgmBuf.length + " bytes\n" + StringUtil.getDump(vgmBuf, 32));
         try {
             musicaK4.run(vgmBuf, vcdBuf);
         } catch (IllegalStateException e) {

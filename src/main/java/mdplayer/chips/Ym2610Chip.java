@@ -619,7 +619,7 @@ public class Ym2610Chip extends BaseChip {
                 writeAdpcmA(chipId, model, startAddress, bLen - 8, vgmBuf, vgmAdr + 15);
         }
 
-        dumpData(model, "YM2610_ADPCMA", vgmAdr + 15, vgmBuf, bLen - 8);
+        dumpData(model, "ADPCMA", vgmAdr + 15, vgmBuf, bLen - 8);
     }
 
     public void writeAdpcmB(int chipId, byte[] vgmBuf, int vgmAdr, int bLen, int startAddress, int romSize, EnmModel model) {
@@ -635,6 +635,6 @@ public class Ym2610Chip extends BaseChip {
                 writeAdpcmB(chipId, model, startAddress, bLen - 8, vgmBuf, vgmAdr + 15);
         }
 
-        dumpData(model, "YM2610_ADPCMB", vgmAdr + 15, vgmBuf, bLen - 8);
+        dumpData(model, "ADPCMB", vgmAdr + 15, vgmBuf, bLen - 8);
     }
 }

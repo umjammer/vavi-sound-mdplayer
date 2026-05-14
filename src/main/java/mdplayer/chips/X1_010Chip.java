@@ -46,6 +46,6 @@ public class X1_010Chip extends BaseChip {
         if (model == EnmModel.VirtualModel)
             context.mds.inst(X1_010Inst.class).writePcm(chipId, buf, offset, length, srcOffset, romSize);
 
-        dumpData(model, "X1-010_PCMData", srcOffset, buf, length);
+        dumpData(model, "PCMData", srcOffset, buf, length);
     }
 }

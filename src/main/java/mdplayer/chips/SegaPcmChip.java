@@ -131,7 +131,7 @@ public class SegaPcmChip extends BaseChip {
             }
         }
 
-        dumpDataForSegaPCM(model, "SEGAPCM_PCMData", dataLength, romData, srcStartAdr);
+        dumpDataForSegaPCM(model, "PCMData", dataLength, romData, srcStartAdr);
     }
 
     public void writeClock(int chipId, int clock, EnmModel model) {

@@ -46,6 +46,6 @@ public class Ga20Chip extends BaseChip {
         if (model == EnmModel.VirtualModel)
             context.mds.inst(Ga20Inst.class).writePcm(chipId, buf, offset, length, srcOffset, romSize);
 
-        dumpData(model, "GA20_PCMData", srcOffset, buf, length);
+        dumpData(model, "PCMData", srcOffset, buf, length);
     }
 }

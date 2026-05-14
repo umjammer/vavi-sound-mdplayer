@@ -127,7 +127,7 @@ public class C140Chip extends BaseChip {
             }
         }
 
-        dumpData(model, "C140_PCMData", srcOffset, buf, length);
+        dumpData(model, "PCMData", srcOffset, buf, length);
     }
 
     public void writeType(int chipId, int type, EnmModel model) {

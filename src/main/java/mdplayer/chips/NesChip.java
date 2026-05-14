@@ -191,6 +191,6 @@ public class NesChip extends BaseChip {
         if (model == EnmModel.VirtualModel)
             context.mds.inst(NesInst.class).writePcm(chipId, vgmBuf, vgmAdr, dataSize, stAdr);
 
-        dumpData(model, "NES_PCMData", vgmAdr, vgmBuf, dataSize);
+        dumpData(model, "PCMData", vgmAdr, vgmBuf, dataSize);
     }
 }
