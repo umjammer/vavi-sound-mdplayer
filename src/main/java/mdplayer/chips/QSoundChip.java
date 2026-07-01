@@ -54,7 +54,7 @@ public class QSoundChip extends BaseChip {
 
     public void write(int chipId, int mm, int ll, int rr, EnmModel model) {
         if (chipId == 0)
-            context.chipLED.put("PriQsnd", 2);
+            fireEventHappened("led.on", chipId);
 
         if (model == EnmModel.VirtualModel) {
             context.mds.write(_inst(chipId), chipId, 0, 0, mm);
@@ -90,7 +90,7 @@ public class QSoundChip extends BaseChip {
                          int srcStartAdr,
                          EnmModel model) {
         if (chipId == 0)
-            context.chipLED.put("PriQsnd", 2);
+            fireEventHappened("led.on", chipId);
 
         if (model == EnmModel.VirtualModel) {
             context.mds.inst(_inst(chipId)).writePcm(chipId, romData, dataStart, dataLength, srcStartAdr, romSize);

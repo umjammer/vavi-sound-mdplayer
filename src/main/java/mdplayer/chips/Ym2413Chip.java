@@ -78,10 +78,7 @@ public class Ym2413Chip extends BaseChip {
     }
 
     public void write(int chipId, int addr, int data, EnmModel model) {
-        if (chipId == 0)
-            context.chipLED.put("PriOPLL", 2);
-        else
-            context.chipLED.put("SecOPLL", 2);
+        fireEventHappened("led.on", chipId);
 
         if (model == EnmModel.VirtualModel)
             register[chipId][addr] = data;

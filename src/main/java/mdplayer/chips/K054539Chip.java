@@ -26,20 +26,14 @@ public class K054539Chip extends BaseChip {
     }
 
     public void write(int chipId, int adr, int data, EnmModel model) {
-        if (chipId == 0)
-            context.chipLED.put("PriK054539", 2);
-        else
-            context.chipLED.put("SecK054539", 2);
+        fireEventHappened("led.on", chipId);
 
         if (model == EnmModel.VirtualModel)
             context.mds.write(inst(chipId), chipId, 0, adr, data);
     }
 
     public void writePcm(int chipId, int romSize, int offset, int length, byte[] buf, int srcOffset, EnmModel model) {
-        if (chipId == 0)
-            context.chipLED.put("PriK054539", 2);
-        else
-            context.chipLED.put("SecK054539", 2);
+        fireEventHappened("led.on", chipId);
 
         if (model == EnmModel.VirtualModel)
             context.mds.inst(K054539Inst.class).writePcm(chipId, buf, offset, length, srcOffset, romSize);

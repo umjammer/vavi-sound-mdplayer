@@ -108,12 +108,6 @@ public class MNDPlugin extends BasePlugin<MnDriver> {
         chip.volume = 0;
         chip.option = null;
         put(MPcmChip.class, chip);
-        //audio.chipLED.put("PriMPCM", 1);
-
-        chipLED.put("PriOPM", 1);
-        chipLED.put("PriOPNA", 1);
-        chipLED.put("SecOPNA", 1);
-        chipLED.put("PriOKI5", 1);
 
         chipRegister.plugin(RealChipPlugin.class).initChip(hiyorimiDeviceFlag);
 

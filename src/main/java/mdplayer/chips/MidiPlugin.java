@@ -216,7 +216,7 @@ public class MidiPlugin implements Plugin {
         chip.volume = Plugin.setting.getBalance().getVolume(MAIN_TAG, Ym2612Chip.class);
         chip.clock = 7670454;
         chip.option = null;
-        context.chipLED.put("PriOPN2", 1);
+        context.getDriver().fireEventHappened(context.chipRegister.chip(Ym2612Chip.class), "led.set");
         infos.add(chip);
 
         chip = new MDSound.Chip();
@@ -226,7 +226,7 @@ public class MidiPlugin implements Plugin {
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, Sn76489Chip.class);
         chip.clock = 3579545;
         chip.option = null;
-        context.chipLED.put("PriDCSG", 1);
+        context.getDriver().fireEventHappened(context.chipRegister.chip(Sn76489Chip.class), "led.set");
         infos.add(chip);
 
         mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, infos);

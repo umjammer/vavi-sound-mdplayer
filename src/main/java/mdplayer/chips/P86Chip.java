@@ -29,10 +29,7 @@ public class P86Chip extends BaseChip {
         if (model != EnmModel.VirtualModel)
             return;
 
-        if (chipId == 0)
-            context.chipLED.put("PriP86", 2);
-        else
-            context.chipLED.put("SecP86", 2);
+        fireEventHappened("led.on", chipId);
 
         context.mds.inst(P86Inst.class).writePcm(chipId, buf, 0, buf.length, bank, mode);
     }
@@ -41,10 +38,7 @@ public class P86Chip extends BaseChip {
         if (model != EnmModel.VirtualModel)
             return;
 
-        if (chipId == 0)
-            context.chipLED.put("PriP86", 2);
-        else
-            context.chipLED.put("SecP86", 2);
+        fireEventHappened("led.on", chipId);
 
         if (port == -1 && addr == -1 && data == -1)
             return;

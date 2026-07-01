@@ -90,7 +90,6 @@ public class FMPPlugin extends BasePlugin<FmpDriver> implements Compilable {
         chip.clock = FMP.baseClock;
         Function<String, InputStream> fn = Ym2608Chip::getOPNARyhthmStream;
         chip.option = new Object[] {fn};
-        chipLED.put("PriOPNA", 1);
         put(Ym2608Chip.class, chip);
         chipRegister.chip(Ym2608Chip.class).clock = FMP.baseClock;
 
@@ -101,7 +100,6 @@ public class FMPPlugin extends BasePlugin<FmpDriver> implements Compilable {
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ppz8Chip.class);
         chip.clock = FMP.baseClock;
         chip.option = null;
-        chipLED.put("PriPPZ8", 1);
         put(Ppz8Chip.class, chip);
 
         mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, flatten());

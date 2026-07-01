@@ -75,10 +75,7 @@ public class C140Chip extends BaseChip {
     }
 
     public void write(int chipId, int adr, int data, EnmModel model) {
-        if (chipId == 0)
-            context.chipLED.put("PriC140", 2);
-        else
-            context.chipLED.put("SecC140", 2);
+        fireEventHappened("led.on", chipId);
 
         if ((model == EnmModel.VirtualModel && (chipTypes[chipId] == null || !chipTypes[chipId].getUseReal()[0])) ||
                 (model == EnmModel.RealModel && (realChips != null && realChips[chipId] != null))) {
@@ -104,10 +101,7 @@ public class C140Chip extends BaseChip {
     }
 
     public void writePcm(int chipId, int romSize, int offset, int length, byte[] buf, int srcOffset, EnmModel model) {
-        if (chipId == 0)
-            context.chipLED.put("PriC140", 2);
-        else
-            context.chipLED.put("SecC140", 2);
+        fireEventHappened("led.on", chipId);
 
         if (model == EnmModel.VirtualModel)
             context.mds.inst(_inst(chipId)).writePcm(chipId, buf, offset, length, srcOffset, romSize);

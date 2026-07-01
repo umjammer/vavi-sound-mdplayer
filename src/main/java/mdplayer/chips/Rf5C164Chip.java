@@ -41,10 +41,7 @@ public class Rf5C164Chip extends BaseChip {
     }
 
     public void writePcm(int chipId, int offset, int length, byte[] buf, int srcOffset, EnmModel model) {
-        if (chipId == 0)
-            context.chipLED.put("PriRF5C", 2);
-        else
-            context.chipLED.put("SecRF5C", 2);
+        fireEventHappened("led.on", chipId);
 
         if (model == EnmModel.VirtualModel)
             context.mds.inst(ScdPcmInst.class).writePcm(chipId, buf, offset, length, srcOffset);
@@ -53,10 +50,7 @@ public class Rf5C164Chip extends BaseChip {
     }
 
     public void write(int chipId, int adr, int data, EnmModel model) {
-        if (chipId == 0)
-            context.chipLED.put("PriRF5C", 2);
-        else
-            context.chipLED.put("SecRF5C", 2);
+        fireEventHappened("led.on", chipId);
 
         if (model == EnmModel.VirtualModel) {
             context.mds.write(inst(chipId), chipId, 0, adr, data);
@@ -64,10 +58,7 @@ public class Rf5C164Chip extends BaseChip {
     }
 
     public void writeMemory(int chipId, int offset, int data, EnmModel model) {
-        if (chipId == 0)
-            context.chipLED.put("PriRF5C", 2);
-        else
-            context.chipLED.put("SecRF5C", 2);
+        fireEventHappened("led.on", chipId);
 
         if (model == EnmModel.VirtualModel)
             context.mds.inst(ScdPcmInst.class).writeMemory(chipId, offset, data);

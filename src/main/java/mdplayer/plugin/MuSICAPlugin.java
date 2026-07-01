@@ -106,15 +106,12 @@ logger.log(Level.INFO, "MuSICA: AY: %b, SCC: %b, OPLL: %b".formatted(useAY, useS
             chip.clock = MuSICA.baseClockAY8910 / 2;
             chipRegister.chip(Ay8910Chip.class).clock = MuSICA.baseClockAY8910;
 
-            chipLED.put("PriAY10", 1);
-
             put(Ay8910Chip.class, chip);
         }
 
         if (useOPLL) {
             MDSound.Chip chip = new MDSound.Chip();
             chip.id = 0;
-            chipLED.put("PriOPLL", 1);
             chip.instrument = chipRegister.chip(Ym2413Chip.class).instrument(0);
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2413Chip.class);
@@ -127,7 +124,6 @@ logger.log(Level.INFO, "MuSICA: AY: %b, SCC: %b, OPLL: %b".formatted(useAY, useS
         if (useSCC) {
             MDSound.Chip chip = new MDSound.Chip();
             chip.id = 0;
-            chipLED.put("PriK051649", 1);
             chip.instrument = chipRegister.chip(K051649Chip.class).instrument(0);
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, K051649Chip.class);

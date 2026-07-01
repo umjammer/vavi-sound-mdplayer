@@ -26,10 +26,7 @@ public class PokeyChip extends BaseChip {
     }
 
     public void write(int chipId, int port, int data, EnmModel model) {
-        if (chipId == 0)
-            context.chipLED.put("PriPOK", 2);
-        else
-            context.chipLED.put("SecPOK", 2);
+        fireEventHappened("led.on", chipId);
 
         if (model == EnmModel.VirtualModel) {
             context.mds.write(inst(chipId), chipId, 0, port, data);

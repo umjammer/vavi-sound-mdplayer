@@ -80,7 +80,7 @@ logger.log(Level.DEBUG, "line: " + e.getType());
 
         plugin.prepare();
 //logger.log(Level.TRACE, "play: " + audio.stopped + ", " + audio.hashCode());
-        listeners.forEach(l -> plugin.getDriver().addGenericListener(l)); // TODO consider more
+        listeners.forEach(l -> plugin.getDriver().addViewListener(l)); // TODO consider more
 
         stop();
 

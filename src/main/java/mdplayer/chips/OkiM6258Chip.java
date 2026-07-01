@@ -39,10 +39,7 @@ public class OkiM6258Chip extends BaseChip {
     }
 
     public void write(int chipId, int port, int data, EnmModel model) {
-        if (chipId == 0)
-            context.chipLED.put("PriOKI5", 2);
-        else
-            context.chipLED.put("SecOKI5", 2);
+        fireEventHappened("led.on", chipId);
 
         if (port == 0x00) {
             if ((data & 0x2) != 0)

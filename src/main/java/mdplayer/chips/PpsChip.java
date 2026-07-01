@@ -29,10 +29,7 @@ public class PpsChip extends BaseChip {
         if (model != EnmModel.VirtualModel)
             return;
 
-        if (chipId == 0)
-            context.chipLED.put("PriPPSDRV", 2);
-        else
-            context.chipLED.put("SecPPSDRV", 2);
+        fireEventHappened("led.on", chipId);
 
         context.mds.inst(PpsInst.class).writePcm(chipId, buf, 0, buf.length);
     }
@@ -41,10 +38,7 @@ public class PpsChip extends BaseChip {
         if (model != EnmModel.VirtualModel)
             return;
 
-        if (chipId == 0)
-            context.chipLED.put("PriPPSDRV", 2);
-        else
-            context.chipLED.put("SecPPSDRV", 2);
+        fireEventHappened("led.on", chipId);
 
         if (port == -1 && addr == -1 && data == -1)
             return;

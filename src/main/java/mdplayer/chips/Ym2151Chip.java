@@ -119,10 +119,7 @@ public class Ym2151Chip extends BaseChip {
                       long frameCounter) {
         int correction = hosei == 0 ? this.corrections[0] : this.corrections[1];
 
-        if (chipId == 0)
-            context.chipLED.put("PriOPM", 2);
-        else
-            context.chipLED.put("SecOPM", 2);
+        fireEventHappened("led.on", chipId);
 
         if ((model == EnmModel.VirtualModel && (chipTypes[chipId] == null || !chipTypes[chipId].getUseReal()[0])) ||
                 (model == EnmModel.RealModel && (realChips != null && realChips[chipId] != null))) {

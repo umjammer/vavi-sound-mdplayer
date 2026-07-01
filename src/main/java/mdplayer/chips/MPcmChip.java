@@ -57,10 +57,7 @@ public class MPcmChip extends BaseChip {
         if (model != EnmModel.VirtualModel)
             return;
 
-        if (chipId == 0)
-            context.chipLED.put("PriMPCM", 2);
-        else
-            context.chipLED.put("SecMPCM", 2);
+        fireEventHappened("led.on", chipId);
 
         context.mds.inst((Class<PcmEnabledInstrument>) inst(chipId)).writePcm(chipId, pcmData, 0, pcmData.length);
     }
@@ -69,10 +66,7 @@ public class MPcmChip extends BaseChip {
         if (model != EnmModel.VirtualModel)
             return;
 
-        if (chipId == 0)
-            context.chipLED.put("PriMPCM", 2);
-        else
-            context.chipLED.put("SecMPCM", 2);
+        fireEventHappened("led.on", chipId);
 
         if (port == -1 && addr == -1 && data == -1)
             return;

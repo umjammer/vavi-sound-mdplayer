@@ -67,10 +67,7 @@ public class Pcm8Chip extends BaseChip {
         if (model != EnmModel.VirtualModel)
             return;
 
-        if (chipId == 0)
-            context.chipLED.put("PriPCM8", 2);
-        else
-            context.chipLED.put("SecPCM8", 2);
+        fireEventHappened("led.on", chipId);
 
         switch (setting.getZMusic().pcm8Type) {
             case 0 -> context.mds.inst(X68kYm2151Inst.class).writePcm(chipId, pcmData, 0, pcmData.length);
@@ -83,10 +80,7 @@ public class Pcm8Chip extends BaseChip {
         if (model != EnmModel.VirtualModel)
             return;
 
-        if (chipId == 0)
-            context.chipLED.put("PriPCM8", 2);
-        else
-            context.chipLED.put("SecPCM8", 2);
+        fireEventHappened("led.on", chipId);
 
         if (port == -1 && addr == -1 && data == -1)
             return;

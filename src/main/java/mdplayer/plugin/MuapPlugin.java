@@ -83,7 +83,6 @@ public class MuapPlugin extends BasePlugin<MuapDriver> implements Compilable {
         }
         Function<String, InputStream> fn = Ym2608Chip::getOPNARyhthmStream;
         chip.option = new Object[] {fn};
-        chipLED.put("PriOPNA", 1);
         put(Ym2608Chip.class, chip);
         chipRegister.chip(Ym2608Chip.class).clock = 7987200;
 
@@ -119,7 +118,6 @@ public class MuapPlugin extends BasePlugin<MuapDriver> implements Compilable {
         }
         if (chip.clock != 0) {
             chipRegister.chip(Ym2612Chip.class).clock = 7670454;
-            chipLED.put("PriOPN2", 1);
             put(Ym2612Chip.class, chip);
         }
 
@@ -130,7 +128,6 @@ public class MuapPlugin extends BasePlugin<MuapDriver> implements Compilable {
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, Cs4231Chip.class);
         chip.clock = 0;
         chip.option = null;
-        chipLED.put("PriCS4231", 1);
         put(Cs4231Chip.class, chip);
 
         mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, flatten());

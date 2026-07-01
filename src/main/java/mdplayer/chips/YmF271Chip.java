@@ -59,10 +59,7 @@ public class YmF271Chip extends BaseChip {
     }
 
     public void write(int chipId, int port, int addr, int data, EnmModel model) {
-        if (chipId == 0)
-            context.chipLED.put("PriOPX", 2);
-        else
-            context.chipLED.put("SecOPX", 2);
+        fireEventHappened("led.on", chipId);
 
         if (model == EnmModel.VirtualModel)
             register[chipId][port][addr] = data;
@@ -79,10 +76,7 @@ public class YmF271Chip extends BaseChip {
     }
 
     public void writePcm(int chipId, int romSize, int offset, int length, byte[] buf, int srcOffset, EnmModel model) {
-        if (chipId == 0)
-            context.chipLED.put("PriOPX", 2);
-        else
-            context.chipLED.put("SecOPX", 2);
+        fireEventHappened("led.on", chipId);
 
         if (model == EnmModel.VirtualModel)
             context.mds.inst(YmF271Inst.class).writePcm(chipId, buf, offset, length, srcOffset, romSize);

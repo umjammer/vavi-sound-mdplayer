@@ -10,10 +10,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import mdplayer.ChipLEDs;
 import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Setting;
+import mdplayer.chips.MPcmChip;
 import mdplayer.chips.MidiPlugin;
 import mdplayer.chips.RealChipPlugin;
 import mdplayer.driver.BaseDriver;
@@ -54,9 +54,6 @@ public abstract class BasePlugin<T extends BaseDriver> implements Plugin {
     public T driverVirtual = null;
 
     public T driverReal = null;
-
-    // view
-    public final ChipLEDs chipLED = new ChipLEDs();
 
     protected byte[] dataBuf = null;
     protected double speed;
@@ -103,6 +100,9 @@ public abstract class BasePlugin<T extends BaseDriver> implements Plugin {
         } else {
             chips.put(chip, new ArrayList<>(List.of(info)));
         }
+
+        // view
+        getDriver().fireEventHappened(chipRegister.chip(chip), "led.set", info.id);
     }
 
     /** check a chip existence */
@@ -163,8 +163,9 @@ logger.log(Level.TRACE, "stop: " + this.stopped + ", " + this.hashCode());
 
         chipRegister.reset();
         chipRegister.clearFadeoutVolume();
-        chipLED.clear();
         masterVolume = setting.getBalance().getMasterVolume();
+
+        getDriver().fireEventHappened(this, "led.reset");
     }
 
     @Override

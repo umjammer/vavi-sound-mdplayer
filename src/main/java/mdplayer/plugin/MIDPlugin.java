@@ -28,8 +28,8 @@ public class MIDPlugin extends BasePlugin<MidiDriver> {
 
     @Override
     protected void initChips() {
-        chipLED.put("PriMID", 1);
-        chipLED.put("SecMID", 1);
+        getDriver().fireEventHappened(chipRegister.plugin(MidiPlugin.class), "led.set", 0);
+        getDriver().fireEventHappened(chipRegister.plugin(MidiPlugin.class), "led.set", 1);
 
         chipRegister.plugin(MidiPlugin.class).releaseAll();
         chipRegister.plugin(MidiPlugin.class).make();

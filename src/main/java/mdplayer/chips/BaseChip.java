@@ -51,6 +51,10 @@ public abstract class BaseChip implements Chip {
     public void updateVol() {
     }
 
+    protected void fireEventHappened(String name, Object... args) {
+        if (context.getDriver() != null) context.getDriver().fireEventHappened(this, name, args);
+    }
+
     protected void dumpData(mdplayer.Common.EnmModel model, String name, int adr, byte[] rom, int len) {
         if (model == mdplayer.Common.EnmModel.RealModel) return;
         if (!setting.getOther().getDumpSwitch()) return;

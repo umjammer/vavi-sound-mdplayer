@@ -64,12 +64,9 @@ public class Ym3526Chip extends BaseChip {
     }
 
     public void write(int chipId, int addr, int data, EnmModel model) {
-        // if (chipTypes == null) return;
+        //if (chipTypes == null) return;
 
-        if (chipId == 0)
-            context.chipLED.put("PriOPL", 2);
-        else
-            context.chipLED.put("SecOPL", 2);
+        fireEventHappened("led.on", chipId);
 
         register[chipId][addr] = data;
 

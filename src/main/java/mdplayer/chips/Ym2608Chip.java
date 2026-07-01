@@ -188,10 +188,7 @@ public class Ym2608Chip extends BaseChip {
         if (addr < 0 || data < 0)
             return;
 
-        if (chipId == 0)
-            context.chipLED.put("PriOPNA", 2);
-        else
-            context.chipLED.put("SecOPNA", 2);
+        fireEventHappened("led.on", chipId);
 
         if ((model == EnmModel.VirtualModel && (chipTypes[chipId] == null || !chipTypes[chipId].getUseReal()[0])) ||
                 (model == EnmModel.RealModel && (realChips != null && realChips[chipId] != null))) {

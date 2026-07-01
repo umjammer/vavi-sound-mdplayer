@@ -7,6 +7,7 @@ import mdplayer.chips.RealChipPlugin;
 import mdplayer.chips.VstPlugin;
 import mdplayer.plugin.BasePlugin;
 import musicDriverInterface.MetaData;
+import vavi.util.event.GenericEvent;
 import vavi.util.event.GenericListener;
 import vavi.util.event.GenericSupport;
 
@@ -45,7 +46,7 @@ public abstract class BaseDriver {
         this.dataBuf = plugin != null ? plugin.getData() : null; // gross
     }
 
-    /** */
+    /**  */
     public abstract void init(EnmModel model, int latency, int waitTime, Object... args);
 
     /** advances the clock */
@@ -93,9 +94,20 @@ public abstract class BaseDriver {
         return setting.getOther().getNonRenderingForPause();
     }
 
-    protected final GenericSupport genericSupport = new GenericSupport();
+    protected final GenericSupport viewSupport = new GenericSupport();
 
-    public void addGenericListener(GenericListener listener) {
-        genericSupport.addGenericListener(listener);
+    public void addViewListener(GenericListener listener) {
+        viewSupport.addGenericListener(listener);
+    }
+
+    /**
+     *
+     * @param name
+     *        "led.reset" ... none
+     *        "led.set" ... none, {@code src} is indicated the led target
+     *        "led.on" ... args 0: chip id, {@code src} is indicated the led target
+     */
+    public void fireEventHappened(Object src, String name, Object... args) {
+        viewSupport.fireEventHappened(new GenericEvent(src, name, args));
     }
 }

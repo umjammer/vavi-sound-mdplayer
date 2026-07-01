@@ -71,10 +71,7 @@ public class Ym3812Chip extends BaseChip {
     }
 
     public void write(int chipId, int addr, int data, EnmModel model) {
-        if (chipId == 0)
-            context.chipLED.put("PriOPL2", 2);
-        else
-            context.chipLED.put("SecOPL2", 2);
+        fireEventHappened("led.on", chipId);
 
         register[chipId][addr] = data;
 

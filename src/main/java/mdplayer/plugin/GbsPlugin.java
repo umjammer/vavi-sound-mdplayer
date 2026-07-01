@@ -51,7 +51,6 @@ logger.log(Level.INFO, "songNo: " + songNo);
 
     @Override
     protected void initChips() {
-        chipLED.put("PriDMG", 1);
 
         MDSound.Chip chip = new MDSound.Chip();
         chip.id = 0;
