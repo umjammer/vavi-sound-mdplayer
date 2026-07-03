@@ -26,3 +26,4 @@ mdplayer.plugin.MdsPlugin
 mdplayer.plugin.GbsPlugin
 mdplayer.plugin.AhxPlugin
 mdplayer.plugin.HvlPlugin
+mdplayer.plugin.YmPlugin

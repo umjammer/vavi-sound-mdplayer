@@ -6,14 +6,22 @@
 
 package mdplayer.driver.ym;
 
+import java.io.BufferedInputStream;
 import java.io.RandomAccessFile;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioFormat.Encoding;
+import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.SourceDataLine;
 
 import mdplayer.driver.ym.YmMusic.YmMusicInfo;
+import vavi.sound.sampled.md.MdAudioFileReader;
+import vavi.sound.sampled.md.MdFormatConversionProvider;
+import vavi.util.Debug;
 import vavi.util.properties.annotation.Property;
 import vavi.util.properties.annotation.PropsEntity;
 
@@ -22,6 +30,7 @@ import org.junit.jupiter.api.Test;
 
 import static mdplayer.driver.ym.Ym2Wav.writeLE16;
 import static mdplayer.driver.ym.Ym2Wav.writeWavHeader;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static vavi.sound.SoundUtil.volume;
 
 
@@ -54,10 +63,12 @@ public class TestCase {
         }
     }
 
+    static final int NBSAMPLEPERBUFFER = 1024;
+
     @Test
     void test1() throws Exception {
+Debug.print(ym);
 
-        final int NBSAMPLEPERBUFFER = 1024;
         short[] convertBuffer = new short[NBSAMPLEPERBUFFER];
 
         YmMusic music = new YmMusic();
@@ -155,8 +166,8 @@ public class TestCase {
 
     @Test
     void test2() throws Exception {
+Debug.print(ym);
 
-        final int NBSAMPLEPERBUFFER = 1024;
         short[] convertBuffer = new short[NBSAMPLEPERBUFFER];
 
         YmMusic music = new YmMusic();
@@ -246,5 +257,65 @@ public class TestCase {
         }
 
         music.unLoad();
+    }
+
+    /** via spi (YmFormat/YmPlugin/YmDriver) */
+    @Test
+    void test3() throws Exception {
+        Path path = Path.of(ym);
+Debug.print(ym);
+
+        AudioInputStream sourceAis = new MdAudioFileReader().getAudioInputStream(new BufferedInputStream(Files.newInputStream(path)));
+
+        AudioFormat inAudioFormat = sourceAis.getFormat();
+Debug.println("IN: " + inAudioFormat);
+        AudioFormat outAudioFormat = new AudioFormat(
+                Encoding.PCM_SIGNED,
+                44100,
+                16,
+                2,
+                4,
+                44100,
+                false,
+                Map.of("track", 1));
+Debug.println("OUT: " + outAudioFormat);
+
+        assertTrue(new MdFormatConversionProvider().isConversionSupported(outAudioFormat, inAudioFormat));
+
+        AudioInputStream secondAis = new MdFormatConversionProvider().getAudioInputStream(outAudioFormat, sourceAis);
+        SourceDataLine line = AudioSystem.getSourceDataLine(secondAis.getFormat());
+        line.open(secondAis.getFormat());
+        volume(line, volume);
+        line.start();
+
+        long totalSquared = 0;
+        int totalSamples = 0;
+        int peak = 0;
+
+        byte[] buf = new byte[1024];
+        long start = System.currentTimeMillis();
+        while (System.currentTimeMillis() - start < time) {
+            int r = secondAis.read(buf, 0, buf.length);
+            if (r < 0) break;
+
+            for (int i = 0; i < r / 2; i++) {
+                int sample = (short) ((buf[i * 2] & 0xff) | (buf[i * 2 + 1] << 8));
+                totalSquared += (long) sample * sample;
+                int absVal = Math.abs(sample);
+                if (absVal > peak) peak = absVal;
+                totalSamples++;
+            }
+
+            line.write(buf, 0, r);
+        }
+
+        line.drain();
+        line.close();
+
+        double rms = Math.sqrt((double) totalSquared / totalSamples);
+        System.out.printf("Stats: RMS=%.2f Peak=%d Samples=%d%n", rms, peak, totalSamples);
+
+        assertTrue(rms > 50.0, "RMS is too low: " + rms);
+        assertTrue(peak > 2000, "Peak is too low: " + peak);
     }
 }

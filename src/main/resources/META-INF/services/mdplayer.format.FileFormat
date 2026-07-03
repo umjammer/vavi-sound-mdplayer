@@ -35,3 +35,4 @@ mdplayer.format.MdsFileFormat
 mdplayer.format.GbsFileFormat
 mdplayer.format.AhxFormat
 mdplayer.format.HvlFormat
+mdplayer.format.YmFormat
