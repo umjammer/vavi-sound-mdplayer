@@ -13,8 +13,6 @@ import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 
-import mdplayer.driver.ahx.AHX.AHXPlayer.AHXSong;
-
 
 public class AHX {
 
@@ -837,7 +835,7 @@ public class AHX {
                 }
 
                 // OkDownSquare
-                if (--x != 0) squarePtr += x << 7;
+                if (--x != 0) squarePtr += x << 7; // TODO int overflow
                 int delta = 32 >> voices[v].waveLength;
                 waveformTab[2] = new ByteSlice(voices[v].squareTempBuffer);
                 for (int i = 0; i < (1 << voices[v].waveLength) * 4; i++) {
