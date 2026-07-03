@@ -5,6 +5,7 @@ import java.lang.System.Logger;
 import mdplayer.Common;
 import mdplayer.chips.MidiPlugin;
 import mdplayer.chips.OkiM6258Chip;
+import mdplayer.chips.Pcm8Chip;
 import mdplayer.driver.rcp.RcsDriver;
 import mdsound.Instrument;
 import mdsound.MDSound;
@@ -67,9 +68,8 @@ public class RCSPlugin extends BasePlugin<RcsDriver> {
             put(OkiM6258Chip.class, chip); // not use mds, via driver direct
         }
 
-        chipLED.put("PriMID", 1);
-        chipLED.put("SecMID", 1);
-        chipLED.put("PriPCM8", 1);
+        getDriver().fireEventHappened(chipRegister.plugin(MidiPlugin.class), "led.set", 0);
+        getDriver().fireEventHappened(chipRegister.plugin(MidiPlugin.class), "led.set", 1);
 
         chipRegister.plugin(MidiPlugin.class).releaseAll();
         chipRegister.plugin(MidiPlugin.class).make();

@@ -95,9 +95,6 @@ public class MDXPlugin extends BasePlugin<MxDriver> {
         }
 logger.log(Level.INFO, "pcm8Type: " + setting.getMxDrv().pcm8Type + ", " + chip.instrument.getClass().getName());
 
-        chipLED.put("PriOPM", 1);
-        chipLED.put("PriOKI5", 1);
-
         chipRegister.plugin(RealChipPlugin.class).initChip(hiyorimiDeviceFlag);
 
         mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, flatten());

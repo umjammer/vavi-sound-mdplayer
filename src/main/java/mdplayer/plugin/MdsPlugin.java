@@ -50,7 +50,6 @@ public class MdsPlugin extends BasePlugin<MdsDriver> {
         MDSound.Chip chip = new MDSound.Chip();
         chip.instrument = Instrument.getInstrument(chipRegister.chip(Ym2612Chip.class).inst(0));
         chip.id = 0;
-        chipLED.put("PriOPM", 1);
         if (chip.instrument instanceof Ym2612Inst) {
             chip.option = new Object[] {
                     (setting.getNukedOPN2().gensDACHPF ? 0x01 : 0x00) |
@@ -69,7 +68,6 @@ public class MdsPlugin extends BasePlugin<MdsDriver> {
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2612Chip.class);
         chip.clock = 7670454;
         chipRegister.chip(Ym2612Chip.class).clock = 7670454;
-        chipLED.put("PriOPN2", 1);
         put(Ym2612Chip.class, chip);
 
         chip = new MDSound.Chip();
@@ -79,7 +77,6 @@ public class MdsPlugin extends BasePlugin<MdsDriver> {
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, Sn76489Chip.class);
         chip.clock = 3579545;
         chip.option = null;
-        chipLED.put("PriDCSG", 1);
         put(Sn76489Chip.class, chip);
 
         mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, flatten());

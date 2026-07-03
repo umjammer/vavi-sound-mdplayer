@@ -64,7 +64,6 @@ public class PMDPlugin extends BasePlugin<PmdDriver> implements Compilable {
         chip.option = new Object[] {fn};
         put(Ym2608Chip.class, chip);
         chipRegister.chip(Ym2608Chip.class).clock = PmdDriver.baseClock;
-        chipLED.put("PriOPNA", 1);
 
         chip = new MDSound.Chip();
         chip.id = 0;
@@ -73,7 +72,6 @@ public class PMDPlugin extends BasePlugin<PmdDriver> implements Compilable {
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ppz8Chip.class);
         chip.clock = PmdDriver.baseClock;
         chip.option = null;
-        chipLED.put("PriPPZ8", 1);
         put(Ppz8Chip.class, chip);
 
         chip = new MDSound.Chip();
@@ -83,7 +81,6 @@ public class PMDPlugin extends BasePlugin<PmdDriver> implements Compilable {
         chip.volume = 0;
         chip.clock = PmdDriver.baseClock;
         chip.option = null;
-        chipLED.put("PriPPSDRV", 1);
         put(PpsChip.class, chip);
 
         chip = new MDSound.Chip();
@@ -93,7 +90,6 @@ public class PMDPlugin extends BasePlugin<PmdDriver> implements Compilable {
         chip.volume = 0;
         chip.clock = PmdDriver.baseClock;
         chip.option = null;
-        chipLED.put("PriP86", 1);
         put(P86Chip.class, chip);
 
         mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, flatten());

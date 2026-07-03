@@ -37,13 +37,13 @@ this is a fork of [MDPlayer](https://github.com/kuma4649/MDPlayer)
 | AY                              | ZX               |       ✅️       |    -     | built-in              | libgme                                                               |                                                                                   |
 | HES                             | PC Engine        |       ✅️       |    -     | built-in              | libgme                                                               |                                                                                   |
 | GBS                             | Game Boy         |     ✅️  ️      |    -     | built-in              | [vavi-sound-emu](https://github.com/umjammer/vavi-sound-emu)         |                                                                                   |
-| GYM                             | Sega Genesis     |      n/a       |    -     |                       | libgme                                                               |                                                                                   |
+| GYM                             | Sega Genesis     |       →        |    -     |                       | [vavi-sound-emu](https://github.com/umjammer/vavi-sound-emu)         |                                                                                   |
 | KSS                             | MSX              |      ️ →       |    -     |                       | [vavi-sound-emu](https://github.com/umjammer/vavi-sound-emu)         |                                                                                   |
-| SAP                             | Atari            |      n/a       |    -     |                       | libgme                                                               |                                                                                   |
+| SAP                             | Atari            |       →        |    -     |                       | [vavi-sound-emu](https://github.com/umjammer/vavi-sound-emu)         |                                                                                   |
 | SPC                             | SNES             |       →        |    -     |                       | [vavi-sound-emu](https://github.com/umjammer/vavi-sound-emu)         |                                                                                   |
-| YM                              | Atari ST         |    n/a    ️    |    -     |                       | [FastTracker_2](https://en.wikipedia.org/wiki/FastTracker_2)         |                                                                                   |
-| HVL                             | Hively Tracker   |    n/a   ️     |    -     |                       | [Hively Tracker](https://github.com/pete-gordon/hivelytracker)       |                                                                                   |
-| AHX                             | AHX Clone        |    n/a    ️    |    -     |                       | [AHX](http://amigascne.org/abyss/ahx/)                               |                                                                                   |
+| YM                              | Atari ST         |       ✅️       |    -     | built-in              | [stymulatorn](https://github.com/ehaupt/stymulatorn)                 |                                                                                   |
+| HVL                             | Amiga            |      ✅️ ️      |    -     | built-in              | [hiivelyplay](https://github.com/pete-gordon/hiivelyplay)            |                                                                                   |
+| AHX                             | Amiga            |      ✅️ ️      |    -     | built-in              | [ahxcs](https://github.com/jimshawx/ahxcs)                           |                                                                                   |
 | ZGM                             | mml2vgm          |      n/a       |    -     | built-in              |                                                                      | currently support only YM2609                                                     |
 | MID                             | midi             |       ️→       |    -     | built-in              | javax.sound.midi.spi                                                 |                                                                                   |
 | RCP                             | recomposer       |       🚫       |    -     | built-in              |                                                                      |                                                                                   |
@@ -193,6 +193,8 @@ you can select a chip implementation variant by number.
 * https://github.com/asma-atari-org/asma.atari.org (sap)
 * https://github.com/Manicsteiner/VGMToolbox (kss, xa, xma, xsf)
 * https://github.com/AnimaInCorpore/portable_mdx (mxdrv)
+* https://github.com/ehaupt/stymulatorn (ym)
+* https://github.com/jimshawx/ahxcs (ahx)
 * s98
   * https://www.zophar.net/music/s98.html (s98)
   * https://github.com/niara3/s98txt/blob/master/src/com/niara3/s98txt/Main.java (s98)

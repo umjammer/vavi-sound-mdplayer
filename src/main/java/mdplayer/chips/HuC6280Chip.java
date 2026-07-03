@@ -40,10 +40,7 @@ public class HuC6280Chip extends BaseChip {
     }
 
     public void write(int chipId, int addr, int data, EnmModel model) {
-        if (chipId == 0)
-            context.chipLED.put("PriHuC", 2);
-        else
-            context.chipLED.put("SecHuC", 2);
+        fireEventHappened("led.on", chipId);
 
         if (model == EnmModel.VirtualModel) {
             if (!chipTypes[chipId].getUseReal()[0]) {
@@ -62,10 +59,7 @@ public class HuC6280Chip extends BaseChip {
     }
 
     public int read(int chipId, int adr, EnmModel model) {
-        if (chipId == 0)
-            context.chipLED.put("PriHuC", 2);
-        else
-            context.chipLED.put("SecHuC", 2);
+        fireEventHappened("led.on", chipId);
 
         if (model == EnmModel.VirtualModel) {
             return context.mds.inst(inst(chipId)).read(chipId, adr);

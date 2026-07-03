@@ -106,10 +106,7 @@ public class NpNesChip extends BaseChip {
         }
 
         public NesMmc5 readMmc5(int chipId, EnmModel model) {
-            if (chipId == 0)
-                context.chipLED.put("PriMMC5", 2);
-            else
-                context.chipLED.put("SecMMC5", 2);
+            fireEventHappened("led.on", chipId);
 
             if (model == EnmModel.VirtualModel) {
                 return null; // mds.readMMC5(chipId);

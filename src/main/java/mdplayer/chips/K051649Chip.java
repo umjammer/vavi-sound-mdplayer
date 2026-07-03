@@ -76,10 +76,7 @@ public class K051649Chip extends BaseChip {
 
 
     public void write(int chipId, int adr, int data, EnmModel model) {
-        if (chipId == 0)
-            context.chipLED.put("PriK051649", 2);
-        else
-            context.chipLED.put("SecK051649", 2);
+        fireEventHappened("led.on", chipId);
 
         if ((adr & 1) != 0) {
             if ((adr >> 1) == 3) { // keyonoff

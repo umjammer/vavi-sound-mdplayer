@@ -96,10 +96,7 @@ public class Sn76489Chip extends BaseChip {
 
     public void write(int chipId, int data, EnmModel model) {
 
-        if (chipId == 0)
-            context.chipLED.put("PriDCSG", 2);
-        else
-            context.chipLED.put("SecDCSG", 2);
+        fireEventHappened("led.on", chipId);
 
         write(chipId, data);
 
@@ -134,10 +131,7 @@ public class Sn76489Chip extends BaseChip {
     }
 
     public void setPan(int chipId, int dData, EnmModel model) {
-        if (chipId == 0)
-            context.chipLED.put("PriDCSG", 2);
-        else
-            context.chipLED.put("SecDCSG", 2);
+        fireEventHappened("led.on", chipId);
 
         if (model == EnmModel.RealModel) {
             if (chipTypes[chipId].getUseReal()[0]) {

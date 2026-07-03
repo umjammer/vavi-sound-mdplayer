@@ -26,10 +26,7 @@ public class WSwanChip extends BaseChip {
     }
 
     public void write(int chipId, int port, int data, EnmModel model) {
-        if (chipId == 0)
-            context.chipLED.put("PriWSW", 2);
-        else
-            context.chipLED.put("SecWSW", 2);
+        fireEventHappened("led.on", chipId);
 
         if (model == EnmModel.VirtualModel) {
             context.mds.write(inst(chipId), chipId, 0, port, data);
@@ -37,10 +34,7 @@ public class WSwanChip extends BaseChip {
     }
 
     public void writeMemory(int chipId, int port, int data, EnmModel model) {
-        if (chipId == 0)
-            context.chipLED.put("PriWSW", 2);
-        else
-            context.chipLED.put("SecWSW", 2);
+        fireEventHappened("led.on", chipId);
 
         if (model == EnmModel.VirtualModel) {
             context.mds.inst(WSwanInst.class).writeMemory(chipId, port, data);

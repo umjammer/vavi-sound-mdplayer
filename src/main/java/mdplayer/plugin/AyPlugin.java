@@ -58,7 +58,6 @@ public class AyPlugin extends BasePlugin<AyDriver> {
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ay8910Chip.class);
         chip.clock = 1789773 / 2;
         chipRegister.chip(Ay8910Chip.class).clock = 1789773;
-        chipLED.put("PriAY10", 1);
         put(Ay8910Chip.class, chip);
 
         chip = new MDSound.Chip();

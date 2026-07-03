@@ -384,7 +384,7 @@ logger.log(Level.TRACE, "MXDRV_Start: " + ret);
             pcmMaps[i].put("volume", mm.readByte(pcms[i] + MXWORK_CH.S0022) & 0xff);
             pcmMaps[i].put("keyOn", mm.readByte(pcms[i] + MXWORK_CH.S0016) & 0xff);
         }
-        genericSupport.fireEventHappened(new GenericEvent(this, "mxdrv",
-                plugin.chipRegister.chip(Ym2151Chip.class).register[0], fmMaps, pcmMaps));
+        fireEventHappened(this, "mxdrv",
+                plugin.chipRegister.chip(Ym2151Chip.class).register[0], fmMaps, pcmMaps);
     }
 }

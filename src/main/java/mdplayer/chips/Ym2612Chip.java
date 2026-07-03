@@ -124,8 +124,7 @@ public class Ym2612Chip extends BaseChip {
     public void write(int chipId, int port, int addr, int data, EnmModel model, int frameCounter) {
         if (addr < 0 || data < 0) return;
 
-        if (chipId == 0) context.chipLED.put("PriOPN2", 2);
-        else context.chipLED.put("SecOPN2", 2);
+        fireEventHappened("led.on", chipId);
 
         if (model == EnmModel.VirtualModel) {
             register[chipId][port][addr] = data;

@@ -74,10 +74,7 @@ public class SegaPcmChip extends BaseChip {
     }
 
     public void write(int chipId, int offset, int data, EnmModel model) {
-        if (chipId == 0)
-            context.chipLED.put("PriSPCM", 2);
-        else
-            context.chipLED.put("SecSPCM", 2);
+        fireEventHappened("led.on", chipId);
 
         if ((model == EnmModel.VirtualModel && (chipTypes[chipId] == null || !chipTypes[chipId].getUseReal()[0])) ||
                 (model == EnmModel.RealModel && (realChips != null && realChips[chipId] != null))) {
@@ -108,10 +105,7 @@ public class SegaPcmChip extends BaseChip {
                          byte[] romData,
                          int srcStartAdr,
                          EnmModel model) {
-        if (chipId == 0)
-            context.chipLED.put("PriSPCM", 2);
-        else
-            context.chipLED.put("SecSPCM", 2);
+        fireEventHappened("led.on", chipId);
 
         if (model == EnmModel.VirtualModel) {
             context.mds.inst(SegaPcmInst.class).writePcm(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
@@ -131,7 +125,7 @@ public class SegaPcmChip extends BaseChip {
             }
         }
 
-        dumpDataForSegaPCM(model, "SEGAPCM_PCMData", dataLength, romData, srcStartAdr);
+        dumpDataForSegaPCM(model, "PCMData", dataLength, romData, srcStartAdr);
     }
 
     public void writeClock(int chipId, int clock, EnmModel model) {

@@ -2454,7 +2454,7 @@ public class frmMain extends JFrame {
         frmYM2612[chipId] = null;
     }
 
-    private void OpenFormOKIM6258(int chipId, boolean force/* = false*/) {
+    private void OpenFormOKIM6258(int chipId, boolean force /* = false */) {
         if (frmOKIM6258[chipId] != null) {
             if (!force) {
                 CloseFormOKIM6258(chipId);
@@ -2495,7 +2495,7 @@ public class frmMain extends JFrame {
         frmOKIM6258[chipId] = null;
     }
 
-    private void OpenFormOKIM6295(int chipId, boolean force/* = false*/) {
+    private void OpenFormOKIM6295(int chipId, boolean force /* = false */) {
         if (frmOKIM6295[chipId] != null) {
             if (!force) {
                 CloseFormOKIM6295(chipId);
@@ -4478,7 +4478,7 @@ public class frmMain extends JFrame {
             }
 
             if (setting.getOther().getAutoOpen()) {
-
+/* TODO view led
                 if (audio.plugin.chipLED.get("PriOPM") != 0) OpenFormYM2151(0, true);
                 else CloseFormYM2151(0);
                 if (audio.plugin.chipLED.get("SecOPM") != 0) OpenFormYM2151(1, true);
@@ -4660,6 +4660,7 @@ public class frmMain extends JFrame {
                 else CloseFormYMF271(0);
                 if (audio.plugin.chipLED.get("SecOPX") != 0) OpenFormYMF271(1, true);
                 else CloseFormYMF271(1);
+*/
             }
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
@@ -9624,7 +9625,7 @@ public class frmMain extends JFrame {
 
     private int[] getChipStatus() {
         int[] chips = new int[256];
-
+/* TODO led
         chips[0] = audio.plugin.chipLED.get("PriOPN");
         audio.plugin.chipLED.put("PriOPN", audio.plugin.chipLED.get("PriOPN"));
         chips[1] = audio.plugin.chipLED.get("PriOPN2");
@@ -9705,7 +9706,7 @@ public class frmMain extends JFrame {
         audio.plugin.chipLED.put("SecK054539", audio.plugin.chipLED.get("SecK054539"));
         chips[128 + 17] = audio.plugin.chipLED.get("SecRF5C68");
         audio.plugin.chipLED.put("SecRF5C68", audio.plugin.chipLED.get("SecRF5C68"));
-
+*/
         return chips;
     }
 

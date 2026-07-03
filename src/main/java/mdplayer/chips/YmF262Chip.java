@@ -94,10 +94,7 @@ public class YmF262Chip extends BaseChip {
     }
 
     public void write(int chipId, int port, int addr, int data, EnmModel model) {
-        if (chipId == 0)
-            context.chipLED.put("PriOPL3", 2);
-        else
-            context.chipLED.put("SecOPL3", 2);
+        fireEventHappened("led.on", chipId);
 
         register[chipId][port][addr] = data;
 

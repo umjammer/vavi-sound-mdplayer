@@ -57,10 +57,7 @@ public class C352Chip extends BaseChip {
     }
 
     public void write(int chipId, int adr, int data, EnmModel model) {
-        if (chipId == 0)
-            context.chipLED.put("PriC352", 2);
-        else
-            context.chipLED.put("SecC352", 2);
+        fireEventHappened("led.on", chipId);
 
         if (adr < register[chipId].length)
             register[chipId][adr] = data;
@@ -73,15 +70,12 @@ public class C352Chip extends BaseChip {
     }
 
     public void writePcm(int chipId, int romSize, int offset, int length, byte[] buf, int srcOffset, EnmModel model) {
-        if (chipId == 0)
-            context.chipLED.put("PriC352", 2);
-        else
-            context.chipLED.put("SecC352", 2);
+        fireEventHappened("led.on", chipId);
 
         if (model == EnmModel.VirtualModel)
             context.mds.inst(C352Inst.class).writePcm(chipId, buf, offset, length, srcOffset, romSize);
 
-        dumpData(model, "C352_PCMData", srcOffset, buf, length);
+        dumpData(model, "PCMData", srcOffset, buf, length);
     }
 
     public Map<String, Object> getInfo(int chipId) {

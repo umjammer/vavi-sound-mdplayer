@@ -39,10 +39,7 @@ public class NesChip extends BaseChip {
         }
 
         public int[] readDmc(int chipId, EnmModel model) {
-            if (chipId == 0)
-                context.chipLED.put("PriNES", 2);
-            else
-                context.chipLED.put("SecNES", 2);
+            fireEventHappened("led.on", chipId);
 
             if (model == EnmModel.VirtualModel) {
 //            if (!ctNES[chipId].UseScci) {
@@ -76,10 +73,7 @@ public class NesChip extends BaseChip {
         }
 
         public Map<String, Object> readFds(int chipId, EnmModel model) {
-            if (chipId == 0)
-                context.chipLED.put("PriFDS", 2);
-            else
-                context.chipLED.put("SecFDS", 2);
+            fireEventHappened("led.on", chipId);
 
             if (model == EnmModel.VirtualModel) {
 //            if (!ctNES[chipId].UseScci) {
@@ -112,10 +106,7 @@ public class NesChip extends BaseChip {
 
     // vgm
     public void write(int chipId, int addr, int data, EnmModel model) {
-        if (chipId == 0)
-            context.chipLED.put("PriNES", 2);
-        else
-            context.chipLED.put("SecNES", 2);
+        fireEventHappened("led.on", chipId);
 
         if (model == EnmModel.VirtualModel) {
 //            if (!ctNES[chipId].UseScci) {
@@ -130,10 +121,7 @@ public class NesChip extends BaseChip {
 
     // vgm
     public int[] readApu(int chipId, EnmModel model) {
-        if (chipId == 0)
-            context.chipLED.put("PriNES", 2);
-        else
-            context.chipLED.put("SecNES", 2);
+        fireEventHappened("led.on", chipId);
 
         if (model == EnmModel.VirtualModel) {
 //            if (!ctNES[chipId].UseScci) {
@@ -183,14 +171,11 @@ public class NesChip extends BaseChip {
 
     // vgm
     public void writePcm(int chipId, int stAdr, int dataSize, byte[] vgmBuf, int vgmAdr, EnmModel model) {
-        if (chipId == 0)
-            context.chipLED.put("PriNES", 2);
-        else
-            context.chipLED.put("SecNES", 2);
+        fireEventHappened("led.on", chipId);
 
         if (model == EnmModel.VirtualModel)
             context.mds.inst(NesInst.class).writePcm(chipId, vgmBuf, vgmAdr, dataSize, stAdr);
 
-        dumpData(model, "NES_PCMData", vgmAdr, vgmBuf, dataSize);
+        dumpData(model, "PCMData", vgmAdr, vgmBuf, dataSize);
     }
 }

@@ -87,9 +87,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
 
                 chipRegister.chip(Sn76489Chip.class).clock = chip.clock & 0x7fff_ffff;
 
-                if (i == 0) chipLED.put("PriDCSG", 1);
-                else chipLED.put("SecDCSG", 1);
-
                 hiyorimiDeviceFlag |= (setting.getSN76489Type()[0].getUseReal()[0]) ? 0x1 : 0x2;
                 chipRegister.chip(Sn76489Chip.class).ngpFlag = driverVirtual.vgm.sn76489NGPFlag;
 
@@ -130,9 +127,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
                 hiyorimiDeviceFlag |= (setting.getYM2612Type()[0].getUseReal()[0]
                         && setting.getYM2612Type()[0].getRealChipInfo()[0].getOnlyPCMEmulation()) ? 0x2 : 0x0;
 
-                if (i == 0) chipLED.put("PriOPN2", 1);
-                else chipLED.put("SecOPN2", 1);
-
                 put(Ym2612Chip.class, chip);
             }
         }
@@ -150,9 +144,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
 
                 hiyorimiDeviceFlag |= 0x2;
 
-                if (i == 0) chipLED.put("PriRF5C68", 1);
-                else chipLED.put("SecRF5C68", 1);
-
                 put(Rf5C68Chip.class, chip);
             }
         }
@@ -169,9 +160,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
 
                 hiyorimiDeviceFlag |= 0x2;
 
-                if (i == 0) chipLED.put("PriRF5C", 1);
-                else chipLED.put("SecRF5C", 1);
-
                 put(Rf5C164Chip.class, chip);
             }
         }
@@ -186,8 +174,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
             chip.option = null;
 
             hiyorimiDeviceFlag |= 0x2;
-
-            chipLED.put("PriPWM", 1);
 
             put(PwmChip.class, chip);
         }
@@ -206,9 +192,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
 
                 hiyorimiDeviceFlag |= 0x2;
 
-                if (i == 0) chipLED.put("PriC140", 1);
-                else chipLED.put("SecC140", 1);
-
                 put(C140Chip.class, chip);
             }
         }
@@ -225,9 +208,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
 
                 hiyorimiDeviceFlag |= 0x2;
 
-                if (i == 0) chipLED.put("PriMPCM", 1);
-                else chipLED.put("SecMPCM", 1);
-
                 put(MultiPcmChip.class, chip);
             }
         }
@@ -243,9 +223,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
                 chip.option = null;
 
                 hiyorimiDeviceFlag |= 0x2;
-
-                if (i == 0) chipLED.put("PriuPD7759", 1);
-                else chipLED.put("SecuPD7759", 1);
 
                 put(Upd7759Chip.class, chip);
             }
@@ -267,8 +244,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
 
             hiyorimiDeviceFlag |= 0x2;
 
-            chipLED.put("PriOKI5", 1);
-
             put(OkiM6258Chip.class, chip);
         }
 
@@ -288,9 +263,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
 
                 hiyorimiDeviceFlag |= 0x2;
 
-                if (i == 0) chipLED.put("PriOKI9", 1);
-                else chipLED.put("SecOKI9", 1);
-
                 put(OkiM6295Chip.class, chip);
             }
         }
@@ -305,8 +277,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
             chip.option = new Object[] {driverVirtual.vgm.segaPCMInterface};
 
             hiyorimiDeviceFlag |= 0x2;
-
-            chipLED.put("PriSPCM", 1);
 
             put(SegaPcmChip.class, chip);
         }
@@ -332,9 +302,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
 
                 chipRegister.chip(Ym2608Chip.class).clock = driverVirtual.vgm.ym2608ClockValue;
 
-                if (i == 0) chipLED.put("PriOPNA", 1);
-                else chipLED.put("SecOPNA", 1);
-
                 put(Ym2608Chip.class, chip);
             }
         }
@@ -350,9 +317,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
                 chip.option = null;
 
                 hiyorimiDeviceFlag |= 0x2;
-
-                if (i == 0) chipLED.put("PriOPM", 1);
-                else chipLED.put("SecOPM", 1);
 
                 put(Ym2151Chip.class, chip);
             }
@@ -375,9 +339,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
                 chipRegister.chip(Ym2203Chip.class).clock = driverVirtual.vgm.ym2203ClockValue;
 
                 hiyorimiDeviceFlag |= 0x2;
-
-                if (i == 0) chipLED.put("PriOPN", 1);
-                else chipLED.put("SecOPN", 1);
 
                 put(Ym2203Chip.class, chip);
             }
@@ -402,9 +363,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
 
                 hiyorimiDeviceFlag |= 0x2;
 
-                if (i == 0) chipLED.put("PriOPNB", 1);
-                else chipLED.put("SecOPNB", 1);
-
                 put(Ym2610Chip.class, chip);
             }
         }
@@ -420,9 +378,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
                 chip.option = null;
 
                 hiyorimiDeviceFlag |= 0x2;
-
-                if (i == 0) chipLED.put("PriOPL2", 1);
-                else chipLED.put("SecOPL2", 1);
 
                 put(Ym3812Chip.class, chip);
             }
@@ -443,9 +398,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
 
                 hiyorimiDeviceFlag |= 0x2;
 
-                if (i == 0) chipLED.put("PriOPL3", 1);
-                else chipLED.put("SecOPL3", 1);
-
                 put(YmF262Chip.class, chip);
             }
         }
@@ -461,9 +413,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
                 chip.option = null;
 
                 hiyorimiDeviceFlag |= 0x2;
-
-                if (i == 0) chipLED.put("PriOPX", 1);
-                else chipLED.put("SecOPX", 1);
 
                 put(YmF271Chip.class, chip);
             }
@@ -481,9 +430,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
 
                 hiyorimiDeviceFlag |= 0x2;
 
-                if (i == 0) chipLED.put("PriOPL4", 1);
-                else chipLED.put("SecOPL4", 1);
-
                 put(YmF278BChip.class, chip);
             }
         }
@@ -499,9 +445,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
                 chip.option = null;
 
                 hiyorimiDeviceFlag |= 0x2;
-
-                if (i == 0) chipLED.put("PriYMZ", 1);
-                else chipLED.put("SecYMZ", 1);
 
                 put(YmZ280BChip.class, chip);
             }
@@ -520,9 +463,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
 
                 hiyorimiDeviceFlag |= 0x2;
 
-                if (i == 0) chipLED.put("PriAY10", 1);
-                else chipLED.put("SecAY10", 1);
-
                 put(Ay8910Chip.class, chip);
             }
         }
@@ -538,9 +478,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
                 chip.option = null;
 
                 hiyorimiDeviceFlag |= 0x2;
-
-                if (i == 0) chipLED.put("PriOPLL", 1);
-                else chipLED.put("SecOPLL", 1);
 
                 put(Ym2413Chip.class, chip);
             }
@@ -558,9 +495,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
 
                 hiyorimiDeviceFlag |= 0x2;
 
-                if (i == 0) chipLED.put("PriHuC", 1);
-                else chipLED.put("SecHuC", 1);
-
                 put(HuC6280Chip.class, chip);
             }
         }
@@ -576,8 +510,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
 
             hiyorimiDeviceFlag |= 0x2;
 
-            chipLED.put("PriQsnd", 1);
-
             put(QSoundChip.class, chip);
         }
 
@@ -590,9 +522,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, Saa1099Chip.class);
                 chip.clock = (driverVirtual.vgm.saa1099ClockValue & 0x3fff_ffff);
                 hiyorimiDeviceFlag |= 0x2;
-
-                if (i == 0) chipLED.put("PriSAA", 1);
-                else chipLED.put("SecSAA", 1);
 
                 put(Saa1099Chip.class, chip);
             }
@@ -607,9 +536,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, WSwanChip.class);
                 chip.clock = (driverVirtual.vgm.wSwanClockValue & 0x3fff_ffff);
                 hiyorimiDeviceFlag |= 0x2;
-
-                if (i == 0) chipLED.put("PriWSW", 1);
-                else chipLED.put("SecWSW", 1);
 
                 put(WSwanChip.class, chip);
             }
@@ -627,9 +553,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
                 chip.option = new Object[] {driverVirtual.vgm.es5503Ch, fn};
                 hiyorimiDeviceFlag |= 0x2;
 
-                if (i == 0) chipLED.put("PriES53", 1);
-                else chipLED.put("SecES53", 1);
-
                 put(Es5503Chip.class, chip);
             }
         }
@@ -644,9 +567,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
                 chip.clock = (driverVirtual.vgm.pokeyClockValue & 0x3fff_ffff);
                 hiyorimiDeviceFlag |= 0x2;
 
-                if (i == 0) chipLED.put("PriPOK", 1);
-                else chipLED.put("SecPOK", 1);
-
                 put(PokeyChip.class, chip);
             }
         }
@@ -660,9 +580,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, X1_010Chip.class);
                 chip.clock = (driverVirtual.vgm.x1_010ClockValue & 0x3fff_ffff);
                 hiyorimiDeviceFlag |= 0x2;
-
-                if (i == 0) chipLED.put("PriX1010", 1);
-                else chipLED.put("SecX1010", 1);
 
                 put(X1_010Chip.class, chip);
             }
@@ -684,9 +601,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
                 C352.setOptions((driverVirtual.vgm.c352ClockValue >> 31));
                 hiyorimiDeviceFlag |= 0x2;
 
-                if (i == 0) chipLED.put("PriC352", 1);
-                else chipLED.put("SecC352", 1);
-
                 put(C352Chip.class, chip);
             }
         }
@@ -702,9 +616,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
                 chip.option = null;
                 hiyorimiDeviceFlag |= 0x2;
 
-                if (i == 0) chipLED.put("PriGA20", 1);
-                else chipLED.put("SecGA20", 1);
-
                 put(Ga20Chip.class, chip);
             }
         }
@@ -718,8 +629,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, K053260Chip.class);
                 chip.clock = driverVirtual.vgm.k053260ClockValue;
                 chip.option = null;
-                if (i == 0) chipLED.put("PriK053260", 1);
-                else chipLED.put("SecK053260", 1);
 
                 hiyorimiDeviceFlag |= 0x2;
 
@@ -736,8 +645,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, K054539Chip.class);
                 chip.clock = driverVirtual.vgm.k054539ClockValue;
                 chip.option = null;
-                if (i == 0) chipLED.put("PriK054539", 1);
-                else chipLED.put("SecK054539", 1);
 
                 hiyorimiDeviceFlag |= 0x2;
 
@@ -755,8 +662,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
                 chip.clock = driverVirtual.vgm.k051649ClockValue;
                 chipRegister.chip(K051649Chip.class).clock = chip.clock;
                 chip.option = null;
-                if (i == 0) chipLED.put("PriK051649", 1);
-                else chipLED.put("SecK051649", 1);
 
                 hiyorimiDeviceFlag |= 0x2;
 
@@ -773,8 +678,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym3526Chip.class);
                 chip.clock = driverVirtual.vgm.ym3526ClockValue;
                 chip.option = null;
-                if (i == 0) chipLED.put("PriOPL", 1);
-                else chipLED.put("SecOPL", 1);
 
                 hiyorimiDeviceFlag |= 0x2;
 
@@ -797,8 +700,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
                             0x00  // chip_flag
                     };
                 }
-                if (i == 0) chipLED.put("PriY8950", 1);
-                else chipLED.put("SecY8950", 1);
 
                 hiyorimiDeviceFlag |= 0x2;
 
@@ -815,8 +716,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, DmgChip.class);
                 chip.clock = driverVirtual.vgm.dmgClockValue;
                 chip.option = null;
-                if (i == 0) chipLED.put("PriDMG", 1);
-                else chipLED.put("SecDMG", 1);
 
                 hiyorimiDeviceFlag |= 0x2;
 
@@ -835,8 +734,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, NesChip.class);
                 chip.clock = driverVirtual.vgm.nesClockValue;
                 chip.option = null;
-                if (i == 0) chipLED.put("PriNES", 1);
-                else chipLED.put("SecNES", 1);
 
                 put(NesChip.class, chip);
 
@@ -847,8 +744,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, DmcChip.class);
                 chip.clock = driverVirtual.vgm.nesClockValue;
                 chip.option = null;
-                if (i == 0) chipLED.put("PriDMC", 1);
-                else chipLED.put("SecDMC", 1);
 
                 put(DmcChip.class, chip);
 
@@ -859,8 +754,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, FdsChip.class);
                 chip.clock = driverVirtual.vgm.nesClockValue;
                 chip.option = null;
-                if (i == 0) chipLED.put("PriFDS", 1);
-                else chipLED.put("SecFDS", 1);
 
                 put(FdsChip.class, chip);
 

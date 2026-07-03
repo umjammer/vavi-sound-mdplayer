@@ -97,10 +97,7 @@ public class Ym2203Chip extends BaseChip {
         if (addr < 0 || data < 0)
             return;
 
-        if (chipId == 0)
-            context.chipLED.put("PriOPN", 2);
-        else
-            context.chipLED.put("SecOPN", 2);
+        fireEventHappened("led.on", chipId);
 
         if (model == EnmModel.VirtualModel) {
             if (addr != 0x2d && addr != 0x2e && addr != 0x2f) {

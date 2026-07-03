@@ -4,6 +4,7 @@ import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
 import mdplayer.Common;
+import mdplayer.chips.SidChip;
 import mdplayer.driver.sid.SidMdDriver;
 import mdplayer.plugin.BasePlugin.HasSongNo;
 
@@ -35,7 +36,7 @@ public class SIDPlugin extends BasePlugin<SidMdDriver> implements HasSongNo {
 
     @Override
     protected void initChips() {
-        chipLED.put("priSID", 1);
+        getDriver().fireEventHappened(chipRegister.chip(SidChip.class), "led.set", 0);
 
         driverVirtual.init(Common.EnmModel.VirtualModel,
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,

@@ -54,9 +54,6 @@ logger.log(Level.DEBUG, "used chip: %02x".formatted(r));
 
                 hiyorimiDeviceFlag |= 0x2;
 
-                if (i == 0) chipLED.put("PriOPM", 1);
-                else chipLED.put("SecOPM", 1);
-
                 put(Ym2151Chip.class, chip);
             }
         }
@@ -72,7 +69,6 @@ logger.log(Level.DEBUG, "used chip: %02x".formatted(r));
             chip.option = null;
 
             hiyorimiDeviceFlag |= 0x1;
-            chipLED.put("PriAY10", 1);
 
             put(Ay8910Chip.class, chip);
         }

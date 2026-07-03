@@ -26,10 +26,7 @@ public class X1_010Chip extends BaseChip {
     }
 
     public void write(int chipId, int mm, int ll, int rr, EnmModel model) {
-        if (chipId == 0)
-            context.chipLED.put("PriX1010", 2);
-        else
-            context.chipLED.put("SecX1010", 2);
+        fireEventHappened("led.on", chipId);
 
         if (model == EnmModel.VirtualModel) {
             context.mds.write(inst(chipId), chipId, 0, 0, mm * 0x100 + ll, rr);
@@ -38,14 +35,11 @@ public class X1_010Chip extends BaseChip {
     }
 
     public void writePcm(int chipId, int romSize, int offset, int length, byte[] buf, int srcOffset, EnmModel model) {
-        if (chipId == 0)
-            context.chipLED.put("PriX1010", 2);
-        else
-            context.chipLED.put("SecX1010", 2);
+        fireEventHappened("led.on", chipId);
 
         if (model == EnmModel.VirtualModel)
             context.mds.inst(X1_010Inst.class).writePcm(chipId, buf, offset, length, srcOffset, romSize);
 
-        dumpData(model, "X1-010_PCMData", srcOffset, buf, length);
+        dumpData(model, "PCMData", srcOffset, buf, length);
     }
 }

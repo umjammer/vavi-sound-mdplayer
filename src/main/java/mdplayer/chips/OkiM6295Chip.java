@@ -45,22 +45,16 @@ public class OkiM6295Chip extends BaseChip {
     }
 
     public void writePcm(int chipId, int romSize, int offset, int length, byte[] buf, int srcOffset, EnmModel model) {
-        if (chipId == 0)
-            context.chipLED.put("PriOKI9", 2);
-        else
-            context.chipLED.put("SecOKI9", 2);
+        fireEventHappened("led.on", chipId);
 
         if (model == EnmModel.VirtualModel)
             context.mds.inst(OkiM6295Inst.class).writePcm(chipId, buf, offset, length, srcOffset, romSize);
 
-        dumpData(model, "OKIM6295_PCMData", srcOffset, buf, length);
+        dumpData(model, "PCMData", srcOffset, buf, length);
     }
 
     public void write(int chipId, int port, int data, EnmModel model) {
-        if (chipId == 0)
-            context.chipLED.put("PriOKI9", 2);
-        else
-            context.chipLED.put("SecOKI9", 2);
+        fireEventHappened("led.on", chipId);
 
         if (model == EnmModel.VirtualModel) {
             context.mds.write(inst(chipId), chipId, 0, port, data);

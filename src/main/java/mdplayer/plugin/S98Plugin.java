@@ -75,10 +75,8 @@ public class S98Plugin extends BasePlugin<S98Driver> {
                 MDSound.Chip chip = new MDSound.Chip();
                 if (contains(Ay8910Chip.class, 0)) {
                     chip.id = 1;
-                    chipLED.put("SecAY10", 1);
                 } else {
                     chip.id = 0;
-                    chipLED.put("PriAY10", 1);
                 }
                 chip.instrument = chipRegister.chip(Ay8910Chip.class).instrument(chip.id);
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
@@ -93,10 +91,8 @@ public class S98Plugin extends BasePlugin<S98Driver> {
                 chip = new MDSound.Chip();
                 if (contains(Ym2203Chip.class, 0)) {
                     chip.id = 1;
-                    chipLED.put("SecOPN", 1);
                 } else {
                     chip.id = 0;
-                    chipLED.put("PriOPN", 1);
                 }
                 chip.instrument = chipRegister.chip(Ym2203Chip.class).instrument(chip.id);
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
@@ -112,10 +108,8 @@ public class S98Plugin extends BasePlugin<S98Driver> {
                 chip.option = null;
                 if (contains(Ym2612Chip.class, 0)) {
                     chip.id = 1;
-                    chipLED.put("SecOPN2", 1);
                 } else {
                     chip.id = 0;
-                    chipLED.put("PriOPN2", 1);
                 }
                 chip.instrument = chipRegister.chip(Ym2612Chip.class).instrument(chip.id);
                 if (chip.instrument instanceof Ym2612Inst) {
@@ -142,10 +136,8 @@ public class S98Plugin extends BasePlugin<S98Driver> {
                 chip = new MDSound.Chip();
                 if (contains(Ym2608Chip.class, 0)) {
                     chip.id = 1;
-                    chipLED.put("SecOPNA", 1);
                 } else {
                     chip.id = 0;
-                    chipLED.put("PriOPNA", 1);
                 }
                 chip.instrument = chipRegister.chip(Ym2608Chip.class).instrument(chip.id);
                 chip.samplingRate = 55467; // (int) setting.getoutputDevice().getSampleRate();
@@ -167,10 +159,8 @@ public class S98Plugin extends BasePlugin<S98Driver> {
                 chip = new MDSound.Chip();
                 if (contains(Ym2151Chip.class, 0)) {
                     chip.id = 1;
-                    chipLED.put("SecOPM", 1);
                 } else {
                     chip.id = 0;
-                    chipLED.put("PriOPM", 1);
                 }
                 chip.instrument = chipRegister.chip(Ym2151Chip.class).instrument(chip.id);
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2151Chip.class);
@@ -186,10 +176,8 @@ public class S98Plugin extends BasePlugin<S98Driver> {
                 chip = new MDSound.Chip();
                 if (contains(Ym2413Chip.class, 0)) {
                     chip.id = 1;
-                    chipLED.put("SecOPLL", 1);
                 } else {
                     chip.id = 0;
-                    chipLED.put("PriOPLL", 1);
                 }
                 chip.instrument = chipRegister.chip(Ym2413Chip.class).instrument(chip.id);
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
@@ -204,10 +192,8 @@ public class S98Plugin extends BasePlugin<S98Driver> {
                 chip = new MDSound.Chip();
                 if (contains(Ym3526Chip.class, 0)) {
                     chip.id = 1;
-                    chipLED.put("SecOPL", 1);
                 } else {
                     chip.id = 0;
-                    chipLED.put("PriOPL", 1);
                 }
                 chip.instrument = chipRegister.chip(Ym3526Chip.class).instrument(chip.id);
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
@@ -222,10 +208,8 @@ public class S98Plugin extends BasePlugin<S98Driver> {
                 chip = new MDSound.Chip();
                 if (contains(Ym3812Chip.class, 0)) {
                     chip.id = 1;
-                    chipLED.put("SecOPL2", 1);
                 } else {
                     chip.id = 0;
-                    chipLED.put("PriOPL2", 1);
                 }
                 chip.instrument = chipRegister.chip(Ym3812Chip.class).instrument(chip.id);
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
@@ -240,10 +224,8 @@ public class S98Plugin extends BasePlugin<S98Driver> {
                 chip = new MDSound.Chip();
                 if (contains(YmF262Chip.class, 0)) {
                     chip.id = 1;
-                    chipLED.put("SecOPL3", 1);
                 } else {
                     chip.id = 0;
-                    chipLED.put("PriOPL3", 1);
                 }
                 chip.instrument = chipRegister.chip(YmF262Chip.class).instrument(chip.id);
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
@@ -259,10 +241,8 @@ public class S98Plugin extends BasePlugin<S98Driver> {
                 chip = new MDSound.Chip();
                 if (contains(Ay8910Chip.class, 0)) {
                     chip.id = 1;
-                    chipLED.put("SecAY10", 1);
                 } else {
                     chip.id = 0;
-                    chipLED.put("PriAY10", 1);
                 }
                 chip.instrument = chipRegister.chip(Ay8910Chip.class).instrument(chip.id);
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();

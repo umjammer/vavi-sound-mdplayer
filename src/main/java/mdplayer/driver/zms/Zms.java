@@ -388,7 +388,7 @@ logger.log(Level.INFO, "PLAY " + playingFileName + " --------");
         {
             // play
             byte[] zmd = fileMng.vReadAllBytes(fnZMD.getFileName().toString()); // nise68.hmn.fb[fnZMD];
-logger.log(Level.INFO, zmd.length + " bytes\n" + StringUtil.getDump(zmd, 32));
+logger.log(Level.TRACE, zmd.length + " bytes\n" + StringUtil.getDump(zmd, 32));
 if (!Arrays.equals(zmd, 1, 7, magic, 0, 6)) { throw new IllegalStateException("output file is not .zmd"); }
             int fileSize = zmd.length;
             int filePtr = nise68.hmn.memMng.malloc(fileSize);

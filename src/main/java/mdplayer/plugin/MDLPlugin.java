@@ -83,8 +83,6 @@ logger.log(Level.INFO, "EX_OPL3: " + EX_OPL3 + ", OPL4_NOUSE: " + OPL4_NOUSE);
 
             hiyorimiDeviceFlag |= 0x2;
 
-            chipLED.put("PriOPL3", 1);
-
             put(YmF262Chip.class, chip);
         } else {
             MDSound.Chip chip = new MDSound.Chip();
@@ -96,8 +94,6 @@ logger.log(Level.INFO, "EX_OPL3: " + EX_OPL3 + ", OPL4_NOUSE: " + OPL4_NOUSE);
             chip.option = new Object[] {Common.getApplicationFolder()};
 
             hiyorimiDeviceFlag |= 0x2;
-
-            chipLED.put("PriOPL4", 1);
 
             put(YmF278BChip.class, chip);
         }

@@ -69,7 +69,6 @@ public class XGMPlugin extends BasePlugin<XgmDriver> {
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2612Chip.class);
         chip.clock = 7670454;
         chipRegister.chip(Ym2612Chip.class).clock = 7670454;
-        chipLED.put("PriOPN2", 1);
         put(Ym2612Chip.class, chip);
 
         chip = new MDSound.Chip();
@@ -79,7 +78,6 @@ public class XGMPlugin extends BasePlugin<XgmDriver> {
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, Sn76489Chip.class);
         chip.clock = 3579545;
         chip.option = null;
-        chipLED.put("PriDCSG", 1);
         put(Sn76489Chip.class, chip);
 
         mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, flatten());

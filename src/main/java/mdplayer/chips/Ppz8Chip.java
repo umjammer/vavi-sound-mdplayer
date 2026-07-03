@@ -40,10 +40,7 @@ public class Ppz8Chip extends BaseChip {
         if (model != EnmModel.VirtualModel)
             return;
 
-        if (chipId == 0)
-            context.chipLED.put("PriPPZ8", 2);
-        else
-            context.chipLED.put("SecPPZ8", 2);
+        fireEventHappened("led.on", chipId);
 
         context.mds.inst(Ppz8Inst.class).writePcm(chipId, bank, mode, pcmData);
     }
@@ -52,10 +49,7 @@ public class Ppz8Chip extends BaseChip {
         if (model != EnmModel.VirtualModel)
             return;
 
-        if (chipId == 0)
-            context.chipLED.put("PriPPZ8", 2);
-        else
-            context.chipLED.put("SecPPZ8", 2);
+        fireEventHappened("led.on", chipId);
 
         if (dPort == -1 && dAddr == -1 && dData == -1)
             return;

@@ -26,10 +26,7 @@ public class PwmChip extends BaseChip {
     }
 
     public void write(int chipId, int adr, int data, EnmModel model) {
-        if (chipId == 0)
-            context.chipLED.put("PriPWM", 2);
-        else
-            context.chipLED.put("SecPWM", 2);
+        fireEventHappened("led.on", chipId);
 
         if (model == EnmModel.VirtualModel)
             context.mds.write(inst(chipId), chipId, 0, adr, data);

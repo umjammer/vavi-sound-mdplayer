@@ -7,14 +7,9 @@ import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import javax.sound.midi.MidiDevice.Info;
 import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.DataLine;
-import javax.sound.sampled.Line;
 import javax.sound.sampled.LineEvent;
 import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.Mixer;
 import javax.sound.sampled.SourceDataLine;
 
 import mdplayer.Common.EnmModel;
@@ -62,7 +57,7 @@ public final class Audio {
         try {
             int sampleRate = setting.getOutputDevice().getSampleRate();
             AudioFormat format = new AudioFormat(sampleRate, 16, 2, true, false);
-            // for hijack datasource, we need to retrieve target DtaSourceLine by name
+            // for hijack datasource, we need to retrieve target SourceDataLine by name
             line = SoundUtil.getLine("#Default Audio Device", SourceDataLine.class);
 logger.log(Level.DEBUG, format);
             line.addLineListener(Audio::lineListener);
@@ -85,7 +80,7 @@ logger.log(Level.DEBUG, "line: " + e.getType());
 
         plugin.prepare();
 //logger.log(Level.TRACE, "play: " + audio.stopped + ", " + audio.hashCode());
-        listeners.forEach(l -> plugin.getDriver().addGenericListener(l)); // TODO consider more
+        listeners.forEach(l -> plugin.getDriver().addViewListener(l)); // TODO consider more
 
         stop();
 

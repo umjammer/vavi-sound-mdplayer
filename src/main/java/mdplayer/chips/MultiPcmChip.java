@@ -28,10 +28,7 @@ public class MultiPcmChip extends BaseChip {
     }
 
     public void write(int chipId, int addr, int data, EnmModel model) {
-        if (chipId == 0)
-            context.chipLED.put("PriMPCM", 2);
-        else
-            context.chipLED.put("SecMPCM", 2);
+        fireEventHappened("led.on", chipId);
 
         if (model == EnmModel.VirtualModel) {
             context.mds.write(inst(chipId), chipId, 0, addr, data);
@@ -40,19 +37,13 @@ public class MultiPcmChip extends BaseChip {
     }
 
     public Map<String, Object> getInfo(int chipId) {
-        if (chipId == 0)
-            context.chipLED.put("PriMPCM", 2);
-        else
-            context.chipLED.put("SecMPCM", 2);
+        fireEventHappened("led.on", chipId);
 
         return context.mds.inst(MultiPcmInst.class).getInfo(chipId);
     }
 
     public void setBank(int chipId, int ch, int addr, EnmModel model) {
-        if (chipId == 0)
-            context.chipLED.put("PriMPCM", 2);
-        else
-            context.chipLED.put("SecMPCM", 2);
+        fireEventHappened("led.on", chipId);
 
         if (model == EnmModel.VirtualModel) {
             context.mds.inst(MultiPcmInst.class).writeBank(chipId, ch, addr);
@@ -61,14 +52,11 @@ public class MultiPcmChip extends BaseChip {
     }
 
     public void writePcm(int chipId, int romSize, int offset, int length, byte[] buf, int srcOffset, EnmModel model) {
-        if (chipId == 0)
-            context.chipLED.put("PriMPCM", 2);
-        else
-            context.chipLED.put("SecMPCM", 2);
+        fireEventHappened("led.on", chipId);
 
         if (model == EnmModel.VirtualModel)
             context.mds.inst(MultiPcmInst.class).writePcm(chipId, buf, offset, length, srcOffset, romSize);
 
-        dumpData(model, "MultiPCM_PCMData", srcOffset, buf, length);
+        dumpData(model, "PCMData", srcOffset, buf, length);
     }
 }

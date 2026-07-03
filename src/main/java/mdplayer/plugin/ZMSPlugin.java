@@ -70,8 +70,6 @@ public class ZMSPlugin extends BasePlugin<ZmsDriver> implements Compilable {
         chip.option = null;
         put(Ym2151Chip.class, chip);
 
-        chipLED.put("PriOPM", 1);
-
         chip = new MDSound.Chip();
         chip.id = 0;
         chip.instrument = chipRegister.chip(MPcmChip.class).instrument(0);
@@ -110,8 +108,8 @@ public class ZMSPlugin extends BasePlugin<ZmsDriver> implements Compilable {
         chipRegister.chip(Ym2151Chip.class).corrections[0] = 4000000;
         chipRegister.chip(Ym2151Chip.class).corrections[1] = 4000000;
 
-        chipLED.put("PriPCM8", 0);
-        chipLED.put("PriMPCMX68k", 0);
+        getDriver().fireEventHappened(chipRegister.chip(Pcm8Chip.class), "led.set", 0);
+        getDriver().fireEventHappened(chipRegister.chip(Pcm8Chip.class), "led.set", 0, "x68k");
 
         try {
             // Compiler usage priority
@@ -172,10 +170,10 @@ logger.log(Level.INFO, "compilePriority: " + compilePriority);
                         // Version 3 is preferred
                         if (driverVirtual.compile(dataBuf, playingFileName)) {
                             setVgmBufV3();
-                            chipLED.put("PriMPCMX68k", 1);
+                            getDriver().fireEventHappened(chipRegister.chip(Pcm8Chip.class), "led.set", 0, "x68k");
                         } else if (driverVirtual.compileV2(dataBuf, playingFileName)) {
                             setVgmBufV2();
-                            chipLED.put("PriPCM8", 1);
+                            getDriver().fireEventHappened(chipRegister.chip(Pcm8Chip.class), "led.set", 0);
                         } else {
                             // compile error
                             throw new IllegalArgumentException("Compile Error.Check console log.");
@@ -185,10 +183,10 @@ logger.log(Level.INFO, "compilePriority: " + compilePriority);
                         // Version 2 is preferred
                         if (driverVirtual.compileV2(dataBuf, playingFileName)) {
                             setVgmBufV2();
-                            chipLED.put("PriPCM8", 1);
+                            getDriver().fireEventHappened(chipRegister.chip(Pcm8Chip.class), "led.set", 0);
                         } else if (driverVirtual.compile(dataBuf, playingFileName)) {
                             setVgmBufV3();
-                            chipLED.put("PriMPCMX68k", 1);
+                            getDriver().fireEventHappened(chipRegister.chip(Pcm8Chip.class), "led.set", 0, "x68k");
                         } else {
                             // compile error
                             throw new IllegalArgumentException("Compile Error.Check console log.");
@@ -198,7 +196,7 @@ logger.log(Level.INFO, "compilePriority: " + compilePriority);
                         // Version 3 only
                         if (driverVirtual.compile(dataBuf, playingFileName)) {
                             setVgmBufV3();
-                            chipLED.put("PriMPCMX68k", 1);
+                            getDriver().fireEventHappened(chipRegister.chip(Pcm8Chip.class), "led.set", 0, "x68k");
                             //logger.log("c:\\temp\\ge.zmd", dataBuf);
                         } else {
                             // compile error
@@ -209,7 +207,7 @@ logger.log(Level.INFO, "compilePriority: " + compilePriority);
                         // Version 2 only
                         if (driverVirtual.compileV2(dataBuf, playingFileName)) {
                             setVgmBufV2();
-                            chipLED.put("PriPCM8", 1);
+                            getDriver().fireEventHappened(chipRegister.chip(Pcm8Chip.class), "led.set", 0);
                         } else {
                             // compile error
                             throw new IllegalArgumentException("Compile Error.Check console log.");
@@ -231,14 +229,14 @@ logger.log(Level.INFO, "compilePriority: " + compilePriority);
             boolean useMIDI2 = dataBuf[0x4b] != 0;
             boolean useMIDI3 = dataBuf[0x4c] != 0;
             boolean useMIDI4 = dataBuf[0x4d] != 0;
-            chipLED.put("PriOPM", useFM ? 1 : 0);
-            chipLED.put("PriMID", useMIDI1 ? 1 : 0);
-            chipLED.put("SecMID", useMIDI2 ? 1 : 0);
-            chipLED.put("TrdMID", useMIDI3 ? 1 : 0);
-            chipLED.put("ForMID", useMIDI4 ? 1 : 0);
-            chipLED.put("PriMPCMX68k", useMPCM ? 1 : 0);
+            if (useFM) getDriver().fireEventHappened(chipRegister.chip(Ym2151Chip.class), "led.set", 0);
+            if (useMIDI1) getDriver().fireEventHappened(chipRegister.plugin(MidiPlugin.class), "led.set", 0);
+            if (useMIDI2) getDriver().fireEventHappened(chipRegister.plugin(MidiPlugin.class), "led.set", 1);
+            if (useMIDI3) getDriver().fireEventHappened(chipRegister.plugin(MidiPlugin.class), "led.set", 2);
+            if (useMIDI4) getDriver().fireEventHappened(chipRegister.plugin(MidiPlugin.class), "led.set", 3);
+            if (useMPCM) getDriver().fireEventHappened(chipRegister.chip(Pcm8Chip.class), "led.set", 0, "x68k");
         } else {
-            chipLED.put("PriPCM8", 1);
+            getDriver().fireEventHappened(chipRegister.chip(Pcm8Chip.class), "led.set", 0);
         }
 
         driverVirtual.init(EnmModel.VirtualModel,

@@ -26,10 +26,7 @@ public class Saa1099Chip extends BaseChip {
     }
 
     public void write(int chipId, int port, int data, EnmModel model) {
-        if (chipId == 0)
-            context.chipLED.put("PriSAA", 2);
-        else
-            context.chipLED.put("SecSAA", 2);
+        fireEventHappened("led.on", chipId);
 
         if (model == EnmModel.VirtualModel) {
             context.mds.write(inst(chipId), chipId, 0, port, data);

@@ -72,10 +72,7 @@ public class Ay8910Chip extends BaseChip {
     }
 
     public void write(int chipId, int addr, int data, EnmModel model) {
-        if (chipId == 0)
-            context.chipLED.put("PriAY10", 2);
-        else
-            context.chipLED.put("SecAY10", 2);
+        fireEventHappened("led.on", chipId);
 
         if (model == EnmModel.VirtualModel)
             psgRegister[chipId][addr] = data;

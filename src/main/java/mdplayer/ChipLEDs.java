@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
+@Deprecated
 public class ChipLEDs {
 
     // TODO this class should be respond realtime, map might be slow.

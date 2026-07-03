@@ -26,10 +26,7 @@ public class Upd7759Chip extends BaseChip {
     }
 
     public void write(int chipId, int port, int data, EnmModel model) {
-        if (chipId == 0)
-            context.chipLED.put("PriuPD7759", 2);
-        else
-            context.chipLED.put("SecuPD7759", 2);
+        fireEventHappened("led.on", chipId);
 
         if (model == EnmModel.VirtualModel) {
             context.mds.write(inst(chipId), chipId, 0, port, data);
@@ -37,16 +34,13 @@ public class Upd7759Chip extends BaseChip {
     }
 
     public void writePcm(int chipId, int romSize, int offset, int length, byte[] buf, int srcOffset, EnmModel model) {
-        if (chipId == 0)
-            context.chipLED.put("PriuPD7759", 2);
-        else
-            context.chipLED.put("SecuPD7759", 2);
+        fireEventHappened("led.on", chipId);
 
         if (model == EnmModel.VirtualModel) {
             context.mds.inst(Upd7759Inst.class).writePcm(chipId, buf, offset, length, srcOffset, romSize);
         } else {
         }
 
-        dumpData(model, "uPD7759_PCMData", srcOffset, buf, length);
+        dumpData(model, "PCMData", srcOffset, buf, length);
     }
 }

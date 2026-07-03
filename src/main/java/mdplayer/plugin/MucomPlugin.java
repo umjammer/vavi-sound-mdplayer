@@ -74,7 +74,6 @@ public class MucomPlugin extends BasePlugin<MucomDriver> implements Compilable {
             chip.option = new Object[] {fn};
             put(Ym2608Chip.class, chip);
 
-            chipLED.put("PriOPNA", 1);
             chipRegister.chip(Ym2608Chip.class).clock = MucomDriver.opnaBaseClock;
         }
 
@@ -93,14 +92,11 @@ public class MucomPlugin extends BasePlugin<MucomDriver> implements Compilable {
             chip.clock = MucomDriver.opnaBaseClock;
             chip.option = new Object[] {fn};
             put(Ym2608Chip.class, chip);
-
-            chipLED.put("SecOPNA", 1);
         }
 
         if (useChipFromMub[2] != Unused.class) {
             MDSound.Chip chip = new MDSound.Chip();
             chip.id = 0;
-            chipLED.put("PriOPNB", 1);
             chip.instrument = chipRegister.chip(Ym2610Chip.class).instrument(0);
             chip.samplingRate = 55467;
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2610Chip.class);
@@ -119,7 +115,6 @@ public class MucomPlugin extends BasePlugin<MucomDriver> implements Compilable {
         if (useChipFromMub[3] != Unused.class) {
             MDSound.Chip chip = new MDSound.Chip();
             chip.id = 1;
-            chipLED.put("SecOPNB", 1);
             chip.instrument = chipRegister.chip(Ym2610Chip.class).instrument(1);
             chip.samplingRate = 55467; // (int) setting.getoutputDevice().getSampleRate();
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2610Chip.class);
@@ -137,7 +132,6 @@ public class MucomPlugin extends BasePlugin<MucomDriver> implements Compilable {
         if (useChipFromMub[4] != Unused.class) {
             MDSound.Chip chip = new MDSound.Chip();
             chip.id = 0;
-            chipLED.put("PriOPM", 1);
             chip.instrument = chipRegister.chip(Ym2151Chip.class).instrument(0);
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2151Chip.class);
             chip.clock = MucomDriver.opmBaseClock;

@@ -28,10 +28,7 @@ public class Es5503Chip extends BaseChip {
     }
 
     public void write(int chipId, int port, int data, EnmModel model) {
-        if (chipId == 0)
-            context.chipLED.put("PriEs53", 2);
-        else
-            context.chipLED.put("SecEs53", 2);
+        fireEventHappened("led.on", chipId);
 
         if (model == EnmModel.VirtualModel) {
             context.mds.write(inst(chipId), chipId, 0, port, data);
@@ -39,16 +36,13 @@ public class Es5503Chip extends BaseChip {
     }
 
     public void writePcm(int chipId, int offset, int length, byte[] buf, int srcOffset, EnmModel model) {
-        if (chipId == 0)
-            context.chipLED.put("PriEs53", 2);
-        else
-            context.chipLED.put("SecEs53", 2);
+        fireEventHappened("led.on", chipId);
 
         if (model == EnmModel.VirtualModel) {
             context.mds.inst(Es5503Inst.class).writePcm(chipId, Arrays.copyOfRange(buf, srcOffset, srcOffset + length), offset, length);
         } else {
         }
 
-        dumpData(model, "ES5503_PCMData", srcOffset, buf, length);
+        dumpData(model, "PCMData", srcOffset, buf, length);
     }
 }

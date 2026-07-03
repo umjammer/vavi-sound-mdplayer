@@ -55,8 +55,6 @@ logger.log(Level.INFO, "songNo: " + songNo);
 
     @Override
     protected void initChips() {
-        chipLED.put("PriNES", 1);
-        chipLED.put("PriDMC", 1);
 
         driverVirtual.setSong(songNo);
         driverVirtual.init(Common.EnmModel.VirtualModel,
@@ -68,13 +66,6 @@ logger.log(Level.INFO, "songNo: " + songNo);
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         }
-
-        if (driverVirtual.useFds())  chipLED.put("PriFDS", 1);
-        if (driverVirtual.useFme7()) chipLED.put("PriFME7", 1);
-        if (driverVirtual.useMmc5()) chipLED.put("PriMMC5", 1);
-        if (driverVirtual.useN106()) chipLED.put("PriN106", 1);
-        if (driverVirtual.useVrc6()) chipLED.put("PriVRC6", 1);
-        if (driverVirtual.useVrc7()) chipLED.put("PriVRC7", 1);
 
         NpNesInst apu = Instrument.getInstrument(NpNesInst.class);
         MDSound.Chip chip = new MDSound.Chip();
