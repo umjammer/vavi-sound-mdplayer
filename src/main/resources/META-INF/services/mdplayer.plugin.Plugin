@@ -25,3 +25,4 @@ mdplayer.plugin.MuapPlugin
 mdplayer.plugin.MdsPlugin
 mdplayer.plugin.GbsPlugin
 mdplayer.plugin.AhxPlugin
+mdplayer.plugin.HvlPlugin
