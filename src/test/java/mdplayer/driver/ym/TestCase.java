@@ -27,6 +27,7 @@ import vavi.util.properties.annotation.PropsEntity;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIf;
 
 import static mdplayer.driver.ym.Ym2Wav.writeLE16;
 import static mdplayer.driver.ym.Ym2Wav.writeWavHeader;
@@ -41,6 +42,7 @@ import static vavi.sound.SoundUtil.volume;
  * @version 0.00 2026-07-02 nsano initial version <br>
  */
 @PropsEntity(url = "file:local.properties")
+@EnabledIf("localPropertiesExists")
 public class TestCase {
 
     static boolean localPropertiesExists() {
