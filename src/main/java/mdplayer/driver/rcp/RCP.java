@@ -531,7 +531,7 @@ logger.log(Level.INFO, "checkHeadString");
     private void extractSame(MIDITrack trk) {
         MIDIEvent evt = trk.getPart().getFirst().getStartEvent();
         while (evt != null) {
-            if (evt.getEventType() == MIDIEventType.MetaSequencerSpecific && evt.getMIDIMessage()[0] == (byte) MIDISpEventType.SameMeasure.ordinal()) {
+            if (evt.getEventType() == MIDIEventType.MetaSequencerSpecific && evt.getMIDIMessage()[0] == (byte) MIDISpEventType.SameMeasure.v) {
 
                 int ofsMea;
                 if (isG36) {
@@ -552,15 +552,15 @@ logger.log(Level.INFO, "checkHeadString");
                             MIDIEvent nEvt = trk.getPart().getFirst().getNextEvent(mEvt);
                             int s;
                             if (nEvt.getEventType() == MIDIEventType.MetaSequencerSpecific
-                                    && nEvt.getMIDIMessage()[0] == (byte) MIDISpEventType.SameMeasure.ordinal()) {
+                                    && nEvt.getMIDIMessage()[0] == (byte) MIDISpEventType.SameMeasure.v) {
                                 s = 0;
                             } else {
                                 s = 1;
                             }
-                            if (mEvt.getMIDIMessage()[0] == (byte) MIDISpEventType.MeasureEnd.ordinal()) {
+                            if (mEvt.getMIDIMessage()[0] == (byte) MIDISpEventType.MeasureEnd.v) {
                                 MeaS = s;
                             }
-                            if (mEvt.getMIDIMessage()[0] == (byte) MIDISpEventType.SameMeasure.ordinal()) {
+                            if (mEvt.getMIDIMessage()[0] == (byte) MIDISpEventType.SameMeasure.v) {
                                 Mea++;
                                 if (ofsMea == Mea) break;
                                 MeaS = s;
@@ -686,8 +686,8 @@ logger.log(Level.INFO, "checkHeadString");
                     pk[1],
                     MIDISpEventType.BankProgram,
                     new byte[][] {
-                            {(byte) MIDIEventType.ProgramChange.ordinal(), (byte) pk[2]},
-                            {(byte) MIDIEventType.ControlChange.ordinal(), 0x00, (byte) pk[3]}
+                            {(byte) MIDIEventType.ProgramChange.v, (byte) pk[2]},
+                            {(byte) MIDIEventType.ControlChange.v, 0x00, (byte) pk[3]}
                     });
             pt += skipPtr;
             break;
@@ -726,7 +726,7 @@ logger.log(Level.INFO, "checkHeadString");
                     pEvt,
                     pk[1],
                     MIDIEventType.ChannelAfterTouch,
-                    new byte[] {(byte) MIDIEventType.ChannelAfterTouch.ordinal(), (byte) pk[2]}
+                    new byte[] {(byte) MIDIEventType.ChannelAfterTouch.v, (byte) pk[2]}
             );
             pt += skipPtr;
             break;
@@ -735,7 +735,7 @@ logger.log(Level.INFO, "checkHeadString");
                     pEvt,
                     pk[1],
                     MIDIEventType.ControlChange,
-                    new byte[] {(byte) MIDIEventType.ControlChange.ordinal(), (byte) pk[2], (byte) pk[3]}
+                    new byte[] {(byte) MIDIEventType.ControlChange.v, (byte) pk[2], (byte) pk[3]}
             );
             pt += skipPtr;
             break;
@@ -744,7 +744,7 @@ logger.log(Level.INFO, "checkHeadString");
                     pEvt,
                     pk[1],
                     MIDIEventType.ProgramChange,
-                    new byte[] {(byte) MIDIEventType.ProgramChange.ordinal(), (byte) pk[2]}
+                    new byte[] {(byte) MIDIEventType.ProgramChange.v, (byte) pk[2]}
             );
             pt += skipPtr;
             break;
@@ -753,7 +753,7 @@ logger.log(Level.INFO, "checkHeadString");
                     pEvt,
                     pk[1],
                     MIDIEventType.KeyAfterTouch,
-                    new byte[] {(byte) MIDIEventType.KeyAfterTouch.ordinal(), (byte) pk[2], (byte) pk[3]}
+                    new byte[] {(byte) MIDIEventType.KeyAfterTouch.v, (byte) pk[2], (byte) pk[3]}
             );
             pt += skipPtr;
             break;
@@ -762,7 +762,7 @@ logger.log(Level.INFO, "checkHeadString");
                     pEvt,
                     pk[1],
                     MIDIEventType.PitchBend,
-                    new byte[] {(byte) MIDIEventType.PitchBend.ordinal(), (byte) pk[2], (byte) pk[3]}
+                    new byte[] {(byte) MIDIEventType.PitchBend.v, (byte) pk[2], (byte) pk[3]}
             );
             pt += skipPtr;
             break;
@@ -1302,7 +1302,7 @@ logger.log(Level.INFO, "checkHeadString");
     }
 
     void efMetaSequencerSpecific(MIDITrack trk, MIDIEvent eve) {
-        specialEventFunc[eve.getMIDIMessage()[0]].accept(trk, eve);
+        specialEventFunc[eve.getMIDIMessage()[0] & 0xff].accept(trk, eve);
     }
 
     void sefUserExclusive1(MIDITrack trk, MIDIEvent eve) {
@@ -1363,7 +1363,7 @@ logger.log(Level.INFO, "checkHeadString");
                 i++;
             }
             j++;
-            if (n == (byte) 0xf7) break;
+            if (n != null && n == (byte) 0xf7) break;
             if (i >= msgBuf.length) {
                 logger.log(Level.TRACE, "sefChExclusive:Detects and skips exclusives that exceed the buffer.");
                 return; // Do not send exclusive when buffer is over
@@ -1625,7 +1625,7 @@ logger.log(Level.INFO, "checkHeadString");
                 i++;
             }
             j++;
-            if (n == (byte) 0xf7) break;
+            if (n != null && n == (byte) 0xf7) break;
             if (i >= msgBuf.length) {
                 logger.log(Level.TRACE, "sefUserExclusiveN: Detects and skips exclusive requests that exceed the buffer.");
                 return; // Do not send exclusive when buffer is over

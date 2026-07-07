@@ -1553,7 +1553,7 @@ public class RCS {
                 i++;
             }
             j++;
-            if (n == (byte) 0xf7) break;
+            if (n != null && n == (byte) 0xf7) break;
             if (i >= msgBuf.length) {
                 logger.log(Level.DEBUG, "sefChExclusive: Detects and skips exclusives that exceed the buffer.");
                 return; // Do not send exclusive when buffer is over

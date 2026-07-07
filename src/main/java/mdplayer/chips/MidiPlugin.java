@@ -8,14 +8,20 @@ package mdplayer.chips;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.MidiUnavailableException;
 import javax.sound.midi.Receiver;
 import javax.sound.midi.ShortMessage;
+import javax.sound.midi.Synthesizer;
+import javax.sound.midi.SysexMessage;
 
 import mdplayer.Common.EnmModel;
 import mdplayer.MIDIExport;
@@ -60,6 +66,9 @@ public class MidiPlugin implements Plugin {
 
     private BasePlugin<? extends BaseDriver> context;
 
+    /** the software synthesizer opened as a fallback when no MIDI out is configured */
+    private Synthesizer fallbackSynth;
+
     public MidiPlugin() {
         mds = new MDSound();
     }
@@ -86,6 +95,9 @@ public class MidiPlugin implements Plugin {
     @Override
     public void close() {
         export.close();
+        if (fallbackSynth != null && fallbackSynth.isOpen()) {
+            fallbackSynth.close();
+        }
     }
 
     // ???
@@ -146,48 +158,136 @@ public class MidiPlugin implements Plugin {
     }
 
     public void send(EnmModel model, int num, byte cmd, byte prm1, byte prm2, int deltaFrames /* = 0 */) {
-        if (model == EnmModel.RealModel) {
-            if (outs == null) return;
-            if (num >= outs.size()) return;
-            if (outs.get(num) == null) return;
-
-            MidiMessage mm = new ShortMessage(); // TODO cmd, prm1, prm2
-            outs.get(num).send(mm, -1);
-            if (num < params.length) params[num].sendBuffer(new byte[] {cmd, prm1, prm2});
-            return;
-        }
-
-//        vstMng.sendMIDIout(model, num, cmd, prm1, prm2, deltaFrames);
+        send(model, num, new byte[] {cmd, prm1, prm2}, deltaFrames);
     }
 
     public void send(EnmModel model, int num, byte cmd, byte prm1, int deltaFrames /* = 0 */) {
-        if (model == EnmModel.RealModel) {
-            if (outs == null) return;
-            if (num >= outs.size()) return;
-            if (outs.get(num) == null) return;
-
-            MidiMessage mm = new ShortMessage(); // TODO cmd, prm1
-            outs.get(num).send(mm, -1);
-            if (num < params.length) params[num].sendBuffer(new byte[] {cmd, prm1});
-            return;
-        }
-
-//        vstMng.sendMIDIout(model, num, cmd, prm1, deltaFrames);
+        send(model, num, new byte[] {cmd, prm1}, deltaFrames);
     }
 
     public void send(EnmModel model, int num, byte[] data, int deltaFrames /* = 0 */) {
-        if (model == EnmModel.RealModel) {
-            if (outs == null) return;
-            if (num >= outs.size()) return;
-            if (outs.get(num) == null) return;
+        // In the original, VirtualModel is routed to VST software synths. VST is not ported,
+        // so both models are sent to the (possibly software) MIDI out here.
+        if (outs.isEmpty()) return;
+        if (num >= outs.size()) return;
+        Receiver out = outs.get(num);
+        if (out == null) return;
 
-            MidiMessage mm = new ShortMessage(); // TODO
-            outs.get(num).send(mm, -1);
-            if (num < params.length) params[num].sendBuffer(data);
-            return;
-        }
+        // Some drivers (e.g. ZMS emulating an X68000 MIDI board) emit a raw MIDI byte stream one
+        // byte at a time using running status, others (e.g. RCP) emit complete messages; a per
+        // receiver stream parser assembles both into whole MidiMessages before dispatching them.
+        parsers.computeIfAbsent(out, MidiStreamParser::new).feed(data);
+        if (num < params.length) params[num].sendBuffer(data);
 
 //        vstMng.sendMIDIout(model, num, data, deltaFrames);
+    }
+
+    /** stream parser per receiver, keyed by receiver identity */
+    private final Map<Receiver, MidiStreamParser> parsers = new HashMap<>();
+
+    /**
+     * Assembles a raw MIDI byte stream (possibly delivered one byte at a time using running
+     * status) into complete {@link MidiMessage}s and forwards them to a {@link Receiver}, the
+     * way a hardware MIDI out port consumes bytes.
+     */
+    static class MidiStreamParser {
+        private final Receiver receiver;
+        private int status = 0; // current running status byte, 0 = none
+        private final byte[] data = new byte[2];
+        private int dataIndex = 0;
+        private int dataNeeded = 0;
+        private boolean inSysex = false;
+        private final ByteArrayOutputStream sysex = new ByteArrayOutputStream();
+
+        MidiStreamParser(Receiver receiver) {
+            this.receiver = receiver;
+        }
+
+        void feed(byte[] bytes) {
+            for (byte b : bytes) feed(b & 0xff);
+        }
+
+        private void feed(int b) {
+            if (b >= 0xf8) { // system real-time: single byte, may interleave anywhere
+                emit(b, 0, 0, 0);
+                return;
+            }
+            if (b == 0xf0) { // sysex start
+                inSysex = true;
+                sysex.reset();
+                sysex.write(0xf0);
+                status = 0;
+                return;
+            }
+            if (b == 0xf7) { // end of exclusive
+                if (inSysex) {
+                    sysex.write(0xf7);
+                    emitSysex();
+                    inSysex = false;
+                }
+                return;
+            }
+            if (b >= 0x80) { // other status byte (channel voice or system common)
+                inSysex = false; // a status byte aborts an unfinished sysex
+                status = b;
+                dataIndex = 0;
+                dataNeeded = dataLength(b);
+                if (dataNeeded == 0) { // e.g. tune request 0xf6
+                    emit(status, 0, 0, 0);
+                    status = 0;
+                }
+                return;
+            }
+            // data byte (< 0x80)
+            if (inSysex) {
+                sysex.write(b);
+                return;
+            }
+            if (status == 0) return; // data byte without a status: ignore
+            data[dataIndex++] = (byte) b;
+            if (dataIndex >= dataNeeded) {
+                emit(status, dataNeeded, data[0] & 0xff, data[1] & 0xff);
+                dataIndex = 0; // running status: keep status for the next message
+                if (status >= 0xf0) status = 0; // system common is not retained as running status
+            }
+        }
+
+        private static int dataLength(int status) {
+            return switch (status & 0xf0) {
+                case 0x80, 0x90, 0xa0, 0xb0, 0xe0 -> 2;
+                case 0xc0, 0xd0 -> 1;
+                default -> switch (status) { // 0xf1..0xf6
+                    case 0xf1, 0xf3 -> 1;
+                    case 0xf2 -> 2;
+                    default -> 0; // 0xf6 tune request and others
+                };
+            };
+        }
+
+        private void emit(int status, int len, int d1, int d2) {
+            try {
+                ShortMessage sm = new ShortMessage();
+                switch (len) {
+                    case 1 -> sm.setMessage(status, d1, 0);
+                    case 2 -> sm.setMessage(status, d1, d2);
+                    default -> sm.setMessage(status);
+                }
+                receiver.send(sm, -1);
+            } catch (InvalidMidiDataException e) {
+                logger.log(Level.WARNING, "invalid midi data: status=" + Integer.toHexString(status));
+            }
+        }
+
+        private void emitSysex() {
+            try {
+                byte[] d = sysex.toByteArray();
+                SysexMessage sx = new SysexMessage();
+                sx.setMessage(d, d.length);
+                receiver.send(sx, -1);
+            } catch (InvalidMidiDataException e) {
+                logger.log(Level.WARNING, "invalid sysex: " + e.getMessage());
+            }
+        }
     }
 
     public void resetAll() {
@@ -237,10 +337,29 @@ public class MidiPlugin implements Plugin {
     }
 
     public void make() {
-        if (setting.getMidiOut().getMidiOutInfos() == null || setting.getMidiOut().getMidiOutInfos().isEmpty())
+        List<MidiOutInfo[]> midiOutInfos = setting.getMidiOut().getMidiOutInfos();
+        if (midiOutInfos == null || midiOutInfos.isEmpty()
+                || midiOutInfos.get(midiMode) == null || midiOutInfos.get(midiMode).length < 1) {
+            // No MIDI out is configured (e.g. no GUI): fall back to the software synthesizer
+            // (Gervill) so drivers that emit MIDI can still be heard. Note: MidiSystem.getReceiver()
+            // returns the platform default MIDI out (often a silent hardware port), so open the
+            // Synthesizer explicitly to render audio.
+            try {
+                if (fallbackSynth == null) {
+                    fallbackSynth = MidiSystem.getSynthesizer();
+                }
+                if (!fallbackSynth.isOpen()) {
+                    fallbackSynth.open();
+                }
+                Receiver r = fallbackSynth.getReceiver();
+                outs.add(r);
+                outsType.add(0);
+                logger.log(Level.INFO, "MIDI out fallback to the software synthesizer: " + fallbackSynth.getDeviceInfo().getName());
+            } catch (MidiUnavailableException e) {
+                logger.log(Level.ERROR, e.getMessage(), e);
+            }
             return;
-        if (setting.getMidiOut().getMidiOutInfos().get(midiMode) == null || setting.getMidiOut().getMidiOutInfos().get(midiMode).length < 1)
-            return;
+        }
 
         for (int i = 0; i < setting.getMidiOut().getMidiOutInfos().get(midiMode).length; i++) {
             int n = -1;
@@ -300,6 +419,7 @@ public class MidiPlugin implements Plugin {
             outs.clear();
             outsType.clear();
         }
+        parsers.clear();
 
 //        vstMng.ReleaseAllMIDIout();
     }
@@ -316,6 +436,7 @@ public class MidiPlugin implements Plugin {
             outs.clear();
             outsType.clear();
         }
+        parsers.clear();
 
 //        vstMng.ReleaseAllMIDIout();
 //        vstMng.Close();
