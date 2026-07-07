@@ -42,6 +42,12 @@ public final class Audio {
 
     private SourceDataLine line;
 
+    /** while true the render loop of {@link #play()} keeps running */
+    private volatile boolean rendering = false;
+
+    /** true when the render loop of {@link #play()} has exited */
+    private volatile boolean renderStopped = true;
+
     private Audio() {
     }
 
@@ -105,23 +111,44 @@ logger.log(Level.DEBUG, "line: " + e.getType());
 
         logger.log(Level.DEBUG, "driver: " + plugin.driverVirtual.getClass().getSimpleName());
 
-        while (true) {
+        rendering = true;
+        renderStopped = false;
+        try {
+            while (rendering) {
 //logger.log(Level.TRACE, "loop HERE");
-            short[] buffer = new short[4];
+                short[] buffer = new short[4];
 
-            int r;
-            if (plugin instanceof SampledPlugin sampledPlugin) {
-                r = sampledPlugin.read(buffer, 0, buffer.length);
-            } else {
-                r = render(buffer, 0, buffer.length);
-                if (setting.getMidiKbd().getUseMIDIKeyboard()) {
-                    plugin.chipRegister.plugin(MidiPlugin.class).keyboard(buffer, 0, buffer.length);
+                int r;
+                if (plugin instanceof SampledPlugin sampledPlugin) {
+                    r = sampledPlugin.read(buffer, 0, buffer.length);
+                } else {
+                    r = render(buffer, 0, buffer.length);
+                    if (setting.getMidiKbd().getUseMIDIKeyboard()) {
+                        plugin.chipRegister.plugin(MidiPlugin.class).keyboard(buffer, 0, buffer.length);
+                    }
+
+                    // detect the end of an emulated-chip song: once it has looped
+                    // enough times or the driver reached the end of its sequence,
+                    // start fading out. (The GUI drives this from its screen loop;
+                    // headless callers such as tests have no such loop, so play()
+                    // would otherwise render silence forever and never return.)
+                    if ((setting.getOther().getUseLoopTimes() && plugin.getVgmCurLoopCounter() > setting.getOther().getLoopTimes() - 1)
+                            || plugin.getVGMStopped()) {
+                        plugin.fadeout = true;
+                    }
                 }
-            }
-            if (r == -1) break;
+                if (r == -1) break;
 
-            this.write(buffer, 0, buffer.length);
-            Thread.yield();
+                this.write(buffer, 0, buffer.length);
+
+                // the fade-out has finished (render() marks the plugin stopped):
+                // leave the loop so play() returns.
+                if (plugin.stopped) break;
+
+                Thread.yield();
+            }
+        } finally {
+            renderStopped = true;
         }
 
         return false;
@@ -216,6 +243,19 @@ logger.log(Level.INFO, "stop: " + plugin.stopped + ", " + hashCode());
     /** */
     public void close() {
         logger.log(Level.INFO, "close enter");
+
+        // stop the render loop of play() and wait for it to exit, so the
+        // previous track's thread can never render into the line reopened by
+        // the next init() (shared singleton line/plugin fields).
+        rendering = false;
+        int timeout = 1000;
+        while (!renderStopped && timeout-- > 0) {
+            try {
+                Thread.sleep(1);
+            } catch (InterruptedException ignore) {
+            }
+        }
+
         plugin.close();
 
         try {
@@ -285,7 +325,7 @@ logger.log(Level.INFO, "stop: " + plugin.stopped + ", " + hashCode());
                     plugin.chipRegister.softReset(EnmModel.VirtualModel);
                     plugin.chipRegister.softReset(EnmModel.RealModel);
 
-                    plugin.mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, null);
+//                    plugin.mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, null);
 
                     plugin.chipRegister.close();
 

@@ -151,6 +151,14 @@ logger.log(Level.TRACE, "stop: " + this.stopped + ", " + this.hashCode());
 
     /** {@code super#prepare()} must be called inside inherited this method */
     public void prepare() {
+        // The chip and sub-plugin instances are shared singletons (loaded once via
+        // ServiceLoader and reused by every format plugin's ChipRegister), so their
+        // owning `context` is only pointed at THIS plugin in the constructor. When a
+        // previously-constructed plugin is replayed after another one has played, the
+        // shared context is left pointing at that other plugin, breaking chip
+        // registration/MIDI routing. Re-point it to the active plugin each song.
+        chipRegister.init(this);
+
         this.fadeout = false;
         this.fadeoutCounter = 1.0;
         this.fadeoutCounterV = 0.00001;

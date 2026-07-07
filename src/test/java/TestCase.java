@@ -173,6 +173,7 @@ Debug.println("format: " + format.getClass().getSimpleName());
 Debug.println("plugin: " + plugin.getClass().getSimpleName());
         audio.init(plugin);
         audio.play();
+Debug.print("done audio.play");
     }
 
     @Test
@@ -180,14 +181,6 @@ Debug.println("plugin: " + plugin.getClass().getSimpleName());
     @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
     void test1() throws Exception {
         play();
-
-        CountDownLatch cdl = new CountDownLatch(1);
-if (!onIde) {
- Thread.sleep(time);
-Debug.println("not on ide");
-} else {
-        cdl.await();
-}
     }
 
     // ^N to next song
@@ -195,7 +188,6 @@ Debug.println("not on ide");
     @DisplayName("play random one in local.properties")
     @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
     void test2() throws Exception {
-
         playMulti(listFilesInLocalProperties());
     }
 
@@ -237,14 +229,14 @@ Debug.print("countdown");
             cdl.set(new CountDownLatch(1));
 Debug.print("play: " + file + " ---------------------------------------------------------------------");
             ExecutorService es = Executors.newSingleThreadExecutor();
-            es.submit(() -> { try { play(); } catch (Exception e) { Debug.printStackTrace(e); }});
+            es.submit(() -> { try { play(); cdl.get().countDown(); } catch (Exception e) { Debug.printStackTrace(e); }});
 Debug.print("await");
             cdl.get().await();
 Debug.println("await: broke");
             es.shutdownNow();
 Debug.println("stop");
             audio.stop();
-            audio.close(); // TODO doesn't work well
+            audio.close();
         }
     }
 
