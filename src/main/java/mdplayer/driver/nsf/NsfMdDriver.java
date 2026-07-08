@@ -8,7 +8,6 @@ import mdplayer.Common.EnmModel;
 import mdplayer.chips.NpNesChip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.plugin.BasePlugin;
-import mdsound.VisWaveBuffer;
 import mdsound.np.NpNesApu;
 import mdsound.np.NpNesDmc;
 import musicDriverInterface.MetaData;
@@ -34,7 +33,7 @@ public class NsfMdDriver extends BaseDriver implements NsfDriver {
 
         this.nsf = new Nsf();
         nsf.setOptions = this::setOptions;
-        nsf.enq = this::enq;
+        nsf.enq = (l, r) -> fireEventHappened(this, "wave.buffer", l, r);
         nsf.isRealModel = model != EnmModel.RealModel;
         nsf.sampleRate = setting.getOutputDevice().getSampleRate();
         nsf.updateAtMiddle = this::updateAtMiddle;
@@ -174,11 +173,6 @@ public class NsfMdDriver extends BaseDriver implements NsfDriver {
     }
 
     @Override
-    public void copyWaveBuffer(short[][] dest) {
-        visWB.copy(dest);
-    }
-
-    @Override
     public boolean isNotRenderingOnPause() {
         return true;
     }
@@ -246,11 +240,5 @@ public class NsfMdDriver extends BaseDriver implements NsfDriver {
             nsf.mmc5.setOption(0, setting.getNsf().getMMC5NonLinearMixer() ? 1 : 0);
             nsf.mmc5.setOption(1, setting.getNsf().getMMC5PhaseRefresh() ? 1 : 0);
         }
-    }
-
-    private final VisWaveBuffer visWB = new VisWaveBuffer();
-
-    private void enq(short left, short right) {
-        visWB.enq(left, right);
     }
 }

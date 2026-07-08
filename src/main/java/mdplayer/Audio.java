@@ -38,8 +38,6 @@ public final class Audio {
 
     public BasePlugin<? extends BaseDriver> plugin;
 
-    public final VisVolume visVolume = new VisVolume();
-
     private SourceDataLine line;
 
     /** while true the render loop of {@link #play()} keeps running */
@@ -354,7 +352,7 @@ logger.log(Level.DEBUG, "stop: " + plugin.stopped);
 
     /** */
     private void updateVisualVolume(short[] buffer, int offset) {
-        visVolume.master = buffer[offset];
+        plugin.getDriver().fireEventHappened(this, "master", buffer, offset);
 
         for (var i : plugin.mds.getFirstInstruments()) {
             var vs = i.getView("volume", null);
@@ -410,10 +408,16 @@ logger.log(Level.DEBUG, "stop: " + plugin.stopped);
         return emuOnly;
     }
 
-    // TODO consider more
+    /**
+     * add to plugin before start playing
+     * TODO consider more
+     */
     private final List<GenericListener> listeners = new ArrayList<>();
 
-    // TODO consider more
+    /**
+     * view listeners (such as visualizer)
+     * TODO consider more
+     */
     public void addGenericListener(GenericListener l) {
         listeners.add(l);
     }

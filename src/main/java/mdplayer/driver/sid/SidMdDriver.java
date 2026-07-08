@@ -217,11 +217,6 @@ public class SidMdDriver extends BaseDriver implements SidDriver {
     }
 
     @Override
-    public void copyWaveBuffer(short[][] dest) {
-        this.visWB.copy(dest);
-    }
-
-    @Override
     public Integer[][] getRegisterFromSid() {
         if (sid.engine == null) return null;
         return sid.engine.getSidRegister();
