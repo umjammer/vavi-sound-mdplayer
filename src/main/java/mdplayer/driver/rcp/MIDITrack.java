@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-import mdplayer.driver.rcp.MIDIEvent.MIDIRythm;
+import mdplayer.driver.rcp.MIDIEvent.MIDIRhythm;
 
 
 public class MIDITrack implements Serializable {
@@ -31,7 +31,7 @@ public class MIDITrack implements Serializable {
     private boolean mute = false;
     private transient Color color = Color.black;
     private List<MIDIPart> parts = new ArrayList<>();
-    private List<MIDIRythm> rhythms = new ArrayList<>();
+    private List<MIDIRhythm> rhythms = new ArrayList<>();
     private boolean rhythmMode = false;
     private int key = 0;
     private int st = 0;
@@ -223,11 +223,11 @@ public class MIDITrack implements Serializable {
         return parts;
     }
 
-    public void setRythm(List<MIDIRythm> value) {
+    public void setRythm(List<MIDIRhythm> value) {
         rhythms = value;
     }
 
-    List<MIDIRythm> getRythm() {
+    List<MIDIRhythm> getRythm() {
         return rhythms;
     }
 

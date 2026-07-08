@@ -170,7 +170,7 @@ public class MIDIEvent implements Serializable {
         }
     }
 
-    public static class MIDIRythm {
+    public static class MIDIRhythm {
         private String name = "";
         private int key = 0;
         private int gt = 1;

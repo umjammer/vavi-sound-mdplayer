@@ -86,7 +86,7 @@ public class RcsDriver extends BaseDriver {
         // Get the song information in the RCP file from here
         ret = RCS.checkHeadString(rcpBuf[0]);
         if (ret == null) return null;
-        boolean IsG36 = ret;
+        boolean isG36 = ret;
 
         int ptr = 32;
         StringBuilder str;
@@ -101,7 +101,7 @@ public class RcsDriver extends BaseDriver {
         md.set(Tag.Title, str.toString());
         md.set(Tag.TitleJ, str.toString());
 
-        if (IsG36) {
+        if (isG36) {
             ptr += 64;
             str = new StringBuilder("%s\n".formatted((new String(rcpBuf[0], ptr, 360)).replace("\0", "")));
         } else {

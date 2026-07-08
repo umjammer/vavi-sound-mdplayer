@@ -394,6 +394,7 @@ public class RCS {
     private double RelativeTempoChangeTickSlice;
     private boolean RelativeTempoChangeSW = false;
 
+    /** @return ternary */
     static Boolean checkHeadString(byte[] buf) {
         if (buf == null || buf.length < 32) return null;
 
@@ -809,12 +810,12 @@ public class RCS {
 
         while (!endTrack) {
             MIDIEvent pEvt = trkn.getPart().get(meaInd).getEndEvent();
-            int[] pk = null;
+            int[] pk;
             if (!isG36) {
-                pk = new int[] {ebs[pt], ebs[pt + 1], ebs[pt + 2], ebs[pt + 3]};
+                pk = new int[] {ebs[pt] & 0xff, ebs[pt + 1] & 0xff, ebs[pt + 2] & 0xff, ebs[pt + 3] & 0xff};
             } else {
                 // Note   Step   Gate   Vel
-                pk = new int[] {ebs[pt], ebs[pt + 2] + ebs[pt + 3] * 0x100, ebs[pt + 4] + ebs[pt + 5] * 0x100, ebs[pt + 1]};
+                pk = new int[] {ebs[pt] & 0xff, (ebs[pt + 2] & 0xff) + (ebs[pt + 3] & 0xff) * 0x100, (ebs[pt + 4] & 0xff) + (ebs[pt + 5] & 0xff) * 0x100, ebs[pt + 1] & 0xff};
                 skipPtr = 6;
             }
             if (pk[0] < 0x80) {
@@ -1895,13 +1896,13 @@ public class RCS {
         for (int ch = 0; ch < 16; ch++) {
             DBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x65, 0x00})); // RPN Master fine tuning
             DBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x64, 0x01}));
-            DBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x06, (byte) ((buf[0xa6f] * 0x100 + buf[0xa6e]) >> 7)}));
+            DBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x06, (byte) ((buf[0xa6f] * 0x100 + buf[0xa6e]) >>> 7)}));
             DBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x26, (byte) ((buf[0xa6f] * 0x100 + buf[0xa6e]) & 0x7f)}));
         }
 
         // Master Volume
         DBuf.add(new CtlSysex(1, getSysEx((byte) 0x41, (byte) 0x10, (byte) 0x42, (byte) 0x12, (byte) 0x83, (byte) 0x40, (byte) 0x00, (byte) 0x04, buf[0x24], (byte) 0x84)));
-        DBuf.add(new CtlSysex(4, getSysEx((byte) 0x7F, (byte) 0x7F, (byte) 0x04, (byte) 0x01, (byte) ((buf[0x24] * 0x81) & 0x7F), (byte) (((buf[0x24] * 0x81) >> 7) & 0x7f))));
+        DBuf.add(new CtlSysex(4, getSysEx((byte) 0x7F, (byte) 0x7F, (byte) 0x04, (byte) 0x01, (byte) ((buf[0x24] * 0x81) & 0x7F), (byte) (((buf[0x24] * 0x81) >>> 7) & 0x7f))));
 
         for (int ch = 0; ch < 16; ch++) {
             DBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x65, 0x00})); // RPN Master Coarse tuning
@@ -1912,7 +1913,7 @@ public class RCS {
         // Master Pan
         DBuf.add(new CtlSysex(1, getSysEx((byte) 0x41, (byte) 0x10, (byte) 0x42, (byte) 0x12, (byte) 0x83, (byte) 0x40, (byte) 0x00, (byte) 0x06, buf[0x26], (byte) 0x84)));
         // Master Balance
-        DBuf.add(new CtlSysex(1, getSysEx((byte) 0x7f, (byte) 0x7f, (byte) 0x04, (byte) 0x02, (byte) ((buf[0x26] * 0x80) & 0x7F), (byte) (((buf[0x26] * 0x80) >> 7) & 0x7f))));
+        DBuf.add(new CtlSysex(1, getSysEx((byte) 0x7f, (byte) 0x7f, (byte) 0x04, (byte) 0x02, (byte) ((buf[0x26] * 0x80) & 0x7F), (byte) (((buf[0x26] * 0x80) >>> 7) & 0x7f))));
 
         // Voice Reserve Loc:Ch partdata - 1 Len:1
         DBuf.add(new CtlSysex(1, getSysEx((byte) 0x41, (byte) 0x10, (byte) 0x42, (byte) 0x12, (byte) 0x83,
@@ -2209,7 +2210,7 @@ public class RCS {
         pac1[0][128 + 9 - 1] = (byte) 0x84;
     }
 
-    private void getCM6Buf(/* ref */ List<CtlSysex> DBuf) {
+    private void getCM6Buf(/* ref */ List<CtlSysex> dBuf) {
 
         byte[] buf = null;
         for (Tuple<String, byte[]> trg : extendFiles) {
@@ -2221,31 +2222,31 @@ public class RCS {
         if (buf == null || buf.length < 1 || buf.length != 0x5849) return;
 
         // System Area
-        DBuf.add(new CtlSysex(2, getSysEx(makeCM6Ptn_0(buf, 0x0080, 0x017, (byte) 0x10, (byte) 0x00, (byte) 0x00))));
+        dBuf.add(new CtlSysex(2, getSysEx(makeCM6Ptn_0(buf, 0x0080, 0x017, (byte) 0x10, (byte) 0x00, (byte) 0x00))));
         // Timbre Memory #1~ (User 128)
         for (int adr = 0x0e34, i = 0; adr <= 0x4d34; adr += 0x100, i += 2) {
-            DBuf.add(new CtlSysex(9, getSysEx(makeCM6Ptn_0(buf, adr, 0x100, (byte) 0x08, (byte) (0x00 + i), (byte) 0x00))));
+            dBuf.add(new CtlSysex(9, getSysEx(makeCM6Ptn_0(buf, adr, 0x100, (byte) 0x08, (byte) (0x00 + i), (byte) 0x00))));
         }
 
-        DBuf.add(new CtlSysex(9, getSysEx(makeCM6Ptn_0(buf, 0x0130, 0x100, (byte) 0x03, (byte) 0x01, (byte) 0x10))));
-        DBuf.add(new CtlSysex(3, getSysEx(makeCM6Ptn_0(buf, 0x0230, 0x054, (byte) 0x03, (byte) 0x03, (byte) 0x10))));
-        DBuf.add(new CtlSysex(5, getSysEx(makeCM6Ptn_0(buf, 0x00a0, 0x090, (byte) 0x03, (byte) 0x00, (byte) 0x00))));
+        dBuf.add(new CtlSysex(9, getSysEx(makeCM6Ptn_0(buf, 0x0130, 0x100, (byte) 0x03, (byte) 0x01, (byte) 0x10))));
+        dBuf.add(new CtlSysex(3, getSysEx(makeCM6Ptn_0(buf, 0x0230, 0x054, (byte) 0x03, (byte) 0x03, (byte) 0x10))));
+        dBuf.add(new CtlSysex(5, getSysEx(makeCM6Ptn_0(buf, 0x00a0, 0x090, (byte) 0x03, (byte) 0x00, (byte) 0x00))));
 
         for (int adr = 0x0284, i = 0; adr <= 0x093e; adr += 0xf6, i += 0xf6) {
-            DBuf.add(new CtlSysex(9, getSysEx(makeCM6Ptn_0(buf, adr, 0xf6, (byte) 0x04, (byte) (i >> 7), (byte) (i & 0x7f)))));
+            dBuf.add(new CtlSysex(9, getSysEx(makeCM6Ptn_0(buf, adr, 0xf6, (byte) 0x04, (byte) (i >> 7), (byte) (i & 0x7f)))));
         }
 
         for (int adr = 0x0a34, i = 0; adr <= 0x0db4; adr += 0x80, i += 0x80) {
-            DBuf.add(new CtlSysex(5, getSysEx(makeCM6Ptn_0(buf, adr, 0x80, (byte) 0x05, (byte) (i >> 7), (byte) (i & 0x7f)))));
+            dBuf.add(new CtlSysex(5, getSysEx(makeCM6Ptn_0(buf, adr, 0x80, (byte) 0x05, (byte) (i >> 7), (byte) (i & 0x7f)))));
         }
 
-        DBuf.add(new CtlSysex(7, getSysEx(makeCM6Ptn_0(buf, 0x4e34, 0xbd, (byte) 0x50, (byte) 0x00, (byte) 0x00))));
+        dBuf.add(new CtlSysex(7, getSysEx(makeCM6Ptn_0(buf, 0x4e34, 0xbd, (byte) 0x50, (byte) 0x00, (byte) 0x00))));
 
         for (int adr = 0x4eb2, i = 0; adr <= 0x579a; adr += 0x98, i += 0x98) {
-            DBuf.add(new CtlSysex(6, getSysEx(makeCM6Ptn_0(buf, adr, 0x98, (byte) 0x51, (byte) (i >> 7), (byte) (i & 0x7f)))));
+            dBuf.add(new CtlSysex(6, getSysEx(makeCM6Ptn_0(buf, adr, 0x98, (byte) 0x51, (byte) (i >> 7), (byte) (i & 0x7f)))));
         }
 
-        DBuf.add(new CtlSysex(6, getSysEx(makeCM6Ptn_0(buf, 0x5832, 0x11, (byte) 0x52, (byte) 0x00, (byte) 0x00))));
+        dBuf.add(new CtlSysex(6, getSysEx(makeCM6Ptn_0(buf, 0x5832, 0x11, (byte) 0x52, (byte) 0x00, (byte) 0x00))));
     }
 
     private byte[] makeCM6Ptn_0(byte[] buf, int adr, int len, byte hh, byte mm, byte ll) {
