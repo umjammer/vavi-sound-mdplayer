@@ -23,7 +23,6 @@ import vavi.sound.SoundUtil;
 import vavi.util.event.GenericListener;
 
 import static java.lang.System.getLogger;
-import static mdplayer.plugin.BasePlugin.BUFFER_SIZE;
 import static vavi.sound.SoundUtil.volume;
 
 
@@ -80,8 +79,6 @@ logger.log(Level.DEBUG, "line: " + e.getType());
 
     /** start blocking rendering */
     public boolean play() {
-        plugin.chipRegister.plugin(RealChipPlugin.class).startThread();
-
         plugin.prepare();
 //logger.log(Level.TRACE, "play: " + audio.stopped + ", " + audio.hashCode());
         listeners.forEach(l -> plugin.getDriver().addViewListener(l)); // TODO consider more
@@ -108,6 +105,11 @@ logger.log(Level.DEBUG, "line: " + e.getType());
         }
 
         logger.log(Level.DEBUG, "driver: " + plugin.driverVirtual.getClass().getSimpleName());
+
+        // after stop(): stop() closes the real chip thread and waits for it, so a thread
+        // started before it would be shut down right away (it only survived the very first
+        // song because driverReal was still null then and the thread exited by itself).
+        plugin.chipRegister.plugin(RealChipPlugin.class).startThread();
 
         rendering = true;
         renderStopped = false;
@@ -168,10 +170,7 @@ logger.log(Level.DEBUG, "line: " + e.getType());
             if (plugin.paused) pause();
 
             if (plugin.stopped) {
-                plugin.chipRegister.plugin(RealChipPlugin.class).setThreadClosed(true);
-                while (!plugin.chipRegister.plugin(RealChipPlugin.class).isThreadStopped()) { // TODO if realChip is not null, _trdStopped is false
-                    Thread.sleep(1);
-                }
+                plugin.chipRegister.plugin(RealChipPlugin.class).closeThread();
 
                 if (plugin instanceof SampledPlugin sampledPlugin) {
                     if (sampledPlugin.naudioFileReader != null) {

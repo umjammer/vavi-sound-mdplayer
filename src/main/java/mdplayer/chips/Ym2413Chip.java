@@ -74,6 +74,7 @@ public class Ym2413Chip extends BaseChip {
 //            registerRhythmB[1] = 0;
 
             fadeout[chipId] = 0;
+            rm[chipId] = false; // same as register[0x0e], the rhythm mode of the previous song must not be left
         }
     }
 

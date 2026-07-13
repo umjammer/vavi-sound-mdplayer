@@ -8,7 +8,7 @@ public class MapperRamCartridge implements Cartridge, IMapper {
     private final byte[][] physicalMemory;
     private final boolean[] useFlag;
     private final byte[][] visibleMemory;
-    private static int[] visibleMemorySegmentNumber;
+    private final int[] visibleMemorySegmentNumber;
     private final int segmentSize;
 
     public int getSegmentSize() {

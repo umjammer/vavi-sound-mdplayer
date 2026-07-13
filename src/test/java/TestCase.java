@@ -102,6 +102,12 @@ public class TestCase {
     @Property
     String ext;
 
+    @Property(name = "multi.1")
+    String multi1;
+
+    @Property(name = "multi.2")
+    String multi2;
+
     static final boolean onIde = System.getProperty("vavi.test", "").equals("ide");
     static final long time = onIde ? 1000 * 1000 : 10 * 1000;
 
@@ -224,8 +230,10 @@ Debug.print("countdown");
             }
         });
 
-        while (true) {
-            this.file = files.get(random.nextInt(files.size())).toString();
+        int c = files.size();
+        while (c > 0) {
+            Path path = files.get(random.nextInt(files.size()));
+            this.file = path.toString();
             cdl.set(new CountDownLatch(1));
 Debug.print("play: " + file + " ---------------------------------------------------------------------");
             ExecutorService es = Executors.newSingleThreadExecutor();
@@ -237,6 +245,7 @@ Debug.println("await: broke");
 Debug.println("stop");
             audio.stop();
             audio.close();
+            c--;
         }
     }
 
@@ -278,6 +287,30 @@ Debug.println(music);
     @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
     void test4() throws Exception {
         playMulti(listFilesUnderDirFilteredByExt(dir, ext));
+    }
+
+    /** play list, nexting by time */
+    void playMultiForTest(List<Path> files) throws Exception {
+        for (Path path : files) {
+            this.file = path.toString();
+Debug.print("play: " + file + " ---------------------------------------------------------------------");
+            ExecutorService es = Executors.newSingleThreadExecutor();
+            es.submit(() -> { try { play(); } catch (Exception e) { Debug.printStackTrace(e); }});
+Debug.print("await");
+            Thread.sleep(time);
+Debug.println("await: broke");
+            es.shutdownNow();
+Debug.println("stop");
+            audio.stop();
+            audio.close();
+        }
+    }
+
+    @Test
+    @DisplayName("multi in local.properties")
+    @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
+    void test21() throws Exception {
+        playMultiForTest(List.of(Path.of(multi1), Path.of(multi2)));
     }
 
     @Test
