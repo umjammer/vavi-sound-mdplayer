@@ -46,7 +46,7 @@ public abstract class BaseDriver {
         this.dataBuf = plugin != null ? plugin.getData() : null; // gross
     }
 
-    /**  */
+    /** */
     public abstract void init(EnmModel model, int latency, int waitTime, Object... args);
 
     /** advances the clock */
@@ -97,6 +97,7 @@ public abstract class BaseDriver {
     }
 
     /**
+     * Fires a view event.
      *
      * @param name
      *        "led.reset" ... none

@@ -14,7 +14,8 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.JComponent;
 import javax.swing.Timer;
@@ -181,6 +182,8 @@ public class FmDspVisualizer extends JComponent {
     private static final int DRIVER_TEXT_2_X = DRIVER_TEXT_X + 9;
     private static final int DRIVER_TRI_X = DRIVER_TEXT_2_X + 26;
     private static final int DRIVER_TRI_Y = DRIVER_TEXT_Y + 3;
+    private static final int DRIVER_NAME_X = DRIVER_TRI_X + 8;
+    private static final int DRIVER_NAME_Y = DRIVER_TEXT_Y - 1;
     private static final int CURL_W = 11;
     private static final int CURL_H = 11;
     private static final int CURL_LEFT_X = 347;
@@ -262,20 +265,24 @@ public class FmDspVisualizer extends JComponent {
         "C ", "C+", "D ", "D+", "E ", "F ", "F+", "G ", "G+", "A ", "A+", "B ",
     };
 
-    private static final Charset CP932 = resolveCp932();
+    /** Strings are Unicode; this is only used to index the JIS addressed font ROM. */
+    private static final Charset JIS0208 = Charset.forName("x-JIS0208");
 
-    private static Charset resolveCp932() {
-        for (String n : new String[] {"windows-31j", "MS932", "Shift_JIS"}) {
-            try {
-                return Charset.forName(n);
-            } catch (Exception ignore) {
-            }
-        }
-        return StandardCharsets.ISO_8859_1;
-    }
+    /** Size of a PC-98 font ROM dump. */
+    public static final int FONT_ROM_SIZE = 0x46800;
+
+    /** The ANK glyphs start here, 16 bytes each. */
+    private static final int ROM_ANK = 0x800;
+
+    private static final int ROM_W = 8, ROM_H = 16;
+
+    private final Map<Character, Integer> jisCache = new HashMap<>();
 
     // ---------- state ----------
     private FmDspDataSource source;
+
+    /** PC-98 font ROM, null when it was not supplied */
+    private byte[] fontRom;
     private final Palette palette = new Palette();
     private LeftMode leftMode = LeftMode.OPNA;
     private RightMode rightMode = RightMode.DEFAULT;
@@ -325,6 +332,19 @@ public class FmDspVisualizer extends JComponent {
     /** Set the data source. May be replaced at any time. */
     public void setDataSource(FmDspDataSource source) {
         this.source = source;
+    }
+
+    /**
+     * Supplies the PC-98 font ROM the comment lines are drawn with, as the original does. Without
+     * it the comments fall back to the ANK only medium font, so Japanese text stays blank.
+     *
+     * @param rom a font ROM dump of {@link #FONT_ROM_SIZE} bytes, or null to use the fallback
+     */
+    public void setFontRom(byte[] rom) {
+        if (rom != null && rom.length < FONT_ROM_SIZE) {
+            throw new IllegalArgumentException("not a PC-98 font rom: " + rom.length + " bytes");
+        }
+        this.fontRom = rom;
     }
 
     public LeftMode getLeftMode() {
@@ -454,71 +474,103 @@ public class FmDspVisualizer extends JComponent {
         putline(s, fmdsp_medium_dat, MFW, MFH, MFB, x, y, color, bg);
     }
 
+    /**
+     * Draws with one of the fmdsp bitmap fonts, which are ANK only: a full width character has no
+     * glyph, so nothing is drawn for it, but the cursor advances exactly as in the C code.
+     */
     private void putline(String s, byte[] font, int fw, int fh, int glyphBytes,
                          int x, int y, int color, boolean bg) {
         if (s == null) return;
-        byte[] cp = s.getBytes(CP932);
-        boolean is2nd = false;
-        int sjis1 = 0;
         int xo = 0;
-        int i = 0;
-        while (i < cp.length) {
-            int c = cp[i] & 0xff;
-            if (!is2nd) {
-                if (!sjisIsMbStart(c)) {
-                    if (c == '\t') {
-                        xo += fw * 8;
-                        xo -= xo % (fw * 8);
-                        i++;
-                    } else {
-                        if (x + xo + fw > PC98_W) return;
-                        vramPutchar(font, c * glyphBytes, x + xo, y, fw, fh, color, bg);
-                        i++;
-                        xo += fw;
-                    }
-                } else {
-                    is2nd = true;
-                    sjis1 = c;
-                    i++;
-                }
-            } else {
-                int sjis2 = cp[i] & 0xff;
-                i++;
-                int jis = sjis2jis(sjis1, sjis2);
-                boolean half = jisIsHalfwidth(jis);
-                if (x + xo + fw * (half ? 1 : 2) > PC98_W) return;
-                // the fmdsp bitmap fonts have no JIS glyphs -> nothing is drawn,
-                // but the cursor still advances exactly as in the C code.
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c == '\t') {
+                xo += fw * 8;
+                xo -= xo % (fw * 8);
+                continue;
+            }
+            int ank = ankOf(c);
+            if (ank >= 0) {
+                if (x + xo + fw > PC98_W) return;
+                vramPutchar(font, ank * glyphBytes, x + xo, y, fw, fh, color, bg);
                 xo += fw;
-                if (!half) {
-                    xo += 8;
-                }
-                is2nd = false;
+            } else {
+                if (x + xo + fw * 2 > PC98_W) return;
+                xo += fw + 8;
             }
         }
     }
 
-    private static boolean sjisIsMbStart(int c) {
-        return (0x81 <= c && c <= 0x9f) || (0xe0 <= c && c <= 0xef);
-    }
-
-    private static boolean jisIsHalfwidth(int jis) {
-        int row = jis >> 8;
-        return row == 0x29 || row == 0x2a;
-    }
-
-    private static int sjis2jis(int s1, int s2) {
-        if (s1 >= 0xe0) s1 -= 0x40;
-        s1 -= 0x81;
-        int jis = s1 << 9;
-        if (s2 >= 0x80) s2--;
-        if (s2 >= 0x9e) {
-            jis |= 0x100 | (s2 - 0x9e);
-        } else {
-            jis |= (s2 - 0x40);
+    /**
+     * Draws with the PC-98 font ROM: ANK 8x16, kanji 16x16 as two halves. This is what the original
+     * uses for the comment lines, and the only font here that has Japanese glyphs.
+     */
+    private void putRom(String s, int x, int y, int color, boolean bg) {
+        if (s == null) return;
+        int xo = 0;
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c == '\t') {
+                xo += ROM_W * 8;
+                xo -= xo % (ROM_W * 8);
+                continue;
+            }
+            int ank = ankOf(c);
+            if (ank >= 0) {
+                if (x + xo + ROM_W > PC98_W) return;
+                vramPutchar(fontRom, ROM_ANK + ank * ROM_H, x + xo, y, ROM_W, ROM_H, color, bg);
+                xo += ROM_W;
+            } else {
+                if (x + xo + ROM_W * 2 > PC98_W) return;
+                int glyph = romKanji(jisOf(c));
+                if (glyph >= 0) {
+                    vramPutchar(fontRom, glyph, x + xo, y, ROM_W, ROM_H, color, bg);
+                    vramPutchar(fontRom, glyph + ROM_H, x + xo + ROM_W, y, ROM_W, ROM_H, color, bg);
+                }
+                xo += ROM_W * 2;
+            }
         }
-        jis += 0x2121;
-        return jis & 0xffff;
+    }
+
+    /** ANK code of {@code c}, or -1 when it is a full width character. */
+    private static int ankOf(char c) {
+        if (c < 0x80) return c;
+        // half width katakana, which the ANK font carries at 0xa1..0xdf
+        if (c >= 0xff61 && c <= 0xff9f) return c - 0xff61 + 0xa1;
+        return -1;
+    }
+
+    /** JIS X 0208 code of {@code c}, or 0 when it has none. */
+    private int jisOf(char c) {
+        return jisCache.computeIfAbsent(c, ch -> {
+            byte[] b = String.valueOf(jisVariantOf(ch)).getBytes(JIS0208);
+            return b.length == 2 ? (b[0] & 0xff) << 8 | (b[1] & 0xff) : 0;
+        });
+    }
+
+    /**
+     * The few characters JIS X 0208 and Shift_JIS disagree about. Text decoded from Shift_JIS
+     * carries the full width forms, which {@code x-JIS0208} cannot encode, so they would be lost -
+     * a wave dash or a minus sign would drop out of a title. The glyph is the same either way.
+     */
+    private static char jisVariantOf(char c) {
+        return switch (c) {
+            case '－' -> '−'; // minus sign
+            case '～' -> '〜'; // wave dash
+            case '￥' -> '¥'; // yen sign
+            case '￠' -> '¢'; // cent sign
+            case '￡' -> '£'; // pound sign
+            case '￢' -> '¬'; // not sign
+            case '∥' -> '‖'; // double vertical line
+            default -> c;
+        };
+    }
+
+    /** Offset of the left half of a kanji in the font ROM, or -1 when there is none. */
+    private int romKanji(int jis) {
+        if (fontRom == null || jis == 0) return -1;
+        int offset = ROM_ANK + 0x60 * ROM_H * 2 * ((jis >> 8) - 0x20) + ((jis & 0xff) << 5);
+        return offset >= 0 && offset + ROM_H * 2 <= fontRom.length ? offset : -1;
     }
 
     private void blitNum(int x, int y, int digit) {
@@ -562,11 +614,16 @@ public class FmDspVisualizer extends JComponent {
         vram[(PC98_H - height) * PC98_W] = 0;
         vram[(PC98_H - 1) * PC98_W] = 0;
 
-        // comments: the original uses the PC-98 ROM font (font98); we do not
-        // have it, so ASCII comment text is rendered with the medium font.
+        // comments: the original draws these with the PC-98 ROM font, which is where the 16 px
+        // line height comes from. Without a ROM we fall back to the medium font, which has no
+        // kanji, so Japanese comments come out blank - see setFontRom().
         if (w != null) {
             for (int i = 0; i < 3; i++) {
-                putMedium(w.comment(i), 0, COMMENT_Y + COMMENT_H * i, 2, false);
+                if (fontRom != null) {
+                    putRom(w.comment(i), 0, COMMENT_Y + COMMENT_H * i, 2, false);
+                } else {
+                    putMedium(w.comment(i), 0, COMMENT_Y + COMMENT_H * i, 2, false);
+                }
             }
         }
     }
@@ -627,6 +684,8 @@ public class FmDspVisualizer extends JComponent {
         putSmall("DR", DRIVER_TEXT_X, DRIVER_TEXT_Y, 7, true);
         putSmall("IVER", DRIVER_TEXT_2_X, DRIVER_TEXT_Y, 7, true);
         vramblitColor(DRIVER_TRI_X, DRIVER_TRI_Y, s_filebar_tri, 0, FILEBAR_TRI_W, FILEBAR_TRI_H, 7);
+        WorkStateSource work = source != null ? source.work() : null;
+        putMedium(work != null ? work.driverName() : null, DRIVER_NAME_X, DRIVER_NAME_Y, 2, false);
         vramblit(CURL_LEFT_X, CURL_Y, s_curl_left, 0, CURL_W, CURL_H);
         vramblit(CURL_RIGHT_X, CURL_Y, s_curl_right, 0, CURL_W, CURL_H);
 
