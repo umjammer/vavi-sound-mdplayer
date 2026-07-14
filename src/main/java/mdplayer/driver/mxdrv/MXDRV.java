@@ -596,6 +596,26 @@ public class MXDRV {
     private boolean fadeoutStart;
     private boolean reqFadeout;
 
+    /**
+     * Arms the end of song / loop detection for playback.
+     * <p>
+     * {@link #MXDRV_MeasurePlayTime} leaves its own loop and fadeout state behind and detaches
+     * {@link #MXCALLBACK_OPMINT}, so this must be called between it and {@link #MXDRV_Play},
+     * otherwise nothing watches the work area while the song plays.
+     *
+     * @param loop terminate after this many loops, {@link Integer#MAX_VALUE} for never
+     * @param fadeout fade out instead of terminating when {@code loop} is reached
+     */
+    public void MXDRV_PlaySetup(int loop, boolean fadeout) {
+        terminatePlay = false;
+        loopCount = 0;
+        loopLimit = loop;
+        fadeoutStart = false;
+        reqFadeout = fadeout;
+
+        MXCALLBACK_OPMINT = this::MXDRV_MeasurePlayTime_OPMINT;
+    }
+
     public void MXDRV_MeasurePlayTime_OPMINT() {
         if ((mm.readInt(G + MXWORK_GLOBAL.PLAYTIME) & 0xffff_ffffL) >= (mm.readInt(G + MXWORK_GLOBAL.MEASURETIMELIMIT) & 0xffff_ffffL)) {
             terminatePlay = true;

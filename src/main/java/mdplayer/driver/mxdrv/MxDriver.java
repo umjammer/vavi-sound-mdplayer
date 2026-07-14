@@ -322,7 +322,8 @@ public class MxDriver extends BaseDriver {
         int playtime = mxdrv.MXDRV_MeasurePlayTime(mdx[0], mdxSize[0], mdxPtr, pdx[0], pdxSize[0], pdxPtr, 1, Depend.TRUE);
 //logger.log(Level.TRACE, "(%d:%02d) %d".formatted(playtime / 1000 / 60, playtime / 1000 % 60, ""));
         totalCounter = (long) playtime * setting.getOutputDevice().getSampleRate() / 1000;
-        mxdrv.terminatePlay = false;
+        // the player decides how many loops to play (Setting.Other#loopTimes), the driver only reports them
+        mxdrv.MXDRV_PlaySetup(Integer.MAX_VALUE, false);
         mxdrv.MXDRV_Play(mdx[0], mdxSize[0], mdxPtr, pdx[0], pdxSize[0], pdxPtr);
 logger.log(Level.TRACE, "MXDRV_Start: " + ret);
     }
@@ -343,12 +344,6 @@ logger.log(Level.TRACE, "MXDRV_Start: " + ret);
                         frameCounter++;
                 }
             }
-
-            mxdrv.MXDRV_MeasurePlayTime_OPMINT();
-            curLoop = mxdrv.loopCount;
-            if (mxdrv.terminatePlay) {
-                stopped = true;
-            }
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
         }
@@ -365,6 +360,11 @@ logger.log(Level.TRACE, "MXDRV_Start: " + ret);
         //logger.log(Level.TRACE, "5:%d".formatted(mm.readint(MXWORK_CHBUF_PCM[4] + MXWORK_CH.S0004)));
         //logger.log(Level.TRACE, "6:%d".formatted(mm.readint(MXWORK_CHBUF_PCM[5] + MXWORK_CH.S0004)));
         //logger.log(Level.TRACE, "7:%d".formatted(mm.readint(MXWORK_CHBUF_PCM[6] + MXWORK_CH.S0004)));
+
+        curLoop = mxdrv.loopCount;
+        if (mxdrv.terminatePlay) {
+            stopped = true;
+        }
 
         XMemory mm = mxdrv.getMemory();
         int[] fms = (int[]) mxdrv.MXDRV_GetWork(MXDRV_WORK.FM);
