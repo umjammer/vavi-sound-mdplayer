@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -237,9 +238,9 @@ public class MuapDriver extends BaseDriver {
 
         muapDriver.startRendering(Common.VGMProcSampleRate, new Tuple<>("YM2608", MucomDriver.opnaBaseClock));
         muapDriver.startMusic(0);
-        Object[] work = (Object[]) muapDriver.getWork();
-        plugin.chipRegister.chip(Cs4231Chip.class).setFifoBuf(0, (byte[]) work[0]);
-        //chipRegister.setCS4231Int0bEnt(0, (Action)work[1], model);
+        Map<String, Object> work = muapDriver.getWork();
+        plugin.chipRegister.chip(Cs4231Chip.class).setFifoBuf(0, (byte[]) work.get("work"));
+//        plugin.chipRegister.chip(Cs4231Chip.class).setInt0bEnt(0, (Runnable) work.get("int0bEnt"), model);
     }
 
     private static class MuapChipAction implements ChipAction {

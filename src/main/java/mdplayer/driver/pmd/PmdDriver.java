@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -52,7 +53,7 @@ public class PmdDriver extends BaseDriver {
     private IDriver pmdDriver = null;
 
     /** driver work area, the source of the "pmd" event */
-    private Object work = null;
+    private Map<String, Object> work = null;
 
     /** how many {@link #processOneFrame()} calls between two "pmd" events */
     private static final int visualizeInterval = Common.VGMProcSampleRate / 120;
@@ -165,9 +166,9 @@ public class PmdDriver extends BaseDriver {
             lp = Math.max(lp, 0);
             curLoop = lp;
 
-            if (work != null && ++visualizeCounter >= visualizeInterval) {
+            if (work != null && work.get("work") != null && ++visualizeCounter >= visualizeInterval) {
                 visualizeCounter = 0;
-                fireEventHappened(this, "pmd", work);
+                fireEventHappened(this, "pmd", work.get("work"));
             }
 
             if (pmdDriver.getStatus() < 1) {
