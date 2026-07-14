@@ -101,6 +101,11 @@ public class FmpDriver extends BaseDriver {
         }
     }
 
+    /** how many {@link #processOneFrame()} calls between two "fmp" events */
+    private static final int visualizeInterval = Common.VGMProcSampleRate / 120;
+
+    private int visualizeCounter;
+
     @Override
     public void processOneFrame() {
         try {
@@ -114,8 +119,17 @@ public class FmpDriver extends BaseDriver {
                     fmp.nise98.runTimer();
                     if (!fmp.nise98.intTimer()) continue;
                     curLoop = fmp.processOneFrame(() -> stopped = true);
+                    // FMP's interrupt is the OPNA timer B, so one frame here is one timer B tick
+                    fmp.getWork().ticks++;
                 }
                 frameCounter++;
+            }
+
+            if (++visualizeCounter >= visualizeInterval) {
+                visualizeCounter = 0;
+                FmpWork work = fmp.getWork();
+                work.ppz8 = plugin.chipRegister.chip(Ppz8Chip.class).getInfo(0);
+                fireEventHappened(this, "fmp", work);
             }
 
             //curLoop = mm.ReadUInt16(reg.a6 + dw.LOOP_COUNTER);
@@ -137,10 +151,38 @@ public class FmpDriver extends BaseDriver {
         int port = (p & 0xff) == 0x8a ? 0 : 1;
         plugin.chipRegister.chip(Ym2608Chip.class).write(0, port, a, d, model);
 
+        echo(port, a, d);
+
         if (port == 1 && a == 0x8 && model == EnmModel.RealModel) {
             this.isDataBlock = true;
             fmp.pcmDataSendCount++;
             plugin.chipRegister.chip(Ym2608Chip.class).setSyncWait(0, 1);
+        }
+    }
+
+    /**
+     * The tempo, the rhythm keys and the SSG mixer never appear in FMP's work area - the driver
+     * only ever writes them to the chip - so the visualizer reads them back from here.
+     */
+    private void echo(int port, int a, int d) {
+        FmpWork work = fmp.getWork();
+        if (port == 0) {
+            switch (a) {
+            case 0x07 -> work.ssgMixer = d & 0xff;
+            case 0x26 -> work.timerB = d & 0xff;
+            default -> {
+            }
+            }
+        } else if (port == 1) {
+            switch (a) {
+            case 0x10 -> {
+                // bit 7 keys the instruments in the low bits off, anything else keys them on
+                if ((d & 0x80) == 0) work.rhythmKeyOn |= d & 0x3f;
+            }
+            case 0x01 -> work.adpcmPan = d & 0xff;
+            default -> {
+            }
+            }
         }
     }
 }

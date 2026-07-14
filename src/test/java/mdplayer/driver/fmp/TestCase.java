@@ -6,6 +6,9 @@
 
 package mdplayer.driver.fmp;
 
+import java.awt.BorderLayout;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -16,12 +19,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
+import javax.swing.JFrame;
 
 import mdplayer.Audio;
 import mdplayer.driver.BaseDriver;
 import mdplayer.format.FileFormat;
 import mdplayer.plugin.BasePlugin;
 import mdplayer.plugin.BasePlugin.Compilable;
+import vavi.sound.visualizer.fmdsp.FmDspVisualizer;
+import vavi.sound.visualizer.fmdsp.LeftMode;
+import vavi.sound.visualizer.fmdsp.RightMode;
 import vavi.util.Debug;
 import vavi.util.properties.annotation.Property;
 import vavi.util.properties.annotation.PropsEntity;
@@ -64,6 +71,10 @@ public class TestCase {
     @Property(name= "fmp.ext")
     String ext;
 
+    /** PC-98 font rom, the comment lines have no Japanese glyphs without it */
+    @Property(name = "fmdsp.fontRom")
+    String fontRom;
+
     static final boolean onIde = System.getProperty("vavi.test", "").equals("ide");
     static final long time = onIde ? 1000 * 1000 : 10 * 1000;
 
@@ -96,6 +107,63 @@ Debug.println("filename: " + fmp);
         plugin.setParams(format, Map.of("fileName", fmp));
         audio.init(plugin);
         audio.play();
+    }
+
+    @Test
+    @DisplayName("play fmp w/ fmdsp visualizer")
+    void test2() throws Exception {
+Debug.println("filename: " + fmp);
+        FileFormat format = FileFormat.getFileFormat(fmp);
+        format.load(Files.newInputStream(Path.of(fmp)), null);
+        var plugin = (BasePlugin<? extends BaseDriver>) format.getPlugin();
+        plugin.setParams(format, Map.of("fileName", fmp));
+
+        FmpFmDspSource source = new FmpFmDspSource();
+        source.setFilename(Path.of(fmp).getFileName().toString());
+
+        FmDspVisualizer visualizer = new FmDspVisualizer(60);
+        visualizer.setDataSource(source);
+        if (fontRom != null && Files.exists(Path.of(fontRom))) {
+            visualizer.setFontRom(Files.readAllBytes(Path.of(fontRom)));
+        }
+
+        JFrame frame = new JFrame();
+        frame.setTitle(Path.of(fmp).getFileName() + " - FMP");
+        frame.setLayout(new BorderLayout());
+        frame.add(visualizer, BorderLayout.CENTER);
+        frame.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                int code = e.getKeyCode();
+                if (code >= KeyEvent.VK_F1 && code <= KeyEvent.VK_F10) {
+                    visualizer.setPaletteIndex(code - KeyEvent.VK_F1);
+                } else if (code == KeyEvent.VK_F11) {
+                    if (e.isShiftDown()) {
+                        RightMode[] r = RightMode.values();
+                        visualizer.setRightMode(r[(visualizer.getRightMode().ordinal() + 1) % r.length]);
+                    } else {
+                        LeftMode[] l = LeftMode.values();
+                        visualizer.setLeftMode(l[(visualizer.getLeftMode().ordinal() + 1) % l.length]);
+                    }
+                } else if (code == KeyEvent.VK_SPACE) {
+                    audio.pause();
+                    source.setPaused(audio.isPaused());
+                }
+            }
+        });
+        frame.pack();
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
+        frame.requestFocusInWindow();
+
+        audio.init(plugin);
+        audio.addGenericListener(source::update);
+        visualizer.start();
+        audio.play();
+        audio.close();
+        visualizer.stop();
+        frame.setVisible(false);
+        frame.dispose();
     }
 
     /**

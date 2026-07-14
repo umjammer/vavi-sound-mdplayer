@@ -13,6 +13,8 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
+import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
@@ -259,6 +261,22 @@ public class FmDspVisualizer extends JComponent {
         TrackId.FM_1, TrackId.FM_2, TrackId.FM_3, TrackId.FM_4, TrackId.FM_5, TrackId.FM_6,
         TrackId.SSG_1, TrackId.SSG_2, TrackId.SSG_3, TrackId.ADPCM,
     };
+
+    /** {@link LeftMode#OPN}: the FM3 extended tracks in place of FM 4-6 (track_disp_table_opn). */
+    private static final TrackId[] TRACK_DISP_OPN = {
+        TrackId.FM_1, TrackId.FM_2, TrackId.FM_3,
+        TrackId.FM_3_EX_1, TrackId.FM_3_EX_2, TrackId.FM_3_EX_3,
+        TrackId.SSG_1, TrackId.SSG_2, TrackId.SSG_3, TrackId.ADPCM,
+    };
+
+    /** {@link LeftMode#PPZ8}: the eight PPZ8 tracks (track_disp_table_ppz8). */
+    private static final TrackId[] TRACK_DISP_PPZ8 = {
+        TrackId.PPZ8_1, TrackId.PPZ8_2, TrackId.PPZ8_3, TrackId.PPZ8_4,
+        TrackId.PPZ8_5, TrackId.PPZ8_6, TrackId.PPZ8_7, TrackId.PPZ8_8,
+        TrackId.ADPCM,
+    };
+
+    /** how many track rows fit in the left half */
     private static final int TRACK_DISP_CNT = 10;
 
     private static final String[] KEY_TABLE = {
@@ -349,6 +367,19 @@ public class FmDspVisualizer extends JComponent {
 
     public LeftMode getLeftMode() {
         return leftMode;
+    }
+
+    /**
+     * The rows the left half shows. {@link LeftMode#THIRTEEN} is drawn as {@link LeftMode#OPNA}
+     * for now: thirteen rows only fit in the half fmdsp gives them with the compact geometry it
+     * switches to for that mode, which this renderer does not have.
+     */
+    private TrackId[] tracks() {
+        return switch (leftMode) {
+            case OPN -> TRACK_DISP_OPN;
+            case PPZ8 -> TRACK_DISP_PPZ8;
+            default -> TRACK_DISP;
+        };
     }
 
     public void setLeftMode(LeftMode mode) {
@@ -638,8 +669,9 @@ public class FmDspVisualizer extends JComponent {
                 vram[y * PC98_W + x] = 0;
             }
         }
-        for (int i = 0; i < TRACK_DISP_CNT; i++) {
-            TrackId t = TRACK_DISP[i];
+        TrackId[] disp = tracks();
+        for (int i = 0; i < disp.length; i++) {
+            TrackId t = disp[i];
             String trackType;
             switch (TYPE_OF[t.ordinal()]) {
             case FM: trackType = "FM   "; break;
@@ -885,8 +917,9 @@ public class FmDspVisualizer extends JComponent {
     private void update10() {
         TrackStatusSource ts = source != null ? source.trackStatus() : null;
 
-        for (int it = 0; it < TRACK_DISP_CNT; it++) {
-            TrackId t = TRACK_DISP[it];
+        TrackId[] disp = tracks();
+        for (int it = 0; it < disp.length; it++) {
+            TrackId t = disp[it];
             if (ts != null) {
                 ts.readStatus(t, scratch);
             } else {
@@ -908,6 +941,9 @@ public class FmDspVisualizer extends JComponent {
                 }
             }
         }
+
+        OperatingSystemMXBean operatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean();
+        cpuusage = (int) (operatingSystemMXBean.getSystemLoadAverage() * 100);
 
         renderControlAndCounters();
         renderCircle();

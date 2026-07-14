@@ -13,6 +13,7 @@ import mdplayer.driver.BaseDriver;
 import musicDriverInterface.MetaData.Tag;
 import pmd.driver.PW;
 import pmd.driver.PW.partWork;
+import vavi.sound.visualizer.fmdsp.FftAnalyzer;
 import vavi.sound.visualizer.fmdsp.FftDataSource;
 import vavi.sound.visualizer.fmdsp.FmDspDataSource;
 import vavi.sound.visualizer.fmdsp.FmDspVisualizer;
@@ -40,7 +41,7 @@ import vavi.util.event.GenericEvent;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-07-13 nsano initial version <br>
  */
-public class PmdFmDspSource implements FmDspDataSource, FftDataSource, LevelDataSource, TrackStatusSource, WorkStateSource {
+public class PmdFmDspSource implements FmDspDataSource, LevelDataSource, TrackStatusSource, WorkStateSource {
 
     /** how fast a held note's meter sags, per "pmd" event */
     private static final double levelSustainDecay = 0.995;
@@ -98,6 +99,8 @@ public class PmdFmDspSource implements FmDspDataSource, FftDataSource, LevelData
     private String filename;
     private final String[] comments = new String[3];
 
+    private final FftAnalyzer fft = new FftAnalyzer(Common.VGMProcSampleRate);
+
     public PmdFmDspSource() {
         Arrays.setAll(tracks, i -> new TrackStatus());
         Arrays.fill(pans, Pan.CENTER);
@@ -131,7 +134,7 @@ public class PmdFmDspSource implements FmDspDataSource, FftDataSource, LevelData
             short[] buffer = (short[]) event.getArguments()[0];
             int offset = (int) event.getArguments()[1];
             for (int i = offset; i + 1 < buffer.length; i += 2) {
-                push((buffer[i] + buffer[i + 1]) / 2f);
+                fft.push((buffer[i] + buffer[i + 1]) / 2f);
             }
         }
         default -> {
@@ -357,7 +360,7 @@ public class PmdFmDspSource implements FmDspDataSource, FftDataSource, LevelData
 
     // ----- FmDspDataSource -----
 
-    @Override public FftDataSource fft() { return this; }
+    @Override public FftDataSource fft() { return fft; }
 
     @Override public LevelDataSource level() { return this; }
 
@@ -470,110 +473,4 @@ public class PmdFmDspSource implements FmDspDataSource, FftDataSource, LevelData
 
     @Override public String comment(int line) { return comments[line]; }
 
-    // ----- FftDataSource -----
-
-    /** power of two, ~93 ms at 44100 Hz. Long enough to resolve the low end of the printed axis. */
-    private static final int fftLength = 4096;
-
-    /**
-     * The renderer prints its frequency axis 48 px per octave and draws the 70 bars 4 px apart, so
-     * a bar spans an octave / 12 and 250 Hz sits on bar 10.5. Anything else and the bars don't
-     * stand where the labels say they do.
-     */
-    private static final double fftBarsPerOctave = 12;
-
-    /** frequency of bar 0, so that bar 10.5 is 250 Hz */
-    private static final double fftLow = 250 / Math.pow(2, 10.5 / fftBarsPerOctave);
-
-    /** the axis is labelled 0 dB at the top and -48 dB at the bottom, one bar step is 1.5 dB */
-    private static final double fftFloor = -48;
-
-    private final float[] pcm = new float[fftLength];
-
-    private int pcmPosition;
-
-    private final double[] window = new double[fftLength];
-
-    private final double[] re = new double[fftLength];
-    private final double[] im = new double[fftLength];
-
-    /** magnitude of each fft bin, normalized so a full scale sine reads 1.0 */
-    private final double[] magnitude = new double[fftLength / 2];
-
-    {
-        for (int i = 0; i < fftLength; i++) {
-            window[i] = 0.5 - 0.5 * Math.cos(2 * Math.PI * i / (fftLength - 1));
-        }
-    }
-
-    private void push(float sample) {
-        pcm[pcmPosition] = sample;
-        pcmPosition = (pcmPosition + 1) % fftLength;
-    }
-
-    @Override
-    public void readFft(int[] out) {
-        int position = pcmPosition;
-        for (int i = 0; i < fftLength; i++) {
-            re[i] = pcm[(position + i) % fftLength] / 32768.0 * window[i];
-            im[i] = 0;
-        }
-        fft(re, im);
-
-        // the hann window halves the amplitude and a real signal splits it over two bins
-        for (int b = 0; b < magnitude.length; b++) {
-            magnitude[b] = Math.sqrt(re[b] * re[b] + im[b] * im[b]) * 4 / fftLength;
-        }
-
-        double binWidth = (double) sampleRate() / fftLength;
-        for (int i = 0; i < FftDataSource.LENGTH; i++) {
-            double from = fftLow * Math.pow(2, (i - 0.5) / fftBarsPerOctave) / binWidth;
-            double to = fftLow * Math.pow(2, (i + 0.5) / fftBarsPerOctave) / binWidth;
-            double peak = 0;
-            int first = (int) Math.floor(from);
-            int last = (int) Math.ceil(to);
-            for (int b = Math.max(1, first); b <= Math.min(last, magnitude.length - 1); b++) {
-                peak = Math.max(peak, magnitude[b]);
-            }
-            double db = 20 * Math.log10(Math.max(peak, 1e-9));
-            out[i] = (int) Math.clamp(
-                    Math.round((db - fftFloor) / -fftFloor * (FftDataSource.MAX + 1)), 0, FftDataSource.MAX);
-        }
-    }
-
-    /** in place radix-2 FFT */
-    private static void fft(double[] re, double[] im) {
-        int n = re.length;
-        for (int i = 1, j = 0; i < n; i++) {
-            int bit = n >> 1;
-            for (; (j & bit) != 0; bit >>= 1) {
-                j ^= bit;
-            }
-            j ^= bit;
-            if (i < j) {
-                double t = re[i]; re[i] = re[j]; re[j] = t;
-                t = im[i]; im[i] = im[j]; im[j] = t;
-            }
-        }
-        for (int len = 2; len <= n; len <<= 1) {
-            double angle = -2 * Math.PI / len;
-            double wr = Math.cos(angle);
-            double wi = Math.sin(angle);
-            for (int i = 0; i < n; i += len) {
-                double cr = 1, ci = 0;
-                for (int j = 0; j < len / 2; j++) {
-                    double ur = re[i + j], ui = im[i + j];
-                    double vr = re[i + j + len / 2] * cr - im[i + j + len / 2] * ci;
-                    double vi = re[i + j + len / 2] * ci + im[i + j + len / 2] * cr;
-                    re[i + j] = ur + vr;
-                    im[i + j] = ui + vi;
-                    re[i + j + len / 2] = ur - vr;
-                    im[i + j + len / 2] = ui - vi;
-                    double nr = cr * wr - ci * wi;
-                    ci = cr * wi + ci * wr;
-                    cr = nr;
-                }
-            }
-        }
-    }
 }
