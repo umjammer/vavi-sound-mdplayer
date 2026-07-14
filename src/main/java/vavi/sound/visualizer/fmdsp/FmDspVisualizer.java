@@ -243,6 +243,70 @@ public class FmDspVisualizer extends JComponent {
     // version shown top-right, matches FMPLAYER_VERSION_*
     private static final String VER0 = "0", VER1 = "1", VER2 = "14";
 
+    /**
+     * a-z for the small font, which carries only the ~46 glyphs the original ever needed - and the
+     * medium font is no help either, its lowercase codepoints being copies of its uppercase glyphs.
+     * Neither bitmap font in {@code fmdsp.dat} has a lowercase shape, which is why the original
+     * draws its "for UNIX/LINUX..." line as the {@code s_text} sprite rather than as text.
+     * <p>
+     * Drawn in the small font's own 4 wide x 5 tall cell: the uppercase sits on rows 1-5, so these
+     * keep the baseline on row 5, put ascenders on row 1 and hang descenders below it on row 6 -
+     * which is why {@link #SMALL_LC} is 7 rows to the stock font's 6. Only {@link #setSubtitle} uses
+     * this; the rest of the display stays dot-by-dot original.
+     */
+    private static final String[][] LOWERCASE = {
+        {".....", ".....", ".##..", "#..#.", "#..#.", ".###.", "....."}, // a
+        {".....", "#....", "###..", "#..#.", "#..#.", "###..", "....."}, // b
+        {".....", ".....", ".###.", "#....", "#....", ".###.", "....."}, // c
+        {".....", "...#.", ".###.", "#..#.", "#..#.", ".###.", "....."}, // d
+        {".....", ".....", ".##..", "####.", "#....", ".###.", "....."}, // e
+        {".....", "..##.", ".#...", "###..", ".#...", ".#...", "....."}, // f
+        {".....", ".....", ".###.", "#..#.", ".###.", "...#.", "###.."}, // g
+        {".....", "#....", "###..", "#..#.", "#..#.", "#..#.", "....."}, // h
+        {".....", ".#...", ".....", ".#...", ".#...", ".#...", "....."}, // i
+        {".....", "..#..", ".....", "..#..", "..#..", "..#..", "##..."}, // j
+        {".....", "#....", "#.#..", "##...", "#.#..", "#..#.", "....."}, // k
+        {".....", "##...", ".#...", ".#...", ".#...", ".###.", "....."}, // l
+        {".....", ".....", "####.", "#.#.#", "#.#.#", "#.#.#", "....."}, // m
+        {".....", ".....", "###..", "#..#.", "#..#.", "#..#.", "....."}, // n
+        {".....", ".....", ".##..", "#..#.", "#..#.", ".##..", "....."}, // o
+        {".....", ".....", "###..", "#..#.", "###..", "#....", "#...."}, // p
+        {".....", ".....", ".###.", "#..#.", ".###.", "...#.", "...#."}, // q
+        {".....", ".....", "#.##.", "##...", "#....", "#....", "....."}, // r
+        {".....", ".....", ".###.", "##...", "..##.", "###..", "....."}, // s
+        {".....", ".#...", "###..", ".#...", ".#...", "..##.", "....."}, // t
+        {".....", ".....", "#..#.", "#..#.", "#..#.", ".###.", "....."}, // u
+        {".....", ".....", "#..#.", "#..#.", "#..#.", ".##..", "....."}, // v
+        {".....", ".....", "#.#.#", "#.#.#", "#.#.#", ".#.#.", "....."}, // w
+        {".....", ".....", "#..#.", ".##..", ".##..", "#..#.", "....."}, // x
+        {".....", ".....", "#..#.", "#..#.", ".###.", "...#.", "###.."}, // y
+        {".....", ".....", "####.", "..#..", ".#...", "####.", "....."}, // z
+    };
+
+    /** rows per {@link #SMALL_LC} glyph: the stock 6 plus one for the descenders. */
+    private static final int SLCB = 7;
+
+    /** {@link #fontdat} with {@link #LOWERCASE} patched in over a-z, at a 7 row stride. */
+    private static final byte[] SMALL_LC = smallWithLowercase();
+
+    private static byte[] smallWithLowercase() {
+        byte[] font = new byte[256 * SLCB];
+        for (int c = 0; c < 256; c++) {
+            System.arraycopy(fontdat, c * SFB, font, c * SLCB, SFB);
+        }
+        for (int i = 0; i < LOWERCASE.length; i++) {
+            String[] glyph = LOWERCASE[i];
+            for (int y = 0; y < SLCB; y++) {
+                int bits = 0;
+                for (int x = 0; x < glyph[y].length(); x++) {
+                    if (glyph[y].charAt(x) == '#') bits |= 1 << (7 - x);
+                }
+                font[('a' + i) * SLCB + y] = (byte) bits;
+            }
+        }
+        return font;
+    }
+
     /** track_type_table[TrackId.ordinal()] : {type, num}. */
     private static final TrackType[] TYPE_OF = {
         TrackType.FM, TrackType.FM, TrackType.FM, TrackType.FM, TrackType.FM, TrackType.FM,
@@ -298,6 +362,9 @@ public class FmDspVisualizer extends JComponent {
 
     // ---------- state ----------
     private FmDspDataSource source;
+
+    /** @see #setSubtitle(String) */
+    private String subtitle = "for JAVA/SWING vavi-apps-mdplayer";
 
     /** PC-98 font ROM, null when it was not supplied */
     private byte[] fontRom;
@@ -397,6 +464,17 @@ public class FmDspVisualizer extends JComponent {
     /** Switch palette index (0..{@link Palette#COUNT}-1). */
     public void setPaletteIndex(int index) {
         palette.select(index);
+    }
+
+    /**
+     * The line above "MUSIC FILE SELECTOR & STATUS DISPLAY", where the original has the
+     * pre-rendered "for UNIX/LINUX GTK+3..." bitmap. {@code null} restores that bitmap.
+     * <p>
+     * Drawn with the small font plus {@link #LOWERCASE}, and ANK only. At 5 px a character the
+     * 48th runs into the right edge and the text is clipped there.
+     */
+    public void setSubtitle(String subtitle) {
+        this.subtitle = subtitle;
     }
 
     /** Start the repaint timer. */
@@ -711,7 +789,14 @@ public class FmDspVisualizer extends JComponent {
         putSmall(VER1 + ".", VER_1_X, TOP_MUSIC_Y, 2, true);
         putSmall(VER2, VER_2_X, TOP_MUSIC_Y, 2, true);
 
-        vramblit(TOP_MUS_X, TOP_TEXT_Y, s_text, 0, TOP_TEXT_W, TOP_TEXT_H);
+        if (subtitle == null) {
+            vramblit(TOP_MUS_X, TOP_TEXT_Y, s_text, 0, TOP_TEXT_W, TOP_TEXT_H);
+        } else {
+            // same origin as the sprite: the glyphs cover its 5 rows and descenders hang one row
+            // below, which is free because the small font's blank row 0 keeps the
+            // "MUSIC FILE SELECTOR" line beneath from painting before row 8.
+            putline(subtitle, SMALL_LC, SFW, SLCB, SLCB, TOP_MUS_X, TOP_TEXT_Y, 2, false);
+        }
 
         putSmall("DR", DRIVER_TEXT_X, DRIVER_TEXT_Y, 7, true);
         putSmall("IVER", DRIVER_TEXT_2_X, DRIVER_TEXT_Y, 7, true);
