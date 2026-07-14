@@ -71,6 +71,17 @@ logger.log(Level.ERROR, e.getMessage());
         }
     }
 
+    /** address of FMP's internal work area in the emulated memory, 0 until the first frame */
+    int workPtr;
+
+    /** FMP's work area, for the visualizer. valid from the first frame on */
+    private final FmpWork work = new FmpWork();
+
+    /** FMP's work area, seen from the outside */
+    public FmpWork getWork() {
+        return work;
+    }
+
     int processOneFrame(Runnable stopper) {
         regs.setSS((short) 0xe000);
         regs.setSP((short) 0x0000);
@@ -90,6 +101,8 @@ logger.log(Level.ERROR, e.getMessage());
         regs.setSP((short) 0x0000);
         nise98.callRunFunctionCall((byte) 0xd2);
         int ptr = (0x2000 << 4) + (regs.getAX() & 0xffff);
+        workPtr = ptr;
+        work.setWork(nise98.getMem(), ptr);
         int fmpSloop_c = nise98.getMem().peekB(ptr + 0x17) & 0xff;
         int pcmUse = nise98.getMem().peekW(ptr + 0x20) & 0xffff;
         if ((pcmUse & 0xff00) != 0) {

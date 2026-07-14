@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -50,6 +51,14 @@ public class PmdDriver extends BaseDriver {
 
     private ICompiler pmdCompiler = null;
     private IDriver pmdDriver = null;
+
+    /** driver work area, the source of the "pmd" event */
+    private Map<String, Object> work = null;
+
+    /** how many {@link #processOneFrame()} calls between two "pmd" events */
+    private static final int visualizeInterval = Common.VGMProcSampleRate / 120;
+
+    private int visualizeCounter;
 
     private static String[] envPmd = null;
     private static String[] envPmdOpt = null;
@@ -157,6 +166,11 @@ public class PmdDriver extends BaseDriver {
             lp = Math.max(lp, 0);
             curLoop = lp;
 
+            if (work != null && work.get("work") != null && ++visualizeCounter >= visualizeInterval) {
+                visualizeCounter = 0;
+                fireEventHappened(this, "pmd", work.get("work"));
+            }
+
             if (pmdDriver.getStatus() < 1) {
                 if (pmdDriver.getStatus() == 0) {
                     Thread.sleep((int) (latency * 2.0)); // Wait for latency*2 until the actual voice is fully pronounced
@@ -259,6 +273,7 @@ public class PmdDriver extends BaseDriver {
                 (Consumer<ChipDatum>) this::writeOPNA1,
                 (BiConsumer<Long, Integer>) this::sendOPNAWait);
 
+        work = pmdDriver.getWork();
 
         pmdDriver.startRendering(Common.VGMProcSampleRate, new Tuple<>("YM2608", baseClock));
         pmdDriver.startMusic(0);
@@ -312,6 +327,8 @@ public class PmdDriver extends BaseDriver {
                 (Function<ChipDatum, Integer>) this::writeP86,
                 (Consumer<ChipDatum>) this::writeOPNA1,
                 (BiConsumer<Long, Integer>) this::sendOPNAWait);
+
+        work = pmdDriver.getWork();
 
         pmdDriver.startRendering(Common.VGMProcSampleRate, new Tuple<>("YM2608", baseClock));
         pmdDriver.startMusic(0);

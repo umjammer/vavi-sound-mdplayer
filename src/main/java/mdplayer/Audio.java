@@ -23,7 +23,6 @@ import vavi.sound.SoundUtil;
 import vavi.util.event.GenericListener;
 
 import static java.lang.System.getLogger;
-import static mdplayer.plugin.BasePlugin.BUFFER_SIZE;
 import static vavi.sound.SoundUtil.volume;
 
 
@@ -38,9 +37,13 @@ public final class Audio {
 
     public BasePlugin<? extends BaseDriver> plugin;
 
-    public final VisVolume visVolume = new VisVolume();
-
     private SourceDataLine line;
+
+    /** while true the render loop of {@link #play()} keeps running */
+    private volatile boolean rendering = false;
+
+    /** true when the render loop of {@link #play()} has exited */
+    private volatile boolean renderStopped = true;
 
     private Audio() {
     }
@@ -76,8 +79,6 @@ logger.log(Level.DEBUG, "line: " + e.getType());
 
     /** start blocking rendering */
     public boolean play() {
-        plugin.chipRegister.plugin(RealChipPlugin.class).startThread();
-
         plugin.prepare();
 //logger.log(Level.TRACE, "play: " + audio.stopped + ", " + audio.hashCode());
         listeners.forEach(l -> plugin.getDriver().addViewListener(l)); // TODO consider more
@@ -105,23 +106,49 @@ logger.log(Level.DEBUG, "line: " + e.getType());
 
         logger.log(Level.DEBUG, "driver: " + plugin.driverVirtual.getClass().getSimpleName());
 
-        while (true) {
+        // after stop(): stop() closes the real chip thread and waits for it, so a thread
+        // started before it would be shut down right away (it only survived the very first
+        // song because driverReal was still null then and the thread exited by itself).
+        plugin.chipRegister.plugin(RealChipPlugin.class).startThread();
+
+        rendering = true;
+        renderStopped = false;
+        try {
+            while (rendering) {
 //logger.log(Level.TRACE, "loop HERE");
-            short[] buffer = new short[4];
+                short[] buffer = new short[4];
 
-            int r;
-            if (plugin instanceof SampledPlugin sampledPlugin) {
-                r = sampledPlugin.read(buffer, 0, buffer.length);
-            } else {
-                r = render(buffer, 0, buffer.length);
-                if (setting.getMidiKbd().getUseMIDIKeyboard()) {
-                    plugin.chipRegister.plugin(MidiPlugin.class).keyboard(buffer, 0, buffer.length);
+                int r;
+                if (plugin instanceof SampledPlugin sampledPlugin) {
+                    r = sampledPlugin.read(buffer, 0, buffer.length);
+                } else {
+                    r = render(buffer, 0, buffer.length);
+                    if (setting.getMidiKbd().getUseMIDIKeyboard()) {
+                        plugin.chipRegister.plugin(MidiPlugin.class).keyboard(buffer, 0, buffer.length);
+                    }
+
+                    // detect the end of an emulated-chip song: once it has looped
+                    // enough times or the driver reached the end of its sequence,
+                    // start fading out. (The GUI drives this from its screen loop;
+                    // headless callers such as tests have no such loop, so play()
+                    // would otherwise render silence forever and never return.)
+                    if ((setting.getOther().getUseLoopTimes() && plugin.getVgmCurLoopCounter() > setting.getOther().getLoopTimes() - 1)
+                            || plugin.getVGMStopped()) {
+                        plugin.fadeout = true;
+                    }
                 }
-            }
-            if (r == -1) break;
+                if (r == -1) break;
 
-            this.write(buffer, 0, buffer.length);
-            Thread.yield();
+                this.write(buffer, 0, buffer.length);
+
+                // the fade-out has finished (render() marks the plugin stopped):
+                // leave the loop so play() returns.
+                if (plugin.stopped) break;
+
+                Thread.yield();
+            }
+        } finally {
+            renderStopped = true;
         }
 
         return false;
@@ -143,10 +170,7 @@ logger.log(Level.DEBUG, "line: " + e.getType());
             if (plugin.paused) pause();
 
             if (plugin.stopped) {
-                plugin.chipRegister.plugin(RealChipPlugin.class).setThreadClosed(true);
-                while (!plugin.chipRegister.plugin(RealChipPlugin.class).isThreadStopped()) { // TODO if realChip is not null, _trdStopped is false
-                    Thread.sleep(1);
-                }
+                plugin.chipRegister.plugin(RealChipPlugin.class).closeThread();
 
                 if (plugin instanceof SampledPlugin sampledPlugin) {
                     if (sampledPlugin.naudioFileReader != null) {
@@ -216,6 +240,19 @@ logger.log(Level.INFO, "stop: " + plugin.stopped + ", " + hashCode());
     /** */
     public void close() {
         logger.log(Level.INFO, "close enter");
+
+        // stop the render loop of play() and wait for it to exit, so the
+        // previous track's thread can never render into the line reopened by
+        // the next init() (shared singleton line/plugin fields).
+        rendering = false;
+        int timeout = 1000;
+        while (!renderStopped && timeout-- > 0) {
+            try {
+                Thread.sleep(1);
+            } catch (InterruptedException ignore) {
+            }
+        }
+
         plugin.close();
 
         try {
@@ -285,7 +322,7 @@ logger.log(Level.INFO, "stop: " + plugin.stopped + ", " + hashCode());
                     plugin.chipRegister.softReset(EnmModel.VirtualModel);
                     plugin.chipRegister.softReset(EnmModel.RealModel);
 
-                    plugin.mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, null);
+//                    plugin.mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, null);
 
                     plugin.chipRegister.close();
 
@@ -314,7 +351,7 @@ logger.log(Level.DEBUG, "stop: " + plugin.stopped);
 
     /** */
     private void updateVisualVolume(short[] buffer, int offset) {
-        visVolume.master = buffer[offset];
+        plugin.getDriver().fireEventHappened(this, "master", buffer, offset);
 
         for (var i : plugin.mds.getFirstInstruments()) {
             var vs = i.getView("volume", null);
@@ -370,10 +407,16 @@ logger.log(Level.DEBUG, "stop: " + plugin.stopped);
         return emuOnly;
     }
 
-    // TODO consider more
+    /**
+     * add to plugin before start playing
+     * TODO consider more
+     */
     private final List<GenericListener> listeners = new ArrayList<>();
 
-    // TODO consider more
+    /**
+     * view listeners (such as visualizer)
+     * TODO consider more
+     */
     public void addGenericListener(GenericListener l) {
         listeners.add(l);
     }

@@ -42,6 +42,7 @@ import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.PlayList;
 import mdplayer.Setting;
+import mdplayer.VisVolume;
 import mdplayer.chips.*;
 import mdplayer.chips.NpNesChip.DmcChip;
 import mdplayer.chips.NpNesChip.FdsChip;
@@ -177,6 +178,8 @@ public class frmMixer2 extends JFrame {
 //        }
 //    }
 
+    public final VisVolume visVolume = new VisVolume(); // TODO from Audio
+
     public void screenChangeParams() {
 
         newParam.Master.Volume = parent.setting.getBalance().getMasterVolume();
@@ -239,314 +242,314 @@ public class frmMixer2 extends JFrame {
         newParam.GimicOPNA.Volume = parent.setting.getBalance().getGimicOPNAVolume();
 
 
-        newParam.Master.VisVolume1 = Common.range(audio.visVolume.get("master") / 250, 0, 44);
+        newParam.Master.VisVolume1 = Common.range(visVolume.get("master") / 250, 0, 44);
         if (newParam.Master.VisVolume2 <= newParam.Master.VisVolume1) {
             newParam.Master.VisVolume2 = newParam.Master.VisVolume1;
             newParam.Master.VisVol2Cnt = 30;
         }
 
-        newParam.YM2151.VisVolume1 = Common.range(audio.visVolume.get("ym2151") / 200, 0, 44);
+        newParam.YM2151.VisVolume1 = Common.range(visVolume.get("ym2151") / 200, 0, 44);
         if (newParam.YM2151.VisVolume2 <= newParam.YM2151.VisVolume1) {
             newParam.YM2151.VisVolume2 = newParam.YM2151.VisVolume1;
             newParam.YM2151.VisVol2Cnt = 30;
         }
 
-        newParam.YM2203.VisVolume1 = Common.range(audio.visVolume.get("ym2203") / 200, 0, 44);
+        newParam.YM2203.VisVolume1 = Common.range(visVolume.get("ym2203") / 200, 0, 44);
         if (newParam.YM2203.VisVolume2 <= newParam.YM2203.VisVolume1) {
             newParam.YM2203.VisVolume2 = newParam.YM2203.VisVolume1;
             newParam.YM2203.VisVol2Cnt = 30;
         }
 
-        newParam.YM2203FM.VisVolume1 = Common.range(audio.visVolume.get("ym2203FM") / 200, 0, 44);
+        newParam.YM2203FM.VisVolume1 = Common.range(visVolume.get("ym2203FM") / 200, 0, 44);
         if (newParam.YM2203FM.VisVolume2 <= newParam.YM2203FM.VisVolume1) {
             newParam.YM2203FM.VisVolume2 = newParam.YM2203FM.VisVolume1;
             newParam.YM2203FM.VisVol2Cnt = 30;
         }
 
-        newParam.YM2203PSG.VisVolume1 = Common.range(audio.visVolume.get("ym2203SSG") / 120, 0, 44);
+        newParam.YM2203PSG.VisVolume1 = Common.range(visVolume.get("ym2203SSG") / 120, 0, 44);
         if (newParam.YM2203PSG.VisVolume2 <= newParam.YM2203PSG.VisVolume1) {
             newParam.YM2203PSG.VisVolume2 = newParam.YM2203PSG.VisVolume1;
             newParam.YM2203PSG.VisVol2Cnt = 30;
         }
 
-        newParam.YM2612.VisVolume1 = Common.range(audio.visVolume.get("ym2612") / 200, 0, 44);
+        newParam.YM2612.VisVolume1 = Common.range(visVolume.get("ym2612") / 200, 0, 44);
         if (newParam.YM2612.VisVolume2 <= newParam.YM2612.VisVolume1) {
             newParam.YM2612.VisVolume2 = newParam.YM2612.VisVolume1;
             newParam.YM2612.VisVol2Cnt = 30;
         }
 
-        newParam.YM2608.VisVolume1 = Common.range(audio.visVolume.get("ym2608") / 200, 0, 44);
+        newParam.YM2608.VisVolume1 = Common.range(visVolume.get("ym2608") / 200, 0, 44);
         if (newParam.YM2608.VisVolume2 <= newParam.YM2608.VisVolume1) {
             newParam.YM2608.VisVolume2 = newParam.YM2608.VisVolume1;
             newParam.YM2608.VisVol2Cnt = 30;
         }
 
-        newParam.YM2608FM.VisVolume1 = Common.range(audio.visVolume.get("ym2608FM") / 200, 0, 44);
+        newParam.YM2608FM.VisVolume1 = Common.range(visVolume.get("ym2608FM") / 200, 0, 44);
         if (newParam.YM2608FM.VisVolume2 <= newParam.YM2608FM.VisVolume1) {
             newParam.YM2608FM.VisVolume2 = newParam.YM2608FM.VisVolume1;
             newParam.YM2608FM.VisVol2Cnt = 30;
         }
 
-        newParam.YM2608PSG.VisVolume1 = Common.range(audio.visVolume.get("ym2608SSG") / 120, 0, 44);
+        newParam.YM2608PSG.VisVolume1 = Common.range(visVolume.get("ym2608SSG") / 120, 0, 44);
         if (newParam.YM2608PSG.VisVolume2 <= newParam.YM2608PSG.VisVolume1) {
             newParam.YM2608PSG.VisVolume2 = newParam.YM2608PSG.VisVolume1;
             newParam.YM2608PSG.VisVol2Cnt = 30;
         }
 
-        newParam.YM2608Rhythm.VisVolume1 = Common.range(audio.visVolume.get("ym2608Rtm") / 200, 0, 44);
+        newParam.YM2608Rhythm.VisVolume1 = Common.range(visVolume.get("ym2608Rtm") / 200, 0, 44);
         if (newParam.YM2608Rhythm.VisVolume2 <= newParam.YM2608Rhythm.VisVolume1) {
             newParam.YM2608Rhythm.VisVolume2 = newParam.YM2608Rhythm.VisVolume1;
             newParam.YM2608Rhythm.VisVol2Cnt = 30;
         }
 
-        newParam.YM2608Adpcm.VisVolume1 = Common.range(audio.visVolume.get("ym2608APCM") / 200, 0, 44);
+        newParam.YM2608Adpcm.VisVolume1 = Common.range(visVolume.get("ym2608APCM") / 200, 0, 44);
         if (newParam.YM2608Adpcm.VisVolume2 <= newParam.YM2608Adpcm.VisVolume1) {
             newParam.YM2608Adpcm.VisVolume2 = newParam.YM2608Adpcm.VisVolume1;
             newParam.YM2608Adpcm.VisVol2Cnt = 30;
         }
 
-        newParam.YM2610.VisVolume1 = Common.range(audio.visVolume.get("ym2610") / 200, 0, 44);
+        newParam.YM2610.VisVolume1 = Common.range(visVolume.get("ym2610") / 200, 0, 44);
         if (newParam.YM2610.VisVolume2 <= newParam.YM2610.VisVolume1) {
             newParam.YM2610.VisVolume2 = newParam.YM2610.VisVolume1;
             newParam.YM2610.VisVol2Cnt = 30;
         }
 
-        newParam.YM2610FM.VisVolume1 = Common.range(audio.visVolume.get("ym2610FM") / 200, 0, 44);
+        newParam.YM2610FM.VisVolume1 = Common.range(visVolume.get("ym2610FM") / 200, 0, 44);
         if (newParam.YM2610FM.VisVolume2 <= newParam.YM2610FM.VisVolume1) {
             newParam.YM2610FM.VisVolume2 = newParam.YM2610FM.VisVolume1;
             newParam.YM2610FM.VisVol2Cnt = 30;
         }
 
-        newParam.YM2610PSG.VisVolume1 = Common.range(audio.visVolume.get("ym2610SSG") / 120, 0, 44);
+        newParam.YM2610PSG.VisVolume1 = Common.range(visVolume.get("ym2610SSG") / 120, 0, 44);
         if (newParam.YM2610PSG.VisVolume2 <= newParam.YM2610PSG.VisVolume1) {
             newParam.YM2610PSG.VisVolume2 = newParam.YM2610PSG.VisVolume1;
             newParam.YM2610PSG.VisVol2Cnt = 30;
         }
 
-        newParam.YM2610AdpcmA.VisVolume1 = Common.range(audio.visVolume.get("ym2610APCMA") / 200, 0, 44);
+        newParam.YM2610AdpcmA.VisVolume1 = Common.range(visVolume.get("ym2610APCMA") / 200, 0, 44);
         if (newParam.YM2610AdpcmA.VisVolume2 <= newParam.YM2610AdpcmA.VisVolume1) {
             newParam.YM2610AdpcmA.VisVolume2 = newParam.YM2610AdpcmA.VisVolume1;
             newParam.YM2610AdpcmA.VisVol2Cnt = 30;
         }
 
-        newParam.YM2610AdpcmB.VisVolume1 = Common.range(audio.visVolume.get("ym2610APCMB") / 200, 0, 44);
+        newParam.YM2610AdpcmB.VisVolume1 = Common.range(visVolume.get("ym2610APCMB") / 200, 0, 44);
         if (newParam.YM2610AdpcmB.VisVolume2 <= newParam.YM2610AdpcmB.VisVolume1) {
             newParam.YM2610AdpcmB.VisVolume2 = newParam.YM2610AdpcmB.VisVolume1;
             newParam.YM2610AdpcmB.VisVol2Cnt = 30;
         }
 
 
-        newParam.YM2413.VisVolume1 = Common.range(audio.visVolume.get("ym2413") / 200, 0, 44);
+        newParam.YM2413.VisVolume1 = Common.range(visVolume.get("ym2413") / 200, 0, 44);
         if (newParam.YM2413.VisVolume2 <= newParam.YM2413.VisVolume1) {
             newParam.YM2413.VisVolume2 = newParam.YM2413.VisVolume1;
             newParam.YM2413.VisVol2Cnt = 30;
         }
 
-        newParam.YM3526.VisVolume1 = Common.range(audio.visVolume.get("ym3526") / 200, 0, 44);
+        newParam.YM3526.VisVolume1 = Common.range(visVolume.get("ym3526") / 200, 0, 44);
         if (newParam.YM3526.VisVolume2 <= newParam.YM3526.VisVolume1) {
             newParam.YM3526.VisVolume2 = newParam.YM3526.VisVolume1;
             newParam.YM3526.VisVol2Cnt = 30;
         }
 
-        newParam.Y8950.VisVolume1 = Common.range(audio.visVolume.get("y8950") / 200, 0, 44);
+        newParam.Y8950.VisVolume1 = Common.range(visVolume.get("y8950") / 200, 0, 44);
         if (newParam.Y8950.VisVolume2 <= newParam.Y8950.VisVolume1) {
             newParam.Y8950.VisVolume2 = newParam.Y8950.VisVolume1;
             newParam.Y8950.VisVol2Cnt = 30;
         }
 
-        newParam.YM3812.VisVolume1 = Common.range(audio.visVolume.get("ym3812") / 200, 0, 44);
+        newParam.YM3812.VisVolume1 = Common.range(visVolume.get("ym3812") / 200, 0, 44);
         if (newParam.YM3812.VisVolume2 <= newParam.YM3812.VisVolume1) {
             newParam.YM3812.VisVolume2 = newParam.YM3812.VisVolume1;
             newParam.YM3812.VisVol2Cnt = 30;
         }
 
-        newParam.YMF262.VisVolume1 = Common.range(audio.visVolume.get("ymf262") / 200, 0, 44);
+        newParam.YMF262.VisVolume1 = Common.range(visVolume.get("ymf262") / 200, 0, 44);
         if (newParam.YMF262.VisVolume2 <= newParam.YMF262.VisVolume1) {
             newParam.YMF262.VisVolume2 = newParam.YMF262.VisVolume1;
             newParam.YMF262.VisVol2Cnt = 30;
         }
 
-        newParam.YMF278B.VisVolume1 = Common.range(audio.visVolume.get("ymf278b") / 200, 0, 44);
+        newParam.YMF278B.VisVolume1 = Common.range(visVolume.get("ymf278b") / 200, 0, 44);
         if (newParam.YMF278B.VisVolume2 <= newParam.YMF278B.VisVolume1) {
             newParam.YMF278B.VisVolume2 = newParam.YMF278B.VisVolume1;
             newParam.YMF278B.VisVol2Cnt = 30;
         }
 
-        newParam.YMZ280B.VisVolume1 = Common.range(audio.visVolume.get("ymz280b") / 200, 0, 44);
+        newParam.YMZ280B.VisVolume1 = Common.range(visVolume.get("ymz280b") / 200, 0, 44);
         if (newParam.YMZ280B.VisVolume2 <= newParam.YMZ280B.VisVolume1) {
             newParam.YMZ280B.VisVolume2 = newParam.YMZ280B.VisVolume1;
             newParam.YMZ280B.VisVol2Cnt = 30;
         }
 
-        newParam.YMF271.VisVolume1 = Common.range(audio.visVolume.get("ymf271") / 200, 0, 44);
+        newParam.YMF271.VisVolume1 = Common.range(visVolume.get("ymf271") / 200, 0, 44);
         if (newParam.YMF271.VisVolume2 <= newParam.YMF271.VisVolume1) {
             newParam.YMF271.VisVolume2 = newParam.YMF271.VisVolume1;
             newParam.YMF271.VisVol2Cnt = 30;
         }
 
-        newParam.AY8910.VisVolume1 = Common.range(audio.visVolume.get("ay8910") / 120, 0, 44);
+        newParam.AY8910.VisVolume1 = Common.range(visVolume.get("ay8910") / 120, 0, 44);
         if (newParam.AY8910.VisVolume2 <= newParam.AY8910.VisVolume1) {
             newParam.AY8910.VisVolume2 = newParam.AY8910.VisVolume1;
             newParam.AY8910.VisVol2Cnt = 30;
         }
 
-        newParam.SN76489.VisVolume1 = Common.range(audio.visVolume.get("sn76489") / 120, 0, 44);
+        newParam.SN76489.VisVolume1 = Common.range(visVolume.get("sn76489") / 120, 0, 44);
         if (newParam.SN76489.VisVolume2 <= newParam.SN76489.VisVolume1) {
             newParam.SN76489.VisVolume2 = newParam.SN76489.VisVolume1;
             newParam.SN76489.VisVol2Cnt = 30;
         }
 
-        newParam.HuC6280.VisVolume1 = Common.range(audio.visVolume.get("huc6280") / 120, 0, 44);
+        newParam.HuC6280.VisVolume1 = Common.range(visVolume.get("huc6280") / 120, 0, 44);
         if (newParam.HuC6280.VisVolume2 <= newParam.HuC6280.VisVolume1) {
             newParam.HuC6280.VisVolume2 = newParam.HuC6280.VisVolume1;
             newParam.HuC6280.VisVol2Cnt = 30;
         }
 
 
-        newParam.RF5C164.VisVolume1 = Common.range(audio.visVolume.get("rf5c164") / 200, 0, 44);
+        newParam.RF5C164.VisVolume1 = Common.range(visVolume.get("rf5c164") / 200, 0, 44);
         if (newParam.RF5C164.VisVolume2 <= newParam.RF5C164.VisVolume1) {
             newParam.RF5C164.VisVolume2 = newParam.RF5C164.VisVolume1;
             newParam.RF5C164.VisVol2Cnt = 30;
         }
 
-        newParam.RF5C68.VisVolume1 = Common.range(audio.visVolume.get("rf5c68") / 200, 0, 44);
+        newParam.RF5C68.VisVolume1 = Common.range(visVolume.get("rf5c68") / 200, 0, 44);
         if (newParam.RF5C68.VisVolume2 <= newParam.RF5C68.VisVolume1) {
             newParam.RF5C68.VisVolume2 = newParam.RF5C68.VisVolume1;
             newParam.RF5C68.VisVol2Cnt = 30;
         }
 
-        newParam.PWM.VisVolume1 = Common.range(audio.visVolume.get("pwm") / 200, 0, 44);
+        newParam.PWM.VisVolume1 = Common.range(visVolume.get("pwm") / 200, 0, 44);
         if (newParam.PWM.VisVolume2 <= newParam.PWM.VisVolume1) {
             newParam.PWM.VisVolume2 = newParam.PWM.VisVolume1;
             newParam.PWM.VisVol2Cnt = 30;
         }
 
-        newParam.OKIM6258.VisVolume1 = Common.range(audio.visVolume.get("okim6258") / 200, 0, 44);
+        newParam.OKIM6258.VisVolume1 = Common.range(visVolume.get("okim6258") / 200, 0, 44);
         if (newParam.OKIM6258.VisVolume2 <= newParam.OKIM6258.VisVolume1) {
             newParam.OKIM6258.VisVolume2 = newParam.OKIM6258.VisVolume1;
             newParam.OKIM6258.VisVol2Cnt = 30;
         }
 
-        newParam.OKIM6295.VisVolume1 = Common.range(audio.visVolume.get("okim6295") / 200, 0, 44);
+        newParam.OKIM6295.VisVolume1 = Common.range(visVolume.get("okim6295") / 200, 0, 44);
         if (newParam.OKIM6295.VisVolume2 <= newParam.OKIM6295.VisVolume1) {
             newParam.OKIM6295.VisVolume2 = newParam.OKIM6295.VisVolume1;
             newParam.OKIM6295.VisVol2Cnt = 30;
         }
 
-        newParam.C140.VisVolume1 = Common.range(audio.visVolume.get("c140") / 200, 0, 44);
+        newParam.C140.VisVolume1 = Common.range(visVolume.get("c140") / 200, 0, 44);
         if (newParam.C140.VisVolume2 <= newParam.C140.VisVolume1) {
             newParam.C140.VisVolume2 = newParam.C140.VisVolume1;
             newParam.C140.VisVol2Cnt = 30;
         }
 
-        newParam.C352.VisVolume1 = Common.range(audio.visVolume.get("c352") / 200, 0, 44);
+        newParam.C352.VisVolume1 = Common.range(visVolume.get("c352") / 200, 0, 44);
         if (newParam.C352.VisVolume2 <= newParam.C352.VisVolume1) {
             newParam.C352.VisVolume2 = newParam.C352.VisVolume1;
             newParam.C352.VisVol2Cnt = 30;
         }
 
-        newParam.SAA1099.VisVolume1 = Common.range(audio.visVolume.get("saa1099") / 200, 0, 44);
+        newParam.SAA1099.VisVolume1 = Common.range(visVolume.get("saa1099") / 200, 0, 44);
         if (newParam.SAA1099.VisVolume2 <= newParam.SAA1099.VisVolume1) {
             newParam.SAA1099.VisVolume2 = newParam.SAA1099.VisVolume1;
             newParam.SAA1099.VisVol2Cnt = 30;
         }
 
-        newParam.PPZ8.VisVolume1 = Common.range(audio.visVolume.get("ppz8") / 200, 0, 44);
+        newParam.PPZ8.VisVolume1 = Common.range(visVolume.get("ppz8") / 200, 0, 44);
         if (newParam.PPZ8.VisVolume2 <= newParam.PPZ8.VisVolume1) {
             newParam.PPZ8.VisVolume2 = newParam.PPZ8.VisVolume1;
             newParam.PPZ8.VisVol2Cnt = 30;
         }
 
-        newParam.SEGAPCM.VisVolume1 = Common.range(audio.visVolume.get("segaPCM") / 200, 0, 44);
+        newParam.SEGAPCM.VisVolume1 = Common.range(visVolume.get("segaPCM") / 200, 0, 44);
         if (newParam.SEGAPCM.VisVolume2 <= newParam.SEGAPCM.VisVolume1) {
             newParam.SEGAPCM.VisVolume2 = newParam.SEGAPCM.VisVolume1;
             newParam.SEGAPCM.VisVol2Cnt = 30;
         }
 
-        newParam.MultiPCM.VisVolume1 = Common.range(audio.visVolume.get("multiPCM") / 200, 0, 44);
+        newParam.MultiPCM.VisVolume1 = Common.range(visVolume.get("multiPCM") / 200, 0, 44);
         if (newParam.MultiPCM.VisVolume2 <= newParam.MultiPCM.VisVolume1) {
             newParam.MultiPCM.VisVolume2 = newParam.MultiPCM.VisVolume1;
             newParam.MultiPCM.VisVol2Cnt = 30;
         }
 
-        newParam.K051649.VisVolume1 = Common.range(audio.visVolume.get("k051649") / 200, 0, 44);
+        newParam.K051649.VisVolume1 = Common.range(visVolume.get("k051649") / 200, 0, 44);
         if (newParam.K051649.VisVolume2 <= newParam.K051649.VisVolume1) {
             newParam.K051649.VisVolume2 = newParam.K051649.VisVolume1;
             newParam.K051649.VisVol2Cnt = 30;
         }
 
-        newParam.K053260.VisVolume1 = Common.range(audio.visVolume.get("k053260") / 200, 0, 44);
+        newParam.K053260.VisVolume1 = Common.range(visVolume.get("k053260") / 200, 0, 44);
         if (newParam.K053260.VisVolume2 <= newParam.K053260.VisVolume1) {
             newParam.K053260.VisVolume2 = newParam.K053260.VisVolume1;
             newParam.K053260.VisVol2Cnt = 30;
         }
 
-        newParam.K054539.VisVolume1 = Common.range(audio.visVolume.get("k054539") / 200, 0, 44);
+        newParam.K054539.VisVolume1 = Common.range(visVolume.get("k054539") / 200, 0, 44);
         if (newParam.K054539.VisVolume2 <= newParam.K054539.VisVolume1) {
             newParam.K054539.VisVolume2 = newParam.K054539.VisVolume1;
             newParam.K054539.VisVol2Cnt = 30;
         }
 
-        newParam.QSound.VisVolume1 = Common.range(audio.visVolume.get("qSound") / 200, 0, 44);
+        newParam.QSound.VisVolume1 = Common.range(visVolume.get("qSound") / 200, 0, 44);
         if (newParam.QSound.VisVolume2 <= newParam.QSound.VisVolume1) {
             newParam.QSound.VisVolume2 = newParam.QSound.VisVolume1;
             newParam.QSound.VisVol2Cnt = 30;
         }
 
-        newParam.GA20.VisVolume1 = Common.range(audio.visVolume.get("ga20") / 200, 0, 44);
+        newParam.GA20.VisVolume1 = Common.range(visVolume.get("ga20") / 200, 0, 44);
         if (newParam.GA20.VisVolume2 <= newParam.GA20.VisVolume1) {
             newParam.GA20.VisVolume2 = newParam.GA20.VisVolume1;
             newParam.GA20.VisVol2Cnt = 30;
         }
 
-        newParam.APU.VisVolume1 = Common.range(audio.visVolume.get("APU") / 200, 0, 44);
+        newParam.APU.VisVolume1 = Common.range(visVolume.get("APU") / 200, 0, 44);
         if (newParam.APU.VisVolume2 <= newParam.APU.VisVolume1) {
             newParam.APU.VisVolume2 = newParam.APU.VisVolume1;
             newParam.APU.VisVol2Cnt = 30;
         }
 
-        newParam.DMC.VisVolume1 = Common.range(audio.visVolume.get("DMC") / 350, 0, 44);
+        newParam.DMC.VisVolume1 = Common.range(visVolume.get("DMC") / 350, 0, 44);
         if (newParam.DMC.VisVolume2 <= newParam.DMC.VisVolume1) {
             newParam.DMC.VisVolume2 = newParam.DMC.VisVolume1;
             newParam.DMC.VisVol2Cnt = 30;
         }
 
-        newParam.FDS.VisVolume1 = Common.range(audio.visVolume.get("FDS") / 200, 0, 44);
+        newParam.FDS.VisVolume1 = Common.range(visVolume.get("FDS") / 200, 0, 44);
         if (newParam.FDS.VisVolume2 <= newParam.FDS.VisVolume1) {
             newParam.FDS.VisVolume2 = newParam.FDS.VisVolume1;
             newParam.FDS.VisVol2Cnt = 30;
         }
 
-        newParam.MMC5.VisVolume1 = Common.range(audio.visVolume.get("MMC5") / 50, 0, 44);
+        newParam.MMC5.VisVolume1 = Common.range(visVolume.get("MMC5") / 50, 0, 44);
         if (newParam.MMC5.VisVolume2 <= newParam.K054539.VisVolume1) {
             newParam.MMC5.VisVolume2 = newParam.MMC5.VisVolume1;
             newParam.MMC5.VisVol2Cnt = 30;
         }
 
-        newParam.N160.VisVolume1 = Common.range(audio.visVolume.get("N160") / 50, 0, 44);
+        newParam.N160.VisVolume1 = Common.range(visVolume.get("N160") / 50, 0, 44);
         if (newParam.N160.VisVolume2 <= newParam.N160.VisVolume1) {
             newParam.N160.VisVolume2 = newParam.N160.VisVolume1;
             newParam.N160.VisVol2Cnt = 30;
         }
-        newParam.VRC6.VisVolume1 = Common.range(audio.visVolume.get("Vrc6Inst") / 50, 0, 44);
+        newParam.VRC6.VisVolume1 = Common.range(visVolume.get("Vrc6Inst") / 50, 0, 44);
         if (newParam.VRC6.VisVolume2 <= newParam.VRC6.VisVolume1) {
             newParam.VRC6.VisVolume2 = newParam.VRC6.VisVolume1;
             newParam.VRC6.VisVol2Cnt = 30;
         }
 
-        newParam.VRC7.VisVolume1 = Common.range(audio.visVolume.get("VRC7") / 50, 0, 44);
+        newParam.VRC7.VisVolume1 = Common.range(visVolume.get("VRC7") / 50, 0, 44);
         if (newParam.VRC7.VisVolume2 <= newParam.VRC7.VisVolume1) {
             newParam.VRC7.VisVolume2 = newParam.VRC7.VisVolume1;
             newParam.VRC7.VisVol2Cnt = 30;
         }
 
-        newParam.FME7.VisVolume1 = Common.range(audio.visVolume.get("FME7") / 50, 0, 44);
+        newParam.FME7.VisVolume1 = Common.range(visVolume.get("FME7") / 50, 0, 44);
         if (newParam.FME7.VisVolume2 <= newParam.FME7.VisVolume1) {
             newParam.FME7.VisVolume2 = newParam.FME7.VisVolume1;
             newParam.FME7.VisVol2Cnt = 30;
         }
 
-        newParam.DMG.VisVolume1 = Common.range(audio.visVolume.get("DMG") / 50, 0, 44);
+        newParam.DMG.VisVolume1 = Common.range(visVolume.get("DMG") / 50, 0, 44);
         if (newParam.DMG.VisVolume2 <= newParam.DMG.VisVolume1) {
             newParam.DMG.VisVolume2 = newParam.DMG.VisVolume1;
             newParam.DMG.VisVol2Cnt = 30;
@@ -835,61 +838,61 @@ public class frmMixer2 extends JFrame {
     }
 
     public void screenInit() {
-        audio.visVolume.put("master", -1);
-        audio.visVolume.put("ym2151", -1);
-        audio.visVolume.put("ym2203", -1);
-        audio.visVolume.put("ym2203FM", -1);
-        audio.visVolume.put("ym2203SSG", -1);
-        audio.visVolume.put("ym2612", -1);
-        audio.visVolume.put("ym2608", -1);
-        audio.visVolume.put("ym2608APCM", -1);
-        audio.visVolume.put("ym2608FM", -1);
-        audio.visVolume.put("ym2608Rtm", -1);
-        audio.visVolume.put("ym2608SSG", -1);
-        audio.visVolume.put("ym2610", -1);
-        audio.visVolume.put("ym2610APCMA", -1);
-        audio.visVolume.put("ym2610APCMB", -1);
-        audio.visVolume.put("ym2610FM", -1);
-        audio.visVolume.put("ym2610SSG", -1);
+        visVolume.put("master", -1);
+        visVolume.put("ym2151", -1);
+        visVolume.put("ym2203", -1);
+        visVolume.put("ym2203FM", -1);
+        visVolume.put("ym2203SSG", -1);
+        visVolume.put("ym2612", -1);
+        visVolume.put("ym2608", -1);
+        visVolume.put("ym2608APCM", -1);
+        visVolume.put("ym2608FM", -1);
+        visVolume.put("ym2608Rtm", -1);
+        visVolume.put("ym2608SSG", -1);
+        visVolume.put("ym2610", -1);
+        visVolume.put("ym2610APCMA", -1);
+        visVolume.put("ym2610APCMB", -1);
+        visVolume.put("ym2610FM", -1);
+        visVolume.put("ym2610SSG", -1);
 
-        audio.visVolume.put("ym2413", -1);
-        audio.visVolume.put("ym3526", -1);
-        audio.visVolume.put("y8950", -1);
-        audio.visVolume.put("ym3812", -1);
-        audio.visVolume.put("ymf262", -1);
-        audio.visVolume.put("ymf278b", -1);
-        audio.visVolume.put("ymz280b", -1);
-        audio.visVolume.put("ymf271", -1);
-        audio.visVolume.put("ay8910", -1);
-        audio.visVolume.put("sn76489", -1);
-        audio.visVolume.put("huc6280", -1);
+        visVolume.put("ym2413", -1);
+        visVolume.put("ym3526", -1);
+        visVolume.put("y8950", -1);
+        visVolume.put("ym3812", -1);
+        visVolume.put("ymf262", -1);
+        visVolume.put("ymf278b", -1);
+        visVolume.put("ymz280b", -1);
+        visVolume.put("ymf271", -1);
+        visVolume.put("ay8910", -1);
+        visVolume.put("sn76489", -1);
+        visVolume.put("huc6280", -1);
 
-        audio.visVolume.put("rf5c164", -1);
-        audio.visVolume.put("rf5c68", -1);
-        audio.visVolume.put("pwm", -1);
-        audio.visVolume.put("okim6258", -1);
-        audio.visVolume.put("okim6295", -1);
-        audio.visVolume.put("c140", -1);
-        audio.visVolume.put("c352", -1);
-        audio.visVolume.put("saa1099", -1);
-        audio.visVolume.put("ppz8", -1);
-        audio.visVolume.put("segaPCM", -1);
-        audio.visVolume.put("multiPCM", -1);
-        audio.visVolume.put("k051649", -1);
-        audio.visVolume.put("k053260", -1);
-        audio.visVolume.put("k054539", -1);
-        audio.visVolume.put("qSound", -1);
-        audio.visVolume.put("ga20", -1);
+        visVolume.put("rf5c164", -1);
+        visVolume.put("rf5c68", -1);
+        visVolume.put("pwm", -1);
+        visVolume.put("okim6258", -1);
+        visVolume.put("okim6295", -1);
+        visVolume.put("c140", -1);
+        visVolume.put("c352", -1);
+        visVolume.put("saa1099", -1);
+        visVolume.put("ppz8", -1);
+        visVolume.put("segaPCM", -1);
+        visVolume.put("multiPCM", -1);
+        visVolume.put("k051649", -1);
+        visVolume.put("k053260", -1);
+        visVolume.put("k054539", -1);
+        visVolume.put("qSound", -1);
+        visVolume.put("ga20", -1);
 
-        audio.visVolume.put("APU", 0);
-        audio.visVolume.put("DMC", 0);
-        audio.visVolume.put("FDS", 0);
-        audio.visVolume.put("MMC5", 0);
-        audio.visVolume.put("N160", 0);
-        audio.visVolume.put("Vrc6Inst", 0);
-        audio.visVolume.put("VRC7", 0);
-        audio.visVolume.put("FME7", 0);
-        audio.visVolume.put("DMG", -1);
+        visVolume.put("APU", 0);
+        visVolume.put("DMC", 0);
+        visVolume.put("FDS", 0);
+        visVolume.put("MMC5", 0);
+        visVolume.put("N160", 0);
+        visVolume.put("Vrc6Inst", 0);
+        visVolume.put("VRC7", 0);
+        visVolume.put("FME7", 0);
+        visVolume.put("DMG", -1);
     }
 
     private final KeyListener frmMixer2_KeyDown = new KeyAdapter() {

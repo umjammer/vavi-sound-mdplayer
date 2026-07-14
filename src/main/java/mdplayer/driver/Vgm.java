@@ -1474,7 +1474,7 @@ logger.log(Level.TRACE, "Bad PCM Table Length!");
         int vgm = ByteUtil.readLeInt(vgmBuf, 0x00);
         if (vgm != FCC_VGM) return false;
 
-        vgmEof = ByteUtil.readLeInt(vgmBuf, 0x04);
+        vgmEof = ByteUtil.readLeInt(vgmBuf, 0x04) + 4;
 
         int version = ByteUtil.readLeInt(vgmBuf, 0x08);
         setVersion.accept("%d.%d%d".formatted((version & 0xf00) / 0x100, (version & 0xf0) / 0x10, (version & 0xf)));

@@ -187,7 +187,7 @@ public class RCP {
     private double relativeTempoChangeTickSlice;
     private boolean relativeTempoChangeSW = false;
 
-    /** @return true: v2, false: v3: null: not match */
+    /** @return ternary true: v2, false: v3: null: not match */
     static Boolean checkHeadString(byte[] buf, Charset charset) {
         if (buf == null || buf.length < 32) {
 logger.log(Level.INFO, "buf is null or buf.length < 32");
@@ -531,7 +531,7 @@ logger.log(Level.INFO, "checkHeadString");
     private void extractSame(MIDITrack trk) {
         MIDIEvent evt = trk.getPart().getFirst().getStartEvent();
         while (evt != null) {
-            if (evt.getEventType() == MIDIEventType.MetaSequencerSpecific && evt.getMIDIMessage()[0] == (byte) MIDISpEventType.SameMeasure.ordinal()) {
+            if (evt.getEventType() == MIDIEventType.MetaSequencerSpecific && evt.getMIDIMessage()[0] == (byte) MIDISpEventType.SameMeasure.v) {
 
                 int ofsMea;
                 if (isG36) {
@@ -542,33 +542,33 @@ logger.log(Level.INFO, "checkHeadString");
                 } else {
                     ofsMea = (evt.getMIDIMessages()[0][0] & 0xff) + (evt.getMIDIMessages()[0][1] & 3) * 0x100;
                 }
-                int Mea = 0;
-                int MeaS;
+                int mea = 0;
+                int meaS;
                 MIDIEvent mEvt = trk.getPart().getFirst().getStartEvent();
                 if (ofsMea != 0) {
                     while (mEvt != null) {
-                        MeaS = 0;
+                        meaS = 0;
                         if (mEvt.getEventType() == MIDIEventType.MetaSequencerSpecific) {
                             MIDIEvent nEvt = trk.getPart().getFirst().getNextEvent(mEvt);
                             int s;
                             if (nEvt.getEventType() == MIDIEventType.MetaSequencerSpecific
-                                    && nEvt.getMIDIMessage()[0] == (byte) MIDISpEventType.SameMeasure.ordinal()) {
+                                    && nEvt.getMIDIMessage()[0] == (byte) MIDISpEventType.SameMeasure.v) {
                                 s = 0;
                             } else {
                                 s = 1;
                             }
-                            if (mEvt.getMIDIMessage()[0] == (byte) MIDISpEventType.MeasureEnd.ordinal()) {
-                                MeaS = s;
+                            if (mEvt.getMIDIMessage()[0] == (byte) MIDISpEventType.MeasureEnd.v) {
+                                meaS = s;
                             }
-                            if (mEvt.getMIDIMessage()[0] == (byte) MIDISpEventType.SameMeasure.ordinal()) {
-                                Mea++;
-                                if (ofsMea == Mea) break;
-                                MeaS = s;
+                            if (mEvt.getMIDIMessage()[0] == (byte) MIDISpEventType.SameMeasure.v) {
+                                mea++;
+                                if (ofsMea == mea) break;
+                                meaS = s;
                             }
                         }
                         mEvt = trk.getPart().getFirst().getNextEvent(mEvt);
-                        Mea += MeaS;
-                        if (ofsMea == Mea) break;
+                        mea += meaS;
+                        if (ofsMea == mea) break;
                     }
                 }
 
@@ -686,8 +686,8 @@ logger.log(Level.INFO, "checkHeadString");
                     pk[1],
                     MIDISpEventType.BankProgram,
                     new byte[][] {
-                            {(byte) MIDIEventType.ProgramChange.ordinal(), (byte) pk[2]},
-                            {(byte) MIDIEventType.ControlChange.ordinal(), 0x00, (byte) pk[3]}
+                            {(byte) MIDIEventType.ProgramChange.v, (byte) pk[2]},
+                            {(byte) MIDIEventType.ControlChange.v, 0x00, (byte) pk[3]}
                     });
             pt += skipPtr;
             break;
@@ -726,7 +726,7 @@ logger.log(Level.INFO, "checkHeadString");
                     pEvt,
                     pk[1],
                     MIDIEventType.ChannelAfterTouch,
-                    new byte[] {(byte) MIDIEventType.ChannelAfterTouch.ordinal(), (byte) pk[2]}
+                    new byte[] {(byte) MIDIEventType.ChannelAfterTouch.v, (byte) pk[2]}
             );
             pt += skipPtr;
             break;
@@ -735,7 +735,7 @@ logger.log(Level.INFO, "checkHeadString");
                     pEvt,
                     pk[1],
                     MIDIEventType.ControlChange,
-                    new byte[] {(byte) MIDIEventType.ControlChange.ordinal(), (byte) pk[2], (byte) pk[3]}
+                    new byte[] {(byte) MIDIEventType.ControlChange.v, (byte) pk[2], (byte) pk[3]}
             );
             pt += skipPtr;
             break;
@@ -744,7 +744,7 @@ logger.log(Level.INFO, "checkHeadString");
                     pEvt,
                     pk[1],
                     MIDIEventType.ProgramChange,
-                    new byte[] {(byte) MIDIEventType.ProgramChange.ordinal(), (byte) pk[2]}
+                    new byte[] {(byte) MIDIEventType.ProgramChange.v, (byte) pk[2]}
             );
             pt += skipPtr;
             break;
@@ -753,7 +753,7 @@ logger.log(Level.INFO, "checkHeadString");
                     pEvt,
                     pk[1],
                     MIDIEventType.KeyAfterTouch,
-                    new byte[] {(byte) MIDIEventType.KeyAfterTouch.ordinal(), (byte) pk[2], (byte) pk[3]}
+                    new byte[] {(byte) MIDIEventType.KeyAfterTouch.v, (byte) pk[2], (byte) pk[3]}
             );
             pt += skipPtr;
             break;
@@ -762,7 +762,7 @@ logger.log(Level.INFO, "checkHeadString");
                     pEvt,
                     pk[1],
                     MIDIEventType.PitchBend,
-                    new byte[] {(byte) MIDIEventType.PitchBend.ordinal(), (byte) pk[2], (byte) pk[3]}
+                    new byte[] {(byte) MIDIEventType.PitchBend.v, (byte) pk[2], (byte) pk[3]}
             );
             pt += skipPtr;
             break;
@@ -928,8 +928,7 @@ logger.log(Level.INFO, "checkHeadString");
             tk.setSameMeasure(null);
             Arrays.fill(tk.getNoteGateTime(), Integer.MAX_VALUE);
             MIDIPart prt = tk.getStartPart();
-            while (true) {
-                if (prt == null) break;
+            while (prt != null) {
                 prt.setStartTick(tk.getSt() + minSt);
                 prt.setENowIndex(prt.getEStartIndex());
                 prt = tk.getNextPart(prt);
@@ -943,10 +942,10 @@ logger.log(Level.INFO, "checkHeadString");
 //            }
         }
 
-        //// MIDI Clock Generation
+        // MIDI Clock Generation
         //MID.Clock = new MIDIClock();
         //MIDIClock.Create(0, ps.TimeBase, 60000000 / ps.Tempo);
-        //// Resetting and starting the MIDI clock
+        // Resetting and starting the MIDI clock
         //MIDIClock.Reset();
         //MIDIClock.Start();
     }
@@ -1171,7 +1170,7 @@ logger.log(Level.INFO, "checkHeadString");
     }
 
     void efMetaCopyrightNotice(MIDITrack trk, MIDIEvent eve) {
-        // prj.Information.Copyright = (Charset.forName("Shift_JIS").new String(eve.getMIDIMessage())).replace("\0", "");
+        //prj.Information.Copyright = (Charset.forName("Shift_JIS").new String(eve.getMIDIMessage())).replace("\0", "");
     }
 
     void efMetaTrackName(MIDITrack trk, MIDIEvent eve) {
@@ -1183,7 +1182,7 @@ logger.log(Level.INFO, "checkHeadString");
     }
 
     void efMetaLyric(MIDITrack trk, MIDIEvent eve) {
-        // ps.Lyric = (Charset.forName("Shift_JIS").new String(eve.MIDIMessage, 2, eve.MIDIMessage.length - 2)).replace("\0", "");
+        //ps.Lyric = (Charset.forName("Shift_JIS").new String(eve.MIDIMessage, 2, eve.MIDIMessage.length - 2)).replace("\0", "");
     }
 
     void efMetaMarker(MIDITrack trk, MIDIEvent eve) {
@@ -1238,13 +1237,13 @@ logger.log(Level.INFO, "checkHeadString");
     }
 
     void efNoteOff(MIDITrack trk, MIDIEvent eve) {
-        // ef3byteMsg(trk, eve);
+        //ef3byteMsg(trk, eve);
     }
 
     void efNoteOn(MIDITrack trk, MIDIEvent eve) {
         if (eve.getGate() == 0) return;
         int okey = eve.getMIDIMessage()[1];
-        // int key = (okey + ((trk.key != null) ? (int)trk.key : 0));
+        //int key = (okey + ((trk.key != null) ? (int)trk.key : 0));
         int key = okey + trk.getKey();
         if (key < 0) key = 0;
         if (key > 127) key = 127;
@@ -1252,7 +1251,7 @@ logger.log(Level.INFO, "checkHeadString");
         if (trk.getOutChannel() != null) {
             boolean flg = false;
             // key Off
-            // if (trk.NoteGateTime[okey] <= trk.NextEventTick + trk.getNowPart().StartTick)
+            //if (trk.NoteGateTime[okey] <= trk.NextEventTick + trk.getNowPart().StartTick)
             if (trk.getNoteGateTime()[okey] <= trk.getNextEventTick()) {
                 msgBuf[0] = (byte) (MIDIEventType.NoteOff.v + trk.getOutChannel());
                 msgBuf[1] = (byte) key;
@@ -1302,7 +1301,7 @@ logger.log(Level.INFO, "checkHeadString");
     }
 
     void efMetaSequencerSpecific(MIDITrack trk, MIDIEvent eve) {
-        specialEventFunc[eve.getMIDIMessage()[0]].accept(trk, eve);
+        specialEventFunc[eve.getMIDIMessage()[0] & 0xff].accept(trk, eve);
     }
 
     void sefUserExclusive1(MIDITrack trk, MIDIEvent eve) {
@@ -1363,7 +1362,7 @@ logger.log(Level.INFO, "checkHeadString");
                 i++;
             }
             j++;
-            if (n == (byte) 0xf7) break;
+            if (n != null && n == (byte) 0xf7) break;
             if (i >= msgBuf.length) {
                 logger.log(Level.TRACE, "sefChExclusive:Detects and skips exclusives that exceed the buffer.");
                 return; // Do not send exclusive when buffer is over
@@ -1625,7 +1624,7 @@ logger.log(Level.INFO, "checkHeadString");
                 i++;
             }
             j++;
-            if (n == (byte) 0xf7) break;
+            if (n != null && n == (byte) 0xf7) break;
             if (i >= msgBuf.length) {
                 logger.log(Level.TRACE, "sefUserExclusiveN: Detects and skips exclusive requests that exceed the buffer.");
                 return; // Do not send exclusive when buffer is over
@@ -1703,7 +1702,7 @@ logger.log(Level.INFO, "checkHeadString");
         for (int ch = 0; ch < 16; ch++) {
             dBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x65, 0x00})); // RPN Master fine tuning
             dBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x64, 0x01}));
-            dBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x06, (byte) (((buf[0xa6f] & 0xff) * 0x100 + (buf[0xa6e] & 0xff)) >> 7)}));
+            dBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x06, (byte) (((buf[0xa6f] & 0xff) * 0x100 + (buf[0xa6e] & 0xff)) >>> 7)}));
             dBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x26, (byte) (((buf[0xa6f] & 0xff) * 0x100 + (buf[0xa6e] & 0xff)) & 0x7f)}));
         }
 
@@ -1723,7 +1722,7 @@ logger.log(Level.INFO, "checkHeadString");
         dBuf.add(new CtlSysex(1, getSysEx(new byte[] {0x41, 0x10, 0x42, 0x12, (byte)0x83, 0x40, 0x00, 0x06, buf[0x26], (byte)0x84})));
         // Master Balance
         dBuf.add(new CtlSysex(1, getSysEx(new byte[] {0x7f, 0x7f, 0x04, 0x02,
-                (byte) (((buf[0x26] & 0xff) * 0x80) & 0x7F), (byte) ((((buf[0x26] & 0xff) * 0x80) >> 7) & 0x7f)})));
+                (byte) (((buf[0x26] & 0xff) * 0x80) & 0x7F), (byte) ((((buf[0x26] & 0xff) * 0x80) >>> 7) & 0x7f)})));
 
         // Voice Reserve Loc:Ch partdata - 1 Len:1
         dBuf.add(new CtlSysex(1, getSysEx(new byte[] {0x41, 0x10, 0x42, 0x12, (byte)0x83     ,

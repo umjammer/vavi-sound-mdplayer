@@ -46,7 +46,7 @@ public abstract class BaseDriver {
         this.dataBuf = plugin != null ? plugin.getData() : null; // gross
     }
 
-    /**  */
+    /** */
     public abstract void init(EnmModel model, int latency, int waitTime, Object... args);
 
     /** advances the clock */
@@ -81,10 +81,6 @@ public abstract class BaseDriver {
         return 0;
     }
 
-    public void copyWaveBuffer(short[][] dest) {
-        plugin.mds.visWaveBuffer.copy(dest);
-    }
-
     // default
     public long whichCounter(long real, long virtual) {
         return 0;
@@ -101,11 +97,13 @@ public abstract class BaseDriver {
     }
 
     /**
+     * Fires a view event.
      *
      * @param name
      *        "led.reset" ... none
      *        "led.set" ... none, {@code src} is indicated the led target
      *        "led.on" ... args 0: chip id, {@code src} is indicated the led target
+     *        "wave.buffer" ... args 0: left value, 1: right value
      */
     public void fireEventHappened(Object src, String name, Object... args) {
         viewSupport.fireEventHappened(new GenericEvent(src, name, args));

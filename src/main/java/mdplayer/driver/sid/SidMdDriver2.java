@@ -15,7 +15,6 @@ import mdplayer.Common.EnmModel;
 import mdplayer.chips.SidChip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.plugin.BasePlugin;
-import mdsound.VisWaveBuffer;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 import vavi.util.ByteUtil;
@@ -181,7 +180,7 @@ static final int INTERVAL = 1024;
 if (CC++ % INTERVAL == 0) {
  logger.log(Level.DEBUG, "SID: %d, %d".formatted(buffer[c + 0], buffer[c + 1]));
 }
-                this.visWB.enq(buffer[c + 0], buffer[c + 1]);
+                fireEventHappened(this, "wave.buffer", buffer[c + 0], buffer[c + 1]);
                 c += 2;
             }
         } catch (InterruptedException e) {
@@ -192,14 +191,7 @@ if (CC++ % INTERVAL == 0) {
     }
 
     @Override
-    public void copyWaveBuffer(short[][] dest) {
-        this.visWB.copy(dest);
-    }
-
-    @Override
     public boolean isNotRenderingOnPause() {
         return true;
     }
-
-    final VisWaveBuffer visWB = new VisWaveBuffer();
 }

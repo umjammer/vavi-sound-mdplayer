@@ -13,7 +13,6 @@ import mdplayer.Common.EnmModel;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.ym.YmMusic.YmMusicInfo;
 import mdplayer.plugin.BasePlugin;
-import mdsound.VisWaveBuffer;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 
@@ -224,7 +223,7 @@ public class YmDriver extends BaseDriver {
                 b[offset + written + i * 2 + 1] = sample;
 
                 processOneFrame();
-                this.visWB.enq(sample, sample);
+                fireEventHappened(this, "wave.buffer", sample, sample);
             }
 
             written += frames * 2;
@@ -233,11 +232,4 @@ public class YmDriver extends BaseDriver {
 
         return written;
     }
-
-    @Override
-    public void copyWaveBuffer(short[][] dest) {
-        this.visWB.copy(dest);
-    }
-
-    final VisWaveBuffer visWB = new VisWaveBuffer();
 }

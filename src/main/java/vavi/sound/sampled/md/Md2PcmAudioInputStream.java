@@ -17,6 +17,8 @@ import java.util.Map;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 
+import mdplayer.Setting;
+import mdplayer.driver.BaseDriver;
 import mdplayer.plugin.BasePlugin.HasSongNo;
 import mdplayer.plugin.Plugin;
 import vavi.io.OutputEngine;
@@ -80,7 +82,19 @@ logger.log(Level.DEBUG,"plugin: " + plugin.getClass().getSimpleName());
                 short[] buffer = new short[4];
                 int r;
                 try {
-                    r = plugin.getDriver().render(buffer, 0, buffer.length);
+                    BaseDriver driver = plugin.getDriver();
+                    r = driver.render(buffer, 0, buffer.length);
+
+                    // detect the end of the song and terminate the stream: the raw
+                    // driver.render() only returns -1 on an exception (never at the
+                    // natural end), so without this a looping song would render
+                    // forever and read() would never reach EOF. (Audio.play() does
+                    // the equivalent for the playback path.)
+                    Setting setting = Setting.getInstance(); // TODO bad dependence, eliminate
+                    if ((setting.getOther().getUseLoopTimes() && driver.curLoop > setting.getOther().getLoopTimes() - 1)
+                            || driver.stopped) {
+                        r = -1;
+                    }
                 } catch (Exception e) {
 logger.log(Level.ERROR, e.getMessage(), e);
                     r = -1;

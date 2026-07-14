@@ -260,7 +260,7 @@ public class MIDIPart implements Serializable {
         //if (midiMessageList == null) return null;
         MIDIEvent eve = new MIDIEvent();
         eve.setEventType(MIDIEventType.MetaSequencerSpecific);
-        eve.setMIDIMessage(new byte[] {(byte) eventType.ordinal()});
+        eve.setMIDIMessage(new byte[] {(byte) eventType.v});
         eve.setMIDIMessages(midiMessageList);
         eve.setStep(step);
 

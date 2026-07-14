@@ -156,14 +156,7 @@ if (CC++ % INTERVAL == 0) { logger.log(Level.DEBUG, "NSF: %d, %d".formatted(b[i]
     }
 
     @Override
-    public void copyWaveBuffer(short[][] dest) {
-        visWB.copy(dest);
-    }
-
-    @Override
     public boolean isNotRenderingOnPause() {
         return true;
     }
-
-    private final mdsound.VisWaveBuffer visWB = new mdsound.VisWaveBuffer();
 }

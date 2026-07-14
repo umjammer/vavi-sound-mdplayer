@@ -14,7 +14,6 @@ import mdplayer.driver.BaseDriver;
 import mdplayer.driver.ahx.AHX.AHXOutput;
 import mdplayer.driver.ahx.AHX.AHXPlayer;
 import mdplayer.plugin.BasePlugin;
-import mdsound.VisWaveBuffer;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 
@@ -170,7 +169,7 @@ public class AhxDriver extends BaseDriver {
                 b[offset + written + i * 2 + 1] = (short) sample;
 
                 processOneFrame();
-                this.visWB.enq((short) sample, (short) sample);
+                fireEventHappened(this, "wave.buffer", (short) sample, (short) sample);
             }
 
             written += frames * 2;
@@ -179,11 +178,4 @@ public class AhxDriver extends BaseDriver {
 
         return written;
     }
-
-    @Override
-    public void copyWaveBuffer(short[][] dest) {
-        this.visWB.copy(dest);
-    }
-
-    final VisWaveBuffer visWB = new VisWaveBuffer();
 }

@@ -99,10 +99,14 @@ public class MdsDriver extends BaseDriver {
             lp = Math.max(lp, 0);
             curLoop = lp;
 
-            if (mdsDriver.getStatus() < 1) {
-                if (mdsDriver.getStatus() == 0) {
-                    Thread.sleep((int) (latency * 2.0)); // Wait for latency*2 until the actual voice is fully pronounced
-                }
+            // NOTE: the underlying vavi.sound.mdsdrv driver stubs getStatus() and
+            // getNowLoopCounter() to always return 0, so it exposes no end-of-song
+            // information. Treating getStatus() == 0 as "stopped" (as a status-aware
+            // driver such as mucom88 would) makes this driver report itself stopped
+            // on the very first frame, which aborts playback for any consumer that
+            // honours the flag (Audio.play(), the SPI stream, frmMain's getVGMStopped()).
+            // Only a genuine error state (< 0) means stopped here.
+            if (mdsDriver.getStatus() < 0) {
                 stopped = true;
             }
         } catch (Exception ex) {

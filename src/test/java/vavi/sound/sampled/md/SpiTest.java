@@ -264,6 +264,7 @@ Debug.println("converter: " + codec.getClass().getName());
         line.drain();
         line.stop();
         line.close();
+Debug.print("done");
     }
 
     @Test

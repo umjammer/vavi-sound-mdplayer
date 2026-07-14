@@ -42,6 +42,11 @@ public interface WorkStateSource {
     /** True if playback is paused. */
     boolean paused();
 
+    /** Name of the sound driver shown next to {@code DRIVER}, e.g. {@code "PMD"}, may be null. */
+    default String driverName() {
+        return null;
+    }
+
     /** Current title / filename, may be null. */
     default String filename() {
         return null;

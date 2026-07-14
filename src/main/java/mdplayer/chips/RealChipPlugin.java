@@ -126,6 +126,7 @@ public class RealChipPlugin implements Plugin {
 
     @Override
     public void close() {
+        closeThread();
 //        SoundChip.realChip = null;
     }
 
@@ -164,34 +165,36 @@ public class RealChipPlugin implements Plugin {
 //        }
     }
 
-    private boolean threadClosed = false;
-    private boolean threadStopped = true;
-
-    private static final double swFreq = 1000d / 44100;
+    /** read by {@link #render()} on its own thread, written by the player thread */
+    private volatile boolean threadClosed = false;
+    private volatile boolean threadStopped = true;
 
     private void render() {
 
-        if (context.driverReal == null) { // first time, driverReal must be null
+        if (context.driverReal == null) { // no real chip driver, nothing to render
             this.threadClosed = true;
             this.setThreadStopped(true);
             return;
         }
 
-        double o = System.currentTimeMillis() / swFreq;
-        double step = 1 / (double) setting.getOutputDevice().getSampleRate();
+        int sampleRate = setting.getOutputDevice().getSampleRate();
+        // elapsed time is counted in samples from the start of this thread. an absolute clock
+        // (epoch) is far too big for a double to keep the resolution of a single sample.
+        long base = System.nanoTime();
+        double threshold = sampleRate / 100d; // 10ms
+        // samples already processed
+        double o = 0;
         this.setThreadStopped(false);
         try {
             while (!this.threadClosed) {
                 Thread.sleep(0);
 
-                double el1 = System.currentTimeMillis() / swFreq;
-                if (el1 - o < step) continue;
-                if (el1 - o >= step * setting.getOutputDevice().getSampleRate() / 100.0) { // Threshold 10ms
-                    do {
-                        o += step;
-                    } while (el1 - o >= step);
+                double el1 = (System.nanoTime() - base) * sampleRate / 1_000_000_000d;
+                if (el1 - o < 1) continue;
+                if (el1 - o >= threshold) { // too late, drop the delayed samples
+                    o = el1;
                 } else {
-                    o += step;
+                    o += 1;
                 }
 
                 if (context.stopped || context.paused) {
@@ -265,12 +268,31 @@ public class RealChipPlugin implements Plugin {
             return;
         }
 
+        // this plugin is a shared singleton, a thread of the previous song might still be alive
+        closeThread();
+
         this.threadClosed = false;
         Thread threadMain = new Thread(this::render);
         threadMain.setPriority(Thread.MAX_PRIORITY);
         threadMain.setDaemon(true);
         threadMain.setName("trdVgmReal");
         threadMain.start();
+    }
+
+    /** requests {@link #render()} to exit and waits for it */
+    public void closeThread() {
+        setThreadClosed(true);
+        int timeout = 1000;
+        while (!isThreadStopped() && timeout-- > 0) {
+            try {
+                Thread.sleep(1);
+            } catch (InterruptedException ignore) {
+                break;
+            }
+        }
+        if (!isThreadStopped()) {
+            logger.log(Level.WARNING, "real chip thread doesn't stop");
+        }
     }
 
     public synchronized boolean isThreadStopped() {
