@@ -244,3 +244,5 @@ local.properties
 AGENTS.md
 mgsdrv.properties
 mxdrv.properties
+src/test/java/mdplayer/driver/fmp/fmp.properties
+src/test/java/mdplayer/driver/musica/musica.properties

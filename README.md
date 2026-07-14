@@ -19,7 +19,7 @@ this is a fork of [MDPlayer](https://github.com/kuma4649/MDPlayer)
 | XGM                             | mega drive       |       ✅️       |    -     | built-in              |                                                                      |                                                                                   |
 | XGM2                            | mega drive       |       ✅️       |    -     | built-in              |                                                                      |                                                                                   |
 | MDS                             | mega drive       | ✅️<sup>*</sup> |    -     | driver                | [vavi-sound-mdsdrv](https://github.com/umjammer/vavi-sound-mdsdrv)   | (*) 🐛  [pcm has problem](https://github.com/umjammer/vavi-sound-mdsdrv/issues/1) |
-| MUC/MUB                         | PC88 MUCOM88     |       ✅️       |    🚧    | driver                | [vavi-sound-mucom88](https://github.com/umjammer/vavi-sound-mucom88) | 🐛 \[compiler] same as c# but both wrong                                          |
+| MUC/MUB                         | PC88 MUCOM88     |       ✅️       |    ✅     | driver                | [vavi-sound-mucom88](https://github.com/umjammer/vavi-sound-mucom88) | ~~🐛 \[compiler] same as c# but both wrong~~                                      |
 | S98                             | PC98             |       ✅️       |    -     | built-in              |                                                                      |                                                                                   |
 | MML/M/M2/MZ                     | PC98 PMD         |       ✅️       |    ✅️    | driver                | [vavi-sound-pmd](https://github.com/umjammer/vavi-sound-pmd)         | for commercial                                                                    |
 | MPI/OPI</br>MVI/OVI</br>MZI/OZI | PC98 FMP         |       ✅️       |    ✅️    | built-in*             |                                                                      | for freeware                                                                      |
@@ -33,24 +33,28 @@ this is a fork of [MDPlayer](https://github.com/kuma4649/MDPlayer)
 | NDP                             | MSX NDP          |       ✅️       |    -     | built-in*             |                                                                      |                                                                                   |
 | BGM/MSD                         | MSX MuSICA       |       ✅️       |    ✅️    | built-in*             |                                                                      | original also often fails                                                         |
 | SID                             | commodore        |      ✅ ️️      |    -     | built-in, ~~library~~ | ~~[JSIDPlay2](https://github.com/umjammer/JSIDPlay2)~~               |                                                                                   |
-| NSF/NSFE                        | NES              |      ✅️️       |    -     | built-in              | [NsfPlayer](https://github.com/umjammer/NsfPlayer)                   | nsfe is not tested                                                                |
-| AY                              | ZX               |       ✅️       |    -     | built-in              | libgme                                                               |                                                                                   |
-| HES                             | PC Engine        |       ✅️       |    -     | built-in              | libgme                                                               |                                                                                   |
+| NSF/NSFE                        | NES              |      ✅️️       |    -     | built-in, ~~library~~ | ~~[NsfPlayer](https://github.com/umjammer/NsfPlayer)~~               | nsfe is not tested                                                                |
+| AY                              | ZX               |       ✅️       |    -     | built-in              | [libgme](https://github.com/libgme/game-music-emu)                   |                                                                                   |
+| HES                             | PC Engine        |       ✅️       |    -     | built-in              | [libgme](https://github.com/libgme/game-music-emu)                   |                                                                                   |
 | GBS                             | Game Boy         |     ✅️  ️      |    -     | built-in              | [vavi-sound-emu](https://github.com/umjammer/vavi-sound-emu)         |                                                                                   |
-| GYM                             | Sega Genesis     |       →        |    -     |                       | [vavi-sound-emu](https://github.com/umjammer/vavi-sound-emu)         |                                                                                   |
-| KSS                             | MSX              |      ️ →       |    -     |                       | [vavi-sound-emu](https://github.com/umjammer/vavi-sound-emu)         |                                                                                   |
-| SAP                             | Atari            |       →        |    -     |                       | [vavi-sound-emu](https://github.com/umjammer/vavi-sound-emu)         |                                                                                   |
-| SPC                             | SNES             |       →        |    -     |                       | [vavi-sound-emu](https://github.com/umjammer/vavi-sound-emu)         |                                                                                   |
+| GYM                             | Sega Genesis     |       →        |    -     | spi                   | [vavi-sound-emu](https://github.com/umjammer/vavi-sound-emu)         |                                                                                   |
+| KSS                             | MSX              |      ️ →       |    -     | spi                   | [vavi-sound-emu](https://github.com/umjammer/vavi-sound-emu)         |                                                                                   |
+| SAP                             | Atari            |       →        |    -     | spi                   | [vavi-sound-emu](https://github.com/umjammer/vavi-sound-emu)         |                                                                                   |
+| SPC                             | SNES             |       →        |    -     | spi                   | [vavi-sound-emu](https://github.com/umjammer/vavi-sound-emu)         |                                                                                   |
 | YM                              | Atari ST         |       ✅️       |    -     | built-in              | [stymulatorn](https://github.com/ehaupt/stymulatorn)                 |                                                                                   |
 | HVL                             | Amiga            |      ✅️ ️      |    -     | built-in              | [hiivelyplay](https://github.com/pete-gordon/hiivelyplay)            |                                                                                   |
 | AHX                             | Amiga            |      ✅️ ️      |    -     | built-in              | [ahxcs](https://github.com/jimshawx/ahxcs)                           |                                                                                   |
 | ZGM                             | mml2vgm          |      n/a       |    -     | built-in              |                                                                      | currently support only YM2609                                                     |
-| MID                             | midi             |       ️→       |    -     | built-in              | javax.sound.midi.spi                                                 |                                                                                   |
-| RCP                             | recomposer       |       🚫       |    -     | built-in              |                                                                      |                                                                                   |
-| RCS                             | RCP + PCM8       |       ⏳️       |    -     | built-in              |                                                                      |                                                                                   |
-| WAV                             |                  |       ️→       |    -     | built-in              | javax.sound.sampled.spi                                              |                                                                                   |
-| MP3                             |                  |       ️→       |    -     | built-in              | [mp3spi](https://github.com/umjammer/mp3spi)                         |                                                                                   |
-| AIF                             |                  |       ️→       |    -     | built-in              | javax.sound.sampled.spi                                              |                                                                                   |
+| MID                             | midi             |       ️→       |    -     | spi                   | built-in                                                             |                                                                                   |
+| RCP                             | recomposer       |       ✅️       |    -     | built-in              |                                                                      |                                                                                   |
+| RCS                             | RCP + PCM8       |       ⏳️       |    -     | built-in              |                                                                      | no samples!                                                                       |
+| WAV                             |                  |       ️→       |    -     | spi                   | built-in                                                             |                                                                                   |
+| MP3                             |                  |       ️→       |    -     | spi                   | [mp3spi](https://github.com/umjammer/mp3spi)                         |                                                                                   |
+| AIF                             | Apple AIFF       |       ️→       |    -     | spi                   | built-in                                                             |                                                                                   |
+| OGG                             |                  |       →        |    -     | spi                   | [tritonus](https://github.com/umjammer/tritonus)                     |                                                                                   |
+| M4A/AAC                         |                  |       →        |    -     | spi                   | [vavi-sound-aac](https://github.com/umjammer/vavi-sound-aac)         |                                                                                   |
+| WMA                             |                  |       →        |    -     | spi                   | [vavi-sound-sandbox](https://github.com/umjammer/vavi-sound-sandbox) |                                                                                   |
+| FLAC                            |                  |       →        |    -     | spi                   | [vavi-sound-flac](https://github.com/umjammer/vavi-sound-flac)       |                                                                                   |
 
 <sub>* at type: driver uses emulator</sub>
 
@@ -195,6 +199,7 @@ you can select a chip implementation variant by number.
 * https://github.com/AnimaInCorpore/portable_mdx (mxdrv)
 * https://github.com/ehaupt/stymulatorn (ym)
 * https://github.com/jimshawx/ahxcs (ahx)
+* https://nfggames.com/X68000/index.php/Mirrors/Groundzero%20Organization/x68tools/music/lzz/ (zms:lzz)
 * s98
   * https://www.zophar.net/music/s98.html (s98)
   * https://github.com/niara3/s98txt/blob/master/src/com/niara3/s98txt/Main.java (s98)
@@ -214,6 +219,7 @@ you can select a chip implementation variant by number.
   * http://www.os.rim.or.jp/~terada/contents/data.htm (zms)
   * https://nfggames.com/X68000/index.php/Mirrors/Groundzero%20Organization/x68tools/music/mndrv/ (mndrv) ... google censorship
   * https://worldofspectrum.org/projectay/gdmusic.htm (ay)
+  * https://archive.org/details/recomposer-collection (rcp)
 * processor
   * z80 
     * https://github.com/trekawek/coffee-gb (z80)
@@ -240,24 +246,30 @@ you can select a chip implementation variant by number.
         * ~~3 alter chips reproduce same glitch, so vgm driver is wrong?~~ ... yes it's unsigned short problem
     * ~~mucom: some are ok and some are not~~
     * ~~mxdrv: luck of fm channel~~
-    * hes: volume related???
+    * ~~hes: volume related???~~
     * ~~ay: zxbeep~~
     * ~~fmp: fmp not resident~~
     * ~~mnd: no .mnd samples on the internet~~
-    * zms: wip signed byte related ... ???
+    * ~~zms: wip signed byte related ... ???~~
     * rcs: wip
-    * rcp: wip, how to treat midi plugin as chip?
-    * nsf: sp library works. `render_()` is not work, `mul` related. (replace `render_()` to vavi-sound-mdplayer:NsfTestPlayer's one, it works)
+    * ~~rcp: wip, how to treat midi plugin as chip?~~
+    * ~~nsf: sp library works. `render_()` is not work, `mul` related. (replace `render_()` to vavi-sound-mdplayer:NsfTestPlayer's one, it works)~~ ... not resolved
     * ~~fmp: test mochit final~~
     * mxdrv: ~~pcm8~~, when 68k opm is chosen as 1st opm, 2nd opm cannot sound pcm8. why???
     * ~~ndp: fmgen ym8910 is silence (meme's works)~~
     * ~~gbs: song no 9 -  wrong~~
+    * zms: upstream STBL561 new patch (but this library doesn't slow)
+    * fmp: startup is slow
  * chip class should handle one chip
  * ~~eliminate dotnet4j~~
  * ~~vgm spi selector~~
    * ~~vavi-sound-smu (wip)~~
    * ~~vavi-sound-ymfm (wip)~~
    * this spi
+ * ~~check ahx, hvl are HasSongNo?~~
+ * \[ym] move ym2149ex to mdsound
+ * ~~make VisWaveBuffer as one of view~~ 
+ * ~~change fmdsp right top strings "for UNIX/..."~~
 
 ---
 
