@@ -89,7 +89,7 @@ public class NpNesChip extends BaseChip {
 
         public byte[] readMmc5(int chipId) {
             // for nsf
-            if (nsf.mmc5 == null) return null;
+            if (nsf == null || nsf.mmc5 == null) return null;
             else if (chipId == 1) return null;
 
             int[] dat = new int[] { 0 };
@@ -117,13 +117,14 @@ public class NpNesChip extends BaseChip {
 
         public void setMmc5Mask(int chipId, int ch) {
             mmc5Mask |= 1 << ch;
-            if (nsf.mmc5 != null)
+            // there is no nsf behind this unless an nsf is what is playing
+            if (nsf != null && nsf.mmc5 != null)
                 nsf.mmc5.setMask(mmc5Mask);
         }
 
         public void resetMmc5Mask(int chipId, int ch) {
             mmc5Mask &= ~(1 << ch);
-            if (nsf.mmc5 != null)
+            if (nsf != null && nsf.mmc5 != null)
                 nsf.mmc5.setMask(mmc5Mask);
         }
     }
@@ -141,7 +142,7 @@ public class NpNesChip extends BaseChip {
             if (chipId != 0)
                 return;
             vrc6Mask |= 1 << ch;
-            if (nsf.vrc6 != null)
+            if (nsf != null && nsf.vrc6 != null)
                 nsf.vrc6.setMask(vrc6Mask);
         }
 
@@ -149,7 +150,7 @@ public class NpNesChip extends BaseChip {
             if (chipId != 0)
                 return;
             vrc6Mask &= ~(1 << ch);
-            if (nsf.vrc6 != null)
+            if (nsf != null && nsf.vrc6 != null)
                 nsf.vrc6.setMask(vrc6Mask);
         }
 
@@ -190,7 +191,7 @@ public class NpNesChip extends BaseChip {
         }
 
         public int[] readVrc7(int chipId) {
-            if (nsf.vrc7 == null) return null;
+            if (nsf == null || nsf.vrc7 == null) return null;
             if (chipId != 0) return null;
 
             return nsf.vrc7.getRegs();
@@ -198,13 +199,13 @@ public class NpNesChip extends BaseChip {
 
         public void setVrc7Mask(int chipId, int ch) {
             vrc7Mask |= 1 << ch;
-            if (nsf.vrc7 != null)
+            if (nsf != null && nsf.vrc7 != null)
                 nsf.vrc7.setMask(vrc7Mask);
         }
 
         public void resetVrc7Mask(int chipId, int ch) {
             vrc7Mask &= ~(1 << ch);
-            if (nsf.vrc7 != null)
+            if (nsf != null && nsf.vrc7 != null)
                 nsf.vrc7.setMask(vrc7Mask);
         }
     }
@@ -231,7 +232,7 @@ public class NpNesChip extends BaseChip {
             if (chipId != 0)
                 return;
             n163Mask |= 1 << ch;
-            if (nsf.n106 != null)
+            if (nsf != null && nsf.n106 != null)
                 nsf.n106.setMask(n163Mask);
         }
 
@@ -239,7 +240,7 @@ public class NpNesChip extends BaseChip {
             if (chipId != 0)
                 return;
             n163Mask &= ~(1 << ch);
-            if (nsf.n106 != null)
+            if (nsf != null && nsf.n106 != null)
                 nsf.n106.setMask(n163Mask);
         }
     }
@@ -257,7 +258,7 @@ public class NpNesChip extends BaseChip {
         public Map<String, Object> readFds(int chipId) {
 
             // for nsf
-            if (nsf.apu == null) return null;
+            if (nsf == null || nsf.apu == null) return null;
             else if (nsf.apu.apu == null) return null;
             else if (chipId == 1) return null;
             else {
@@ -267,13 +268,13 @@ public class NpNesChip extends BaseChip {
 
         public void setFdsMask(int chipId) {
             fdsMask |= 1;
-            if (nsf.fds != null)
+            if (nsf != null && nsf.fds != null)
                 nsf.fds.setMask(fdsMask);
         }
 
         public void resetFdsMask(int chipId) {
             fdsMask &= ~1;
-            if (nsf.fds != null)
+            if (nsf != null && nsf.fds != null)
                 nsf.fds.setMask(fdsMask);
         }
     }
@@ -290,7 +291,7 @@ public class NpNesChip extends BaseChip {
 
         public byte[] readS5B(int chipId) {
             // for nsf
-            if (nsf.fme7 == null) return null;
+            if (nsf == null || nsf.fme7 == null) return null;
             else if (chipId == 1) return null;
 
             int[] dat = new int[] { 0 };
@@ -318,19 +319,21 @@ public class NpNesChip extends BaseChip {
                 case 0:
                 case 1:
                     apuMask |= 1 << ch;
-                    if (nsf.apu != null)
+                    if (nsf != null && nsf.apu != null)
                         nsf.apu.setMask(apuMask);
                     break;
                 case 2:
                 case 3:
                 case 4:
                     context.chipRegister.chip(NpNesChip.DmcChip.class).dmcMask |= 1 << (ch - 2);
-                    if (nsf.dmc != null)
+                    if (nsf != null && nsf.dmc != null)
                         nsf.dmc.setMask(context.chipRegister.chip(NpNesChip.DmcChip.class).dmcMask);
                     break;
             }
         }
-        context.mds.inst(NpNesInst.class).setMask(chipId, ch);
+        Instrument instrument = context.mds.inst(NpNesInst.class);
+        if (instrument == null) return; // the song being played does not use this chip
+        instrument.setMask(chipId, ch);
     }
 
     // vgm
@@ -340,19 +343,21 @@ public class NpNesChip extends BaseChip {
                 case 0:
                 case 1:
                     apuMask &= ~(1 << ch);
-                    if (nsf.apu != null)
+                    if (nsf != null && nsf.apu != null)
                         nsf.apu.setMask(apuMask);
                     break;
                 case 2:
                 case 3:
                 case 4:
                     context.chipRegister.chip(NpNesChip.DmcChip.class).dmcMask &= ~(1 << (ch - 2));
-                    if (nsf.dmc != null)
+                    if (nsf != null && nsf.dmc != null)
                         nsf.dmc.setMask(context.chipRegister.chip(NpNesChip.DmcChip.class).dmcMask);
                     break;
             }
         }
-        context.mds.inst(NpNesInst.class).resetMask(chipId, ch);
+        Instrument instrument = context.mds.inst(NpNesInst.class);
+        if (instrument == null) return; // the song being played does not use this chip
+        instrument.resetMask(chipId, ch);
     }
 
     // vgm

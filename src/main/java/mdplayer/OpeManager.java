@@ -56,7 +56,9 @@ public class OpeManager {
         }
 
         public void callBack() {
-            request.callBack.accept(request.results);
+            if (request.callBack != null) {
+                request.callBack.accept(request.results);
+            }
         }
     }
 

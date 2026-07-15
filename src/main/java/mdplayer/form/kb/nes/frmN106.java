@@ -1,5 +1,6 @@
 package mdplayer.form.kb.nes;
 
+import mdplayer.ScreenPanel;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
@@ -22,48 +23,23 @@ import mdplayer.MDChipParams;
 import mdplayer.Tables;
 import mdplayer.chips.NpNesChip;
 import mdplayer.chips.NpNesChip.N163Chip;
-import mdplayer.form.frmBase;
+import mdplayer.form.kb.frmChipBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
 import mdsound.np.chip.NesN106;
 
-
-public class frmN106 extends frmBase {
-    public boolean isClosed = false;
-    public int x = -1;
-    public int y = -1;
-    private int frameSizeW = 0;
-    private int frameSizeH = 0;
-    private final int chipId;
-    private final int zoom;
-    private final MDChipParams.N106 newParam;
-    private final MDChipParams.N106 oldParam;
-    private final FrameBuffer frameBuffer = new FrameBuffer();
+public class frmN106 extends frmChipBase<MDChipParams.N106> {
     static final Preferences prefs = Preferences.userNodeForPackage(frmN106.class);
 
     public frmN106(frmMain frm, int chipId, int zoom, MDChipParams.N106 newParam, MDChipParams.N106 oldParam) {
-        super(frm);
+        super(frm, chipId, zoom, newParam, oldParam);
 
         initializeComponent();
 
-        this.chipId = chipId;
-        this.zoom = zoom;
-        this.newParam = newParam;
-        this.oldParam = oldParam;
-
-        frameBuffer.Add(pbScreen, Resources.getPlaneN106(), null, zoom);
-        screenInit();
-        update();
-    }
-
-    public void update() {
-        frameBuffer.refresh(null);
+        bind(Resources.getPlaneN106());
     }
 
 //    @Override
-    protected boolean getShowWithoutActivation() {
-        return true;
-    }
 
     private final WindowListener windowListener = new WindowAdapter() {
         @Override
@@ -232,7 +208,7 @@ public class frmN106 extends frmBase {
     }
 
     private void initializeComponent() {
-        this.pbScreen = new JPanel();
+        this.pbScreen = new ScreenPanel();
         //((System.ComponentModel.ISupportInitialize)(this.pbScreen)).BeginInit();
 
         //
@@ -254,7 +230,7 @@ public class frmN106 extends frmBase {
         this.setPreferredSize(new Dimension(320, 198));
         this.getContentPane().add(this.pbScreen);
 //        this.FormBorderStyle = JFormBorderStyle.FixedSingle;
-        this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
+        this.setIconImage(Resources.getFeli128());
 //        this.MaximizeBox = false;
         this.setName("frmN106");
         this.setTitle("N163(N106)");
@@ -265,5 +241,4 @@ public class frmN106 extends frmBase {
     }
 
     BufferedImage image;
-    public JPanel pbScreen;
 }

@@ -1,5 +1,6 @@
 package mdplayer.form.sys;
 
+import mdplayer.ScreenPanel;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -26,6 +27,8 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -43,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
@@ -67,11 +71,17 @@ import javax.swing.JToolTip;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 
+import vavi.util.archive.Archives;
 import com.github.kwhat.jnativehook.GlobalScreen;
 import com.github.kwhat.jnativehook.NativeHookException;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
 import mdplayer.Audio;
+import mdplayer.ChipLEDs;
+import vavi.util.event.GenericEvent;
+import java.util.function.BiConsumer;
+import java.util.function.IntConsumer;
+import mdsound.Instrument;
 import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.Common.EnmInstFormat;
@@ -96,6 +106,7 @@ import mdplayer.chips.NpNesChip.N163Chip;
 import mdplayer.chips.NpNesChip.Vrc6Chip;
 import mdplayer.chips.NpNesChip.Vrc7Chip;
 import mdplayer.driver.BaseDriver;
+import mdplayer.form.Layouts;
 import mdplayer.form.kb.driver.frmPPZ8;
 import mdplayer.form.kb.frmMIDI;
 import mdplayer.form.kb.frmRegTest;
@@ -123,6 +134,9 @@ import mdplayer.form.kb.opn.frmYM2612MIDI;
 import mdplayer.form.kb.opx.frmYMF271;
 import mdplayer.form.kb.pcm.frmC140;
 import mdplayer.form.kb.pcm.frmC352;
+import mdplayer.form.kb.pcm.frmGA20;
+import mdplayer.form.kb.pcm.frmK053260;
+import mdplayer.form.kb.pcm.frmK054539;
 import mdplayer.form.kb.pcm.frmMegaCD;
 import mdplayer.form.kb.pcm.frmMultiPCM;
 import mdplayer.form.kb.pcm.frmOKIM6258;
@@ -166,6 +180,22 @@ public class frmMain extends JFrame {
 
     private frmInfo frmInfo = null;
     private frmPlayList frmPlayList = null;
+    private boolean faderMasterHover = false;
+    private boolean faderMasterDrag = false;
+    private int faderMasterVal = 0;
+    private boolean faderTimeLineHover = false;
+    private boolean faderTimeLineDrag = false;
+    private int faderTimeLineVal = 0;
+    private int visVolumeMaster = 0;
+
+    private static final int[] masterVolTbl = new int[] {
+        -192,-188, -184, -180, -176, -172, -169, -165, -161, -158,
+        -154, -150, -146, -142, -139, -135, -131, -128, -123, -120,
+        -116, -112, -108, -104, -101, -97, -93, -89, -86, -82,
+        -78, -74, -70, -66, -62, -58, -54, -50, -46, -42,
+        -38, -34, -30, -26, -22, -18,-15,-11,-7,-3,
+        0,2,5,9,13,17,20
+    };
 //    private frmVSTeffectList frmVSTeffectList = null;
 
     private final frmMegaCD[] frmMCD = new frmMegaCD[] {null, null};
@@ -177,6 +207,9 @@ public class frmMain extends JFrame {
     private final frmYMZ280B[] frmYMZ280B = new frmYMZ280B[] {null, null};
     private final frmC352[] frmC352 = new frmC352[] {null, null};
     private final frmMultiPCM[] frmMultiPCM = new frmMultiPCM[] {null, null};
+    private final frmGA20[] frmGA20 = new frmGA20[] {null, null};
+    private final frmK053260[] frmK053260 = new frmK053260[] {null, null};
+    private final frmK054539[] frmK054539 = new frmK054539[] {null, null};
     private final frmQSound[] frmQSound = new frmQSound[] {null, null};
     private final frmYM2608[] frmYM2608 = new frmYM2608[] {null, null};
     private final frmYM2151[] frmYM2151 = new frmYM2151[] {null, null};
@@ -224,9 +257,10 @@ public class frmMain extends JFrame {
 
     private boolean isInitialOpenFolder = true;
 
-    private byte[] srcBuf;
-
     public Setting setting = Setting.load();
+
+    /** the designer's captions, converted from frmMain.resx */
+    private static final ResourceBundle resources = ResourceBundle.getBundle("mdplayer/form/sys/frmMain", Locale.getDefault());
     public final TonePallet tonePallet = TonePallet.load(null);
 
     private int frameSizeW = 0;
@@ -346,15 +380,139 @@ public class frmMain extends JFrame {
 
         logger.log(Level.INFO, "Audio initialization process completed at startup");
 
+        // the chips and the drivers tell the view what they are doing; this is the view listening
+        audio.addGenericListener(this::viewEventHappened);
+
         startMIDIInMonitoring();
 
         logger.log(Level.INFO, "frmMain<init>:STEP 04");
 
         setVisible(true);
+
+        // Swing fires windowActivated before windowOpened, and again on every focus gain, so the
+        // load/shown sequence is driven from here instead: shown starts the render loop, and it
+        // must not run before load has created the child windows it needs.
+        frmMain_Load(null);
+        frmMain_Shown(null);
     }
 
     private void clearWindowPos() {
         setting.setLocation(new Setting.Location());
+    }
+
+    /** A chip's panel: how to open it and how to close it. */
+    private record ChipPanel(Class<? extends Chip> chip, BiConsumer<Integer, Boolean> open, IntConsumer close) {
+    }
+
+    /**
+     * Every chip that has a panel of its own. Built lazily: the open and close methods capture
+     * {@code this}, and this list is what {@link #autoOpenPanels} walks.
+     */
+    private List<ChipPanel> chipPanels() {
+        return List.of(
+                new ChipPanel(Ay8910Chip.class, this::OpenFormAY8910, this::CloseFormAY8910),
+                new ChipPanel(C140Chip.class, this::OpenFormC140, this::CloseFormC140),
+                new ChipPanel(C352Chip.class, this::OpenFormC352, this::CloseFormC352),
+                new ChipPanel(DmgChip.class, this::OpenFormDMG, this::CloseFormDMG),
+                new ChipPanel(HuC6280Chip.class, this::OpenFormHuC6280, this::CloseFormHuC6280),
+                new ChipPanel(K051649Chip.class, this::OpenFormK051649, this::CloseFormK051649),
+                new ChipPanel(Rf5C164Chip.class, this::OpenFormMegaCD, this::CloseFormMegaCD),
+                new ChipPanel(Rf5C68Chip.class, this::OpenFormRf5c68, this::CloseFormRf5c68),
+                new ChipPanel(MultiPcmChip.class, this::OpenFormMultiPCM, this::CloseFormMultiPCM),
+                new ChipPanel(Ga20Chip.class, this::OpenFormGA20, this::CloseFormGA20),
+                new ChipPanel(K053260Chip.class, this::OpenFormK053260, this::CloseFormK053260),
+                new ChipPanel(K054539Chip.class, this::OpenFormK054539, this::CloseFormK054539),
+                new ChipPanel(OkiM6258Chip.class, this::OpenFormOKIM6258, this::CloseFormOKIM6258),
+                new ChipPanel(OkiM6295Chip.class, this::OpenFormOKIM6295, this::CloseFormOKIM6295),
+                new ChipPanel(Ppz8Chip.class, this::OpenFormPPZ8, this::CloseFormPPZ8),
+                new ChipPanel(QSoundChip.class, this::OpenFormQSound, this::CloseFormQSound),
+                new ChipPanel(SegaPcmChip.class, this::OpenFormSegaPCM, this::CloseFormSegaPCM),
+                new ChipPanel(Sn76489Chip.class, this::OpenFormSN76489, this::CloseFormSN76489),
+                new ChipPanel(Y8950Chip.class, this::OpenFormY8950, this::closeFormY8950),
+                new ChipPanel(Ym2151Chip.class, this::OpenFormYM2151, this::CloseFormYM2151),
+                new ChipPanel(Ym2203Chip.class, this::OpenFormYM2203, this::CloseFormYM2203),
+                new ChipPanel(Ym2413Chip.class, this::OpenFormYM2413, this::CloseFormYM2413),
+                new ChipPanel(Ym2608Chip.class, this::OpenFormYM2608, this::CloseFormYM2608),
+                new ChipPanel(Ym2610Chip.class, this::OpenFormYM2610, this::CloseFormYM2610),
+                new ChipPanel(Ym2612Chip.class, this::openFormYM2612, this::closeFormYM2612),
+                new ChipPanel(Ym3526Chip.class, this::OpenFormYM3526, this::CloseFormYM3526),
+                new ChipPanel(Ym3812Chip.class, this::openFormYM3812, this::CloseFormYM3812),
+                new ChipPanel(YmF262Chip.class, this::openFormYMF262, this::CloseFormYMF262),
+                new ChipPanel(YmF271Chip.class, this::OpenFormYMF271, this::CloseFormYMF271),
+                new ChipPanel(YmF278BChip.class, this::OpenFormYMF278B, this::CloseFormYMF278B),
+                new ChipPanel(YmZ280BChip.class, this::OpenFormYMZ280B, this::CloseFormYMZ280B),
+                new ChipPanel(NesChip.class, this::openFormNESDMC, this::closeFormNESDMC),
+                new ChipPanel(NpNesChip.FdsChip.class, this::openFormFDS, this::closeFormFDS),
+                new ChipPanel(NpNesChip.Mmc5Chip.class, this::openFormMMC5, this::closeFormMMC5),
+                new ChipPanel(NpNesChip.N163Chip.class, this::openFormN106, this::closeFormN106),
+                new ChipPanel(NpNesChip.Vrc6Chip.class, this::openFormVRC6, this::closeFormVRC6),
+                new ChipPanel(NpNesChip.Vrc7Chip.class, this::openFormVRC7, this::closeFormVRC7)
+        );
+    }
+
+    /**
+     * Is this chip one of the ones the song being played is made of? A chip has a panel whatever
+     * the song, but only the chips the song actually drives have an instrument behind them.
+     */
+    private boolean songUses(Class<? extends Chip> chip, int chipId) {
+        Chip c = audio.plugin.chipRegister.chip(chip);
+        if (c == null) return false;
+
+        for (Class<? extends Instrument> instrument : c.implementations()) {
+            if (audio.plugin.mds.inst(instrument, chipId) != null) return true;
+        }
+        return false;
+    }
+
+    /** Shows a panel for each chip the song uses, and hides the rest. */
+    private void autoOpenPanels() {
+        for (ChipPanel panel : chipPanels()) {
+            for (int chipId = 0; chipId < 2; chipId++) {
+                if (songUses(panel.chip(), chipId)) {
+                    panel.open().accept(chipId, true);
+                } else {
+                    panel.close().accept(chipId);
+                }
+            }
+        }
+    }
+
+    /**
+     * What the chips and the drivers have to say, as they play.
+     * <p>
+     * This runs on the audio thread, so it only records what happened — the screen loop is what
+     * draws it.
+     *
+     * @see mdplayer.driver.BaseDriver#fireEventHappened
+     */
+    private void viewEventHappened(GenericEvent ev) {
+        Object[] args = ev.getArguments();
+
+        switch (ev.getName()) {
+        case "led.on", "led.set" -> {
+            int chipId = args != null && args.length > 0 && args[0] instanceof Number n ? n.intValue() : 0;
+            newParam.chipLED.on(ev.getSource(), chipId);
+        }
+        case "led.reset" -> newParam.chipLED.clear();
+        case "wave.buffer" -> {
+            if (args == null || args.length < 2
+                    || !(args[0] instanceof Number left) || !(args[1] instanceof Number right)) {
+                return;
+            }
+
+            visVolumeMaster = Math.max(Math.abs(left.intValue()), Math.abs(right.intValue()));
+
+            if (frmVisWave != null) {
+                frmVisWave.push(left.shortValue(), right.shortValue());
+            }
+            if (frmMixer2 != null && !frmMixer2.isClosed) {
+                // the mixer's master meter is the loudest of what just came out
+                frmMixer2.visVolume.put("master", visVolumeMaster);
+            }
+        }
+        default -> {
+        }
+        }
     }
 
     private final WindowListener windowListener = new WindowAdapter() {
@@ -368,15 +526,6 @@ public class frmMain extends JFrame {
             frmMain_FormClosing(e);
         }
 
-        @Override
-        public void windowActivated(WindowEvent e) {
-            frmMain_Shown(e);
-        }
-
-        @Override
-        public void windowOpened(WindowEvent e) {
-            frmMain_Load(e);
-        }
     };
 
     private void frmMain_Load(WindowEvent ev) {
@@ -393,7 +542,7 @@ public class frmMain extends JFrame {
 
         logger.log(Level.INFO, "frmMain_Load:STEP 06");
 
-        screen = new DoubleBuffer(pbScreen, Resources.getPlaneControl(), 1);
+        screen = new DoubleBuffer(pbScreen, Resources.getPlaneMain(), 1);
         screen.setting = setting;
         //oldParam = new MDChipParams();
         //newParam = new MDChipParams();
@@ -433,6 +582,9 @@ public class frmMain extends JFrame {
             if (setting.getLocation().getOpenYMZ280B()[chipId]) OpenFormYMZ280B(chipId, false);
             if (setting.getLocation().getOpenC352()[chipId]) OpenFormC352(chipId, false);
             if (setting.getLocation().getOpenMultiPCM()[chipId]) OpenFormMultiPCM(chipId, false);
+            if (setting.getLocation().getOpenGA20()[chipId]) OpenFormGA20(chipId, false);
+            if (setting.getLocation().getOpenK053260()[chipId]) OpenFormK053260(chipId, false);
+            if (setting.getLocation().getOpenK054539()[chipId]) OpenFormK054539(chipId, false);
             if (setting.getLocation().getOpenQSound()[chipId]) OpenFormQSound(chipId, false);
             if (setting.getLocation().getOpenHuC6280()[chipId]) OpenFormHuC6280(chipId, false);
             if (setting.getLocation().getOpenK051649()[chipId]) OpenFormK051649(chipId, false);
@@ -675,11 +827,20 @@ public class frmMain extends JFrame {
     private void changeZoom() {
         opeButtonZoom.setToolTipText(zoomTip[setting.getOther().getZoom() - 1]);
 
-        this.setMaximumSize(new Dimension(frameSizeW + Resources.getPlaneControl().getWidth() * setting.getOther().getZoom(), frameSizeH + Resources.getPlaneControl().getHeight() * setting.getOther().getZoom()));
-        this.setMinimumSize(new Dimension(frameSizeW + Resources.getPlaneControl().getWidth() * setting.getOther().getZoom(), frameSizeH + Resources.getPlaneControl().getHeight() * setting.getOther().getZoom()));
-        this.setPreferredSize(new Dimension(frameSizeW + Resources.getPlaneControl().getWidth() * setting.getOther().getZoom(), frameSizeH + Resources.getPlaneControl().getHeight() * setting.getOther().getZoom()));
+        int zoom = setting.getOther().getZoom();
+        int w = Resources.getPlaneMain().getWidth() * zoom;
+        int h = Resources.getPlaneMain().getHeight() * zoom;
+
+        // the skin fills the client area; size the content pane to it and let pack() add the window
+        // chrome. (The old code added frameSizeW/H, the WinForms "Width - ClientSize" chrome, but in
+        // Swing getWidth() == getSize().width so that was always zero and the skin got clipped by the
+        // title bar.)
+        pbScreen.setBounds(0, 0, w, h);
+        getContentPane().setPreferredSize(new Dimension(w, h));
+
         componentListener.componentResized(null);
-        RelocateOpeButton(setting.getOther().getZoom());
+        RelocateOpeButton(zoom);
+        pack();
 
         if (frmMCD[0] != null && !frmMCD[0].isClosed) {
             tsmiPRF5C164_Click(null);
@@ -1030,28 +1191,27 @@ public class frmMain extends JFrame {
         Thread trd = new Thread(this::screenMainLoop);
         trd.setPriority(Thread.MIN_PRIORITY);
         trd.start();
+        // unlike C#'s Environment.GetCommandLineArgs(), args[0] is the first argument, not the exe
         String[] args = Common.getCommandLineArgs();
 
-//        Application.DoEvents();
-//        Activate();
-
-        if (args.length < 2) {
+        if (args.length < 1 || args[0].isBlank()) {
             return;
         }
 
         logger.log(Level.INFO, "frmMain_Shown:STEP 10");
+
+        String fileName = args[0];
 
         try {
 
             frmPlayList.stop();
 
             PlayList pl = frmPlayList.getPlayList();
-            if (pl.getMusics().isEmpty() || !pl.getMusics().getLast().fileName.equals(args[1])) {
-                pl.addFile(args[1]);
-                //frmPlayList.AddList(args[1]);
+            if (pl.getMusics().isEmpty() || !Objects.equals(pl.getMusics().getLast().fileName, fileName)) {
+                pl.addFile(fileName);
             }
 
-            if (!loadAndPlay(0, 0, args[1], "")) {
+            if (!loadAndPlay(0, 0, fileName, "")) {
                 frmPlayList.stop();
                 OpeManager.requestToAudio(new Request(enmRequest.Stop, null, null));
                 //audio.Stop();
@@ -1078,7 +1238,7 @@ public class frmMain extends JFrame {
             // Reallocate when resizing
 //            if (screen != null) screen.setVisible(false);
 
-            screen = new DoubleBuffer(pbScreen, Resources.getPlaneControl(), setting.getOther().getZoom());
+            screen = new DoubleBuffer(pbScreen, Resources.getPlaneMain(), setting.getOther().getZoom());
             screen.setting = setting;
             reqAllScreenInit = true;
             //screen.screenInitAll();
@@ -1133,6 +1293,9 @@ public class frmMain extends JFrame {
             setting.getLocation().getOpenDMG()[chipId] = false;
             setting.getLocation().getOpenYMZ280B()[chipId] = false;
             setting.getLocation().getOpenC352()[chipId] = false;
+            setting.getLocation().getOpenGA20()[chipId] = false;
+            setting.getLocation().getOpenK053260()[chipId] = false;
+            setting.getLocation().getOpenK054539()[chipId] = false;
             setting.getLocation().getOpenQSound()[chipId] = false;
             setting.getLocation().getOpenHuC6280()[chipId] = false;
             setting.getLocation().getOpenK051649()[chipId] = false;
@@ -1172,178 +1335,227 @@ public class frmMain extends JFrame {
             setting.getLocation().setPMain(getBounds().getLocation());
         }
         if (frmPlayList != null && !frmPlayList.isClosed) {
+            setting.getLocation().setPPlayList(frmPlayList.getLocation());
+            setting.getLocation().setPPlayListWH(new Dimension(frmPlayList.getWidth(), frmPlayList.getHeight()));
             frmPlayList.setVisible(false);
             setting.getLocation().setOPlayList(true);
         }
         if (frmInfo != null && !frmInfo.isClosed) {
+            setting.getLocation().setPInfo(frmInfo.getLocation());
             frmInfo.setVisible(false);
             setting.getLocation().setOInfo(true);
         }
         if (frmMixer2 != null && !frmMixer2.isClosed) {
+            setting.getLocation().setPosMixer(frmMixer2.getLocation());
             frmMixer2.setVisible(false);
             setting.getLocation().setOMixer(true);
         }
         if (frmYM2612MIDI != null && !frmYM2612MIDI.isClosed) {
+            setting.getLocation().setPosYm2612MIDI(frmYM2612MIDI.getLocation());
             frmYM2612MIDI.setVisible(false);
             setting.getLocation().setOpenYm2612MIDI(true);
         }
-//        if (frmVSTeffectList != null && !frmVSTeffectList.isClosed) {
-//            frmVSTeffectList.setVisible(false);
-//            setting.getLocation().setOpenVSTeffectList(true);
-//        }
 
         for (int chipId = 0; chipId < 2; chipId++) {
             if (frmAY8910[chipId] != null && !frmAY8910[chipId].isClosed) {
+                setting.getLocation().getPosAY8910()[chipId] = frmAY8910[chipId].getLocation();
                 frmAY8910[chipId].setVisible(false);
                 setting.getLocation().getOpenAY8910()[chipId] = true;
             }
             if (frmC140[chipId] != null && !frmC140[chipId].isClosed) {
+                setting.getLocation().getPosC140()[chipId] = frmC140[chipId].getLocation();
                 frmC140[chipId].setVisible(false);
                 setting.getLocation().getOpenC140()[chipId] = true;
             }
             if (frmPPZ8[chipId] != null && !frmPPZ8[chipId].isClosed) {
+                setting.getLocation().getPosPPZ8()[chipId] = frmPPZ8[chipId].getLocation();
                 frmPPZ8[chipId].setVisible(false);
                 setting.getLocation().getOpenPPZ8()[chipId] = true;
             }
             if (frmS5B[chipId] != null && !frmS5B[chipId].isClosed) {
+                setting.getLocation().getPosS5B()[chipId] = frmS5B[chipId].getLocation();
                 frmS5B[chipId].setVisible(false);
                 setting.getLocation().getOpenS5B()[chipId] = true;
             }
             if (frmDMG[chipId] != null && !frmDMG[chipId].isClosed) {
+                setting.getLocation().getPosDMG()[chipId] = frmDMG[chipId].getLocation();
                 frmDMG[chipId].setVisible(false);
                 setting.getLocation().getOpenDMG()[chipId] = true;
             }
             if (frmYMZ280B[chipId] != null && !frmYMZ280B[chipId].isClosed) {
+                setting.getLocation().getPosYMZ280B()[chipId] = frmYMZ280B[chipId].getLocation();
                 frmYMZ280B[chipId].setVisible(false);
                 setting.getLocation().getOpenYMZ280B()[chipId] = true;
             }
             if (frmC352[chipId] != null && !frmC352[chipId].isClosed) {
+                setting.getLocation().getPosC352()[chipId] = frmC352[chipId].getLocation();
                 frmC352[chipId].setVisible(false);
                 setting.getLocation().getOpenC352()[chipId] = true;
             }
+            if (frmGA20[chipId] != null && !frmGA20[chipId].isClosed) {
+                setting.getLocation().getPosGA20()[chipId] = frmGA20[chipId].getLocation();
+                frmGA20[chipId].setVisible(false);
+                setting.getLocation().getOpenGA20()[chipId] = true;
+            }
+            if (frmK053260[chipId] != null && !frmK053260[chipId].isClosed) {
+                setting.getLocation().getPosK053260()[chipId] = frmK053260[chipId].getLocation();
+                frmK053260[chipId].setVisible(false);
+                setting.getLocation().getOpenK053260()[chipId] = true;
+            }
+            if (frmK054539[chipId] != null && !frmK054539[chipId].isClosed) {
+                setting.getLocation().getPosK054539()[chipId] = frmK054539[chipId].getLocation();
+                frmK054539[chipId].setVisible(false);
+                setting.getLocation().getOpenK054539()[chipId] = true;
+            }
             if (frmQSound[chipId] != null && !frmQSound[chipId].isClosed) {
+                setting.getLocation().getPosQSound()[chipId] = frmQSound[chipId].getLocation();
                 frmQSound[chipId].setVisible(false);
                 setting.getLocation().getOpenQSound()[chipId] = true;
             }
             if (frmFDS[chipId] != null && !frmFDS[chipId].isClosed) {
+                setting.getLocation().getPosFDS()[chipId] = frmFDS[chipId].getLocation();
                 frmFDS[chipId].setVisible(false);
                 setting.getLocation().getOpenFDS()[chipId] = true;
             }
             if (frmHuC6280[chipId] != null && !frmHuC6280[chipId].isClosed) {
+                setting.getLocation().getPosHuC6280()[chipId] = frmHuC6280[chipId].getLocation();
                 frmHuC6280[chipId].setVisible(false);
                 setting.getLocation().getOpenHuC6280()[chipId] = true;
             }
             if (frmK051649[chipId] != null && !frmK051649[chipId].isClosed) {
-                frmK051649[chipId].setVisible(false);
-                setting.getLocation().getOpenK051649()[chipId] = true;
-            }
-            if (frmK051649[chipId] != null && !frmK051649[chipId].isClosed) {
+                setting.getLocation().getPosK051649()[chipId] = frmK051649[chipId].getLocation();
                 frmK051649[chipId].setVisible(false);
                 setting.getLocation().getOpenK051649()[chipId] = true;
             }
             if (frmMCD[chipId] != null && !frmMCD[chipId].isClosed) {
+                setting.getLocation().getPosRf5c164()[chipId] = frmMCD[chipId].getLocation();
                 frmMCD[chipId].setVisible(false);
                 setting.getLocation().getOpenRf5c164()[chipId] = true;
             }
             if (frmRf5c68[chipId] != null && !frmRf5c68[chipId].isClosed) {
+                setting.getLocation().getPosRf5c68()[chipId] = frmRf5c68[chipId].getLocation();
                 frmRf5c68[chipId].setVisible(false);
                 setting.getLocation().getOpenRf5c68()[chipId] = true;
             }
             if (frmMIDI[chipId] != null && !frmMIDI[chipId].isClosed) {
+                setting.getLocation().getPosMIDI()[chipId] = frmMIDI[chipId].getLocation();
                 frmMIDI[chipId].setVisible(false);
                 setting.getLocation().getOpenMIDI()[chipId] = true;
             }
             if (frmMMC5[chipId] != null && !frmMMC5[chipId].isClosed) {
+                setting.getLocation().getPosMMC5()[chipId] = frmMMC5[chipId].getLocation();
                 frmMMC5[chipId].setVisible(false);
                 setting.getLocation().getOpenMMC5()[chipId] = true;
             }
             if (frmVRC6[chipId] != null && !frmVRC6[chipId].isClosed) {
+                setting.getLocation().getPosVrc6()[chipId] = frmVRC6[chipId].getLocation();
                 frmVRC6[chipId].setVisible(false);
                 setting.getLocation().getOpenVrc6()[chipId] = true;
             }
             if (frmVRC7[chipId] != null && !frmVRC7[chipId].isClosed) {
+                setting.getLocation().getPosVrc7()[chipId] = frmVRC7[chipId].getLocation();
                 frmVRC7[chipId].setVisible(false);
                 setting.getLocation().getOpenVrc7()[chipId] = true;
             }
             if (frmN106[chipId] != null && !frmN106[chipId].isClosed) {
+                setting.getLocation().getPosN106()[chipId] = frmN106[chipId].getLocation();
                 frmN106[chipId].setVisible(false);
                 setting.getLocation().getOpenN106()[chipId] = true;
             }
             if (frmNESDMC[chipId] != null && !frmNESDMC[chipId].isClosed) {
+                setting.getLocation().getPosNESDMC()[chipId] = frmNESDMC[chipId].getLocation();
                 frmNESDMC[chipId].setVisible(false);
                 setting.getLocation().getOpenNESDMC()[chipId] = true;
             }
             if (frmOKIM6258[chipId] != null && !frmOKIM6258[chipId].isClosed) {
+                setting.getLocation().getPosOKIM6258()[chipId] = frmOKIM6258[chipId].getLocation();
                 frmOKIM6258[chipId].setVisible(false);
                 setting.getLocation().getOpenOKIM6258()[chipId] = true;
             }
             if (frmOKIM6295[chipId] != null && !frmOKIM6295[chipId].isClosed) {
+                setting.getLocation().getPosOKIM6295()[chipId] = frmOKIM6295[chipId].getLocation();
                 frmOKIM6295[chipId].setVisible(false);
                 setting.getLocation().getOpenOKIM6295()[chipId] = true;
             }
             if (frmSegaPCM[chipId] != null && !frmSegaPCM[chipId].isClosed) {
+                setting.getLocation().getPosSegaPCM()[chipId] = frmSegaPCM[chipId].getLocation();
                 frmSegaPCM[chipId].setVisible(false);
                 setting.getLocation().getOpenSegaPCM()[chipId] = true;
             }
             if (frmSN76489[chipId] != null && !frmSN76489[chipId].isClosed) {
+                setting.getLocation().getPosSN76489()[chipId] = frmSN76489[chipId].getLocation();
                 frmSN76489[chipId].setVisible(false);
                 setting.getLocation().getOpenSN76489()[chipId] = true;
             }
             if (frmYM2151[chipId] != null && !frmYM2151[chipId].isClosed) {
+                setting.getLocation().getPosYm2151()[chipId] = frmYM2151[chipId].getLocation();
                 frmYM2151[chipId].setVisible(false);
                 setting.getLocation().getOpenYm2151()[chipId] = true;
             }
             if (frmYM2203[chipId] != null && !frmYM2203[chipId].isClosed) {
+                setting.getLocation().getPosYm2203()[chipId] = frmYM2203[chipId].getLocation();
                 frmYM2203[chipId].setVisible(false);
                 setting.getLocation().getOpenYm2203()[chipId] = true;
             }
             if (frmYM2413[chipId] != null && !frmYM2413[chipId].isClosed) {
+                setting.getLocation().getPosYm2413()[chipId] = frmYM2413[chipId].getLocation();
                 frmYM2413[chipId].setVisible(false);
                 setting.getLocation().getOpenYm2413()[chipId] = true;
             }
             if (frmYM2608[chipId] != null && !frmYM2608[chipId].isClosed) {
+                setting.getLocation().getPosYm2608()[chipId] = frmYM2608[chipId].getLocation();
                 frmYM2608[chipId].setVisible(false);
                 setting.getLocation().getOpenYm2608()[chipId] = true;
             }
             if (frmYM2610[chipId] != null && !frmYM2610[chipId].isClosed) {
+                setting.getLocation().getPosYm2610()[chipId] = frmYM2610[chipId].getLocation();
                 frmYM2610[chipId].setVisible(false);
                 setting.getLocation().getOpenYm2610()[chipId] = true;
             }
             if (frmYM2612[chipId] != null && !frmYM2612[chipId].isClosed) {
+                setting.getLocation().getPosYm2612()[chipId] = frmYM2612[chipId].getLocation();
                 frmYM2612[chipId].setVisible(false);
                 setting.getLocation().getOpenYm2612()[chipId] = true;
             }
             if (frmYM3526[chipId] != null && !frmYM3526[chipId].isClosed) {
+                setting.getLocation().getPosYm3526()[chipId] = frmYM3526[chipId].getLocation();
                 frmYM3526[chipId].setVisible(false);
                 setting.getLocation().getOpenYm3526()[chipId] = true;
             }
             if (frmY8950[chipId] != null && !frmY8950[chipId].isClosed) {
+                setting.getLocation().getPosY8950()[chipId] = frmY8950[chipId].getLocation();
                 frmY8950[chipId].setVisible(false);
                 setting.getLocation().getOpenY8950()[chipId] = true;
             }
             if (frmYM3812[chipId] != null && !frmYM3812[chipId].isClosed) {
+                setting.getLocation().getPosYm3812()[chipId] = frmYM3812[chipId].getLocation();
                 frmYM3812[chipId].setVisible(false);
                 setting.getLocation().getOpenYm3812()[chipId] = true;
             }
             if (frmYMF262[chipId] != null && !frmYMF262[chipId].isClosed) {
+                setting.getLocation().getPosYmf262()[chipId] = frmYMF262[chipId].getLocation();
                 frmYMF262[chipId].setVisible(false);
                 setting.getLocation().getOpenYmf262()[chipId] = true;
             }
             if (frmYMF271[chipId] != null && !frmYMF271[chipId].isClosed) {
+                setting.getLocation().getPosYMF271()[chipId] = frmYMF271[chipId].getLocation();
                 frmYMF271[chipId].setVisible(false);
                 setting.getLocation().getOpenYMF271()[chipId] = true;
             }
             if (frmYMF278B[chipId] != null && !frmYMF278B[chipId].isClosed) {
+                setting.getLocation().getPosYmf278b()[chipId] = frmYMF278B[chipId].getLocation();
                 frmYMF278B[chipId].setVisible(false);
                 setting.getLocation().getOpenYmf278b()[chipId] = true;
             }
 
             if (frmRegTest != null && !frmRegTest.isClosed) {
+                setting.getLocation().getPosRegTest()[chipId] = frmRegTest.getLocation();
                 frmRegTest.setVisible(false);
                 setting.getLocation().getOpenRegTest()[chipId] = true;
             }
 
             if (frmVisWave != null && !frmVisWave.isClosed) {
+                setting.getLocation().setPosVisWave(frmVisWave.getLocation());
                 frmVisWave.setVisible(false);
                 setting.getLocation().setOpenVisWave(true);
             }
@@ -1366,6 +1578,8 @@ public class frmMain extends JFrame {
             int px = ev.getX() / setting.getOther().getZoom();
             int py = ev.getY() / setting.getOther().getZoom();
 
+            checkMouseHover(px, py);
+
             if (py < 9) {
                 Arrays.fill(newButton, 0);
                 return;
@@ -1377,103 +1591,90 @@ public class frmMain extends JFrame {
                 else newButton[n] = 0;
             }
         }
+
+        @Override
+        public void mouseDragged(MouseEvent ev) {
+            int px = ev.getX() / setting.getOther().getZoom();
+            int py = ev.getY() / setting.getOther().getZoom();
+
+            checkMouseHover(px, py);
+
+            if (faderMasterDrag) {
+                faderMasterVal = Common.range(px - 184, 0, 56);
+                if (audio.plugin != null) {
+                    audio.plugin.setMasterVolume(true, masterVolTbl[faderMasterVal]);
+                }
+            }
+
+            if (faderTimeLineDrag) {
+                faderTimeLineVal = Common.range(px - 184, 0, 56);
+            }
+        }
     };
 
     private final MouseListener pbScreen_MouseClick = new MouseAdapter() {
         @Override
+        public void mousePressed(MouseEvent ev) {
+            showMainPopup(ev);
+
+            int px = ev.getX() / setting.getOther().getZoom();
+            int py = ev.getY() / setting.getOther().getZoom();
+
+            checkMouseHover(px, py);
+
+            if (faderMasterHover) {
+                faderMasterDrag = true;
+                faderMasterVal = Common.range(px - 184, 0, 56);
+                if (audio.plugin != null) {
+                    audio.plugin.setMasterVolume(true, masterVolTbl[faderMasterVal]);
+                }
+            }
+            if (faderTimeLineHover) {
+                faderTimeLineDrag = true;
+                faderTimeLineVal = px - 184;
+            }
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent ev) {
+            showMainPopup(ev);
+
+            int px = ev.getX() / setting.getOther().getZoom();
+            int py = ev.getY() / setting.getOther().getZoom();
+
+            checkMouseHover(px, py);
+
+            if (faderTimeLineDrag) {
+                faderTimeLineVal = Common.range(px - 184, 0, 56);
+                audio.seek(faderTimeLineVal / 56.0);
+            }
+
+            faderMasterDrag = false;
+            faderTimeLineDrag = false;
+        }
+
+        @Override
         public void mouseExited(MouseEvent e) {
             Arrays.fill(newButton, 0);
+            faderMasterHover = false;
+            faderTimeLineHover = false;
         }
 
         @Override
         public void mouseClicked(MouseEvent ev) {
-            if (ev.getButton() == MouseEvent.BUTTON2) {
-                cmsMenu.setVisible(true);
-                cmsMenu.setLocation(ev.getX(), ev.getY());
-            }
-
-            //int px = ev.getX() / setting.getother().getZoom();
-            //int py = ev.getY() / setting.getother().getZoom();
-
-            //if (py < 16) {
-            //    if (px < 8 * 2) return;
-            //    if (px < 8 * 5 + 4) {
-            //        if (py < 8) tsmiPAY8910_Click(null);
-            //        else tsmiSAY8910_Click(null);
-            //        return;
-            //    }
-            //    if (px < 8 * 7) {
-            //        if (py < 8) tsmiPOPLL_Click(null);
-            //        else tsmiSOPLL_Click(null);
-            //        return;
-            //    }
-            //    if (px < 8 * 9) {
-            //        if (py < 8) tsmiPOPN_Click(null);
-            //        else tsmiSOPN_Click(null);
-            //        return;
-            //    }
-            //    if (px < 8 * 11) {
-            //        if (py < 8) tsmiPOPN2_Click(null);
-            //        else tsmiSOPN2_Click(null);
-            //        return;
-            //    }
-            //    if (px < 8 * 13 + 4) {
-            //        if (py < 8) tsmiPOPNA_Click(null);
-            //        else tsmiSOPNA_Click(null);
-            //        return;
-            //    }
-            //    if (px < 8 * 16) {
-            //        if (py < 8) tsmiPOPNB_Click(null);
-            //        else tsmiSOPNB_Click(null);
-            //        return;
-            //    }
-            //    if (px < 8 * 18 + 4) {
-            //        if (py < 8) tsmiPOPM_Click(null);
-            //        else tsmiSOPM_Click(null);
-            //        return;
-            //    }
-            //    if (px < 8 * 20 + 4) {
-            //        if (py < 8) tsmiPDCSG_Click(null);
-            //        else tsmiSDCSG_Click(null);
-            //        return;
-            //    }
-            //    if (px < 8 * 23) {
-            //        if (py < 8) tsmiPRF5C164_Click(null);
-            //        else tsmiSRF5C164_Click(null);
-            //        return;
-            //    }
-            //    if (px < 8 * 25 + 4) {
-            //        return;
-            //    }
-            //    if (px < 8 * 27 + 4) {
-            //        if (py < 8) tsmiPOKIM6258_Click(null);
-            //        else tsmiSOKIM6258_Click(null);
-            //        return;
-            //    }
-            //    if (px < 8 * 30) {
-            //        if (py < 8) tsmiPOKIM6295_Click(null);
-            //        else tsmiSOKIM6295_Click(null);
-            //        return;
-            //    }
-            //    if (px < 8 * 32 + 4) {
-            //        if (py < 8) tsmiPC140_Click(null);
-            //        else tsmiSC140_Click(null);
-            //        return;
-            //    }
-            //    if (px < 8 * 35) {
-            //        if (py < 8) tsmiPSegaPCM_Click(null);
-            //        else tsmiSSegaPCM_Click(null);
-            //        return;
-            //    }
-            //    if (px < 8 * 37 + 4) {
-            //        if (py < 8) tsmiPHuC6280_Click(null);
-            //        else tsmiSHuC6280_Click(null);
-            //        return;
-            //    }
-            //    return;
-            //}
         }
     };
+
+    private void checkMouseHover(int px, int py) {
+        faderMasterHover = (px >= 184 && px < 243 && py >= 13 && py < 20);
+        faderTimeLineHover = (px >= 184 && px < 243 && py >= 29 && py < 36);
+    }
+
+    private void showMainPopup(MouseEvent ev) {
+        if (ev.isPopupTrigger()) {
+            cmsMenu.show(pbScreen, ev.getX(), ev.getY());
+        }
+    }
 
     private void tsmiPOPN_Click(ActionEvent ev) {
         OpenFormYM2203(0, false);
@@ -1772,6 +1973,24 @@ public class frmMain extends JFrame {
 
     private void tsmiVisWave_Click(ActionEvent ev) {
         openFormVisWave();
+    }
+
+    private void tsmiConsole_Click(ActionEvent ev) {
+        openConsole();
+    }
+
+    /** Shows what the player is logging. */
+    private void openConsole() {
+        if (frmConsole != null && !frmConsole.isClosed) {
+            frmConsole.setVisible(false);
+            frmConsole.dispose();
+            frmConsole = null;
+            return;
+        }
+
+        frmConsole = new frmConsole(this);
+        frmConsole.setLocation(this.getLocation().x, this.getLocation().y + 100);
+        frmConsole.setVisible(true);
     }
 
 
@@ -2282,6 +2501,132 @@ public class frmMain extends JFrame {
             logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         frmMultiPCM[chipId] = null;
+    }
+
+    private void OpenFormGA20(int chipId, boolean force /* = false */) {
+        if (frmGA20[chipId] != null) {
+            if (!force) {
+                CloseFormGA20(chipId);
+                return;
+            } else return;
+        }
+
+        frmGA20[chipId] = new frmGA20(this, chipId, setting.getOther().getZoom(), newParam.ga20[chipId], oldParam.ga20[chipId]);
+
+        if (setting.getLocation().getPosGA20()[chipId].equals(empty)) {
+            frmGA20[chipId].x = this.getLocation().x;
+            frmGA20[chipId].y = this.getLocation().y + 264;
+        } else {
+            frmGA20[chipId].x = setting.getLocation().getPosGA20()[chipId].x;
+            frmGA20[chipId].y = setting.getLocation().getPosGA20()[chipId].y;
+        }
+
+        frmGA20[chipId].setVisible(true);
+        frmGA20[chipId].update();
+        frmGA20[chipId].setTitle("GA20 (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"));
+        oldParam.ga20[chipId] = new MDChipParams.GA20();
+
+        checkAndSetForm(frmGA20[chipId]);
+    }
+
+    private void CloseFormGA20(int chipId) {
+        if (frmGA20[chipId] == null) return;
+
+        try {
+            frmGA20[chipId].setVisible(false);
+        } catch (Exception ex) {
+            logger.log(Level.ERROR, ex.getMessage(), ex);
+        }
+        try {
+            frmGA20[chipId].dispose();
+        } catch (Exception ex) {
+            logger.log(Level.ERROR, ex.getMessage(), ex);
+        }
+        frmGA20[chipId] = null;
+    }
+
+    private void OpenFormK053260(int chipId, boolean force /* = false */) {
+        if (frmK053260[chipId] != null) {
+            if (!force) {
+                CloseFormK053260(chipId);
+                return;
+            } else return;
+        }
+
+        frmK053260[chipId] = new frmK053260(this, chipId, setting.getOther().getZoom(), newParam.k053260[chipId], oldParam.k053260[chipId]);
+
+        if (setting.getLocation().getPosK053260()[chipId].equals(empty)) {
+            frmK053260[chipId].x = this.getLocation().x;
+            frmK053260[chipId].y = this.getLocation().y + 264;
+        } else {
+            frmK053260[chipId].x = setting.getLocation().getPosK053260()[chipId].x;
+            frmK053260[chipId].y = setting.getLocation().getPosK053260()[chipId].y;
+        }
+
+        frmK053260[chipId].setVisible(true);
+        frmK053260[chipId].update();
+        frmK053260[chipId].setTitle("K053260 (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"));
+        oldParam.k053260[chipId] = new MDChipParams.K053260();
+
+        checkAndSetForm(frmK053260[chipId]);
+    }
+
+    private void CloseFormK053260(int chipId) {
+        if (frmK053260[chipId] == null) return;
+
+        try {
+            frmK053260[chipId].setVisible(false);
+        } catch (Exception ex) {
+            logger.log(Level.ERROR, ex.getMessage(), ex);
+        }
+        try {
+            frmK053260[chipId].dispose();
+        } catch (Exception ex) {
+            logger.log(Level.ERROR, ex.getMessage(), ex);
+        }
+        frmK053260[chipId] = null;
+    }
+
+    private void OpenFormK054539(int chipId, boolean force /* = false */) {
+        if (frmK054539[chipId] != null) {
+            if (!force) {
+                CloseFormK054539(chipId);
+                return;
+            } else return;
+        }
+
+        frmK054539[chipId] = new frmK054539(this, chipId, setting.getOther().getZoom(), newParam.k054539[chipId], oldParam.k054539[chipId]);
+
+        if (setting.getLocation().getPosK054539()[chipId].equals(empty)) {
+            frmK054539[chipId].x = this.getLocation().x;
+            frmK054539[chipId].y = this.getLocation().y + 264;
+        } else {
+            frmK054539[chipId].x = setting.getLocation().getPosK054539()[chipId].x;
+            frmK054539[chipId].y = setting.getLocation().getPosK054539()[chipId].y;
+        }
+
+        frmK054539[chipId].setVisible(true);
+        frmK054539[chipId].update();
+        frmK054539[chipId].setTitle("K054539 (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"));
+        oldParam.k054539[chipId] = new MDChipParams.K054539();
+
+        checkAndSetForm(frmK054539[chipId]);
+    }
+
+    private void CloseFormK054539(int chipId) {
+        if (frmK054539[chipId] == null) return;
+
+        try {
+            frmK054539[chipId].setVisible(false);
+        } catch (Exception ex) {
+            logger.log(Level.ERROR, ex.getMessage(), ex);
+        }
+        try {
+            frmK054539[chipId].dispose();
+        } catch (Exception ex) {
+            logger.log(Level.ERROR, ex.getMessage(), ex);
+        }
+        frmK054539[chipId] = null;
     }
 
     private void OpenFormQSound(int chipId, boolean force/* = false*/) {
@@ -3448,36 +3793,43 @@ public class frmMain extends JFrame {
             }
         }
 
-        frmYM2612MIDI = new frmYM2612MIDI(this, setting.getOther().getZoom(), newParam.ym2612Midi);
-        if (setting.getLocation().getPosYm2612MIDI().equals(empty)) {
-            frmYM2612MIDI.x = this.getLocation().x + 328;
-            frmYM2612MIDI.y = this.getLocation().y;
-        } else {
-            frmYM2612MIDI.x = setting.getLocation().getPosYm2612MIDI().x;
-            frmYM2612MIDI.y = setting.getLocation().getPosYm2612MIDI().y;
-        }
+        try {
+            frmYM2612MIDI = new frmYM2612MIDI(this, setting.getOther().getZoom(), newParam.ym2612Midi);
+            if (setting.getLocation().getPosYm2612MIDI().equals(empty)) {
+                frmYM2612MIDI.x = this.getLocation().x + 328;
+                frmYM2612MIDI.y = this.getLocation().y;
+            } else {
+                frmYM2612MIDI.x = setting.getLocation().getPosYm2612MIDI().x;
+                frmYM2612MIDI.y = setting.getLocation().getPosYm2612MIDI().y;
+            }
 
-//        Screen s = Screen.FromControl(frmYM2612MIDI);
-        Rectangle s = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
-        Rectangle rc = new Rectangle(frmYM2612MIDI.getLocation(), frmYM2612MIDI.getSize());
-        if (s.contains(rc)) {
-            frmYM2612MIDI.setLocation(rc.getLocation());
-            frmYM2612MIDI.setPreferredSize(rc.getSize());
-        } else {
-            frmYM2612MIDI.setLocation(new Point(100, 100));
-        }
+            Rectangle s = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
+            Rectangle rc = new Rectangle(frmYM2612MIDI.getLocation(), frmYM2612MIDI.getSize());
+            if (s.contains(rc)) {
+                frmYM2612MIDI.setLocation(rc.getLocation());
+                frmYM2612MIDI.setPreferredSize(rc.getSize());
+            } else {
+                frmYM2612MIDI.setLocation(new Point(100, 100));
+            }
 
-        //frmYM2612MIDI.setting = setting;
-        frmYM2612MIDI.setVisible(true);
-        frmYM2612MIDI.update();
-        oldParam.ym2612Midi = new MDChipParams.YM2612MIDI();
+            frmYM2612MIDI.setVisible(true);
+            frmYM2612MIDI.update();
+            oldParam.ym2612Midi = new MDChipParams.YM2612MIDI();
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "Could not open MIDI keyboard panel: " + e.getMessage());
+            frmYM2612MIDI = null;
+        }
     }
 
     private void openSetting() {
-        frmSetting frm = new frmSetting(setting);
-        if (frm.showDialog() == JFileChooser.APPROVE_OPTION) {
-            flgReinit = true;
-            reinit(frm.setting);
+        try {
+            frmSetting frm = new frmSetting(setting);
+            if (frm.showDialog() == JFileChooser.APPROVE_OPTION) {
+                flgReinit = true;
+                reinit(frm.setting);
+            }
+        } catch (Exception e) {
+            logger.log(Level.ERROR, "Could not open settings panel: " + e.getMessage(), e);
         }
     }
 
@@ -3516,7 +3868,9 @@ public class frmMain extends JFrame {
 
         logger.log(Level.ERROR, "The settings have been changed, so the audio initialization process will start again.");
 
-        audio.plugin.init();
+        if (audio.plugin != null) {
+            audio.plugin.init();
+        }
 
         logger.log(Level.ERROR, "Audio initialization process complete");
 
@@ -3694,26 +4048,49 @@ public class frmMain extends JFrame {
                 continue;
             }
 
-            screenChangeParams();
-            screenChangeParamsForms();
+            try {
+                screenChangeParams();
+                screenChangeParamsForms();
+            } catch (Exception e) {
+                logger.log(Level.ERROR, "Exception in screenChangeParams loop: " + e.getMessage(), e);
+            }
 
             if ((double) System.currentTimeMillis() >= nextFrame + period) {
                 nextFrame += period;
                 continue;
             }
 
-//            this.screenDrawParams.run();
-//            this.Invoke((Runnable) (screenDrawParamsForms));
+            // this loop is not the EDT, so hand the drawing over to it
+            SwingUtilities.invokeLater(() -> {
+                screenDrawParams();
+                screenDrawParamsForms();
+            });
 
             nextFrame += period;
 
-            if (frmPlayList != null && frmPlayList.isPlaying()) {
-                if ((setting.getOther().getUseLoopTimes() && audio.plugin.getVgmCurLoopCounter() > setting.getOther().getLoopTimes() - 1)
-                        || audio.plugin.getVGMStopped()) {
-                    fadeout();
+            // Audio.play() runs on its own thread, and does not clear the stopped flag until it has
+            // torn the previous song down. Until it does, a stopped plugin means "this song has not
+            // begun", not "this song has ended". This is about the audio, not about the play list.
+            if (songStarting && audio.isRendering()) {
+                songStarting = false;
+
+                // Only now is it known which chips the song is made of: the instruments behind them
+                // are not built until play() has prepared the plugin, which happens on that thread,
+                // after playData() asked for the song.
+                if (setting.getOther().getAutoOpen()) {
+                    SwingUtilities.invokeLater(this::autoOpenPanels);
                 }
-                if (audio.plugin.isStopped() && frmPlayList.isPlaying()) {
-                    nextPlayMode();
+            }
+
+            if (frmPlayList != null && frmPlayList.isPlaying()) {
+                if (!songStarting) {
+                    if ((setting.getOther().getUseLoopTimes() && audio.plugin.getVgmCurLoopCounter() > setting.getOther().getLoopTimes() - 1)
+                            || audio.plugin.getVGMStopped()) {
+                        fadeout();
+                    }
+                    if (audio.plugin.isStopped()) {
+                        nextPlayMode();
+                    }
                 }
             }
 
@@ -3773,6 +4150,41 @@ public class frmMain extends JFrame {
         sec -= newParam.LCsecond;
         newParam.LCmillisecond = (int) (sec * 100.0);
 
+        // Fader (Master Volume)
+        int val;
+        if (faderMasterDrag) {
+            newParam.Master = Common.range(faderMasterVal, 0, 56);
+        } else {
+            val = Common.range(setting.getBalance().getMasterVolume(), -192, 20) + 192;
+            val = (int) (val * ((7.0 * 8) / (20.0 - (-192))));
+            newParam.Master = val;
+        }
+
+        val = Common.range(visVolumeMaster / 220, 0, 56);
+        if (newParam.MasterVis > 0) newParam.MasterVis--;
+        newParam.MasterVis = Math.max(newParam.MasterVis, val);
+
+        newParam.MasterHover = faderMasterHover ? 0 : 1;
+        newParam.MasterDrag = faderMasterDrag ? 0 : 1;
+
+        // Fader (Timeline)
+        double gc = (double) audio.plugin.getCounter();
+        double tc = (double) audio.plugin.getTotalCounter();
+        if (tc > 0.0) {
+            newParam.TimeLineVis = (int) (57.0 * gc / tc) % 57;
+        } else {
+            newParam.TimeLineVis = 0;
+        }
+
+        if (faderTimeLineDrag) {
+            newParam.TimeLine = faderTimeLineVal;
+        } else {
+            newParam.TimeLine = newParam.TimeLineVis;
+        }
+
+        newParam.TimeLineHover = faderTimeLineHover ? 0 : 1;
+        newParam.TimeLineDrag = faderTimeLineDrag ? 0 : 1;
+
         updateOpeButtonActiveState();
     }
 
@@ -3804,6 +4216,15 @@ public class frmMain extends JFrame {
 
             if (frmMultiPCM[chipId] != null && !frmMultiPCM[chipId].isClosed) frmMultiPCM[chipId].screenChangeParams();
             else frmMultiPCM[chipId] = null;
+
+            if (frmGA20[chipId] != null && !frmGA20[chipId].isClosed) frmGA20[chipId].screenChangeParams();
+            else frmGA20[chipId] = null;
+
+            if (frmK053260[chipId] != null && !frmK053260[chipId].isClosed) frmK053260[chipId].screenChangeParams();
+            else frmK053260[chipId] = null;
+
+            if (frmK054539[chipId] != null && !frmK054539[chipId].isClosed) frmK054539[chipId].screenChangeParams();
+            else frmK054539[chipId] = null;
 
             if (frmQSound[chipId] != null && !frmQSound[chipId].isClosed) frmQSound[chipId].screenChangeParams();
             else frmQSound[chipId] = null;
@@ -3913,38 +4334,28 @@ public class frmMain extends JFrame {
         DrawBuff.drawTimer(screen.mainScreen, 1, oldParam.TCminutes, oldParam.TCsecond, oldParam.TCmillisecond, newParam.TCminutes, newParam.TCsecond, newParam.TCmillisecond);
         DrawBuff.drawTimer(screen.mainScreen, 2, oldParam.LCminutes, oldParam.LCsecond, oldParam.LCmillisecond, newParam.LCminutes, newParam.LCsecond, newParam.LCmillisecond);
 
-        //byte[] chips = audio.getChipStatus();
-        //DrawBuff.drawChipName(screen.mainScreen, 14 * 4, 0 * 8, 0,oldParam.chipLED.PriOPN, chips[0]);
-        //DrawBuff.drawChipName(screen.mainScreen, 18 * 4, 0 * 8, 1,oldParam.chipLED.PriOPN2, chips[1]);
-        //DrawBuff.drawChipName(screen.mainScreen, 23 * 4, 0 * 8, 2,oldParam.chipLED.PriOPNA, chips[2]);
-        //DrawBuff.drawChipName(screen.mainScreen, 28 * 4, 0 * 8, 3,oldParam.chipLED.PriOPNB, chips[3]);
-        //DrawBuff.drawChipName(screen.mainScreen, 33 * 4, 0 * 8, 4,oldParam.chipLED.PriOPM, chips[4]);
-        //DrawBuff.drawChipName(screen.mainScreen, 37 * 4, 0 * 8, 5,oldParam.chipLED.PriDCSG, chips[5]);
-        //DrawBuff.drawChipName(screen.mainScreen, 42 * 4, 0 * 8, 6,oldParam.chipLED.PriRF5C, chips[6]);
-        //DrawBuff.drawChipName(screen.mainScreen, 47 * 4, 0 * 8, 7,oldParam.chipLED.PriPWM, chips[7]);
-        //DrawBuff.drawChipName(screen.mainScreen, 51 * 4, 0 * 8, 8,oldParam.chipLED.PriOKI5, chips[8]);
-        //DrawBuff.drawChipName(screen.mainScreen, 56 * 4, 0 * 8, 9,oldParam.chipLED.PriOKI9, chips[9]);
-        //DrawBuff.drawChipName(screen.mainScreen, 61 * 4, 0 * 8, 10,oldParam.chipLED.PriC140, chips[10]);
-        //DrawBuff.drawChipName(screen.mainScreen, 66 * 4, 0 * 8, 11,oldParam.chipLED.PriSPCM, chips[11]);
-        //DrawBuff.drawChipName(screen.mainScreen, 4 * 4, 0 * 8, 12,oldParam.chipLED.PriAY10, chips[12]);
-        //DrawBuff.drawChipName(screen.mainScreen, 9 * 4, 0 * 8, 13,oldParam.chipLED.PriOPLL, chips[13]);
-        //DrawBuff.drawChipName(screen.mainScreen, 71 * 4, 0 * 8, 14,oldParam.chipLED.PriHuC8, chips[14]);
+        // C# took these by ref, so drawTimer marked them itself; Java has to do it here or every
+        // frame would redraw the digits
+        oldParam.Cminutes = newParam.Cminutes;
+        oldParam.Csecond = newParam.Csecond;
+        oldParam.Cmillisecond = newParam.Cmillisecond;
+        oldParam.TCminutes = newParam.TCminutes;
+        oldParam.TCsecond = newParam.TCsecond;
+        oldParam.TCmillisecond = newParam.TCmillisecond;
+        oldParam.LCminutes = newParam.LCminutes;
+        oldParam.LCsecond = newParam.LCsecond;
+        oldParam.LCmillisecond = newParam.LCmillisecond;
 
-        //DrawBuff.drawChipName(screen.mainScreen, 14 * 4, 1 * 8, 0,oldParam.chipLED.SecOPN, chips[128 + 0]);
-        //DrawBuff.drawChipName(screen.mainScreen, 18 * 4, 1 * 8, 1,oldParam.chipLED.SecOPN2, chips[128 + 1]);
-        //DrawBuff.drawChipName(screen.mainScreen, 23 * 4, 1 * 8, 2,oldParam.chipLED.SecOPNA, chips[128 + 2]);
-        //DrawBuff.drawChipName(screen.mainScreen, 28 * 4, 1 * 8, 3,oldParam.chipLED.SecOPNB, chips[128 + 3]);
-        //DrawBuff.drawChipName(screen.mainScreen, 33 * 4, 1 * 8, 4,oldParam.chipLED.SecOPM, chips[128 + 4]);
-        //DrawBuff.drawChipName(screen.mainScreen, 37 * 4, 1 * 8, 5,oldParam.chipLED.SecDCSG, chips[128 + 5]);
-        //DrawBuff.drawChipName(screen.mainScreen, 42 * 4, 1 * 8, 6,oldParam.chipLED.SecRF5C, chips[128 + 6]);
-        //DrawBuff.drawChipName(screen.mainScreen, 47 * 4, 1 * 8, 7,oldParam.chipLED.SecPWM, chips[128 + 7]);
-        //DrawBuff.drawChipName(screen.mainScreen, 51 * 4, 1 * 8, 8,oldParam.chipLED.SecOKI5, chips[128 + 8]);
-        //DrawBuff.drawChipName(screen.mainScreen, 56 * 4, 1 * 8, 9,oldParam.chipLED.SecOKI9, chips[128 + 9]);
-        //DrawBuff.drawChipName(screen.mainScreen, 61 * 4, 1 * 8, 10,oldParam.chipLED.SecC140, chips[128 + 10]);
-        //DrawBuff.drawChipName(screen.mainScreen, 66 * 4, 1 * 8, 11,oldParam.chipLED.SecSPCM, chips[128 + 11]);
-        //DrawBuff.drawChipName(screen.mainScreen, 4 * 4, 1 * 8, 12,oldParam.chipLED.SecAY10, chips[128 + 12]);
-        //DrawBuff.drawChipName(screen.mainScreen, 9 * 4, 1 * 8, 13,oldParam.chipLED.SecOPLL, chips[128 + 13]);
-        //DrawBuff.drawChipName(screen.mainScreen, 71 * 4, 0 * 8, 14,oldParam.chipLED.SecHuC8, chips[128 + 14]);
+        // nothing is loaded yet: the skin, the buttons and the timers are all there is to show
+        if (audio.plugin == null) {
+            screen.refresh(null);
+            return;
+        }
+
+        // The chip-name lamps are not drawn: this skin (planeMain) spends that row on the timers,
+        // which is why the original has its drawChipName() calls commented out too. The lamps are
+        // still lit and faded — they are how we know which chips a song is actually using.
+        newParam.chipLED.fade();
 
         DrawBuff.drawFont4(screen.mainScreen, 1, 9, 1, audio.plugin.isDataBlock(EnmModel.VirtualModel) ? "VD" : "  ");
         DrawBuff.drawFont4(screen.mainScreen, 321 - 16, 9, 1, isPcmRAMWrite(EnmModel.VirtualModel) ? "VP" : "  ");
@@ -3961,6 +4372,30 @@ public class frmMain extends JFrame {
                 DrawBuff.drawFont8(screen.mainScreen, 0, 16, 0, "R.CHIP-EMU : %12d ".formatted(d));
             DrawBuff.drawFont8(screen.mainScreen, 0, 24, 0, "PROC TIME  : %12d ".formatted(audio.plugin.procTimePer1Frame));
         }
+
+        int[] od = new int[] { oldParam.MasterDrag };
+        int[] ov = new int[] { oldParam.MasterHover };
+        int[] oval1 = new int[] { oldParam.Master };
+        int[] oval2 = new int[] { oldParam.MasterVis };
+        DrawBuff.drawFaderH(screen.mainScreen, 23 * 8, 14,
+                newParam.MasterDrag, newParam.MasterHover, newParam.Master, newParam.MasterVis,
+                od, ov, oval1, oval2);
+        oldParam.MasterDrag = od[0];
+        oldParam.MasterHover = ov[0];
+        oldParam.Master = oval1[0];
+        oldParam.MasterVis = oval2[0];
+
+        int[] tod = new int[] { oldParam.TimeLineDrag };
+        int[] tov = new int[] { oldParam.TimeLineHover };
+        int[] toval1 = new int[] { oldParam.TimeLine };
+        int[] toval2 = new int[] { oldParam.TimeLineVis };
+        DrawBuff.drawFaderH(screen.mainScreen, 23 * 8, 30,
+                newParam.TimeLineDrag, newParam.TimeLineHover, newParam.TimeLine, newParam.TimeLineVis,
+                tod, tov, toval1, toval2);
+        oldParam.TimeLineDrag = tod[0];
+        oldParam.TimeLineHover = tov[0];
+        oldParam.TimeLine = toval1[0];
+        oldParam.TimeLineVis = toval2[0];
 
         screen.refresh(null);
 
@@ -3983,15 +4418,11 @@ public class frmMain extends JFrame {
         }
     }
 
+    /** Only a vgm writes to PCM RAM, and only once it has a driver behind it. */
     boolean isPcmRAMWrite(Common.EnmModel model) {
-        if (model == Common.EnmModel.VirtualModel) {
-            if (audio.plugin instanceof VGMPlugin vgmPlugin)
-                return vgmPlugin.driverVirtual.vgm.isPcmRAMWrite;
-        } else {
-            if (audio.plugin instanceof VGMPlugin vgmPlugin)
-                return vgmPlugin.driverVirtual.vgm.isPcmRAMWrite;
-        }
-        return false;
+        return audio.plugin instanceof VGMPlugin vgmPlugin
+                && vgmPlugin.driverVirtual != null
+                && vgmPlugin.driverVirtual.vgm.isPcmRAMWrite;
     }
 
     private void screenDrawParamsForms() {
@@ -4040,6 +4471,21 @@ public class frmMain extends JFrame {
                 frmMultiPCM[chipId].screenDrawParams();
                 frmMultiPCM[chipId].update();
             } else frmMultiPCM[chipId] = null;
+
+            if (frmGA20[chipId] != null && !frmGA20[chipId].isClosed) {
+                frmGA20[chipId].screenDrawParams();
+                frmGA20[chipId].update();
+            } else frmGA20[chipId] = null;
+
+            if (frmK053260[chipId] != null && !frmK053260[chipId].isClosed) {
+                frmK053260[chipId].screenDrawParams();
+                frmK053260[chipId].update();
+            } else frmK053260[chipId] = null;
+
+            if (frmK054539[chipId] != null && !frmK054539[chipId].isClosed) {
+                frmK054539[chipId].screenDrawParams();
+                frmK054539[chipId].update();
+            } else frmK054539[chipId] = null;
 
             if (frmQSound[chipId] != null && !frmQSound[chipId].isClosed) {
                 frmQSound[chipId].screenDrawParams();
@@ -4205,38 +4651,9 @@ public class frmMain extends JFrame {
 
     private void screenInit(Object dmy) {
 
-        oldParam.chipLED.put("PriOPN", 255);
-        oldParam.chipLED.put("PriOPN2", 255);
-        oldParam.chipLED.put("PriOPNA", 255);
-        oldParam.chipLED.put("PriOPNB", 255);
-        oldParam.chipLED.put("PriOPM", 255);
-        oldParam.chipLED.put("PriDCSG", 255);
-        oldParam.chipLED.put("PriRF5C", 255);
-        oldParam.chipLED.put("PriRF5C68", 255);
-        oldParam.chipLED.put("PriPWM", 255);
-        oldParam.chipLED.put("PriOKI5", 255);
-        oldParam.chipLED.put("PriOKI9", 255);
-        oldParam.chipLED.put("PriC140", 255);
-        oldParam.chipLED.put("PriSPCM", 255);
-        oldParam.chipLED.put("PriAY10", 255);
-        oldParam.chipLED.put("PriOPLL", 255);
-        oldParam.chipLED.put("PriHuC8", 255);
-        oldParam.chipLED.put("SecOPN", 255);
-        oldParam.chipLED.put("SecOPN2", 255);
-        oldParam.chipLED.put("SecOPNA", 255);
-        oldParam.chipLED.put("SecOPNB", 255);
-        oldParam.chipLED.put("SecOPM", 255);
-        oldParam.chipLED.put("SecDCSG", 255);
-        oldParam.chipLED.put("SecRF5C", 255);
-        oldParam.chipLED.put("SecRF5C68", 255);
-        oldParam.chipLED.put("SecPWM", 255);
-        oldParam.chipLED.put("SecOKI5", 255);
-        oldParam.chipLED.put("SecOKI9", 255);
-        oldParam.chipLED.put("SecC140", 255);
-        oldParam.chipLED.put("SecSPCM", 255);
-        oldParam.chipLED.put("SecAY10", 255);
-        oldParam.chipLED.put("SecOPLL", 255);
-        oldParam.chipLED.put("SecHuC8", 255);
+        // nothing is on the screen yet, so no lamp has been drawn
+        oldParam.chipLED.clear();
+        newParam.chipLED.clear();
 
         //byte[] chips = audio.GetChipStatus();
         //DrawBuff.drawChipName(screen.mainScreen, 14 * 4, 0 * 8, 0,oldParam.chipLED.PriOPN, chips[0]);
@@ -4292,8 +4709,11 @@ public class frmMain extends JFrame {
             audio.pause();
         }
 
-        if (audio.plugin.chipRegister.plugin(RealChipPlugin.class).isThreadStopped() && audio.plugin.isStopped()) {
-            audio.plugin.resetTimeCounter();
+        if (audio.plugin != null && audio.plugin.chipRegister != null) {
+            RealChipPlugin realChip = audio.plugin.chipRegister.plugin(RealChipPlugin.class);
+            if (realChip != null && realChip.isThreadStopped() && audio.plugin.isStopped()) {
+                audio.plugin.resetTimeCounter();
+            }
         }
 
         frmPlayList.stop();
@@ -4329,7 +4749,6 @@ public class frmMain extends JFrame {
 
         frmPlayList.stop();
 
-        //if (srcBuf == null && frmPlayList.getMusicCount() < 1)
         if (frmPlayList.getMusicCount() < 1) {
             fn = fileOpen(false);
             if (fn == null) return;
@@ -4348,13 +4767,39 @@ public class frmMain extends JFrame {
         }
     }
 
+    /** the thread {@link Audio#play()} renders the current song on */
+    private Thread audioThread;
+
+    /** set while a song has been asked for but has not started coming out yet */
+    private volatile boolean songStarting;
+
+    /**
+     * Starts rendering the loaded song.
+     * <p>
+     * {@link Audio#play()} does not return until the song ends — it is the render loop — so it
+     * cannot be run on the event dispatch thread, or the whole GUI would freeze for the length of
+     * the song. It stops whatever was playing before, so the previous thread ends by itself.
+     */
+    private void startAudio() {
+        songStarting = true;
+        audioThread = new Thread(() -> {
+            try {
+                if (!audio.play()) {
+                    SwingUtilities.invokeLater(() -> {
+                        frmPlayList.stop();
+                        OpeManager.requestToAudio(new Request(enmRequest.Stop, null, null));
+                    });
+                }
+            } catch (Exception e) {
+                logger.log(Level.ERROR, e.getMessage(), e);
+            }
+        }, "mdplayer-audio");
+        audioThread.setDaemon(true);
+        audioThread.start();
+    }
+
     private void playData() {
         try {
-
-            if (srcBuf == null) {
-
-                throw new IllegalStateException("cancel");
-            }
 
             if (audio.isPaused()) {
                 audio.pause();
@@ -4405,23 +4850,7 @@ public class frmMain extends JFrame {
                 }
             }
 
-            if (!audio.play()) {
-
-                //frmMain.ForceChannelMask(EnmChip.Ym2612, 0, 0, true);
-                try {
-                    frmPlayList.stop();
-                    Request req = new Request(enmRequest.Stop, null, null);
-                    OpeManager.requestToAudio(req);
-                    //while (!req.end) Thread.sleep(1);
-                    //audio.Stop();
-                } catch (Exception ex) {
-                    logger.log(Level.ERROR, ex.getMessage(), ex);
-                    if (!ex.getMessage().isEmpty())
-                        JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                    else
-                        throw new Exception();
-                }
-            }
+            startAudio();
 
             for (int chipId = 0; chipId < 2; chipId++) {
                 for (int ch = 0; ch < 3; ch++)
@@ -4477,191 +4906,8 @@ public class frmMain extends JFrame {
                 frmInfo.update();
             }
 
-            if (setting.getOther().getAutoOpen()) {
-/* TODO view led
-                if (audio.plugin.chipLED.get("PriOPM") != 0) OpenFormYM2151(0, true);
-                else CloseFormYM2151(0);
-                if (audio.plugin.chipLED.get("SecOPM") != 0) OpenFormYM2151(1, true);
-                else CloseFormYM2151(1);
-
-                if (audio.plugin.chipLED.get("PriOPN") != 0) OpenFormYM2203(0, true);
-                else CloseFormYM2203(0);
-                if (audio.plugin.chipLED.get("SecOPN") != 0) OpenFormYM2203(1, true);
-                else CloseFormYM2203(1);
-
-                if (audio.plugin.chipLED.get("PriOPLL") != 0) OpenFormYM2413(0, true);
-                else CloseFormYM2413(0);
-                if (audio.plugin.chipLED.get("SecOPLL") != 0) OpenFormYM2413(1, true);
-                else CloseFormYM2413(1);
-
-                if (audio.plugin.chipLED.get("PriOPNA") != 0) OpenFormYM2608(0, true);
-                else CloseFormYM2608(0);
-                if (audio.plugin.chipLED.get("SecOPNA") != 0) OpenFormYM2608(1, true);
-                else CloseFormYM2608(1);
-
-                if (audio.plugin.chipLED.get("PriOPNB") != 0) OpenFormYM2610(0, true);
-                else CloseFormYM2610(0);
-                if (audio.plugin.chipLED.get("SecOPNB") != 0) OpenFormYM2610(1, true);
-                else CloseFormYM2610(1);
-
-                if (audio.plugin.chipLED.get("PriOPN2") != 0) openFormYM2612(0, true);
-                else closeFormYM2612(0);
-                if (audio.plugin.chipLED.get("SecOPN2") != 0) openFormYM2612(1, true);
-                else closeFormYM2612(1);
-
-                if (audio.plugin.chipLED.get("PriDCSG") != 0) OpenFormSN76489(0, true);
-                else CloseFormSN76489(0);
-                if (audio.plugin.chipLED.get("SecDCSG") != 0) {
-                    if (!(boolean) audio.plugin.chipRegister.chip(Sn76489Chip.class).getInfo(0).get("flag")) OpenFormSN76489(1, true);
-                } else CloseFormSN76489(1);
-
-                if (audio.plugin.chipLED.get("PriPPZ8") != 0) OpenFormPPZ8(0, true);
-                else CloseFormPPZ8(0);
-                if (audio.plugin.chipLED.get("SecPPZ8") != 0) OpenFormPPZ8(1, true);
-                else CloseFormPPZ8(1);
-
-                if (audio.plugin.chipLED.get("PriFME7") != 0) OpenFormS5B(0, true);
-                else CloseFormS5B(0);
-                if (audio.plugin.chipLED.get("SecFME7") != 0) OpenFormS5B(1, true);
-                else CloseFormS5B(1);
-
-                if (audio.plugin.chipLED.get("PriDMG") != 0) OpenFormDMG(0, true);
-                else CloseFormDMG(0);
-                if (audio.plugin.chipLED.get("SecDMG") != 0) OpenFormDMG(1, true);
-                else CloseFormDMG(1);
-
-                if (audio.plugin.chipLED.get("PriRF5C") != 0) OpenFormMegaCD(0, true);
-                else CloseFormMegaCD(0);
-                if (audio.plugin.chipLED.get("SecRF5C") != 0) OpenFormMegaCD(1, true);
-                else CloseFormMegaCD(1);
-
-                if (audio.plugin.chipLED.get("PriRF5C68") != 0) OpenFormRf5c68(0, true);
-                else CloseFormRf5c68(0);
-                if (audio.plugin.chipLED.get("SecRF5C68") != 0) OpenFormRf5c68(1, true);
-                else CloseFormRf5c68(1);
-
-                if (audio.plugin.chipLED.get("PriOKI5") != 0) OpenFormOKIM6258(0, true);
-                else CloseFormOKIM6258(0);
-                if (audio.plugin.chipLED.get("SecOKI5") != 0) OpenFormOKIM6258(1, true);
-                else CloseFormOKIM6258(1);
-
-                if (audio.plugin.chipLED.get("PriOKI9") != 0) OpenFormOKIM6295(0, true);
-                else CloseFormOKIM6295(0);
-                if (audio.plugin.chipLED.get("SecOKI9") != 0) OpenFormOKIM6295(1, true);
-                else CloseFormOKIM6295(1);
-
-                if (audio.plugin.chipLED.get("PriC140") != 0) OpenFormC140(0, true);
-                else CloseFormC140(0);
-                if (audio.plugin.chipLED.get("SecC140") != 0) OpenFormC140(1, true);
-                else CloseFormC140(1);
-
-                if (audio.plugin.chipLED.get("PriYMZ") != 0) OpenFormYMZ280B(0, true);
-                else CloseFormYMZ280B(0);
-                if (audio.plugin.chipLED.get("SecYMZ") != 0) OpenFormYMZ280B(1, true);
-                else CloseFormYMZ280B(1);
-
-                if (audio.plugin.chipLED.get("PriC352") != 0) OpenFormC352(0, true);
-                else CloseFormC352(0);
-                if (audio.plugin.chipLED.get("SecC352") != 0) OpenFormC352(1, true);
-                else CloseFormC352(1);
-
-                if (audio.plugin.chipLED.get("PriMPCM") != 0) OpenFormMultiPCM(0, true);
-                else CloseFormMultiPCM(0);
-                if (audio.plugin.chipLED.get("SecMPCM") != 0) OpenFormMultiPCM(1, true);
-                else CloseFormMultiPCM(1);
-
-                if (audio.plugin.chipLED.get("PriQsnd") != 0) OpenFormQSound(0, true);
-                else CloseFormQSound(0);
-                if (audio.plugin.chipLED.get("SecQsnd") != 0) OpenFormQSound(1, true);
-                else CloseFormQSound(1);
-
-                if (audio.plugin.chipLED.get("PriSPCM") != 0) OpenFormSegaPCM(0, true);
-                else CloseFormSegaPCM(0);
-                if (audio.plugin.chipLED.get("SecSPCM") != 0) OpenFormSegaPCM(1, true);
-                else CloseFormSegaPCM(1);
-
-                if (audio.plugin.chipLED.get("PriAY10") != 0) OpenFormAY8910(0, true);
-                else CloseFormAY8910(0);
-                if (audio.plugin.chipLED.get("SecAY10") != 0) OpenFormAY8910(1, true);
-                else CloseFormAY8910(1);
-
-                if (audio.plugin.chipLED.get("PriHuC") != 0) OpenFormHuC6280(0, true);
-                else CloseFormHuC6280(0);
-                if (audio.plugin.chipLED.get("SecHuC") != 0) OpenFormHuC6280(1, true);
-                else CloseFormHuC6280(1);
-
-                if (audio.plugin.chipLED.get("PriK051649") != 0) OpenFormK051649(0, true);
-                else CloseFormK051649(0);
-                if (audio.plugin.chipLED.get("SecK051649") != 0) OpenFormK051649(1, true);
-                else CloseFormK051649(1);
-
-                if (audio.plugin.chipLED.get("PriMID") != 0) OpenFormMIDI(0, true);
-                else closeFormMIDI(0);
-                //if (audio.plugin.chipLED.get("SecMID") != 0) OpenFormMIDI(1, true); else CloseFormMIDI(1);
-
-                if (audio.plugin.chipLED.get("PriNES") != 0 || audio.plugin.chipLED.get("PriDMC") != 0)
-                    openFormNESDMC(0, true);
-                else closeFormNESDMC(0);
-                if (audio.plugin.chipLED.get("SecNES") != 0 || audio.plugin.chipLED.get("SecDMC") != 0)
-                    openFormNESDMC(1, true);
-                else closeFormNESDMC(1);
-
-                if (audio.plugin.chipLED.get("PriFDS") != 0) openFormFDS(0, true);
-                else closeFormFDS(0);
-                if (audio.plugin.chipLED.get("SecFDS") != 0) openFormFDS(1, true);
-                else closeFormFDS(1);
-
-                if (audio.plugin.chipLED.get("PriVRC6") != 0) openFormVRC6(0, true);
-                else closeFormVRC6(0);
-                if (audio.plugin.chipLED.get("SecVRC6") != 0) openFormVRC6(1, true);
-                else closeFormVRC6(1);
-
-                if (audio.plugin.chipLED.get("PriVRC7") != 0) openFormVRC7(0, true);
-                else closeFormVRC7(0);
-                if (audio.plugin.chipLED.get("SecVRC7") != 0) openFormVRC7(1, true);
-                else closeFormVRC7(1);
-
-                if (audio.plugin.chipLED.get("PriMMC5") != 0) openFormMMC5(0, true);
-                else closeFormMMC5(0);
-                if (audio.plugin.chipLED.get("SecMMC5") != 0) openFormMMC5(1, true);
-                else closeFormMMC5(1);
-
-                if (audio.plugin.chipLED.get("PriN106") != 0) openFormN106(0, true);
-                else closeFormN106(0);
-                if (audio.plugin.chipLED.get("SecN106") != 0) openFormN106(1, true);
-                else closeFormN106(1);
-
-                if (audio.plugin.chipLED.get("PriOPL") != 0) OpenFormYM3526(0, true);
-                else CloseFormYM3526(0);
-                if (audio.plugin.chipLED.get("SecOPL") != 0) OpenFormYM3526(1, true);
-                else CloseFormYM3526(1);
-
-                if (audio.plugin.chipLED.get("PriY8950") != 0) OpenFormY8950(0, true);
-                else closeFormY8950(0);
-                if (audio.plugin.chipLED.get("SecY8950") != 0) OpenFormY8950(1, true);
-                else closeFormY8950(1);
-
-                if (audio.plugin.chipLED.get("PriOPL2") != 0) openFormYM3812(0, true);
-                else CloseFormYM3812(0);
-                if (audio.plugin.chipLED.get("SecOPL2") != 0) openFormYM3812(1, true);
-                else CloseFormYM3812(1);
-
-                if (audio.plugin.chipLED.get("PriOPL3") != 0) openFormYMF262(0, true);
-                else CloseFormYMF262(0);
-                if (audio.plugin.chipLED.get("SecOPL3") != 0) openFormYMF262(1, true);
-                else CloseFormYMF262(1);
-
-                if (audio.plugin.chipLED.get("PriOPL4") != 0) OpenFormYMF278B(0, true);
-                else CloseFormYMF278B(0);
-                if (audio.plugin.chipLED.get("SecOPL4") != 0) OpenFormYMF278B(1, true);
-                else CloseFormYMF278B(1);
-
-                if (audio.plugin.chipLED.get("PriOPX") != 0) OpenFormYMF271(0, true);
-                else CloseFormYMF271(0);
-                if (audio.plugin.chipLED.get("SecOPX") != 0) OpenFormYMF271(1, true);
-                else CloseFormYMF271(1);
-*/
-            }
+            // the panels the song wants are opened once it is actually playing, from the screen
+            // loop — until then there is nothing to ask about which chips it uses
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
         }
@@ -4699,7 +4945,9 @@ public class frmMain extends JFrame {
 
     public void slow() {
         if (audio.isPaused()) {
-            audio.stepPlay(4000);
+            // upstream STBL506 dropped the frame-advance button: slow while paused now creeps
+            // forward at a hundredth of the speed rather than stepping a fixed number of frames
+            audio.plugin.speed(0.01);
             audio.pause();
             return;
         }
@@ -4738,7 +4986,11 @@ public class frmMain extends JFrame {
         String lastPath = prefs.get("mdplayer.lasPath", null);
         if (lastPath != null) ofd.setCurrentDirectory(new File(lastPath));
         ofd.setDialogTitle("Select a file");
-        ofd.setFileFilter(ofd.getChoosableFileFilters()[setting.getOther().getFilterIndex()]);
+        int filterIndex = setting.getOther().getFilterIndex();
+        javax.swing.filechooser.FileFilter[] filters = ofd.getChoosableFileFilters();
+        if (filterIndex >= 0 && filterIndex < filters.length) {
+            ofd.setFileFilter(filters[filterIndex]);
+        }
 
         if (!setting.getOther().getDefaultDataPath().isEmpty() && Files.exists(Path.of(setting.getOther().getDefaultDataPath())) && isInitialOpenFolder) {
             ofd.setCurrentDirectory(new File(setting.getOther().getDefaultDataPath()));
@@ -4769,9 +5021,11 @@ public class frmMain extends JFrame {
         //    frmPlayList.getHeight() = setting.getlocation().PPlayListWH.y;
         //}
         frmPlayList.setVisible(!frmPlayList.isVisible());
-        if (frmPlayList.isVisible()) checkAndSetForm(frmPlayList);
-        frmPlayList.toFront();
-        frmPlayList.toBack();
+        if (frmPlayList.isVisible()) {
+            checkAndSetForm(frmPlayList);
+            frmPlayList.toFront();
+            frmPlayList.requestFocus();
+        }
     }
 
     private void dispVSTList() {
@@ -4782,10 +5036,12 @@ public class frmMain extends JFrame {
     }
 
     private void showContextMenu() {
-        cmsOpenOtherPanel.setVisible(true);
+        // a JPopupMenu must be shown via show(invoker, x, y); setVisible(true) alone leaves it
+        // without an invoker, so it comes up unplaced and mislaid-out
         PointerInfo pi = MouseInfo.getPointerInfo();
         Point p = pi.getLocation();
-        cmsOpenOtherPanel.setLocation(p.x, p.y);
+        SwingUtilities.convertPointFromScreen(p, this);
+        cmsOpenOtherPanel.show(this, p.x, p.y);
     }
 
     public void getInstCh(Class<? extends Chip> chip, int ch, int chipId) {
@@ -6311,7 +6567,8 @@ public class frmMain extends JFrame {
 
     public boolean loadAndPlay(int m, int songNo, String fn, String zfn /* = null */) {
         try {
-            if (audio.plugin.flgReinit) flgReinit = true;
+            // the plugin of the song played so far; there is none before the first one
+            if (audio.plugin != null && audio.plugin.flgReinit) flgReinit = true;
             if (setting.getOther().getInitAlways()) flgReinit = true;
             reinit(setting);
 
@@ -6329,7 +6586,8 @@ public class frmMain extends JFrame {
                 playingFileName = fn;
                 format = FileFormat.getFileFormat(zfn);
             }
-            format.load(Files.newInputStream(Path.of(fn)), null);
+            // .vgz and friends are compressed: reading the file raw fails the format's header check
+            format.load(Archives.getInputStream(new BufferedInputStream(Files.newInputStream(Path.of(fn)))), null);
 
             // Set the volume balance before playback
             loadPresetMixerBalance(playingFileName, playingArcFileName, format);
@@ -6345,13 +6603,10 @@ public class frmMain extends JFrame {
             newParam.ym2612[0].fileFormat = format;
             newParam.ym2612[1].fileFormat = format;
 
-            if (srcBuf != null) {
-                SwingUtilities.invokeLater(this::playData);
-            }
+            SwingUtilities.invokeLater(this::playData);
 
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
-            srcBuf = null;
             JOptionPane.showMessageDialog(this,
                     "Failed to load file.\nMessage=%s".formatted(ex.getMessage()),
                     "MDPlayer", JOptionPane.ERROR_MESSAGE);
@@ -6363,7 +6618,8 @@ public class frmMain extends JFrame {
 
     public boolean bufferPlay(byte[] buf, String fullPath) {
         try {
-            if (audio.plugin.flgReinit) flgReinit = true;
+            // the plugin of the song played so far; there is none before the first one
+            if (audio.plugin != null && audio.plugin.flgReinit) flgReinit = true;
             if (setting.getOther().getInitAlways()) flgReinit = true;
             reinit(setting);
 
@@ -6373,29 +6629,30 @@ public class frmMain extends JFrame {
 
             String playingFileName = fullPath;
             String playingArcFileName = "";
-            List<Tuple<String, byte[]>> extFile = null;
             FileFormat format = FileFormat.getFileFormat(fullPath);
-            srcBuf = buf;
+            format.load(new ByteArrayInputStream(buf), null);
 
             // Set the volume balance before playback
             loadPresetMixerBalance(playingFileName, playingArcFileName, format);
 
-            audio.plugin.setParams(format, Map.of(
+            // TODO buf reaches the format, but setParams only names a file, so a plugin that reads
+            //  the file itself still needs fullPath to exist. The SPLAY remote (mml2vgm preview)
+            //  can pass a buffer with no file behind it.
+            BasePlugin<? extends BaseDriver> plugin = (BasePlugin<? extends BaseDriver>) format.getPlugin();
+            plugin.setParams(format, Map.of(
                     "fileName", playingFileName,
                     "arcFileName", playingArcFileName,
                     "midiMode", 0,
                     "songNo", 0)
             );
+            audio.init(plugin);
             newParam.ym2612[0].fileFormat = format;
             newParam.ym2612[1].fileFormat = format;
 
-            if (srcBuf != null) {
-                SwingUtilities.invokeLater(this::playData);
-            }
+            SwingUtilities.invokeLater(this::playData);
 
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
-            srcBuf = null;
             JOptionPane.showMessageDialog(this,
                     "Failed to load file.\nMessage=%s".formatted(ex.getMessage()),
                     "MDPlayer", JOptionPane.ERROR_MESSAGE);
@@ -7654,10 +7911,10 @@ public class frmMain extends JFrame {
     }
 
     private void tsmiChangeZoom_Click(ActionEvent ev) {
-        if (ev.getSource() == tsmiChangeZoomX1) setting.getOther().setZoom(1);
-        else if (ev.getSource() == tsmiChangeZoomX2) setting.getOther().setZoom(2);
-        else if (ev.getSource() == tsmiChangeZoomX3) setting.getOther().setZoom(3);
-        else if (ev.getSource() == tsmiChangeZoomX4) setting.getOther().setZoom(4);
+        if (ev != null && ev.getSource() == tsmiChangeZoomX1) setting.getOther().setZoom(1);
+        else if (ev != null && ev.getSource() == tsmiChangeZoomX2) setting.getOther().setZoom(2);
+        else if (ev != null && ev.getSource() == tsmiChangeZoomX3) setting.getOther().setZoom(3);
+        else if (ev != null && ev.getSource() == tsmiChangeZoomX4) setting.getOther().setZoom(4);
         else
             setting.getOther().setZoom((setting.getOther().getZoom() == 4) ? 1 : (setting.getOther().getZoom() + 1));
 
@@ -7779,24 +8036,30 @@ public class frmMain extends JFrame {
     private JButton[] lstOpeButtonControl;
 
     private void RelocateOpeButton(int zoom) {
-        opeButtonSetting.setLocation(new Point((17 + 0) * zoom, 9 * zoom));
-        opeButtonStop.setLocation(new Point((17 + 16 * 1) * zoom, 9 * zoom));
-        opeButtonPause.setLocation(new Point((17 + 16 * 2) * zoom, 9 * zoom));
-        opeButtonFadeout.setLocation(new Point((17 + 16 * 3) * zoom, 9 * zoom));
-        opeButtonPrevious.setLocation(new Point((17 + 16 * 4) * zoom, 9 * zoom));
-        opeButtonSlow.setLocation(new Point((17 + 16 * 5) * zoom, 9 * zoom));
-        opeButtonPlay.setLocation(new Point((17 + 16 * 6) * zoom, 9 * zoom));
-        opeButtonFast.setLocation(new Point((17 + 16 * 7) * zoom, 9 * zoom));
-        opeButtonNext.setLocation(new Point((17 + 16 * 8) * zoom, 9 * zoom));
-        opeButtonMode.setLocation(new Point((17 + 16 * 9) * zoom, 9 * zoom));
-        opeButtonOpen.setLocation(new Point((17 + 16 * 10) * zoom, 9 * zoom));
-        opeButtonPlayList.setLocation(new Point((17 + 16 * 11) * zoom, 9 * zoom));
-        opeButtonInformation.setLocation(new Point((17 + 16 * 12) * zoom, 9 * zoom));
-        opeButtonMixer.setLocation(new Point((17 + 16 * 13) * zoom, 9 * zoom));
-        opeButtonKBD.setLocation(new Point((17 + 16 * 14) * zoom, 9 * zoom));
-        opeButtonVST.setLocation(new Point((17 + 16 * 15) * zoom, 9 * zoom));
-        opeButtonMIDIKBD.setLocation(new Point((17 + 16 * 16) * zoom, 9 * zoom));
-        opeButtonZoom.setLocation(new Point((17 + 16 * 17) * zoom, 9 * zoom));
+        // the skin lays the buttons out in two rows — transport on top (y 9), the rest below
+        // (y 25) — not the single row the earlier port flattened them into; under the content
+        // pane's null layout a bare setLocation() would also leave each button 0x0 and invisible,
+        // so give each its 16x16 (times zoom) skin cell as bounds
+        int s = 16 * zoom;
+        opeButtonStop.setBounds((17 + 16 * 0) * zoom, 9 * zoom, s, s);
+        opeButtonPause.setBounds((17 + 16 * 1) * zoom, 9 * zoom, s, s);
+        opeButtonFadeout.setBounds((17 + 16 * 2) * zoom, 9 * zoom, s, s);
+        opeButtonPrevious.setBounds((17 + 16 * 3) * zoom, 9 * zoom, s, s);
+        opeButtonSlow.setBounds((17 + 16 * 4) * zoom, 9 * zoom, s, s);
+        opeButtonPlay.setBounds((17 + 16 * 5) * zoom, 9 * zoom, s, s);
+        opeButtonFast.setBounds((17 + 16 * 6) * zoom, 9 * zoom, s, s);
+        opeButtonNext.setBounds((17 + 16 * 7) * zoom, 9 * zoom, s, s);
+        opeButtonMode.setBounds((17 + 16 * 8) * zoom, 9 * zoom, s, s);
+
+        opeButtonSetting.setBounds((17 + 16 * 0) * zoom, 25 * zoom, s, s);
+        opeButtonOpen.setBounds((17 + 16 * 1) * zoom, 25 * zoom, s, s);
+        opeButtonPlayList.setBounds((17 + 16 * 2) * zoom, 25 * zoom, s, s);
+        opeButtonInformation.setBounds((17 + 16 * 3) * zoom, 25 * zoom, s, s);
+        opeButtonMixer.setBounds((17 + 16 * 4) * zoom, 25 * zoom, s, s);
+        opeButtonKBD.setBounds((17 + 16 * 5) * zoom, 25 * zoom, s, s);
+        opeButtonVST.setBounds((17 + 16 * 6) * zoom, 25 * zoom, s, s);
+        opeButtonMIDIKBD.setBounds((17 + 16 * 7) * zoom, 25 * zoom, s, s);
+        opeButtonZoom.setBounds((17 + 16 * 8) * zoom, 25 * zoom, s, s);
 
         redrawButton(opeButtonSetting, setting.getOther().getZoom(), lstOpeButtonLeaveImage[0]);
         redrawButton(opeButtonStop, setting.getOther().getZoom(), lstOpeButtonLeaveImage[1]);
@@ -7846,19 +8109,20 @@ public class frmMain extends JFrame {
 
     private static void redrawButton(JButton button, int zoom, BufferedImage image) {
         try {
-            final int size = 16;
-            if (button.getSize().width != size * zoom) button.setPreferredSize(new Dimension(size * zoom, size * zoom));
+            final int size = 16; // the sprites are 16x16 at 1x
+            int dim = size * zoom;
+            button.setPreferredSize(new Dimension(dim, dim));
 
-            Image canvas;
-            if (button.getIcon() != null && button.getIcon().getIconWidth() == size * zoom)
-                canvas = ((ImageIcon) button.getIcon()).getImage();
-            else
-                canvas = new BufferedImage(button.getWidth(), button.getHeight(), BufferedImage.TYPE_INT_ARGB);
-            Graphics2D g = (Graphics2D) canvas.getGraphics();
+            BufferedImage canvas = new BufferedImage(dim, dim, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g = canvas.createGraphics();
             g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
             g.setColor(Color.black);
-            g.clearRect(0, 0, canvas.getWidth(null), canvas.getHeight(null));
-            g.drawImage(image, 0, 0, canvas.getWidth(null), canvas.getHeight(null), 0, 0, size * zoom, size * zoom, null);
+            g.fillRect(0, 0, dim, dim);
+            // scale the whole 16x16 sprite up to the zoomed button; the source rect must be the
+            // sprite's own size, not the destination size, or only its top-left corner is copied and
+            // the icon comes out at 1x in a corner of the cell
+            g.drawImage(image, 0, 0, dim, dim, 0, 0, size, size, null);
+            g.dispose();
 
             button.setIcon(new ImageIcon(canvas));
         } catch (Exception e) {
@@ -7952,7 +8216,7 @@ public class frmMain extends JFrame {
     private void initializeComponent() {
 //        this.components = new System.ComponentModel.Container();
 //        System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmMain));
-        this.pbScreen = new JLabel();
+        this.pbScreen = new ScreenPanel();
         this.cmsOpenOtherPanel = new JPopupMenu();
         this.primaryToolStripMenuItem = new JMenuItem();
         this.tsmiCPPSG = new JMenuItem();
@@ -8087,6 +8351,7 @@ public class frmMain extends JFrame {
         this.aY8910ToolStripMenuItem = new JMenuItem();
         this.sIDToolStripMenuItem = new JMenuItem();
         this.tsmiVisualizer = new JMenuItem();
+        this.tsmiConsole = new JMenuItem();
         this.opeButtonSetting = new JButton();
         this.toolTip1 = new JToolTip();
         this.opeButtonStop = new JButton();
@@ -8117,7 +8382,7 @@ public class frmMain extends JFrame {
         this.pbScreen.setBackground(Color.black);
         new DropTarget(this.pbScreen, DnDConstants.ACTION_COPY_OR_MOVE, new Common.DTListener(this::pbScreen_DragDrop), true);
         //resources.ApplyResources(this.pbScreen, "pbScreen");
-        this.pbScreen.setIcon(new ImageIcon(mdplayer.properties.Resources.getPlaneControl()));
+        // the skin is blitted in as the frame buffer's background, see DoubleBuffer in frmMain_Load
         this.pbScreen.setName("pbScreen");
         // this.pbScreen.TabStop = false;
 //        this.pbScreen.addDragAndDropListenr(this.pbScreen_DragDrop);
@@ -8746,6 +9011,7 @@ public class frmMain extends JFrame {
         this.cmsMenu.add(this.tsmiChangeZoom);
         this.cmsMenu.add(this.RegisterDumpDisplayToolStripMenuItem);
         this.cmsMenu.add(this.tsmiVisualizer);
+        this.cmsMenu.add(this.tsmiConsole);
         this.cmsMenu.setName("contextMenuStrip1");
         //resources.ApplyResources(this.cmsMenu, "cmsMenu");
         //
@@ -8754,7 +9020,8 @@ public class frmMain extends JFrame {
         this.FileToolStripMenuItem.add(this.tsmiOpenFile);
         this.FileToolStripMenuItem.add(this.tsmiExit);
         this.FileToolStripMenuItem.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcOpenFolder()));
-        this.FileToolStripMenuItem.setName("FileToolStripMenuItem");
+        // the caption is keyed on the name the designer gave it
+        this.FileToolStripMenuItem.setName("ファイルToolStripMenuItem");
         //resources.ApplyResources(this.FileToolStripMenuItem, "FileToolStripMenuItem");
         //
         // tsmiOpenFile
@@ -8779,7 +9046,8 @@ public class frmMain extends JFrame {
         this.OperationToolStripMenuItem.add(this.tsmiFf);
         this.OperationToolStripMenuItem.add(this.tsmiNext);
         this.OperationToolStripMenuItem.add(this.tsmiPlayMode);
-        this.OperationToolStripMenuItem.setName("OperationToolStripMenuItem");
+        // the caption is keyed on the name the designer gave it
+        this.OperationToolStripMenuItem.setName("操作ToolStripMenuItem");
         //resources.ApplyResources(this.OperationToolStripMenuItem, "OperationToolStripMenuItem");
         //
         // tsmiPlay
@@ -8871,7 +9139,8 @@ public class frmMain extends JFrame {
         this.AnotherWindowDisplayToolStripMenuItem.add(this.tsmiKBrd);
         this.AnotherWindowDisplayToolStripMenuItem.add(this.tsmiVST);
         this.AnotherWindowDisplayToolStripMenuItem.add(this.tsmiMIDIkbd);
-        this.AnotherWindowDisplayToolStripMenuItem.setName("AnotherWindowDisplayToolStripMenuItem");
+        // the caption is keyed on the name the designer gave it
+        this.AnotherWindowDisplayToolStripMenuItem.setName("その他ウィンドウ表示ToolStripMenuItem");
         //resources.ApplyResources(this.AnotherWindowDisplayToolStripMenuItem, "AnotherWindowDisplayToolStripMenuItem");
         //
         // tsmiKBrd
@@ -8949,7 +9218,8 @@ public class frmMain extends JFrame {
         this.RegisterDumpDisplayToolStripMenuItem.add(this.sN76489ToolStripMenuItem);
         this.RegisterDumpDisplayToolStripMenuItem.add(this.aY8910ToolStripMenuItem);
         this.RegisterDumpDisplayToolStripMenuItem.add(this.sIDToolStripMenuItem);
-        this.RegisterDumpDisplayToolStripMenuItem.setName("RegisterDumpDisplayToolStripMenuItem");
+        // the caption is keyed on the name the designer gave it
+        this.RegisterDumpDisplayToolStripMenuItem.setName("レジスタダンプ表示ToolStripMenuItem");
 //        //resources.ApplyResources(this.RegisterDumpDisplayToolStripMenuItem, "RegisterDumpDisplayToolStripMenuItem");
         //
         // yM2612ToolStripMenuItem
@@ -9059,6 +9329,12 @@ public class frmMain extends JFrame {
         this.tsmiVisualizer.setName("tsmiVisualizer");
         //resources.ApplyResources(this.tsmiVisualizer, "tsmiVisualizer");
         this.tsmiVisualizer.addActionListener(this::tsmiVisWave_Click);
+        //
+        // tsmiConsole
+        //
+        this.tsmiConsole.setName("tsmiConsole");
+        this.tsmiConsole.setText("Console");
+        this.tsmiConsole.addActionListener(this::tsmiConsole_Click);
         //
         // opeButtonSetting
         //
@@ -9430,25 +9706,30 @@ public class frmMain extends JFrame {
 //            this.AutoScaleMode = JAutoScaleMode.Font;
         //this.setBackground(Color.ControlDarkDark);
         JPanel main = new JPanel();
-        main.setLayout(new FlowLayout());
-        main.add(this.opeButtonZoom);
-        main.add(this.opeButtonMIDIKBD);
-        main.add(this.opeButtonVST);
-        main.add(this.opeButtonKBD);
-        main.add(this.opeButtonMixer);
-        main.add(this.opeButtonInformation);
-        main.add(this.opeButtonPlayList);
-        main.add(this.opeButtonOpen);
-        main.add(this.opeButtonMode);
-        main.add(this.opeButtonNext);
-        main.add(this.opeButtonFast);
-        main.add(this.opeButtonPlay);
-        main.add(this.opeButtonSlow);
-        main.add(this.opeButtonPrevious);
-        main.add(this.opeButtonFadeout);
-        main.add(this.opeButtonPause);
-        main.add(this.opeButtonStop);
-        main.add(this.opeButtonSetting);
+        main.setLayout(null);
+        // the operation buttons sit on top of the skin at absolute pixel positions (see
+        // RelocateOpeButton). They are children of pbScreen, not siblings of it: pbScreen is opaque
+        // and repaints every frame, so a sibling drawn on top of it would be painted over each
+        // time — as its children they are painted together with, and after, the skin.
+        this.pbScreen.setLayout(null);
+        this.pbScreen.add(this.opeButtonZoom);
+        this.pbScreen.add(this.opeButtonMIDIKBD);
+        this.pbScreen.add(this.opeButtonVST);
+        this.pbScreen.add(this.opeButtonKBD);
+        this.pbScreen.add(this.opeButtonMixer);
+        this.pbScreen.add(this.opeButtonInformation);
+        this.pbScreen.add(this.opeButtonPlayList);
+        this.pbScreen.add(this.opeButtonOpen);
+        this.pbScreen.add(this.opeButtonMode);
+        this.pbScreen.add(this.opeButtonNext);
+        this.pbScreen.add(this.opeButtonFast);
+        this.pbScreen.add(this.opeButtonPlay);
+        this.pbScreen.add(this.opeButtonSlow);
+        this.pbScreen.add(this.opeButtonPrevious);
+        this.pbScreen.add(this.opeButtonFadeout);
+        this.pbScreen.add(this.opeButtonPause);
+        this.pbScreen.add(this.opeButtonStop);
+        this.pbScreen.add(this.opeButtonSetting);
         main.add(this.pbScreen);
         this.setContentPane(main);
 //        this.FormBorderStyle = JFormBorderStyle.FixedSingle;
@@ -9456,8 +9737,19 @@ public class frmMain extends JFrame {
         this.setName("frmMain");
         this.addWindowListener(this.windowListener);
         this.addComponentListener(this.componentListener);
-        this.setPreferredSize(new Dimension(640, 80));
+        // the window is sized to the skin by changeZoom()/pack() (which derives the frame size from
+        // the content pane plus the title-bar inset); an explicit frame preferred size here would
+        // instead make pack() use it verbatim and clip the skin, so it is deliberately not set.
+        // Like the WinForms original (FixedSingle), the window is not user-resizable.
+        this.setResizable(false);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        // the menu items were named but never captioned — their text was in the .resx, and the
+        // ApplyResources() calls that would have fetched it did not survive the port, so without
+        // this every entry of both menus comes up blank
+        Layouts.captions(this.cmsMenu, resources);
+        Layouts.captions(this.cmsOpenOtherPanel, resources);
+
         this.pack();
         //((System.ComponentModel.ISupportInitialize)(this.pbScreen)).EndInit();
         // this.cmsOpenOtherPanel.ResumeLayout(false);
@@ -9465,7 +9757,7 @@ public class frmMain extends JFrame {
 //        this.ResumeLayout(false);
     }
 
-    private JLabel pbScreen;
+    private ScreenPanel pbScreen;
     private JPopupMenu cmsOpenOtherPanel;
     private JMenuItem primaryToolStripMenuItem;
     private JMenuItem tsmiPOPN;
@@ -9622,6 +9914,8 @@ public class frmMain extends JFrame {
     private JButton opeButtonOpen;
     private JButton opeButtonMode;
     private JMenuItem tsmiVisualizer;
+    private JMenuItem tsmiConsole;
+    private frmConsole frmConsole;
 
     private int[] getChipStatus() {
         int[] chips = new int[256];

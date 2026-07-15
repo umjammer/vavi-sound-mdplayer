@@ -1,5 +1,6 @@
 package mdplayer.form.kb.wf;
 
+import mdplayer.ScreenPanel;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
@@ -22,19 +23,18 @@ import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.chips.HuC6280Chip;
-import mdplayer.form.frmBase;
+import mdplayer.form.kb.frmChipBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
 import mdsound.chips.OotakeHuC6280;
 
 import static mdplayer.Common.searchSSGNote;
 
-
-public class frmHuC6280 extends frmBase {
+public class frmHuC6280 extends frmChipBase<MDChipParams.HuC6280> {
 
     private void initializeComponent() {
 //            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmHuC6280));
-        this.pbScreen = new JPanel();
+        this.pbScreen = new ScreenPanel();
         //((System.ComponentModel.ISupportInitialize)(this.pbScreen)).BeginInit();
 
         //
@@ -56,7 +56,7 @@ public class frmHuC6280 extends frmBase {
         this.setPreferredSize(new Dimension(320, 151));
         this.getContentPane().add(this.pbScreen);
 //        this.FormBorderStyle = JFormBorderStyle.FixedSingle;
-        this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
+        this.setIconImage(Resources.getFeli128());
 //        this.MaximizeBox = false;
         this.setName("frmHuC6280");
         this.setTitle("Huc6280");
@@ -67,45 +67,20 @@ public class frmHuC6280 extends frmBase {
     }
 
     BufferedImage image;
-    public JPanel pbScreen;
-
-    public boolean isClosed = false;
-    public int x = -1;
-    public int y = -1;
-    private int frameSizeW = 0;
-    private int frameSizeH = 0;
-    private final int chipId;
-    private final int zoom;
-
-    private final MDChipParams.HuC6280 newParam;
-    private final MDChipParams.HuC6280 oldParam;
-    private final FrameBuffer frameBuffer = new FrameBuffer();
 
     static final Preferences prefs = Preferences.userNodeForPackage(frmHuC6280.class);
 
     public frmHuC6280(frmMain frm, int chipId, int zoom, MDChipParams.HuC6280 newParam, MDChipParams.HuC6280 oldParam) {
-        super(frm);
-
-        this.chipId = chipId;
-        this.zoom = zoom;
+        super(frm, chipId, zoom, newParam, oldParam);
 
         initializeComponent();
 
-        this.newParam = newParam;
-        this.oldParam = oldParam;
         frameBuffer.Add(pbScreen, Resources.getPlaneHuC6280(), null, zoom);
         DrawBuff.screenInitHuC6280(frameBuffer);
         update();
     }
 
-    public void update() {
-        frameBuffer.refresh(null);
-    }
-
 //    @Override
-    protected boolean getShowWithoutActivation() {
-        return true;
-    }
 
     private final WindowListener windowListener = new WindowAdapter() {
         @Override

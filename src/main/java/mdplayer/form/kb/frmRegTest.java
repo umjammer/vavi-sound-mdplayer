@@ -1,5 +1,6 @@
 package mdplayer.form.kb;
 
+import mdplayer.ScreenPanel;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
@@ -49,7 +50,7 @@ import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
 
 
-public class frmRegTest extends frmChipBase {
+public class frmRegTest extends frmChipBase<Void> {
 
     static class ChipData {
 
@@ -538,7 +539,7 @@ public class frmRegTest extends frmChipBase {
     };
 
     private void initializeComponent() {
-        this.pbScreen = new JPanel();
+        this.pbScreen = new ScreenPanel();
         this.panel1 = new JPanel();
 
         //
@@ -569,7 +570,7 @@ public class frmRegTest extends frmChipBase {
         this.setPreferredSize(new Dimension(320, 151));
         this.getContentPane().add(new JScrollPane(this.panel1));
 //        this.FormBorderStyle = JFormBorderStyle.Sizable;
-        this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
+        this.setIconImage(Resources.getFeli128());
         this.setMaximumSize(new Dimension(1024, 1024));
         this.setName("frmRegTest");
         this.setTitle("RegDump");
@@ -580,6 +581,6 @@ public class frmRegTest extends frmChipBase {
 //            this.ResumeLayout(false);
     }
 
-    public JPanel pbScreen;
+    public ScreenPanel pbScreen;
     private JPanel panel1;
 }

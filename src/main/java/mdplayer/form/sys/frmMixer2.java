@@ -1,5 +1,6 @@
 package mdplayer.form.sys;
 
+import mdplayer.ScreenPanel;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
@@ -13,6 +14,8 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionAdapter;
+import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.event.WindowAdapter;
@@ -90,6 +93,7 @@ public class frmMixer2 extends JFrame {
         frameBuffer.Add(pbScreen, Resources.getPlaneMixer(), null, zoom);
         DrawBuff.screenInitMixer(frameBuffer);
         update();
+        changeZoom();
     }
 
     private final MouseWheelListener pbScreen_MouseWheel = new MouseAdapter() {
@@ -111,8 +115,10 @@ public class frmMixer2 extends JFrame {
         } else if (i == setVolume.length + 1) {
             audio.plugin.chipRegister.plugin(RealChipPlugin.class).setGimicOPNAVolume(false, delta);
         } else if (i > 0 && i < setVolume.length) {
-            var t = setVolume[chipn];
-            audio.plugin.setVolume(t.getItem1(), t.getItem2(), isAbs, delta);
+            var t = setVolume[i];
+            if (t != null) {
+                audio.plugin.setVolume(t.getItem1(), t.getItem2(), isAbs, delta);
+            }
         }
     }
 
@@ -148,10 +154,17 @@ public class frmMixer2 extends JFrame {
     };
 
     public void changeZoom() {
-        this.setMaximumSize(new Dimension(frameSizeW + Resources.getPlaneMixer().getWidth() * zoom, frameSizeH + Resources.getPlaneMixer().getHeight() * zoom));
-        this.setMinimumSize(new Dimension(frameSizeW + Resources.getPlaneMixer().getWidth() * zoom, frameSizeH + Resources.getPlaneMixer().getHeight() * zoom));
-        this.setPreferredSize(new Dimension(frameSizeW + Resources.getPlaneMixer().getWidth() * zoom, frameSizeH + Resources.getPlaneMixer().getHeight() * zoom));
+        int w = Resources.getPlaneMixer().getWidth() * zoom;
+        int h = Resources.getPlaneMixer().getHeight() * zoom;
+
+        // size the skin panel and let pack() add the title-bar inset; the old code added
+        // frameSizeW/H (the WinForms Width-minus-ClientSize chrome, always zero in Swing) and never
+        // packed, so the window came up the wrong height and the skin was clipped
+        pbScreen.setPreferredSize(new Dimension(w, h));
+        setResizable(false);
         componentListener.componentResized(null);
+        setPreferredSize(null); // clear any explicit frame size so pack() derives it from the content
+        pack();
     }
 
     private final ComponentListener componentListener = new ComponentAdapter() {
@@ -178,9 +191,263 @@ public class frmMixer2 extends JFrame {
 //        }
 //    }
 
-    public final VisVolume visVolume = new VisVolume(); // TODO from Audio
+    /** the meters: master is fed by frmMain from the rendered wave, the per-chip ones by nothing yet */
+    public final VisVolume visVolume = new VisVolume();
+
+    private void updateVisualVolumes() {
+        if (audio.plugin == null || audio.plugin.chipRegister == null) {
+            return;
+        }
+
+        java.util.function.Function<Object, Integer> getVol = (volObj) -> {
+            if (volObj == null) return 0;
+            if (volObj instanceof int[]) {
+                int max = 0;
+                for (int v : (int[]) volObj) if (v > max) max = v;
+                return max;
+            } else if (volObj instanceof int[][]) {
+                int max = 0;
+                for (int[] row : (int[][]) volObj) {
+                    if (row != null) {
+                        for (int v : row) if (v > max) max = v;
+                    }
+                }
+                return max;
+            }
+            return 0;
+        };
+
+        java.util.function.BiFunction<Class<? extends mdplayer.Chip>, String, Object> chipInfo = (chipClass, key) -> {
+            try {
+                mdplayer.Chip chip = audio.plugin.chipRegister.chip(chipClass);
+                if (!(chip instanceof BaseChip)) return null;
+                java.util.Map<String, Object> info = ((BaseChip) chip).getInfo(0);
+                if (info == null) return null;
+                return info.get(key);
+            } catch (Exception e) {
+                return null;
+            }
+        };
+
+        java.util.function.Function<Class<? extends mdplayer.Chip>, Integer> getChipVol = (chipClass) -> {
+            try {
+                mdplayer.Chip chip = audio.plugin.chipRegister.chip(chipClass);
+                if (!(chip instanceof BaseChip)) return 0;
+                java.util.Map<String, Object> info = ((BaseChip) chip).getInfo(0);
+                if (info == null) return 0;
+                Object volObj = info.get("volume");
+                return getVol.apply(volObj);
+            } catch (Exception e) {
+                return 0;
+            }
+        };
+
+        visVolume.put("ym2151", getChipVol.apply(Ym2151Chip.class) * 5);
+
+        int ym2203FMVal = getChipVol.apply(Ym2203Chip.class) * 5;
+        int ym2203SSGVal = 0;
+        try {
+            int[] ym2203Reg = (int[]) chipInfo.apply(Ym2203Chip.class, "register");
+            if (ym2203Reg != null) {
+                int mixer = ym2203Reg[0x07];
+                for (int ch = 0; ch < 3; ch++) {
+                    boolean toneOn = (mixer & (0x01 << ch)) == 0;
+                    boolean noiseOn = (mixer & (0x08 << ch)) == 0;
+                    if (toneOn || noiseOn) {
+                        int v = (ym2203Reg[0x08 + ch] & 0xf) * 600;
+                        if (v > ym2203SSGVal) ym2203SSGVal = v;
+                    }
+                }
+            }
+        } catch (Exception e) {}
+        visVolume.put("ym2203FM", ym2203FMVal);
+        visVolume.put("ym2203SSG", ym2203SSGVal);
+        visVolume.put("ym2203", Math.max(ym2203FMVal, ym2203SSGVal));
+
+        visVolume.put("ym2612", getChipVol.apply(Ym2612Chip.class) * 5);
+
+        int ym2608FMVal = getChipVol.apply(Ym2608Chip.class) * 5;
+        int ym2608SSGVal = 0;
+        try {
+            int[][] ym2608Reg2D = (int[][]) chipInfo.apply(Ym2608Chip.class, "register");
+            if (ym2608Reg2D != null && ym2608Reg2D.length > 0) {
+                int mixer = ym2608Reg2D[0][0x07];
+                for (int ch = 0; ch < 3; ch++) {
+                    boolean toneOn = (mixer & (0x01 << ch)) == 0;
+                    boolean noiseOn = (mixer & (0x08 << ch)) == 0;
+                    if (toneOn || noiseOn) {
+                        int v = (ym2608Reg2D[0][0x08 + ch] & 0xf) * 600;
+                        if (v > ym2608SSGVal) ym2608SSGVal = v;
+                    }
+                }
+            }
+        } catch (Exception e) {}
+        int ym2608APCMVal = 0;
+        try {
+            Object ym2608APCMVol = chipInfo.apply(Ym2608Chip.class, "adpcmVolume");
+            ym2608APCMVal = getVol.apply(ym2608APCMVol) * 5;
+        } catch (Exception e) {}
+        int ym2608RtmVal = 0;
+        try {
+            Object ym2608RtmVol = chipInfo.apply(Ym2608Chip.class, "rythmVolume");
+            ym2608RtmVal = getVol.apply(ym2608RtmVol) * 5;
+        } catch (Exception e) {}
+        visVolume.put("ym2608FM", ym2608FMVal);
+        visVolume.put("ym2608SSG", ym2608SSGVal);
+        visVolume.put("ym2608APCM", ym2608APCMVal);
+        visVolume.put("ym2608Rtm", ym2608RtmVal);
+        visVolume.put("ym2608", Math.max(Math.max(ym2608FMVal, ym2608SSGVal), Math.max(ym2608APCMVal, ym2608RtmVal)));
+
+        int ym2610FMVal = getChipVol.apply(Ym2610Chip.class) * 5;
+        int ym2610SSGVal = 0;
+        try {
+            int[][] ym2610Reg2D = (int[][]) chipInfo.apply(Ym2610Chip.class, "register");
+            if (ym2610Reg2D != null && ym2610Reg2D.length > 0) {
+                int mixer = ym2610Reg2D[0][0x07];
+                for (int ch = 0; ch < 3; ch++) {
+                    boolean toneOn = (mixer & (0x01 << ch)) == 0;
+                    boolean noiseOn = (mixer & (0x08 << ch)) == 0;
+                    if (toneOn || noiseOn) {
+                        int v = (ym2610Reg2D[0][0x08 + ch] & 0xf) * 600;
+                        if (v > ym2610SSGVal) ym2610SSGVal = v;
+                    }
+                }
+            }
+        } catch (Exception e) {}
+        int ym2610APCMAVal = 0;
+        try {
+            Object ym2610APCMAVol = chipInfo.apply(Ym2610Chip.class, "adpcmAVolume");
+            ym2610APCMAVal = getVol.apply(ym2610APCMAVol) * 5;
+        } catch (Exception e) {}
+        int ym2610APCMBVal = 0;
+        try {
+            Object ym2610APCMBVol = chipInfo.apply(Ym2610Chip.class, "adpcmBVolume");
+            ym2610APCMBVal = getVol.apply(ym2610APCMBVol) * 5;
+        } catch (Exception e) {}
+        visVolume.put("ym2610FM", ym2610FMVal);
+        visVolume.put("ym2610SSG", ym2610SSGVal);
+        visVolume.put("ym2610APCMA", ym2610APCMAVal);
+        visVolume.put("ym2610APCMB", ym2610APCMBVal);
+        visVolume.put("ym2610", Math.max(Math.max(ym2610FMVal, ym2610SSGVal), Math.max(ym2610APCMAVal, ym2610APCMBVal)));
+
+        visVolume.put("ym2413", getChipVol.apply(Ym2413Chip.class) * 5);
+        visVolume.put("ym3526", getChipVol.apply(Ym3526Chip.class) * 5);
+        visVolume.put("y8950", getChipVol.apply(Y8950Chip.class) * 5);
+        visVolume.put("ym3812", getChipVol.apply(Ym3812Chip.class) * 5);
+        visVolume.put("ymf262", getChipVol.apply(YmF262Chip.class) * 5);
+        visVolume.put("ymf278b", getChipVol.apply(YmF278BChip.class) * 5);
+        visVolume.put("ymz280b", getChipVol.apply(YmZ280BChip.class) * 5);
+        visVolume.put("ymf271", getChipVol.apply(YmF271Chip.class) * 5);
+        visVolume.put("ay8910", getChipVol.apply(Ay8910Chip.class) * 5);
+        visVolume.put("sn76489", getChipVol.apply(Sn76489Chip.class) * 5);
+        visVolume.put("huc6280", getChipVol.apply(HuC6280Chip.class) * 5);
+        visVolume.put("rf5c164", getChipVol.apply(Rf5C164Chip.class) * 5);
+        visVolume.put("rf5c68", getChipVol.apply(Rf5C68Chip.class) * 5);
+        visVolume.put("pwm", getChipVol.apply(PwmChip.class) * 5);
+        visVolume.put("okim6258", getChipVol.apply(OkiM6258Chip.class) * 5);
+        visVolume.put("okim6295", getChipVol.apply(OkiM6295Chip.class) * 5);
+        visVolume.put("c140", getChipVol.apply(C140Chip.class) * 5);
+        visVolume.put("c352", getChipVol.apply(C352Chip.class) * 5);
+        visVolume.put("saa1099", getChipVol.apply(Saa1099Chip.class) * 5);
+        visVolume.put("ppz8", getChipVol.apply(Ppz8Chip.class) * 5);
+        int segaPCMVal = 0;
+        try {
+            byte[] segapcmReg = (byte[]) chipInfo.apply(SegaPcmChip.class, "register");
+            if (segapcmReg != null) {
+                for (int ch = 0; ch < 16; ch++) {
+                    int v = 0;
+                    if ((segapcmReg[0x86 + ch * 8] & 1) == 0) {
+                        int l = segapcmReg[ch * 8 + 2] & 0x7f;
+                        int r = segapcmReg[ch * 8 + 3] & 0x7f;
+                        v = Math.max(l, r) * 70;
+                    }
+                    if (v > segaPCMVal) segaPCMVal = v;
+                }
+            }
+        } catch (Exception e) {}
+        visVolume.put("segaPCM", segaPCMVal);
+
+        int multiPCMVal = 0;
+        try {
+            mdplayer.Chip chip = audio.plugin.chipRegister.chip(MultiPcmChip.class);
+            if (chip instanceof BaseChip) {
+                java.util.Map<String, Object> info = ((BaseChip) chip).getInfo(0);
+                if (info != null) {
+                    for (int ch = 0; ch < 28; ch++) {
+                        Boolean bit = (Boolean) info.get("channels." + ch + ".bit");
+                        if (bit != null && bit) {
+                            Integer inst1 = (Integer) info.get("channels." + ch + ".inst.1");
+                            Integer pan = (Integer) info.get("channels." + ch + ".pan");
+                            if (inst1 != null && pan != null) {
+                                int panL = (pan >> 4) & 0xf;
+                                int panR = pan & 0xf;
+                                int l = (0x7f - inst1) * panL / 0xf;
+                                int r = (0x7f - inst1) * panR / 0xf;
+                                int v = Math.max(l, r) * 70;
+                                if (v > multiPCMVal) multiPCMVal = v;
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {}
+        visVolume.put("multiPCM", multiPCMVal);
+        visVolume.put("k051649", getChipVol.apply(K051649Chip.class) * 5);
+        visVolume.put("k053260", getChipVol.apply(K053260Chip.class) * 5);
+        visVolume.put("k054539", getChipVol.apply(K054539Chip.class) * 5);
+        visVolume.put("qSound", getChipVol.apply(QSoundChip.class) * 5);
+        visVolume.put("ga20", getChipVol.apply(Ga20Chip.class) * 5);
+
+        NpNesChip npNesChip = null;
+        try {
+            mdplayer.Chip chip = audio.plugin.chipRegister.chip(NpNesChip.class);
+            if (chip instanceof NpNesChip) npNesChip = (NpNesChip) chip;
+            if (npNesChip == null) {
+                chip = audio.plugin.chipRegister.chip(DmcChip.class);
+                if (chip instanceof NpNesChip) npNesChip = (NpNesChip) chip;
+            }
+            if (npNesChip == null) {
+                chip = audio.plugin.chipRegister.chip(FdsChip.class);
+                if (chip instanceof NpNesChip) npNesChip = (NpNesChip) chip;
+            }
+            if (npNesChip == null) {
+                chip = audio.plugin.chipRegister.chip(N163Chip.class);
+                if (chip instanceof NpNesChip) npNesChip = (NpNesChip) chip;
+            }
+            if (npNesChip == null) {
+                chip = audio.plugin.chipRegister.chip(Vrc6Chip.class);
+                if (chip instanceof NpNesChip) npNesChip = (NpNesChip) chip;
+            }
+            if (npNesChip == null) {
+                chip = audio.plugin.chipRegister.chip(Mmc5Chip.class);
+                if (chip instanceof NpNesChip) npNesChip = (NpNesChip) chip;
+            }
+            if (npNesChip == null) {
+                chip = audio.plugin.chipRegister.chip(Fme7Chip.class);
+                if (chip instanceof NpNesChip) npNesChip = (NpNesChip) chip;
+            }
+            if (npNesChip == null) {
+                chip = audio.plugin.chipRegister.chip(Vrc7Chip.class);
+                if (chip instanceof NpNesChip) npNesChip = (NpNesChip) chip;
+            }
+        } catch (Exception e) {}
+
+        if (npNesChip != null) {
+            try { visVolume.put("APU", npNesChip.getVolume(0) * 15); } catch (Exception e) {}
+            try { visVolume.put("DMC", npNesChip.getVolume(1) * 15); } catch (Exception e) {}
+            try { visVolume.put("FDS", npNesChip.getVolume(2) * 15); } catch (Exception e) {}
+            try { visVolume.put("N160", npNesChip.getVolume(3) * 15); } catch (Exception e) {}
+            try { visVolume.put("VRC6", npNesChip.getVolume(4) * 15); } catch (Exception e) {}
+            try { visVolume.put("MMC5", npNesChip.getVolume(5) * 15); } catch (Exception e) {}
+            try { visVolume.put("FME7", npNesChip.getVolume(6) * 15); } catch (Exception e) {}
+            try { visVolume.put("VRC7", npNesChip.getVolume(7) * 15); } catch (Exception e) {}
+        }
+
+        visVolume.put("DMG", getChipVol.apply(DmgChip.class) * 5);
+    }
 
     public void screenChangeParams() {
+        updateVisualVolumes();
 
         newParam.Master.Volume = parent.setting.getBalance().getMasterVolume();
         newParam.YM2151.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ym2151Chip.class);
@@ -812,6 +1079,9 @@ public class frmMixer2 extends JFrame {
                 nVI.VisVolume1,
                 oVI.VisVolume2,
                 nVI.VisVolume2);
+        oVI.Volume = nVI.Volume;
+        oVI.VisVolume1 = nVI.VisVolume1;
+        oVI.VisVolume2 = nVI.VisVolume2;
     }
 
     private void drawGVolAndFader(int num, MDChipParams.Mixer.VolumeInfo oVI, MDChipParams.Mixer.VolumeInfo nVI) {
@@ -835,6 +1105,9 @@ public class frmMixer2 extends JFrame {
                 nVI.VisVolume1,
                 oVI.VisVolume2,
                 nVI.VisVolume2);
+        oVI.Volume = nVI.Volume;
+        oVI.VisVolume1 = nVI.VisVolume1;
+        oVI.VisVolume2 = nVI.VisVolume2;
     }
 
     public void screenInit() {
@@ -917,42 +1190,41 @@ public class frmMixer2 extends JFrame {
             int px = ev.getX() / parent.setting.getOther().getZoom();
             int py = ev.getY() / parent.setting.getOther().getZoom();
             chipn = px / 20 + (py / 72) * 16;
-            boolean b = ev.getButton() == MouseEvent.BUTTON3;
-            if (b) setVolume(chipn, true, 0);
-        }
-
-        @Override
-        public void mouseMoved(MouseEvent ev) {
-            int px = ev.getX() / parent.setting.getOther().getZoom();
-            int py = ev.getY() / parent.setting.getOther().getZoom();
-            py = py % 72;
-            int n;
-            if (ev.getButton() == MouseEvent.BUTTON1) {
-                if (chipn < 62) {
-                    if (py < 18) {
-                        n = Math.min((18 - py), 8);
-                        n = (int) (n * 2.5);
-                    } else if (py == 18) {
-                        n = 0;
-                    } else {
-                        n = Math.max((18 - py), -35);
-                        n = (int) (n * (192.0 / 35.0));
-                    }
-                } else {
-                    if (py < 0) {
-                        n = 127;
-                    } else {
-                        n = (int) ((72 - py) * (127.0 / 72.0));
-                    }
-                }
-
-                setVolume(chipn, true, n);
+            if (ev.getButton() == MouseEvent.BUTTON3) {
+                setVolume(chipn, true, 0);
             }
         }
 
         @Override
         public void mouseEntered(MouseEvent ev) {
             pbScreen.requestFocus();
+        }
+    };
+
+    private final MouseMotionListener pbScreen_MouseDrag = new MouseMotionAdapter() {
+        @Override
+        public void mouseDragged(MouseEvent ev) {
+            int px = ev.getX() / parent.setting.getOther().getZoom();
+            int py = ev.getY() / parent.setting.getOther().getZoom();
+            chipn = px / 20 + (py / 72) * 16;
+            py = py % 72;
+
+            int n;
+            if (chipn < 62) {
+                if (py < 18) {
+                    n = Math.min((18 - py), 8);
+                    n = (int) (n * 2.5);
+                } else if (py == 18) {
+                    n = 0;
+                } else {
+                    n = Math.max((18 - py), -35);
+                    n = (int) (n * (192.0 / 35.0));
+                }
+            } else {
+                n = (int) ((72 - py) * (127.0 / 72.0));
+            }
+
+            setVolume(chipn, true, n);
         }
     };
 
@@ -1015,7 +1287,7 @@ public class frmMixer2 extends JFrame {
     private void initializeComponent() {
 //        this.components = new System.ComponentModel.Container();
 //        System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmMixer2));
-        this.pbScreen = new JPanel();
+        this.pbScreen = new ScreenPanel();
         this.ctxtMenu = new JPopupMenu();
         this.tsmiLoadDriverBalance = new JMenuItem();
         this.tsmiLoadSongBalance = new JMenuItem();
@@ -1036,6 +1308,7 @@ public class frmMixer2 extends JFrame {
         // this.pbScreen.TabIndex = 0
         // this.pbScreen.TabStop = false;
         this.pbScreen.addMouseListener(this.pbScreen_MouseClick); // TODO
+        this.pbScreen.addMouseMotionListener(this.pbScreen_MouseDrag);
         this.pbScreen.addMouseWheelListener(this.pbScreen_MouseWheel); // TODO
         //
         // ctxtMenu
@@ -1090,7 +1363,7 @@ public class frmMixer2 extends JFrame {
         this.setPreferredSize(new Dimension(320, 288));
         this.getContentPane().add(this.pbScreen);
 //        this.FormBorderStyle = JFormBorderStyle.FixedSingle;
-        this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
+        this.setIconImage(Resources.getFeli128());
 //        this.MaximizeBox = false;
         this.setName("frmMixer2");
         this.setTitle("Mixer");
@@ -1106,7 +1379,7 @@ public class frmMixer2 extends JFrame {
     }
 
     BufferedImage image;
-    public JPanel pbScreen;
+    public ScreenPanel pbScreen;
     private JPopupMenu ctxtMenu;
     private JMenuItem tsmiSaveDriverBalance;
     private JMenuItem tsmiSaveSongBalance;

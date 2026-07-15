@@ -1,5 +1,6 @@
 package mdplayer.form.kb.driver;
 
+import mdplayer.ScreenPanel;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
@@ -23,48 +24,23 @@ import mdplayer.MDChipParams;
 import mdplayer.Tables;
 import mdplayer.chips.Ppz8Chip;
 import mdplayer.chips.SegaPcmChip;
-import mdplayer.form.frmBase;
+import mdplayer.form.kb.frmChipBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
 import mdsound.instrument.Ppz8Inst;
 
-
-public class frmPPZ8 extends frmBase {
-    public boolean isClosed = false;
-    public int x = -1;
-    public int y = -1;
-    private int frameSizeW = 0;
-    private int frameSizeH = 0;
-    private int chipId = 0;
-    private int zoom = 1;
-    private MDChipParams.PPZ8 newParam = null;
-    private MDChipParams.PPZ8 oldParam = new MDChipParams.PPZ8();
-    private final FrameBuffer frameBuffer = new FrameBuffer();
+public class frmPPZ8 extends frmChipBase<MDChipParams.PPZ8> {
     static final Preferences prefs = Preferences.userNodeForPackage(frmPPZ8.class);
 
     public frmPPZ8(frmMain frm, int chipId, int zoom, MDChipParams.PPZ8 newParam, MDChipParams.PPZ8 oldParam) {
-        super(frm);
+        super(frm, chipId, zoom, newParam, new MDChipParams.PPZ8());
 
         initializeComponent();
 
-        this.chipId = chipId;
-        this.zoom = zoom;
-        this.newParam = newParam;
-        this.oldParam = oldParam;
-
-        frameBuffer.Add(pbScreen, Resources.getPlanePPZ8(), null, zoom);
-        screenInit();
-        update();
-    }
-
-    public void update() {
-        frameBuffer.refresh(null);
+        bind(Resources.getPlanePPZ8());
     }
 
 //    @Override
-    protected boolean getShowWithoutActivation() {
-        return true;
-    }
 
     private final WindowListener windowListener = new WindowAdapter() {
         @Override
@@ -129,7 +105,7 @@ public class frmPPZ8 extends frmBase {
     private int searchPPZ8Note(int freq) {
         double m = Double.MAX_VALUE;
 
-        int clock = audio.plugin.mds.getChipInfo(Ppz8Inst.class).clock;
+        int clock = clock(Ppz8Inst.class);
         if (clock >= 1000000)
             clock = clock / 384;
 
@@ -149,7 +125,6 @@ public class frmPPZ8 extends frmBase {
         }
         return n;
     }
-
 
     public void screenInit() {
         boolean PPZ8Type = false;//  (chipId == 0) ? parent.setting.PPZ8Type.UseScci : parent.setting.PPZ8SType.UseScci;
@@ -255,7 +230,7 @@ public class frmPPZ8 extends frmBase {
     }
 
     private void initializeComponent() {
-        this.pbScreen = new JPanel();
+        this.pbScreen = new ScreenPanel();
 
         //
         // pbScreen
@@ -276,7 +251,7 @@ public class frmPPZ8 extends frmBase {
         this.setPreferredSize(new Dimension(321, 145));
         this.getContentPane().add(this.pbScreen);
 //        this.FormBorderStyle = JFormBorderStyle.FixedSingle;
-        this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
+        this.setIconImage(Resources.getFeli128());
 //        this.MaximizeBox = false;
         this.setName("frmPPZ8");
         this.setTitle("Ppz8Inst");
@@ -286,5 +261,4 @@ public class frmPPZ8 extends frmBase {
     }
 
     BufferedImage image;
-    public JPanel pbScreen;
 }

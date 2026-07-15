@@ -1,5 +1,6 @@
 package mdplayer.form.kb.pcm;
 
+import mdplayer.ScreenPanel;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
@@ -22,35 +23,19 @@ import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.Tables;
 import mdplayer.chips.Rf5C68Chip;
-import mdplayer.form.frmBase;
+import mdplayer.form.kb.frmChipBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
 
-
-public class frmRf5c68 extends frmBase {
-    public boolean isClosed = false;
-    public int x = -1;
-    public int y = -1;
-    private int frameSizeW = 0;
-    private int frameSizeH = 0;
-    private int chipId = 0;
-    private int zoom = 1;
-
-    private final MDChipParams.RF5C68 newParam;
-    private final MDChipParams.RF5C68 oldParam;
-    private final FrameBuffer frameBuffer = new FrameBuffer();
+public class frmRf5c68 extends frmChipBase<MDChipParams.RF5C68> {
 
     static final Preferences prefs = Preferences.userNodeForPackage(frmRf5c68.class);
 
     public frmRf5c68(frmMain frm, int chipId, int zoom, MDChipParams.RF5C68 newParam, MDChipParams.RF5C68 oldParam) {
-        super(frm);
-        this.chipId = chipId;
-        this.zoom = zoom;
+        super(frm, chipId, zoom, newParam, oldParam);
 
         initializeComponent();
 
-        this.newParam = newParam;
-        this.oldParam = oldParam;
         frameBuffer.Add(pbScreen, Resources.getPlaneC(), null, zoom);
         DrawBuff.screenInitRF5C68(frameBuffer);
         update();
@@ -78,14 +63,7 @@ public class frmRf5c68 extends frmBase {
         }
     };
 
-    public void update() {
-        frameBuffer.refresh(null);
-    }
-
 //    @Override
-    protected boolean getShowWithoutActivation() {
-        return true;
-    }
 
     public void changeZoom() {
         this.setMaximumSize(new Dimension(frameSizeW + Resources.getPlaneC().getWidth() * zoom, frameSizeH + Resources.getPlaneC().getHeight() * zoom));
@@ -209,10 +187,9 @@ public class frmRf5c68 extends frmBase {
         }
     }
 
-
     private void initializeComponent() {
 //            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmRf5c68));
-        this.pbScreen = new JPanel();
+        this.pbScreen = new ScreenPanel();
         //((System.ComponentModel.ISupportInitialize)(this.pbScreen)).BeginInit();
 
         //
@@ -234,7 +211,7 @@ public class frmRf5c68 extends frmBase {
         this.setPreferredSize(new Dimension(320, 72));
         this.getContentPane().add(this.pbScreen);
 //        this.FormBorderStyle = JFormBorderStyle.FixedSingle;
-        this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
+        this.setIconImage(Resources.getFeli128());
 //        this.MaximizeBox = false;
         this.setMaximumSize(new Dimension(336, 111));
         this.setMinimumSize(new Dimension(336, 111));
@@ -247,5 +224,4 @@ public class frmRf5c68 extends frmBase {
     }
 
     BufferedImage image;
-    public JPanel pbScreen;
 }

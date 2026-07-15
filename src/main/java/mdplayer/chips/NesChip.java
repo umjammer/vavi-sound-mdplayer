@@ -88,11 +88,15 @@ public class NesChip extends BaseChip {
         }
 
         public void setFdsMask(int chipId) {
-            context.mds.inst(FdsInst.class).setFDSMask(chipId);
+            FdsInst instrument = context.mds.inst(FdsInst.class);
+            if (instrument == null) return; // the song being played does not use this chip
+            instrument.setFDSMask(chipId);
         }
 
         public void resetFdsMask(int chipId) {
-            context.mds.inst(FdsInst.class).resetFDSMask(chipId);
+            FdsInst instrument = context.mds.inst(FdsInst.class);
+            if (instrument == null) return; // the song being played does not use this chip
+            instrument.resetFDSMask(chipId);
         }
     }
 
@@ -149,7 +153,9 @@ public class NesChip extends BaseChip {
                     break;
             }
         }
-        context.mds.inst(NesInst.class).setMask(chipId, ch);
+        Instrument instrument = context.mds.inst(NesInst.class);
+        if (instrument == null) return; // the song being played does not use this chip
+        instrument.setMask(chipId, ch);
     }
 
     // vgm
@@ -166,7 +172,9 @@ public class NesChip extends BaseChip {
                     break;
             }
         }
-        context.mds.inst(NesInst.class).resetMask(chipId, ch);
+        Instrument instrument = context.mds.inst(NesInst.class);
+        if (instrument == null) return; // the song being played does not use this chip
+        instrument.resetMask(chipId, ch);
     }
 
     // vgm

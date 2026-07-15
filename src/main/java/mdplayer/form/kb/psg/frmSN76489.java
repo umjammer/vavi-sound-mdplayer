@@ -1,5 +1,6 @@
 package mdplayer.form.kb.psg;
 
+import mdplayer.ScreenPanel;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
@@ -21,39 +22,22 @@ import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.Tables;
 import mdplayer.chips.Sn76489Chip;
-import mdplayer.form.frmBase;
+import mdplayer.form.kb.frmChipBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
 import mdsound.instrument.Sn76489Inst;
 
 import static mdplayer.Common.searchSSGNote;
 
-
-public class frmSN76489 extends frmBase {
-    public boolean isClosed = false;
-    public int x = -1;
-    public int y = -1;
-    private int frameSizeW = 0;
-    private int frameSizeH = 0;
-    private int chipId = 0;
-    private int zoom = 1;
-
-    private final MDChipParams.SN76489 newParam;
-    private final MDChipParams.SN76489 oldParam;
-    private final FrameBuffer frameBuffer = new FrameBuffer();
+public class frmSN76489 extends frmChipBase<MDChipParams.SN76489> {
 
     static final Preferences prefs = Preferences.userNodeForPackage(frmSN76489.class);
 
     public frmSN76489(frmMain frm, int chipId, int zoom, MDChipParams.SN76489 newParam, MDChipParams.SN76489 oldParam) {
-        super(frm);
-
-        this.chipId = chipId;
-        this.zoom = zoom;
+        super(frm, chipId, zoom, newParam, oldParam);
 
         initializeComponent();
 
-        this.newParam = newParam;
-        this.oldParam = oldParam;
         frameBuffer.Add(pbScreen, Resources.getPlaneSN76489(), null, zoom);
         boolean SN76489Type = (chipId == 0) ? parent.setting.getSN76489Type()[0].getUseReal()[0] : parent.setting.getSN76489Type()[1].getUseReal()[0];
         int tp = SN76489Type ? 1 : 0;
@@ -61,14 +45,7 @@ public class frmSN76489 extends frmBase {
         update();
     }
 
-    public void update() {
-        frameBuffer.refresh(null);
-    }
-
 //    @Override
-    protected boolean getShowWithoutActivation() {
-        return true;
-    }
 
     private final WindowListener windowListener = new WindowAdapter() {
         @Override
@@ -110,7 +87,6 @@ public class frmSN76489 extends frmBase {
         }
     };
 
-
     public void screenChangeParams() {
         int[] psgRegister = (int[]) audio.plugin.chipRegister.chip(Sn76489Chip.class).getInfo(chipId).get("register");
         int[] psgRegister1 = null;
@@ -138,7 +114,7 @@ public class frmSN76489 extends frmBase {
                     //Tone Ch
                     for (int ch = 0; ch < 3; ch++) {
                         if (psgRegister[ch * 2 + 1] != 15) {
-                            float fTone = audio.plugin.mds.getChipInfo(Sn76489Inst.class).clock / (2.0f * psgRegister[ch * 2] * 16.0f);
+                            float fTone = clock(Sn76489Inst.class) / (2.0f * psgRegister[ch * 2] * 16.0f);
 
                             newParam.channels[ch].note = searchSSGNote(fTone);
                         } else {
@@ -301,7 +277,7 @@ public class frmSN76489 extends frmBase {
     }
 
     private void initializeComponent() {
-        this.pbScreen = new JPanel();
+        this.pbScreen = new ScreenPanel();
         //((System.ComponentModel.ISupportInitialize)(this.pbScreen)).BeginInit();
 
         //
@@ -323,7 +299,7 @@ public class frmSN76489 extends frmBase {
         this.setPreferredSize(new Dimension(320, 40));
         this.getContentPane().add(this.pbScreen);
 //        this.FormBorderStyle = JFormBorderStyle.FixedSingle;
-        this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
+        this.setIconImage(Resources.getFeli128());
 //        this.MaximizeBox = false;
         this.setName("frmSN76489");
         this.setTitle("SN76489");
@@ -334,5 +310,4 @@ public class frmSN76489 extends frmBase {
     }
 
     BufferedImage image;
-    public JPanel pbScreen;
 }

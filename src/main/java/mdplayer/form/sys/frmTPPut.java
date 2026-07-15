@@ -20,6 +20,7 @@ import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.table.DefaultTableModel;
 
+import mdplayer.form.Layouts;
 import mdplayer.Setting;
 import mdplayer.Tone;
 import mdplayer.TonePallet;
@@ -353,6 +354,8 @@ public class frmTPPut extends JFrame {
 //        this.StartPosition = JFormStartPosition.CenterParent;
         this.setTitle("Put to Tone Pallet");
         this.addWindowListener(this.frmTPPut_Load);
+        Layouts.absolute(this.getContentPane());
+        this.setSize(this.getMinimumSize());
         // this.groupBox1.ResumeLayout(false);
         //((System.ComponentModel.ISupportInitialize)(this.dgvTonePallet)).EndInit();
 //        this.ResumeLayout(false);

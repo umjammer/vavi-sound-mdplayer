@@ -1,5 +1,6 @@
 package mdplayer.form.kb.nes;
 
+import mdplayer.ScreenPanel;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
@@ -21,49 +22,27 @@ import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.chips.NpNesChip;
 import mdplayer.chips.NpNesChip.Mmc5Chip;
-import mdplayer.form.frmBase;
+import mdplayer.form.kb.frmChipBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
 
-
-public class frmMMC5 extends frmBase {
-    public boolean isClosed = false;
-    public int x = -1;
-    public int y = -1;
-    private int frameSizeW = 0;
-    private int frameSizeH = 0;
-    private final int chipId;
-    private final int zoom;
+public class frmMMC5 extends frmChipBase<MDChipParams.MMC5> {
 
     //
-    private final MDChipParams.MMC5 newParam;
-    private final MDChipParams.MMC5 oldParam = new MDChipParams.MMC5();
-    private final FrameBuffer frameBuffer = new FrameBuffer();
 
     static final Preferences prefs = Preferences.userNodeForPackage(frmMMC5.class);
 
     public frmMMC5(frmMain frm, int chipId, int zoom, MDChipParams.MMC5 newParam) {
-        super(frm);
-
-        this.chipId = chipId;
-        this.zoom = zoom;
+        super(frm, chipId, zoom, newParam, new MDChipParams.MMC5());
 
         initializeComponent();
 
-        this.newParam = newParam;
         frameBuffer.Add(pbScreen, Resources.getPlaneMMC5(), null, zoom);
         DrawBuff.screenInitNESDMC(frameBuffer);
         update();
     }
 
-    public void update() {
-        frameBuffer.refresh(null);
-    }
-
 //    @Override
-    protected boolean getShowWithoutActivation() {
-        return true;
-    }
 
     private final WindowListener windowListener = new WindowAdapter() {
         @Override
@@ -232,7 +211,7 @@ public class frmMMC5 extends frmBase {
     };
 
     private void initializeComponent() {
-        this.pbScreen = new JPanel();
+        this.pbScreen = new ScreenPanel();
         //((System.ComponentModel.ISupportInitialize)(this.pbScreen)).BeginInit();
 
         //
@@ -253,7 +232,7 @@ public class frmMMC5 extends frmBase {
         this.setPreferredSize(new Dimension(286, 40));
         this.getContentPane().add(this.pbScreen);
 //        this.FormBorderStyle = JFormBorderStyle.FixedSingle;
-        this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
+        this.setIconImage(Resources.getFeli128());
 //        this.MaximizeBox = false;
         this.setName("frmMMC5");
         this.setTitle("MMC5");
@@ -264,5 +243,4 @@ public class frmMMC5 extends frmBase {
     }
 
     BufferedImage image;
-    private JPanel pbScreen;
 }

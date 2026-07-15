@@ -10,6 +10,7 @@ import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -138,8 +139,10 @@ public class SegaPcmChip extends BaseChip {
     }
 
     public Map<String, Object> getInfo(int chipId) {
-        Map<String, Object> info = context.mds.inst(SegaPcmInst.class).getInfo(chipId);
-        info.put("register", register[chipId]);
+        Map<String, Object> info = new HashMap<>(context.mds.inst(SegaPcmInst.class).getInfo(chipId));
+        if (!info.containsKey("register")) {
+            info.put("register", register[chipId]);
+        }
         info.put("keyOn", keyOn[chipId]);
         return info;
     }

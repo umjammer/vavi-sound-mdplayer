@@ -3,52 +3,97 @@ package mdplayer;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
+import java.awt.Transparency;
+import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.ComponentColorModel;
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
+import java.awt.image.Raster;
+import java.awt.image.WritableRaster;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.util.function.Consumer;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 
 import static java.lang.System.getLogger;
 
 
+/**
+ * The pixel store the skinned screens are drawn into.
+ * <p>
+ * {@link DrawBuff} blits sprites by writing raw bytes into {@link #baPlaneBuffer}. That array is the
+ * backing store of {@link #bmpPlane}, so a write is immediately visible to Swing and no copy is
+ * needed per frame; {@link #refresh} only has to ask the component to repaint.
+ * <p>
+ * Pixels are 4 interleaved bytes in {@code R,G,B,A} order — the layout {@link #clearScreen} and
+ * {@link #drawByteArrayTransp}'s green colour key already assume.
+ *
+ * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
+ * @version 0.00 2026-07-14 nsano initial version <br>
+ */
 public class FrameBuffer {
 
     private static final Logger logger = getLogger(FrameBuffer.class.getName());
+
+    /** bytes per pixel: R, G, B, A */
+    private static final int BPP = 4;
 
     public JComponent pbScreen;
     public BufferedImage bmpPlane;
     public int bmpPlaneW = 0;
     public int bmpPlaneH = 0;
     public byte[] baPlaneBuffer;
-    public Graphics2D bgPlane;
     public int zoom = 1;
     public Dimension imageSize = new Dimension(0, 0);
 
+    /**
+     * Binds this buffer to the component that presents it, sized after the skin image, which is
+     * blitted in as the background.
+     */
     public void Add(JComponent pbScreen, BufferedImage initialImage, Consumer<Graphics> p, int zoom) {
-        this.zoom = zoom;
+        this.zoom = Math.max(1, zoom);
         this.pbScreen = pbScreen;
-//        Graphics2DContext currentContext;
-//        currentContext = Graphics2DManager.Current;
-//        imageSize = new Dimension(initialImage.getWidth(), initialImage.getHeight());
-//
-//        pbScreen.setPreferredSize(new Dimension(imageSize.width * zoom, imageSize.height * zoom));
-//
-//        bgPlane = currentContext.Allocate(pbScreen.CreateGraphics(), pbScreen.DisplayRectangle);
-//        if (p != null)
-//            pbScreen.Graphics2D += new JPaintEventHandler(p);
-//        bmpPlane = new BufferedImage(imageSize.getWidth(), imageSize.getHeight(), PixelFormat.Format32bppArgb);
-//        bmpPlaneW = imageSize.width;
-//        bmpPlaneH = imageSize.height;
-//        BufferedImageData bdPlane = bmpPlane
-//                .LockBits(new Rectangle(0, 0, bmpPlane.getWidth(), bmpPlane.getHeight()), ImageLockMode.readOnly, bmpPlane.PixelFormat);
-//        baPlaneBuffer = new byte[bdPlane.Stride * bmpPlane.getHeight()];
-//        System.Runtime.InteropServices.Marshal.Copy(bdPlane.Scan0, baPlaneBuffer, 0, baPlaneBuffer.length);
-//        bmpPlane.UnlockBits(bdPlane);
-//        bgPlane.Graphics.InterpolationMode = Drawing2D.InterpolationMode.NearestNeighbor;
-//        bgPlane.Graphics.DrawImage(initialImage, 0, 0, imageSize.getWidth() * zoom, imageSize.getHeight() * zoom);
+
+        bmpPlaneW = initialImage.getWidth();
+        bmpPlaneH = initialImage.getHeight();
+        imageSize = new Dimension(bmpPlaneW, bmpPlaneH);
+
+        // baPlaneBuffer is bmpPlane's pixel store, so DrawBuff writes straight into the image
+        DataBufferByte dataBuffer = new DataBufferByte(bmpPlaneW * bmpPlaneH * BPP);
+        baPlaneBuffer = dataBuffer.getData();
+        WritableRaster raster = Raster.createInterleavedRaster(dataBuffer,
+                bmpPlaneW, bmpPlaneH, bmpPlaneW * BPP, BPP, new int[] {0, 1, 2, 3}, null);
+        ColorModel colorModel = new ComponentColorModel(ColorSpace.getInstance(ColorSpace.CS_sRGB),
+                true, false, Transparency.TRANSLUCENT, DataBuffer.TYPE_BYTE);
+        bmpPlane = new BufferedImage(colorModel, raster, false, null);
+
+        clearScreen();
+        drawImage(initialImage);
+
+        if (pbScreen instanceof ScreenPanel screenPanel) {
+            screenPanel.bind(bmpPlane, this.zoom);
+        } else if (pbScreen != null) {
+            logger.log(Level.WARNING, "not a ScreenPanel, nothing will be painted: " + pbScreen.getClass().getName());
+        }
+    }
+
+    /** Blits the skin into the buffer as the background. */
+    private void drawImage(BufferedImage image) {
+        int w = Math.min(bmpPlaneW, image.getWidth());
+        int h = Math.min(bmpPlaneH, image.getHeight());
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                int argb = image.getRGB(x, y);
+                int adr = (bmpPlaneW * y + x) * BPP;
+                baPlaneBuffer[adr] = (byte) (argb >> 16); // R
+                baPlaneBuffer[adr + 1] = (byte) (argb >> 8); // G
+                baPlaneBuffer[adr + 2] = (byte) argb; // B
+                baPlaneBuffer[adr + 3] = (byte) (argb >> 24); // A
+            }
+        }
     }
 
     public void remove(Consumer<Graphics> p) {
@@ -56,79 +101,27 @@ public class FrameBuffer {
             bmpPlane.flush();
             bmpPlane = null;
         }
-        if (bgPlane != null) {
-//            bgPlane.flush();
-            bgPlane = null;
-        }
-        try {
-//            if (pbScreen != null)
-//                pbScreen.Graphics2D -= new JPaintEventHandler(p);
-        } catch (Exception ex) {
-            logger.log(Level.ERROR, ex.getMessage(), ex);
-        }
         pbScreen = null;
-
         baPlaneBuffer = null;
     }
 
-    private void drawScreen() {
-        if (bmpPlane == null) return;
-
-//        BufferedImage bdPlane = bmpPlane.LockBits(new Rectangle(0, 0, bmpPlane.getWidth(), bmpPlane.getHeight()), ImageLockMode.WriteOnly, bmpPlane.PixelFormat);
-////            unsafe
-//        {
-//            byte[] bdP = (byte[])bdPlane.Scan0;
-//            int adr;
-//            for (int y = 0; y < bdPlane.getHeight(); y++) {
-//                adr = bdPlane.Stride * y;
-//                for (int x = 0; x < bdPlane.Stride; x++) {
-//                    bdP[adr + x] = baPlaneBuffer[bdPlane.Stride * y + x];
-//                }
-//            }
-//        }
-//        bmpPlane.UnlockBits(bdPlane);
-
-        bgPlane.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-        bgPlane.drawImage(bmpPlane, 0, 0, bmpPlane.getWidth() * zoom, bmpPlane.getHeight() * zoom, null);
-
-        //IntPtr hBmp = bmpPlane.GetHbitmap();
-        //IntPtr hFormDC = bgPlane.Graphics.GetHdc(), hDC = CreateCompatibleDC(hFormDC);
-        //IntPtr hPrevBmp = SelectObject(hDC, hBmp);
-        //BitBlt(hFormDC, 0, 0, bmpPlane.getWidth(), bmpPlane.getHeight(), hDC, 0, 0, SRCCOPY);
-        //bgPlane.Graphics.ReleaseHdc(hFormDC);
-        //SelectObject(hDC, hPrevBmp);
-        //DeleteDC(hDC);
-        //DeleteObject(hBmp);
-    }
-
     public void clearScreen() {
-        for (int i = 0; i < baPlaneBuffer.length; i += 4) {
+        if (baPlaneBuffer == null) return;
+
+        for (int i = 0; i < baPlaneBuffer.length; i += BPP) {
             baPlaneBuffer[i] = 0x00; // R
             baPlaneBuffer[i + 1] = 0x00; // G
             baPlaneBuffer[i + 2] = 0x00; // B
             baPlaneBuffer[i + 3] = (byte) 0xff; // a
         }
-        // Arrays.fill(baPlaneBuffer, 0, baPlaneBuffer.length);
     }
 
+    /** Presents what has been drawn since the last call. */
     public void refresh(Graphics g) {
-        Runnable act;
+        JComponent c = pbScreen;
+        if (c == null) return;
 
-//        if (pbScreen == null) return;
-//        if (pbScreen.IsDisposed) return;
-//
-//        try {
-//            pbScreen.Invoke(act = () -> {
-//                try {
-//                    drawScreen();
-//                } catch (Exception ex) {
-//                    Log.forcedWrite(ex);
-//                    Remove(p);
-//                }
-//                if (bgPlane != null) bgPlane.Render();
-//            });
-//        } catch (Exception ignore) {
-//        }
+        SwingUtilities.invokeLater(c::repaint);
     }
 
     public void drawByteArray(int x, int y, byte[] src, int srcWidth, int imgX, int imgY, int imgWidth, int imgHeight) {

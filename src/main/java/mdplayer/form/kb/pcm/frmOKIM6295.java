@@ -1,5 +1,6 @@
 package mdplayer.form.kb.pcm;
 
+import mdplayer.ScreenPanel;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
@@ -21,50 +22,26 @@ import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.chips.OkiM6295Chip;
-import mdplayer.form.frmBase;
+import mdplayer.form.kb.frmChipBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
 import mdsound.chips.OkiM6295;
 
-
-public class frmOKIM6295 extends frmBase {
-    public boolean isClosed = false;
-    public int x = -1;
-    public int y = -1;
-    private int frameSizeW = 0;
-    private int frameSizeH = 0;
-    private int chipId = 0;
-    private int zoom = 1;
-
-    private final MDChipParams.OKIM6295 newParam;
-    private final MDChipParams.OKIM6295 oldParam;
-    private final FrameBuffer frameBuffer = new FrameBuffer();
+public class frmOKIM6295 extends frmChipBase<MDChipParams.OKIM6295> {
 
     static final Preferences prefs = Preferences.userNodeForPackage(frmOKIM6295.class);
 
     public frmOKIM6295(frmMain frm, int chipId, int zoom, MDChipParams.OKIM6295 newParam, MDChipParams.OKIM6295 oldParam) {
-        super(frm);
-
-        this.chipId = chipId;
-        this.zoom = zoom;
+        super(frm, chipId, zoom, newParam, oldParam);
 
         initializeComponent();
 
-        this.newParam = newParam;
-        this.oldParam = oldParam;
         frameBuffer.Add(pbScreen, Resources.getPlaneMSM6295(), null, zoom);
         DrawBuff.screenInitOKIM6295(frameBuffer);
         update();
     }
 
-    public void update() {
-        frameBuffer.refresh(null);
-    }
-
 //    @Override
-    protected boolean getShowWithoutActivation() {
-        return true;
-    }
 
     private final WindowListener windowListener = new WindowAdapter() {
         @Override
@@ -191,7 +168,7 @@ public class frmOKIM6295 extends frmBase {
 
     private void initializeComponent() {
 //            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmOKIM6295));
-        this.pbScreen = new JPanel();
+        this.pbScreen = new ScreenPanel();
         //((System.ComponentModel.ISupportInitialize)(this.pbScreen)).BeginInit();
 
         //
@@ -213,7 +190,7 @@ public class frmOKIM6295 extends frmBase {
         this.setPreferredSize(new Dimension(320, 40));
         this.getContentPane().add(this.pbScreen);
 //        this.FormBorderStyle = JFormBorderStyle.FixedSingle;
-        this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
+        this.setIconImage(Resources.getFeli128());
 //        this.MaximizeBox = false;
         this.setName("frmOKIM6295");
         this.setTitle("OKIM6295");
@@ -224,5 +201,4 @@ public class frmOKIM6295 extends frmBase {
     }
 
     BufferedImage image;
-    public JPanel pbScreen;
 }

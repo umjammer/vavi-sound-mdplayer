@@ -1,5 +1,6 @@
 package mdplayer.form.kb;
 
+import mdplayer.ScreenPanel;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
@@ -21,46 +22,18 @@ import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.Tables;
 import mdplayer.chips.Ym2151Chip;
-import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
 
-
-public class frmYM2151 extends frmBase {
-
-    public boolean isClosed = false;
-    public int x = -1;
-    public int y = -1;
-    private int frameSizeW = 0;
-    private int frameSizeH = 0;
-    private final int chipId;
-    private final int zoom;
-
-    private final MDChipParams.YM2151 newParam;
-    private final MDChipParams.YM2151 oldParam;
-    private final FrameBuffer frameBuffer = new FrameBuffer();
+public class frmYM2151 extends frmChipBase<MDChipParams.YM2151> {
 
     static final Preferences prefs = Preferences.userNodeForPackage(frmYM2151.class);
 
     public frmYM2151(frmMain frm, int chipId, int zoom, MDChipParams.YM2151 newParam, MDChipParams.YM2151 oldParam) {
-        super(frm);
-        this.chipId = chipId;
-        this.zoom = zoom;
+        super(frm, chipId, zoom, newParam, oldParam);
         initializeComponent();
 
-        this.newParam = newParam;
-        this.oldParam = oldParam;
-        frameBuffer.Add(pbScreen, Resources.getPlaneE(), null, zoom);
-        screenInit();
-        update();
-    }
-
-    public void update() {
-        frameBuffer.refresh(null);
-    }
-
-    protected boolean getShowWithoutActivation() {
-        return true;
+        bind(Resources.getPlaneE());
     }
 
     private final WindowListener windowListener = new WindowAdapter() {
@@ -298,7 +271,7 @@ public class frmYM2151 extends frmBase {
     }
 
     private void initializeComponent() {
-        this.pbScreen = new JPanel();
+        this.pbScreen = new ScreenPanel();
 
         //
         // pbScreen
@@ -319,7 +292,7 @@ public class frmYM2151 extends frmBase {
         this.setPreferredSize(new Dimension(320, 216));
         this.getContentPane().add(this.pbScreen);
 //        this.FormBorderStyle = JFormBorderStyle.FixedSingle;
-        this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
+        this.setIconImage(Resources.getFeli128());
 //        this.MaximizeBox = false;
         this.setName("frmYM2151");
         this.setTitle("OPM");
@@ -330,5 +303,4 @@ public class frmYM2151 extends frmBase {
     }
 
     BufferedImage image;
-    public JPanel pbScreen;
 }

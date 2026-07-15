@@ -1,22 +1,29 @@
 package mdplayer.form.kb;
 
-import java.awt.Dimension;
-import java.awt.Image;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
+import java.awt.image.BufferedImage;
 
+import mdsound.Instrument;
+import mdsound.MDSound;
 import mdplayer.FrameBuffer;
-import mdplayer.MDChipParams;
+import mdplayer.ScreenPanel;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
 
 
-public class frmChipBase extends frmBase {
+/**
+ * What every chip panel is.
+ * <p>
+ * A chip panel is a skinned screen showing one chip's state: {@link #screenChangeParams()} pulls
+ * that state out of the chip each frame, {@link #screenDrawParams()} blits what changed, and
+ * {@link #update()} presents it. Each panel differs only in its skin, its parameters and what it
+ * draws — everything else is the same, and lives here.
+ *
+ * @param <P> the chip's slice of {@link mdplayer.MDChipParams}, diffed new against old to decide
+ *            what needs redrawing
+ */
+public class frmChipBase<P> extends frmBase {
+
     public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
@@ -25,75 +32,66 @@ public class frmChipBase extends frmBase {
     protected int chipId = 0;
     protected int zoom = 1;
 
-    protected MDChipParams.AY8910 newParam = null;
-    protected MDChipParams.AY8910 oldParam = null;
+    protected P newParam = null;
+    protected P oldParam = null;
 
+    /** the screen this panel's skin and sprites are drawn into */
     protected final FrameBuffer frameBuffer = new FrameBuffer();
 
-    private void initializeComponent() {
-        //
-        // frmChipBase
-        //
-//            this.AutoScaleDimensions = new DimensionF(6F, 12F);
-//            this.AutoScaleMode = JAutoScaleMode.Font;
-        //this.setBackground(Color.ControlDarkDark);
-        this.setPreferredSize(new Dimension(329, 57));
-//        this.FormBorderStyle = JFormBorderStyle.FixedSingle;
-        this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
-//        this.MaximizeBox = false;
-        this.setName("frmChipBase");
-        this.setTitle("frmChipBase");
-        this.addWindowListener(this.windowListener);
-        this.addMouseListener(this.pbScreen_MouseClick);
-//            this.ResumeLayout(false);
-    }
+    /** the component that frame buffer is presented on */
+    protected ScreenPanel pbScreen;
 
     public frmChipBase() {
-        initializeComponent();
     }
 
-    public frmChipBase(frmMain frm, int chipId, int zoom, MDChipParams.AY8910 newParam) {
+    public frmChipBase(frmMain frm, int chipId, int zoom, P newParam, P oldParam) {
         super(frm);
         parent = frm;
         this.chipId = chipId;
         this.zoom = zoom;
         this.newParam = newParam;
-
-        initializeComponent();
+        this.oldParam = oldParam;
     }
 
-    private final WindowListener windowListener = new WindowAdapter() {
-        @Override
-        public void windowClosed(WindowEvent e) {
-        }
+    /**
+     * Puts the panel on screen, once the subclass has built its components. Call at the end of the
+     * constructor, with the skin this chip is drawn on.
+     */
+    protected final void bind(BufferedImage plane) {
+        setIconImage(Resources.getFeli128());
+        frameBuffer.Add(pbScreen, plane, null, zoom);
+        screenInit();
+        update();
+    }
 
-        @Override
-        public void windowOpened(WindowEvent e) {
-        }
-    };
-
-    private final MouseListener pbScreen_MouseClick = new MouseAdapter() {
-        @Override
-        public void mouseClicked(MouseEvent e) {
-        }
-    };
-
+    /** Presents what {@link #screenDrawParams()} has drawn. */
     public void update() {
         frameBuffer.refresh(null);
     }
 
-    //@Override
+    /**
+     * The clock of one of this panel's chips, or 0 when the song being played does not use it — a
+     * panel can be open for a chip the current song has nothing to say about.
+     */
+    protected int clock(Class<? extends Instrument> instrument) {
+        MDSound.Chip chip = audio.plugin.mds.getChipInfo(instrument);
+        return chip == null ? 0 : chip.clock;
+    }
+
+    /** A chip panel never takes the focus off the main window. */
     protected boolean getShowWithoutActivation() {
         return true;
     }
 
-
+    /** Reads this frame's chip state into {@link #newParam}. */
     public void screenChangeParams() {
     }
 
+    /** Draws what changed between {@link #oldParam} and {@link #newParam}. */
     public void screenDrawParams() {
     }
 
+    /** Draws the parts of the screen that never change. */
     public void screenInit() {
     }
 }

@@ -1,5 +1,6 @@
 package mdplayer.form.kb.wf;
 
+import mdplayer.ScreenPanel;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
@@ -21,19 +22,18 @@ import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.chips.K051649Chip;
-import mdplayer.form.frmBase;
+import mdplayer.form.kb.frmChipBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
 import mdsound.instrument.K051649Inst;
 
 import static mdplayer.Common.searchSSGNote;
 
-
-public class frmK051649 extends frmBase {
+public class frmK051649 extends frmChipBase<MDChipParams.K051649> {
 
     private void initializeComponent() {
 //            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmK051649));
-        this.pbScreen = new JPanel();
+        this.pbScreen = new ScreenPanel();
         //((System.ComponentModel.ISupportInitialize)(this.pbScreen)).BeginInit();
 
         //
@@ -55,7 +55,7 @@ public class frmK051649 extends frmBase {
         this.setPreferredSize(new Dimension(320, 144));
         this.getContentPane().add(this.pbScreen);
 //        this.FormBorderStyle = JFormBorderStyle.FixedSingle;
-        this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
+        this.setIconImage(Resources.getFeli128());
 //        this.MaximizeBox = false;
         this.setName("frmK051649");
         this.setTitle("K051649Inst");
@@ -68,43 +68,20 @@ public class frmK051649 extends frmBase {
     // //#endregion
 
     BufferedImage image;
-    public JPanel pbScreen;
-    public boolean isClosed = false;
-    public int x = -1;
-    public int y = -1;
-    private int frameSizeW = 0;
-    private int frameSizeH = 0;
-    private final int chipId;
-    private final int zoom;
-
-    private final MDChipParams.K051649 newParam;
-    private final MDChipParams.K051649 oldParam = new MDChipParams.K051649();
-    private final FrameBuffer frameBuffer = new FrameBuffer();
 
     static final Preferences prefs = Preferences.userNodeForPackage(frmK051649.class);
 
     public frmK051649(frmMain frm, int chipId, int zoom, MDChipParams.K051649 newParam) {
-        super(frm);
-
-        this.chipId = chipId;
-        this.zoom = zoom;
+        super(frm, chipId, zoom, newParam, new MDChipParams.K051649());
 
         initializeComponent();
 
-        this.newParam = newParam;
         frameBuffer.Add(pbScreen, Resources.getPlaneK051649(), null, zoom);
         DrawBuff.screenInitK051649(frameBuffer);
         update();
     }
 
-    public void update() {
-        frameBuffer.refresh(null);
-    }
-
 //    @Override
-    protected boolean getShowWithoutActivation() {
-        return true;
-    }
 
     private final WindowListener windowListener = new WindowAdapter() {
         @Override
@@ -150,7 +127,7 @@ public class frmK051649 extends frmBase {
 
             MDChipParams.Channel channel = newParam.channels[ch];
             for (int i = 0; i < 32; i++) channel.inst[i] = (int) chip.get("channels." + ch + ".inst." + i);
-            float fTone = audio.plugin.mds.getChipInfo(K051649Inst.class).clock / (8.0f * (float) chip.get("channels." + ch + ".frequency"));
+            float fTone = clock(K051649Inst.class) / (8.0f * (float) chip.get("channels." + ch + ".frequency"));
             channel.freq = (int) chip.get("channels." + ch + ".frequency");
             channel.volume = (int) chip.get("channels." + ch + ".volume");
             channel.volumeL = (int) chip.get("channels." + ch + ".volumeL");

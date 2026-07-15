@@ -1,5 +1,6 @@
 package mdplayer.form.kb.opl;
 
+import mdplayer.ScreenPanel;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
@@ -23,34 +24,19 @@ import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.chips.SegaPcmChip;
 import mdplayer.chips.Y8950Chip;
-import mdplayer.form.frmBase;
+import mdplayer.form.kb.frmChipBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
 import mdsound.instrument.Y8950Inst;
 
-
-public class frmY8950 extends frmBase {
-    public boolean isClosed = false;
-    public int x = -1;
-    public int y = -1;
-    private int frameSizeW = 0;
-    private int frameSizeH = 0;
-    private final int chipId;
-    private final int zoom;
-
-    private final MDChipParams.Y8950 newParam;
-    private final MDChipParams.Y8950 oldParam = new MDChipParams.Y8950();
-    private final FrameBuffer frameBuffer = new FrameBuffer();
+public class frmY8950 extends frmChipBase<MDChipParams.Y8950> {
 
     static final Preferences prefs = Preferences.userNodeForPackage(frmY8950.class);
 
     public frmY8950(frmMain frm, int chipId, int zoom, MDChipParams.Y8950 newParam) {
-        super(frm);
-        this.chipId = chipId;
-        this.zoom = zoom;
+        super(frm, chipId, zoom, newParam, new MDChipParams.Y8950());
         initializeComponent();
 
-        this.newParam = newParam;
         frameBuffer.Add(pbScreen, Resources.getPlaneY8950(), null, zoom);
         boolean Y8950Type = false;// (chipId == 0) ? parent.setting.Y8950Type.UseScci : parent.setting.Y8950Type.UseScci;
         int tp = Y8950Type ? 1 : 0;
@@ -136,14 +122,7 @@ public class frmY8950 extends frmBase {
         }
     };
 
-    public void update() {
-        frameBuffer.refresh(null);
-    }
-
 //    @Override
-    protected boolean getShowWithoutActivation() {
-        return true;
-    }
 
     public void changeZoom() {
         this.setMaximumSize(new Dimension(frameSizeW + Resources.getPlaneY8950().getWidth() * zoom, frameSizeH + Resources.getPlaneY8950().getHeight() * zoom));
@@ -233,7 +212,6 @@ public class frmY8950 extends frmBase {
                 nyc.volume--;
                 if (nyc.volume < 0) nyc.volume = 0;
             }
-
 
         }
         newParam.channels[9].dda = ((Y8950Register[0xbd] >> 7) & 0x01) != 0;//DA
@@ -343,7 +321,7 @@ public class frmY8950 extends frmBase {
 
     private void initializeComponent() {
 //            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmY8950));
-        this.pbScreen = new JPanel();
+        this.pbScreen = new ScreenPanel();
         //((System.ComponentModel.ISupportInitialize)(this.pbScreen)).BeginInit();
 
         //
@@ -365,7 +343,7 @@ public class frmY8950 extends frmBase {
         this.setPreferredSize(new Dimension(328, 176));
         this.getContentPane().add(this.pbScreen);
 //        this.FormBorderStyle = JFormBorderStyle.FixedSingle;
-        this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
+        this.setIconImage(Resources.getFeli128());
 //        this.MaximizeBox = false;
         this.setName("frmY8950");
         this.setTitle("Y8950Inst");
@@ -376,5 +354,4 @@ public class frmY8950 extends frmBase {
     }
 
     BufferedImage image;
-    public JPanel pbScreen;
 }

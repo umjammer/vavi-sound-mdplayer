@@ -76,10 +76,14 @@ public class QSoundChip extends BaseChip {
 
     public void setMask(int chipId, int ch, boolean mask) {
         this.mask[chipId][ch] = mask;
+
+        PcmEnabledInstrument instrument = context.mds.inst(_inst(chipId));
+        if (instrument == null) return; // the song being played does not use this chip
+
         if (mask)
-            context.mds.inst(_inst(chipId)).setMask(chipId, ch);
+            instrument.setMask(chipId, ch);
         else
-            context.mds.inst(_inst(chipId)).resetMask(chipId, ch);
+            instrument.resetMask(chipId, ch);
     }
 
     public void writePcm(int chipId,

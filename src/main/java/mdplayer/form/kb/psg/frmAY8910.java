@@ -1,6 +1,7 @@
 
 package mdplayer.form.kb.psg;
 
+import mdplayer.ScreenPanel;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
@@ -26,12 +27,11 @@ import mdsound.instrument.Ay8910Inst;
 import static mdplayer.Common.searchSSGNote;
 
 
-public class frmAY8910 extends frmChipBase {
-    JPanel pbScreen;
+public class frmAY8910 extends frmChipBase<MDChipParams.AY8910> {
     BufferedImage image;
 
     private void initializeComponent() {
-        this.pbScreen = new JPanel();
+        this.pbScreen = new ScreenPanel();
 
         //
         // pbScreen
@@ -52,7 +52,7 @@ public class frmAY8910 extends frmChipBase {
         this.setPreferredSize(new Dimension(320, 40));
         this.getContentPane().add(this.pbScreen);
 //        this.FormBorderStyle = JFormBorderStyle.FixedSingle;
-        this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
+        this.setIconImage(Resources.getFeli128());
         this.setName("frmAY8910");
         this.setTitle("AY8910");
         this.addWindowListener(this.windowListener);
@@ -62,15 +62,9 @@ public class frmAY8910 extends frmChipBase {
     }
 
     public frmAY8910(frmMain frm, int chipId, int zoom, MDChipParams.AY8910 newParam, MDChipParams.AY8910 oldParam) {
-        super(frm, chipId, zoom, newParam);
+        super(frm, chipId, zoom, newParam, oldParam);
 
         initializeComponent();
-
-        parent = frm;
-        this.chipId = chipId;
-        this.zoom = zoom;
-        this.newParam = newParam;
-        this.oldParam = oldParam;
 
         frameBuffer.Add(this.pbScreen, Resources.getPlaneAY8910(), null, zoom);
 
@@ -145,7 +139,7 @@ public class frmAY8910 extends frmChipBase {
                 int tp = (ct << 8) | ft;
                 if (tp == 0)
                     tp = 1;
-                float fTone = audio.plugin.mds.getChipInfo(Ay8910Inst.class).clock / (8.0f * (float) tp);
+                float fTone = clock(Ay8910Inst.class) / (8.0f * (float) tp);
                 channel.note = searchSSGNote(fTone);
             }
         }

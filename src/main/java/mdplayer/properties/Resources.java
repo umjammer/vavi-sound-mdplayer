@@ -912,11 +912,11 @@ public class Resources {
     }
 
     /**
+     * The application icon, used as the window icon of every form.
      */
-    public static Icon getFeli128() {
+    public static BufferedImage getFeli128() {
 
-        Object obj = resourceMan.getObject("Feli128");
-        return ((Icon) (obj));
+        return getImage("Feli128");
     }
 
     /**
@@ -925,14 +925,6 @@ public class Resources {
     public static BufferedImage getFeliAndMD2() {
 
         return getImage("FeliAndMD2");
-    }
-
-    /**
-     */
-    public static Icon getFeliTop() {
-
-        Object obj = resourceMan.getObject("FeliTop");
-        return ((Icon) (obj));
     }
 
     /**
@@ -1013,6 +1005,14 @@ public class Resources {
     public static BufferedImage getPlaneControl() {
 
         return getImage("planeControl");
+    }
+
+    /**
+     * The main window's skin.
+     */
+    public static BufferedImage getPlaneMain() {
+
+        return getImage("planeMain");
     }
 
     /**
@@ -1131,6 +1131,30 @@ public class Resources {
     public static BufferedImage getPlaneMultiPCM() {
 
         return getImage("planeMultiPCM");
+    }
+
+    /**
+     * Looks up localized resources of type BufferedImage.
+     */
+    public static BufferedImage getPlaneGA20() {
+
+        return getImage("planeGA20");
+    }
+
+    /**
+     * Looks up localized resources of type BufferedImage.
+     */
+    public static BufferedImage getPlaneK053260() {
+
+        return getImage("planeK053260");
+    }
+
+    /**
+     * Looks up localized resources of type BufferedImage.
+     */
+    public static BufferedImage getPlaneK054539() {
+
+        return getImage("planeK054539");
     }
 
     /**
@@ -1338,6 +1362,14 @@ public class Resources {
     public static BufferedImage getRFader() {
 
         return getImage("rFader");
+    }
+
+    /**
+     * Looks up localized resources of type BufferedImage.
+     */
+    public static BufferedImage getRFaderH() {
+
+        return getImage("rFaderH");
     }
 
     /**

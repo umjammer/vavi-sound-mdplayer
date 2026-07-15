@@ -18,11 +18,13 @@ import java.util.stream.IntStream;
 import mdplayer.Common.EnmInstFormat;
 import mdplayer.properties.Resources;
 import mdplayer.vst.VstInfo;
+import vavi.util.serdes.JacksonXMLBeanBinder;
 import vavi.util.serdes.Serdes;
 
 import static java.lang.System.getLogger;
 
 
+@Serdes(beanBinder = JacksonXMLBeanBinder.class)
 public class Setting implements Serializable, Cloneable {
 
     private static final Logger logger = getLogger(Setting.class.getName());
@@ -2025,7 +2027,7 @@ public class Setting implements Serializable, Cloneable {
         public void setInstFormat(EnmInstFormat value) {
             instFormat = value;
         }
-        private int zoom = 1;
+        private int zoom = 2;
         public int getZoom() {
             return zoom;
         }
@@ -3446,6 +3448,78 @@ public class Setting implements Serializable, Cloneable {
             _OpenMultiPCM = value;
         }
 
+        private Point[] _PosGA20 = new Point[] {
+                EmptyPoint, EmptyPoint
+        };
+
+        public Point[] getPosGA20() {
+            return _PosGA20;
+        }
+
+        void setPosGA20(Point[] value) {
+            _PosGA20 = value;
+        }
+
+        private boolean[] _OpenGA20 = new boolean[] {
+                false, false
+        };
+
+        public boolean[] getOpenGA20() {
+            return _OpenGA20;
+        }
+
+        void setOpenGA20(boolean[] value) {
+            _OpenGA20 = value;
+        }
+
+        private Point[] _PosK053260 = new Point[] {
+                EmptyPoint, EmptyPoint
+        };
+
+        public Point[] getPosK053260() {
+            return _PosK053260;
+        }
+
+        void setPosK053260(Point[] value) {
+            _PosK053260 = value;
+        }
+
+        private boolean[] _OpenK053260 = new boolean[] {
+                false, false
+        };
+
+        public boolean[] getOpenK053260() {
+            return _OpenK053260;
+        }
+
+        void setOpenK053260(boolean[] value) {
+            _OpenK053260 = value;
+        }
+
+        private Point[] _PosK054539 = new Point[] {
+                EmptyPoint, EmptyPoint
+        };
+
+        public Point[] getPosK054539() {
+            return _PosK054539;
+        }
+
+        void setPosK054539(Point[] value) {
+            _PosK054539 = value;
+        }
+
+        private boolean[] _OpenK054539 = new boolean[] {
+                false, false
+        };
+
+        public boolean[] getOpenK054539() {
+            return _OpenK054539;
+        }
+
+        void setOpenK054539(boolean[] value) {
+            _OpenK054539 = value;
+        }
+
         private boolean[] _OpenQSound = new boolean[] {
                 false, false
         };
@@ -4611,12 +4685,16 @@ public class Setting implements Serializable, Cloneable {
         fullPath = fullPath.resolve(Resources.getCntSettingFileName());
 
         try (OutputStream sw = Files.newOutputStream(fullPath)) {
-            Serdes.Util.serialize(sw, this);
+            Serdes.Util.serialize(this, sw);
         } catch (IOException e) {
             logger.log(Level.ERROR, e.getMessage(), e);
         }
     }
 
+    /**
+     * Reads the saved settings into the instance everything else already holds — the engine reads
+     * {@link #getInstance()}, so loading into a separate object would leave the two disagreeing.
+     */
     public static Setting load() {
         try {
             String fn = Resources.getCntSettingFileName();
@@ -4631,15 +4709,17 @@ public class Setting implements Serializable, Cloneable {
             Path fullPath = Common.settingFilePath;
             fullPath = fullPath == null ? Path.of(Resources.getCntSettingFileName()) : fullPath.resolve(Resources.getCntSettingFileName());
 
-            if (!Files.exists(fullPath)) {
-                return new Setting();
-            }
-            try (InputStream sr = Files.newInputStream(fullPath)) {
-                return Serdes.Util.deserialize(sr, new Setting());
+            if (Files.exists(fullPath)) {
+                try (InputStream sr = Files.newInputStream(fullPath)) {
+                    Serdes.Util.deserialize(sr, instance);
+                }
             }
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
-            return new Setting();
         }
+
+        // fills in whatever the settings file did not carry, and everything on a first run
+        instance.init();
+        return instance;
     }
 }

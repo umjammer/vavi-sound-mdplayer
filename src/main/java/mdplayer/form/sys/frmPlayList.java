@@ -19,6 +19,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.lang.System.Logger;
@@ -28,11 +29,18 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.ResourceBundle;
+import java.util.MissingResourceException;
+import java.util.Locale;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
+import java.awt.BorderLayout;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JToolBar;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -84,6 +92,9 @@ public class frmPlayList extends JFrame {
     private final frmMain frmMain;
 
     private boolean playing = false;
+
+    /** the kind of list last opened or saved, so that saving offers the same kind back */
+    private boolean m3u = false;
     private int playIndex;
     private int oldPlayIndex;
 
@@ -207,7 +218,29 @@ public class frmPlayList extends JFrame {
     }
 
     public void updatePlayingIndex(int newPlayingIndex) {
-        if (oldPlayIndex != -1) {
+        logger.log(Level.INFO, "updatePlayingIndex: newPlayingIndex=" + newPlayingIndex +
+            ", dgvList.getRowCount()=" + dgvList.getRowCount() +
+            ", playList.getMusics().size()=" + playList.getMusics().size());
+
+        for (int i = 0; i < playList.getMusics().size(); i++) {
+            PlayList.Music m = playList.getMusics().get(i);
+            logger.log(Level.INFO, "  music " + i + ": fileName=" + m.fileName + ", title=" + m.title + ", game=" + m.game);
+        }
+
+        if (dgvList.getRowCount() < 1 && playList.getMusics().size() > 0) {
+            logger.log(Level.INFO, "dgvList is empty but playList.getMusics() is not! Refreshing...");
+            refresh();
+            logger.log(Level.INFO, "After refresh: dgvList.getRowCount()=" + dgvList.getRowCount());
+        }
+
+        if (dgvList.getRowCount() < 1) {
+            // an empty list has no row to mark, and -1/-2 would resolve to one that is not there
+            playIndex = -1;
+            oldPlayIndex = -1;
+            return;
+        }
+
+        if (oldPlayIndex != -1 && oldPlayIndex < dgvList.getRowCount()) {
             ResetColor(oldPlayIndex);
         }
 
@@ -246,21 +279,41 @@ public class frmPlayList extends JFrame {
 
     private final MouseListener dgvList_CellMouseClick = new MouseAdapter() {
         @Override
-        public void mouseClicked(MouseEvent e) {
-            if (dgvList.getSelectedRowCount() < 0) return;
-            dgvList.setRowSelectionInterval(dgvList.getSelectedRow(), dgvList.getSelectedRow()); // TODO
+        public void mousePressed(MouseEvent e) {
+            showPlayListPopup(e);
+        }
 
-            if (e.getButton() == MouseEvent.BUTTON2) {
-                if (dgvList.getSelectedRowCount() > 1) {
-                    tsmiDelThis.setText("Remove the selected song.");
-                } else {
-                    tsmiDelThis.setText("Remove this song");
-                }
-                cmsPlayList.setLocation(new Point(e.getX(), e.getY()));
-                cmsPlayList.setVisible(true);
+        @Override
+        public void mouseReleased(MouseEvent e) {
+            showPlayListPopup(e);
+        }
+
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            int row = dgvList.rowAtPoint(e.getPoint());
+            if (row < 0) return;
+            if (e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() == 2) {
+                playRow(row);
             }
         }
     };
+
+    private void showPlayListPopup(MouseEvent e) {
+        if (!e.isPopupTrigger()) return;
+
+        int row = dgvList.rowAtPoint(e.getPoint());
+        if (row < 0) return;
+        if (!dgvList.isRowSelected(row)) {
+            dgvList.setRowSelectionInterval(row, row);
+        }
+
+        if (dgvList.getSelectedRowCount() > 1) {
+            tsmiDelThis.setText("Remove the selected song.");
+        } else {
+            tsmiDelThis.setText("Remove this song");
+        }
+        cmsPlayList.show(dgvList, e.getX(), e.getY());
+    }
 
     private void tsmiDelThis_Click(ActionEvent ev) {
         if (dgvList.getSelectedRowCount() < 1) return;
@@ -454,63 +507,34 @@ loopEx:
         playing = true;
     }
 
-    private void dgvList_CellDoubleClick(ActionEvent e) {
-//        if (e.RowIndex < 0) return;
-
-        dgvList.setEnabled(false);
-
-        playing = false;
-
-//        try {
-//            String fn = (String) dgvList.getValueAt(e.RowIndex, cols.clmFileName.ordinal());
-//            String zfn = (String) dgvList.getValueAt(e.RowIndex, cols.clmZipFileName.ordinal());
-//            int m = 0;
-//            int songNo = 0;
-//            try {
-//                songNo = (int) dgvList.getValueAt(e.RowIndex, cols.clmSongNo.ordinal());
-//            } catch (Exception ex) {
-//                songNo = 0;
-//            }
-//            if (dgvList.getValueAt(e.RowIndex, cols.clmType.ordinal()) != null && !dgvList.getValueAt(e.RowIndex, cols.clmType.ordinal()).toString().equals("-")) {
-//                m = dgvList.getValueAt(e.RowIndex, cols.clmType.ordinal()).toString()[0] - 'A';
-//                if (m < 0 || m > 9) m = 0;
-//            }
-//
-//            if (!frmMain.loadAndPlay(m, songNo, fn, zfn)) return;
-//            updatePlayingIndex(e.RowIndex);
-//
-//            playing = true;
-//        } finally {
-//            //dgvList.MultiSelect = true;
-//            dgvList.setEnabled(true);
-//            dgvList.Rows[e.RowIndex].Selected = true;
-//        }
+    private void tsmiPlayThis_Click(ActionEvent ev) {
+        if (dgvList.getSelectedRowCount() < 1) return;
+        playRow(dgvList.getSelectedRows()[0]);
     }
 
-    private void tsmiPlayThis_Click(ActionEvent ev) {
-        if (dgvList.getSelectedRowCount() < 0) return;
-
+    private void playRow(int row) {
+        if (row < 0 || row >= dgvList.getRowCount()) return;
         playing = false;
 
-        String fn = (String) dgvList.getValueAt(dgvList.getSelectedRows()[0], cols.clmFileName.ordinal());
-        String zfn = (String) dgvList.getValueAt(dgvList.getSelectedRows()[0], cols.clmZipFileName.ordinal());
+        String fn = (String) dgvList.getValueAt(row, cols.clmFileName.ordinal());
+        String zfn = (String) dgvList.getValueAt(row, cols.clmZipFileName.ordinal());
         int m = 0;
-        if (dgvList.getValueAt(dgvList.getSelectedRows()[0], cols.clmType.ordinal()) != null && !dgvList.getValueAt(dgvList.getSelectedRows()[0], cols.clmType.ordinal()).toString().equals("-")) {
-            m = dgvList.getValueAt(dgvList.getSelectedRows()[0], cols.clmType.ordinal()).toString().charAt(0) - 'A';
+        if (dgvList.getValueAt(row, cols.clmType.ordinal()) != null && !dgvList.getValueAt(row, cols.clmType.ordinal()).toString().equals("-")) {
+            m = dgvList.getValueAt(row, cols.clmType.ordinal()).toString().charAt(0) - 'A';
             if (m < 0 || m > 9) m = 0;
         }
         int songNo;
         try {
-            songNo = (int) dgvList.getValueAt(dgvList.getSelectedRows()[0], cols.clmSongNo.ordinal());
+            songNo = (int) dgvList.getValueAt(row, cols.clmSongNo.ordinal());
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
             songNo = 0;
         }
 
-        frmMain.loadAndPlay(m, songNo, fn, zfn);
-        updatePlayingIndex(dgvList.getSelectedRows()[0]);
-
-        playing = true;
+        if (frmMain.loadAndPlay(m, songNo, fn, zfn)) {
+            updatePlayingIndex(row);
+            playing = true;
+        }
     }
 
     private void tsmiDelAllMusic_Click(ActionEvent ev) {
@@ -555,7 +579,9 @@ loopEx:
             PlayList pl;
             String filename = ofd.getSelectedFile().getPath();
 
-            if (filename.toLowerCase().lastIndexOf(".m3u") == -1) {
+            m3u = filename.toLowerCase().endsWith(".m3u");
+
+            if (!m3u) {
                 pl = PlayList.load(filename);
                 playing = false;
                 playList = pl;
@@ -585,14 +611,18 @@ loopEx:
     private void tsbSavePlayList_Click(ActionEvent ev) {
 
         JFileChooser sfd = new JFileChooser();
-        sfd.addChoosableFileFilter(new FileFilter() {
+        FileFilter xmlFilter = new FileFilter() {
             @Override public boolean accept(java.io.File f) { return f.getName().toLowerCase().endsWith(".xml"); }
             @Override public String getDescription() { return "XML file(*.xml)"; }
-        });
-        sfd.addChoosableFileFilter(new FileFilter() {
+        };
+        FileFilter m3uFilter = new FileFilter() {
             @Override public boolean accept(java.io.File f) { return f.getName().toLowerCase().endsWith(".m3u"); }
             @Override public String getDescription() { return "M3U file(*.m3u)"; }
-        });
+        };
+        sfd.addChoosableFileFilter(xmlFilter);
+        sfd.addChoosableFileFilter(m3uFilter);
+        // upstream STBL546: a list opened as an m3u is offered back as an m3u
+        sfd.setFileFilter(m3u ? m3uFilter : xmlFilter);
         sfd.setDialogTitle("Save the playlist file");
         if (!frmMain.setting.getOther().getDefaultDataPath().isEmpty() && Files.exists(Path.of(frmMain.setting.getOther().getDefaultDataPath())) && IsInitialOpenFolder) {
             sfd.setCurrentDirectory(new java.io.File(frmMain.setting.getOther().getDefaultDataPath()));
@@ -622,7 +652,9 @@ loopEx:
         }
 
         try {
-            if (filename.toLowerCase().lastIndexOf(".m3u") == -1)
+            m3u = filename.toLowerCase().endsWith(".m3u");
+
+            if (!m3u)
                 playList.save(filename);
             else
                 playList.saveM3U(filename);
@@ -644,7 +676,11 @@ loopEx:
             });
         });
         ofd.setDialogTitle("Select a file");
-        ofd.setFileFilter(ofd.getChoosableFileFilters()[setting.getOther().getFilterIndex()]);
+        int filterIndex = setting.getOther().getFilterIndex();
+        FileFilter[] filters = ofd.getChoosableFileFilters();
+        if (filterIndex >= 0 && filterIndex < filters.length) {
+            ofd.setFileFilter(filters[filterIndex]);
+        }
 
         if (!frmMain.setting.getOther().getDefaultDataPath().isEmpty() && Files.exists(Path.of(frmMain.setting.getOther().getDefaultDataPath())) && IsInitialOpenFolder) {
             ofd.setCurrentDirectory(new java.io.File(frmMain.setting.getOther().getDefaultDataPath()));
@@ -776,31 +812,8 @@ loopEx:
                     return;
                 }
 
-                int index = dgvList.getSelectedRows()[0];
-
 //                e.Handled = true;
-
-                playing = false;
-
-                String fn = (String) dgvList.getValueAt(index, cols.clmFileName.ordinal());
-                String zfn = (String) dgvList.getValueAt(index, cols.clmZipFileName.ordinal());
-                int m = 0;
-                if (dgvList.getValueAt(index, cols.clmType.ordinal()) != null && !dgvList.getValueAt(index, cols.clmType.ordinal()).toString().equals("-")) {
-                    m = dgvList.getValueAt(index, cols.clmType.ordinal()).toString().charAt(0) - 'A';
-                    if (m < 0 || m > 9) m = 0;
-                }
-                int songNo;
-                try {
-                    songNo = (int) dgvList.getValueAt(index, cols.clmSongNo.ordinal());
-                } catch (Exception ex) {
-                    logger.log(Level.ERROR, ex.getMessage(), ex);
-                    songNo = 0;
-                }
-
-                frmMain.loadAndPlay(m, songNo, fn, zfn);
-                updatePlayingIndex(index);
-
-                playing = true;
+                playRow(dgvList.getSelectedRows()[0]);
                 break;
             case 46: // Delete
 //                e.Handled = true;
@@ -862,84 +875,60 @@ loopEx:
                 reent = true;
             }
 
-//            if (!e.Data.GetDataPresent(DataFormats.FileDrop)) return false;
+            try {
+                if (!(data instanceof List<?> dropped)) return false;
 
-//            try {
-//                this.setEnabled(false);
-//                this.timer1.setEnabled(false);
-//
-//                String[] filename = ((String[]) e.Data.GetData(DataFormats.FileDrop));
-//
-//                // If the dropped item is a folder, retrieve a list of the actual files,
-//                // including those in subfolders.
-//                List<String> result = new ArrayList<>();
-//                GetTrueFileNameList(result, Arrays.asList(filename));
-//                // Remove duplicates
-//                filename = result.stream().distinct().toArray(String[]::new);
-//
-//                int i = playList.getMusics().size();
-//                Point cp = dgvList.PointToClient(new Point(e.getX(), e.getY()));
-//                JList.HitTestInfo hti = dgvList.HitTest(cp.getX(), cp.getY());
-//                if (hti.Type == JListHitTestType.Cell && hti.RowIndex >= 0 && hti.RowIndex < dgvList.getRowCount()) {
-//                    if (hti.RowIndex < playList.getMusics().size()) i = hti.RowIndex;
-//                }
-//
-//                // Stop the song
-//                stop();
-//                frmMain.stop();
-//                while (!audio.isStopped())
-//                    Application.DoEvents();
-//
-//                int buIndex = i;
-//
-//                playList.InsertFile(i, filename);
-//
-//                if (buIndex <= oldPlayIndex) {
-//                    oldPlayIndex += i - buIndex;
-//                }
-//                i = buIndex;
-//
-//                // Play the song at the selected position.
-//                String fn = playList.getMusics().get(i).fileName;
-//                if (fn.toLowerCase().lastIndexOf(".lzh") == -1
-//                                && fn.toLowerCase().lastIndexOf(".zip") == -1
-//                                && fn.toLowerCase().lastIndexOf(".m3u") == -1
-//                    //&& fn.toLowerCase().lastIndexOf(".Sid") == -1
-//                ) {
-//                    frmMain.loadAndPlay(0, 0, fn, null);
-//                    setStart(i);// -1);
-//                    frmMain.oldParam = new MDChipParams();
-//                    play();
-//                }
-//            } catch (Exception ex) {
-//                Log.forcedWrite(ex);
-//                JOptionPane.showMessageDialog(null, "File loading failed.");
-//            } finally {
-//                this.setEnabled(true);
-//                this.timer1.start();
-//                synchronized (relock) {
-//                    reent = false;
-//                }
-//            }
-            return false;
+                List<String> files = dropped.stream()
+                        .filter(File.class::isInstance)
+                        .map(File.class::cast)
+                        .map(File::getAbsolutePath)
+                        .collect(Collectors.toList());
+                List<String> filenames = new ArrayList<>();
+                getTrueFileNameList(filenames, files);
+                filenames = filenames.stream().distinct().collect(Collectors.toList());
+                if (filenames.isEmpty()) return false;
+
+                int row = dgvList.rowAtPoint(e.getLocation());
+                int[] insertIndex = {row >= 0 && row < dgvList.getRowCount() ? row : playList.getMusics().size()};
+
+                stop();
+                frmMain.stop();
+
+                int before = insertIndex[0];
+                playList.insertFile(insertIndex, filenames.toArray(String[]::new));
+                if (before <= oldPlayIndex) {
+                    oldPlayIndex += insertIndex[0] - before;
+                }
+                if (before <= playIndex) {
+                    playIndex += insertIndex[0] - before;
+                }
+
+                return true;
+            } catch (Exception ex) {
+                logger.log(Level.ERROR, ex.getMessage(), ex);
+                JOptionPane.showMessageDialog(null, "File loading failed.");
+                return false;
+            } finally {
+                synchronized (relock) {
+                    reent = false;
+                }
+            }
         }
     };
 
     private static void getTrueFileNameList(List<String> res, List<String> files) {
         for (String f : files) {
-            if (Files.exists(Path.of(f))) {
+            if (Files.isDirectory(Path.of(f))) {
+                try (var s = Files.list(Paths.get(f))) {
+                    List<String> fs = s.map(java.nio.file.Path::toString).collect(Collectors.toList());
+                    getTrueFileNameList(res, fs);
+                } catch (IOException ev) {
+                    throw new UncheckedIOException(ev);
+                }
+            } else if (Files.exists(Path.of(f))) {
                 if (!res.contains(f)) {
                     String ext = getExtension(f).toLowerCase();
                     if (Arrays.asList(sext).contains(ext)) res.add(f);
-                }
-            } else {
-                if (Files.exists(Path.of(f))) {
-                    try (var s = Files.list(Paths.get(f))) {
-                        List<String> fs = s.map(java.nio.file.Path::toString).collect(Collectors.toList());
-                        getTrueFileNameList(res, fs);
-                    } catch (IOException ev) {
-                        throw new UncheckedIOException(ev);
-                    }
                 }
             }
         }
@@ -1062,27 +1051,51 @@ loopEx:
         }
     }
 
+    /**
+     * The columns of {@link #dgvList}, in the order {@link PlayList#makeRow} builds a row: an
+     * ordinal is the column index, so the two must be kept in step.
+     */
     enum cols {
-        __dummy__,
-        clmKey,
-        clmSongNo,
-        clmZipFileName,
-        clmFileName,
         clmPlayingNow,
+        clmKey,
+        clmFileName,
+        clmZipFileName,
+        clmDispFileName,
         clmEXT,
         clmType,
         clmTitle,
         clmTitleJ,
-        clmDispFileName,
         clmGame,
         clmGameJ,
         clmComposer,
         clmComposerJ,
-        clmVGMby,
         clmConverted,
         clmNotes,
         clmDuration,
-        clmSpacer
+        clmVGMby,
+        clmSongNo
+    }
+
+    /** the designer's captions and widths, converted from frmPlayList.resx */
+    private static final ResourceBundle resources = ResourceBundle.getBundle("mdplayer/form/sys/frmPlayList", Locale.getDefault());
+
+    /** The caption the designer gave a column, or its name if it has none. */
+    private static String header(String column) {
+        try {
+            return resources.getString(column + ".HeaderText");
+        } catch (MissingResourceException e) {
+            return column;
+        }
+    }
+
+    /** Sizes a column the way the designer did. */
+    private void width(cols column) {
+        try {
+            dgvList.getColumnModel().getColumn(column.ordinal())
+                    .setPreferredWidth(Integer.parseInt(resources.getString(column.name() + ".Width").trim()));
+        } catch (MissingResourceException | NumberFormatException e) {
+            logger.log(Level.DEBUG, "no width for " + column);
+        }
     }
 
     private void initializeComponent() {
@@ -1092,8 +1105,16 @@ loopEx:
 //        JTableCellStyle JListCellStyle3 = new JTableCellStyle();
 //        JTableCellStyle JListCellStyle4 = new JTableCellStyle();
 //        JTableCellStyle JListCellStyle2 = new JTableCellStyle();
-        this.toolStripContainer1 = new JPopupMenu();
+        this.toolStripContainer1 = new JPanel();
         this.dgvList = new JTable();
+        // the WinForms columns did not survive the port, so the model has to declare them; their
+        // captions and widths are the designer's, out of frmPlayList.resx
+        this.dgvList.setModel(new DefaultTableModel(
+                Arrays.stream(cols.values()).map(c -> header(c.name())).toArray(), 0));
+        this.dgvList.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        for (cols column : cols.values()) {
+            width(column);
+        }
         this.clmKey = new JTextArea();
         this.clmSongNo = new JTextArea();
         this.clmZipFileName = new JTextArea();
@@ -1113,7 +1134,7 @@ loopEx:
         this.clmNotes = new JTextArea();
         this.clmDuration = new JTextArea();
         this.clmSpacer = new JTextArea();
-        this.cmsPlayList = new JMenu();
+        this.cmsPlayList = new JPopupMenu();
         this.typeSettingsToolStripMenuItem = new JMenu();
         this.tsmiA = new JMenuItem();
         this.tsmiB = new JMenuItem();
@@ -1131,7 +1152,7 @@ loopEx:
         this.toolStripSeparator3 = new JSeparator();
         this.tsmiDelAllMusic = new JMenuItem();
         this.tsmiOpenFolder = new JMenuItem();
-        this.toolStrip1 = new JPopupMenu();
+        this.toolStrip1 = new JToolBar();
         this.tsbOpenPlayList = new JButton();
         this.tsbSavePlayList = new JButton();
         this.toolStripSeparator1 = new JSeparator();
@@ -1157,17 +1178,19 @@ loopEx:
         //
         // toolStripContainer1
         //
-        //
-        // toolStripContainer1.ContentPanel
-        //
-//        //resources.ApplyResources(this.toolStripContainer1.ContentPanel, "toolStripContainer1.ContentPanel");
-        this.toolStripContainer1.add(this.dgvList);
-//        //resources.ApplyResources(this.toolStripContainer1, "toolStripContainer1");
+        // a ToolStripContainer is a panel with the tool strip along its top and the content filling
+        // the rest, so that is what it is here — the table needs a scroll pane of its own, or its
+        // header does not show and a long list cannot be reached
         this.toolStripContainer1.setName("toolStripContainer1");
-        //
-        // toolStripContainer1.TopToolStripPanel
-        //
-        this.toolStripContainer1.add(this.toolStrip1);
+        this.toolStripContainer1.setLayout(new BorderLayout());
+        this.toolStripContainer1.add(this.toolStrip1, BorderLayout.NORTH);
+        JScrollPane scrollPane = new JScrollPane(this.dgvList);
+        scrollPane.getViewport().setBackground(Color.BLACK);
+        this.dgvList.setBackground(Color.BLACK);
+        this.dgvList.setForeground(new Color(192, 192, 255));
+        this.dgvList.setSelectionBackground(Color.DARK_GRAY);
+        this.dgvList.setSelectionForeground(Color.WHITE);
+        this.toolStripContainer1.add(scrollPane, BorderLayout.CENTER);
         //
         // dgvList
         //
@@ -1589,10 +1612,14 @@ loopEx:
         //
         //resources.ApplyResources(this, "$this");
 //            this.AutoScaleMode = JAutoScaleMode.Font;
-        this.getContentPane().add(this.toolStripContainer1);
+        // the container fills the window, so BorderLayout is what is wanted here
+        this.getContentPane().add(this.toolStripContainer1, BorderLayout.CENTER);
 //        this.KeyPreview = true;
         this.setName("frmPlayList");
 //        this.setOpacity(0);
+        this.setTitle("play list");
+        this.setSize(585, 270);
+        this.setMinimumSize(new Dimension(400, 120));
         this.addWindowListener(this.windowListener);
         this.addKeyListener(this.frmPlayList_KeyDown);
         // this.toolStripContainer1.ContentPanel.ResumeLayout(false);
@@ -1608,11 +1635,11 @@ loopEx:
     }
 
     private JTable dgvList;
-    private JMenu cmsPlayList;
+    private JPopupMenu cmsPlayList;
     private JMenuItem tsmiPlayThis;
     private JMenuItem tsmiDelThis;
-    private JPopupMenu toolStripContainer1;
-    private JPopupMenu toolStrip1;
+    private JPanel toolStripContainer1;
+    private JToolBar toolStrip1;
     private JButton tsbOpenPlayList;
     private JButton tsbSavePlayList;
     private JSeparator toolStripSeparator1;

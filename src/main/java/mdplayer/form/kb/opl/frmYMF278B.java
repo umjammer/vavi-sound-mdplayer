@@ -1,5 +1,6 @@
 package mdplayer.form.kb.opl;
 
+import mdplayer.ScreenPanel;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
@@ -23,33 +24,18 @@ import mdplayer.MDChipParams;
 import mdplayer.chips.SegaPcmChip;
 import mdplayer.chips.YmF278BChip;
 import mdplayer.driver.moonDriver.BuiltInMoonDriver;
-import mdplayer.form.frmBase;
+import mdplayer.form.kb.frmChipBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
 
-
-public class frmYMF278B extends frmBase {
-    public boolean isClosed = false;
-    public int x = -1;
-    public int y = -1;
-    private int frameSizeW = 0;
-    private int frameSizeH = 0;
-    private final int chipId;
-    private final int zoom;
-
-    private final MDChipParams.YMF278B newParam;
-    private final MDChipParams.YMF278B oldParam = new MDChipParams.YMF278B();
-    private final FrameBuffer frameBuffer = new FrameBuffer();
+public class frmYMF278B extends frmChipBase<MDChipParams.YMF278B> {
 
     static final Preferences prefs = Preferences.userNodeForPackage(frmYMF278B.class);
 
     public frmYMF278B(frmMain frm, int chipId, int zoom, MDChipParams.YMF278B newParam) {
-        super(frm);
-        this.chipId = chipId;
-        this.zoom = zoom;
+        super(frm, chipId, zoom, newParam, new MDChipParams.YMF278B());
         initializeComponent();
 
-        this.newParam = newParam;
         frameBuffer.Add(pbScreen, Resources.getPlaneYMF278B(), null, zoom);
         boolean ymF278BType = (chipId == 0)
                 ? parent.setting.getYMF278BType()[0].getUseReal()[0]
@@ -62,14 +48,7 @@ public class frmYMF278B extends frmBase {
         update();
     }
 
-    public void update() {
-        frameBuffer.refresh(null);
-    }
-
 //    @Override
-    protected boolean getShowWithoutActivation() {
-        return true;
-    }
 
     private final WindowListener windowListener = new WindowAdapter() {
         @Override
@@ -306,7 +285,6 @@ public class frmYMF278B extends frmBase {
                     nyc.volumeR = 0;
                 }
             }
-
 
         }
 
@@ -595,7 +573,7 @@ public class frmYMF278B extends frmBase {
 
     private void initializeComponent() {
 //            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmYMF278B));
-        this.pbScreen = new JPanel();
+        this.pbScreen = new ScreenPanel();
         // ((System.ComponentModel.ISupportInitialize)(this.pbScreen)).BeginInit();
 
         //
@@ -617,7 +595,7 @@ public class frmYMF278B extends frmBase {
         this.setPreferredSize(new Dimension(656, 352));
         this.getContentPane().add(this.pbScreen);
 //        this.FormBorderStyle = JFormBorderStyle.FixedSingle;
-        this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
+        this.setIconImage(Resources.getFeli128());
 //        this.MaximizeBox = false;
         this.setName("frmYMF278B");
         this.setTitle("YMF278B");
@@ -628,5 +606,4 @@ public class frmYMF278B extends frmBase {
     }
 
     BufferedImage image;
-    public JPanel pbScreen;
 }

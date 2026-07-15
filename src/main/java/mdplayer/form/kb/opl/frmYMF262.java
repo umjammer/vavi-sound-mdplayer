@@ -1,5 +1,6 @@
 package mdplayer.form.kb.opl;
 
+import mdplayer.ScreenPanel;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
@@ -21,34 +22,18 @@ import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.chips.SegaPcmChip;
 import mdplayer.chips.YmF262Chip;
-import mdplayer.form.frmBase;
+import mdplayer.form.kb.frmChipBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
 
-
-public class frmYMF262 extends frmBase {
-    public boolean isClosed = false;
-    public int x = -1;
-    public int y = -1;
-    private int frameSizeW = 0;
-    private int frameSizeH = 0;
-    private final int chipId;
-    private final int zoom;
-
-    private final MDChipParams.YMF262 newParam;
-    private final MDChipParams.YMF262 oldParam;
-    private final FrameBuffer frameBuffer = new FrameBuffer();
+public class frmYMF262 extends frmChipBase<MDChipParams.YMF262> {
 
     static final Preferences prefs = Preferences.userNodeForPackage(frmYMF262.class);
 
     public frmYMF262(frmMain frm, int chipId, int zoom, MDChipParams.YMF262 newParam, MDChipParams.YMF262 oldParam) {
-        super(frm);
-        this.chipId = chipId;
-        this.zoom = zoom;
+        super(frm, chipId, zoom, newParam, oldParam);
         initializeComponent();
 
-        this.newParam = newParam;
-        this.oldParam = oldParam;
         frameBuffer.Add(pbScreen, Resources.getPlaneYMF262(), null, zoom);
         boolean YMF262Type = (chipId == 0)
                 ? parent.setting.getYMF262Type()[0].getUseReal()[0]
@@ -61,14 +46,7 @@ public class frmYMF262 extends frmBase {
         update();
     }
 
-    public void update() {
-        frameBuffer.refresh(null);
-    }
-
 //    @Override
-    protected boolean getShowWithoutActivation() {
-        return true;
-    }
 
     private final WindowListener windowListener = new WindowAdapter() {
         @Override
@@ -279,7 +257,6 @@ public class frmYMF262 extends frmBase {
                 }
             }
 
-
         }
 
 //#region Acquisition of rhythm information
@@ -460,7 +437,7 @@ public class frmYMF262 extends frmBase {
 
     private void initializeComponent() {
 //            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmYMF262));
-        this.pbScreen = new JPanel();
+        this.pbScreen = new ScreenPanel();
         //((System.ComponentModel.ISupportInitialize)(this.pbScreen)).BeginInit();
 
         //
@@ -482,7 +459,7 @@ public class frmYMF262 extends frmBase {
         this.setPreferredSize(new Dimension(328, 320));
         this.getContentPane().add(this.pbScreen);
 //        this.FormBorderStyle = JFormBorderStyle.FixedSingle;
-        this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
+        this.setIconImage(Resources.getFeli128());
 //        this.MaximizeBox = false;
         this.setName("frmYMF262");
         this.setTitle("YMF262");
@@ -493,5 +470,4 @@ public class frmYMF262 extends frmBase {
     }
 
     BufferedImage image;
-    public JPanel pbScreen;
 }

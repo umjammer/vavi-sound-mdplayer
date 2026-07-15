@@ -1,5 +1,6 @@
 package mdplayer.form.kb.opl;
 
+import mdplayer.ScreenPanel;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
@@ -23,36 +24,20 @@ import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.chips.SegaPcmChip;
 import mdplayer.chips.Ym3812Chip;
-import mdplayer.form.frmBase;
+import mdplayer.form.kb.frmChipBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
 import mdsound.instrument.Ym3812Inst;
 
-
-public class frmYM3812 extends frmBase {
-    public boolean isClosed = false;
-    public int x = -1;
-    public int y = -1;
-    private int frameSizeW = 0;
-    private int frameSizeH = 0;
-    private final int chipId;
-    private final int zoom;
-
-    private final MDChipParams.YM3812 newParam;
-    private final MDChipParams.YM3812 oldParam;
-    private final FrameBuffer frameBuffer = new FrameBuffer();
+public class frmYM3812 extends frmChipBase<MDChipParams.YM3812> {
 
     static final Preferences prefs = Preferences.userNodeForPackage(frmYM3812.class);
 
     public frmYM3812(frmMain frm, int chipId, int zoom, MDChipParams.YM3812 newParam, MDChipParams.YM3812 oldParam) {
-        super(frm);
+        super(frm, chipId, zoom, newParam, oldParam);
 
-        this.chipId = chipId;
-        this.zoom = zoom;
         initializeComponent();
 
-        this.newParam = newParam;
-        this.oldParam = oldParam;
         frameBuffer.Add(pbScreen, Resources.getPlaneYM3812(), null, zoom);
         boolean YM3812Type = (chipId == 0)
                 ? parent.setting.getYM3812Type()[0].getUseReal()[0]
@@ -66,14 +51,7 @@ public class frmYM3812 extends frmBase {
         update();
     }
 
-    public void update() {
-        frameBuffer.refresh(null);
-    }
-
 //    @Override
-    protected boolean getShowWithoutActivation() {
-        return true;
-    }
 
     private final WindowListener windowListener = new WindowAdapter() {
         @Override
@@ -202,7 +180,6 @@ public class frmYM3812 extends frmBase {
                 if (nyc.volume < 0) nyc.volume = 0;
             }
 
-
         }
         newParam.channels[9].dda = ((ym3812Register[0xbd] >> 7) & 0x01) != 0; // DA
         newParam.channels[10].dda = ((ym3812Register[0xbd] >> 6) & 0x01) != 0; // DV
@@ -330,7 +307,7 @@ public class frmYM3812 extends frmBase {
 
     private void initializeComponent() {
 //        System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmYM3812));
-        this.pbScreen = new JPanel();
+        this.pbScreen = new ScreenPanel();
         // ((System.ComponentModel.ISupportInitialize)(this.pbScreen)).BeginInit();
 
         //
@@ -352,7 +329,7 @@ public class frmYM3812 extends frmBase {
         this.setPreferredSize(new Dimension(328, 168));
         this.getContentPane().add(this.pbScreen);
 //        this.FormBorderStyle = JFormBorderStyle.FixedSingle;
-        this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
+        this.setIconImage(Resources.getFeli128());
 //        this.MaximizeBox = false;
         this.setName("frmYM3812");
         this.setTitle("YM3812");
@@ -363,5 +340,4 @@ public class frmYM3812 extends frmBase {
     }
 
     BufferedImage image;
-    public JPanel pbScreen;
 }

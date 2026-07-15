@@ -51,6 +51,10 @@ public abstract class BaseChip implements Chip {
     public void updateVol() {
     }
 
+    public java.util.Map<String, Object> getInfo(int chipId) {
+        return java.util.Collections.emptyMap();
+    }
+
     protected void fireEventHappened(String name, Object... args) {
         if (context.getDriver() != null) context.getDriver().fireEventHappened(this, name, args);
     }

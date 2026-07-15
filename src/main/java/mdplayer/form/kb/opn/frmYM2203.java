@@ -1,5 +1,6 @@
 package mdplayer.form.kb.opn;
 
+import mdplayer.ScreenPanel;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
@@ -22,35 +23,19 @@ import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.chips.Ym2203Chip;
 import mdplayer.chips.Ym2608Chip;
-import mdplayer.form.frmBase;
+import mdplayer.form.kb.frmChipBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
 import mdsound.instrument.YmFmYm2203Inst;
 
-
-public class frmYM2203 extends frmBase {
-    public boolean isClosed = false;
-    public int x = -1;
-    public int y = -1;
-    private int frameSizeW = 0;
-    private int frameSizeH = 0;
-    private int chipId = 0;
-    private int zoom = 1;
-
-    private final MDChipParams.YM2203 newParam;
-    private final MDChipParams.YM2203 oldParam;
-    private final FrameBuffer frameBuffer = new FrameBuffer();
+public class frmYM2203 extends frmChipBase<MDChipParams.YM2203> {
 
     static final Preferences prefs = Preferences.userNodeForPackage(frmYM2203.class);
 
     public frmYM2203(frmMain frm, int chipId, int zoom, MDChipParams.YM2203 newParam, MDChipParams.YM2203 oldParam) {
-        super(frm);
-        this.chipId = chipId;
-        this.zoom = zoom;
+        super(frm, chipId, zoom, newParam, oldParam);
         initializeComponent();
 
-        this.newParam = newParam;
-        this.oldParam = oldParam;
         frameBuffer.Add(pbScreen, Resources.getPlaneYM2203(), null, zoom);
         boolean YM2203Type = (chipId == 0)
                 ? parent.setting.getYM2203Type()[0].getUseReal()[0]
@@ -63,14 +48,7 @@ public class frmYM2203 extends frmBase {
         update();
     }
 
-    public void update() {
-        frameBuffer.refresh(null);
-    }
-
 //    @Override
-    protected boolean getShowWithoutActivation() {
-        return true;
-    }
 
     private final WindowListener windowListener = new WindowAdapter() {
         @Override
@@ -139,9 +117,9 @@ public class frmYM2203 extends frmBase {
         int defaultMasterClock = 7987200 / 2;
         float ssgMul = 1.0f;
         int masterClock = defaultMasterClock;
-        if (audio.plugin.mds.getChipInfo(YmFmYm2203Inst.class).clock != 0) {
-            ssgMul = audio.plugin.mds.getChipInfo(YmFmYm2203Inst.class).clock / (float) defaultMasterClock;
-            masterClock = audio.plugin.mds.getChipInfo(YmFmYm2203Inst.class).clock;
+        if (clock(YmFmYm2203Inst.class) != 0) {
+            ssgMul = clock(YmFmYm2203Inst.class) / (float) defaultMasterClock;
+            masterClock = clock(YmFmYm2203Inst.class);
         }
 
         int divInd = ym2203Register[0x2d];
@@ -213,7 +191,6 @@ public class frmYM2203 extends frmBase {
             }
             newParam.channels[ch].note = n;
 
-
         }
 
         for (int ch = 3; ch < 6; ch++) //FM EX
@@ -274,7 +251,6 @@ public class frmYM2203 extends frmBase {
         newParam.efrq = ym2203Register[0x0c] * 0x100 + ym2203Register[0x0b];
         newParam.etype = (ym2203Register[0x0d] & 0xf);
     }
-
 
     public void screenDrawParams() {
         boolean YM2203Type = (chipId == 0)
@@ -430,7 +406,7 @@ public class frmYM2203 extends frmBase {
 
     private void initializeComponent() {
 //        System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmYM2203));
-        this.pbScreen = new JPanel();
+        this.pbScreen = new ScreenPanel();
         //((System.ComponentModel.ISupportInitialize)(this.pbScreen)).BeginInit();
 
         //
@@ -452,7 +428,7 @@ public class frmYM2203 extends frmBase {
         this.setPreferredSize(new Dimension(320, 136));
         this.getContentPane().add(this.pbScreen);
 //        this.FormBorderStyle = JFormBorderStyle.FixedSingle;
-        this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
+        this.setIconImage(Resources.getFeli128());
 //        this.MaximizeBox = false;
         this.setName("frmYM2203");
         this.setTitle("YM2203");
@@ -463,6 +439,5 @@ public class frmYM2203 extends frmBase {
     }
 
     BufferedImage image;
-    public JPanel pbScreen;
 }
 

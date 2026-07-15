@@ -1,5 +1,6 @@
 package mdplayer.form.kb.pcm;
 
+import mdplayer.ScreenPanel;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
@@ -22,48 +23,23 @@ import mdplayer.MDChipParams;
 import mdplayer.Tables;
 import mdplayer.chips.QSoundChip;
 import mdplayer.chips.SegaPcmChip;
-import mdplayer.form.frmBase;
+import mdplayer.form.kb.frmChipBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
 
-
-public class frmQSound extends frmBase {
-    public boolean isClosed = false;
-    public int x = -1;
-    public int y = -1;
-    private int frameSizeW = 0;
-    private int frameSizeH = 0;
-    private int chipId = 0;
-    private int zoom = 1;
-    private final MDChipParams.QSound newParam;
-    private final MDChipParams.QSound oldParam;
-    private final FrameBuffer frameBuffer = new FrameBuffer();
+public class frmQSound extends frmChipBase<MDChipParams.QSound> {
 
     static final Preferences prefs = Preferences.userNodeForPackage(frmQSound.class);
 
     public frmQSound(frmMain frm, int chipId, int zoom, MDChipParams.QSound newParam, MDChipParams.QSound oldParam) {
-        super(frm);
+        super(frm, chipId, zoom, newParam, oldParam);
 
         initializeComponent();
 
-        this.chipId = chipId;
-        this.zoom = zoom;
-        this.newParam = newParam;
-        this.oldParam = oldParam;
-
-        frameBuffer.Add(pbScreen, Resources.getPlaneQSound(), null, zoom);
-        screenInit();
-        update();
-    }
-
-    public void update() {
-        frameBuffer.refresh(null);
+        bind(Resources.getPlaneQSound());
     }
 
 //    @Override
-    protected boolean getShowWithoutActivation() {
-        return true;
-    }
 
     private final WindowListener windowListener = new WindowAdapter() {
         @Override
@@ -139,7 +115,7 @@ public class frmQSound extends frmBase {
         }
     };
 
-    private void screenInit() {
+    public void screenInit() {
         for (int ch = 0; ch < 16; ch++) {
             for (int ot = 0; ot < 12 * 8; ot++) {
                 int kx = Tables.kbl[(ot % 12) * 2] + ot / 12 * 28;
@@ -262,7 +238,7 @@ public class frmQSound extends frmBase {
 
     private void initializeComponent() {
 //            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmQSound));
-        this.pbScreen = new JPanel();
+        this.pbScreen = new ScreenPanel();
         //((System.ComponentModel.ISupportInitialize)(this.pbScreen)).BeginInit();
 
         //
@@ -285,7 +261,7 @@ public class frmQSound extends frmBase {
         this.setPreferredSize(new Dimension(440, 177));
         this.getContentPane().add(this.pbScreen);
 //        this.FormBorderStyle = JFormBorderStyle.FixedSingle;
-        this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
+        this.setIconImage(Resources.getFeli128());
 //        this.MaximizeBox = false;
         this.setName("frmQSound");
         this.setTitle("QSoundInst");
@@ -296,5 +272,4 @@ public class frmQSound extends frmBase {
     }
 
     BufferedImage image;
-    public JPanel pbScreen;
 }

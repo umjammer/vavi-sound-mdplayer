@@ -6,6 +6,8 @@
 
 package mdplayer.chips;
 
+import java.util.Map;
+
 import mdplayer.Common.EnmModel;
 import mdsound.Instrument;
 import mdsound.instrument.K054539Inst;
@@ -30,6 +32,11 @@ public class K054539Chip extends BaseChip {
 
         if (model == EnmModel.VirtualModel)
             context.mds.write(inst(chipId), chipId, 0, adr, data);
+    }
+
+    public Map<String, Object> getInfo(int chipId) {
+        K054539Inst inst = context.mds.inst(K054539Inst.class);
+        return inst == null ? null : inst.getInfo(chipId);
     }
 
     public void writePcm(int chipId, int romSize, int offset, int length, byte[] buf, int srcOffset, EnmModel model) {

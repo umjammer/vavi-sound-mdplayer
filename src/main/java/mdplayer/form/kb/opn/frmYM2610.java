@@ -1,5 +1,6 @@
 package mdplayer.form.kb.opn;
 
+import mdplayer.ScreenPanel;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
@@ -23,48 +24,23 @@ import mdplayer.MDChipParams;
 import mdplayer.Tables;
 import mdplayer.chips.Ym2608Chip;
 import mdplayer.chips.Ym2610Chip;
-import mdplayer.form.frmBase;
+import mdplayer.form.kb.frmChipBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
 import mdsound.instrument.Ym2610Inst;
 
-
-public class frmYM2610 extends frmBase {
-    public boolean isClosed = false;
-    public int x = -1;
-    public int y = -1;
-    private int frameSizeW = 0;
-    private int frameSizeH = 0;
-    private int chipId = 0;
-    private int zoom = 1;
-
-    private MDChipParams.YM2610 newParam = null;
-    private MDChipParams.YM2610 oldParam = null;
-    private final FrameBuffer frameBuffer = new FrameBuffer();
+public class frmYM2610 extends frmChipBase<MDChipParams.YM2610> {
 
     static final Preferences prefs = Preferences.userNodeForPackage(frmYM2610.class);
 
     public frmYM2610(frmMain frm, int chipId, int zoom, MDChipParams.YM2610 newParam, MDChipParams.YM2610 oldParam) {
-        super(frm);
-        this.chipId = chipId;
-        this.zoom = zoom;
+        super(frm, chipId, zoom, newParam, oldParam);
         initializeComponent();
 
-        this.newParam = newParam;
-        this.oldParam = oldParam;
-        frameBuffer.Add(pbScreen, Resources.getPlaneYM2610(), null, zoom);
-        screenInit();
-        update();
-    }
-
-    public void update() {
-        frameBuffer.refresh(null);
+        bind(Resources.getPlaneYM2610());
     }
 
 //    @Override
-    protected boolean getShowWithoutActivation() {
-        return true;
-    }
 
     private final WindowListener windowListener = new WindowAdapter() {
         @Override
@@ -247,7 +223,7 @@ public class frmYM2610 extends frmBase {
         int defaultMasterClock = 8000000;
         float ssgMul = 1.0f;
         int masterClock = defaultMasterClock;
-        int clock = audio.plugin.mds.getChipInfo(Ym2610Inst.class).clock;
+        int clock = clock(Ym2610Inst.class);
         if (clock != 0) {
             ssgMul = clock / (float) defaultMasterClock;
             masterClock = clock;
@@ -334,7 +310,6 @@ public class frmYM2610 extends frmBase {
             }
             newParam.channels[ch].note = n;
 
-
         }
 
         for (int ch = 6; ch < 9; ch++) //FM EX
@@ -420,7 +395,6 @@ public class frmYM2610 extends frmBase {
         if ((YM2610Register[0][0x11] & 0xc0) == 0) {
             newParam.channels[12].note = -1;
         }
-
 
         int tl = YM2610Register[1][0x01] & 0x3f;
         for (int ch = 13; ch < 19; ch++) // ADPCM a
@@ -522,7 +496,7 @@ public class frmYM2610 extends frmBase {
 
     private void initializeComponent() {
 //            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmYM2610));
-        this.pbScreen = new JPanel();
+        this.pbScreen = new ScreenPanel();
         //((System.ComponentModel.ISupportInitialize)(this.pbScreen)).BeginInit();
 
         //
@@ -544,7 +518,7 @@ public class frmYM2610 extends frmBase {
         this.setPreferredSize(new Dimension(320, 224));
         this.getContentPane().add(this.pbScreen);
 //        this.FormBorderStyle = JFormBorderStyle.FixedSingle;
-        this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
+        this.setIconImage(Resources.getFeli128());
 //        this.MaximizeBox = false;
         this.setName("frmYM2610");
         this.setTitle("YM2610");
@@ -555,5 +529,4 @@ public class frmYM2610 extends frmBase {
     }
 
     BufferedImage image;
-    public JPanel pbScreen;
 }

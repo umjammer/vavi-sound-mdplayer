@@ -1,5 +1,6 @@
 package mdplayer.form.kb.pcm;
 
+import mdplayer.ScreenPanel;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
@@ -22,49 +23,23 @@ import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.Tables;
 import mdplayer.chips.SegaPcmChip;
-import mdplayer.form.frmBase;
+import mdplayer.form.kb.frmChipBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
 
-
-public class frmSegaPCM extends frmBase {
-    public boolean isClosed = false;
-    public int x = -1;
-    public int y = -1;
-    private int frameSizeW = 0;
-    private int frameSizeH = 0;
-    private int chipId = 0;
-    private int zoom = 1;
-
-    private MDChipParams.SegaPcm newParam = null;
-    private MDChipParams.SegaPcm oldParam = null;
-    private final FrameBuffer frameBuffer = new FrameBuffer();
+public class frmSegaPCM extends frmChipBase<MDChipParams.SegaPcm> {
 
     static final Preferences prefs = Preferences.userNodeForPackage(frmSegaPCM.class);
 
     public frmSegaPCM(frmMain frm, int chipId, int zoom, MDChipParams.SegaPcm newParam, MDChipParams.SegaPcm oldParam) {
-        super(frm);
-
-        this.chipId = chipId;
-        this.zoom = zoom;
+        super(frm, chipId, zoom, newParam, oldParam);
 
         initializeComponent();
 
-        this.newParam = newParam;
-        this.oldParam = oldParam;
-        frameBuffer.Add(pbScreen, Resources.getPlaneSEGAPCM(), null, zoom);
-        screenInit();
-        update();
-    }
-
-    public void update() {
-        frameBuffer.refresh(null);
+        bind(Resources.getPlaneSEGAPCM());
     }
 
 //    @Override
-    protected boolean getShowWithoutActivation() {
-        return true;
-    }
 
     private final WindowListener windowListener = new WindowAdapter() {
         @Override
@@ -238,10 +213,9 @@ public class frmSegaPCM extends frmBase {
         }
     }
 
-
     private void initializeComponent() {
 //            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmSegaPCM));
-        this.pbScreen = new JPanel();
+        this.pbScreen = new ScreenPanel();
         //((System.ComponentModel.ISupportInitialize)(this.pbScreen)).BeginInit();
 
         //
@@ -263,7 +237,7 @@ public class frmSegaPCM extends frmBase {
         this.setPreferredSize(new Dimension(320, 136));
         this.getContentPane().add(this.pbScreen);
 //        this.FormBorderStyle = JFormBorderStyle.FixedSingle;
-        this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
+        this.setIconImage(Resources.getFeli128());
 //        this.MaximizeBox = false;
         this.setName("frmSegaPCM");
         this.setTitle("SegaPCM");
@@ -274,5 +248,4 @@ public class frmSegaPCM extends frmBase {
     }
 
     BufferedImage image;
-    public JPanel pbScreen;
 }

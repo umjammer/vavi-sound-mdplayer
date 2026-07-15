@@ -1,5 +1,6 @@
 package mdplayer.form.kb;
 
+import mdplayer.ScreenPanel;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
@@ -20,48 +21,22 @@ import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.chips.YmZ280BChip;
-import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
 
-
-public class frmYMZ280B extends frmBase {
-    public boolean isClosed = false;
-    public int x = -1;
-    public int y = -1;
-    private int frameSizeW = 0;
-    private int frameSizeH = 0;
-    private final int chipId;
-    private final int zoom;
-    private final MDChipParams.YMZ280B newParam;
-    private MDChipParams.YMZ280B oldParam = new MDChipParams.YMZ280B();
-    private final FrameBuffer frameBuffer = new FrameBuffer();
+public class frmYMZ280B extends frmChipBase<MDChipParams.YMZ280B> {
 
     static final Preferences prefs = Preferences.userNodeForPackage(frmYMZ280B.class);
 
     public frmYMZ280B(frmMain frm, int chipId, int zoom, MDChipParams.YMZ280B newParam, MDChipParams.YMZ280B oldParam) {
-        super(frm);
+        super(frm, chipId, zoom, newParam, new MDChipParams.YMZ280B());
 
         initializeComponent();
 
-        this.chipId = chipId;
-        this.zoom = zoom;
-        this.newParam = newParam;
-        this.oldParam = oldParam;
-
-        frameBuffer.Add(pbScreen, Resources.getPlaneYMZ280B(), null, zoom);
-        screenInit();
-        update();
-    }
-
-    public void update() {
-        frameBuffer.refresh(null);
+        bind(Resources.getPlaneYMZ280B());
     }
 
 //    @Override
-    protected boolean getShowWithoutActivation() {
-        return true;
-    }
 
     private final WindowListener windowListener = new WindowAdapter() {
         @Override
@@ -191,7 +166,7 @@ public class frmYMZ280B extends frmBase {
 
     private void initializeComponent() {
 //        System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmYMZ280B));
-        this.pbScreen = new JPanel();
+        this.pbScreen = new ScreenPanel();
         //((System.ComponentModel.ISupportInitialize)(this.pbScreen)).BeginInit();
 
         //
@@ -213,7 +188,7 @@ public class frmYMZ280B extends frmBase {
         this.setPreferredSize(new Dimension(240, 72));
         this.getContentPane().add(this.pbScreen);
 //        this.FormBorderStyle = JFormBorderStyle.FixedSingle;
-        this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
+        this.setIconImage(Resources.getFeli128());
 //        this.MaximizeBox = false;
         this.setName("frmYMZ280B");
         this.setTitle("YMZ280B");
@@ -224,5 +199,4 @@ public class frmYMZ280B extends frmBase {
     }
 
     BufferedImage image;
-    public JPanel pbScreen;
 }

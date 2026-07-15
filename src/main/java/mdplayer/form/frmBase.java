@@ -11,7 +11,7 @@ import mdplayer.form.sys.frmMain;
 public class frmBase extends JFrame {
 
     public frmMain parent = null;
-    protected Audio audio;
+    protected final Audio audio = Audio.getInstance();
 
     /**
      //Required method for Designer support - do not modify

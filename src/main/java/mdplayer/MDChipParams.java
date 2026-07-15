@@ -17,10 +17,20 @@ public class MDChipParams {
     public int LCmillisecond = -1;
 
     public final ChipLEDs chipLED = new ChipLEDs();
+    public int Master = -255;
+    public int MasterVis = -255;
+    public int MasterHover = -255;
+    public int MasterDrag = -255;
+    public int TimeLine = -255;
+    public int TimeLineVis = -255;
+    public int TimeLineHover = -255;
+    public int TimeLineDrag = -255;
 
     public static class Channel {
 
         public int pan = -1;
+        public int panL = -1;
+        public int panR = -1;
         public int pantp = -1;
         public int note = -1;
         public int volume = -1;
@@ -150,6 +160,31 @@ public class MDChipParams {
     }
 
     public final MultiPCM[] multiPCM = new MultiPCM[] {new MultiPCM(), new MultiPCM()};
+
+    public static class GA20 {
+        public final Channel[] channels = new Channel[] {
+                new Channel(), new Channel(), new Channel(), new Channel()
+        };
+    }
+
+    public final GA20[] ga20 = new GA20[] {new GA20(), new GA20()};
+
+    public static class K053260 {
+        public final Channel[] channels = new Channel[] {
+                new Channel(), new Channel(), new Channel(), new Channel()
+        };
+    }
+
+    public final K053260[] k053260 = new K053260[] {new K053260(), new K053260()};
+
+    public static class K054539 {
+        public final Channel[] channels = new Channel[] {
+                new Channel(), new Channel(), new Channel(), new Channel(),
+                new Channel(), new Channel(), new Channel(), new Channel()
+        };
+    }
+
+    public final K054539[] k054539 = new K054539[] {new K054539(), new K054539()};
 
     public static class YMZ280B {
         public final Channel[] channels = new Channel[] {

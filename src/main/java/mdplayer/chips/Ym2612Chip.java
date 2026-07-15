@@ -283,10 +283,13 @@ public class Ym2612Chip extends BaseChip {
         write(chipId, p, 0x48 + c, register[chipId][p][0x48 + c], EnmModel.RealModel, -1);
         write(chipId, p, 0x4c + c, register[chipId][p][0x4c + c], EnmModel.RealModel, -1);
 
+        Instrument instrument = context.mds.inst(inst(chipId));
+        if (instrument == null) return; // the song being played does not use this chip
+
         if (mask)
-            context.mds.inst(inst(chipId)).setMask(chipId, ch);
+            instrument.setMask(chipId, ch);
         else
-            context.mds.inst(inst(chipId)).resetMask(chipId, ch);
+            instrument.resetMask(chipId, ch);
     }
 
     public void setSyncWait(int chipId, int wait) {

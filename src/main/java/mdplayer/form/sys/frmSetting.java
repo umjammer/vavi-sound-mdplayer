@@ -1,5 +1,6 @@
 package mdplayer.form.sys;
 
+import java.awt.Dimension;
 import java.awt.Color;
 import java.awt.Desktop;
 import java.awt.event.ActionEvent;
@@ -24,6 +25,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Locale;
+import java.util.ResourceBundle;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -66,6 +70,7 @@ import mdplayer.MidiOutInfo;
 import mdplayer.Setting;
 import mdplayer.Setting.ChipType2;
 import mdplayer.chips.RealChipPlugin;
+import mdplayer.form.Layouts;
 import mdplayer.properties.Resources;
 
 import static java.lang.System.getLogger;
@@ -74,6 +79,9 @@ import static java.lang.System.getLogger;
 public class frmSetting extends JDialog {
 
     private static final Logger logger = getLogger(frmSetting.class.getName());
+
+    /** the designer's geometry and captions, converted from frmSetting.resx */
+    private static final ResourceBundle resources = ResourceBundle.getBundle("mdplayer/form/sys/frmSetting", Locale.getDefault());
 
     private static final boolean asioSupported = true;
     private static final boolean wasapiSupported = true;
@@ -133,7 +141,7 @@ public class frmSetting extends JDialog {
                 logger.log(Level.ERROR, e.getMessage(), e);
             }
         }
-        if (MidiSystem.getMidiDeviceInfo().length > 0)
+        if (cmbMIDIIN.getItemCount() > 0)
             cmbMIDIIN.setSelectedIndex(0);
 
         if (ucSI != null) {
@@ -336,9 +344,14 @@ public class frmSetting extends JDialog {
                     ucSI.rbYM2612S_EmuNuked,
                     ucSI.rbYM2612S_EmuMame);
 
-            ucSI.cbSendWait.setSelected(setting.getYM2612Type()[0].getRealChipInfo()[0].getUseWait());
-            ucSI.cbTwice.setSelected(setting.getYM2612Type()[0].getRealChipInfo()[0].getUseWaitBoost());
-            ucSI.cbEmulationPCMOnly.setSelected(setting.getYM2612Type()[0].getRealChipInfo()[0].getOnlyPCMEmulation());
+            if (setting.getYM2612Type() != null && setting.getYM2612Type().length > 0
+                    && setting.getYM2612Type()[0].getRealChipInfo() != null
+                    && setting.getYM2612Type()[0].getRealChipInfo().length > 0
+                    && setting.getYM2612Type()[0].getRealChipInfo()[0] != null) {
+                ucSI.cbSendWait.setSelected(setting.getYM2612Type()[0].getRealChipInfo()[0].getUseWait());
+                ucSI.cbTwice.setSelected(setting.getYM2612Type()[0].getRealChipInfo()[0].getUseWaitBoost());
+                ucSI.cbEmulationPCMOnly.setSelected(setting.getYM2612Type()[0].getRealChipInfo()[0].getOnlyPCMEmulation());
+            }
 
             setRealParam(setting.getYM2610Type()[0],
                     ucSI.rbYM2610BP_Silent,
@@ -848,11 +861,15 @@ public class frmSetting extends JDialog {
         if (rbS != null) rbS.setEnabled(false);
         cmbS.setEnabled(false);
 
+        // the real chip list hangs off the plugin, and there is none until a song is loaded, so
+        // settings opened before that offers no real chip — same as having none attached
+        if (Audio.getInstance().plugin == null) return;
+
         List<ChipType2> lstChip = Audio.getInstance().plugin.chipRegister.plugin(RealChipPlugin.class).getRealChipList(realType);
         if (lstChip == null || lstChip.isEmpty()) return;
 
         for (ChipType2 ct : lstChip) {
-            if (ct == null) continue;
+            if (ct == null || ct.getRealChipInfo() == null || ct.getRealChipInfo().length == 0 || ct.getRealChipInfo()[0] == null) continue;
 
             cmbP.addItem("(%s:%s:%s:%s)%s".formatted(
                     ct.getRealChipInfo()[0].getInterfaceName(),
@@ -869,13 +886,17 @@ public class frmSetting extends JDialog {
                     ct.getRealChipInfo()[0].getChipName()));
         }
 
-        cmbP.setSelectedIndex(0);
-        if (rbP != null) rbP.setEnabled(true);
-        cmbP.setEnabled(true);
+        if (cmbP.getItemCount() > 0) {
+            cmbP.setSelectedIndex(0);
+            if (rbP != null) rbP.setEnabled(true);
+            cmbP.setEnabled(true);
+        }
 
-        cmbS.setSelectedIndex(0);
-        if (rbS != null) rbS.setEnabled(true);
-        cmbS.setEnabled(true);
+        if (cmbS.getItemCount() > 0) {
+            cmbS.setSelectedIndex(0);
+            if (rbS != null) rbS.setEnabled(true);
+            cmbS.setEnabled(true);
+        }
     }
 
     private static void setRealParam(ChipType2 chipType2,
@@ -890,7 +911,7 @@ public class frmSetting extends JDialog {
                                      JCheckBox rbEmu3/* = null */) {
         String n = "";
 
-        if (chipType2.getRealChipInfo()[0] != null) {
+        if (chipType2.getRealChipInfo() != null && chipType2.getRealChipInfo().length > 0 && chipType2.getRealChipInfo()[0] != null) {
             n = "(%s:%s:%s:%s)".formatted(
                     chipType2.getRealChipInfo()[0].getInterfaceName(),
                     chipType2.getRealChipInfo()[0].getSoundLocation(),
@@ -908,7 +929,7 @@ public class frmSetting extends JDialog {
         }
 
         if (cmbP2A != null) {
-            if (chipType2.getRealChipInfo()[1] != null) {
+            if (chipType2.getRealChipInfo() != null && chipType2.getRealChipInfo().length > 1 && chipType2.getRealChipInfo()[1] != null) {
                 n = "(%s:%s:%s:%s)".formatted(
                         chipType2.getRealChipInfo()[1].getInterfaceName(),
                         chipType2.getRealChipInfo()[1].getSoundLocation(),
@@ -927,7 +948,7 @@ public class frmSetting extends JDialog {
         }
 
         if (cmbP2B != null) {
-            if (chipType2.getRealChipInfo()[2] != null) {
+            if (chipType2.getRealChipInfo() != null && chipType2.getRealChipInfo().length > 2 && chipType2.getRealChipInfo()[2] != null) {
                 n = "(%s:%s:%s:%s)".formatted(
                         chipType2.getRealChipInfo()[2].getInterfaceName(),
                         chipType2.getRealChipInfo()[2].getSoundLocation(),
@@ -945,12 +966,12 @@ public class frmSetting extends JDialog {
             }
         }
 
-        if (chipType2.getUseEmu().length > 1 && chipType2.getUseEmu()[1]) {
+        if (rbEmu2 != null && chipType2.getUseEmu().length > 1 && chipType2.getUseEmu()[1]) {
             rbEmu2.setSelected(true);
             return;
         }
 
-        if (chipType2.getUseEmu().length > 2 && chipType2.getUseEmu()[2]) {
+        if (rbEmu3 != null && chipType2.getUseEmu().length > 2 && chipType2.getUseEmu()[2]) {
             rbEmu3.setSelected(true);
             return;
         }
@@ -989,8 +1010,9 @@ public class frmSetting extends JDialog {
 
         dgv.setColumnModel(new DefaultTableColumnModel());
 
-        for (TableColumn col : (Iterable<TableColumn>) dgvMIDIoutListA.getColumnModel().getColumns().asIterator()) {
-            dgv.getColumnModel().addColumn(col);
+        Enumeration<TableColumn> columns = dgvMIDIoutListA.getColumnModel().getColumns();
+        while (columns.hasMoreElements()) {
+            dgv.getColumnModel().addColumn(columns.nextElement());
         }
     }
 
@@ -1394,114 +1416,29 @@ public class frmSetting extends JDialog {
         setting.getMidiKbd().setMono(rbMONO.isSelected());
         setting.getMidiKbd().setUseMonoChannel(rbFM1.isSelected() ? 0 : (rbFM2.isSelected() ? 1 : (rbFM3.isSelected() ? 2 : (rbFM4.isSelected() ? 3 : (rbFM5.isSelected() ? 4 : (rbFM6.isSelected() ? 5 : -1))))));
 
-        setting.getMidiKbd().setMidiCtrl_CopySelecttingLogToClipbrd(-1);
-        try {
-            i = Integer.parseInt(tbCCCopyLog.getText());
-            setting.getMidiKbd().setMidiCtrl_CopySelecttingLogToClipbrd(Math.clamp(i, 0, 127));
-        } catch (NumberFormatException e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-            setting.getMidiKbd().setMidiCtrl_CopyToneFromYM2612Ch1(-1);
-        }
-        try {
-            i = Integer.parseInt(tbCCChCopy.getText());
-            setting.getMidiKbd().setMidiCtrl_CopyToneFromYM2612Ch1(Math.clamp(i, 0, 127));
-        } catch (NumberFormatException e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-            setting.getMidiKbd().setMidiCtrl_DelOneLog(-1);
-        }
-        try {
-            i = Integer.parseInt(tbCCDelLog.getText());
-            setting.getMidiKbd().setMidiCtrl_DelOneLog(Math.clamp(i, 0, 127));
-        } catch (NumberFormatException e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-            setting.getMidiKbd().setMidiCtrl_Fadeout(-1);
-        }
-        try {
-            i = Integer.parseInt(tbCCFadeout.getText());
-            setting.getMidiKbd().setMidiCtrl_Fadeout(Math.clamp(i, 0, 127));
-        } catch (NumberFormatException e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-            setting.getMidiKbd().setMidiCtrl_Fast(-1);
-        }
-        try {
-            i = Integer.parseInt(tbCCFast.getText());
-            setting.getMidiKbd().setMidiCtrl_Fast(Math.clamp(i, 0, 127));
-        } catch (NumberFormatException e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-            setting.getMidiKbd().setMidiCtrl_Next(-1);
-        }
-        try {
-            i = Integer.parseInt(tbCCNext.getText());
-            setting.getMidiKbd().setMidiCtrl_Next(Math.clamp(i, 0, 127));
-        } catch (NumberFormatException e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-            setting.getMidiKbd().setMidiCtrl_Pause(-1);
-        }
-        try {
-            i = Integer.parseInt(tbCCPause.getText());
-            setting.getMidiKbd().setMidiCtrl_Pause(Math.clamp(i, 0, 127));
-        } catch (NumberFormatException e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-            setting.getMidiKbd().setMidiCtrl_Play(-1);
-        }
-        try {
-            i = Integer.parseInt(tbCCPlay.getText());
-            setting.getMidiKbd().setMidiCtrl_Play(Math.clamp(i, 0, 127));
-        } catch (NumberFormatException e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-            setting.getMidiKbd().setMidiCtrl_Previous(-1);
-        }
-        try {
-            i = Integer.parseInt(tbCCPrevious.getText());
-            setting.getMidiKbd().setMidiCtrl_Previous(Math.clamp(i, 0, 127));
-        } catch (NumberFormatException e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-            setting.getMidiKbd().setMidiCtrlSlow(-1);
-        }
-        try {
-            i = Integer.parseInt(tbCCSlow.getText());
-            setting.getMidiKbd().setMidiCtrlSlow(Math.clamp(i, 0, 127));
-        } catch (NumberFormatException e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-            setting.getMidiKbd().setMidiCtrl_Stop(-1);
-        }
-        try {
-            i = Integer.parseInt(tbCCStop.getText());
-            setting.getMidiKbd().setMidiCtrl_Stop(Math.clamp(i, 0, 127));
-        } catch (NumberFormatException e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-        }
-        try {
-            i = Integer.parseInt(tbLatencyEmu.getText());
-            setting.setLatencyEmulation(Math.clamp(i, 0, 999));
-        } catch (NumberFormatException e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-        }
-        try {
-            i = Integer.parseInt(tbLatencySCCI.getText());
-            setting.setLatencySCCI(Math.clamp(i, 0, 999));
-        } catch (NumberFormatException e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-        }
+        setting.getMidiKbd().setMidiCtrl_CopySelecttingLogToClipbrd(parseMidiCtrl(tbCCCopyLog.getText()));
+        setting.getMidiKbd().setMidiCtrl_CopyToneFromYM2612Ch1(parseMidiCtrl(tbCCChCopy.getText()));
+        setting.getMidiKbd().setMidiCtrl_DelOneLog(parseMidiCtrl(tbCCDelLog.getText()));
+        setting.getMidiKbd().setMidiCtrl_Fadeout(parseMidiCtrl(tbCCFadeout.getText()));
+        setting.getMidiKbd().setMidiCtrl_Fast(parseMidiCtrl(tbCCFast.getText()));
+        setting.getMidiKbd().setMidiCtrl_Next(parseMidiCtrl(tbCCNext.getText()));
+        setting.getMidiKbd().setMidiCtrl_Pause(parseMidiCtrl(tbCCPause.getText()));
+        setting.getMidiKbd().setMidiCtrl_Play(parseMidiCtrl(tbCCPlay.getText()));
+        setting.getMidiKbd().setMidiCtrl_Previous(parseMidiCtrl(tbCCPrevious.getText()));
+        setting.getMidiKbd().setMidiCtrlSlow(parseMidiCtrl(tbCCSlow.getText()));
+        setting.getMidiKbd().setMidiCtrl_Stop(parseMidiCtrl(tbCCStop.getText()));
+
+        setting.setLatencyEmulation(parseIntSafe(tbLatencyEmu.getText(), 0, 999, setting.getLatencyEmulation()));
+        setting.setLatencySCCI(parseIntSafe(tbLatencySCCI.getText(), 0, 999, setting.getLatencySCCI()));
 
         setting.getOther().setUseLoopTimes(cbUseLoopTimes.isSelected());
-        try {
-            i = Integer.parseInt(tbLoopTimes.getText());
-            setting.getOther().setLoopTimes(Math.clamp(i, 1, 999));
-        } catch (NumberFormatException e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-        }
+        setting.getOther().setLoopTimes(parseIntSafe(tbLoopTimes.getText(), 1, 999, setting.getOther().getLoopTimes()));
 
         setting.getOther().setUseGetInst(cbUseGetInst.isSelected());
         setting.getOther().setDefaultDataPath(tbDataPath.getText());
         setting.setFileSearchPathList(tbSearchPath.getText());
         setting.getOther().setInstFormat(EnmInstFormat.values()[cmbInstFormat.getSelectedIndex()]);
-        try {
-            i = Integer.parseInt(tbScreenFrameRate.getText());
-            setting.getOther().setScreenFrameRate(Math.clamp(i, 10, 120));
-        } catch (NumberFormatException e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-        }
+        setting.getOther().setScreenFrameRate(parseIntSafe(tbScreenFrameRate.getText(), 10, 120, setting.getOther().getScreenFrameRate()));
         setting.getOther().setAutoOpen(cbAutoOpen.isSelected());
         setting.getOther().setDumpSwitch(cbDumpSwitch.isSelected());
         setting.getOther().setDumpPath(tbDumpPath.getText());
@@ -1518,12 +1455,7 @@ public class frmSetting extends JDialog {
         setting.getOther().setExAll(cbExALL.isSelected());
         setting.getOther().setNonRenderingForPause(cbNonRenderingForPause.isSelected());
         setting.setDebug_DispFrameCounter(cbDispFrameCounter.isSelected());
-        try {
-            setting.setDebug_SCCbaseAddress(Integer.parseInt(tbSCCbaseAddress.getText(), 16));
-        } catch (NumberFormatException e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-            setting.setDebug_SCCbaseAddress(0x9800);
-        }
+        setting.setDebug_SCCbaseAddress(parseHexSafe(tbSCCbaseAddress.getText(), setting.getDebug_SCCbaseAddress()));
 
         setting.setHiyorimiMode(cbHiyorimiMode.isSelected());
 
@@ -1797,31 +1729,36 @@ public class frmSetting extends JDialog {
         if (rb_SCCI.isSelected()) {
             if (cmb_SCCI.getSelectedItem() != null) {
                 String n = cmb_SCCI.getSelectedItem().toString();
-                n = n.substring(0, n.indexOf(")")).substring(1);
-                String[] ns = n.split(":");
-                rci = ct.getRealChipInfo()[0];
-                rci.setInterfaceName(String.join(":", Arrays.copyOfRange(ns, 0, ns.length - 3)));
-                try {
-                    v = Integer.parseInt(ns[ns.length - 3]);
-                } catch (NumberFormatException e) {
-                    logger.log(Level.WARNING, e);
-                    v = 0;
+                int idx = n.indexOf(")");
+                if (idx != -1 && n.startsWith("(")) {
+                    n = n.substring(1, idx);
+                    String[] ns = n.split(":");
+                    if (ns.length >= 3) {
+                        rci = ct.getRealChipInfo()[0];
+                        rci.setInterfaceName(String.join(":", Arrays.copyOfRange(ns, 0, ns.length - 3)));
+                        try {
+                            v = Integer.parseInt(ns[ns.length - 3]);
+                        } catch (NumberFormatException e) {
+                            logger.log(Level.WARNING, e);
+                            v = 0;
+                        }
+                        rci.setSoundLocation(v);
+                        try {
+                            v = Integer.parseInt(ns[ns.length - 2]);
+                        } catch (NumberFormatException e) {
+                            logger.log(Level.WARNING, e);
+                            v = 0;
+                        }
+                        rci.setBusID(v);
+                        try {
+                            v = Integer.parseInt(ns[ns.length - 1]);
+                        } catch (NumberFormatException e) {
+                            logger.log(Level.WARNING, e);
+                            v = 0;
+                        }
+                        rci.setSoundChip(v);
+                    }
                 }
-                rci.setSoundLocation(v);
-                try {
-                    v = Integer.parseInt(ns[ns.length - 2]);
-                } catch (NumberFormatException e) {
-                    logger.log(Level.WARNING, e);
-                    v = 0;
-                }
-                rci.setBusID(v);
-                try {
-                    v = Integer.parseInt(ns[ns.length - 1]);
-                } catch (NumberFormatException e) {
-                    logger.log(Level.WARNING, e);
-                    v = 0;
-                }
-                rci.setSoundChip(v);
             }
         }
 
@@ -1836,60 +1773,97 @@ public class frmSetting extends JDialog {
         if (rb_SCCI_E != null && rb_SCCI_E.isSelected()) {
             if (cmb_SCCI_E1.getSelectedItem() != null) {
                 String n = cmb_SCCI_E1.getSelectedItem().toString();
-                n = n.substring(0, n.indexOf(")")).substring(1);
-                String[] ns = n.split(":");
-                rci = ct.getRealChipInfo()[1];
-                rci.setInterfaceName(String.join(":", Arrays.copyOfRange(ns, 0, ns.length - 3)));
-                try {
-                    v = Integer.parseInt(ns[ns.length - 3]);
-                } catch (NumberFormatException e) {
-                    logger.log(Level.WARNING, e);
-                    v = 0;
+                int idx = n.indexOf(")");
+                if (idx != -1 && n.startsWith("(")) {
+                    n = n.substring(1, idx);
+                    String[] ns = n.split(":");
+                    if (ns.length >= 3) {
+                        rci = ct.getRealChipInfo()[1];
+                        rci.setInterfaceName(String.join(":", Arrays.copyOfRange(ns, 0, ns.length - 3)));
+                        try {
+                            v = Integer.parseInt(ns[ns.length - 3]);
+                        } catch (NumberFormatException e) {
+                            logger.log(Level.WARNING, e);
+                            v = 0;
+                        }
+                        rci.setSoundLocation(v);
+                        try {
+                            v = Integer.parseInt(ns[ns.length - 2]);
+                        } catch (NumberFormatException e) {
+                            logger.log(Level.WARNING, e);
+                            v = 0;
+                        }
+                        rci.setBusID(v);
+                        try {
+                            v = Integer.parseInt(ns[ns.length - 1]);
+                        } catch (NumberFormatException e) {
+                            logger.log(Level.WARNING, e);
+                            v = 0;
+                        }
+                        rci.setSoundChip(v);
+                    }
                 }
-                rci.setSoundLocation(v);
-                try {
-                    v = Integer.parseInt(ns[ns.length - 2]);
-                } catch (NumberFormatException e) {
-                    logger.log(Level.WARNING, e);
-                    v = 0;
-                }
-                rci.setBusID(v);
-                try {
-                    v = Integer.parseInt(ns[ns.length - 1]);
-                } catch (NumberFormatException e) {
-                    logger.log(Level.WARNING, e);
-                    v = 0;
-                }
-                rci.setSoundChip(v);
             }
             if (cmb_SCCI_E2.getSelectedItem() != null) {
                 String n = cmb_SCCI_E2.getSelectedItem().toString();
-                n = n.substring(0, n.indexOf(")")).substring(1);
-                String[] ns = n.split(":");
-                rci = ct.getRealChipInfo()[2];
-                rci.setInterfaceName(String.join(":", Arrays.copyOfRange(ns, 0, ns.length - 3)));
-                try {
-                    v = Integer.parseInt(ns[ns.length - 3]);
-                } catch (NumberFormatException e) {
-                    logger.log(Level.WARNING, e);
-                    v = 0;
+                int idx = n.indexOf(")");
+                if (idx != -1 && n.startsWith("(")) {
+                    n = n.substring(1, idx);
+                    String[] ns = n.split(":");
+                    if (ns.length >= 3) {
+                        rci = ct.getRealChipInfo()[2];
+                        rci.setInterfaceName(String.join(":", Arrays.copyOfRange(ns, 0, ns.length - 3)));
+                        try {
+                            v = Integer.parseInt(ns[ns.length - 3]);
+                        } catch (NumberFormatException e) {
+                            logger.log(Level.WARNING, e);
+                            v = 0;
+                        }
+                        rci.setSoundLocation(v);
+                        try {
+                            v = Integer.parseInt(ns[ns.length - 2]);
+                        } catch (NumberFormatException e) {
+                            logger.log(Level.WARNING, e);
+                            v = 0;
+                        }
+                        rci.setBusID(v);
+                        try {
+                            v = Integer.parseInt(ns[ns.length - 1]);
+                        } catch (NumberFormatException e) {
+                            logger.log(Level.WARNING, e);
+                            v = 0;
+                        }
+                        rci.setSoundChip(v);
+                    }
                 }
-                rci.setSoundLocation(v);
-                try {
-                    v = Integer.parseInt(ns[ns.length - 2]);
-                } catch (NumberFormatException e) {
-                    logger.log(Level.WARNING, e);
-                    v = 0;
-                }
-                rci.setBusID(v);
-                try {
-                    v = Integer.parseInt(ns[ns.length - 1]);
-                } catch (NumberFormatException e) {
-                    logger.log(Level.WARNING, e);
-                    v = 0;
-                }
-                rci.setSoundChip(v);
             }
+        }
+    }
+
+    private static int parseMidiCtrl(String text) {
+        if (text == null || text.trim().isEmpty()) return -1;
+        try {
+            return Math.clamp(Integer.parseInt(text.trim()), 0, 127);
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
+
+    private static int parseIntSafe(String text, int min, int max, int defaultValue) {
+        if (text == null || text.trim().isEmpty()) return defaultValue;
+        try {
+            return Math.clamp(Integer.parseInt(text.trim()), min, max);
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
+    }
+
+    private static int parseHexSafe(String text, int defaultValue) {
+        if (text == null || text.trim().isEmpty()) return defaultValue;
+        try {
+            return Integer.parseInt(text.trim(), 16);
+        } catch (NumberFormatException e) {
+            return defaultValue;
         }
     }
 
@@ -2241,7 +2215,11 @@ public class frmSetting extends JDialog {
             }
         });
         ofd.setDialogTitle("Select a file");
-        ofd.setFileFilter(ofd.getChoosableFileFilters()[setting.getOther().getFilterIndex()]);
+        int filterIndex = setting.getOther().getFilterIndex();
+        FileFilter[] filters = ofd.getChoosableFileFilters();
+        if (filterIndex >= 0 && filterIndex < filters.length) {
+            ofd.setFileFilter(filters[filterIndex]);
+        }
 
         if (!setting.getOther().getDefaultDataPath().isEmpty() && Files.exists(Path.of(setting.getOther().getDefaultDataPath())) && IsInitialOpenFolder) {
             ofd.setCurrentDirectory(new File(setting.getOther().getDefaultDataPath()));
@@ -2358,7 +2336,11 @@ public class frmSetting extends JDialog {
             }
         });
         ofd.setDialogTitle("Select a file");
-        ofd.setFileFilter(ofd.getChoosableFileFilters()[setting.getOther().getFilterIndex()]);
+        int filterIndex = setting.getOther().getFilterIndex();
+        FileFilter[] filters = ofd.getChoosableFileFilters();
+        if (filterIndex >= 0 && filterIndex < filters.length) {
+            ofd.setFileFilter(filters[filterIndex]);
+        }
 
 //        if (!setting.getVst().getDefaultPath().isEmpty() && Directory.exists(setting.getVst().getDefaultPath()) && IsInitialOpenFolder) {
 //            ofd.setCurrentDirectory(new File(setting.getVst().getDefaultPath()));
@@ -2723,7 +2705,7 @@ public class frmSetting extends JDialog {
         this.gbDirectSound = new JPanel();
         this.cmbDirectSoundDevice = new JComboBox<>();
         this.tcSetting = new JTabbedPane();
-        this.tpOutput = new JTabbedPane();
+        this.tpOutput = new JPanel();
         this.rbNullDevice = new JCheckBox();
         this.label36 = new JLabel();
         this.lblWaitTime = new JLabel();
@@ -2738,7 +2720,7 @@ public class frmSetting extends JDialog {
         this.rbSPPCM = new JCheckBox();
         this.groupBox16 = new JPanel();
         this.cmbSPPCMDevice = new JComboBox<>();
-        this.tpModule = new JTabbedPane();
+        this.tpModule = new JPanel();
         this.groupBox1 = new JPanel();
         this.cbUnuseRealChip = new JCheckBox();
         this.ucSI = new ucSettingInstruments();
@@ -2750,7 +2732,7 @@ public class frmSetting extends JDialog {
         this.tbLatencyEmu = new JTextArea();
         this.tbLatencySCCI = new JTextArea();
         this.label10 = new JLabel();
-        this.tpNuked = new JTabbedPane();
+        this.tpNuked = new JPanel();
         this.groupBox29 = new JPanel();
         this.cbGensSSGEG = new JCheckBox();
         this.cbGensDACHPF = new JCheckBox();
@@ -2760,7 +2742,7 @@ public class frmSetting extends JDialog {
         this.rbNukedOPN2OptionDiscrete = new JCheckBox();
         this.rbNukedOPN2OptionASIClp = new JCheckBox();
         this.rbNukedOPN2OptionASIC = new JCheckBox();
-        this.tpNSF = new JTabbedPane();
+        this.tpNSF = new JPanel();
         this.trkbNSFLPF = new JProgressBar();
         this.label53 = new JLabel();
         this.label52 = new JLabel();
@@ -2791,7 +2773,7 @@ public class frmSetting extends JDialog {
         this.tbNSFFds_LPF = new JTextArea();
         this.cbNFSFds_4085Reset = new JCheckBox();
         this.cbNSFFDSWriteDisable8000 = new JCheckBox();
-        this.tpSID = new JTabbedPane();
+        this.tpSID = new JPanel();
         this.groupBox28 = new JPanel();
         this.cbSIDModel_Force = new JCheckBox();
         this.rbSIDModel_8580 = new JCheckBox();
@@ -2823,7 +2805,7 @@ public class frmSetting extends JDialog {
         this.tbSIDOutputBufferSize = new JTextArea();
         this.label51 = new JLabel();
         this.label49 = new JLabel();
-        this.tpPMDDotNET = new JTabbedPane();
+        this.tpPMDDotNET = new JPanel();
         this.rbPMDManual = new JCheckBox();
         this.rbPMDAuto = new JCheckBox();
         this.btnPMDResetDriverArguments = new JButton();
@@ -2862,10 +2844,10 @@ public class frmSetting extends JDialog {
         this.tbPMDVolumeGIMICSSG = new JTextArea();
         this.label64 = new JLabel();
         this.tbPMDVolumeFM = new JTextArea();
-        this.tpMIDIOut = new JTabbedPane();
+        this.tpMIDIOut = new JPanel();
         this.btnAddVST = new JButton();
         this.tbcMIDIoutList = new JTabbedPane();
-        this.tabPage1 = new JTabbedPane();
+        this.tabPage1 = new JPanel();
         this.dgvMIDIoutListA = new JTable();
         this.JListTextBoxColumn1 = new JTextField();
         this.clmIsVST = new JCheckBox();
@@ -2877,39 +2859,39 @@ public class frmSetting extends JDialog {
         this.JListTextBoxColumn4 = new JTextArea();
         this.btnUP_A = new JButton();
         this.btnDOWN_A = new JButton();
-        this.tabPage2 = new JTabbedPane();
+        this.tabPage2 = new JPanel();
         this.dgvMIDIoutListB = new JTable();
         this.btnUP_B = new JButton();
         this.btnDOWN_B = new JButton();
-        this.tabPage3 = new JTabbedPane();
+        this.tabPage3 = new JPanel();
         this.dgvMIDIoutListC = new JTable();
         this.btnUP_C = new JButton();
         this.btnDOWN_C = new JButton();
-        this.tabPage4 = new JTabbedPane();
+        this.tabPage4 = new JPanel();
         this.dgvMIDIoutListD = new JTable();
         this.btnUP_D = new JButton();
         this.btnDOWN_D = new JButton();
-        this.tabPage5 = new JTabbedPane();
+        this.tabPage5 = new JPanel();
         this.dgvMIDIoutListE = new JTable();
         this.btnUP_E = new JButton();
         this.btnDOWN_E = new JButton();
-        this.tabPage6 = new JTabbedPane();
+        this.tabPage6 = new JPanel();
         this.dgvMIDIoutListF = new JTable();
         this.btnUP_F = new JButton();
         this.btnDOWN_F = new JButton();
-        this.tabPage7 = new JTabbedPane();
+        this.tabPage7 = new JPanel();
         this.dgvMIDIoutListG = new JTable();
         this.btnUP_G = new JButton();
         this.btnDOWN_G = new JButton();
-        this.tabPage8 = new JTabbedPane();
+        this.tabPage8 = new JPanel();
         this.dgvMIDIoutListH = new JTable();
         this.btnUP_H = new JButton();
         this.btnDOWN_H = new JButton();
-        this.tabPage9 = new JTabbedPane();
+        this.tabPage9 = new JPanel();
         this.dgvMIDIoutListI = new JTable();
         this.btnUP_I = new JButton();
         this.btnDOWN_I = new JButton();
-        this.tabPage10 = new JTabbedPane();
+        this.tabPage10 = new JPanel();
         this.dgvMIDIoutListJ = new JTable();
         this.button17 = new JButton();
         this.btnDOWN_J = new JButton();
@@ -2922,7 +2904,7 @@ public class frmSetting extends JDialog {
         this.clmManufacturer = new JTextArea();
         this.clmSpacer = new JTextArea();
         this.label16 = new JLabel();
-        this.tpMIDIOut2 = new JTabbedPane();
+        this.tpMIDIOut2 = new JPanel();
         this.groupBox15 = new JPanel();
         this.btnBeforeSend_Default = new JButton();
         this.tbBeforeSend_Custom = new JTextArea();
@@ -2934,7 +2916,7 @@ public class frmSetting extends JDialog {
         this.label33 = new JLabel();
         this.tbBeforeSend_GMReset = new JTextArea();
         this.label31 = new JLabel();
-        this.tabMIDIExp = new JTabbedPane();
+        this.tabMIDIExp = new JPanel();
         this.cbUseMIDIExport = new JCheckBox();
         this.gbMIDIExport = new JPanel();
         this.cbMIDIKeyOnFnum = new JCheckBox();
@@ -2956,7 +2938,7 @@ public class frmSetting extends JDialog {
         this.btnMIDIOutputPath = new JButton();
         this.lblOutputPath = new JLabel();
         this.tbMIDIOutputPath = new JTextArea();
-        this.tpMIDIKBD = new JTabbedPane();
+        this.tpMIDIKBD = new JPanel();
         this.cbUseMIDIKeyboard = new JCheckBox();
         this.gbMIDIKeyboard = new JPanel();
         this.pictureBox8 = new JLabel();
@@ -3001,7 +2983,7 @@ public class frmSetting extends JDialog {
         this.cbFM4 = new JCheckBox();
         this.cmbMIDIIN = new JComboBox<>();
         this.label5 = new JLabel();
-        this.tpKeyBoard = new JTabbedPane();
+        this.tpKeyBoard = new JPanel();
         this.cbUseKeyBoardHook = new JCheckBox();
         this.gbUseKeyBoardHook = new JPanel();
         this.lblKeyBoardHookNotice = new JLabel();
@@ -3082,7 +3064,7 @@ public class frmSetting extends JDialog {
         this.cbPlayWin = new JCheckBox();
         this.cbFastWin = new JCheckBox();
         this.cbNextWin = new JCheckBox();
-        this.tpBalance = new JTabbedPane();
+        this.tpBalance = new JPanel();
         this.groupBox25 = new JPanel();
         this.rbAutoBalanceNotSamePositionAsSongData = new JCheckBox();
         this.rbAutoBalanceSamePositionAsSongData = new JCheckBox();
@@ -3101,7 +3083,7 @@ public class frmSetting extends JDialog {
         this.groupBox20 = new JPanel();
         this.rbAutoBalanceNotLoadDriverBalance = new JCheckBox();
         this.rbAutoBalanceLoadDriverBalance = new JCheckBox();
-        this.tpPlayList = new JTabbedPane();
+        this.tpPlayList = new JPanel();
         this.groupBox17 = new JPanel();
         this.cbAutoOpenImg = new JCheckBox();
         this.tbImageExt = new JTextArea();
@@ -3113,7 +3095,7 @@ public class frmSetting extends JDialog {
         this.label3 = new JLabel();
         this.label2 = new JLabel();
         this.cbEmptyPlayList = new JCheckBox();
-        this.tpOther = new JTabbedPane();
+        this.tpOther = new JPanel();
         this.btnSearchPath = new JButton();
         this.tbSearchPath = new JTextArea();
         this.label68 = new JLabel();
@@ -3146,7 +3128,7 @@ public class frmSetting extends JDialog {
         this.cbInitAlways = new JCheckBox();
         this.cbAutoOpen = new JCheckBox();
         this.cbUseLoopTimes = new JCheckBox();
-        this.tpOmake = new JTabbedPane();
+        this.tpOmake = new JPanel();
         this.label67 = new JLabel();
         this.label14 = new JLabel();
         this.btVST = new JButton();
@@ -3154,7 +3136,7 @@ public class frmSetting extends JDialog {
         this.tbVST = new JTextArea();
         this.groupBox5 = new JPanel();
         this.cbDispFrameCounter = new JCheckBox();
-        this.tpAbout = new JTabbedPane();
+        this.tpAbout = new JPanel();
         this.tableLayoutPanel = new JTable();
         this.logoBufferedImage = new JLabel();
         this.labelProductName = new JLabel();
@@ -3278,7 +3260,10 @@ public class frmSetting extends JDialog {
         // btnCancel
         //
         //resources.ApplyResources(this.btnCancel, "btnCancel");
-        this.btnCancel.addActionListener(e -> dialogResult = JOptionPane.NO_OPTION);
+        this.btnCancel.addActionListener(e -> {
+            dialogResult = JFileChooser.CANCEL_OPTION;
+            setVisible(false);
+        });
         this.btnCancel.setName("btnCancel");
         // this.btnCancel.UseVisualStyl.setBackground(true);
         //
@@ -3490,17 +3475,17 @@ public class frmSetting extends JDialog {
 //        this.cmbWaitTime.DropDownStyle = JComboBoxStyle.DropDownList;
 //        this.cmbWaitTime.FormattingEnabled = true;
         DefaultComboBoxModel<String> m = (DefaultComboBoxModel<String>) this.cmbWaitTime.getModel();
-        m.addElement(Resources.getResourceManager().getString("cmbWaitTime.Items"));
-        m.addElement(Resources.getResourceManager().getString("cmbWaitTime.Items1"));
-        m.addElement(Resources.getResourceManager().getString("cmbWaitTime.Items2"));
-        m.addElement(Resources.getResourceManager().getString("cmbWaitTime.Items3"));
-        m.addElement(Resources.getResourceManager().getString("cmbWaitTime.Items4"));
-        m.addElement(Resources.getResourceManager().getString("cmbWaitTime.Items5"));
-        m.addElement(Resources.getResourceManager().getString("cmbWaitTime.Items6"));
-        m.addElement(Resources.getResourceManager().getString("cmbWaitTime.Items7"));
-        m.addElement(Resources.getResourceManager().getString("cmbWaitTime.Items8"));
-        m.addElement(Resources.getResourceManager().getString("cmbWaitTime.Items9"));
-        m.addElement(Resources.getResourceManager().getString("cmbWaitTime.Items10"));
+        m.addElement(resources.getString("cmbWaitTime.Items"));
+        m.addElement(resources.getString("cmbWaitTime.Items1"));
+        m.addElement(resources.getString("cmbWaitTime.Items2"));
+        m.addElement(resources.getString("cmbWaitTime.Items3"));
+        m.addElement(resources.getString("cmbWaitTime.Items4"));
+        m.addElement(resources.getString("cmbWaitTime.Items5"));
+        m.addElement(resources.getString("cmbWaitTime.Items6"));
+        m.addElement(resources.getString("cmbWaitTime.Items7"));
+        m.addElement(resources.getString("cmbWaitTime.Items8"));
+        m.addElement(resources.getString("cmbWaitTime.Items9"));
+        m.addElement(resources.getString("cmbWaitTime.Items10"));
         //resources.ApplyResources(this.cmbWaitTime, "cmbWaitTime");
         this.cmbWaitTime.setName("cmbWaitTime");
         //
@@ -3510,13 +3495,13 @@ public class frmSetting extends JDialog {
 //        this.cmbSampleRate.DropDownStyle = JComboBoxStyle.DropDownList;
 //        this.cmbSampleRate.FormattingEnabled = true;
         m = (DefaultComboBoxModel<String>) this.cmbSampleRate.getModel();
-        m.addElement(Resources.getResourceManager().getString("cmbSampleRate.Items"));
-        m.addElement(Resources.getResourceManager().getString("cmbSampleRate.Items1"));
-        m.addElement(Resources.getResourceManager().getString("cmbSampleRate.Items2"));
-        m.addElement(Resources.getResourceManager().getString("cmbSampleRate.Items3"));
-        m.addElement(Resources.getResourceManager().getString("cmbSampleRate.Items4"));
-        m.addElement(Resources.getResourceManager().getString("cmbSampleRate.Items5"));
-        m.addElement(Resources.getResourceManager().getString("cmbSampleRate.Items6"));
+        m.addElement(resources.getString("cmbSampleRate.Items"));
+        m.addElement(resources.getString("cmbSampleRate.Items1"));
+        m.addElement(resources.getString("cmbSampleRate.Items2"));
+        m.addElement(resources.getString("cmbSampleRate.Items3"));
+        m.addElement(resources.getString("cmbSampleRate.Items4"));
+        m.addElement(resources.getString("cmbSampleRate.Items5"));
+        m.addElement(resources.getString("cmbSampleRate.Items6"));
         this.cmbSampleRate.setName("cmbSampleRate");
         //
         // cmbLatency
@@ -3524,14 +3509,14 @@ public class frmSetting extends JDialog {
 //        this.cmbLatency.DropDownStyle = JComboBoxStyle.DropDownList;
 //        this.cmbLatency.FormattingEnabled = true;
         m = (DefaultComboBoxModel<String>) this.cmbLatency.getModel();
-        m.addElement(Resources.getResourceManager().getString("cmbLatency.Items"));
-        m.addElement(Resources.getResourceManager().getString("cmbLatency.Items1"));
-        m.addElement(Resources.getResourceManager().getString("cmbLatency.Items2"));
-        m.addElement(Resources.getResourceManager().getString("cmbLatency.Items3"));
-        m.addElement(Resources.getResourceManager().getString("cmbLatency.Items4"));
-        m.addElement(Resources.getResourceManager().getString("cmbLatency.Items5"));
-        m.addElement(Resources.getResourceManager().getString("cmbLatency.Items6"));
-        m.addElement(Resources.getResourceManager().getString("cmbLatency.Items7"));
+        m.addElement(resources.getString("cmbLatency.Items"));
+        m.addElement(resources.getString("cmbLatency.Items1"));
+        m.addElement(resources.getString("cmbLatency.Items2"));
+        m.addElement(resources.getString("cmbLatency.Items3"));
+        m.addElement(resources.getString("cmbLatency.Items4"));
+        m.addElement(resources.getString("cmbLatency.Items5"));
+        m.addElement(resources.getString("cmbLatency.Items6"));
+        m.addElement(resources.getString("cmbLatency.Items7"));
         //resources.ApplyResources(this.cmbLatency, "cmbLatency");
         this.cmbLatency.setName("cmbLatency");
         //
@@ -6390,23 +6375,23 @@ public class frmSetting extends JDialog {
 //        this.cmbInstFormat.DropDownStyle = JComboBoxStyle.DropDownList;
 //        this.cmbInstFormat.FormattingEnabled = true;
         m = ((DefaultComboBoxModel<String>) this.cmbInstFormat.getModel());
-        m.addElement(Resources.getResourceManager().getString("cmbInstFormat.Items"));
-        m.addElement(Resources.getResourceManager().getString("cmbInstFormat.Items1"));
-        m.addElement(Resources.getResourceManager().getString("cmbInstFormat.Items2"));
-        m.addElement(Resources.getResourceManager().getString("cmbInstFormat.Items3"));
-        m.addElement(Resources.getResourceManager().getString("cmbInstFormat.Items4"));
-        m.addElement(Resources.getResourceManager().getString("cmbInstFormat.Items5"));
-        m.addElement(Resources.getResourceManager().getString("cmbInstFormat.Items6"));
-        m.addElement(Resources.getResourceManager().getString("cmbInstFormat.Items7"));
-        m.addElement(Resources.getResourceManager().getString("cmbInstFormat.Items8"));
-        m.addElement(Resources.getResourceManager().getString("cmbInstFormat.Items9"));
-        m.addElement(Resources.getResourceManager().getString("cmbInstFormat.Items10"));
-        m.addElement(Resources.getResourceManager().getString("cmbInstFormat.Items11"));
-        m.addElement(Resources.getResourceManager().getString("cmbInstFormat.Items12"));
-        m.addElement(Resources.getResourceManager().getString("cmbInstFormat.Items13"));
-        m.addElement(Resources.getResourceManager().getString("cmbInstFormat.Items14"));
-        m.addElement(Resources.getResourceManager().getString("cmbInstFormat.Items15"));
-        m.addElement(Resources.getResourceManager().getString("cmbInstFormat.Items16"));
+        m.addElement(resources.getString("cmbInstFormat.Items"));
+        m.addElement(resources.getString("cmbInstFormat.Items1"));
+        m.addElement(resources.getString("cmbInstFormat.Items2"));
+        m.addElement(resources.getString("cmbInstFormat.Items3"));
+        m.addElement(resources.getString("cmbInstFormat.Items4"));
+        m.addElement(resources.getString("cmbInstFormat.Items5"));
+        m.addElement(resources.getString("cmbInstFormat.Items6"));
+        m.addElement(resources.getString("cmbInstFormat.Items7"));
+        m.addElement(resources.getString("cmbInstFormat.Items8"));
+        m.addElement(resources.getString("cmbInstFormat.Items9"));
+        m.addElement(resources.getString("cmbInstFormat.Items10"));
+        m.addElement(resources.getString("cmbInstFormat.Items11"));
+        m.addElement(resources.getString("cmbInstFormat.Items12"));
+        m.addElement(resources.getString("cmbInstFormat.Items13"));
+        m.addElement(resources.getString("cmbInstFormat.Items14"));
+        m.addElement(resources.getString("cmbInstFormat.Items15"));
+        m.addElement(resources.getString("cmbInstFormat.Items16"));
         //resources.ApplyResources(this.cmbInstFormat, "cmbInstFormat");
         this.cmbInstFormat.setName("cmbInstFormat");
         //
@@ -6683,6 +6668,10 @@ public class frmSetting extends JDialog {
 //        this.MinimizeBox = false;
         this.setTitle("frmSetting");
         this.addWindowListener(this.windowListener);
+        // this form's geometry never lived in code: it was all resources.ApplyResources()
+        Layouts.absolute(this.getContentPane(), resources);
+        this.getContentPane().setPreferredSize(Layouts.clientSize(resources, new Dimension(504, 481)));
+        this.pack();
         // this.gbWaveOut.ResumeLayout(false);
         // this.gbAsioOut.ResumeLayout(false);
         // this.gbWasapiOut.ResumeLayout(false);
@@ -6854,8 +6843,8 @@ public class frmSetting extends JDialog {
     private JComboBox<String> cmbWasapiDevice;
     private JComboBox<String> cmbDirectSoundDevice;
     private JTabbedPane tcSetting;
-    private JTabbedPane tpOutput;
-    private JTabbedPane tpAbout;
+    private JPanel tpOutput;
+    private JPanel tpAbout;
     private JTable tableLayoutPanel;
     private JLabel logoBufferedImage;
     private JLabel labelProductName;
@@ -6863,7 +6852,7 @@ public class frmSetting extends JDialog {
     private JLabel labelCopyright;
     private JLabel labelCompanyName;
     private JTextArea textBoxDescription;
-    private JTabbedPane tpOther;
+    private JPanel tpOther;
     private JPanel gbMIDIKeyboard;
     private JPanel gbUseChannel;
     private JCheckBox cbFM1;
@@ -6880,7 +6869,7 @@ public class frmSetting extends JDialog {
     private JLabel lblLatencyUnit;
     private JLabel lblLatency;
     private JComboBox<String> cmbLatency;
-    private JTabbedPane tpModule;
+    private JPanel tpModule;
     private JPanel groupBox3;
     private JLabel label13;
     private JLabel label12;
@@ -6899,7 +6888,7 @@ public class frmSetting extends JDialog {
     private JButton btnDataPath;
     private JTextArea tbDataPath;
     private JLabel label19;
-    private JTabbedPane tpMIDIKBD;
+    private JPanel tpMIDIKBD;
     private JComboBox<String> cmbInstFormat;
     private JLabel lblInstFormat;
     private JLabel label30;
@@ -6915,7 +6904,7 @@ public class frmSetting extends JDialog {
     private JLabel label6;
     private JTextArea tbDumpPath;
     private JButton btnResetPosition;
-    private JTabbedPane tabMIDIExp;
+    private JPanel tabMIDIExp;
     private JCheckBox cbUseMIDIExport;
     private JPanel gbMIDIExport;
     private JCheckBox cbMIDIUseVOPM;
@@ -6951,7 +6940,7 @@ public class frmSetting extends JDialog {
     private JCheckBox rbFM4;
     private JCheckBox rbFM1;
     private JPanel groupBox2;
-    private JTabbedPane tpOmake;
+    private JPanel tpOmake;
     private JTextArea tbCCFadeout;
     private JTextArea tbCCPause;
     private JTextArea tbCCSlow;
@@ -6978,7 +6967,7 @@ public class frmSetting extends JDialog {
     private JLabel label14;
     private JButton btVST;
     private JTextArea tbVST;
-    private JTabbedPane tpMIDIOut;
+    private JPanel tpMIDIOut;
     private JButton btnUP_A;
     private JButton btnSubMIDIout;
     private JButton btnDOWN_A;
@@ -6992,32 +6981,32 @@ public class frmSetting extends JDialog {
     private JTextArea clmManufacturer;
     private JTextArea clmSpacer;
     private JTabbedPane tbcMIDIoutList;
-    private JTabbedPane tabPage1;
-    private JTabbedPane tabPage2;
-    private JTabbedPane tabPage3;
-    private JTabbedPane tabPage4;
+    private JPanel tabPage1;
+    private JPanel tabPage2;
+    private JPanel tabPage3;
+    private JPanel tabPage4;
     private JButton btnUP_B;
     private JButton btnDOWN_B;
     private JButton btnUP_C;
     private JButton btnDOWN_C;
     private JButton btnUP_D;
     private JButton btnDOWN_D;
-    private JTabbedPane tabPage5;
+    private JPanel tabPage5;
     private JButton btnUP_E;
     private JButton btnDOWN_E;
-    private JTabbedPane tabPage6;
+    private JPanel tabPage6;
     private JButton btnUP_F;
     private JButton btnDOWN_F;
-    private JTabbedPane tabPage7;
+    private JPanel tabPage7;
     private JButton btnUP_G;
     private JButton btnDOWN_G;
-    private JTabbedPane tabPage8;
+    private JPanel tabPage8;
     private JButton btnUP_H;
     private JButton btnDOWN_H;
-    private JTabbedPane tabPage9;
+    private JPanel tabPage9;
     private JButton btnUP_I;
     private JButton btnDOWN_I;
-    private JTabbedPane tabPage10;
+    private JPanel tabPage10;
     private JButton button17;
     private JButton btnDOWN_J;
     private JButton btnAddVST;
@@ -7030,7 +7019,7 @@ public class frmSetting extends JDialog {
     private JTable dgvMIDIoutListH;
     private JTable dgvMIDIoutListI;
     private JTable dgvMIDIoutListJ;
-    private JTabbedPane tpNSF;
+    private JPanel tpNSF;
     private JPanel groupBox8;
     private JCheckBox cbNSFFDSWriteDisable8000;
     private JPanel groupBox10;
@@ -7056,7 +7045,7 @@ public class frmSetting extends JDialog {
     private JLabel label20;
     private JTextArea tbNSFFds_LPF;
     private JCheckBox cbNFSFds_4085Reset;
-    private JTabbedPane tpSID;
+    private JPanel tpSID;
     private JPanel groupBox13;
     private JLabel label22;
     private JButton btnSIDCharacter;
@@ -7078,7 +7067,7 @@ public class frmSetting extends JDialog {
     private JLabel lblWaitTime;
     private JLabel label28;
     private JComboBox<String> cmbWaitTime;
-    private JTabbedPane tpMIDIOut2;
+    private JPanel tpMIDIOut2;
     private JPanel groupBox15;
     private JButton btnBeforeSend_Default;
     private JTextArea tbBeforeSend_Custom;
@@ -7110,7 +7099,7 @@ public class frmSetting extends JDialog {
     private JLabel label3;
     private JLabel label2;
     private JCheckBox cbInitAlways;
-    private JTabbedPane tpBalance;
+    private JPanel tpBalance;
     private JCheckBox cbAutoBalanceUseThis;
     private JPanel groupBox18;
     private JPanel groupBox24;
@@ -7129,7 +7118,7 @@ public class frmSetting extends JDialog {
     private JCheckBox rbAutoBalanceLoadDriverBalance;
     private JPanel groupBox25;
     private JCheckBox rbAutoBalanceNotSamePositionAsSongData;
-    private JTabbedPane tpKeyBoard;
+    private JPanel tpKeyBoard;
     private JLabel pictureBox10;
     private JLabel pictureBox11;
     private JLabel pictureBox12;
@@ -7215,7 +7204,7 @@ public class frmSetting extends JDialog {
     private JTextArea tbSIDOutputBufferSize;
     private JLabel label49;
     private JLabel label51;
-    private JTabbedPane tpNuked;
+    private JPanel tpNuked;
     private JPanel groupBox26;
     private JCheckBox rbNukedOPN2OptionYM2612u;
     private JCheckBox rbNukedOPN2OptionYM2612;
@@ -7231,7 +7220,7 @@ public class frmSetting extends JDialog {
     private JLabel label53;
     private JLabel label52;
     private JProgressBar trkbNSFHPF;
-    private JTabbedPane tpPMDDotNET;
+    private JPanel tpPMDDotNET;
     private JCheckBox rbPMDManual;
     private JCheckBox rbPMDAuto;
     private JButton btnPMDResetDriverArguments;
@@ -7283,7 +7272,7 @@ public class frmSetting extends JDialog {
     private JPanel groupBox29;
     private JCheckBox cbGensSSGEG;
     private JCheckBox cbGensDACHPF;
-    private JTabbedPane tpPlayList;
+    private JPanel tpPlayList;
     private JCheckBox cbAutoOpenImg;
     private JCheckBox cbAutoOpenMML;
     private JCheckBox cbAutoOpenText;

@@ -48,12 +48,18 @@ public class DmgChip extends BaseChip {
 
     public void setMask(int chipId, int ch) {
         mask[chipId][ch] = true;
-        context.mds.inst(inst(chipId)).setMask(chipId, ch);
+
+        Instrument instrument = context.mds.inst(inst(chipId));
+        if (instrument == null) return; // the song being played does not use this chip
+        instrument.setMask(chipId, ch);
     }
 
     public void resetMask(int chipId, int ch) {
         mask[chipId][ch] = false;
-        context.mds.inst(inst(chipId)).resetMask(chipId, ch);
+
+        Instrument instrument = context.mds.inst(inst(chipId));
+        if (instrument == null) return; // the song being played does not use this chip
+        instrument.resetMask(chipId, ch);
     }
 
     public int read(int chipId, int addr) {

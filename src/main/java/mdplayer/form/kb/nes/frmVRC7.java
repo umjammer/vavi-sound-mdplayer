@@ -1,5 +1,6 @@
 package mdplayer.form.kb.nes;
 
+import mdplayer.ScreenPanel;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
@@ -23,34 +24,19 @@ import mdplayer.MDChipParams;
 import mdplayer.chips.NpNesChip;
 import mdplayer.chips.NpNesChip.Vrc7Chip;
 import mdplayer.chips.SegaPcmChip;
-import mdplayer.form.frmBase;
+import mdplayer.form.kb.frmChipBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
 
-
-public class frmVRC7 extends frmBase {
-    public boolean isClosed = false;
-    public int x = -1;
-    public int y = -1;
-    private int frameSizeW = 0;
-    private int frameSizeH = 0;
-    private final int chipId;
-    private final int zoom;
-
-    private final MDChipParams.VRC7 newParam;
-    private final MDChipParams.VRC7 oldParam = new MDChipParams.VRC7();
-    private final FrameBuffer frameBuffer = new FrameBuffer();
+public class frmVRC7 extends frmChipBase<MDChipParams.VRC7> {
 
     static final Preferences prefs = Preferences.userNodeForPackage(frmVRC7.class);
 
     public frmVRC7(frmMain frm, int chipId, int zoom, MDChipParams.VRC7 newParam) {
-        super(frm);
+        super(frm, chipId, zoom, newParam, new MDChipParams.VRC7());
 
-        this.chipId = chipId;
-        this.zoom = zoom;
         initializeComponent();
 
-        this.newParam = newParam;
         frameBuffer.Add(pbScreen, Resources.getPlaneVRC7(), null, zoom);
         boolean VRC7Type = false;
         int tp = VRC7Type ? 1 : 0;
@@ -58,14 +44,7 @@ public class frmVRC7 extends frmBase {
         update();
     }
 
-    public void update() {
-        frameBuffer.refresh(null);
-    }
-
 //    @Override
-    protected boolean getShowWithoutActivation() {
-        return true;
-    }
 
     private final WindowListener windowListener = new WindowAdapter() {
         @Override
@@ -132,7 +111,6 @@ public class frmVRC7 extends frmBase {
             int oct = ((vrc7Register[0x20 + ch] & 0xe) >> 1);
             // Get the approximate pitch from the frequency and octave information
             nyc.note = SegaPcmChip.searchSegaPCMNote(freq / 172.0) + (oct - 4) * 12;
-
 
             // In case of one-shot (a state where key-on has occurred at least once since the last process)
             if (ki.on[ch]) {
@@ -303,7 +281,7 @@ public class frmVRC7 extends frmBase {
 
     private void initializeComponent() {
 //            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmVRC7));
-        this.pbScreen = new JPanel();
+        this.pbScreen = new ScreenPanel();
         //((System.ComponentModel.ISupportInitialize)(this.pbScreen)).BeginInit();
 
         //
@@ -325,7 +303,7 @@ public class frmVRC7 extends frmBase {
         this.setPreferredSize(new Dimension(320, 88));
         this.getContentPane().add(this.pbScreen);
 //        this.FormBorderStyle = JFormBorderStyle.FixedSingle;
-        this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
+        this.setIconImage(Resources.getFeli128());
 //        this.MaximizeBox = false;
         this.setName("frmVRC7");
         this.setTitle("VRC7");
@@ -336,5 +314,4 @@ public class frmVRC7 extends frmBase {
     }
 
     BufferedImage image;
-    public JPanel pbScreen;
 }

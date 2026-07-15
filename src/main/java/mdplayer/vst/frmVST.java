@@ -98,7 +98,7 @@ public class frmVST extends JDialog {
         // frmVST
         //
         this.setPreferredSize(new Dimension(284, 261));
-        this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
+        this.setIconImage(Resources.getFeli128());
         this.setName("frmVST");
         this.setTitle("frmVST");
         this.pack();

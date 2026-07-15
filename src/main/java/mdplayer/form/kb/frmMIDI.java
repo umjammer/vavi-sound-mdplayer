@@ -1,5 +1,6 @@
 package mdplayer.form.kb;
 
+import mdplayer.ScreenPanel;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
@@ -412,7 +413,7 @@ public class frmMIDI extends frmBase {
 
     private void initializeComponent() {
 //        System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmMIDI));
-        this.pbScreen = new JPanel();
+        this.pbScreen = new ScreenPanel();
         //((System.ComponentModel.ISupportInitialize)(this.pbScreen)).BeginInit();
 
         //
@@ -433,7 +434,7 @@ public class frmMIDI extends frmBase {
         this.setPreferredSize(new Dimension(440, 352));
         this.getContentPane().add(this.pbScreen);
 //        this.FormBorderStyle = JFormBorderStyle.FixedSingle;
-        this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
+        this.setIconImage(Resources.getFeli128());
 //        this.MaximizeBox = false;
         this.setName("frmMIDI");
         this.setTitle("MIDI");
@@ -444,5 +445,5 @@ public class frmMIDI extends frmBase {
     }
 
     BufferedImage image;
-    public JPanel pbScreen;
+    public ScreenPanel pbScreen;
 }

@@ -1,5 +1,6 @@
 package mdplayer.form.kb.nes;
 
+import mdplayer.ScreenPanel;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
@@ -22,47 +23,25 @@ import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.chips.NesChip.FdsChip;
 import mdplayer.chips.NpNesChip;
-import mdplayer.form.frmBase;
+import mdplayer.form.kb.frmChipBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
 
-
-public class frmFDS extends frmBase {
-    public boolean isClosed = false;
-    public int x = -1;
-    public int y = -1;
-    private int frameSizeW = 0;
-    private int frameSizeH = 0;
-    private final int chipId;
-    private final int zoom;
-
-    private final MDChipParams.FDS newParam;
-    private final MDChipParams.FDS oldParam = new MDChipParams.FDS();
-    private final FrameBuffer frameBuffer = new FrameBuffer();
+public class frmFDS extends frmChipBase<MDChipParams.FDS> {
 
     static final Preferences prefs = Preferences.userNodeForPackage(frmFDS.class);
 
     public frmFDS(frmMain frm, int chipId, int zoom, MDChipParams.FDS newParam) {
-        super(frm);
-        this.chipId = chipId;
-        this.zoom = zoom;
+        super(frm, chipId, zoom, newParam, new MDChipParams.FDS());
 
         initializeComponent();
 
-        this.newParam = newParam;
         frameBuffer.Add(pbScreen, Resources.getPlaneFDS(), null, zoom);
         DrawBuff.screenInitFDS(frameBuffer);
         update();
     }
 
-    public void update() {
-        frameBuffer.refresh(null);
-    }
-
 //    @Override
-    protected boolean getShowWithoutActivation() {
-        return true;
-    }
 
     private final WindowListener windowListener = new WindowAdapter() {
         @Override
@@ -248,7 +227,7 @@ public class frmFDS extends frmBase {
     }
 
     private void initializeComponent() {
-        this.pbScreen = new JPanel();
+        this.pbScreen = new ScreenPanel();
         //((System.ComponentModel.ISupportInitialize)(this.pbScreen)).BeginInit();
 
         //
@@ -269,7 +248,7 @@ public class frmFDS extends frmBase {
         this.setPreferredSize(new Dimension(320, 56));
         this.getContentPane().add(this.pbScreen);
 //        this.FormBorderStyle = JFormBorderStyle.FixedSingle;
-        this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
+        this.setIconImage(Resources.getFeli128());
 //        this.MaximizeBox = false;
         this.setName("frmFDS");
         this.setTitle("FDS");
@@ -280,5 +259,4 @@ public class frmFDS extends frmBase {
     }
 
     BufferedImage image;
-    private JPanel pbScreen;
 }

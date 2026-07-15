@@ -6,6 +6,7 @@
 
 package mdplayer.chips;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
@@ -61,7 +62,8 @@ public class OkiM6258Chip extends BaseChip {
     }
 
     public Map<String, Object> getInfo(int chipId) {
-        Map<String, Object> info = context.mds.inst(OkiM6258Inst.class).getInfo(chipId);
+        // the instrument hands back an unmodifiable map, and this adds to it
+        Map<String, Object> info = new HashMap<>(context.mds.inst(OkiM6258Inst.class).getInfo(chipId));
         info.put("keyOn", keyOn[chipId]);
         return info;
     }

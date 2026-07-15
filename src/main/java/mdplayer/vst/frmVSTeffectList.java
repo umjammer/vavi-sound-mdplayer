@@ -71,7 +71,11 @@ public class frmVSTeffectList extends JFrame {
             }
         });
         ofd.setDialogTitle("Select a file");
-        ofd.setFileFilter(ofd.getChoosableFileFilters()[setting.getOther().getFilterIndex()]);
+        int filterIndex = setting.getOther().getFilterIndex();
+        FileFilter[] filters = ofd.getChoosableFileFilters();
+        if (filterIndex >= 0 && filterIndex < filters.length) {
+            ofd.setFileFilter(filters[filterIndex]);
+        }
 
         if (!setting.getVst().getDefaultPath().isEmpty() && Files.exists(Path.of(setting.getVst().getDefaultPath())) && isInitialOpenFolder) {
             ofd.setCurrentDirectory(new File(setting.getVst().getDefaultPath()));
@@ -448,7 +452,7 @@ public class frmVSTeffectList extends JFrame {
 //            this.AutoScaleMode = JAutoScaleMode.Font;
         this.setPreferredSize(new Dimension(410, 261));
         this.getContentPane().add(this.toolStripContainer1);
-        this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
+        this.setIconImage(Resources.getFeli128());
 //        this.KeyPreview = true;
         this.setMinimumSize(new Dimension(400, 120));
 //        this.setName("frmVSTeffectList");

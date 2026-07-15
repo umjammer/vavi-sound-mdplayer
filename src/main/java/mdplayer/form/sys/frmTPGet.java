@@ -18,6 +18,7 @@ import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableModel;
 
+import mdplayer.form.Layouts;
 import mdplayer.Setting;
 import mdplayer.Tone;
 import mdplayer.TonePallet;
@@ -242,6 +243,8 @@ public class frmTPGet extends JDialog {
 //        this.StartPosition = JFormStartPosition.CenterParent;
         this.setTitle("Get from Tone Pallet");
         this.addWindowListener(this.frmTPGet_Load);
+        Layouts.absolute(this.getContentPane());
+        this.setSize(this.getMinimumSize());
         // this.groupBox1.ResumeLayout(false);
         //((System.ComponentModel.ISupportInitialize)(this.dgvTonePallet)).EndInit();
 //        this.ResumeLayout(false);

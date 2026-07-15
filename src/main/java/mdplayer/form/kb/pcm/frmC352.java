@@ -1,5 +1,6 @@
 package mdplayer.form.kb.pcm;
 
+import mdplayer.ScreenPanel;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
@@ -22,50 +23,24 @@ import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.Tables;
 import mdplayer.chips.C352Chip;
-import mdplayer.form.frmBase;
+import mdplayer.form.kb.frmChipBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
 import mdsound.instrument.C352Inst;
 
-
-public class frmC352 extends frmBase {
-    public boolean isClosed = false;
-    public int x = -1;
-    public int y = -1;
-    private int frameSizeW = 0;
-    private int frameSizeH = 0;
-    private int chipId = 0;
-    private int zoom = 1;
-    private MDChipParams.C352 newParam = null;
-    private MDChipParams.C352 oldParam = new MDChipParams.C352();
-    private final FrameBuffer frameBuffer = new FrameBuffer();
+public class frmC352 extends frmChipBase<MDChipParams.C352> {
 
     static final Preferences prefs = Preferences.userNodeForPackage(frmC352.class);
 
     public frmC352(frmMain frm, int chipId, int zoom, MDChipParams.C352 newParam, MDChipParams.C352 oldParam) {
-        super(frm);
+        super(frm, chipId, zoom, newParam, new MDChipParams.C352());
 
         initializeComponent();
 
-        parent = frm;
-        this.chipId = chipId;
-        this.zoom = zoom;
-        this.newParam = newParam;
-        this.oldParam = oldParam;
-
-        frameBuffer.Add(pbScreen, Resources.getPlaneC352(), null, zoom);
-        screenInit();
-        update();
-    }
-
-    public void update() {
-        frameBuffer.refresh(null);
+        bind(Resources.getPlaneC352());
     }
 
 //    @Override
-    protected boolean getShowWithoutActivation() {
-        return true;
-    }
 
     private final WindowListener windowListener = new WindowAdapter() {
         @Override
@@ -162,7 +137,7 @@ public class frmC352 extends frmBase {
     private int searchC352Note(int freq) {
         double m = Double.MAX_VALUE;
 
-        int clock = audio.plugin.mds.getChipInfo(C352Inst.class).clock;
+        int clock = clock(C352Inst.class);
 
         int n = 0;
         for (int i = 0; i < 12 * 8; i++) {
@@ -267,7 +242,7 @@ public class frmC352 extends frmBase {
 
     private void initializeComponent() {
 //            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmC352));
-        this.pbScreen = new JPanel();
+        this.pbScreen = new ScreenPanel();
         //((System.ComponentModel.ISupportInitialize)(this.pbScreen)).BeginInit();
 
         //
@@ -289,7 +264,7 @@ public class frmC352 extends frmBase {
         this.setPreferredSize(new Dimension(524, 264));
         this.getContentPane().add(this.pbScreen);
 //        this.FormBorderStyle = JFormBorderStyle.FixedSingle;
-        this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
+        this.setIconImage(Resources.getFeli128());
 //        this.MaximizeBox = false;
         this.setName("frmC352");
         this.setTitle("C352Inst");
@@ -300,5 +275,4 @@ public class frmC352 extends frmBase {
     }
 
     BufferedImage image;
-    public JPanel pbScreen;
 }

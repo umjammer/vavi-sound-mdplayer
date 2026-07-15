@@ -1,5 +1,6 @@
 package mdplayer.form.kb.opl;
 
+import mdplayer.ScreenPanel;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
@@ -22,35 +23,19 @@ import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.chips.SegaPcmChip;
 import mdplayer.chips.Ym3526Chip;
-import mdplayer.form.frmBase;
+import mdplayer.form.kb.frmChipBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
 import mdsound.instrument.Ym3526Inst;
 
-
-public class frmYM3526 extends frmBase {
-    public boolean isClosed = false;
-    public int x = -1;
-    public int y = -1;
-    private int frameSizeW = 0;
-    private int frameSizeH = 0;
-    private int chipId = 0;
-    private int zoom = 1;
-
-    private MDChipParams.YM3526 newParam = null;
-    private MDChipParams.YM3526 oldParam = null;
-    private final FrameBuffer frameBuffer = new FrameBuffer();
+public class frmYM3526 extends frmChipBase<MDChipParams.YM3526> {
 
     static final Preferences prefs = Preferences.userNodeForPackage(frmYM3526.class);
 
     public frmYM3526(frmMain frm, int chipId, int zoom, MDChipParams.YM3526 newParam, MDChipParams.YM3526 oldParam) {
-        super(frm);
-        this.chipId = chipId;
-        this.zoom = zoom;
+        super(frm, chipId, zoom, newParam, oldParam);
         initializeComponent();
 
-        this.newParam = newParam;
-        this.oldParam = oldParam;
         frameBuffer.Add(pbScreen, Resources.getPlaneYM3526(), null, zoom);
         boolean YM3526Type = (chipId == 0)
                 ? parent.setting.getYM3526Type()[0].getUseReal()[0]
@@ -64,14 +49,7 @@ public class frmYM3526 extends frmBase {
         update();
     }
 
-    public void update() {
-        frameBuffer.refresh(null);
-    }
-
 //    @Override
-    protected boolean getShowWithoutActivation() {
-        return true;
-    }
 
     private final WindowListener windowListener = new WindowAdapter() {
         @Override
@@ -196,7 +174,6 @@ public class frmYM3526 extends frmBase {
                 if (nyc.volume < 0) nyc.volume = 0;
             }
 
-
         }
         newParam.channels[9].dda = ((ym3526Register[0xbd] >> 7) & 0x01) != 0;//DA
         newParam.channels[10].dda = ((ym3526Register[0xbd] >> 6) & 0x01) != 0;//DV
@@ -319,7 +296,7 @@ public class frmYM3526 extends frmBase {
 
     private void initializeComponent() {
 //            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmYM3526));
-        this.pbScreen = new JPanel();
+        this.pbScreen = new ScreenPanel();
         //((System.ComponentModel.ISupportInitialize)(this.pbScreen)).BeginInit();
 
         //
@@ -341,7 +318,7 @@ public class frmYM3526 extends frmBase {
         this.setPreferredSize(new Dimension(328, 168));
         this.getContentPane().add(this.pbScreen);
 //        this.FormBorderStyle = JFormBorderStyle.FixedSingle;
-        this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
+        this.setIconImage(Resources.getFeli128());
 //        this.MaximizeBox = false;
         this.setName("frmYM3526");
         this.setTitle("YM3526");
@@ -352,6 +329,5 @@ public class frmYM3526 extends frmBase {
     }
 
     BufferedImage image;
-    public JPanel pbScreen;
 }
 

@@ -1,5 +1,6 @@
 package mdplayer.form.kb.pcm;
 
+import mdplayer.ScreenPanel;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
@@ -22,49 +23,24 @@ import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.Tables;
 import mdplayer.chips.MultiPcmChip;
-import mdplayer.form.frmBase;
+import mdplayer.form.kb.frmChipBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
 import mdsound.chips.MultiPCM;
 
-
-public class frmMultiPCM extends frmBase {
-    public boolean isClosed = false;
-    public int x = -1;
-    public int y = -1;
-    private int frameSizeW = 0;
-    private int frameSizeH = 0;
-    private int chipId = 0;
-    private int zoom = 1;
-    private MDChipParams.MultiPCM newParam = null;
-    private MDChipParams.MultiPCM oldParam = new MDChipParams.MultiPCM();
-    private final FrameBuffer frameBuffer = new FrameBuffer();
+public class frmMultiPCM extends frmChipBase<MDChipParams.MultiPCM> {
 
     static final Preferences prefs = Preferences.userNodeForPackage(frmMultiPCM.class);
 
     public frmMultiPCM(frmMain frm, int chipId, int zoom, MDChipParams.MultiPCM newParam, MDChipParams.MultiPCM oldParam) {
-        super(frm);
+        super(frm, chipId, zoom, newParam, new MDChipParams.MultiPCM());
 
         initializeComponent();
 
-        this.chipId = chipId;
-        this.zoom = zoom;
-        this.newParam = newParam;
-        this.oldParam = oldParam;
-
-        frameBuffer.Add(pbScreen, Resources.getPlaneMultiPCM(), null, zoom);
-        screenInit();
-        update();
-    }
-
-    public void update() {
-        frameBuffer.refresh(null);
+        bind(Resources.getPlaneMultiPCM());
     }
 
 //    @Override
-    protected boolean getShowWithoutActivation() {
-        return true;
-    }
 
     private final WindowListener windowListener = new WindowAdapter() {
         @Override
@@ -263,7 +239,7 @@ public class frmMultiPCM extends frmBase {
     }
 
     private void initializeComponent() {
-        this.pbScreen = new JPanel();
+        this.pbScreen = new ScreenPanel();
 
         //
         // pbScreen
@@ -284,7 +260,7 @@ public class frmMultiPCM extends frmBase {
         this.setPreferredSize(new Dimension(527, 225));
         this.getContentPane().add(this.pbScreen);
 //        this.FormBorderStyle = JFormBorderStyle.FixedSingle;
-        this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
+        this.setIconImage(Resources.getFeli128());
 //        this.MaximizeBox = false;
         this.setName("frmMultiPCM");
         this.setTitle("MultiPCM");
@@ -295,5 +271,4 @@ public class frmMultiPCM extends frmBase {
     }
 
     BufferedImage image;
-    public JPanel pbScreen;
 }

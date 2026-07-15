@@ -1,5 +1,6 @@
 package mdplayer.form.kb.opl;
 
+import mdplayer.ScreenPanel;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
@@ -23,34 +24,18 @@ import mdplayer.MDChipParams;
 import mdplayer.Tables;
 import mdplayer.chips.SegaPcmChip;
 import mdplayer.chips.Ym2413Chip;
-import mdplayer.form.frmBase;
+import mdplayer.form.kb.frmChipBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
 
-
-public class frmYM2413 extends frmBase {
-    public boolean isClosed = false;
-    public int x = -1;
-    public int y = -1;
-    private int frameSizeW = 0;
-    private int frameSizeH = 0;
-    private final int chipId;
-    private final int zoom;
-
-    private final MDChipParams.YM2413 newParam;
-    private final MDChipParams.YM2413 oldParam;
-    private final FrameBuffer frameBuffer = new FrameBuffer();
+public class frmYM2413 extends frmChipBase<MDChipParams.YM2413> {
 
     static final Preferences prefs = Preferences.userNodeForPackage(frmYM2413.class);
 
     public frmYM2413(frmMain frm, int chipId, int zoom, MDChipParams.YM2413 newParam, MDChipParams.YM2413 oldParam) {
-        super(frm);
-        this.chipId = chipId;
-        this.zoom = zoom;
+        super(frm, chipId, zoom, newParam, oldParam);
         initializeComponent();
 
-        this.newParam = newParam;
-        this.oldParam = oldParam;
         frameBuffer.Add(pbScreen, Resources.getPlaneYM2413(), null, zoom);
 
         boolean YM2413Type = (chipId == 0)
@@ -65,14 +50,7 @@ public class frmYM2413 extends frmBase {
         update();
     }
 
-    public void update() {
-        frameBuffer.refresh(null);
-    }
-
 //    @Override
-    protected boolean getShowWithoutActivation() {
-        return true;
-    }
 
     private final WindowListener windowListener = new WindowAdapter() {
         @Override
@@ -184,7 +162,6 @@ public class frmYM2413 extends frmBase {
             if (newParam.channels[13].volume < 0) newParam.channels[13].volume = 0;
         }
 
-
         newParam.channels[0].inst[4] = (ym2413Register[0x02] & 0x3f);//TL
         newParam.channels[0].inst[5] = (ym2413Register[0x03] & 0x07);//FB
 
@@ -212,7 +189,6 @@ public class frmYM2413 extends frmBase {
         newParam.channels[0].inst[27] = (ym2413Register[0x03] & 0x10) >> 4;//DC
 
     }
-
 
     public void screenInitYM2413(FrameBuffer screen, int tp) {
 
@@ -418,7 +394,7 @@ public class frmYM2413 extends frmBase {
 
     private void initializeComponent() {
 //        System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmYM2413));
-        this.pbScreen = new JPanel();
+        this.pbScreen = new ScreenPanel();
         //((System.ComponentModel.ISupportInitialize)(this.pbScreen)).BeginInit();
 
         //
@@ -440,7 +416,7 @@ public class frmYM2413 extends frmBase {
         this.setPreferredSize(new Dimension(320, 120));
         this.getContentPane().add(this.pbScreen);
 //        this.FormBorderStyle = JFormBorderStyle.FixedSingle;
-        this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
+        this.setIconImage(Resources.getFeli128());
 //        this.MaximizeBox = false;
         this.setName("frmYM2413");
         this.setTitle("YM2413");
@@ -452,5 +428,4 @@ public class frmYM2413 extends frmBase {
     }
 
     BufferedImage image;
-    public JPanel pbScreen;
 }

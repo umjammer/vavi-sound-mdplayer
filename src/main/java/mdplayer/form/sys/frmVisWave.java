@@ -42,14 +42,30 @@ public class frmVisWave extends frmBase {
 
     static final Preferences prefs = Preferences.userNodeForPackage(frmVisWave.class);
 
+    /** where in {@link #buf} the next sample goes */
+    private int writeIndex;
+
     public frmVisWave(frmMain frm) {
         parent = frm;
         initializeComponent();
         bmp = new BufferedImage(400, 400, BufferedImage.TYPE_INT_ARGB);
+        // the timer starts drawing at once, so it needs somewhere to draw
+        g = (Graphics2D) bmp.getGraphics();
+    }
+
+    /**
+     * Takes one rendered sample, as the driver produces it. This is what there is to draw — the
+     * wave is fed to us rather than copied out of the driver, so nothing here reaches into it.
+     *
+     * @see mdplayer.driver.BaseDriver#fireEventHappened
+     */
+    public void push(short left, short right) {
+        buf[0][writeIndex] = left;
+        buf[1][writeIndex] = right;
+        writeIndex = (writeIndex + 1) % buf[0].length;
     }
 
     private void timer1_Tick(ActionEvent ev) {
-//        audio.plugin.driverVirtual.copyWaveBuffer(buf); // TODO use event
 
         g.setColor(Color.black);
         g.fillRect(0, 0, bmp.getWidth(), bmp.getHeight());
@@ -403,9 +419,10 @@ public class frmVisWave extends frmBase {
 //            this.AutoScaleMode = JAutoScaleMode.Font;
         this.setPreferredSize(new Dimension(224, 201));
         this.getContentPane().add(this.toolStripContainer1);
-        this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
+        this.setIconImage(Resources.getFeli128());
         this.setName("frmVisWave");
-        this.setOpacity(0.9f);
+        // no setOpacity(): Swing only allows a translucent frame if it is undecorated, and this one
+        // has a title bar to drag it by
         this.setTitle("Visualizer");
         this.addWindowListener(this.windowListener);
         //((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();

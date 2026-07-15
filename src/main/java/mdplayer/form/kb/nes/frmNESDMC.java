@@ -1,5 +1,6 @@
 package mdplayer.form.kb.nes;
 
+import mdplayer.ScreenPanel;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
@@ -22,49 +23,27 @@ import mdplayer.MDChipParams;
 import mdplayer.chips.NesChip;
 import mdplayer.chips.NesChip.DmcChip;
 import mdplayer.chips.NpNesChip;
-import mdplayer.form.frmBase;
+import mdplayer.form.kb.frmChipBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
 
-
-public class frmNESDMC extends frmBase {
-    public boolean isClosed = false;
-    public int x = -1;
-    public int y = -1;
-    private int frameSizeW = 0;
-    private int frameSizeH = 0;
-    private final int chipId;
-    private final int zoom;
+public class frmNESDMC extends frmChipBase<MDChipParams.NESDMC> {
 
     //
-    private final MDChipParams.NESDMC newParam;
-    private final MDChipParams.NESDMC oldParam = new MDChipParams.NESDMC();
-    private final FrameBuffer frameBuffer = new FrameBuffer();
 
     static final Preferences prefs = Preferences.userNodeForPackage(frmNESDMC.class);
 
     public frmNESDMC(frmMain frm, int chipId, int zoom, MDChipParams.NESDMC newParam) {
-        super(frm);
-
-        this.chipId = chipId;
-        this.zoom = zoom;
+        super(frm, chipId, zoom, newParam, new MDChipParams.NESDMC());
 
         initializeComponent();
 
-        this.newParam = newParam;
         frameBuffer.Add(pbScreen, Resources.getPlaneNESDMC(), null, zoom);
         DrawBuff.screenInitNESDMC(frameBuffer);
         update();
     }
 
-    public void update() {
-        frameBuffer.refresh(null);
-    }
-
 //    @Override
-    protected boolean getShowWithoutActivation() {
-        return true;
-    }
 
     private final WindowListener windowListener = new WindowAdapter() {
         @Override
@@ -333,7 +312,7 @@ public class frmNESDMC extends frmBase {
 
     private void initializeComponent() {
 //            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmNESDMC));
-        this.pbScreen = new JPanel();
+        this.pbScreen = new ScreenPanel();
         //((System.ComponentModel.ISupportInitialize)(this.pbScreen)).BeginInit();
 
         //
@@ -355,7 +334,7 @@ public class frmNESDMC extends frmBase {
         this.setPreferredSize(new Dimension(320, 56));
         this.getContentPane().add(this.pbScreen);
 //        this.FormBorderStyle = JFormBorderStyle.FixedSingle;
-        this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
+        this.setIconImage(Resources.getFeli128());
 //        this.MaximizeBox = false;
         this.setName("frmNESDMC");
         this.setTitle("NES & DMC");
@@ -366,5 +345,4 @@ public class frmNESDMC extends frmBase {
     }
 
     BufferedImage image;
-    public JPanel pbScreen;
 }

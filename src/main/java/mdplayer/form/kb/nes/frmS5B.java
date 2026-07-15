@@ -1,5 +1,6 @@
 package mdplayer.form.kb.nes;
 
+import mdplayer.ScreenPanel;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
@@ -22,49 +23,24 @@ import mdplayer.MDChipParams;
 import mdplayer.Tables;
 import mdplayer.chips.NpNesChip;
 import mdplayer.chips.NpNesChip.Fme7Chip;
-import mdplayer.form.frmBase;
+import mdplayer.form.kb.frmChipBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
 
 import static mdplayer.Common.searchSSGNote;
 
-
-public class frmS5B extends frmBase {
-    public boolean isClosed = false;
-    public int x = -1;
-    public int y = -1;
-    private int frameSizeW = 0;
-    private int frameSizeH = 0;
-    private final int chipId;
-    private final int zoom;
-    private final MDChipParams.S5B newParam;
-    private final MDChipParams.S5B oldParam;
-    private final FrameBuffer frameBuffer = new FrameBuffer();
+public class frmS5B extends frmChipBase<MDChipParams.S5B> {
     static final Preferences prefs = Preferences.userNodeForPackage(frmS5B.class);
 
     public frmS5B(frmMain frm, int chipId, int zoom, MDChipParams.S5B newParam, MDChipParams.S5B oldParam) {
-        super(frm);
+        super(frm, chipId, zoom, newParam, oldParam);
 
         initializeComponent();
 
-        this.chipId = chipId;
-        this.zoom = zoom;
-        this.newParam = newParam;
-        this.oldParam = oldParam;
-
-        frameBuffer.Add(this.pbScreen, Resources.getPlaneS5B(), null, zoom);
-        screenInit();
-        update();
-    }
-
-    public void update() {
-        frameBuffer.refresh(null);
+        bind(Resources.getPlaneS5B());
     }
 
 //    @Override
-    protected boolean getShowWithoutActivation() {
-        return true;
-    }
 
     private final WindowListener windowListener = new WindowAdapter() {
         @Override
@@ -217,7 +193,7 @@ public class frmS5B extends frmBase {
     };
 
     private void initializeComponent() {
-        this.pbScreen = new JPanel();
+        this.pbScreen = new ScreenPanel();
         //((System.ComponentModel.ISupportInitialize)(this.pbScreen)).BeginInit();
 
         //
@@ -240,7 +216,7 @@ public class frmS5B extends frmBase {
         this.setPreferredSize(new Dimension(320, 40));
         this.getContentPane().add(this.pbScreen);
 //        this.FormBorderStyle = JFormBorderStyle.FixedSingle;
-        this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
+        this.setIconImage(Resources.getFeli128());
 //        this.MaximizeBox = false;
         this.setName("frmS5B");
         this.setTitle("S5B(FME)");
@@ -251,5 +227,4 @@ public class frmS5B extends frmBase {
     }
 
     BufferedImage image;
-    public JPanel pbScreen;
 }

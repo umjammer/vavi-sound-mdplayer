@@ -20,6 +20,7 @@ import mdplayer.driver.BaseDriver;
 import mdplayer.plugin.BasePlugin;
 import mdplayer.plugin.SampledPlugin;
 import vavi.sound.SoundUtil;
+import vavi.util.event.GenericEvent;
 import vavi.util.event.GenericListener;
 
 import static java.lang.System.getLogger;
@@ -46,6 +47,9 @@ public final class Audio {
     private volatile boolean renderStopped = true;
 
     private Audio() {
+        Thread thread = new Thread(this::processRequest, "mdplayer-request-processor");
+        thread.setDaemon(true);
+        thread.start();
     }
 
     /** singleton */
@@ -77,6 +81,15 @@ logger.log(Level.DEBUG, format);
 logger.log(Level.DEBUG, "line: " + e.getType());
     }
 
+    /**
+     * Is {@link #play()} inside its render loop? By then it has prepared the plugin, so this is
+     * what tells the view that the song has really begun — not the stopped flag, which a plugin
+     * that has never played starts out with anyway.
+     */
+    public boolean isRendering() {
+        return rendering && !renderStopped;
+    }
+
     /** start blocking rendering */
     public boolean play() {
         plugin.prepare();
@@ -89,6 +102,13 @@ logger.log(Level.DEBUG, "line: " + e.getType());
 
         plugin.paused = false;
         plugin.stopped = false;
+
+        // prepare() cleared the fade-out, but stop() has run since, and it fades the previous song
+        // out when the line is idle. Leaving that armed would fade this song out within a few
+        // samples and mark it stopped before a note of it was heard.
+        plugin.fadeout = false;
+        plugin.fadeoutCounter = 1.0;
+        plugin.fadeoutCounterV = 0.00001;
 
         plugin.oneTimeReset = false;
 
@@ -160,12 +180,33 @@ logger.log(Level.DEBUG, "line: " + e.getType());
         ShortBuffer sb = bb.asShortBuffer();
         sb.put(buffer, offset, count);
         sb.rewind();
+
+        // Calculate peak left and right channel levels
+        int maxL = 0;
+        int maxR = 0;
+        for (int i = 0; i < count; i += 2) {
+            int l = Math.abs(buffer[offset + i]);
+            int r = (i + 1 < count) ? Math.abs(buffer[offset + i + 1]) : l;
+            if (l > maxL) maxL = l;
+            if (r > maxR) maxR = r;
+        }
+
+        if (plugin != null) {
+            if (plugin.getDriver() != null) {
+                plugin.getDriver().fireEventHappened(this, "wave.buffer", (short) maxL, (short) maxR);
+            } else {
+                GenericEvent ev = new GenericEvent(this, "wave.buffer", (short) maxL, (short) maxR);
+                listeners.forEach(l -> l.eventHappened(ev));
+            }
+        }
+
         return line.write(bb.array(), 0, count * Short.BYTES);
     }
 
     /** */
     public void stop() {
         logger.log(Level.TRACE, "stop enter");
+        if (plugin == null) return;
         try {
             if (plugin.paused) pause();
 
@@ -253,17 +294,23 @@ logger.log(Level.INFO, "stop: " + plugin.stopped + ", " + hashCode());
             }
         }
 
-        plugin.close();
+        if (plugin != null) {
+            plugin.close();
+            try {
+                plugin.chipRegister.plugin(MidiPlugin.class).midiClose();
+                plugin.chipRegister.plugin(RealChipPlugin.class).close();
+            } catch (Exception ex) {
+                logger.log(Level.ERROR, ex.getMessage(), ex);
+            }
+        }
 
         try {
-            plugin.chipRegister.plugin(MidiPlugin.class).midiClose();
-            plugin.chipRegister.plugin(RealChipPlugin.class).close();
-
-            if (line.available() > 0)
-                line.drain();
-            line.stop();
-            line.close();
-
+            if (line != null) {
+                if (line.available() > 0)
+                    line.drain();
+                line.stop();
+                line.close();
+            }
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
         }
@@ -372,9 +419,30 @@ logger.log(Level.DEBUG, "stop: " + plugin.stopped);
         plugin.paused = !plugin.paused;
     }
 
-    /** */
+    /** nothing loaded yet means nothing is paused */
     public boolean isPaused() {
-        return plugin.paused;
+        return plugin != null && plugin.paused;
+    }
+
+    public void seek(double n) {
+        if (plugin instanceof mdplayer.plugin.SampledPlugin sampledPlugin) {
+            try {
+                if (sampledPlugin.naudioFileReader != null) {
+                    long totalBytes = sampledPlugin.naudioFileReader.getFrameLength() * sampledPlugin.naudioFileReader.getFormat().getFrameSize();
+                    long targetPos = (long) (totalBytes * n);
+                    sampledPlugin.naudioFileReader.close();
+                    sampledPlugin.naudioFileReader = javax.sound.sampled.AudioSystem.getAudioInputStream(java.nio.file.Path.of(sampledPlugin.naudioFileName).toFile());
+                    long skipped = 0;
+                    while (skipped < targetPos) {
+                        long s = sampledPlugin.naudioFileReader.skip(targetPos - skipped);
+                        if (s <= 0) break;
+                        skipped += s;
+                    }
+                }
+            } catch (Exception e) {
+                logger.log(Level.ERROR, e.getMessage(), e);
+            }
+        }
     }
 
     // for gui
@@ -382,16 +450,31 @@ logger.log(Level.DEBUG, "stop: " + plugin.stopped);
         while (true) {
             Request req = OpeManager.getRequestToAudio();
             if (req == null) {
-                Thread.yield(); // TODO this should not be a thread, use event system or blocking queue
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException ignored) {
+                }
                 continue;
             }
 
             switch (req.request) {
                 case Die: // Please kill yourself
-                    plugin.close();
-                    plugin.chipRegister.plugin(RealChipPlugin.class).realChipClose();
+                    if (plugin != null) {
+                        try {
+                            plugin.close();
+                        } catch (Exception e) {
+                            logger.log(Level.ERROR, e.getMessage(), e);
+                        }
+                        if (plugin.chipRegister != null) {
+                            try {
+                                plugin.chipRegister.plugin(RealChipPlugin.class).realChipClose();
+                            } catch (Exception e) {
+                                logger.log(Level.ERROR, e.getMessage(), e);
+                            }
+                        }
+                    }
                     req.setEnd(true);
-                    return;
+                    break;
                 case Stop:
                     stop();
                     req.setEnd(true);

@@ -1,5 +1,6 @@
 package mdplayer.form.kb.nes;
 
+import mdplayer.ScreenPanel;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
@@ -22,48 +23,23 @@ import mdplayer.MDChipParams;
 import mdplayer.Tables;
 import mdplayer.chips.NpNesChip;
 import mdplayer.chips.NpNesChip.Vrc6Chip;
-import mdplayer.form.frmBase;
+import mdplayer.form.kb.frmChipBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
 import mdsound.np.chip.DeviceInfo.BasicTrackInfo;
 
-
-public class frmVRC6 extends frmBase {
-    public boolean isClosed = false;
-    public int x = -1;
-    public int y = -1;
-    private int frameSizeW = 0;
-    private int frameSizeH = 0;
-    private final int chipId;
-    private final int zoom;
-    private final MDChipParams.VRC6 newParam;
-    private final MDChipParams.VRC6 oldParam;
-    private final FrameBuffer frameBuffer = new FrameBuffer();
+public class frmVRC6 extends frmChipBase<MDChipParams.VRC6> {
     static final Preferences prefs = Preferences.userNodeForPackage(frmVRC6.class);
 
     public frmVRC6(frmMain frm, int chipId, int zoom, MDChipParams.VRC6 newParam, MDChipParams.VRC6 oldParam) {
-        super(frm);
+        super(frm, chipId, zoom, newParam, oldParam);
 
         initializeComponent();
 
-        this.chipId = chipId;
-        this.zoom = zoom;
-        this.newParam = newParam;
-        this.oldParam = oldParam;
-
-        frameBuffer.Add(pbScreen, Resources.getPlaneVRC6(), null, zoom);
-        screenInit();
-        update();
-    }
-
-    public void update() {
-        frameBuffer.refresh(null);
+        bind(Resources.getPlaneVRC6());
     }
 
 //    @Override
-    protected boolean getShowWithoutActivation() {
-        return true;
-    }
 
     private final WindowListener windowListener = new WindowAdapter() {
         @Override
@@ -212,7 +188,7 @@ public class frmVRC6 extends frmBase {
 
     private void initializeComponent() {
 //        System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmVRC6));
-        this.pbScreen = new JPanel();
+        this.pbScreen = new ScreenPanel();
         //((System.ComponentModel.ISupportInitialize)(this.pbScreen)).BeginInit();
 
         //
@@ -234,7 +210,7 @@ public class frmVRC6 extends frmBase {
         this.setPreferredSize(new Dimension(320, 56));
         this.getContentPane().add(this.pbScreen);
 //        this.FormBorderStyle = JFormBorderStyle.FixedSingle;
-        this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
+        this.setIconImage(Resources.getFeli128());
 //        this.MaximizeBox = false;
         this.setName("frmVRC6");
         this.setTitle("Vrc6Inst");
@@ -245,5 +221,4 @@ public class frmVRC6 extends frmBase {
     }
 
     BufferedImage image;
-    public JPanel pbScreen;
 }

@@ -34,10 +34,14 @@ public class OkiM6295Chip extends BaseChip {
 
     public void setMask(int chipId, int ch, boolean mask) {
         this.mask[chipId][ch] = mask;
+
+        Instrument instrument = context.mds.inst(inst(chipId), 0);
+        if (instrument == null) return; // the song being played does not use this chip
+
         if (mask)
-            context.mds.inst(inst(chipId), 0).setMask(chipId, 1 << ch);
+            instrument.setMask(chipId, 1 << ch);
         else
-            context.mds.inst(inst(chipId), 0).resetMask(chipId, 1 << ch);
+            instrument.resetMask(chipId, 1 << ch);
     }
 
     public Map<String, Object> getInfo(int chipId) {

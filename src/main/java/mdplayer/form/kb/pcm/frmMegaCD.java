@@ -1,5 +1,6 @@
 package mdplayer.form.kb.pcm;
 
+import mdplayer.ScreenPanel;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
@@ -22,50 +23,26 @@ import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.Tables;
 import mdplayer.chips.Rf5C164Chip;
-import mdplayer.form.frmBase;
+import mdplayer.form.kb.frmChipBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
 import mdsound.chips.ScdPcm;
 
-
-public class frmMegaCD extends frmBase {
-    public boolean isClosed = false;
-    public int x = -1;
-    public int y = -1;
-    private int frameSizeW = 0;
-    private int frameSizeH = 0;
-    private int chipId = 0;
-    private int zoom = 1;
-
-    private final MDChipParams.RF5C164 newParam;
-    private final MDChipParams.RF5C164 oldParam;
-    private final FrameBuffer frameBuffer = new FrameBuffer();
+public class frmMegaCD extends frmChipBase<MDChipParams.RF5C164> {
 
     static final Preferences prefs = Preferences.userNodeForPackage(frmMegaCD.class);
 
     public frmMegaCD(frmMain frm, int chipId, int zoom, MDChipParams.RF5C164 newParam, MDChipParams.RF5C164 oldParam) {
-        super(frm);
-
-        this.chipId = chipId;
-        this.zoom = zoom;
+        super(frm, chipId, zoom, newParam, oldParam);
 
         initializeComponent();
 
-        this.newParam = newParam;
-        this.oldParam = oldParam;
         frameBuffer.Add(pbScreen, Resources.getPlaneC(), null, zoom);
         DrawBuff.screenInitRF5C164(frameBuffer);
         update();
     }
 
-    public void update() {
-        frameBuffer.refresh(null);
-    }
-
 //    @Override
-    protected boolean getShowWithoutActivation() {
-        return true;
-    }
 
     private final WindowListener windowListener = new WindowAdapter() {
         @Override
@@ -193,7 +170,7 @@ public class frmMegaCD extends frmBase {
 
     private void initializeComponent() {
 //            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmMegaCD));
-        this.pbScreen = new JPanel();
+        this.pbScreen = new ScreenPanel();
         //((System.ComponentModel.ISupportInitialize)(this.pbScreen)).BeginInit();
 
         //
@@ -215,7 +192,7 @@ public class frmMegaCD extends frmBase {
         this.setPreferredSize(new Dimension(320, 72));
         this.getContentPane().add(this.pbScreen);
 //        this.FormBorderStyle = JFormBorderStyle.FixedSingle;
-        this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
+        this.setIconImage(Resources.getFeli128());
 //        this.MaximizeBox = false;
         this.setMaximumSize(new Dimension(336, 111));
         this.setMinimumSize(new Dimension(336, 111));
@@ -228,6 +205,5 @@ public class frmMegaCD extends frmBase {
     }
 
     BufferedImage image;
-    public JPanel pbScreen;
 }
 

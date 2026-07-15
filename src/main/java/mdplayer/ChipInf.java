@@ -4,6 +4,7 @@ import mdplayer.Common.EnmModel;
 import mdplayer.Common.EnmRealModel;
 
 
+@Deprecated
 public class ChipInf {
     /**
      * ID Primary:0 / Secondary:1

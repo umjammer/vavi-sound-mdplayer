@@ -449,7 +449,7 @@ public class frmInfo extends JFrame {
         this.getContentPane().add(this.lblGame);
         this.getContentPane().add(this.lblTitleJ);
         this.getContentPane().add(this.lblTitle);
-        this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
+        this.setIconImage(Resources.getFeli128());
         this.setMaximumSize(new Dimension(800, 268));
         this.setMinimumSize(new Dimension(252, 268));
         this.setName("frmInfo");

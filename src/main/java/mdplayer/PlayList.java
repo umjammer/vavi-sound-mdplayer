@@ -25,18 +25,19 @@ import mdplayer.format.FileFormat;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 import vavi.util.serdes.Element;
+import vavi.util.serdes.JacksonXMLBeanBinder;
 import vavi.util.serdes.Serdes;
 
 import static java.lang.System.getLogger;
 import static mdplayer.Common.charset;
 
 
-@Serdes
+@Serdes(beanBinder = JacksonXMLBeanBinder.class)
 public class PlayList implements Serializable, Cloneable {
 
     private static final Logger logger = getLogger(PlayList.class.getName());
 
-    @Serdes
+    @Serdes(beanBinder = JacksonXMLBeanBinder.class)
     public static class Music {
         public FileFormat format;
         public String playingNow;
@@ -207,18 +208,25 @@ public class PlayList implements Serializable, Cloneable {
         }
     }
 
+    /** {@code ".../foo.vgz"} is a {@code VGZ}, not everything up to the dot. */
+    private static String extension(String fileName) {
+        String name = Path.of(fileName).getFileName().toString();
+        int dot = name.lastIndexOf('.');
+        return dot < 0 ? "" : name.substring(dot + 1).toUpperCase();
+    }
+
     public List<Object[]> makeRow(List<Music> musics) {
         List<Object[]> ret = new ArrayList<>();
 
         for (Music music : musics) {
+            if (music == null || music.fileName == null) continue; // a half-written playlist entry has no file to show
             Object[] row = new Object[] {
                 " ", // clmPlayingNow
                 0, // clmKey
                 music.fileName, // clmFileName
                 music.arcFileName, // clmZipFileName
                 Path.of(music.fileName).getFileName().toString(), // clmDispFileName
-                music.fileName, // clmDispFileName
-                Path.of(music.fileName).toString().substring(0, music.fileName.lastIndexOf('.') + 1).toUpperCase(), // clmEXT
+                extension(music.fileName), // clmEXT
                 music.type, // clmType
                 music.title, // clmTitle
                 music.titleJ, // clmTitleJ
@@ -275,13 +283,13 @@ public class PlayList implements Serializable, Cloneable {
 
     private void addFileLoop(Music mc, Archive archive, Entry entry /* = null */) {
         try {
-            musics = mc.format.addFileLoop(mc, archive, entry);
-            if (musics == null) return;
+            List<Music> added = mc.format.addFileLoop(mc, archive, entry);
+            if (added == null) return;
 
-            List<Object[]> rows = makeRow(musics);
+            List<Object[]> rows = makeRow(added);
             for (Object[] row : rows)
                 addRow.accept(row);
-            this.musics.addAll(musics);
+            this.musics.addAll(added);
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
         }
@@ -289,13 +297,13 @@ public class PlayList implements Serializable, Cloneable {
 
     private void addFileLoop(int[] index, Music mc, Archive archive, Entry entry /* = null */) {
         try {
-            musics = mc.format.addFileLoop(index[0], mc, archive, entry);
-            if (musics == null) return;
+            List<Music> added = mc.format.addFileLoop(index[0], mc, archive, entry);
+            if (added == null) return;
 
-            List<Object[]> rows = makeRow(musics);
+            List<Object[]> rows = makeRow(added);
             for (Object[] row : rows)
                 setRow.accept(index[0], row);
-            this.musics.addAll(index[0], musics);
+            this.musics.addAll(index[0], added);
             index[0] += rows.size();
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);

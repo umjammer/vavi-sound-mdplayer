@@ -11,6 +11,12 @@ import javax.swing.JComponent;
 import static java.lang.System.getLogger;
 
 
+/**
+ * The main screen's {@link FrameBuffer}.
+ *
+ * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
+ * @version 0.00 2026-07-14 nsano initial version <br>
+ */
 public class DoubleBuffer implements Closeable {
 
     private static final Logger logger = getLogger(DoubleBuffer.class.getName());
@@ -20,34 +26,23 @@ public class DoubleBuffer implements Closeable {
     public Setting setting = null;
 
     public DoubleBuffer(JComponent pbMainScreen, BufferedImage initialImage, int zoom) {
-        this.close();
-
         mainScreen = new FrameBuffer();
-        mainScreen.Add(pbMainScreen, initialImage, g -> {}, zoom);
+        mainScreen.Add(pbMainScreen, initialImage, null, zoom);
     }
 
     @Override
     public void close() {
-        if (mainScreen != null)
-            mainScreen.remove(g -> {});
-    }
-
-    private void paint(Graphics g) {
-        refresh(g);
+        if (mainScreen != null) {
+            mainScreen.remove(null);
+            mainScreen = null;
+        }
     }
 
     public void refresh(Graphics g) {
         try {
             if (mainScreen != null) {
-                try {
-                    mainScreen.refresh(g);
-                } catch (Exception ex) {
-                    logger.log(Level.ERROR, ex.getMessage(), ex);
-                    mainScreen.remove(g2 -> {});
-                    mainScreen = null;
-                }
+                mainScreen.refresh(g);
             }
-
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
         }
