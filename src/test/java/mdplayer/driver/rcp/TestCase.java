@@ -23,6 +23,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 
 /**
@@ -62,6 +63,7 @@ Debug.println("volume: " + volume + ", player.volume: " + System.getProperty("md
 
     @Test
     @DisplayName("play rcp")
+    @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
     void test() throws Exception {
 Debug.println("filename: " + rcp);
         FileFormat format = FileFormat.getFileFormat(rcp);

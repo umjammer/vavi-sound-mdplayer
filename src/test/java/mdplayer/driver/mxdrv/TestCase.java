@@ -4,7 +4,7 @@
  * Programmed by Naohide Sano
  */
 
-package mdplayer.driver.mdx;
+package mdplayer.driver.mxdrv;
 
 import java.awt.Dimension;
 import java.nio.file.Files;
@@ -25,6 +25,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 
 /**
@@ -69,6 +70,7 @@ Debug.println("volume: " + volume + ", player.volume: " + System.getProperty("md
 
     @Test
     @DisplayName("play mdx w/ visualizer")
+    @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
     void test() throws Exception {
 Debug.println("filename: " + mdx);
         FileFormat format = FileFormat.getFileFormat(mdx);

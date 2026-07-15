@@ -6,7 +6,7 @@
  * Apache License Version 2.0
  */
 
-package mdplayer.driver.mdx;
+package mdplayer.driver.mxdrv;
 
 import java.awt.Color;
 import java.awt.Graphics;
