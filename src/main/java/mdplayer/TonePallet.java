@@ -71,10 +71,13 @@ public class TonePallet implements Serializable, Cloneable {
                 fullPath = Path.of(fileName);
             }
 
-            try (InputStream sr = Files.newInputStream(fullPath)) {
-                TonePallet pl = Serdes.Util.deserialize(sr, new TonePallet());
-                return pl;
+            if (Files.exists(fullPath) && Files.size(fullPath) > 10) {
+                try (InputStream sr = Files.newInputStream(fullPath)) {
+                    TonePallet pl = Serdes.Util.deserialize(sr, new TonePallet());
+                    return pl;
+                }
             }
+            return new TonePallet();
         } catch (NoSuchFileException e) {
             logger.log(Level.ERROR, e.toString());
             return new TonePallet();

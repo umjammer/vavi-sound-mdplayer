@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.ResourceBundle;
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
@@ -15,7 +16,6 @@ import mdplayer.PlayList;
 import mdplayer.driver.hes.HesDriver;
 import mdplayer.plugin.HESPlugin;
 import mdplayer.plugin.Plugin;
-import mdplayer.properties.Resources;
 import musicDriverInterface.MetaData;
 import vavi.sound.SoundUtil;
 import vavi.sound.sampled.md.MdEncoding;
@@ -31,6 +31,8 @@ import vavi.util.archive.Entry;
  * @version 0.00 2022-07-07 nsano initial version <br>
  */
 public class HESFileFormat extends BaseFileFormat {
+
+    private static final ResourceBundle rb = ResourceBundle.getBundle("mdplayer/properties/resources");
 
     @Override
     public String[] getExtensions() {
@@ -81,7 +83,7 @@ public class HESFileFormat extends BaseFileFormat {
     public String[] getPresetMixerBalance() {
         return new String[] {
                 "DriverBalance_HES.mbc",
-                Resources.getDefaultVolumeBalance_HES()
+                rb.getString("DefaultVolumeBalance_HES")
         };
     }
 
@@ -91,7 +93,7 @@ public class HESFileFormat extends BaseFileFormat {
     }
 
     @Override
-    public List<PlayList.Music> addFileLoop(PlayList.Music mc, Archive archive, Entry entry/* = null*/) throws IOException {
+    public List<PlayList.Music> addFileLoop(PlayList.Music mc, Archive archive, Entry entry /* = null */) throws IOException {
         byte[] buf;
         if (entry == null) {
             buf = Files.readAllBytes(Path.of(mc.fileName));

@@ -133,6 +133,8 @@ logger.log(Level.DEBUG, "line: " + e.getType());
 
         rendering = true;
         renderStopped = false;
+        boolean started = false;
+        int playRenders = 0;
         try {
             while (rendering) {
 //logger.log(Level.TRACE, "loop HERE");
@@ -147,18 +149,26 @@ logger.log(Level.DEBUG, "line: " + e.getType());
                         plugin.chipRegister.plugin(MidiPlugin.class).keyboard(buffer, 0, buffer.length);
                     }
 
+                    if (!plugin.getVGMStopped()) {
+                        started = true;
+                    }
+                    if (started) {
+                        playRenders++;
+                    }
+
                     // detect the end of an emulated-chip song: once it has looped
                     // enough times or the driver reached the end of its sequence,
                     // start fading out. (The GUI drives this from its screen loop;
                     // headless callers such as tests have no such loop, so play()
                     // would otherwise render silence forever and never return.)
-                    if ((setting.getOther().getUseLoopTimes() && plugin.getVgmCurLoopCounter() > setting.getOther().getLoopTimes() - 1)
-                            || plugin.getVGMStopped()) {
+                    if (started && playRenders > 22050 && ((setting.getOther().getUseLoopTimes() && plugin.getVgmCurLoopCounter() > setting.getOther().getLoopTimes() - 1)
+                            || plugin.getVGMStopped())) {
                         plugin.fadeout = true;
                     }
                 }
                 if (r == -1) break;
 
+                if (!rendering) break;
                 this.write(buffer, 0, buffer.length);
 
                 // the fade-out has finished (render() marks the plugin stopped):
@@ -174,33 +184,44 @@ logger.log(Level.DEBUG, "line: " + e.getType());
         return false;
     }
 
-    /** write to line */
     private int write(short[] buffer, int offset, int count) {
-        ByteBuffer bb = ByteBuffer.allocate(count * Short.BYTES).order(ByteOrder.LITTLE_ENDIAN);
-        ShortBuffer sb = bb.asShortBuffer();
-        sb.put(buffer, offset, count);
-        sb.rewind();
+        int bytesToWrite = count * Short.BYTES;
+        while (rendering) {
+            if (line == null) return 0;
+            int available = line.available();
+            if (available >= bytesToWrite) {
+                ByteBuffer bb = ByteBuffer.allocate(bytesToWrite).order(ByteOrder.LITTLE_ENDIAN);
+                ShortBuffer sb = bb.asShortBuffer();
+                sb.put(buffer, offset, count);
+                sb.rewind();
 
-        // Calculate peak left and right channel levels
-        int maxL = 0;
-        int maxR = 0;
-        for (int i = 0; i < count; i += 2) {
-            int l = Math.abs(buffer[offset + i]);
-            int r = (i + 1 < count) ? Math.abs(buffer[offset + i + 1]) : l;
-            if (l > maxL) maxL = l;
-            if (r > maxR) maxR = r;
-        }
+                // Calculate peak left and right channel levels
+                int maxL = 0;
+                int maxR = 0;
+                for (int i = 0; i < count; i += 2) {
+                    int l = Math.abs(buffer[offset + i]);
+                    int r = (i + 1 < count) ? Math.abs(buffer[offset + i + 1]) : l;
+                    if (l > maxL) maxL = l;
+                    if (r > maxR) maxR = r;
+                }
 
-        if (plugin != null) {
-            if (plugin.getDriver() != null) {
-                plugin.getDriver().fireEventHappened(this, "wave.buffer", (short) maxL, (short) maxR);
-            } else {
-                GenericEvent ev = new GenericEvent(this, "wave.buffer", (short) maxL, (short) maxR);
-                listeners.forEach(l -> l.eventHappened(ev));
+                if (plugin != null) {
+                    if (plugin.getDriver() != null) {
+                        plugin.getDriver().fireEventHappened(this, "wave.buffer", (short) maxL, (short) maxR);
+                    } else {
+                        GenericEvent ev = new GenericEvent(this, "wave.buffer", (short) maxL, (short) maxR);
+                        listeners.forEach(l -> l.eventHappened(ev));
+                    }
+                }
+
+                return line.write(bb.array(), 0, bytesToWrite);
+            }
+            try {
+                Thread.sleep(1);
+            } catch (InterruptedException ignored) {
             }
         }
-
-        return line.write(bb.array(), 0, count * Short.BYTES);
+        return 0;
     }
 
     /** */
@@ -228,7 +249,7 @@ logger.log(Level.DEBUG, "line: " + e.getType());
                     plugin.fadeout = true;
                     int cnt = 0;
                     while (!plugin.stopped && cnt < 100) {
-                        Thread.yield();
+                        try { Thread.sleep(1); } catch (InterruptedException ignored) {}
                         cnt++;
                     }
                 }
@@ -250,12 +271,12 @@ logger.log(Level.DEBUG, "line: " + e.getType());
 
             int timeout = 5000;
             while (!plugin.chipRegister.plugin(RealChipPlugin.class).isThreadStopped()) {
-                Thread.yield();
+                try { Thread.sleep(1); } catch (InterruptedException ignored) {}
                 timeout--;
                 if (timeout < 1) break;
             }
             while (!plugin.stopped) {
-                Thread.yield();
+                try { Thread.sleep(1); } catch (InterruptedException ignored) {}
                 timeout--;
                 if (timeout < 1) break;
             }
@@ -293,7 +314,13 @@ logger.log(Level.INFO, "stop: " + plugin.stopped + ", " + hashCode());
             } catch (InterruptedException ignore) {
             }
         }
-
+        if (line != null) {
+            try {
+                line.close();
+            } catch (Exception e) {
+                logger.log(Level.ERROR, e.getMessage(), e);
+            }
+        }
         if (plugin != null) {
             plugin.close();
             try {
@@ -304,16 +331,7 @@ logger.log(Level.INFO, "stop: " + plugin.stopped + ", " + hashCode());
             }
         }
 
-        try {
-            if (line != null) {
-                if (line.available() > 0)
-                    line.drain();
-                line.stop();
-                line.close();
-            }
-        } catch (Exception ex) {
-            logger.log(Level.ERROR, ex.getMessage(), ex);
-        }
+
     }
 
     /** */
@@ -401,7 +419,7 @@ logger.log(Level.DEBUG, "stop: " + plugin.stopped);
         plugin.getDriver().fireEventHappened(this, "master", buffer, offset);
 
         for (var i : plugin.mds.getFirstInstruments()) {
-            var vs = i.getView("volume", null);
+            var vs = i.getView(-1, "volume", null);
         }
     }
 
@@ -459,20 +477,7 @@ logger.log(Level.DEBUG, "stop: " + plugin.stopped);
 
             switch (req.request) {
                 case Die: // Please kill yourself
-                    if (plugin != null) {
-                        try {
-                            plugin.close();
-                        } catch (Exception e) {
-                            logger.log(Level.ERROR, e.getMessage(), e);
-                        }
-                        if (plugin.chipRegister != null) {
-                            try {
-                                plugin.chipRegister.plugin(RealChipPlugin.class).realChipClose();
-                            } catch (Exception e) {
-                                logger.log(Level.ERROR, e.getMessage(), e);
-                            }
-                        }
-                    }
+                    close();
                     req.setEnd(true);
                     break;
                 case Stop:

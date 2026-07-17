@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
+import java.util.ResourceBundle;
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
@@ -17,7 +18,6 @@ import mdplayer.driver.Vgm;
 import mdplayer.driver.VgmDriver;
 import mdplayer.plugin.Plugin;
 import mdplayer.plugin.VGMPlugin;
-import mdplayer.properties.Resources;
 import musicDriverInterface.MetaData;
 import vavi.sound.sampled.md.MdEncoding;
 import vavi.sound.sampled.md.MdFileFormatType;
@@ -37,6 +37,8 @@ import static vavi.util.compat.Util.getExtension;
  * @version 0.00 2022-07-07 nsano initial version <br>
  */
 public class VGMFileFormat extends BaseFileFormat {
+
+    private static final ResourceBundle rb = ResourceBundle.getBundle("mdplayer/properties/resources");
 
     private static final Logger logger = System.getLogger(VGMFileFormat.class.getName());
 
@@ -60,9 +62,10 @@ public class VGMFileFormat extends BaseFileFormat {
 
     @Override
     public String[] getPresetMixerBalance() {
+
         return new String[] {
                 "DriverBalance_VGM.mbc",
-                Resources.getDefaultVolumeBalance_VGM()
+                rb.getString("DefaultVolumeBalance_VGM")
         };
     }
 

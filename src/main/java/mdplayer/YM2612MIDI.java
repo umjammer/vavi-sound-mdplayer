@@ -34,7 +34,7 @@ public class YM2612MIDI {
     private static final Logger logger = getLogger(YM2612MIDI.class.getName());
 
     private int latestNoteNumberMONO = -1;
-    private final int[] latestNoteNumber = new int[] {-1, -1, -1, -1, -1, -1};
+    private final int[] latestNoteNumber = {-1, -1, -1, -1, -1, -1};
 
     private final Setting setting;
     private final MDSound mdsMIDI;
@@ -50,7 +50,9 @@ public class YM2612MIDI {
     public Runnable slow;
     public Runnable stop;
 
-    private int[][] _noteLog = new int[][] {new int[100], new int[100], new int[100], new int[100], new int[100], new int[100]};
+    private int[][] _noteLog = {
+            new int[100], new int[100], new int[100], new int[100], new int[100], new int[100]
+    };
 
     public int[][] getNoteLog() {
         return _noteLog;
@@ -252,7 +254,7 @@ public class YM2612MIDI {
 
     private Tone voiceCopyChToTone(int des, String name) {
         Tone tone = new Tone();
-        int[][] reg = mdsMIDI.inst(Ym2612Inst.class).readRegister((byte) 0);
+        int[][] reg = (int[][]) mdsMIDI.inst(Ym2612Inst.class).getView(0, "register", null).get("Ym2612");
 
         for (int i = 0; i < 4; i++) {
             int opn = (i == 0) ? 0 : ((i == 1) ? 8 : ((i == 2) ? 4 : 12));
@@ -341,17 +343,17 @@ public class YM2612MIDI {
 
     public void setMode(int m) {
         switch (m) {
-        case 0:
-             // MONO
-            for (int ch = 0; ch < 6; ch++) {
-                setting.getMidiKbd().getUseChannel()[ch] = ch == setting.getMidiKbd().getUseMonoChannel();
-            }
-            setting.getMidiKbd().setMono(true);
-            break;
-        default:
-             // POLY
-            setting.getMidiKbd().setMono(false);
-            break;
+            case 0:
+                // MONO
+                for (int ch = 0; ch < 6; ch++) {
+                    setting.getMidiKbd().getUseChannel()[ch] = ch == setting.getMidiKbd().getUseMonoChannel();
+                }
+                setting.getMidiKbd().setMono(true);
+                break;
+            default:
+                // POLY
+                setting.getMidiKbd().setMono(false);
+                break;
         }
     }
 
@@ -486,7 +488,7 @@ public class YM2612MIDI {
 
     public void clearNoteLog(int ch) {
         for (int i = 0; i < 10; i++) {
-            newParam.ym2612Midi.noteLog[ch][i] = -1;
+            ym2612Midi.noteLog[ch][i] = -1;
         }
 
         for (int i = 0; i < 100; i++) {
@@ -515,7 +517,7 @@ public class YM2612MIDI {
                     int p = _noteLogPtr[ch] - 9;
                     if (p < 0) p += 100;
                     for (int i = 0; i < 10; i++) {
-                        newParam.ym2612Midi.noteLog[ch][i] = _noteLog[ch][p];
+                        ym2612Midi.noteLog[ch][i] = _noteLog[ch][p];
                         p++;
                         if (p == 100) p = 0;
                     }
@@ -544,7 +546,7 @@ public class YM2612MIDI {
                         int p = _noteLogPtr[ch] - 10;
                         if (p < 0) p += 100;
                         for (int i = 0; i < 10; i++) {
-                            newParam.ym2612Midi.noteLog[ch][i] = _noteLog[ch][p];
+                            ym2612Midi.noteLog[ch][i] = _noteLog[ch][p];
                             p++;
                             if (p == 100) p = 0;
                         }
@@ -755,21 +757,21 @@ public class YM2612MIDI {
         }
 
         switch (tp) {
-        case 2:
-            loadTonePalletFromMml2Vgm(tnt.toArray(String[]::new), tonePallet);
-            break;
-        case 3:
-            loadTonePalletFromFMP7(tnt.toArray(String[]::new), tonePallet);
-            break;
-        case 4:
-            loadTonePalletFromNRTDRV(tnt.toArray(String[]::new), tonePallet);
-            break;
-        case 5:
-            loadTonePalletFromMXDRV(tnt.toArray(String[]::new), tonePallet);
-            break;
-        case 6:
-            loadTonePalletFromMUSICLALF(tnt.toArray(String[]::new), tonePallet);
-            break;
+            case 2:
+                loadTonePalletFromMml2Vgm(tnt.toArray(String[]::new), tonePallet);
+                break;
+            case 3:
+                loadTonePalletFromFMP7(tnt.toArray(String[]::new), tonePallet);
+                break;
+            case 4:
+                loadTonePalletFromNRTDRV(tnt.toArray(String[]::new), tonePallet);
+                break;
+            case 5:
+                loadTonePalletFromMXDRV(tnt.toArray(String[]::new), tonePallet);
+                break;
+            case 6:
+                loadTonePalletFromMUSICLALF(tnt.toArray(String[]::new), tonePallet);
+                break;
         }
     }
 
@@ -1121,138 +1123,138 @@ public class YM2612MIDI {
                     t.name = "No.%d(From NRTDRV)".formatted(toneBuf.get(0));
 
                     switch (voiceMode) {
-                    case 0:
-                        t.ops = new Tone.Op[4];
-                        for (int i = 0; i < 4; i++) {
-                            t.ops[i] = new Tone.Op();
-                            t.ops[i].ar = toneBuf.get(i * 11 + 5);
-                            t.ops[i].dr = toneBuf.get(i * 11 + 6);
-                            t.ops[i].sr = toneBuf.get(i * 11 + 7);
-                            t.ops[i].rr = toneBuf.get(i * 11 + 8);
-                            t.ops[i].sl = toneBuf.get(i * 11 + 9);
-                            t.ops[i].tl = toneBuf.get(i * 11 + 10);
-                            t.ops[i].ks = toneBuf.get(i * 11 + 11);
-                            t.ops[i].ml = toneBuf.get(i * 11 + 12);
-                            t.ops[i].dt = toneBuf.get(i * 11 + 13);
-                            t.ops[i].dt2 = toneBuf.get(i * 11 + 14);
-                            t.ops[i].am = toneBuf.get(i * 11 + 15);
-                            t.ops[i].sg = 0;
-                        }
-                        t.al = toneBuf.get(2);
-                        t.fb = toneBuf.get(3);
+                        case 0:
+                            t.ops = new Tone.Op[4];
+                            for (int i = 0; i < 4; i++) {
+                                t.ops[i] = new Tone.Op();
+                                t.ops[i].ar = toneBuf.get(i * 11 + 5);
+                                t.ops[i].dr = toneBuf.get(i * 11 + 6);
+                                t.ops[i].sr = toneBuf.get(i * 11 + 7);
+                                t.ops[i].rr = toneBuf.get(i * 11 + 8);
+                                t.ops[i].sl = toneBuf.get(i * 11 + 9);
+                                t.ops[i].tl = toneBuf.get(i * 11 + 10);
+                                t.ops[i].ks = toneBuf.get(i * 11 + 11);
+                                t.ops[i].ml = toneBuf.get(i * 11 + 12);
+                                t.ops[i].dt = toneBuf.get(i * 11 + 13);
+                                t.ops[i].dt2 = toneBuf.get(i * 11 + 14);
+                                t.ops[i].am = toneBuf.get(i * 11 + 15);
+                                t.ops[i].sg = 0;
+                            }
+                            t.al = toneBuf.get(2);
+                            t.fb = toneBuf.get(3);
 
-                        tonePallet.getLstTone().set(toneBuf.get(0), t);
-                        break;
-                    case 1:
-                        t.ops = new Tone.Op[4];
-                        for (int i = 0; i < 4; i++) {
-                            t.ops[i] = new Tone.Op();
-                            t.ops[i].ar = toneBuf.get(i * 11 + 1);
-                            t.ops[i].dr = toneBuf.get(i * 11 + 2);
-                            t.ops[i].sr = toneBuf.get(i * 11 + 3);
-                            t.ops[i].rr = toneBuf.get(i * 11 + 4);
-                            t.ops[i].sl = toneBuf.get(i * 11 + 5);
-                            t.ops[i].tl = toneBuf.get(i * 11 + 6);
-                            t.ops[i].ks = toneBuf.get(i * 11 + 7);
-                            t.ops[i].ml = toneBuf.get(i * 11 + 8);
-                            t.ops[i].dt = toneBuf.get(i * 11 + 9);
-                            t.ops[i].dt2 = toneBuf.get(i * 11 + 10);
-                            t.ops[i].am = toneBuf.get(i * 11 + 11);
-                            t.ops[i].sg = 0;
-                        }
-                        t.al = toneBuf.get(46);
-                        t.fb = toneBuf.get(47);
+                            tonePallet.getLstTone().set(toneBuf.get(0), t);
+                            break;
+                        case 1:
+                            t.ops = new Tone.Op[4];
+                            for (int i = 0; i < 4; i++) {
+                                t.ops[i] = new Tone.Op();
+                                t.ops[i].ar = toneBuf.get(i * 11 + 1);
+                                t.ops[i].dr = toneBuf.get(i * 11 + 2);
+                                t.ops[i].sr = toneBuf.get(i * 11 + 3);
+                                t.ops[i].rr = toneBuf.get(i * 11 + 4);
+                                t.ops[i].sl = toneBuf.get(i * 11 + 5);
+                                t.ops[i].tl = toneBuf.get(i * 11 + 6);
+                                t.ops[i].ks = toneBuf.get(i * 11 + 7);
+                                t.ops[i].ml = toneBuf.get(i * 11 + 8);
+                                t.ops[i].dt = toneBuf.get(i * 11 + 9);
+                                t.ops[i].dt2 = toneBuf.get(i * 11 + 10);
+                                t.ops[i].am = toneBuf.get(i * 11 + 11);
+                                t.ops[i].sg = 0;
+                            }
+                            t.al = toneBuf.get(46);
+                            t.fb = toneBuf.get(47);
 
-                        tonePallet.getLstTone().set(toneBuf.getFirst(), t);
-                        break;
-                    case 2:
-                        t.ops = new Tone.Op[4];
-                        for (int i = 0; i < 4; i++) {
-                            t.ops[i] = new Tone.Op();
-                            t.ops[i].ar = toneBuf.get(i * 11 + 4);
-                            t.ops[i].dr = toneBuf.get(i * 11 + 5);
-                            t.ops[i].sr = toneBuf.get(i * 11 + 6);
-                            t.ops[i].rr = toneBuf.get(i * 11 + 7);
-                            t.ops[i].sl = toneBuf.get(i * 11 + 8);
-                            t.ops[i].tl = toneBuf.get(i * 11 + 9);
-                            t.ops[i].ks = toneBuf.get(i * 11 + 10);
-                            t.ops[i].ml = toneBuf.get(i * 11 + 11);
-                            t.ops[i].dt = toneBuf.get(i * 11 + 12);
-                            t.ops[i].dt2 = toneBuf.get(i * 11 + 13);
-                            t.ops[i].am = toneBuf.get(i * 11 + 14);
-                            t.ops[i].sg = 0;
-                        }
-                        t.al = toneBuf.get(1);
-                        t.fb = toneBuf.get(2);
+                            tonePallet.getLstTone().set(toneBuf.getFirst(), t);
+                            break;
+                        case 2:
+                            t.ops = new Tone.Op[4];
+                            for (int i = 0; i < 4; i++) {
+                                t.ops[i] = new Tone.Op();
+                                t.ops[i].ar = toneBuf.get(i * 11 + 4);
+                                t.ops[i].dr = toneBuf.get(i * 11 + 5);
+                                t.ops[i].sr = toneBuf.get(i * 11 + 6);
+                                t.ops[i].rr = toneBuf.get(i * 11 + 7);
+                                t.ops[i].sl = toneBuf.get(i * 11 + 8);
+                                t.ops[i].tl = toneBuf.get(i * 11 + 9);
+                                t.ops[i].ks = toneBuf.get(i * 11 + 10);
+                                t.ops[i].ml = toneBuf.get(i * 11 + 11);
+                                t.ops[i].dt = toneBuf.get(i * 11 + 12);
+                                t.ops[i].dt2 = toneBuf.get(i * 11 + 13);
+                                t.ops[i].am = toneBuf.get(i * 11 + 14);
+                                t.ops[i].sg = 0;
+                            }
+                            t.al = toneBuf.get(1);
+                            t.fb = toneBuf.get(2);
 
-                        tonePallet.getLstTone().set(toneBuf.get(0), t);
-                        break;
-                    case 3:
-                        t.ops = new Tone.Op[4];
-                        for (int i = 0; i < 4; i++) {
-                            t.ops[i] = new Tone.Op();
-                            t.ops[i].ar = toneBuf.get(i * 11 + 1);
-                            t.ops[i].dr = toneBuf.get(i * 11 + 2);
-                            t.ops[i].sr = toneBuf.get(i * 11 + 3);
-                            t.ops[i].rr = toneBuf.get(i * 11 + 4);
-                            t.ops[i].sl = toneBuf.get(i * 11 + 5);
-                            t.ops[i].tl = toneBuf.get(i * 11 + 6);
-                            t.ops[i].ks = toneBuf.get(i * 11 + 7);
-                            t.ops[i].ml = toneBuf.get(i * 11 + 8);
-                            t.ops[i].dt = toneBuf.get(i * 11 + 9);
-                            t.ops[i].dt2 = toneBuf.get(i * 11 + 10);
-                            t.ops[i].am = toneBuf.get(i * 11 + 11);
-                            t.ops[i].sg = 0;
-                        }
-                        t.al = toneBuf.get(45);
-                        t.fb = toneBuf.get(46);
+                            tonePallet.getLstTone().set(toneBuf.get(0), t);
+                            break;
+                        case 3:
+                            t.ops = new Tone.Op[4];
+                            for (int i = 0; i < 4; i++) {
+                                t.ops[i] = new Tone.Op();
+                                t.ops[i].ar = toneBuf.get(i * 11 + 1);
+                                t.ops[i].dr = toneBuf.get(i * 11 + 2);
+                                t.ops[i].sr = toneBuf.get(i * 11 + 3);
+                                t.ops[i].rr = toneBuf.get(i * 11 + 4);
+                                t.ops[i].sl = toneBuf.get(i * 11 + 5);
+                                t.ops[i].tl = toneBuf.get(i * 11 + 6);
+                                t.ops[i].ks = toneBuf.get(i * 11 + 7);
+                                t.ops[i].ml = toneBuf.get(i * 11 + 8);
+                                t.ops[i].dt = toneBuf.get(i * 11 + 9);
+                                t.ops[i].dt2 = toneBuf.get(i * 11 + 10);
+                                t.ops[i].am = toneBuf.get(i * 11 + 11);
+                                t.ops[i].sg = 0;
+                            }
+                            t.al = toneBuf.get(45);
+                            t.fb = toneBuf.get(46);
 
-                        tonePallet.getLstTone().set(toneBuf.getFirst(), t);
-                        break;
-                    case 4:
-                        t.ops = new Tone.Op[4];
-                        for (int i = 0; i < 4; i++) {
-                            t.ops[i] = new Tone.Op();
-                            t.ops[i].ar = toneBuf.get(i * 11 + 4);
-                            t.ops[i].dr = toneBuf.get(i * 11 + 5);
-                            t.ops[i].sr = toneBuf.get(i * 11 + 6);
-                            t.ops[i].rr = toneBuf.get(i * 11 + 7);
-                            t.ops[i].sl = toneBuf.get(i * 11 + 8);
-                            t.ops[i].tl = toneBuf.get(i * 11 + 9);
-                            t.ops[i].ks = toneBuf.get(i * 11 + 10);
-                            t.ops[i].ml = toneBuf.get(i * 11 + 11);
-                            t.ops[i].dt = toneBuf.get(i * 11 + 12);
-                            t.ops[i].dt2 = toneBuf.get(i * 11 + 13);
-                            t.ops[i].am = toneBuf.get(i * 11 + 14);
-                            t.ops[i].sg = 0;
-                        }
-                        t.al = toneBuf.get(1) & 0x7;
-                        t.fb = (toneBuf.get(1) & 0x38) >> 3;
+                            tonePallet.getLstTone().set(toneBuf.getFirst(), t);
+                            break;
+                        case 4:
+                            t.ops = new Tone.Op[4];
+                            for (int i = 0; i < 4; i++) {
+                                t.ops[i] = new Tone.Op();
+                                t.ops[i].ar = toneBuf.get(i * 11 + 4);
+                                t.ops[i].dr = toneBuf.get(i * 11 + 5);
+                                t.ops[i].sr = toneBuf.get(i * 11 + 6);
+                                t.ops[i].rr = toneBuf.get(i * 11 + 7);
+                                t.ops[i].sl = toneBuf.get(i * 11 + 8);
+                                t.ops[i].tl = toneBuf.get(i * 11 + 9);
+                                t.ops[i].ks = toneBuf.get(i * 11 + 10);
+                                t.ops[i].ml = toneBuf.get(i * 11 + 11);
+                                t.ops[i].dt = toneBuf.get(i * 11 + 12);
+                                t.ops[i].dt2 = toneBuf.get(i * 11 + 13);
+                                t.ops[i].am = toneBuf.get(i * 11 + 14);
+                                t.ops[i].sg = 0;
+                            }
+                            t.al = toneBuf.get(1) & 0x7;
+                            t.fb = (toneBuf.get(1) & 0x38) >> 3;
 
-                        tonePallet.getLstTone().set(toneBuf.get(0), t);
-                        break;
-                    case 5:
-                        t.ops = new Tone.Op[4];
-                        for (int i = 0; i < 4; i++) {
-                            t.ops[i] = new Tone.Op();
-                            t.ops[i].ar = toneBuf.get(i * 11 + 12);
-                            t.ops[i].dr = toneBuf.get(i * 11 + 13);
-                            t.ops[i].sr = toneBuf.get(i * 11 + 14);
-                            t.ops[i].rr = toneBuf.get(i * 11 + 15);
-                            t.ops[i].sl = toneBuf.get(i * 11 + 16);
-                            t.ops[i].tl = toneBuf.get(i * 11 + 17);
-                            t.ops[i].ks = toneBuf.get(i * 11 + 18);
-                            t.ops[i].ml = toneBuf.get(i * 11 + 19);
-                            t.ops[i].dt = toneBuf.get(i * 11 + 20);
-                            t.ops[i].dt2 = toneBuf.get(i * 11 + 21);
-                            t.ops[i].am = toneBuf.get(i * 11 + 22);
-                            t.ops[i].sg = 0;
-                        }
-                        t.al = toneBuf.get(1) & 0x7;
-                        t.fb = (toneBuf.get(1) & 0x38) >> 3;
+                            tonePallet.getLstTone().set(toneBuf.get(0), t);
+                            break;
+                        case 5:
+                            t.ops = new Tone.Op[4];
+                            for (int i = 0; i < 4; i++) {
+                                t.ops[i] = new Tone.Op();
+                                t.ops[i].ar = toneBuf.get(i * 11 + 12);
+                                t.ops[i].dr = toneBuf.get(i * 11 + 13);
+                                t.ops[i].sr = toneBuf.get(i * 11 + 14);
+                                t.ops[i].rr = toneBuf.get(i * 11 + 15);
+                                t.ops[i].sl = toneBuf.get(i * 11 + 16);
+                                t.ops[i].tl = toneBuf.get(i * 11 + 17);
+                                t.ops[i].ks = toneBuf.get(i * 11 + 18);
+                                t.ops[i].ml = toneBuf.get(i * 11 + 19);
+                                t.ops[i].dt = toneBuf.get(i * 11 + 20);
+                                t.ops[i].dt2 = toneBuf.get(i * 11 + 21);
+                                t.ops[i].am = toneBuf.get(i * 11 + 22);
+                                t.ops[i].sg = 0;
+                            }
+                            t.al = toneBuf.get(1) & 0x7;
+                            t.fb = (toneBuf.get(1) & 0x38) >> 3;
 
-                        tonePallet.getLstTone().set(toneBuf.get(0), t);
-                        break;
+                            tonePallet.getLstTone().set(toneBuf.get(0), t);
+                            break;
                     }
 
                     stage = 0;
@@ -1635,8 +1637,8 @@ public class YM2612MIDI {
     }
 
     public void changeSelectedParamValue(int n) {
-        int ch = newParam.ym2612Midi.selectCh;
-        int p = newParam.ym2612Midi.selectParam;
+        int ch = ym2612Midi.selectCh;
+        int p = ym2612Midi.selectParam;
         if (ch == -1 || p == -1) return;
 
         if (p >= 44 && p < 48) {
@@ -1694,4 +1696,23 @@ public class YM2612MIDI {
         }
         setTonesFromSettng();
     }
+
+    @Deprecated
+    public static class Params {
+
+        public boolean lfoSw = false;
+        public int lfoFrq = -1;
+        public boolean IsMONO = true;
+        public int useFormat = 0;
+        public int selectCh = -1;
+        public int selectParam = -1;
+
+        public final mdplayer.MDChipParams.Channel[] channels = {new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel()};
+
+        public final int[][] noteLog = {new int[10], new int[10], new int[10], new int[10], new int[10], new int[10]};
+        public final boolean[] useChannel = {false, false, false, false, false, false};
+    }
+
+    @Deprecated
+    public mdplayer.YM2612MIDI.Params ym2612Midi = new mdplayer.YM2612MIDI.Params();
 }

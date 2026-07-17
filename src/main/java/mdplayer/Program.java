@@ -5,7 +5,7 @@ import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import javax.swing.JOptionPane;
 
-import mdplayer.form.sys.frmMain;
+import mdplayer.form.sys.FormMain;
 
 import static java.lang.System.getLogger;
 
@@ -29,9 +29,9 @@ public class Program {
             return;
         }
 
-        frmMain frm = null;
+        FormMain frm = null;
         try {
-            frm = new frmMain();
+            frm = new FormMain();
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
             JOptionPane.showMessageDialog(null,

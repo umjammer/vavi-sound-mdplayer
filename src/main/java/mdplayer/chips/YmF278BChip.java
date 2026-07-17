@@ -9,6 +9,7 @@ package mdplayer.chips;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
+import mdplayer.MDChipParams.VolumeInfo;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
@@ -29,21 +30,27 @@ public class YmF278BChip extends BaseChip {
 
     private final RSoundChip[] realChips = {null, null};
 
+    @Deprecated
     public final int[][][] register = {
             {null, null},
             {null, null}
     };
 
+    @Deprecated
     private final int[] registerFm = {0, 0};
 
+    @Deprecated
     private final int[][] registerPcm = {new int[24], new int[24]};
 
+    @Deprecated
     private final int[] registerRhythmB = {0, 0};
 
+    @Deprecated
     private final int[] registerRhythm = {
             0, 0
     };
 
+    @Deprecated
     private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
                     false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
@@ -82,14 +89,17 @@ public class YmF278BChip extends BaseChip {
         }
     }
 
+    // TODO getInfo
     public int getRhythmKeyOn(int chipId) {
         return registerRhythm[chipId];
     }
 
+    // TODO getInfo
     public void resetRhythmKeyOn(int chipId) {
         registerRhythm[chipId] = 0;
     }
 
+    // TODO getInfo
     public int[] getPcmKeyOn(int chipId) {
         return registerPcm[chipId];
     }
@@ -99,6 +109,7 @@ public class YmF278BChip extends BaseChip {
             registerPcm[chipId][i] = 0;
     }
 
+    // TODO getInfo
     public int getFmKeyOn(int chipId) {
         return registerFm[chipId];
     }
@@ -197,9 +208,10 @@ public class YmF278BChip extends BaseChip {
         if (model == EnmModel.VirtualModel)
             context.mds.inst(YmF278BInst.class).writeRam(chipId, romSize, offset, length, buf, srcOffset);
 
-        dumpData(model, "PCMRAMData", srcOffset,buf, length);
+        dumpData(model, "PCMRAMData", srcOffset, buf, length);
     }
 
+    @Override
     public Map<String, Object> getInfo(int chipId) {
         return Map.of("register", register[chipId]);
     }
@@ -211,4 +223,31 @@ public class YmF278BChip extends BaseChip {
     public void resetMask(int chipId, int ch) {
         setMask(chipId, ch, false);
     }
+
+    @Deprecated
+    public static class Params {
+
+        public final mdplayer.MDChipParams.Channel[] channels = {
+                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(),
+                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(),
+                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(),
+                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), // FM 18
+                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), // Rhythm 5
+                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(),
+                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(),
+                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(),
+                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(),
+                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel() // PCM 24
+        };
+    }
+
+    @Deprecated
+    public final Params[] ymf278b = {new Params(), new Params()};
+    @Deprecated
+    public final Params[] ymf278b_old = {new Params(), new Params()};
+
+    @Deprecated
+    public final VolumeInfo YMF278B = new VolumeInfo(); // OPL4
+    @Deprecated
+    public final VolumeInfo YMF278B_old = new VolumeInfo(); // OPL4
 }

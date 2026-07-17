@@ -9,6 +9,7 @@ package mdplayer.chips;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
+import mdplayer.MDChipParams.VolumeInfo;
 import mdplayer.RealChip.RC86ctlSoundChip;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
@@ -25,6 +26,7 @@ import mdsound.instrument.YmFmYm2203Inst;
  * system property
  * <li>{@code mdplayer.variant.ym2203} ... active chip index</li>
  * </p>
+ *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
@@ -34,16 +36,23 @@ public class Ym2203Chip extends BaseChip {
 
     private final RSoundChip[] realChips = {null, null};
 
+    @Deprecated
     public final int[][] fmRegister = {null, null};
+    @Deprecated
     public final int[][] fmKeyOn = {null, null};
+    @Deprecated
     public final int[][] fmCh3SlotVolume = {new int[4], new int[4]};
+    @Deprecated
     private final int[] nowFadeoutVol = {0, 0};
+    @Deprecated
     public final int[][] fmVolume = {new int[9], new int[9]};
+    @Deprecated
     private final boolean[][] maskFM = {
             {false, false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false, false}
     };
 
+    @Deprecated
     public int clock;
 
     @Override
@@ -324,6 +333,7 @@ public class Ym2203Chip extends BaseChip {
         }
     }
 
+    @Override
     public Map<String, Object> getInfo(int chipId) {
         return Map.of(
                 "volume", fmVolume[chipId],
@@ -352,4 +362,30 @@ public class Ym2203Chip extends BaseChip {
         setFadeout(0, 0);
         setFadeout(1, 0);
     }
+
+    @Deprecated
+    public static class Params {
+        public int nfrq = -1;
+        public int efrq = -1;
+        public int etype = -1;
+        public final mdplayer.MDChipParams.Channel[] channels = new mdplayer.MDChipParams.Channel[] {new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel()};
+    }
+
+    @Deprecated
+    public final Params[] ym2203 = new Params[] {new Params(), new Params()};
+    @Deprecated
+    public final Params[] ym2203_old = new Params[] {new Params(), new Params()};
+
+    @Deprecated
+    public final VolumeInfo YM2203 = new VolumeInfo();
+    @Deprecated
+    public final VolumeInfo YM2203_old = new VolumeInfo();
+    @Deprecated
+    public final VolumeInfo YM2203FM = new VolumeInfo();
+    @Deprecated
+    public final VolumeInfo YM2203FM_old = new VolumeInfo();
+    @Deprecated
+    public final VolumeInfo YM2203PSG = new VolumeInfo();
+    @Deprecated
+    public final VolumeInfo YM2203PSG_old = new VolumeInfo();
 }

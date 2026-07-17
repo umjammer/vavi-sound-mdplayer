@@ -9,6 +9,7 @@ package mdplayer.chips;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
+import mdplayer.MDChipParams.VolumeInfo;
 import mdsound.Instrument;
 import mdsound.instrument.Rf5C68Inst;
 
@@ -21,6 +22,7 @@ import mdsound.instrument.Rf5C68Inst;
  */
 public class Rf5C68Chip extends BaseChip {
 
+    @Deprecated
     private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false}
@@ -68,8 +70,9 @@ public class Rf5C68Chip extends BaseChip {
             context.mds.inst(Rf5C68Inst.class).writeMemory(chipId, offset, data);
     }
 
+    @Override
     public Map<String, Object> getInfo(int chipId) {
-        return context.mds.inst(Rf5C68Inst.class).getInfo(chipId);
+        return context.mds.inst(Rf5C68Inst.class).getView(chipId, "info", null);
     }
 
     public void setMask(int chipId, int ch) {
@@ -79,4 +82,20 @@ public class Rf5C68Chip extends BaseChip {
     public void resetMask(int chipId, int ch) {
         setMask(chipId, ch, false);
     }
+
+    @Deprecated
+    public static class Params {
+
+        public final mdplayer.MDChipParams.Channel[] channels = new mdplayer.MDChipParams.Channel[] {new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel()};
+    }
+
+    @Deprecated
+    public final Params[] rf5c68 = new Params[] {new Params(), new Params()};
+    @Deprecated
+    public final Params[] rf5c68_old = new Params[] {new Params(), new Params()};
+
+    @Deprecated
+    public final VolumeInfo RF5C68 = new VolumeInfo();
+    @Deprecated
+    public final VolumeInfo RF5C68_old = new VolumeInfo();
 }

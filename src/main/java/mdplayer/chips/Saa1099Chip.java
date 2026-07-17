@@ -7,6 +7,7 @@
 package mdplayer.chips;
 
 import mdplayer.Common.EnmModel;
+import mdplayer.MDChipParams.VolumeInfo;
 import mdsound.Instrument;
 import mdsound.instrument.Saa1099Inst;
 
@@ -32,4 +33,9 @@ public class Saa1099Chip extends BaseChip {
             context.mds.write(inst(chipId), chipId, 0, port, data);
         }
     }
+
+    @Deprecated
+    public final VolumeInfo SAA1099 = new VolumeInfo();
+    @Deprecated
+    public final VolumeInfo SAA1099_old = new VolumeInfo();
 }

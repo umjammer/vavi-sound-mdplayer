@@ -7,8 +7,6 @@ import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.List;
 
-import mdplayer.Common.EnmRealChipType;
-
 import static java.lang.System.getLogger;
 
 
@@ -19,6 +17,18 @@ public class RealChip implements Closeable {
 //    private NScci.NScci nScci;
 
 //    private Nc86ctl.Nc86ctl nc86ctl;
+
+    public enum EnmRealChipType {
+        YM2608(1), YM2151(2), YM2610(3), YM2203(4),
+        YM2612(5), AY8910(6), SN76489(7), YM3812(8),
+        YMF262(9), YM2413(10), YM3526(11), K051649(13),
+        SPPCM(42), C140(43), SEGAPCM(44);
+        final int v;
+
+        EnmRealChipType(int v) {
+            this.v = v;
+        }
+    }
 
 //#region IDisposable Support
 
@@ -135,7 +145,7 @@ public class RealChip implements Closeable {
 //        }
     }
 
-    public void SendData() {
+    public void sendData() {
 //        if (nScci != null)
 //            NScci.NSoundInterfaceManager().sendData();
 //        if (nc86ctl != null) {

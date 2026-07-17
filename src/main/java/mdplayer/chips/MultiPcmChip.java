@@ -9,6 +9,7 @@ package mdplayer.chips;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
+import mdplayer.MDChipParams.VolumeInfo;
 import mdsound.Instrument;
 import mdsound.instrument.MultiPcmInst;
 
@@ -36,10 +37,11 @@ public class MultiPcmChip extends BaseChip {
         }
     }
 
+    @Override
     public Map<String, Object> getInfo(int chipId) {
         fireEventHappened("led.on", chipId);
 
-        return context.mds.inst(MultiPcmInst.class).getInfo(chipId);
+        return context.mds.inst(MultiPcmInst.class).getView(chipId, "info", null);
     }
 
     public void setBank(int chipId, int ch, int addr, EnmModel model) {
@@ -59,4 +61,29 @@ public class MultiPcmChip extends BaseChip {
 
         dumpData(model, "PCMData", srcOffset, buf, length);
     }
+
+    @Deprecated
+    public static class Params {
+
+        public final mdplayer.MDChipParams.Channel[] channels = new mdplayer.MDChipParams.Channel[] {
+                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(),
+                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(),
+                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(),
+                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(),
+
+                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(),
+                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(),
+                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel()
+        };
+    }
+
+    @Deprecated
+    public final Params[] multiPCM = new Params[] {new Params(), new Params()};
+    @Deprecated
+    public final Params[] multiPCM_old = new Params[] {new Params(), new Params()};
+
+    @Deprecated
+    public final VolumeInfo MultiPCM = new VolumeInfo(); // MPCM
+    @Deprecated
+    public final VolumeInfo MultiPCM_old = new VolumeInfo(); // MPCM
 }

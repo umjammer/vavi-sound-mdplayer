@@ -9,13 +9,10 @@ package mdplayer.chips;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
-import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
-import mdplayer.driver.BaseDriver;
-import mdplayer.emu.nise68.XMemory;
 import mdplayer.emu.nise68.Memory68;
 import mdplayer.emu.nise68.Register68;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.emu.nise68.XMemory;
 import mdsound.Instrument;
 import mdsound.Instrument.PcmEnabledInstrument;
 import mdsound.chips.MPcm;
@@ -37,6 +34,7 @@ public class MPcmChip extends BaseChip {
 
     private static final Logger logger = System.getLogger(MPcmChip.class.getName());
 
+    @Deprecated
     private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false}

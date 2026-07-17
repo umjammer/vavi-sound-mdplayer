@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.ResourceBundle;
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
@@ -13,7 +14,6 @@ import mdplayer.PlayList.Music;
 import mdplayer.driver.gbs.Gbs;
 import mdplayer.plugin.GbsPlugin;
 import mdplayer.plugin.Plugin;
-import mdplayer.properties.Resources;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 import vavi.sound.SoundUtil;
@@ -30,6 +30,8 @@ import vavi.util.archive.Entry;
  * @version 0.00 2026-04-10 nsano initial version <br>
  */
 public class GbsFileFormat extends BaseFileFormat {
+
+    private static final ResourceBundle rb = ResourceBundle.getBundle("mdplayer/properties/resources");
 
     @Override
     public String[] getExtensions() {
@@ -82,7 +84,7 @@ public class GbsFileFormat extends BaseFileFormat {
     public String[] getPresetMixerBalance() {
         return new String[] {
                 "DriverBalance_GBS.mbc",
-                Resources.getDefaultVolumeBalance_GBS()
+                rb.getString("DefaultVolumeBalance_GBS")
         };
     }
 

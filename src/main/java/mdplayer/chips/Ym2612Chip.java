@@ -9,9 +9,11 @@ package mdplayer.chips;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
+import mdplayer.MDChipParams.VolumeInfo;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
+import mdplayer.format.FileFormat;
 import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.instrument.MameYm2612Inst;
@@ -27,6 +29,7 @@ import mdsound.instrument.Ym3438Inst;
  * system property
  * <li>{@code mdplayer.variant.ym2612} ... active chip index</li>
  * </p>
+ *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
@@ -36,22 +39,29 @@ public class Ym2612Chip extends BaseChip {
 
     private final RSoundChip[] realChips = {null, null};
 
+    @Deprecated
     public final int[][][] register = {
             {null, null},
             {null, null}
     };
+    @Deprecated
     public final int[][] keyOn = {null, null};
+    @Deprecated
     public final int[][] volume = {
             {0, 0, 0, 0, 0, 0, 0, 0, 0},
             {0, 0, 0, 0, 0, 0, 0, 0, 0}
     };
+    @Deprecated
     public final int[][] ch3SlotVolume = {new int[4], new int[4]};
+    // TODO check cache or not
     private final int[] fadeout = {0, 0};
+    @Deprecated
     private final boolean[][] mask = {
             {false, false, false, false, false, false},
             {false, false, false, false, false, false}
     };
 
+    @Deprecated
     public int clock;
 
     @Override
@@ -310,6 +320,7 @@ public class Ym2612Chip extends BaseChip {
         }
     }
 
+    @Override
     public Map<String, Object> getInfo(int chipId) {
         return Map.of(
                 "volume", volume[chipId],
@@ -332,4 +343,29 @@ public class Ym2612Chip extends BaseChip {
         setFadeout(0, 0);
         setFadeout(1, 0);
     }
+
+    @Deprecated
+    public static class Params {
+
+        public FileFormat fileFormat = FileFormat.unknown;
+        public boolean lfoSw = false;
+        public int lfoFrq = -1;
+        public int timerA = -1;
+        public int timerB = -1;
+        public final int[] xpcmVolL = new int[] {-1, -1, -1, -1};
+        public final int[] xpcmVolR = new int[] {-1, -1, -1, -1};
+        public final int[] xpcmInst = new int[] {-1, -1, -1, -1};
+
+        public final mdplayer.MDChipParams.Channel[] channels = new mdplayer.MDChipParams.Channel[] {new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel()};
+    }
+
+    @Deprecated
+    public final Params[] ym2612 = new Params[] {new Params(), new Params()};
+    @Deprecated
+    public final Params[] ym2612_old = new Params[] {new Params(), new Params()};
+
+    @Deprecated
+    public final VolumeInfo YM2612 = new VolumeInfo();
+    @Deprecated
+    public final VolumeInfo YM2612_old = new VolumeInfo();
 }

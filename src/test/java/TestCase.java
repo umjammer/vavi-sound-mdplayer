@@ -322,6 +322,31 @@ Debug.println("stop");
         cdl.await();
     }
 
+    @Test
+    void testJacksonSerialization() throws Exception {
+        mdplayer.Setting setting = new mdplayer.Setting();
+        setting.init();
+        var midiOut = setting.getMidiOut();
+        var list = new java.util.ArrayList<mdplayer.MidiOutInfo[]>();
+        mdplayer.MidiOutInfo info1 = new mdplayer.MidiOutInfo();
+        info1.id = 1;
+        info1.name = "TestMIDI1";
+        mdplayer.MidiOutInfo info2 = new mdplayer.MidiOutInfo();
+        info2.id = 2;
+        info2.name = "TestMIDI2";
+        list.add(new mdplayer.MidiOutInfo[]{info1, info2});
+        midiOut.setMidiOutInfos(list);
+
+        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+        vavi.util.serdes.Serdes.Util.serialize(setting, baos);
+        String xml = baos.toString(java.nio.charset.StandardCharsets.UTF_8);
+        System.out.println("Serialized XML:\n" + xml);
+
+        mdplayer.Setting loaded = new mdplayer.Setting();
+        vavi.util.serdes.Serdes.Util.deserialize(new java.io.ByteArrayInputStream(baos.toByteArray()), loaded);
+        System.out.println("Deserialized successfully!");
+    }
+
     /**
      * @param args 0: audio file
      */

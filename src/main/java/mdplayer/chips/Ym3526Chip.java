@@ -9,6 +9,7 @@ package mdplayer.chips;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
+import mdplayer.MDChipParams.VolumeInfo;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
@@ -29,14 +30,18 @@ public class Ym3526Chip extends BaseChip {
 
     private final RSoundChip[] realChips = {null, null};
 
+    @Deprecated
     public final int[][] register = {null, null};
 
+    // TOCO check cache or not
     private final int[] fadeout = {0, 0};
 
+    @Deprecated
     private final ChipKeyInfo[] keyInfo = {
             new ChipKeyInfo(14), new ChipKeyInfo(14)
     };
 
+    @Deprecated
     private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false}
@@ -201,6 +206,7 @@ public class Ym3526Chip extends BaseChip {
         }
     }
 
+    @Override
     public Map<String, Object> getInfo(int chipId) {
         return Map.of("register", register[chipId]);
     }
@@ -224,4 +230,25 @@ public class Ym3526Chip extends BaseChip {
         setFadeout(0, 0);
         setFadeout(1, 0);
     }
+
+    @Deprecated
+    public static class Params {
+
+        public final mdplayer.MDChipParams.Channel[] channels = {
+                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(),
+                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), // FM 9
+                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel() // Rhythm 5
+        };
+
+    }
+
+    @Deprecated
+    public final Params[] ym3526 = new Params[] {new Params(), new Params()};
+    @Deprecated
+    public final Params[] ym3526_old = new Params[] {new Params(), new Params()};
+
+    @Deprecated
+    public final VolumeInfo YM3526 = new VolumeInfo();
+    @Deprecated
+    public final VolumeInfo YM3526_old = new VolumeInfo();
 }

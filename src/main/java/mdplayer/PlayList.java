@@ -39,7 +39,8 @@ public class PlayList implements Serializable, Cloneable {
 
     @Serdes(beanBinder = JacksonXMLBeanBinder.class)
     public static class Music {
-        public FileFormat format;
+        @com.fasterxml.jackson.annotation.JsonIgnore
+        public transient FileFormat format;
         public String playingNow;
         public String fileName;
         public String arcFileName;
@@ -166,11 +167,14 @@ public class PlayList implements Serializable, Cloneable {
                 fullPath = Path.of(fileName);
             }
 
-            try (InputStream sr = Files.newInputStream(fullPath)) {
-                PlayList pl = new PlayList();
-                Serdes.Util.deserialize(sr, pl);
-                return pl;
+            if (Files.exists(fullPath) && Files.size(fullPath) > 10) {
+                try (InputStream sr = Files.newInputStream(fullPath)) {
+                    PlayList pl = new PlayList();
+                    Serdes.Util.deserialize(sr, pl);
+                    return pl;
+                }
             }
+            return new PlayList();
         } catch (NoSuchFileException ex) {
             logger.log(Level.ERROR, ex.toString());
             return new PlayList();
@@ -246,8 +250,10 @@ public class PlayList implements Serializable, Cloneable {
         return ret;
     }
 
-    public BiConsumer<Integer, Object[]> setRow;
-    public Consumer<Object[]> addRow;
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public transient BiConsumer<Integer, Object[]> setRow;
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public transient Consumer<Object[]> addRow;
 
     public void addFile(String filename) {
         try {

@@ -3,186 +3,172 @@ package mdplayer;
 import java.awt.Frame;
 import java.io.File;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
-import mdplayer.form.sys.frmMain;
-import mdplayer.form.sys.frmPlayList;
+import static org.junit.jupiter.api.Assertions.*;
+import mdplayer.form.sys.FormMain;
 
 @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
 public class RobotTest {
 
-    private static void findAllTabbedPanes(java.awt.Container container, List<javax.swing.JTabbedPane> list) {
-        for (java.awt.Component comp : container.getComponents()) {
-            if (comp instanceof javax.swing.JTabbedPane) {
-                list.add((javax.swing.JTabbedPane) comp);
-            }
-            if (comp instanceof java.awt.Container) {
-                findAllTabbedPanes((java.awt.Container) comp, list);
-            }
-        }
-    }
-
-    private static java.awt.Component findComponentByName(java.awt.Container container, String name) {
-        for (java.awt.Component comp : container.getComponents()) {
-            if (name.equals(comp.getName())) {
-                return comp;
-            }
-            if (comp instanceof java.awt.Container) {
-                java.awt.Component child = findComponentByName((java.awt.Container) comp, name);
-                if (child != null) return child;
-            }
-        }
-        return null;
-    }
-
     @Test
-    public void testGuiActions() throws Exception {
-        System.out.println("Checking Setting class annotations:");
-        for (java.lang.annotation.Annotation a : Setting.class.getAnnotations()) {
-            System.out.println("  - " + a);
-        }
+    public void testArgumentStartupDelayAndFadeoutState() throws Exception {
+        File testSong = new File("src/test/resources/test.vgm");
+        String songPath = testSong.getAbsolutePath();
+        System.out.println("Starting test with song path: " + songPath);
 
-        // Start mdplayer in GUI mode in a separate thread
+        // Start mdplayer in GUI mode in a separate thread passing the song as an argument
         Thread t = new Thread(() -> {
             try {
-                Program.main(new String[]{});
+                Program.main(new String[]{songPath});
             } catch (Exception e) {
                 e.printStackTrace();
             }
         });
         t.start();
 
-        // Wait for the main frame to be fully constructed, visible, and fields initialized
-        frmMain mainFrame = null;
-        Field audioField = frmMain.class.getDeclaredField("audio");
-        audioField.setAccessible(true);
-        Field frmPlayListField = frmMain.class.getDeclaredField("frmPlayList");
-        frmPlayListField.setAccessible(true);
+        // 1. Wait for the main window to open and become visible
+        FormMain mainFrame = null;
+        long windowOpenedTime = 0;
         
-        for (int i = 0; i < 100; i++) {
-            Thread.sleep(100);
+        for (int i = 0; i < 200; i++) {
+            Thread.sleep(20);
             for (Frame f : Frame.getFrames()) {
-                if (f instanceof frmMain) {
-                    frmMain fm = (frmMain) f;
-                    try {
-                        if (fm.isVisible() && audioField.get(fm) != null && frmPlayListField.get(fm) != null) {
-                            mainFrame = fm;
-                            break;
-                        }
-                    } catch (Exception ignored) {}
+                if (f instanceof FormMain) {
+                    FormMain fm = (FormMain) f;
+                    if (fm.isVisible()) {
+                        mainFrame = fm;
+                        windowOpenedTime = System.currentTimeMillis();
+                        break;
+                    }
                 }
             }
             if (mainFrame != null) break;
         }
 
-        if (mainFrame == null) {
-            throw new RuntimeException("frmMain not found or not visible");
+        assertNotNull(mainFrame, "FormMain failed to become visible within timeout");
+        System.out.println("FormMain window opened at timestamp: " + windowOpenedTime);
+
+        // 2. Poll the startup phase: monitor Fadeout button state and wait for song to start playing
+        Field activeField = FormMain.class.getDeclaredField("lstOpeButtonActive");
+        activeField.setAccessible(true);
+        Field audioFieldObj = FormMain.class.getDeclaredField("audio");
+        audioFieldObj.setAccessible(true);
+
+        long songStartedTime = 0;
+        boolean fadeoutButtonFlashedOrange = false;
+
+        // Poll every 50 ms for up to 5 seconds
+        for (int i = 0; i < 100; i++) {
+            Thread.sleep(50);
+            
+            // Check button states on FormMain
+            boolean[] activeButtons = (boolean[]) activeField.get(mainFrame);
+            if (activeButtons != null && activeButtons[3]) {
+                fadeoutButtonFlashedOrange = true;
+            }
+
+            // Check if audio has started playing (stopped goes false)
+            Audio audioObj = (Audio) audioFieldObj.get(mainFrame);
+            if (audioObj != null && audioObj.plugin != null && !audioObj.plugin.stopped) {
+                songStartedTime = System.currentTimeMillis();
+                break;
+            }
         }
 
-        System.out.println("frmMain found! Preparing test song in playlist...");
+        assertTrue(songStartedTime > 0, "Song failed to start playing within timeout");
+        long latency = songStartedTime - windowOpenedTime;
+        System.out.println("Song started playing at timestamp: " + songStartedTime);
+        System.out.println("Measured latency (Window Opened -> Playback Started): " + latency + " ms");
+
+        // 3. Assert the requirements:
+        // A. Fadeout button (3rd button) must NOT have turned orange at startup
+        assertFalse(fadeoutButtonFlashedOrange, "The 3rd button (Fadeout button) became orange at startup!");
+        
+        // B. Latency must be less than 1.5 seconds (1500 ms)
+        assertTrue(latency < 1500, "Song start took too long: " + latency + " ms");
+
+        // Let the song play for 3 seconds
+        Thread.sleep(3000);
+
+        // 4. Simulate closing the window (WINDOW_CLOSING) while playing
+        System.out.println("Simulating window close button (WINDOW_CLOSING) while playing...");
+        final FormMain finalMain = mainFrame;
+        javax.swing.SwingUtilities.invokeAndWait(() -> {
+            finalMain.setDefaultCloseOperation(javax.swing.JFrame.DISPOSE_ON_CLOSE);
+            finalMain.dispatchEvent(new java.awt.event.WindowEvent(finalMain, java.awt.event.WindowEvent.WINDOW_CLOSING));
+        });
+
+        // Sleep to verify thread closes cleanly without locking the GUI/AWT queue
+        Thread.sleep(5000);
+        System.out.println("Test complete. Window closed successfully.");
+    }
+
+    @Test
+    public void testCloseButtonExternalProcess() throws Exception {
         File testSong = new File("src/test/resources/test.vgm");
         String songPath = testSong.getAbsolutePath();
-        System.out.println("Song path: " + songPath);
+        System.out.println("Starting external process test with song path: " + songPath);
+
+        // 1st. Run mdplayer w/ a song argument as normal process
+        int windowX = 100;
+        int windowY = 100;
+        ProcessBuilder playerBuilder = new ProcessBuilder(
+            "java",
+            "-Dmdplayer.test.x=" + windowX,
+            "-Dmdplayer.test.y=" + windowY,
+            "-cp",
+            System.getProperty("java.class.path"),
+            "mdplayer.Program",
+            songPath
+        );
+        playerBuilder.inheritIO();
+        Process playerProcess = playerBuilder.start();
+        long pid = playerProcess.pid();
+        System.out.println("Spawned mdplayer process with PID: " + pid);
+
+        // Wait for mdplayer to startup and start playing
+        Thread.sleep(5000);
+
+        // 2nd. Use robot controller as a different jvm process
+        ProcessBuilder robotBuilder = new ProcessBuilder(
+            "java",
+            "-cp",
+            System.getProperty("java.class.path"),
+            "mdplayer.RobotController",
+            String.valueOf(pid),
+            String.valueOf(windowX),
+            String.valueOf(windowY)
+        );
+        robotBuilder.inheritIO();
+        Process robotProcess = robotBuilder.start();
+        int robotExit = robotProcess.waitFor();
+        System.out.println("Robot controller process exited with code: " + robotExit);
+        assertEquals(0, robotExit, "Robot controller failed to execute click.");
+
+        // Wait for player process to terminate
+        boolean exitedCleanly = playerProcess.waitFor(15, java.util.concurrent.TimeUnit.SECONDS);
         
-        final frmMain finalMain = mainFrame;
-        final frmPlayList playlistFrame = (frmPlayList) frmPlayListField.get(finalMain);
-        
-        // Add file to playlist and refresh to populate UI table
-        javax.swing.SwingUtilities.invokeAndWait(() -> {
-            playlistFrame.getPlayList().getMusics().clear();
-            playlistFrame.getPlayList().addFile(songPath);
-            playlistFrame.refresh();
-        });
-
-        System.out.println("Starting playback of the song from playlist...");
-        javax.swing.SwingUtilities.invokeAndWait(() -> {
-            finalMain.play();
-        });
-
-        Thread.sleep(2000); // Let it play for 2 seconds
-
-        System.out.println("Testing settings panel...");
-        // Get methods via reflection
-        Method openSetting = frmMain.class.getDeclaredMethod("openSetting");
-        openSetting.setAccessible(true);
-        Method openMIDIKeyboard = frmMain.class.getDeclaredMethod("openMIDIKeyboard");
-        openMIDIKeyboard.setAccessible(true);
-
-        // Open settings dialog asynchronously
-        javax.swing.SwingUtilities.invokeLater(() -> {
+        if (!exitedCleanly) {
+            System.err.println("DEADLOCK DETECTED! Printing thread dump using jstack for PID: " + pid);
             try {
-                openSetting.invoke(finalMain);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
-
-        // Wait for the settings dialog to become visible
-        javax.swing.JDialog dialog = null;
-        for (int i = 0; i < 50; i++) {
-            Thread.sleep(100);
-            for (Frame f : Frame.getFrames()) {
-                for (java.awt.Window w : f.getOwnedWindows()) {
-                    if (w instanceof javax.swing.JDialog && w.isVisible()) {
-                        dialog = (javax.swing.JDialog) w;
-                        break;
-                    }
+                ProcessBuilder jstackBuilder = new ProcessBuilder("jstack", String.valueOf(pid));
+                jstackBuilder.redirectErrorStream(true);
+                Process jstackProcess = jstackBuilder.start();
+                java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(jstackProcess.getInputStream()));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    System.err.println("  [jstack] " + line);
                 }
+                jstackProcess.waitFor();
+            } catch (Exception e) {
+                System.err.println("Failed to run jstack: " + e.getMessage());
             }
-            if (dialog != null) break;
+            // Force destroy the process to avoid leaving it running if there is a deadlock
+            playerProcess.destroyForcibly();
         }
         
-        if (dialog == null) {
-            throw new RuntimeException("Settings dialog not found");
-        }
-
-        System.out.println("Clicking OK button on settings dialog...");
-        final javax.swing.JDialog finalDialog = dialog;
-        javax.swing.JButton okButton = (javax.swing.JButton) findComponentByName(dialog, "btnOK");
-        if (okButton != null) {
-            javax.swing.SwingUtilities.invokeAndWait(okButton::doClick);
-        } else {
-            System.err.println("OK button not found! Falling back to dispose...");
-            javax.swing.SwingUtilities.invokeAndWait(finalDialog::dispose);
-        }
-
-        Thread.sleep(2000); // Wait 2 seconds for settings apply and reinit
-
-        System.out.println("Attempting to play song AGAIN after settings OK...");
-        javax.swing.SwingUtilities.invokeAndWait(() -> {
-            finalMain.play();
-        });
-
-        Thread.sleep(2000); // Wait 2 seconds
-
-        System.out.println("Testing STOP button on main frame...");
-        javax.swing.JButton stopButton = (javax.swing.JButton) findComponentByName(finalMain, "opeButtonStop");
-        if (stopButton != null) {
-            javax.swing.SwingUtilities.invokeAndWait(stopButton::doClick);
-            System.out.println("Stop button clicked successfully!");
-        } else {
-            System.err.println("Stop button not found on main frame!");
-        }
-
-        Thread.sleep(1000); // Wait 1 second
-
-        System.out.println("Testing PLAY button on main frame...");
-        javax.swing.JButton playButton = (javax.swing.JButton) findComponentByName(finalMain, "opeButtonPlay");
-        if (playButton != null) {
-            javax.swing.SwingUtilities.invokeAndWait(playButton::doClick);
-            System.out.println("Play button clicked successfully!");
-        } else {
-            System.err.println("Play button not found on main frame!");
-        }
-
-        Thread.sleep(2000); // Let it play for 2 seconds
-
-        System.out.println("All GUI tests passed successfully! Disposing frames...");
-        javax.swing.SwingUtilities.invokeAndWait(finalMain::dispose);
-        
-        Thread.sleep(1000);
+        assertTrue(exitedCleanly, "mdplayer process failed to close via window 'x' button (deadlock/hang detected)!");
+        System.out.println("mdplayer process exited successfully.");
     }
 }

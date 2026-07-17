@@ -7,6 +7,7 @@
 package mdplayer.chips;
 
 import mdplayer.Common.EnmModel;
+import mdplayer.MDChipParams.VolumeInfo;
 import mdplayer.RealChip.RC86ctlSoundChip;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
@@ -30,19 +31,26 @@ public class Ay8910Chip extends BaseChip {
 
     private final RSoundChip[] realChips = {null, null};
 
+    // TODO eliminate cache like params, retrieve directly
+    @Deprecated
     public final int[][] psgRegister = {null, null};
 
+    @Deprecated
     public final int[][] psgKeyOn = {null, null};
 
+    @Deprecated
     private final int[] fadeoutVolume = {0, 0};
 
+    @Deprecated
     public final int[][] psgVolume = {new int[3], new int[3]};
 
+    @Deprecated
     private final boolean[][] mask = {
             {false, false, false},
             {false, false, false}
     };
 
+    @Deprecated
     public int clock;
 
     @Override
@@ -178,4 +186,23 @@ public class Ay8910Chip extends BaseChip {
         setFadeout(0, 0);
         setFadeout(1, 0);
     }
+
+    @Deprecated
+    public static class Params {
+
+        public int nfrq = -1;
+        public int efrq = -1;
+        public int etype = -1;
+        public final mdplayer.MDChipParams.Channel[] channels = new mdplayer.MDChipParams.Channel[] {new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel()};
+    }
+
+    @Deprecated
+    public final Params[] ay8910 = new Params[] {new Params(), new Params()};
+    @Deprecated
+    public final Params[] ay8910_old = new Params[] {new Params(), new Params()};
+
+    @Deprecated
+    public final VolumeInfo AY8910 = new VolumeInfo();
+    @Deprecated
+    public final VolumeInfo AY8910_old = new VolumeInfo();
 }

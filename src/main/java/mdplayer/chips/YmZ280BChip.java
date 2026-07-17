@@ -9,6 +9,7 @@ package mdplayer.chips;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
+import mdplayer.MDChipParams.VolumeInfo;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
@@ -29,6 +30,7 @@ public class YmZ280BChip extends BaseChip {
 
     private final RSoundChip[] realChips = {null, null};
 
+    @Deprecated
     public final int[][] register = {null, null};
 
     @Override
@@ -75,7 +77,27 @@ public class YmZ280BChip extends BaseChip {
         dumpData(model, "PCMData", srcOffset, buf, length);
     }
 
+    @Override
     public Map<String, Object> getInfo(int chipId) {
         return Map.of("register", register[chipId]);
     }
+
+    @Deprecated
+    public static class Params {
+
+        public final mdplayer.MDChipParams.Channel[] channels = new mdplayer.MDChipParams.Channel[] {
+                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(),
+                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel()
+        };
+    }
+
+    @Deprecated
+    public final Params[] ymz280b = new Params[] {new Params(), new Params()};
+    @Deprecated
+    public final Params[] ymz280b_old = new Params[] {new Params(), new Params()};
+
+    @Deprecated
+    public final VolumeInfo YMZ280B = new VolumeInfo(); // YMZ
+    @Deprecated
+    public final VolumeInfo YMZ280B_old = new VolumeInfo(); // YMZ
 }

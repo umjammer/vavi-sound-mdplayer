@@ -9,6 +9,7 @@ package mdplayer.chips;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
+import mdplayer.MDChipParams.VolumeInfo;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
@@ -30,23 +31,30 @@ public class K051649Chip extends BaseChip {
 
     private final RSoundChip[] realChips = {null, null};
 
+    @Deprecated
     private final K051649 scc_k051649 = new K051649();
 
+    @Deprecated
     private int sccR_port;
 
+    @Deprecated
     private int sccR_offset;
 
+    @Deprecated
     private int sccR_dat;
 
+    @Deprecated
     public final byte[] keyOnOff = {
             0, 0
     };
 
+    @Deprecated
     public final boolean[][] mask = {
             {false, false, false, false, false},
             {false, false, false, false, false}
     };
 
+    @Deprecated
     public int clock;
 
     @Override
@@ -73,7 +81,6 @@ public class K051649Chip extends BaseChip {
         mask[chipId][ch] = false;
         write(chipId, (3 << 1) | 1, keyOnOff[chipId], EnmModel.VirtualModel);
     }
-
 
     public void write(int chipId, int adr, int data, EnmModel model) {
         fireEventHappened("led.on", chipId);
@@ -139,8 +146,9 @@ public class K051649Chip extends BaseChip {
         }
     }
 
+    @Override
     public Map<String, Object> getInfo(int chipId) {
-        return context.mds.inst(K051649Inst.class).getInfo(chipId);
+        return context.mds.inst(K051649Inst.class).getView(chipId, "info", null);
     }
 
     @Override
@@ -148,4 +156,20 @@ public class K051649Chip extends BaseChip {
         softReset(0, model);
         softReset(1, model);
     }
+
+    @Deprecated
+    public static class Params {
+
+        public final mdplayer.MDChipParams.Channel[] channels = {new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel()};
+    }
+
+    @Deprecated
+    public final Params[] k051649 = new Params[] {new Params(), new Params()};
+    @Deprecated
+    public final Params[] k051649_old = new Params[] {new Params(), new Params()};
+
+    @Deprecated
+    public final VolumeInfo K051649 = new VolumeInfo(); // K051
+    @Deprecated
+    public final VolumeInfo K051649_old = new VolumeInfo(); // K051
 }

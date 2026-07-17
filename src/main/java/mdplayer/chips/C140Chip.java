@@ -6,7 +6,10 @@
 
 package mdplayer.chips;
 
+import java.util.Map;
+
 import mdplayer.Common.EnmModel;
+import mdplayer.MDChipParams.VolumeInfo;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
@@ -24,6 +27,7 @@ import mdsound.instrument.C219Inst;
  * system property
  * <li>{@code mdplayer.variant.c140} ... active chip index</li>
  * </p>
+ *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
@@ -33,10 +37,14 @@ public class C140Chip extends BaseChip {
 
     private final RSoundChip[] realChips = {null, null};
 
+    // TODO eliminate cache like params, retrieve directly
+    @Deprecated
     public final byte[][] pcmRegister = {null, null};
 
+    @Deprecated
     public final boolean[][] pcmKeyOn = {null, null};
 
+    @Deprecated
     private static final boolean[][] mask = {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
                     false, false, false, false, false, false, false, false},
@@ -117,7 +125,7 @@ public class C140Chip extends BaseChip {
                 }
 //                realChips[chipId].setRegister(0x10006, romSize);
 
-                context.chipRegister.plugin(RealChipPlugin.class).realChip.SendData();
+                context.chipRegister.plugin(RealChipPlugin.class).realChip.sendData();
             }
         }
 
@@ -147,8 +155,9 @@ public class C140Chip extends BaseChip {
         return pcmRegister[chipId];
     }
 
-    public boolean[] getKeyOn(int chipId) {
-        return pcmKeyOn[chipId];
+    @Override
+    public Map<String, Object> getInfo(int chipId) {
+        return Map.of("keyOn", pcmKeyOn[chipId]);
     }
 
     public void setMask(int chipId, int ch) {
@@ -158,4 +167,20 @@ public class C140Chip extends BaseChip {
     public void resetMask(int chipId, int ch) {
         setMask(chipId, ch, false);
     }
+
+    @Deprecated
+    public static class Params {
+
+        public final mdplayer.MDChipParams.Channel[] channels = new mdplayer.MDChipParams.Channel[] {new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel()};
+    }
+
+    @Deprecated
+    public final Params[] c140 = new Params[] {new Params(), new Params()};
+    @Deprecated
+    public final Params[] c140_old = new Params[] {new Params(), new Params()};
+
+    @Deprecated
+    public final VolumeInfo C140_ = new VolumeInfo();
+    @Deprecated
+    public final VolumeInfo C140_old = new VolumeInfo();
 }

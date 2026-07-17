@@ -71,7 +71,7 @@ public class MIDIParam {
     private int msgInd;
     private boolean NowSystemMsg;
 
-    private static final int[] tblRevTypeXG = new int[] {
+    private static final int[] tblRevTypeXG = {
             0x0000,
             0x0100, 0x0101, 0x0106, 0x0107,
             0x0200, 0x0201, 0x0202, 0x0205, 0x0206, 0x0207,
@@ -83,7 +83,7 @@ public class MIDIParam {
             0x1300
     };
 
-    private static final int[] tblChoTypeXG = new int[] {
+    private static final int[] tblChoTypeXG = {
             0x0000,
             0x4100, 0x4101, 0x4102, 0x4103, 0x4104, 0x4105, 0x4106, 0x4107, 0x4108,
             0x4200, 0x4201, 0x4202, 0x4208,
@@ -93,7 +93,7 @@ public class MIDIParam {
             0x5700
     };
 
-    private static final int[] tblVarInsTypeXG = new int[] {
+    private static final int[] tblVarInsTypeXG = {
             0x0000,
             0x0100, 0x0101, 0x0106, 0x0107,
             0x0200, 0x0201, 0x0202, 0x0205, 0x0206, 0x0207,
@@ -143,7 +143,7 @@ public class MIDIParam {
             0x6300, 0x6301
     };
 
-    private static final int[] tblIns1TypeFromEFX = new int[] {
+    private static final int[] tblIns1TypeFromEFX = {
             0x0000, 0x0100, 0x0101, 0x0102, 0x0103, 0x0110, 0x0111, 0x0120,
             0x0121, 0x0122, 0x0123, 0x0124, 0x0125, 0x0126, 0x0130, 0x0131,
             0x0140, 0x0141, 0x0142, 0x0143, 0x0144, 0x0150, 0x0151, 0x0152,
@@ -156,14 +156,34 @@ public class MIDIParam {
 
 
     public MIDIParam() {
-        note = new byte[][] {new byte[256], new byte[256], new byte[256], new byte[256], new byte[256], new byte[256], new byte[256], new byte[256], new byte[256], new byte[256], new byte[256], new byte[256], new byte[256], new byte[256], new byte[256], new byte[256]};
+        note = new byte[][] {
+                new byte[256], new byte[256], new byte[256], new byte[256],
+                new byte[256], new byte[256], new byte[256], new byte[256],
+                new byte[256], new byte[256], new byte[256], new byte[256],
+                new byte[256], new byte[256], new byte[256], new byte[256]
+        };
         notes = new String[16];
-        keyPress = new byte[][] {new byte[256], new byte[256], new byte[256], new byte[256], new byte[256], new byte[256], new byte[256], new byte[256], new byte[256], new byte[256], new byte[256], new byte[256], new byte[256], new byte[256], new byte[256], new byte[256]};
-        cc = new byte[][] {new byte[256], new byte[256], new byte[256], new byte[256], new byte[256], new byte[256], new byte[256], new byte[256], new byte[256], new byte[256], new byte[256], new byte[256], new byte[256], new byte[256], new byte[256], new byte[256]};
+        keyPress = new byte[][] {
+                new byte[256], new byte[256], new byte[256], new byte[256],
+                new byte[256], new byte[256], new byte[256], new byte[256],
+                new byte[256], new byte[256], new byte[256], new byte[256],
+                new byte[256], new byte[256], new byte[256], new byte[256]
+        };
+        cc = new byte[][] {
+                new byte[256], new byte[256], new byte[256], new byte[256],
+                new byte[256], new byte[256], new byte[256], new byte[256],
+                new byte[256], new byte[256], new byte[256], new byte[256],
+                new byte[256], new byte[256], new byte[256], new byte[256]
+        };
         pc = new byte[16];
         cPress = new byte[16];
         bend = new short[16];
-        level = new int[][] {new int[5], new int[5], new int[5], new int[5], new int[5], new int[5], new int[5], new int[5], new int[5], new int[5], new int[5], new int[5], new int[5], new int[5], new int[5], new int[5]};
+        level = new int[][] {
+                new int[5], new int[5], new int[5], new int[5],
+                new int[5], new int[5], new int[5], new int[5],
+                new int[5], new int[5], new int[5], new int[5],
+                new int[5], new int[5], new int[5], new int[5]
+        };
         nrpnVibRate = new byte[16];
         nrpnVibDepth = new byte[16];
         nrpnVibDelay = new byte[16];

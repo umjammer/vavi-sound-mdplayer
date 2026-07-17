@@ -9,6 +9,7 @@ package mdplayer.chips;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
+import mdplayer.MDChipParams.VolumeInfo;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
@@ -24,6 +25,7 @@ import mdsound.instrument.Ym3812Inst;
  * system property
  * <li>{@code mdplayer.variant.ym3812} ... active chip index</li>
  * </p>
+ *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
@@ -33,12 +35,16 @@ public class Ym3812Chip extends BaseChip {
 
     private final RSoundChip[] realChips = {null, null};
 
+    @Deprecated
     public final int[][] register = {null, null};
 
+    // check cache or not
     private final int[] fadeout = {0, 0};
 
+    @Deprecated
     private final ChipKeyInfo[] keyInfo = {new ChipKeyInfo(14), new ChipKeyInfo(14)};
 
+    @Deprecated
     private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false}
@@ -145,6 +151,7 @@ public class Ym3812Chip extends BaseChip {
         _write(chipId, addr, data, model);
     }
 
+    // TODO getInfo
     public ChipKeyInfo getKeyInfo(int chipId) {
         ChipKeyInfo[] keyInfoRet = {new ChipKeyInfo(14), new ChipKeyInfo(14)}; // TODO out for memory usage?
         for (int ch = 0; ch < keyInfo[chipId].off.length; ch++) {
@@ -205,6 +212,7 @@ public class Ym3812Chip extends BaseChip {
         }
     }
 
+    @Override
     public Map<String, Object> getInfo(int chipId) {
         return Map.of("register", register[chipId]);
     }
@@ -228,4 +236,24 @@ public class Ym3812Chip extends BaseChip {
         setFadeout(0, 0);
         setFadeout(1, 0);
     }
+
+    @Deprecated
+    public static class Params {
+
+        public final mdplayer.MDChipParams.Channel[] channels = {
+                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(),
+                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), // FM 9
+                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel() // Rhythm 5
+        };
+    }
+
+    @Deprecated
+    public final Params[] ym3812 = {new Params(), new Params()};
+    @Deprecated
+    public final Params[] ym3812_old = {new Params(), new Params()};
+
+    @Deprecated
+    public final VolumeInfo YM3812 = new VolumeInfo();
+    @Deprecated
+    public final VolumeInfo YM3812_old = new VolumeInfo();
 }

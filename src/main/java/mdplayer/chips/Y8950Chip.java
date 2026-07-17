@@ -9,6 +9,7 @@ package mdplayer.chips;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
+import mdplayer.MDChipParams.VolumeInfo;
 import mdplayer.Setting;
 import mdsound.Instrument;
 import mdsound.instrument.Y8950Inst;
@@ -26,8 +27,10 @@ public class Y8950Chip extends BaseChip {
 
     public final int[][] register = {null, null};
 
+    @Deprecated
     private final ChipKeyInfo[] keyInfo = {new ChipKeyInfo(15), new ChipKeyInfo(15)};
 
+    @Deprecated
     private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false}
@@ -138,6 +141,7 @@ public class Y8950Chip extends BaseChip {
         dumpData(model, "PCMData", srcOffset, buf, length);
     }
 
+    @Override
     public Map<String, Object> getInfo(int chipId) {
         return Map.of("register", register[chipId]);
     }
@@ -149,4 +153,25 @@ public class Y8950Chip extends BaseChip {
     public void resetMask(int chipId, int ch) {
         setMask(chipId, ch, false);
     }
+
+    @Deprecated
+    public static class Params {
+
+        public final mdplayer.MDChipParams.Channel[] channels = {
+                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(),
+                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), // FM 9
+                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), // Rhythm 5
+                new mdplayer.MDChipParams.Channel() // ADPCM
+        };
+    }
+
+    @Deprecated
+    public final Params[] y8950 = {new Params(), new Params()};
+    @Deprecated
+    public final Params[] y8950_old = {new Params(), new Params()};
+
+    @Deprecated
+    public final VolumeInfo Y8950 = new VolumeInfo();
+    @Deprecated
+    public final VolumeInfo Y8950_old = new VolumeInfo();
 }

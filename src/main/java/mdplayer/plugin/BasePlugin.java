@@ -139,6 +139,7 @@ public abstract class BasePlugin<T extends BaseDriver> implements Plugin {
 
         this.paused = false;
         this.stopped = true;
+        this.fadeout = false;
 logger.log(Level.TRACE, "stop: " + this.stopped + ", " + this.hashCode());
     }
 

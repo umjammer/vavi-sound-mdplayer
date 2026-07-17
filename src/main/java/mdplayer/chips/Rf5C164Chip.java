@@ -9,6 +9,7 @@ package mdplayer.chips;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
+import mdplayer.MDChipParams.VolumeInfo;
 import mdsound.Instrument;
 import mdsound.instrument.ScdPcmInst;
 
@@ -21,6 +22,7 @@ import mdsound.instrument.ScdPcmInst;
  */
 public class Rf5C164Chip extends BaseChip {
 
+    @Deprecated
     private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false}
@@ -68,8 +70,9 @@ public class Rf5C164Chip extends BaseChip {
             context.mds.inst(ScdPcmInst.class).writeMemory(chipId, offset, data);
     }
 
+    @Override
     public Map<String, Object> getInfo(int chipId) {
-        return context.mds.inst(ScdPcmInst.class).getInfo(chipId);
+        return context.mds.inst(ScdPcmInst.class).getView(chipId, "info", null);
     }
 
     public void setMask(int chipId, int ch) {
@@ -79,4 +82,20 @@ public class Rf5C164Chip extends BaseChip {
     public void resetMask(int chipId, int ch) {
         setMask(chipId, ch, false);
     }
+
+    @Deprecated
+    public static class Params {
+
+        public final mdplayer.MDChipParams.Channel[] channels = new mdplayer.MDChipParams.Channel[] {new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel()};
+    }
+
+    @Deprecated
+    public final mdplayer.chips.Rf5C164Chip.Params[] rf5c164 = new mdplayer.chips.Rf5C164Chip.Params[] {new mdplayer.chips.Rf5C164Chip.Params(), new mdplayer.chips.Rf5C164Chip.Params()};
+    @Deprecated
+    public final mdplayer.chips.Rf5C164Chip.Params[] rf5c164_old = new mdplayer.chips.Rf5C164Chip.Params[] {new mdplayer.chips.Rf5C164Chip.Params(), new mdplayer.chips.Rf5C164Chip.Params()};
+
+    @Deprecated
+    public final VolumeInfo RF5C164 = new VolumeInfo();
+    @Deprecated
+    public final VolumeInfo RF5C164_old = new VolumeInfo();
 }

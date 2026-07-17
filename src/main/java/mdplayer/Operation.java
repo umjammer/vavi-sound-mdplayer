@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import vavi.util.compat.Tuple;
-import mdplayer.form.sys.frmMain;
+import mdplayer.form.sys.FormMain;
 
 
 public class Operation {
@@ -22,15 +22,15 @@ public class Operation {
 
     private final List<Tuple<Ope, Object[]>> cmdBuf = new ArrayList<>();
 
-    private final frmMain parent;
+    private final FormMain parent;
 
-    public void SendCommand(Ope cmd, Object... option) {
+    public void sendCommand(Ope cmd, Object... option) {
         synchronized (lockObj) {
             cmdBuf.add(new Tuple<>(cmd, option));
         }
     }
 
-    public Operation(frmMain parent) {
+    public Operation(FormMain parent) {
         this.parent = parent;
 
         Thread trd = new Thread(this::start);

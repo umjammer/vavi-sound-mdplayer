@@ -10,6 +10,7 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.lang.System.Logger;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
+import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 
@@ -333,20 +335,19 @@ logger.log(Level.DEBUG, "delete attributes: " + dir);
         }
     }
 
-    public enum EnmModel {
-        VirtualModel, RealModel
+    /**
+     * Looks up localized resources of type BufferedImage.
+     */
+    public static BufferedImage getImage(String name) {
+        try {
+            return ImageIO.read(Common.class.getResourceAsStream("/mdplayer/resources/" + name + ".png"));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
-    public enum EnmRealChipType {
-        YM2608(1), YM2151(2), YM2610(3), YM2203(4),
-        YM2612(5), AY8910(6), SN76489(7), YM3812(8),
-        YMF262(9), YM2413(10), YM3526(11), K051649(13),
-        SPPCM(42), C140(43), SEGAPCM(44);
-        final int v;
-
-        EnmRealChipType(int v) {
-            this.v = v;
-        }
+    public enum EnmModel {
+        VirtualModel, RealModel
     }
 
     public enum EnmInstFormat {

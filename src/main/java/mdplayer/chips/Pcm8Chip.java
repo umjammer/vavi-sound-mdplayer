@@ -27,8 +27,7 @@ import mdsound.x68sound.X68Sound;
  */
 public class Pcm8Chip extends BaseChip {
 
-    private static final Logger logger = System.getLogger(Pcm8Chip.class.getName());
-
+    // not view
     private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false}
@@ -45,6 +44,7 @@ public class Pcm8Chip extends BaseChip {
         return setting.getZMusic().pcm8Type;
     }
 
+    // not view
     public static boolean isFromDF(int v) {
         //noinspection ConstantValue
         return switch (v) {
@@ -54,6 +54,7 @@ public class Pcm8Chip extends BaseChip {
         };
     }
 
+    // not view
     public static boolean isFromPTM(int v) {
         return switch (v) {
             case X68Sound.SNDERR_PCMOUT,

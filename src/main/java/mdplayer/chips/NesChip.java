@@ -38,6 +38,7 @@ public class NesChip extends BaseChip {
             return new Class[] {DmcInst.class};
         }
 
+        // TODO getInfo
         public int[] readDmc(int chipId, EnmModel model) {
             fireEventHappened("led.on", chipId);
 
@@ -72,12 +73,13 @@ public class NesChip extends BaseChip {
             return new Class[] {FdsInst.class};
         }
 
+        // TODO getInfo
         public Map<String, Object> readFds(int chipId, EnmModel model) {
             fireEventHappened("led.on", chipId);
 
             if (model == EnmModel.VirtualModel) {
 //            if (!ctNES[chipId].UseScci) {
-                return context.mds.inst(FdsInst.class).getInfo(chipId);
+                return context.mds.inst(FdsInst.class).getView(chipId, "info", null);
 //            }
             } else {
                 return null;
@@ -124,6 +126,7 @@ public class NesChip extends BaseChip {
     }
 
     // vgm
+    // TODO getInfo
     public int[] readApu(int chipId, EnmModel model) {
         fireEventHappened("led.on", chipId);
 

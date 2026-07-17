@@ -9,6 +9,7 @@ package mdplayer.chips;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
+import mdplayer.MDChipParams.VolumeInfo;
 import mdplayer.Setting;
 import mdsound.Instrument;
 import mdsound.Instrument.PcmEnabledInstrument;
@@ -22,6 +23,7 @@ import mdsound.instrument.QSoundInst;
  * system property
  * <li>{@code mdplayer.variant.qsound} ... active chip index</li>
  * </p>
+ *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
@@ -29,6 +31,7 @@ public class QSoundChip extends BaseChip {
 
     private final Setting.ChipType2[] chipTypes = setting.getQSoundType();
 
+    @Deprecated
     private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
                     false, false, false,},
@@ -66,10 +69,12 @@ public class QSoundChip extends BaseChip {
         }
     }
 
+    @Deprecated
     private final int[][] register = {
             new int[256], new int[256]
     };
 
+    @Override
     public Map<String, Object> getInfo(int chipId) {
         return Map.of("register", register[chipId]);
     }
@@ -110,4 +115,27 @@ public class QSoundChip extends BaseChip {
     public void resetMask(int chipId, int ch) {
         setMask(chipId, ch, false);
     }
+
+    @Deprecated
+    public static class Params {
+
+        public final mdplayer.MDChipParams.Channel[] channels = new mdplayer.MDChipParams.Channel[] {
+                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(),
+                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(),
+                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(),
+                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(),
+
+                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel()
+        };
+    }
+
+    @Deprecated
+    public final Params[] qSound = new Params[] {new Params(), new Params()};
+    @Deprecated
+    public final Params[] qSound_old = new Params[] {new Params(), new Params()};
+
+    @Deprecated
+    public final VolumeInfo QSound = new VolumeInfo(); // QSND
+    @Deprecated
+    public final VolumeInfo QSound_old = new VolumeInfo(); // QSND
 }

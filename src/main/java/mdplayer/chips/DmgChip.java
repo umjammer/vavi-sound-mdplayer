@@ -9,6 +9,7 @@ package mdplayer.chips;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
+import mdplayer.MDChipParams.VolumeInfo;
 import mdsound.Instrument;
 import mdsound.instrument.DmgInst;
 
@@ -21,6 +22,7 @@ import mdsound.instrument.DmgInst;
  */
 public class DmgChip extends BaseChip {
 
+    @Deprecated
     public final boolean[][] mask = {
             {false, false, false, false},
             {false, false, false, false}
@@ -37,7 +39,7 @@ public class DmgChip extends BaseChip {
 
         if (model == EnmModel.VirtualModel) {
 //            if (!ctNES[chipId].UseScci) {
-                context.mds.write(inst(chipId), chipId, 0, addr, data);
+            context.mds.write(inst(chipId), chipId, 0, addr, data);
 //            }
         } else {
 //            if (scNES[chipId] == null) return;
@@ -68,9 +70,27 @@ public class DmgChip extends BaseChip {
         return context.mds.inst(DmgInst.class).read(chipId, addr);
     }
 
+    @Override
     public Map<String, Object> getInfo(int chipId) {
         if (chipId == 1) return null;
 
-        return context.mds.inst(DmgInst.class).getInfo(chipId);
+        return context.mds.inst(DmgInst.class).getView(chipId, "info", null);
     }
+
+    @Deprecated
+    public static class Params {
+
+        public final byte[] wf = new byte[32];
+        public final mdplayer.MDChipParams.Channel[] channels = new mdplayer.MDChipParams.Channel[] {new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel()};
+    }
+
+    @Deprecated
+    public final Params[] dmg = new Params[] {new Params(), new Params()};
+    @Deprecated
+    public final Params[] dmg_old= new Params[] {new Params(), new Params()};
+
+    @Deprecated
+    public final VolumeInfo DMG = new VolumeInfo();
+    @Deprecated
+    public final VolumeInfo DMG_old = new VolumeInfo();
 }

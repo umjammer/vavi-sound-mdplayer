@@ -7,6 +7,7 @@ import java.util.List;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip;
+import mdplayer.RealChip.EnmRealChipType;
 import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
 import mdplayer.plugin.BasePlugin;
@@ -71,7 +72,7 @@ public class RealChipPlugin implements Plugin {
 //        }
     }
 
-    public List<Setting.ChipType2> getRealChipList(Common.EnmRealChipType scciType) {
+    public List<Setting.ChipType2> getRealChipList(EnmRealChipType scciType) {
 //        if (SoundChip.realChip == null) return null;
 //        return SoundChip.realChip.getRealChipList(scciType);
         return null;

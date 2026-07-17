@@ -13,19 +13,27 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.stream.IntStream;
 
 import mdplayer.Common.EnmInstFormat;
-import mdplayer.properties.Resources;
 import mdplayer.vst.VstInfo;
 import vavi.util.serdes.JacksonXMLBeanBinder;
 import vavi.util.serdes.Serdes;
+import tools.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonToken;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.ValueDeserializer;
 
 import static java.lang.System.getLogger;
 
 
 @Serdes(beanBinder = JacksonXMLBeanBinder.class)
 public class Setting implements Serializable, Cloneable {
+
+    private static final ResourceBundle rb = ResourceBundle.getBundle("mdplayer/properties/resources");
 
     private static final Logger logger = getLogger(Setting.class.getName());
 
@@ -880,6 +888,13 @@ public class Setting implements Serializable, Cloneable {
             return vst;
         }
     }
+    public static class MidiOutInfoArray implements Serializable {
+        private MidiOutInfo[] infos = new MidiOutInfo[0];
+        public MidiOutInfo[] getInfos() { return infos; }
+        public void setInfos(MidiOutInfo[] value) { infos = value; }
+        public MidiOutInfoArray() {}
+        public MidiOutInfoArray(MidiOutInfo[] value) { infos = value; }
+    }
 
     public static class MidiOut implements Serializable, Cloneable {
 
@@ -912,11 +927,41 @@ public class Setting implements Serializable, Cloneable {
             custom = value;
         }
         private List<MidiOutInfo[]> midiOutInfos = null;
+        @com.fasterxml.jackson.annotation.JsonIgnore
         public List<MidiOutInfo[]> getMidiOutInfos() {
             return midiOutInfos;
         }
+        @com.fasterxml.jackson.annotation.JsonIgnore
         public void setMidiOutInfos(List<MidiOutInfo[]> value) {
             midiOutInfos = value;
+        }
+
+        @com.fasterxml.jackson.annotation.JsonProperty("midiOutInfos")
+        @tools.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper(useWrapping = true, localName = "midiOutInfos")
+        @tools.jackson.dataformat.xml.annotation.JacksonXmlProperty(localName = "midiOutInfoArray")
+        public List<MidiOutInfoArray> getMidiOutInfosForJackson() {
+            if (midiOutInfos == null) return null;
+            List<MidiOutInfoArray> result = new java.util.ArrayList<>();
+            for (MidiOutInfo[] array : midiOutInfos) {
+                result.add(new MidiOutInfoArray(array));
+            }
+            return result;
+        }
+
+        @com.fasterxml.jackson.annotation.JsonProperty("midiOutInfos")
+        public void setMidiOutInfosForJackson(List<MidiOutInfoArray> value) {
+            if (value == null) {
+                midiOutInfos = null;
+                return;
+            }
+            midiOutInfos = new java.util.ArrayList<>();
+            for (MidiOutInfoArray wrapper : value) {
+                if (wrapper == null) {
+                    midiOutInfos.add(null);
+                } else {
+                    midiOutInfos.add(wrapper.getInfos());
+                }
+            }
         }
 
         @Override
@@ -3100,8 +3145,10 @@ public class Setting implements Serializable, Cloneable {
     }
 
     public static class Location implements Serializable {
+        @JsonDeserialize(using = PointDeserializer.class)
         private Point _PMain = EmptyPoint;
 
+        @JsonDeserialize(using = PointDeserializer.class)
         public Point getPMain() {
             if (_PMain.x < 0 || _PMain.y < 0) {
                 return new Point(0, 0);
@@ -3113,8 +3160,10 @@ public class Setting implements Serializable, Cloneable {
             _PMain = value;
         }
 
+        @JsonDeserialize(using = PointDeserializer.class)
         private Point _PInfo = EmptyPoint;
 
+        @JsonDeserialize(using = PointDeserializer.class)
         public Point getPInfo() {
             if (_PInfo.x < 0 || _PInfo.y < 0) {
                 return new Point(0, 0);
@@ -3136,8 +3185,10 @@ public class Setting implements Serializable, Cloneable {
             _OInfo = value;
         }
 
+        @JsonDeserialize(using = PointDeserializer.class)
         private Point _PPlayList = EmptyPoint;
 
+        @JsonDeserialize(using = PointDeserializer.class)
         public Point getPPlayList() {
             if (_PPlayList.x < 0 || _PPlayList.y < 0) {
                 return new Point(0, 0);
@@ -3159,8 +3210,10 @@ public class Setting implements Serializable, Cloneable {
             _OPlayList = value;
         }
 
+        @JsonDeserialize(using = DimensionDeserializer.class)
         private Dimension _PPlayListWH = EmptyDimension;
 
+        @JsonDeserialize(using = DimensionDeserializer.class)
         public Dimension getPPlayListWH() {
             if (_PPlayListWH.width < 0 || _PPlayListWH.height < 0) {
                 return new Dimension(0, 0);
@@ -3172,8 +3225,10 @@ public class Setting implements Serializable, Cloneable {
             _PPlayListWH = value;
         }
 
+        @JsonDeserialize(using = PointDeserializer.class)
         private Point _PMixer = EmptyPoint;
 
+        @JsonDeserialize(using = PointDeserializer.class)
         public Point getPMixer() {
             if (_PMixer.x < 0 || _PMixer.y < 0) {
                 return new Point(0, 0);
@@ -3195,8 +3250,10 @@ public class Setting implements Serializable, Cloneable {
             _OMixer = value;
         }
 
+        @JsonDeserialize(using = PointDeserializer.class)
         private Point _PMixerWH = EmptyPoint;
 
+        @JsonDeserialize(using = PointDeserializer.class)
         public Point getPMixerWH() {
             if (_PMixerWH.x < 0 || _PMixerWH.y < 0) {
                 return new Point(0, 0);
@@ -3208,10 +3265,12 @@ public class Setting implements Serializable, Cloneable {
             _PMixerWH = value;
         }
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         private Point[] _PosRf5c164 = new Point[] {
                 EmptyPoint, EmptyPoint
         };
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         public Point[] getPosRf5c164() {
             return _PosRf5c164;
         }
@@ -3232,10 +3291,12 @@ public class Setting implements Serializable, Cloneable {
             _OpenRf5c164 = value;
         }
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         private Point[] _PosRf5c68 = new Point[] {
                 EmptyPoint, EmptyPoint
         };
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         public Point[] getPosRf5c68() {
             return _PosRf5c68;
         }
@@ -3256,10 +3317,12 @@ public class Setting implements Serializable, Cloneable {
             _OpenRf5c68 = value;
         }
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         private Point[] _PosYMF271 = new Point[] {
                 EmptyPoint, EmptyPoint
         };
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         public Point[] getPosYMF271() {
             return _PosYMF271;
         }
@@ -3280,10 +3343,12 @@ public class Setting implements Serializable, Cloneable {
             _OpenYMF271 = value;
         }
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         private Point[] _PosC140 = new Point[] {
                 EmptyPoint, EmptyPoint
         };
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         public Point[] getPosC140() {
             return _PosC140;
         }
@@ -3304,10 +3369,12 @@ public class Setting implements Serializable, Cloneable {
             openC140 = value;
         }
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         private Point[] posS5B = new Point[] {
                 EmptyPoint, EmptyPoint
         };
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         public Point[] getPosS5B() {
             return posS5B;
         }
@@ -3328,10 +3395,12 @@ public class Setting implements Serializable, Cloneable {
             _OpenS5B = value;
         }
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         private Point[] _PosDMG = new Point[] {
                 EmptyPoint, EmptyPoint
         };
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         public Point[] getPosDMG() {
             return _PosDMG;
         }
@@ -3352,10 +3421,12 @@ public class Setting implements Serializable, Cloneable {
             _OpenDMG = value;
         }
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         private Point[] _PosPPZ8 = new Point[] {
                 EmptyPoint, EmptyPoint
         };
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         public Point[] getPosPPZ8() {
             return _PosPPZ8;
         }
@@ -3376,10 +3447,12 @@ public class Setting implements Serializable, Cloneable {
             _OpenPPZ8 = value;
         }
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         private Point[] _PosYMZ280B = new Point[] {
                 EmptyPoint, EmptyPoint
         };
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         public Point[] getPosYMZ280B() {
             return _PosYMZ280B;
         }
@@ -3400,10 +3473,12 @@ public class Setting implements Serializable, Cloneable {
             _OpenYMZ280B = value;
         }
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         private Point[] _PosC352 = new Point[] {
                 EmptyPoint, EmptyPoint
         };
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         public Point[] getPosC352() {
             return _PosC352;
         }
@@ -3424,10 +3499,12 @@ public class Setting implements Serializable, Cloneable {
             openC352 = value;
         }
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         private Point[] _PosMultiPCM = new Point[] {
                 EmptyPoint, EmptyPoint
         };
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         public Point[] getPosMultiPCM() {
             return _PosMultiPCM;
         }
@@ -3448,10 +3525,12 @@ public class Setting implements Serializable, Cloneable {
             _OpenMultiPCM = value;
         }
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         private Point[] _PosGA20 = new Point[] {
                 EmptyPoint, EmptyPoint
         };
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         public Point[] getPosGA20() {
             return _PosGA20;
         }
@@ -3472,10 +3551,12 @@ public class Setting implements Serializable, Cloneable {
             _OpenGA20 = value;
         }
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         private Point[] _PosK053260 = new Point[] {
                 EmptyPoint, EmptyPoint
         };
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         public Point[] getPosK053260() {
             return _PosK053260;
         }
@@ -3496,10 +3577,12 @@ public class Setting implements Serializable, Cloneable {
             _OpenK053260 = value;
         }
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         private Point[] _PosK054539 = new Point[] {
                 EmptyPoint, EmptyPoint
         };
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         public Point[] getPosK054539() {
             return _PosK054539;
         }
@@ -3532,10 +3615,12 @@ public class Setting implements Serializable, Cloneable {
             _OpenQSound = value;
         }
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         private Point[] _PosYm2151 = new Point[] {
                 EmptyPoint, EmptyPoint
         };
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         public Point[] getPosYm2151() {
             return _PosYm2151;
         }
@@ -3556,10 +3641,12 @@ public class Setting implements Serializable, Cloneable {
             _OpenYm2151 = value;
         }
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         private Point[] _PosYm2608 = new Point[] {
                 EmptyPoint, EmptyPoint
         };
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         public Point[] getPosYm2608() {
             return _PosYm2608;
         }
@@ -3580,10 +3667,12 @@ public class Setting implements Serializable, Cloneable {
             _OpenYm2608 = value;
         }
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         private Point[] _PosYm2203 = new Point[] {
                 EmptyPoint, EmptyPoint
         };
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         public Point[] getPosYm2203() {
             return _PosYm2203;
         }
@@ -3604,10 +3693,12 @@ public class Setting implements Serializable, Cloneable {
             _OpenYm2203 = value;
         }
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         private Point[] _PosYm2610 = new Point[] {
                 EmptyPoint, EmptyPoint
         };
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         public Point[] getPosYm2610() {
             return _PosYm2610;
         }
@@ -3628,10 +3719,12 @@ public class Setting implements Serializable, Cloneable {
             _OpenYm2610 = value;
         }
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         private Point[] _PosYm2612 = new Point[] {
                 EmptyPoint, EmptyPoint
         };
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         public Point[] getPosYm2612() {
             return _PosYm2612;
         }
@@ -3652,10 +3745,12 @@ public class Setting implements Serializable, Cloneable {
             _OpenYm2612 = value;
         }
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         private Point[] _PosOKIM6258 = new Point[] {
                 EmptyPoint, EmptyPoint
         };
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         public Point[] getPosOKIM6258() {
             return _PosOKIM6258;
         }
@@ -3676,10 +3771,12 @@ public class Setting implements Serializable, Cloneable {
             _OpenOKIM6258 = value;
         }
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         private Point[] _PosOKIM6295 = new Point[] {
                 EmptyPoint, EmptyPoint
         };
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         public Point[] getPosOKIM6295() {
             return _PosOKIM6295;
         }
@@ -3700,10 +3797,12 @@ public class Setting implements Serializable, Cloneable {
             openOKIM6295 = value;
         }
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         private Point[] _PosSN76489 = new Point[] {
                 EmptyPoint, EmptyPoint
         };
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         public Point[] getPosSN76489() {
             return _PosSN76489;
         }
@@ -3724,10 +3823,12 @@ public class Setting implements Serializable, Cloneable {
             _OpenSN76489 = value;
         }
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         private Point[] _PosMIDI = new Point[] {
                 EmptyPoint, EmptyPoint
         };
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         public Point[] getPosMIDI() {
             return _PosMIDI;
         }
@@ -3748,10 +3849,12 @@ public class Setting implements Serializable, Cloneable {
             _OpenMIDI = value;
         }
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         private Point[] _PosSegaPCM = new Point[] {
                 EmptyPoint, EmptyPoint
         };
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         public Point[] getPosSegaPCM() {
             return _PosSegaPCM;
         }
@@ -3772,10 +3875,12 @@ public class Setting implements Serializable, Cloneable {
             _OpenSegaPCM = value;
         }
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         private Point[] _PosAY8910 = new Point[] {
                 EmptyPoint, EmptyPoint
         };
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         public Point[] getPosAY8910() {
             return _PosAY8910;
         }
@@ -3796,10 +3901,12 @@ public class Setting implements Serializable, Cloneable {
             _OpenAY8910 = value;
         }
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         private Point[] _PosHuC6280 = new Point[] {
                 EmptyPoint, EmptyPoint
         };
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         public Point[] getPosHuC6280() {
             return _PosHuC6280;
         }
@@ -3820,10 +3927,12 @@ public class Setting implements Serializable, Cloneable {
             _OpenHuC6280 = value;
         }
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         private Point[] _PosK051649 = new Point[] {
                 EmptyPoint, EmptyPoint
         };
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         public Point[] getPosK051649() {
             return _PosK051649;
         }
@@ -3844,10 +3953,12 @@ public class Setting implements Serializable, Cloneable {
             _OpenK051649 = value;
         }
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         private Point[] _PosYm2413 = new Point[] {
                 EmptyPoint, EmptyPoint
         };
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         public Point[] getPosYm2413() {
             return _PosYm2413;
         }
@@ -3868,10 +3979,12 @@ public class Setting implements Serializable, Cloneable {
             _OpenYm2413 = value;
         }
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         private Point[] _PosYm3526 = new Point[] {
                 EmptyPoint, EmptyPoint
         };
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         public Point[] getPosYm3526() {
             return _PosYm3526;
         }
@@ -3892,10 +4005,12 @@ public class Setting implements Serializable, Cloneable {
             _OpenYm3526 = value;
         }
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         private Point[] _PosY8950 = new Point[] {
                 EmptyPoint, EmptyPoint
         };
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         public Point[] getPosY8950() {
             return _PosY8950;
         }
@@ -3916,10 +4031,12 @@ public class Setting implements Serializable, Cloneable {
             _OpenY8950 = value;
         }
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         private Point[] _PosYm3812 = new Point[] {
                 EmptyPoint, EmptyPoint
         };
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         public Point[] getPosYm3812() {
             return _PosYm3812;
         }
@@ -3940,10 +4057,12 @@ public class Setting implements Serializable, Cloneable {
             _OpenYm3812 = value;
         }
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         private Point[] _PosYmf262 = new Point[] {
                 EmptyPoint, EmptyPoint
         };
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         public Point[] getPosYmf262() {
             return _PosYmf262;
         }
@@ -3964,10 +4083,12 @@ public class Setting implements Serializable, Cloneable {
             _OpenYmf262 = value;
         }
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         private Point[] _PosYmf278b = new Point[] {
                 EmptyPoint, EmptyPoint
         };
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         public Point[] getPosYmf278b() {
             return _PosYmf278b;
         }
@@ -3988,8 +4109,10 @@ public class Setting implements Serializable, Cloneable {
             _OpenYmf278b = value;
         }
 
+        @JsonDeserialize(using = PointDeserializer.class)
         private Point _PosYm2612MIDI = EmptyPoint;
 
+        @JsonDeserialize(using = PointDeserializer.class)
         public Point getPosYm2612MIDI() {
             return _PosYm2612MIDI;
         }
@@ -4008,8 +4131,10 @@ public class Setting implements Serializable, Cloneable {
             _OpenYm2612MIDI = value;
         }
 
+        @JsonDeserialize(using = PointDeserializer.class)
         private Point _PosMixer = EmptyPoint;
 
+        @JsonDeserialize(using = PointDeserializer.class)
         public Point getPosMixer() {
             return _PosMixer;
         }
@@ -4028,8 +4153,10 @@ public class Setting implements Serializable, Cloneable {
             _OpenMixer = value;
         }
 
+        @JsonDeserialize(using = PointDeserializer.class)
         private Point _PosVSTeffectList = EmptyPoint;
 
+        @JsonDeserialize(using = PointDeserializer.class)
         public Point getPosVSTeffectList() {
             return _PosVSTeffectList;
         }
@@ -4048,10 +4175,12 @@ public class Setting implements Serializable, Cloneable {
             _OpenVSTeffectList = value;
         }
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         private Point[] _PosNESDMC = new Point[] {
                 EmptyPoint, EmptyPoint
         };
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         public Point[] getPosNESDMC() {
             return _PosNESDMC;
         }
@@ -4072,10 +4201,12 @@ public class Setting implements Serializable, Cloneable {
             _OpenNESDMC = value;
         }
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         private Point[] _PosFDS = new Point[] {
                 EmptyPoint, EmptyPoint
         };
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         public Point[] getPosFDS() {
             return _PosFDS;
         }
@@ -4096,10 +4227,12 @@ public class Setting implements Serializable, Cloneable {
             _OpenFDS = value;
         }
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         private Point[] _PosMMC5 = new Point[] {
                 EmptyPoint, EmptyPoint
         };
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         public Point[] getPosMMC5() {
             return _PosMMC5;
         }
@@ -4120,10 +4253,12 @@ public class Setting implements Serializable, Cloneable {
             _OpenMMC5 = value;
         }
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         private Point[] _PosVrc6 = new Point[] {
                 EmptyPoint, EmptyPoint
         };
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         public Point[] getPosVrc6() {
             return _PosVrc6;
         }
@@ -4144,10 +4279,12 @@ public class Setting implements Serializable, Cloneable {
             _OpenVrc6 = value;
         }
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         private Point[] _PosVrc7 = new Point[] {
                 EmptyPoint, EmptyPoint
         };
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         public Point[] getPosVrc7() {
             return _PosVrc7;
         }
@@ -4168,10 +4305,12 @@ public class Setting implements Serializable, Cloneable {
             _OpenVrc7 = value;
         }
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         private Point[] _PosN106 = new Point[] {
                 EmptyPoint, EmptyPoint
         };
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         public Point[] getPosN106() {
             return _PosN106;
         }
@@ -4192,10 +4331,12 @@ public class Setting implements Serializable, Cloneable {
             _OpenN106 = value;
         }
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         private Point[] _PosQSound = new Point[] {
                 EmptyPoint, EmptyPoint
         };
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         public Point[] getPosQSound() {
             return _PosQSound;
         }
@@ -4204,10 +4345,12 @@ public class Setting implements Serializable, Cloneable {
             _PosQSound = value;
         }
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         private Point[] _PosRegTest = new Point[] {
                 EmptyPoint, EmptyPoint
         };
 
+        @JsonDeserialize(contentUsing = PointDeserializer.class)
         public Point[] getPosRegTest() {
             return _PosRegTest;
         }
@@ -4228,8 +4371,10 @@ public class Setting implements Serializable, Cloneable {
             _OpenRegTest = value;
         }
 
+        @JsonDeserialize(using = PointDeserializer.class)
         private Point _PosVisWave = EmptyPoint;
 
+        @JsonDeserialize(using = PointDeserializer.class)
         public Point getPosVisWave() {
             return _PosVisWave;
         }
@@ -4682,7 +4827,8 @@ public class Setting implements Serializable, Cloneable {
 
     public void save() {
         Path fullPath = Common.settingFilePath;
-        fullPath = fullPath.resolve(Resources.getCntSettingFileName());
+
+        fullPath = fullPath.resolve(rb.getString("cntSettingFileName"));
 
         try (OutputStream sw = Files.newOutputStream(fullPath)) {
             Serdes.Util.serialize(this, sw);
@@ -4697,7 +4843,8 @@ public class Setting implements Serializable, Cloneable {
      */
     public static Setting load() {
         try {
-            String fn = Resources.getCntSettingFileName();
+
+            String fn = rb.getString("cntSettingFileName");
             if (Files.exists(Path.of(System.getProperty("user.dir"), fn))) {
                 // If there is a configuration file in the same folder as the application, use that.
                 Common.settingFilePath = Path.of(System.getProperty("user.dir")).getParent();
@@ -4707,9 +4854,15 @@ public class Setting implements Serializable, Cloneable {
             }
 
             Path fullPath = Common.settingFilePath;
-            fullPath = fullPath == null ? Path.of(Resources.getCntSettingFileName()) : fullPath.resolve(Resources.getCntSettingFileName());
+            if (fullPath == null) {
 
-            if (Files.exists(fullPath)) {
+                fullPath = Path.of(rb.getString("cntSettingFileName"));
+            } else {
+
+                fullPath = fullPath.resolve(rb.getString("cntSettingFileName"));
+            }
+
+            if (Files.exists(fullPath) && Files.size(fullPath) > 10) {
                 try (InputStream sr = Files.newInputStream(fullPath)) {
                     Serdes.Util.deserialize(sr, instance);
                 }
@@ -4721,5 +4874,49 @@ public class Setting implements Serializable, Cloneable {
         // fills in whatever the settings file did not carry, and everything on a first run
         instance.init();
         return instance;
+    }
+
+    public static class PointDeserializer extends ValueDeserializer<Point> {
+        @Override
+        public Point deserialize(JsonParser p, DeserializationContext ctxt) throws JacksonException {
+            double x = 0;
+            double y = 0;
+            if (p.currentToken() == JsonToken.START_OBJECT) {
+                while (p.nextToken() != JsonToken.END_OBJECT) {
+                    String name = p.currentName();
+                    p.nextToken();
+                    if ("x".equals(name)) {
+                        x = p.getValueAsDouble();
+                    } else if ("y".equals(name)) {
+                        y = p.getValueAsDouble();
+                    } else {
+                        p.skipChildren();
+                    }
+                }
+            }
+            return new Point((int) Math.round(x), (int) Math.round(y));
+        }
+    }
+
+    public static class DimensionDeserializer extends ValueDeserializer<Dimension> {
+        @Override
+        public Dimension deserialize(JsonParser p, DeserializationContext ctxt) throws JacksonException {
+            double width = 0;
+            double height = 0;
+            if (p.currentToken() == JsonToken.START_OBJECT) {
+                while (p.nextToken() != JsonToken.END_OBJECT) {
+                    String name = p.currentName();
+                    p.nextToken();
+                    if ("width".equals(name)) {
+                        width = p.getValueAsDouble();
+                    } else if ("height".equals(name)) {
+                        height = p.getValueAsDouble();
+                    } else {
+                        p.skipChildren();
+                    }
+                }
+            }
+            return new Dimension((int) Math.round(width), (int) Math.round(height));
+        }
     }
 }

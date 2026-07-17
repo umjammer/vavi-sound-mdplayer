@@ -443,7 +443,9 @@ public class MidiPlugin implements Plugin {
     }
 
     public int[][] readYM2612() {
-        return mds.inst(Ym2612Inst.class, 0).readRegister(0);
+        Instrument inst = mds.inst(Ym2612Inst.class, 0);
+        if (inst == null) return null;
+        return (int[][]) inst.getView(0, "registers", null).get("Ym2612");
     }
 
     public MIDIParam get(int chipId) {
@@ -464,4 +466,7 @@ public class MidiPlugin implements Plugin {
             buffer[i + offset] += bufVirtualFunction_MIDIKeyboard[i];
         }
     }
+
+    public final MIDIParam[] midi = {new MIDIParam(), new MIDIParam()};
+    public final MIDIParam[] midi_old = {new MIDIParam(), new MIDIParam()};
 }

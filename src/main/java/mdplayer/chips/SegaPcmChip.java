@@ -10,12 +10,13 @@ import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
+import mdplayer.MDChipParams.VolumeInfo;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdplayer.Tables;
@@ -41,15 +42,18 @@ public class SegaPcmChip extends BaseChip {
 
     private final RSoundChip[] realChips = {null, null};
 
+    @Deprecated
     private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,},
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,}
     };
 
+    @Deprecated
     public final byte[][] register = {
             null, null
     };
 
+    @Deprecated
     public final boolean[][] keyOn = {
             null, null
     };
@@ -122,7 +126,7 @@ public class SegaPcmChip extends BaseChip {
                 }
                 realChips[chipId].setRegister(0x10006, romSize);
 
-                context.chipRegister.plugin(RealChipPlugin.class).realChip.SendData();
+                context.chipRegister.plugin(RealChipPlugin.class).realChip.sendData();
             }
         }
 
@@ -138,8 +142,9 @@ public class SegaPcmChip extends BaseChip {
         }
     }
 
+    @Override
     public Map<String, Object> getInfo(int chipId) {
-        Map<String, Object> info = new HashMap<>(context.mds.inst(SegaPcmInst.class).getInfo(chipId));
+        Map<String, Object> info = new HashMap<>(context.mds.inst(SegaPcmInst.class).getView(chipId, "info", null));
         if (!info.containsKey("register")) {
             info.put("register", register[chipId]);
         }
@@ -248,4 +253,20 @@ public class SegaPcmChip extends BaseChip {
         }
         return n;
     }
+
+    @Deprecated
+    public static class Params {
+
+        public final mdplayer.MDChipParams.Channel[] channels = new mdplayer.MDChipParams.Channel[] {new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel()};
+    }
+
+    @Deprecated
+    public final Params[] segaPcm = new Params[] {new Params(), new Params()};
+    @Deprecated
+    public final Params[] segaPcm_old = new Params[] {new Params(), new Params()};
+
+    @Deprecated
+    public final VolumeInfo SEGAPCM = new VolumeInfo();
+    @Deprecated
+    public final VolumeInfo SEGAPCM_old = new VolumeInfo();
 }

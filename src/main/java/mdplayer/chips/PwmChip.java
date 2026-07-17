@@ -7,6 +7,7 @@
 package mdplayer.chips;
 
 import mdplayer.Common.EnmModel;
+import mdplayer.MDChipParams.VolumeInfo;
 import mdsound.Instrument;
 import mdsound.instrument.PwmInst;
 
@@ -31,4 +32,9 @@ public class PwmChip extends BaseChip {
         if (model == EnmModel.VirtualModel)
             context.mds.write(inst(chipId), chipId, 0, adr, data);
     }
+
+    @Deprecated
+    public final VolumeInfo PWM = new VolumeInfo();
+    @Deprecated
+    public final VolumeInfo PWM_old = new VolumeInfo();
 }

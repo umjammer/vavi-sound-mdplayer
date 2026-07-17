@@ -9,6 +9,7 @@ package mdplayer.chips;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
+import mdplayer.MDChipParams.VolumeInfo;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
@@ -25,6 +26,7 @@ import mdsound.instrument.YmFmYm2610Inst;
  * system property
  * <li>{@code mdplayer.variant.ym2610} ... active chip index</li>
  * </p>
+ *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
@@ -36,36 +38,46 @@ public class Ym2610Chip extends BaseChip {
     private final RSoundChip[] realChipsEA = {null, null};
     private final RSoundChip[] realChipsEB = {null, null};
 
+    @Deprecated
     public final int[][][] register = {
             {null, null},
             {null, null}
     };
 
+    @Deprecated
     public final int[][] keyOn = {null, null};
 
+    @Deprecated
     public final int[][] volume = {
             {0, 0, 0, 0, 0, 0, 0, 0, 0},
             {0, 0, 0, 0, 0, 0, 0, 0, 0}
     };
 
+    @Deprecated
     public final int[][] ch3SlotVolume = {new int[4], new int[4]};
 
+    @Deprecated
     public final int[][][] rhythmVolume = {
             {new int[2], new int[2], new int[2], new int[2], new int[2], new int[2]},
             {new int[2], new int[2], new int[2], new int[2], new int[2], new int[2]}
     };
 
+    @Deprecated
     public final int[][] adpcmVolume = {new int[2], new int[2]};
 
+    @Deprecated
     public final int[] adpcmPan = {0, 0};
 
+    // TODO check cache or not
     private final int[] nowFadeoutVol = {0, 0};
 
+    @Deprecated
     private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false}
     };
 
+    @Deprecated
     public int clock;
 
     @SuppressWarnings("unchecked")
@@ -374,7 +386,7 @@ public class Ym2610Chip extends BaseChip {
                     realChips[chipId].setRegister((dPort << 8) | 0x04, b & 0xff);
                 }
 
-                context.chipRegister.plugin(RealChipPlugin.class).realChip.SendData();
+                context.chipRegister.plugin(RealChipPlugin.class).realChip.sendData();
             }
             if (realChipsEB[chipId] != null) {
                 int dPort = 2;
@@ -391,7 +403,7 @@ public class Ym2610Chip extends BaseChip {
                     realChipsEB[chipId].setRegister((dPort << 8) | 0x10004, b & 0xff);
                 }
 
-                context.chipRegister.plugin(RealChipPlugin.class).realChip.SendData();
+                context.chipRegister.plugin(RealChipPlugin.class).realChip.sendData();
             }
         }
     }
@@ -413,7 +425,7 @@ public class Ym2610Chip extends BaseChip {
                     realChips[chipId].setRegister((dPort << 8) | 0x04, buf[srcStartAddr + cnt] & 0xff);
                 }
 
-                context.chipRegister.plugin(RealChipPlugin.class).realChip.SendData();
+                context.chipRegister.plugin(RealChipPlugin.class).realChip.sendData();
             }
             if (realChipsEB[chipId] != null) {
                 int dPort = 2;
@@ -429,7 +441,7 @@ public class Ym2610Chip extends BaseChip {
                     realChipsEB[chipId].setRegister((dPort << 8) | 0x10004, buf[srcStartAddr + cnt] & 0xff);
                 }
 
-                context.chipRegister.plugin(RealChipPlugin.class).realChip.SendData();
+                context.chipRegister.plugin(RealChipPlugin.class).realChip.sendData();
             }
         }
     }
@@ -453,7 +465,7 @@ public class Ym2610Chip extends BaseChip {
                     realChips[chipId].setRegister((dPort << 8) | 0x04, b & 0xff);
                 }
 
-                context.chipRegister.plugin(RealChipPlugin.class).realChip.SendData();
+                context.chipRegister.plugin(RealChipPlugin.class).realChip.sendData();
             }
             if (realChipsEB[chipId] != null) {
                 int dPort = 2;
@@ -470,7 +482,7 @@ public class Ym2610Chip extends BaseChip {
                     realChipsEB[chipId].setRegister((dPort << 8) | 0x10004, b & 0xff);
                 }
 
-                context.chipRegister.plugin(RealChipPlugin.class).realChip.SendData();
+                context.chipRegister.plugin(RealChipPlugin.class).realChip.sendData();
             }
         }
     }
@@ -492,7 +504,7 @@ public class Ym2610Chip extends BaseChip {
                     realChips[chipId].setRegister((dPort << 8) | 0x04, buf[srcStartAddr + cnt] & 0xff);
                 }
 
-                context.chipRegister.plugin(RealChipPlugin.class).realChip.SendData();
+                context.chipRegister.plugin(RealChipPlugin.class).realChip.sendData();
             }
             if (realChipsEB[chipId] != null) {
                 int dPort = 2;
@@ -508,7 +520,7 @@ public class Ym2610Chip extends BaseChip {
                     realChipsEB[chipId].setRegister((dPort << 8) | 0x10004, buf[srcStartAddr + cnt] & 0xff);
                 }
 
-                context.chipRegister.plugin(RealChipPlugin.class).realChip.SendData();
+                context.chipRegister.plugin(RealChipPlugin.class).realChip.sendData();
             }
         }
     }
@@ -583,6 +595,7 @@ public class Ym2610Chip extends BaseChip {
         write(chipId, 1, 0x0b, register[chipId][1][0x0b], EnmModel.RealModel);
     }
 
+    @Override
     public Map<String, Object> getInfo(int chipId) {
         return Map.of(
                 "volume", volume[chipId],
@@ -636,4 +649,47 @@ public class Ym2610Chip extends BaseChip {
 
         dumpData(model, "ADPCMB", vgmAdr + 15, vgmBuf, bLen - 8);
     }
+
+    @Deprecated
+    public static class Params {
+
+        public boolean lfoSw = false;
+        public int lfoFrq = -1;
+        public int nfrq = -1;
+        public int efrq = -1;
+        public int etype = -1;
+
+        public final mdplayer.MDChipParams.Channel[] channels = {
+                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), // FM 0
+                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), // SSG 9
+                new mdplayer.MDChipParams.Channel(), // ADPCM 12
+                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel() // RHYTHM 13
+        };
+    }
+
+    @Deprecated
+    public final Params[] ym2610 = {new Params(), new Params()};
+    @Deprecated
+    public final Params[] ym2610_old = {new Params(), new Params()};
+
+    @Deprecated
+    public final VolumeInfo YM2610AdpcmA = new VolumeInfo();
+    @Deprecated
+    public final VolumeInfo YM2610AdpcmA_old = new VolumeInfo();
+    @Deprecated
+    public final VolumeInfo YM2610AdpcmB = new VolumeInfo();
+    @Deprecated
+    public final VolumeInfo YM2610AdpcmB_old = new VolumeInfo();
+    @Deprecated
+    public final VolumeInfo YM2610FM = new VolumeInfo();
+    @Deprecated
+    public final VolumeInfo YM2610FM_old = new VolumeInfo();
+    @Deprecated
+    public final VolumeInfo YM2610PSG = new VolumeInfo();
+    @Deprecated
+    public final VolumeInfo YM2610PSG_old = new VolumeInfo();
+    @Deprecated
+    public final VolumeInfo YM2610 = new VolumeInfo();
+    @Deprecated
+    public final VolumeInfo YM2610_old = new VolumeInfo();
 }

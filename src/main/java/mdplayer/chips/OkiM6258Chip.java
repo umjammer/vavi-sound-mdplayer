@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
+import mdplayer.MDChipParams.VolumeInfo;
 import mdsound.Instrument;
 import mdsound.instrument.OkiM6258Inst;
 
@@ -22,8 +23,10 @@ import mdsound.instrument.OkiM6258Inst;
  */
 public class OkiM6258Chip extends BaseChip {
 
+    @Deprecated
     private final boolean[] mask = {false, false};
 
+    @Deprecated
     public final boolean[] keyOn = {false, false};
 
     @Override
@@ -61,9 +64,10 @@ public class OkiM6258Chip extends BaseChip {
         }
     }
 
+    @Override
     public Map<String, Object> getInfo(int chipId) {
         // the instrument hands back an unmodifiable map, and this adds to it
-        Map<String, Object> info = new HashMap<>(context.mds.inst(OkiM6258Inst.class).getInfo(chipId));
+        Map<String, Object> info = new HashMap<>(context.mds.inst(OkiM6258Inst.class).getView(chipId, "info", null));
         info.put("keyOn", keyOn[chipId]);
         return info;
     }
@@ -79,4 +83,26 @@ public class OkiM6258Chip extends BaseChip {
     public void resetMask(int chipId) {
         setMask(chipId, false);
     }
+
+    @Deprecated
+    public static class Params {
+
+        public int pan = -1;
+        public int pantp = -1;
+        public int masterFreq = -1;
+        public int divider = -1;
+        public int pbFreq = -1;
+        public int volumeL = -1;
+        public int volumeR = -1;
+        public boolean keyon = false;
+        public Boolean mask = false;
+    }
+
+    @Deprecated
+    public final Params[] okim6258 = new Params[] {new Params(), new Params()};
+
+    @Deprecated
+    public final VolumeInfo OKIM6258 = new VolumeInfo();
+    @Deprecated
+    public final VolumeInfo OKIM6258_old = new VolumeInfo();
 }

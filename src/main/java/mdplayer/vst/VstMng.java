@@ -92,7 +92,7 @@ public class VstMng {
         vi.editor = true;
 
         if (vi.editor) {
-            frmVST dlg = new frmVST(null);
+            FormVST dlg = new FormVST(null);
             dlg.setPluginCommandStub(ctx);
             dlg.Show(vi);
             vi.vstPluginsForm = dlg;
@@ -123,7 +123,7 @@ public class VstMng {
             vi.param = setting.getVst().getVSTInfo()[i].param;
 
             if (vi.editor) {
-                frmVST dlg = new frmVST(null);
+                FormVST dlg = new FormVST(null);
                 dlg.setPluginCommandStub(ctx);
                 dlg.Show(vi);
                 vi.vstPluginsForm = dlg;
@@ -528,7 +528,7 @@ public class VstMng {
 //        ctx.getParameterProperties(0);
 
 
-        frmVST dlg = new frmVST(null);
+        FormVST dlg = new FormVST(null);
         dlg.setPluginCommandStub(ctx);
         dlg.Show(vi);
         vi.vstPluginsForm = dlg;
@@ -836,7 +836,7 @@ public class VstMng {
 
     public static class VstInfo2 extends VstInfo {
         public VstPlugin vstPlugins = null;
-        public frmVST vstPluginsForm = null;
+        public FormVST vstPluginsForm = null;
 
         // It doesn't matter if it's actually a VSTi or not.
         public boolean isInstrument = false;
