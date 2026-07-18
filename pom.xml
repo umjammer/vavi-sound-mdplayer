@@ -3,7 +3,7 @@
 
   <groupId>vavi</groupId>
   <artifactId>vavi-apps-mdplayer</artifactId>
-  <version>0.0.17</version>
+  <version>0.0.18</version>
 
   <properties>
     <!-- the music file `mvn exec:exec` starts playing, none by default -->
