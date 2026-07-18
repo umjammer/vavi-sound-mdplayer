@@ -2,12 +2,12 @@ package mdplayer.format;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.System.Logger;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.ResourceBundle;
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
@@ -17,7 +17,6 @@ import mdplayer.Setting;
 import mdplayer.driver.mxdrv.MxDriver;
 import mdplayer.plugin.MDXPlugin;
 import mdplayer.plugin.Plugin;
-import mdplayer.properties.Resources;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 import vavi.sound.SoundUtil;
@@ -38,7 +37,7 @@ import static vavi.util.compat.Util.getExtension;
  */
 public class MDXFileFormat extends BaseFileFormat {
 
-    private static final Logger logger = System.getLogger(MDXFileFormat.class.getName());
+    private static final ResourceBundle rb = ResourceBundle.getBundle("mdplayer/properties/resources");
 
     @Override
     public String[] getExtensions() {
@@ -95,7 +94,7 @@ public class MDXFileFormat extends BaseFileFormat {
     public String[] getPresetMixerBalance() {
         return new String[] {
                 "DriverBalance_MDX.mbc",
-                Resources.getDefaultVolumeBalance_MDX()
+                rb.getString("DefaultVolumeBalance_MDX")
         };
     }
 

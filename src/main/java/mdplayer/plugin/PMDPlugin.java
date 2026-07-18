@@ -63,7 +63,6 @@ public class PMDPlugin extends BasePlugin<PmdDriver> implements Compilable {
         Function<String, InputStream> fn = Ym2608Chip::getOPNARyhthmStream;
         chip.option = new Object[] {fn};
         put(Ym2608Chip.class, chip);
-        chipRegister.chip(Ym2608Chip.class).clock = PmdDriver.baseClock;
 
         chip = new MDSound.Chip();
         chip.id = 0;

@@ -33,6 +33,7 @@ import vavi.util.ByteUtil;
  * system property
  * <li>{@code mdplayer.variant.ym2608} ... active chip index</li>
  * </p>
+ *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
@@ -44,31 +45,39 @@ public class Ym2608Chip extends BaseChip {
 
     public final RSoundChip[] realChips = {null, null};
 
+    @Deprecated
     public final int[][][] register = {
             {null, null},
             {null, null}
     };
 
+    @Deprecated
     public final int[][] keyOn = {null, null};
 
+    @Deprecated
     public final int[][] volume = {
             {0, 0, 0, 0, 0, 0, 0, 0, 0},
             {0, 0, 0, 0, 0, 0, 0, 0, 0}
     };
 
+    @Deprecated
     public final int[][] ch3SlotVolume = {
             new int[4], new int[4]
     };
 
+    @Deprecated
     public final int[][][] rhythmVolume = {
             {new int[2], new int[2], new int[2], new int[2], new int[2], new int[2]},
             {new int[2], new int[2], new int[2], new int[2], new int[2], new int[2]}
     };
 
+    @Deprecated
     public final int[][] adpcmVolume = {new int[2], new int[2]};
 
+    @Deprecated
     public final int[] adpcmPan = {0, 0};
 
+    // TODO check cache or not
     private final int[] fadeout = {0, 0};
 
     private final boolean[][] mask = {
@@ -76,7 +85,6 @@ public class Ym2608Chip extends BaseChip {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false}
     };
 
-    public int clock;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -442,7 +450,8 @@ public class Ym2608Chip extends BaseChip {
 
     public void setMask(int chipId, int ch, boolean mask, boolean noSend/*=false*/) {
         this.mask[chipId][ch] = mask;
-        if (ch >= 9 && ch < 12) {
+        // FM ch3 and its extended slots mask as one
+        if (ch == 2 || (ch >= 9 && ch < 12)) {
             this.mask[chipId][2] = mask;
             this.mask[chipId][9] = mask;
             this.mask[chipId][10] = mask;
@@ -491,7 +500,7 @@ public class Ym2608Chip extends BaseChip {
             return;
 
         if (realChips[chipId] != null && chipTypes[chipId].getRealChipInfo()[0].getUseWait()) {
-            context.chipRegister.plugin(RealChipPlugin.class).realChip.SendData();
+            context.chipRegister.plugin(RealChipPlugin.class).realChip.sendData();
             while (!realChips[chipId].isBufferEmpty()) {
             }
         }
@@ -501,7 +510,7 @@ public class Ym2608Chip extends BaseChip {
         if (model != EnmModel.VirtualModel)
             sendData(chipId, model);
 
-        dumpData(model, "ADPCM",ofs, buf, len);
+        dumpData(model, "ADPCM", ofs, buf, len);
     }
 
     public void setFadeout(int chipId, int v) {
@@ -547,10 +556,11 @@ public class Ym2608Chip extends BaseChip {
         }
     }
 
+    @Override
     public Map<String, Object> getInfo(int chipId) {
         return Map.of(
                 "volume", volume[chipId],
-                "rythmVolume", rhythmVolume[chipId],
+                "rhythmVolume", rhythmVolume[chipId],
                 "ch3SlotVolume", /* ctYM2612.UseScci ? */ ch3SlotVolume[chipId] /* : context.mds.inst(inst[chipId]).readFMCh3SlotVolume(); */,
                 "adpcmVolume", adpcmVolume[chipId],
                 "register", register[chipId],
@@ -633,12 +643,18 @@ public class Ym2608Chip extends BaseChip {
 //                write(0x1, 0x10, 0x80, model);
 
         while ((read(chipId, 0x1, 0x00, model) & 0xbf) != 0) {
-            try { Thread.sleep(0); } catch (InterruptedException ignore) {}
+            try {
+                Thread.sleep(0);
+            } catch (InterruptedException ignore) {
+            }
         }
         if (model == mdplayer.Common.EnmModel.RealModel) {
             if ((chipId == 0 && setting.getYM2608Type()[0].getUseReal()[0])
                     || (chipId == 1 && setting.getYM2608Type()[1].getUseReal()[0])) {
-                try { Thread.sleep(500); } catch (InterruptedException ignore) {}
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ignore) {
+                }
             }
         }
 
@@ -647,6 +663,7 @@ public class Ym2608Chip extends BaseChip {
 
     /**
      * Check the RAMType of OPNA from the data
+     *
      * @return true: x8bit, false: x1bit
      */
     private static boolean searchOpnaRamType(byte[] vgmBuf, int vgmDataOffset) {
@@ -758,5 +775,10 @@ public class Ym2608Chip extends BaseChip {
             }
         }
         return n;
+    }
+
+    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    public boolean getMask(int chipId, int ch) {
+        return ch < mask[chipId].length && mask[chipId][ch];
     }
 }

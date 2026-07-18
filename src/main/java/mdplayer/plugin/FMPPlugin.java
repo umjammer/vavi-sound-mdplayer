@@ -91,7 +91,6 @@ public class FMPPlugin extends BasePlugin<FmpDriver> implements Compilable {
         Function<String, InputStream> fn = Ym2608Chip::getOPNARyhthmStream;
         chip.option = new Object[] {fn};
         put(Ym2608Chip.class, chip);
-        chipRegister.chip(Ym2608Chip.class).clock = FMP.baseClock;
 
         chip = new MDSound.Chip();
         chip.id = 0;

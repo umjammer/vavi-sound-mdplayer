@@ -11,6 +11,8 @@ import java.lang.System.Logger.Level;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -45,10 +47,12 @@ public class SegaPcmChip extends BaseChip {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,}
     };
 
+    @Deprecated
     public final byte[][] register = {
             null, null
     };
 
+    @Deprecated
     public final boolean[][] keyOn = {
             null, null
     };
@@ -121,7 +125,7 @@ public class SegaPcmChip extends BaseChip {
                 }
                 realChips[chipId].setRegister(0x10006, romSize);
 
-                context.chipRegister.plugin(RealChipPlugin.class).realChip.SendData();
+                context.chipRegister.plugin(RealChipPlugin.class).realChip.sendData();
             }
         }
 
@@ -137,9 +141,14 @@ public class SegaPcmChip extends BaseChip {
         }
     }
 
+    @Override
     public Map<String, Object> getInfo(int chipId) {
-        Map<String, Object> info = context.mds.inst(SegaPcmInst.class).getInfo(chipId);
-        info.put("register", register[chipId]);
+        SegaPcmInst inst = context.mds.inst(SegaPcmInst.class);
+        if (inst == null) return Collections.emptyMap(); // the song being played does not use this chip
+        Map<String, Object> info = new HashMap<>(inst.getView(chipId, "info", null));
+        if (!info.containsKey("register")) {
+            info.put("register", register[chipId]);
+        }
         info.put("keyOn", keyOn[chipId]);
         return info;
     }
@@ -244,5 +253,10 @@ public class SegaPcmChip extends BaseChip {
             }
         }
         return n;
+    }
+
+    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    public boolean getMask(int chipId, int ch) {
+        return ch < mask[chipId].length && mask[chipId][ch];
     }
 }

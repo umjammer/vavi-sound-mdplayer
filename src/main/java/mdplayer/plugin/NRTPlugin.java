@@ -65,7 +65,6 @@ logger.log(Level.DEBUG, "used chip: %02x".formatted(r));
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ay8910Chip.class);
             chip.clock = 2000000 / 2;
-            chipRegister.chip(Ay8910Chip.class).clock = chip.clock;
             chip.option = null;
 
             hiyorimiDeviceFlag |= 0x1;

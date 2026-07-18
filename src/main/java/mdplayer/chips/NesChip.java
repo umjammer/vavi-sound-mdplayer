@@ -38,6 +38,7 @@ public class NesChip extends BaseChip {
             return new Class[] {DmcInst.class};
         }
 
+        // TODO getInfo
         public int[] readDmc(int chipId, EnmModel model) {
             fireEventHappened("led.on", chipId);
 
@@ -60,6 +61,10 @@ public class NesChip extends BaseChip {
         public void resetDmcMask(int chipId, int ch) {
             resetMask(chipId, ch + 2);
         }
+
+        public boolean getDmcMask(int chipId, int ch) {
+            return (dmcMask & (1 << ch)) != 0;
+        }
     }
 
     // vgm
@@ -72,12 +77,13 @@ public class NesChip extends BaseChip {
             return new Class[] {FdsInst.class};
         }
 
+        // TODO getInfo
         public Map<String, Object> readFds(int chipId, EnmModel model) {
             fireEventHappened("led.on", chipId);
 
             if (model == EnmModel.VirtualModel) {
 //            if (!ctNES[chipId].UseScci) {
-                return context.mds.inst(FdsInst.class).getInfo(chipId);
+                return context.mds.inst(FdsInst.class).getView(chipId, "info", null);
 //            }
             } else {
                 return null;
@@ -88,11 +94,15 @@ public class NesChip extends BaseChip {
         }
 
         public void setFdsMask(int chipId) {
-            context.mds.inst(FdsInst.class).setFDSMask(chipId);
+            FdsInst instrument = context.mds.inst(FdsInst.class);
+            if (instrument == null) return; // the song being played does not use this chip
+            instrument.setFDSMask(chipId);
         }
 
         public void resetFdsMask(int chipId) {
-            context.mds.inst(FdsInst.class).resetFDSMask(chipId);
+            FdsInst instrument = context.mds.inst(FdsInst.class);
+            if (instrument == null) return; // the song being played does not use this chip
+            instrument.resetFDSMask(chipId);
         }
     }
 
@@ -120,6 +130,7 @@ public class NesChip extends BaseChip {
     }
 
     // vgm
+    // TODO getInfo
     public int[] readApu(int chipId, EnmModel model) {
         fireEventHappened("led.on", chipId);
 
@@ -141,6 +152,7 @@ public class NesChip extends BaseChip {
             switch (ch) {
                 case 0:
                 case 1:
+                    apuMask |= 1 << ch;
                     break;
                 case 2:
                 case 3:
@@ -149,7 +161,9 @@ public class NesChip extends BaseChip {
                     break;
             }
         }
-        context.mds.inst(NesInst.class).setMask(chipId, ch);
+        Instrument instrument = context.mds.inst(NesInst.class);
+        if (instrument == null) return; // the song being played does not use this chip
+        instrument.setMask(chipId, ch);
     }
 
     // vgm
@@ -158,6 +172,7 @@ public class NesChip extends BaseChip {
             switch (ch) {
                 case 0:
                 case 1:
+                    apuMask &= ~(1 << ch);
                     break;
                 case 2:
                 case 3:
@@ -166,7 +181,13 @@ public class NesChip extends BaseChip {
                     break;
             }
         }
-        context.mds.inst(NesInst.class).resetMask(chipId, ch);
+        Instrument instrument = context.mds.inst(NesInst.class);
+        if (instrument == null) return; // the song being played does not use this chip
+        instrument.resetMask(chipId, ch);
+    }
+
+    public boolean getMask(int chipId, int ch) {
+        return (apuMask & (1 << ch)) != 0;
     }
 
     // vgm

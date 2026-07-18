@@ -28,6 +28,7 @@ import static mdplayer.chips.YmF278BChip.channel;
  * system property
  * <li>{@code mdplayer.variant.ymf262} ... active chip index</li>
  * </p>
+ *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
@@ -37,15 +38,19 @@ public class YmF262Chip extends BaseChip {
 
     private final RSoundChip[] realChips = {null, null};
 
+    @Deprecated
     public final int[][][] register = {
             {null, null},
             {null, null}
     };
 
+    @Deprecated
     private final int[] registerFm = {0, 0};
 
+    @Deprecated
     private final int[] registerRhythmB = {0, 0};
 
+    @Deprecated
     private final int[] registerRhythm = {0, 0};
 
     private final boolean[][] mask = {
@@ -55,6 +60,7 @@ public class YmF262Chip extends BaseChip {
                     false, false, false, false, false, false, false}
     };
 
+    // TODO check cache or not
     private final int[] fadeout = {0, 0};
 
     @Override
@@ -83,12 +89,14 @@ public class YmF262Chip extends BaseChip {
         }
     }
 
+    // TODO getInfo
     public int getRhythmKeyON(int chipId) {
         int r = registerRhythm[chipId];
         registerRhythm[chipId] = 0;
         return r;
     }
 
+    // TODO getInfo
     public int getFmKeyON(int chipId) {
         return registerFm[chipId];
     }
@@ -245,6 +253,7 @@ public class YmF262Chip extends BaseChip {
         }
     }
 
+    @Override
     public Map<String, Object> getInfo(int chipId) {
         return Map.of("register", register[chipId]);
     }
@@ -267,5 +276,10 @@ public class YmF262Chip extends BaseChip {
     public void clearFadeout() {
         setFadeout(0, 0);
         setFadeout(1, 0);
+    }
+
+    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    public boolean getMask(int chipId, int ch) {
+        return ch < mask[chipId].length && mask[chipId][ch];
     }
 }

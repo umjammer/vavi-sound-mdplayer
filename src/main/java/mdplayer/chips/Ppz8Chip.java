@@ -32,8 +32,10 @@ public class Ppz8Chip extends BaseChip {
         return new Class[] {Ppz8Inst.class};
     }
 
+    @Override
     public Map<String, Object> getInfo(int chipId) {
-        return context.mds.inst(Ppz8Inst.class).getInfo(chipId);
+        Ppz8Inst inst = context.mds.inst(Ppz8Inst.class);
+        return inst == null ? null : inst.getView(chipId, "info", null);
     }
 
     public void writePcm(int chipId, int bank, int mode, byte[][] pcmData, EnmModel model) {
@@ -66,5 +68,10 @@ public class Ppz8Chip extends BaseChip {
 
     public void resetMask(int chipId, int ch) {
         setMask(chipId, ch, false);
+    }
+
+    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    public boolean getMask(int chipId, int ch) {
+        return ch < mask[chipId].length && mask[chipId][ch];
     }
 }

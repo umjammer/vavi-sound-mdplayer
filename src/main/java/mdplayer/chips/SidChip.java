@@ -29,6 +29,7 @@ public class SidChip extends BaseChip {
         return new Class[0];
     }
 
+    @Override
     public Map<String, Object> getInfo(int chipId) {
         return sid != null ? Map.of("register",  sid.getRegisterFromSid()[chipId]) : Collections.emptyMap();
     }

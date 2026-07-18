@@ -7,7 +7,6 @@ import mdplayer.Common.EnmModel;
 import mdplayer.chips.Ay8910Chip;
 import mdplayer.chips.K051649Chip;
 import mdplayer.chips.Ym2413Chip;
-import mdplayer.driver.mgsdrv.MgsDrv;
 import mdplayer.driver.ndp.Ndp;
 import mdplayer.driver.ndp.NdpDriver;
 import mdsound.MDSound;
@@ -52,7 +51,7 @@ public class NDPPlugin extends BasePlugin<NdpDriver> {
             chip.instrument = chipRegister.chip(Ay8910Chip.class).instrument(0);
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ay8910Chip.class);
-            chip.clock = MgsDrv.baseClockAY8910 / 2;
+            chip.clock = Ndp.baseClockAY8910 / 2;
             chip.option = null;
             if (chip.instrument instanceof MameAy8910Inst) {
                 chip.option = new Object[] {
@@ -61,7 +60,6 @@ public class NDPPlugin extends BasePlugin<NdpDriver> {
                 };
             }
             put(Ay8910Chip.class, chip);
-            chipRegister.chip(Ay8910Chip.class).clock = Ndp.baseClockAY8910;
         }
 
         if (useOPLL) {
@@ -70,10 +68,9 @@ public class NDPPlugin extends BasePlugin<NdpDriver> {
             chip.instrument = chipRegister.chip(Ym2413Chip.class).instrument(0);
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2413Chip.class);
-            chip.clock = MgsDrv.baseClockYM2413;
+            chip.clock = Ndp.baseClockYM2413;
             chip.option = null;
             put(Ym2413Chip.class, chip);
-            chipRegister.chip(Ym2413Chip.class).clock = Ndp.baseClockYM2413;
         }
 
         if (useSCC) {
@@ -82,10 +79,9 @@ public class NDPPlugin extends BasePlugin<NdpDriver> {
             chip.instrument = chipRegister.chip(K051649Chip.class).instrument(0);
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, K051649Chip.class);
-            chip.clock = MgsDrv.baseClockK051649;
+            chip.clock = Ndp.baseClockK051649;
             chip.option = null;
             put(K051649Chip.class, chip);
-            chipRegister.chip(K051649Chip.class).clock = Ndp.baseClockK051649;
         }
 
         mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, flatten());

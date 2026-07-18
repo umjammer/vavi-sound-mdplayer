@@ -23,8 +23,10 @@ import mdsound.instrument.C352Inst;
  */
 public class C352Chip extends BaseChip {
 
+    @Deprecated
     public final int[][] register = {null, null};
 
+    @Deprecated
     public final int[][] keyOn = {null, null};
 
     private final boolean[][] mask = {
@@ -33,8 +35,6 @@ public class C352Chip extends BaseChip {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
                     false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false}
     };
-
-    public int clock;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -78,10 +78,13 @@ public class C352Chip extends BaseChip {
         dumpData(model, "PCMData", srcOffset, buf, length);
     }
 
+    @Override
     public Map<String, Object> getInfo(int chipId) {
+        C352Inst inst = context.mds.inst(C352Inst.class);
+        if (inst == null) return null; // the song being played does not use this chip
         return Map.of(
                 "register", register[chipId],
-                "flags", context.mds.inst(C352Inst.class).getInfo(chipId).get("flags")
+                "flags", inst.getView(chipId, "flags", null).get("flags")
         );
     }
 
@@ -91,5 +94,10 @@ public class C352Chip extends BaseChip {
 
     public void resetMask(int chipId, int ch) {
         setMask(chipId, ch, false);
+    }
+
+    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    public boolean getMask(int chipId, int ch) {
+        return ch < mask[chipId].length && mask[chipId][ch];
     }
 }

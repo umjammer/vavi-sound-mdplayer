@@ -74,7 +74,6 @@ public class MucomPlugin extends BasePlugin<MucomDriver> implements Compilable {
             chip.option = new Object[] {fn};
             put(Ym2608Chip.class, chip);
 
-            chipRegister.chip(Ym2608Chip.class).clock = MucomDriver.opnaBaseClock;
         }
 
         if (useChipFromMub[1] != Unused.class) {
@@ -109,7 +108,6 @@ public class MucomPlugin extends BasePlugin<MucomDriver> implements Compilable {
             }
             chip.option = null;
             put(Ym2610Chip.class, chip);
-            chipRegister.chip(Ym2610Chip.class).clock = MucomDriver.opnbBaseClock;
         }
 
         if (useChipFromMub[3] != Unused.class) {
@@ -167,7 +165,6 @@ public class MucomPlugin extends BasePlugin<MucomDriver> implements Compilable {
         chipRegister.chip(Ym2608Chip.class).writeClock((byte) 1, MucomDriver.opnaBaseClock, Common.EnmModel.RealModel);
         chipRegister.chip(Ym2608Chip.class).setSsgVolume((byte) 0, setting.getBalance().getGimicOPNAVolume(), Common.EnmModel.RealModel);
         chipRegister.chip(Ym2608Chip.class).setSsgVolume((byte) 1, setting.getBalance().getGimicOPNAVolume(), Common.EnmModel.RealModel);
-
 
         driverVirtual.init(Common.EnmModel.VirtualModel,
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,

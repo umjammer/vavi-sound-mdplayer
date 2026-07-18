@@ -12,6 +12,7 @@ import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
+import mdplayer.format.FileFormat;
 import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.instrument.MameYm2612Inst;
@@ -27,6 +28,7 @@ import mdsound.instrument.Ym3438Inst;
  * system property
  * <li>{@code mdplayer.variant.ym2612} ... active chip index</li>
  * </p>
+ *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
@@ -36,23 +38,29 @@ public class Ym2612Chip extends BaseChip {
 
     private final RSoundChip[] realChips = {null, null};
 
+    @Deprecated
     public final int[][][] register = {
             {null, null},
             {null, null}
     };
+    @Deprecated
     public final int[][] keyOn = {null, null};
+    @Deprecated
     public final int[][] volume = {
             {0, 0, 0, 0, 0, 0, 0, 0, 0},
             {0, 0, 0, 0, 0, 0, 0, 0, 0}
     };
+    @Deprecated
     public final int[][] ch3SlotVolume = {new int[4], new int[4]};
+    // TODO check cache or not
     private final int[] fadeout = {0, 0};
     private final boolean[][] mask = {
             {false, false, false, false, false, false},
             {false, false, false, false, false, false}
     };
 
-    public int clock;
+    /** the format of the song being played; the panel draws a few things per format */
+    public FileFormat fileFormat = FileFormat.unknown;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -268,7 +276,8 @@ public class Ym2612Chip extends BaseChip {
     }
 
     private void setMask(int chipId, int ch, boolean mask) {
-        this.mask[chipId][ch] = mask;
+        // channels 6-8 are FM3's extended slots; they share ch2's mask slot (the array is 6 wide)
+        this.mask[chipId][ch < 6 ? ch : 2] = mask;
 
         int c = (ch < 3) ? ch : (ch - 3);
         int p = (ch < 3) ? 0 : 1;
@@ -283,10 +292,13 @@ public class Ym2612Chip extends BaseChip {
         write(chipId, p, 0x48 + c, register[chipId][p][0x48 + c], EnmModel.RealModel, -1);
         write(chipId, p, 0x4c + c, register[chipId][p][0x4c + c], EnmModel.RealModel, -1);
 
+        Instrument instrument = context.mds.inst(inst(chipId));
+        if (instrument == null) return; // the song being played does not use this chip
+
         if (mask)
-            context.mds.inst(inst(chipId)).setMask(chipId, ch);
+            instrument.setMask(chipId, ch);
         else
-            context.mds.inst(inst(chipId)).resetMask(chipId, ch);
+            instrument.resetMask(chipId, ch);
     }
 
     public void setSyncWait(int chipId, int wait) {
@@ -307,6 +319,7 @@ public class Ym2612Chip extends BaseChip {
         }
     }
 
+    @Override
     public Map<String, Object> getInfo(int chipId) {
         return Map.of(
                 "volume", volume[chipId],
@@ -328,5 +341,11 @@ public class Ym2612Chip extends BaseChip {
     public void clearFadeout() {
         setFadeout(0, 0);
         setFadeout(1, 0);
+    }
+
+    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    public boolean getMask(int chipId, int ch) {
+        // channels 6-8 are FM3's extended slots; they mask together with ch2
+        return mask[chipId][ch < 6 ? ch : 2];
     }
 }

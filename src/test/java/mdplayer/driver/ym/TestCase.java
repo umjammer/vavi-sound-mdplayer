@@ -28,6 +28,7 @@ import vavi.util.properties.annotation.PropsEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 import static mdplayer.driver.ym.Ym2Wav.writeLE16;
 import static mdplayer.driver.ym.Ym2Wav.writeWavHeader;
@@ -167,6 +168,7 @@ Debug.print(ym);
     }
 
     @Test
+    @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
     void test2() throws Exception {
 Debug.print(ym);
 

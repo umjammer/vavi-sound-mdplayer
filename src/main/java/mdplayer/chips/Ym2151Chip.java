@@ -27,6 +27,7 @@ import mdsound.instrument.YmFmYm2151Inst;
  * system property
  * <li>{@code mdplayer.variant.ym2151} ... active chip index</li>
  * </p>
+ *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
@@ -36,21 +37,28 @@ public class Ym2151Chip extends BaseChip {
 
     private final RSoundChip[] realChips = {null, null};
 
+    @Deprecated
     public final int[][] register = {null, null};
+    @Deprecated
     public final int[][] keyOn = {null, null};
+    @Deprecated
     public final int[][] volume = {
             {0, 0, 0, 0, 0, 0, 0, 0},
             {0, 0, 0, 0, 0, 0, 0, 0}
     };
 
+    // TODO check cache or not
     private final int[] fadeout = {0, 0};
     private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false}
     };
+    @Deprecated
     public final int[] amd = {-1, -1};
+    @Deprecated
     public final int[] pmd = {-1, -1};
 
+    // TODO check cache or not
     private final boolean[] use4MYM2151scci = {false, false};
 
     public boolean[] getUse4MYM2151scci() {
@@ -302,7 +310,7 @@ public class Ym2151Chip extends BaseChip {
             return;
 
         if (realChips[chipId] != null && chipTypes[chipId].getRealChipInfo()[0].getUseWait()) {
-            context.chipRegister.plugin(RealChipPlugin.class).realChip.SendData();
+            context.chipRegister.plugin(RealChipPlugin.class).realChip.sendData();
             while (!realChips[chipId].isBufferEmpty()) {
             }
         }
@@ -392,5 +400,13 @@ public class Ym2151Chip extends BaseChip {
         ret -= 12;
 
         return ret;
+    }
+
+
+
+
+    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    public boolean getMask(int chipId, int ch) {
+        return ch < mask[chipId].length && mask[chipId][ch];
     }
 }

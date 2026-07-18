@@ -37,7 +37,7 @@ public class DmgChip extends BaseChip {
 
         if (model == EnmModel.VirtualModel) {
 //            if (!ctNES[chipId].UseScci) {
-                context.mds.write(inst(chipId), chipId, 0, addr, data);
+            context.mds.write(inst(chipId), chipId, 0, addr, data);
 //            }
         } else {
 //            if (scNES[chipId] == null) return;
@@ -48,12 +48,18 @@ public class DmgChip extends BaseChip {
 
     public void setMask(int chipId, int ch) {
         mask[chipId][ch] = true;
-        context.mds.inst(inst(chipId)).setMask(chipId, ch);
+
+        Instrument instrument = context.mds.inst(inst(chipId));
+        if (instrument == null) return; // the song being played does not use this chip
+        instrument.setMask(chipId, ch);
     }
 
     public void resetMask(int chipId, int ch) {
         mask[chipId][ch] = false;
-        context.mds.inst(inst(chipId)).resetMask(chipId, ch);
+
+        Instrument instrument = context.mds.inst(inst(chipId));
+        if (instrument == null) return; // the song being played does not use this chip
+        instrument.resetMask(chipId, ch);
     }
 
     public int read(int chipId, int addr) {
@@ -62,9 +68,16 @@ public class DmgChip extends BaseChip {
         return context.mds.inst(DmgInst.class).read(chipId, addr);
     }
 
+    @Override
     public Map<String, Object> getInfo(int chipId) {
         if (chipId == 1) return null;
 
-        return context.mds.inst(DmgInst.class).getInfo(chipId);
+        DmgInst inst = context.mds.inst(DmgInst.class);
+        return inst == null ? null : inst.getView(chipId, "info", null);
+    }
+
+    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    public boolean getMask(int chipId, int ch) {
+        return ch < mask[chipId].length && mask[chipId][ch];
     }
 }

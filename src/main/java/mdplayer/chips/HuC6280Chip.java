@@ -29,6 +29,7 @@ public class HuC6280Chip extends BaseChip {
             {false, false, false, false, false, false}
     };
 
+    @Deprecated
     private final int[] currentCh = {
             0, 0
     };
@@ -72,8 +73,10 @@ public class HuC6280Chip extends BaseChip {
         this.mask[chipId][ch] = mask;
     }
 
+    @Override
     public Map<String, Object> getInfo(int chipId) {
-        return context.mds.inst(HuC6280Inst.class).getInfo(chipId);
+        HuC6280Inst inst = context.mds.inst(HuC6280Inst.class);
+        return inst == null ? null : inst.getView(chipId, "info", null);
     }
 
     public void setMask(int chipId, int ch) {
@@ -82,5 +85,10 @@ public class HuC6280Chip extends BaseChip {
 
     public void resetMask(int chipId, int ch) {
         setMask(chipId, ch, false);
+    }
+
+    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    public boolean getMask(int chipId, int ch) {
+        return ch < mask[chipId].length && mask[chipId][ch];
     }
 }

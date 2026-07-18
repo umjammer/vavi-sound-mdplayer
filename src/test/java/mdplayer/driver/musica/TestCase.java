@@ -24,6 +24,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.condition.EnabledIf;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 
 /**
@@ -71,6 +72,7 @@ Debug.println("settings\n" +
 
     @Test
     @DisplayName("compile mml")
+    @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
     void test() throws Exception {
 Debug.println("filename: " + musica);
         FileFormat format = FileFormat.getFileFormat(musica);

@@ -25,20 +25,22 @@ import mdplayer.format.FileFormat;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 import vavi.util.serdes.Element;
+import vavi.util.serdes.JacksonXMLBeanBinder;
 import vavi.util.serdes.Serdes;
 
 import static java.lang.System.getLogger;
 import static mdplayer.Common.charset;
 
 
-@Serdes
+@Serdes(beanBinder = JacksonXMLBeanBinder.class)
 public class PlayList implements Serializable, Cloneable {
 
     private static final Logger logger = getLogger(PlayList.class.getName());
 
-    @Serdes
+    @Serdes(beanBinder = JacksonXMLBeanBinder.class)
     public static class Music {
-        public FileFormat format;
+        @com.fasterxml.jackson.annotation.JsonIgnore
+        public transient FileFormat format;
         public String playingNow;
         public String fileName;
         public String arcFileName;
@@ -165,11 +167,13 @@ public class PlayList implements Serializable, Cloneable {
                 fullPath = Path.of(fileName);
             }
 
-            try (InputStream sr = Files.newInputStream(fullPath)) {
-                PlayList pl = new PlayList();
-                Serdes.Util.deserialize(sr, pl);
-                return pl;
+            if (Files.exists(fullPath) && Files.size(fullPath) > 10) {
+                try (InputStream sr = Files.newInputStream(fullPath)) {
+                    // the binder builds and returns a fresh bean; the one passed in stays empty
+                    return Serdes.Util.deserialize(sr, new PlayList());
+                }
             }
+            return new PlayList();
         } catch (NoSuchFileException ex) {
             logger.log(Level.ERROR, ex.toString());
             return new PlayList();
@@ -207,39 +211,47 @@ public class PlayList implements Serializable, Cloneable {
         }
     }
 
+    /** {@code ".../foo.vgz"} is a {@code VGZ}, not everything up to the dot. */
+    private static String extension(String fileName) {
+        String name = Path.of(fileName).getFileName().toString();
+        int dot = name.lastIndexOf('.');
+        return dot < 0 ? "" : name.substring(dot + 1).toUpperCase();
+    }
+
     public List<Object[]> makeRow(List<Music> musics) {
         List<Object[]> ret = new ArrayList<>();
 
         for (Music music : musics) {
+            if (music == null || music.fileName == null) continue; // a half-written playlist entry has no file to show
             Object[] row = new Object[] {
-                " ", // clmPlayingNow
                 0, // clmKey
-                music.fileName, // clmFileName
+                music.songNo, // clmSongNo
                 music.arcFileName, // clmZipFileName
-                Path.of(music.fileName).getFileName().toString(), // clmDispFileName
-                music.fileName, // clmDispFileName
-                Path.of(music.fileName).toString().substring(0, music.fileName.lastIndexOf('.') + 1).toUpperCase(), // clmEXT
+                music.fileName, // clmFileName
+                " ", // clmPlayingNow
+                extension(music.fileName), // clmEXT
                 music.type, // clmType
                 music.title, // clmTitle
                 music.titleJ, // clmTitleJ
+                Path.of(music.fileName).getFileName().toString(), // clmDispFileName
                 music.game, // clmGame
                 music.gameJ, // clmGameJ
-//                music.remark, // clmRemark
                 music.composer, // clmComposer
                 music.composerJ, // clmComposerJ
+                music.vgmby, // clmVGMby
                 music.converted, // clmConverted
                 music.notes, // clmNotes
                 music.duration, // clmDuration
-                music.vgmby, // clmVGMby
-                music.songNo, // clmSongNo
             };
             ret.add(row);
         }
         return ret;
     }
 
-    public BiConsumer<Integer, Object[]> setRow;
-    public Consumer<Object[]> addRow;
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public transient BiConsumer<Integer, Object[]> setRow;
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public transient Consumer<Object[]> addRow;
 
     public void addFile(String filename) {
         try {
@@ -275,13 +287,13 @@ public class PlayList implements Serializable, Cloneable {
 
     private void addFileLoop(Music mc, Archive archive, Entry entry /* = null */) {
         try {
-            musics = mc.format.addFileLoop(mc, archive, entry);
-            if (musics == null) return;
+            List<Music> added = mc.format.addFileLoop(mc, archive, entry);
+            if (added == null) return;
 
-            List<Object[]> rows = makeRow(musics);
+            List<Object[]> rows = makeRow(added);
             for (Object[] row : rows)
                 addRow.accept(row);
-            this.musics.addAll(musics);
+            this.musics.addAll(added);
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
         }
@@ -289,13 +301,13 @@ public class PlayList implements Serializable, Cloneable {
 
     private void addFileLoop(int[] index, Music mc, Archive archive, Entry entry /* = null */) {
         try {
-            musics = mc.format.addFileLoop(index[0], mc, archive, entry);
-            if (musics == null) return;
+            List<Music> added = mc.format.addFileLoop(index[0], mc, archive, entry);
+            if (added == null) return;
 
-            List<Object[]> rows = makeRow(musics);
+            List<Object[]> rows = makeRow(added);
             for (Object[] row : rows)
                 setRow.accept(index[0], row);
-            this.musics.addAll(index[0], musics);
+            this.musics.addAll(index[0], added);
             index[0] += rows.size();
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);

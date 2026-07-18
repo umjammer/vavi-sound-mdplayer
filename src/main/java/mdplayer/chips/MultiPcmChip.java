@@ -36,10 +36,12 @@ public class MultiPcmChip extends BaseChip {
         }
     }
 
+    @Override
     public Map<String, Object> getInfo(int chipId) {
         fireEventHappened("led.on", chipId);
 
-        return context.mds.inst(MultiPcmInst.class).getInfo(chipId);
+        MultiPcmInst inst = context.mds.inst(MultiPcmInst.class);
+        return inst == null ? null : inst.getView(chipId, "info", null);
     }
 
     public void setBank(int chipId, int ch, int addr, EnmModel model) {

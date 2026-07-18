@@ -24,6 +24,7 @@ import mdsound.instrument.Ym3812Inst;
  * system property
  * <li>{@code mdplayer.variant.ym3812} ... active chip index</li>
  * </p>
+ *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
@@ -33,10 +34,13 @@ public class Ym3812Chip extends BaseChip {
 
     private final RSoundChip[] realChips = {null, null};
 
+    @Deprecated
     public final int[][] register = {null, null};
 
+    // check cache or not
     private final int[] fadeout = {0, 0};
 
+    @Deprecated
     private final ChipKeyInfo[] keyInfo = {new ChipKeyInfo(14), new ChipKeyInfo(14)};
 
     private final boolean[][] mask = {
@@ -145,6 +149,7 @@ public class Ym3812Chip extends BaseChip {
         _write(chipId, addr, data, model);
     }
 
+    // TODO getInfo
     public ChipKeyInfo getKeyInfo(int chipId) {
         ChipKeyInfo[] keyInfoRet = {new ChipKeyInfo(14), new ChipKeyInfo(14)}; // TODO out for memory usage?
         for (int ch = 0; ch < keyInfo[chipId].off.length; ch++) {
@@ -205,6 +210,7 @@ public class Ym3812Chip extends BaseChip {
         }
     }
 
+    @Override
     public Map<String, Object> getInfo(int chipId) {
         return Map.of("register", register[chipId]);
     }
@@ -227,5 +233,10 @@ public class Ym3812Chip extends BaseChip {
     public void clearFadeout() {
         setFadeout(0, 0);
         setFadeout(1, 0);
+    }
+
+    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    public boolean getMask(int chipId, int ch) {
+        return ch < mask[chipId].length && mask[chipId][ch];
     }
 }

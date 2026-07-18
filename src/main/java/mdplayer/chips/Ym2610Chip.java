@@ -25,6 +25,7 @@ import mdsound.instrument.YmFmYm2610Inst;
  * system property
  * <li>{@code mdplayer.variant.ym2610} ... active chip index</li>
  * </p>
+ *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
@@ -36,29 +37,37 @@ public class Ym2610Chip extends BaseChip {
     private final RSoundChip[] realChipsEA = {null, null};
     private final RSoundChip[] realChipsEB = {null, null};
 
+    @Deprecated
     public final int[][][] register = {
             {null, null},
             {null, null}
     };
 
+    @Deprecated
     public final int[][] keyOn = {null, null};
 
+    @Deprecated
     public final int[][] volume = {
             {0, 0, 0, 0, 0, 0, 0, 0, 0},
             {0, 0, 0, 0, 0, 0, 0, 0, 0}
     };
 
+    @Deprecated
     public final int[][] ch3SlotVolume = {new int[4], new int[4]};
 
+    @Deprecated
     public final int[][][] rhythmVolume = {
             {new int[2], new int[2], new int[2], new int[2], new int[2], new int[2]},
             {new int[2], new int[2], new int[2], new int[2], new int[2], new int[2]}
     };
 
+    @Deprecated
     public final int[][] adpcmVolume = {new int[2], new int[2]};
 
+    @Deprecated
     public final int[] adpcmPan = {0, 0};
 
+    // TODO check cache or not
     private final int[] nowFadeoutVol = {0, 0};
 
     private final boolean[][] mask = {
@@ -66,7 +75,6 @@ public class Ym2610Chip extends BaseChip {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false}
     };
 
-    public int clock;
 
     @SuppressWarnings("unchecked")
     private Class<? extends AdpcmEnabledInstrument> _inst(int chipId) {
@@ -374,7 +382,7 @@ public class Ym2610Chip extends BaseChip {
                     realChips[chipId].setRegister((dPort << 8) | 0x04, b & 0xff);
                 }
 
-                context.chipRegister.plugin(RealChipPlugin.class).realChip.SendData();
+                context.chipRegister.plugin(RealChipPlugin.class).realChip.sendData();
             }
             if (realChipsEB[chipId] != null) {
                 int dPort = 2;
@@ -391,7 +399,7 @@ public class Ym2610Chip extends BaseChip {
                     realChipsEB[chipId].setRegister((dPort << 8) | 0x10004, b & 0xff);
                 }
 
-                context.chipRegister.plugin(RealChipPlugin.class).realChip.SendData();
+                context.chipRegister.plugin(RealChipPlugin.class).realChip.sendData();
             }
         }
     }
@@ -413,7 +421,7 @@ public class Ym2610Chip extends BaseChip {
                     realChips[chipId].setRegister((dPort << 8) | 0x04, buf[srcStartAddr + cnt] & 0xff);
                 }
 
-                context.chipRegister.plugin(RealChipPlugin.class).realChip.SendData();
+                context.chipRegister.plugin(RealChipPlugin.class).realChip.sendData();
             }
             if (realChipsEB[chipId] != null) {
                 int dPort = 2;
@@ -429,7 +437,7 @@ public class Ym2610Chip extends BaseChip {
                     realChipsEB[chipId].setRegister((dPort << 8) | 0x10004, buf[srcStartAddr + cnt] & 0xff);
                 }
 
-                context.chipRegister.plugin(RealChipPlugin.class).realChip.SendData();
+                context.chipRegister.plugin(RealChipPlugin.class).realChip.sendData();
             }
         }
     }
@@ -453,7 +461,7 @@ public class Ym2610Chip extends BaseChip {
                     realChips[chipId].setRegister((dPort << 8) | 0x04, b & 0xff);
                 }
 
-                context.chipRegister.plugin(RealChipPlugin.class).realChip.SendData();
+                context.chipRegister.plugin(RealChipPlugin.class).realChip.sendData();
             }
             if (realChipsEB[chipId] != null) {
                 int dPort = 2;
@@ -470,7 +478,7 @@ public class Ym2610Chip extends BaseChip {
                     realChipsEB[chipId].setRegister((dPort << 8) | 0x10004, b & 0xff);
                 }
 
-                context.chipRegister.plugin(RealChipPlugin.class).realChip.SendData();
+                context.chipRegister.plugin(RealChipPlugin.class).realChip.sendData();
             }
         }
     }
@@ -492,7 +500,7 @@ public class Ym2610Chip extends BaseChip {
                     realChips[chipId].setRegister((dPort << 8) | 0x04, buf[srcStartAddr + cnt] & 0xff);
                 }
 
-                context.chipRegister.plugin(RealChipPlugin.class).realChip.SendData();
+                context.chipRegister.plugin(RealChipPlugin.class).realChip.sendData();
             }
             if (realChipsEB[chipId] != null) {
                 int dPort = 2;
@@ -508,14 +516,15 @@ public class Ym2610Chip extends BaseChip {
                     realChipsEB[chipId].setRegister((dPort << 8) | 0x10004, buf[srcStartAddr + cnt] & 0xff);
                 }
 
-                context.chipRegister.plugin(RealChipPlugin.class).realChip.SendData();
+                context.chipRegister.plugin(RealChipPlugin.class).realChip.sendData();
             }
         }
     }
 
     public void setMask(int chipId, int ch, boolean mask) {
         this.mask[chipId][ch] = mask;
-        if (ch >= 9 && ch < 12) {
+        // FM ch3 and its extended slots mask as one
+        if (ch == 2 || (ch >= 9 && ch < 12)) {
             this.mask[chipId][2] = mask;
             this.mask[chipId][9] = mask;
             this.mask[chipId][10] = mask;
@@ -583,6 +592,7 @@ public class Ym2610Chip extends BaseChip {
         write(chipId, 1, 0x0b, register[chipId][1][0x0b], EnmModel.RealModel);
     }
 
+    @Override
     public Map<String, Object> getInfo(int chipId) {
         return Map.of(
                 "volume", volume[chipId],
@@ -635,5 +645,10 @@ public class Ym2610Chip extends BaseChip {
         }
 
         dumpData(model, "ADPCMB", vgmAdr + 15, vgmBuf, bLen - 8);
+    }
+
+    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    public boolean getMask(int chipId, int ch) {
+        return ch < mask[chipId].length && mask[chipId][ch];
     }
 }

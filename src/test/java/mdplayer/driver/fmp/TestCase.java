@@ -39,6 +39,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 
 /**
@@ -100,6 +101,7 @@ Debug.println("settings\n" +
 
     @Test
     @DisplayName("compile mml")
+    @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
     void test() throws Exception {
 Debug.println("filename: " + fmp);
         FileFormat format = FileFormat.getFileFormat(fmp);
@@ -112,6 +114,7 @@ Debug.println("filename: " + fmp);
 
     @Test
     @DisplayName("play fmp w/ fmdsp visualizer")
+    @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
     void test2() throws Exception {
 Debug.println("filename: " + fmp);
         FileFormat format = FileFormat.getFileFormat(fmp);
@@ -169,6 +172,7 @@ Debug.println("filename: " + fmp);
 
     @Test
     @DisplayName("play multi fmp w/ fmdsp visualizer")
+    @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
     void test3() throws Exception {
         Random random = new Random(System.currentTimeMillis());
 

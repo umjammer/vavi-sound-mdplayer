@@ -1,0 +1,699 @@
+package mdplayer.form.sys.setting;
+
+import java.awt.event.ActionEvent;
+import java.io.File;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import javax.sound.midi.MidiDevice;
+import javax.sound.midi.MidiSystem;
+import javax.sound.midi.MidiUnavailableException;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.table.DefaultTableColumnModel;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
+import mdplayer.MidiOutInfo;
+import mdplayer.Setting;
+import mdplayer.form.SettingTab;
+import mdplayer.form.sys.FormSetting;
+
+import static java.lang.System.getLogger;
+
+/** the "MIDIOut" page of the settings dialog, split out of the original FormSetting */
+public class SettingMIDIOutPanel extends SettingTab {
+
+    @Override
+    public int order() {
+        return 70;
+    }
+
+    private static final Logger logger = getLogger(SettingMIDIOutPanel.class.getName());
+
+    private JButton btnUP_A;
+    private JButton btnSubMIDIout;
+    private JButton btnDOWN_A;
+    private JButton btnAddMIDIout;
+    private JLabel label18;
+    private JTable dgvMIDIoutListA;
+    private JTable dgvMIDIoutPallet;
+    private JLabel label16;
+    private JTabbedPane tbcMIDIoutList;
+    private JPanel tabPage1;
+    private JPanel tabPage2;
+    private JPanel tabPage3;
+    private JPanel tabPage4;
+    private JButton btnUP_B;
+    private JButton btnDOWN_B;
+    private JButton btnUP_C;
+    private JButton btnDOWN_C;
+    private JButton btnUP_D;
+    private JButton btnDOWN_D;
+    private JPanel tabPage5;
+    private JButton btnUP_E;
+    private JButton btnDOWN_E;
+    private JPanel tabPage6;
+    private JButton btnUP_F;
+    private JButton btnDOWN_F;
+    private JPanel tabPage7;
+    private JButton btnUP_G;
+    private JButton btnDOWN_G;
+    private JPanel tabPage8;
+    private JButton btnUP_H;
+    private JButton btnDOWN_H;
+    private JPanel tabPage9;
+    private JButton btnUP_I;
+    private JButton btnDOWN_I;
+    private JPanel tabPage10;
+    private JButton button17;
+    private JButton btnDOWN_J;
+    private JButton btnAddVST;
+    private JTable dgvMIDIoutListB;
+    private JTable dgvMIDIoutListC;
+    private JTable dgvMIDIoutListD;
+    private JTable dgvMIDIoutListE;
+    private JTable dgvMIDIoutListF;
+    private JTable dgvMIDIoutListG;
+    private JTable dgvMIDIoutListH;
+    private JTable dgvMIDIoutListI;
+    private JTable dgvMIDIoutListJ;
+
+    final JTable[] dgv;
+
+    public SettingMIDIOutPanel() {
+        this.btnAddVST = new JButton();
+        this.tbcMIDIoutList = new JTabbedPane();
+        this.tabPage1 = new JPanel();
+        this.dgvMIDIoutListA = new JTable();
+        this.btnUP_A = new JButton();
+        this.btnDOWN_A = new JButton();
+        this.tabPage2 = new JPanel();
+        this.dgvMIDIoutListB = new JTable();
+        this.btnUP_B = new JButton();
+        this.btnDOWN_B = new JButton();
+        this.tabPage3 = new JPanel();
+        this.dgvMIDIoutListC = new JTable();
+        this.btnUP_C = new JButton();
+        this.btnDOWN_C = new JButton();
+        this.tabPage4 = new JPanel();
+        this.dgvMIDIoutListD = new JTable();
+        this.btnUP_D = new JButton();
+        this.btnDOWN_D = new JButton();
+        this.tabPage5 = new JPanel();
+        this.dgvMIDIoutListE = new JTable();
+        this.btnUP_E = new JButton();
+        this.btnDOWN_E = new JButton();
+        this.tabPage6 = new JPanel();
+        this.dgvMIDIoutListF = new JTable();
+        this.btnUP_F = new JButton();
+        this.btnDOWN_F = new JButton();
+        this.tabPage7 = new JPanel();
+        this.dgvMIDIoutListG = new JTable();
+        this.btnUP_G = new JButton();
+        this.btnDOWN_G = new JButton();
+        this.tabPage8 = new JPanel();
+        this.dgvMIDIoutListH = new JTable();
+        this.btnUP_H = new JButton();
+        this.btnDOWN_H = new JButton();
+        this.tabPage9 = new JPanel();
+        this.dgvMIDIoutListI = new JTable();
+        this.btnUP_I = new JButton();
+        this.btnDOWN_I = new JButton();
+        this.tabPage10 = new JPanel();
+        this.dgvMIDIoutListJ = new JTable();
+        this.button17 = new JButton();
+        this.btnDOWN_J = new JButton();
+        this.btnSubMIDIout = new JButton();
+        this.btnAddMIDIout = new JButton();
+        this.label18 = new JLabel();
+        this.dgvMIDIoutPallet = new JTable();
+        this.label16 = new JLabel();
+
+        //
+        // btnAddMIDIout
+        //
+        this.btnAddMIDIout.setName("btnAddMIDIout");
+        this.btnAddMIDIout.addActionListener(this::btnAddMIDIout_Click);
+        //
+        // btnAddVST
+        //
+        this.btnAddVST.setName("btnAddVST");
+        this.btnAddVST.addActionListener(this::btnAddVST_Click);
+        //
+        // btnDOWN_A
+        //
+        this.btnDOWN_A.setName("btnDOWN_A");
+        this.btnDOWN_A.addActionListener(this::btnDOWN_Click);
+        //
+        // btnDOWN_B
+        //
+        this.btnDOWN_B.setName("btnDOWN_B");
+        this.btnDOWN_B.addActionListener(this::btnDOWN_Click);
+        //
+        // btnDOWN_C
+        //
+        this.btnDOWN_C.setName("btnDOWN_C");
+        this.btnDOWN_C.addActionListener(this::btnDOWN_Click);
+        //
+        // btnDOWN_D
+        //
+        this.btnDOWN_D.setName("btnDOWN_D");
+        this.btnDOWN_D.addActionListener(this::btnDOWN_Click);
+        //
+        // btnDOWN_E
+        //
+        this.btnDOWN_E.setName("btnDOWN_E");
+        this.btnDOWN_E.addActionListener(this::btnDOWN_Click);
+        //
+        // btnDOWN_F
+        //
+        this.btnDOWN_F.setName("btnDOWN_F");
+        this.btnDOWN_F.addActionListener(this::btnDOWN_Click);
+        //
+        // btnDOWN_G
+        //
+        this.btnDOWN_G.setName("btnDOWN_G");
+        this.btnDOWN_G.addActionListener(this::btnDOWN_Click);
+        //
+        // btnDOWN_H
+        //
+        this.btnDOWN_H.setName("btnDOWN_H");
+        this.btnDOWN_H.addActionListener(this::btnDOWN_Click);
+        //
+        // btnDOWN_I
+        //
+        this.btnDOWN_I.setName("btnDOWN_I");
+        this.btnDOWN_I.addActionListener(this::btnDOWN_Click);
+        //
+        // btnDOWN_J
+        //
+        this.btnDOWN_J.setName("btnDOWN_J");
+        this.btnDOWN_J.addActionListener(this::btnDOWN_Click);
+        //
+        // btnSubMIDIout
+        //
+        this.btnSubMIDIout.setName("btnSubMIDIout");
+        this.btnSubMIDIout.addActionListener(this::btnSubMIDIout_Click);
+        //
+        // btnUP_A
+        //
+        this.btnUP_A.setName("btnUP_A");
+        this.btnUP_A.addActionListener(this::btnUP_Click);
+        //
+        // btnUP_B
+        //
+        this.btnUP_B.setName("btnUP_B");
+        this.btnUP_B.addActionListener(this::btnUP_Click);
+        //
+        // btnUP_C
+        //
+        this.btnUP_C.setName("btnUP_C");
+        this.btnUP_C.addActionListener(this::btnUP_Click);
+        //
+        // btnUP_D
+        //
+        this.btnUP_D.setName("btnUP_D");
+        this.btnUP_D.addActionListener(this::btnUP_Click);
+        //
+        // btnUP_E
+        //
+        this.btnUP_E.setName("btnUP_E");
+        this.btnUP_E.addActionListener(this::btnUP_Click);
+        //
+        // btnUP_F
+        //
+        this.btnUP_F.setName("btnUP_F");
+        this.btnUP_F.addActionListener(this::btnUP_Click);
+        //
+        // btnUP_G
+        //
+        this.btnUP_G.setName("btnUP_G");
+        this.btnUP_G.addActionListener(this::btnUP_Click);
+        //
+        // btnUP_H
+        //
+        this.btnUP_H.setName("btnUP_H");
+        this.btnUP_H.addActionListener(this::btnUP_Click);
+        //
+        // btnUP_I
+        //
+        this.btnUP_I.setName("btnUP_I");
+        this.btnUP_I.addActionListener(this::btnUP_Click);
+        //
+        // button17
+        //
+        this.button17.setName("button17");
+        this.button17.addActionListener(this::btnUP_Click);
+        //
+        // dgvMIDIoutListA
+        //
+        this.dgvMIDIoutListA.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        this.dgvMIDIoutListA.setName("dgvMIDIoutListA");
+        //
+        // dgvMIDIoutListB
+        //
+        this.dgvMIDIoutListB.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        this.dgvMIDIoutListB.setName("dgvMIDIoutListB");
+        //
+        // dgvMIDIoutListC
+        //
+        this.dgvMIDIoutListC.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        this.dgvMIDIoutListC.setName("dgvMIDIoutListC");
+        //
+        // dgvMIDIoutListD
+        //
+        this.dgvMIDIoutListD.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        this.dgvMIDIoutListD.setName("dgvMIDIoutListD");
+        //
+        // dgvMIDIoutListE
+        //
+        this.dgvMIDIoutListE.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        this.dgvMIDIoutListE.setName("dgvMIDIoutListE");
+        //
+        // dgvMIDIoutListF
+        //
+        this.dgvMIDIoutListF.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        this.dgvMIDIoutListF.setName("dgvMIDIoutListF");
+        //
+        // dgvMIDIoutListG
+        //
+        this.dgvMIDIoutListG.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        this.dgvMIDIoutListG.setName("dgvMIDIoutListG");
+        //
+        // dgvMIDIoutListH
+        //
+        this.dgvMIDIoutListH.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        this.dgvMIDIoutListH.setName("dgvMIDIoutListH");
+        //
+        // dgvMIDIoutListI
+        //
+        this.dgvMIDIoutListI.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        this.dgvMIDIoutListI.setName("dgvMIDIoutListI");
+        //
+        // dgvMIDIoutListJ
+        //
+        this.dgvMIDIoutListJ.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        this.dgvMIDIoutListJ.setName("dgvMIDIoutListJ");
+        //
+        // dgvMIDIoutPallet
+        //
+        this.dgvMIDIoutPallet.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        this.dgvMIDIoutPallet.setName("dgvMIDIoutPallet");
+        //
+        // label16
+        //
+        this.label16.setName("label16");
+        //
+        // label18
+        //
+        this.label18.setName("label18");
+        //
+        // tabPage1
+        //
+        this.tabPage1.add(this.dgvMIDIoutListA);
+        this.tabPage1.add(this.btnUP_A);
+        this.tabPage1.add(this.btnDOWN_A);
+        this.tabPage1.setName("tabPage1");
+        //
+        // tabPage10
+        //
+        this.tabPage10.add(this.dgvMIDIoutListJ);
+        this.tabPage10.add(this.button17);
+        this.tabPage10.add(this.btnDOWN_J);
+        this.tabPage10.setName("tabPage10");
+        //
+        // tabPage2
+        //
+        this.tabPage2.add(this.dgvMIDIoutListB);
+        this.tabPage2.add(this.btnUP_B);
+        this.tabPage2.add(this.btnDOWN_B);
+        this.tabPage2.setName("tabPage2");
+        //
+        // tabPage3
+        //
+        this.tabPage3.add(this.dgvMIDIoutListC);
+        this.tabPage3.add(this.btnUP_C);
+        this.tabPage3.add(this.btnDOWN_C);
+        this.tabPage3.setName("tabPage3");
+        //
+        // tabPage4
+        //
+        this.tabPage4.add(this.dgvMIDIoutListD);
+        this.tabPage4.add(this.btnUP_D);
+        this.tabPage4.add(this.btnDOWN_D);
+        this.tabPage4.setName("tabPage4");
+        //
+        // tabPage5
+        //
+        this.tabPage5.add(this.dgvMIDIoutListE);
+        this.tabPage5.add(this.btnUP_E);
+        this.tabPage5.add(this.btnDOWN_E);
+        this.tabPage5.setName("tabPage5");
+        //
+        // tabPage6
+        //
+        this.tabPage6.add(this.dgvMIDIoutListF);
+        this.tabPage6.add(this.btnUP_F);
+        this.tabPage6.add(this.btnDOWN_F);
+        this.tabPage6.setName("tabPage6");
+        //
+        // tabPage7
+        //
+        this.tabPage7.add(this.dgvMIDIoutListG);
+        this.tabPage7.add(this.btnUP_G);
+        this.tabPage7.add(this.btnDOWN_G);
+        this.tabPage7.setName("tabPage7");
+        //
+        // tabPage8
+        //
+        this.tabPage8.add(this.dgvMIDIoutListH);
+        this.tabPage8.add(this.btnUP_H);
+        this.tabPage8.add(this.btnDOWN_H);
+        this.tabPage8.setName("tabPage8");
+        //
+        // tabPage9
+        //
+        this.tabPage9.add(this.dgvMIDIoutListI);
+        this.tabPage9.add(this.btnUP_I);
+        this.tabPage9.add(this.btnDOWN_I);
+        this.tabPage9.setName("tabPage9");
+        //
+        // tbcMIDIoutList
+        //
+        this.tbcMIDIoutList.add(this.tabPage1);
+        this.tbcMIDIoutList.add(this.tabPage2);
+        this.tbcMIDIoutList.add(this.tabPage3);
+        this.tbcMIDIoutList.add(this.tabPage4);
+        this.tbcMIDIoutList.add(this.tabPage5);
+        this.tbcMIDIoutList.add(this.tabPage6);
+        this.tbcMIDIoutList.add(this.tabPage7);
+        this.tbcMIDIoutList.add(this.tabPage8);
+        this.tbcMIDIoutList.add(this.tabPage9);
+        this.tbcMIDIoutList.add(this.tabPage10);
+        this.tbcMIDIoutList.setName("tbcMIDIoutList");
+        this.tbcMIDIoutList.setSelectedIndex(0);
+        //
+        // tpMIDIOut
+        //
+        this.add(this.btnAddVST);
+        this.add(this.tbcMIDIoutList);
+        this.add(this.btnSubMIDIout);
+        this.add(this.btnAddMIDIout);
+        this.add(this.label18);
+        this.add(this.dgvMIDIoutPallet);
+        this.add(this.label16);
+        this.setName("tpMIDIOut");
+
+        dgv = new JTable[] {
+                dgvMIDIoutListA, dgvMIDIoutListB, dgvMIDIoutListC, dgvMIDIoutListD, dgvMIDIoutListE,
+                dgvMIDIoutListF, dgvMIDIoutListG, dgvMIDIoutListH, dgvMIDIoutListI, dgvMIDIoutListJ
+        };
+    }
+
+    @Override
+    public void load(Setting setting) {
+        copyFromMIDIoutListA(dgvMIDIoutListB);
+        copyFromMIDIoutListA(dgvMIDIoutListC);
+        copyFromMIDIoutListA(dgvMIDIoutListD);
+        copyFromMIDIoutListA(dgvMIDIoutListE);
+        copyFromMIDIoutListA(dgvMIDIoutListF);
+        copyFromMIDIoutListA(dgvMIDIoutListG);
+        copyFromMIDIoutListA(dgvMIDIoutListH);
+        copyFromMIDIoutListA(dgvMIDIoutListI);
+        copyFromMIDIoutListA(dgvMIDIoutListJ);
+        if (setting.getMidiOut().getMidiOutInfos() != null && !setting.getMidiOut().getMidiOutInfos().isEmpty()) {
+            for (int i = 0; i < setting.getMidiOut().getMidiOutInfos().size(); i++) {
+                DefaultTableModel m = (DefaultTableModel) dgv[i].getModel();
+                m.setRowCount(0);
+                Set<Integer> midioutNotFound = new HashSet<>();
+                if (setting.getMidiOut().getMidiOutInfos().get(i) != null && setting.getMidiOut().getMidiOutInfos().get(i).length > 0) {
+                    for (int j = 0; j < setting.getMidiOut().getMidiOutInfos().get(i).length; j++) {
+                        MidiOutInfo moi = setting.getMidiOut().getMidiOutInfos().get(i)[j];
+                        int found = -999;
+                        int k = 0;
+                        for (MidiDevice.Info info : MidiSystem.getMidiDeviceInfo()) {
+                            try {
+                                MidiDevice device = MidiSystem.getMidiDevice(info);
+                                if (device.getMaxReceivers() == 0) {
+                                    continue;
+                                }
+                                if (moi.name.equals(device.getDeviceInfo().getName())) {
+                                    midioutNotFound.add(k);
+                                    found = k++;
+                                    break;
+                                }
+                            } catch (MidiUnavailableException e) {
+                                logger.log(Level.ERROR, e.getMessage(), e);
+                            }
+                        }
+
+                        moi.id = found;
+
+                        String stype = switch (moi.type) {
+                            case 1 -> "XG";
+                            case 2 -> "GS";
+                            case 3 -> "LA";
+                            case 4 -> "GS(SC-55_1)";
+                            case 5 -> "GS(SC-55_2)";
+                            default -> "GM";
+                        };
+
+                        String sbeforeSend = switch (moi.beforeSendType) {
+                            case 1 -> "GM Reset";
+                            case 2 -> "XG Reset";
+                            case 3 -> "GS Reset";
+                            case 4 -> "Custom";
+                            default -> "None";
+                        };
+
+                        m.addRow(new Object[] {
+                                moi.id,
+                                moi.isVST,
+                                moi.fileName,
+                                moi.name,
+                                stype,
+                                sbeforeSend,
+                                moi.isVST ? moi.vendor : (moi.manufacturer != -1 ? String.valueOf(moi.manufacturer) : "Unknown")
+                        });
+                    }
+                }
+            }
+        }
+
+        DefaultTableModel m = (DefaultTableModel) dgvMIDIoutPallet.getModel();
+
+        int i = 0;
+        for (MidiDevice.Info info : MidiSystem.getMidiDeviceInfo()) {
+            try {
+                MidiDevice device = MidiSystem.getMidiDevice(info);
+                if (device.getMaxReceivers() == 0) {
+                    continue;
+                }
+                m.addRow(new Object[] {i++, device.getDeviceInfo().getName(), device.getDeviceInfo().getVendor()});
+            } catch (MidiUnavailableException e) {
+                logger.log(Level.ERROR, e.getMessage(), e);
+            }
+        }
+    }
+
+    @Override
+    public void apply(Setting setting) {
+        int i;
+
+        setting.getMidiOut().setMidiOutInfos(new ArrayList<>());
+
+        for (JTable d : dgv) {
+            if (d.getRowCount() > 0) {
+                List<MidiOutInfo> lstMoi = new ArrayList<>();
+                for (i = 0; i < d.getRowCount(); i++) {
+                    MidiOutInfo moi = new MidiOutInfo();
+                    moi.id = (int) d.getModel().getValueAt(i, 0);
+                    moi.isVST = (boolean) d.getModel().getValueAt(i, 1);
+                    moi.fileName = (String) d.getModel().getValueAt(i, 2);
+                    moi.name = (String) d.getModel().getValueAt(i, 3);
+                    String stype = (String) d.getModel().getValueAt(i, 4);
+                    // GM / XG / GS / LA / GS(SC - 55_1) / GS(SC - 55_2)
+                    moi.type = 0;
+                    if (stype.equals("XG")) moi.type = 1;
+                    if (stype.equals("GS")) moi.type = 2;
+                    if (stype.equals("LA")) moi.type = 3;
+                    if (stype.equals("GS(SC - 55_1)")) moi.type = 4;
+                    if (stype.equals("GS(SC - 55_2)")) moi.type = 5;
+                    String sbeforeSend = (String) d.getModel().getValueAt(i, 5);
+                    moi.beforeSendType = 0;
+                    if (sbeforeSend.equals("GM Reset")) moi.beforeSendType = 1;
+                    if (sbeforeSend.equals("XG Reset")) moi.beforeSendType = 2;
+                    if (sbeforeSend.equals("GS Reset")) moi.beforeSendType = 3;
+                    if (sbeforeSend.equals("Custom")) moi.beforeSendType = 4;
+
+                    String mn = (String) d.getModel().getValueAt(i, 6);
+                    if (moi.isVST) {
+                        moi.vendor = mn;
+                        moi.manufacturer = -1;
+                    } else {
+                        moi.vendor = "";
+                        moi.manufacturer = mn == null || mn.equals("Unknown") ? -1 : FormSetting.Manufacturers.byManufacture(mn);
+                    }
+
+                    lstMoi.add(moi);
+                }
+                setting.getMidiOut().getMidiOutInfos().add(lstMoi.toArray(MidiOutInfo[]::new));
+            } else {
+                setting.getMidiOut().getMidiOutInfos().add(null);
+            }
+        }
+
+    }
+
+    private void btnAddMIDIout_Click(ActionEvent ev) {
+        if (dgvMIDIoutPallet.getSelectedRowCount() < 1) return;
+
+        int p = tbcMIDIoutList.getSelectedIndex();
+
+        for (int row : dgvMIDIoutPallet.getSelectedRows()) {
+            boolean found = false;
+            for (int r = 0; r < dgv[p].getRowCount(); r++) {
+                if (dgv[p].getModel().getValueAt(r, 1).equals(dgvMIDIoutPallet.getModel().getValueAt(row, 1))) {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found)
+                ((DefaultTableModel) dgv[p].getModel()).addRow(new Object[] {
+                        dgvMIDIoutPallet.getModel().getValueAt(row, 0),
+                        false,
+                        "",
+                        dgvMIDIoutPallet.getModel().getValueAt(row, 1),
+                        "GM",
+                        "None",
+                        dgvMIDIoutPallet.getModel().getValueAt(row, 2)
+                });
+        }
+    }
+
+    private void btnAddVST_Click(ActionEvent ev) {
+        JFileChooser ofd = new JFileChooser();
+        ofd.setFileFilter(new FileFilter() {
+            @Override
+            public boolean accept(File f) {
+                return f.getName().toLowerCase().endsWith(".dll");
+            }
+
+            @Override
+            public String getDescription() {
+                return "VST Plugin file(*.dll)";
+            }
+        });
+        ofd.setDialogTitle("Select a file");
+        int filterIndex = setting.getOther().getFilterIndex();
+        FileFilter[] filters = ofd.getChoosableFileFilters();
+        if (filterIndex >= 0 && filterIndex < filters.length) {
+            ofd.setFileFilter(filters[filterIndex]);
+        }
+
+//        if (!setting.getVst().getDefaultPath().isEmpty() && Directory.exists(setting.getVst().getDefaultPath()) && IsInitialOpenFolder) {
+//            ofd.setCurrentDirectory(new File(setting.getVst().getDefaultPath()));
+////        } else {
+////            ofd.RestoreDirectory = true;
+//        }
+////        ofd.CheckPathExists = true;
+//        ofd.setMultiSelectionEnabled(false);
+//
+//        if (ofd.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
+//            return;
+//        }
+//
+//        VstInfo s = audio.getVSTInfo(ofd.getSelectedFile().getName());
+//        if (s == null) return;
+//
+//        setting.getVst().setDefaultPath(Path.getDirectoryName(ofd.getSelectedFile().getName()));
+//
+//        int p = tbcMIDIoutList.getSelectedIndex();
+//        ((DefaultTableModel) dgv[p].getModel()).addRow(new Object[] {
+//                -999
+//                , true
+//                , s.fileName
+//                , s.effectName
+//                , "GM"
+//                , "None"
+//                , s.vendorName
+//        });
+    }
+
+    private void btnDOWN_Click(ActionEvent ev) {
+        int p = tbcMIDIoutList.getSelectedIndex();
+
+        if (dgv[p].getSelectedRowCount() < 1) return;
+
+        for (int row : dgv[p].getSelectedRows()) {
+            if (row > dgv[p].getRowCount() - 2) continue;
+
+            int i = row + 1;
+            DefaultTableModel m = (DefaultTableModel) dgv[p].getModel();
+            m.insertRow(i + 2, new Object[] {
+                    m.getValueAt(row, 0),
+                    m.getValueAt(row, 1),
+                    m.getValueAt(row, 2),
+                    m.getValueAt(row, 3),
+                    m.getValueAt(row, 4),
+                    m.getValueAt(row, 5),
+            });
+            m.removeRow(row);
+            dgv[p].setRowSelectionInterval(i, i);
+        }
+    }
+
+    private void btnSubMIDIout_Click(ActionEvent ev) {
+        int p = tbcMIDIoutList.getSelectedIndex();
+
+        if (dgv[p].getSelectedRowCount() < 1) return;
+
+        for (int row : dgv[p].getSelectedRows()) {
+            ((DefaultTableModel) dgv[p].getModel()).removeRow(row);
+        }
+    }
+
+    private void btnUP_Click(ActionEvent ev) {
+        int p = tbcMIDIoutList.getSelectedIndex();
+
+        if (dgv[p].getSelectedRowCount() < 1) return;
+
+        for (int row : dgv[p].getSelectedRows()) {
+            if (row < 1) continue;
+
+            int i = row - 1;
+            DefaultTableModel m = (DefaultTableModel) dgv[p].getModel();
+            m.insertRow(i, new Object[] {
+                    m.getValueAt(row, 0),
+                    m.getValueAt(row, 1),
+                    m.getValueAt(row, 2),
+                    m.getValueAt(row, 3),
+                    m.getValueAt(row, 4),
+                    m.getValueAt(row, 5),
+            });
+            m.removeRow(row);
+            dgv[p].setRowSelectionInterval(i, i);
+        }
+    }
+
+    private void copyFromMIDIoutListA(JTable dgv) {
+
+        dgv.setColumnModel(new DefaultTableColumnModel());
+
+        Enumeration<TableColumn> columns = dgvMIDIoutListA.getColumnModel().getColumns();
+        while (columns.hasMoreElements()) {
+            dgv.getColumnModel().addColumn(columns.nextElement());
+        }
+    }
+}

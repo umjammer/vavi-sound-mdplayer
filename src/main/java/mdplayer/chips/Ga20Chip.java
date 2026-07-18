@@ -6,6 +6,8 @@
 
 package mdplayer.chips;
 
+import java.util.Map;
+
 import mdplayer.Common.EnmModel;
 import mdsound.Instrument;
 import mdsound.instrument.Ga20Inst;
@@ -32,6 +34,12 @@ public class Ga20Chip extends BaseChip {
             context.mds.write(inst(chipId), chipId, 0, adr, dat);
         } else {
         }
+    }
+
+    @Override
+    public Map<String, Object> getInfo(int chipId) {
+        Ga20Inst inst = context.mds.inst(Ga20Inst.class);
+        return inst == null ? null : inst.getView(chipId, "info", null);
     }
 
     public void writePcm(int chipId, int romSize, int offset, int length, byte[] buf, int srcOffset, EnmModel model) {

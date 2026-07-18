@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.ResourceBundle;
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
@@ -14,7 +15,6 @@ import mdplayer.PlayList;
 import mdplayer.driver.mndrv.MnDriver;
 import mdplayer.plugin.MNDPlugin;
 import mdplayer.plugin.Plugin;
-import mdplayer.properties.Resources;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 import vavi.sound.SoundUtil;
@@ -32,6 +32,8 @@ import vavi.util.compat.Tuple;
  * @version 0.00 2022-07-07 nsano initial version <br>
  */
 public class MNDFileFormat extends BaseFileFormat {
+
+    private static final ResourceBundle rb = ResourceBundle.getBundle("mdplayer/properties/resources");
 
     @Override
     public String[] getExtensions() {
@@ -93,7 +95,7 @@ public class MNDFileFormat extends BaseFileFormat {
     public String[] getPresetMixerBalance() {
         return new String[] {
                 "DriverBalance_MND.mbc",
-                Resources.getDefaultVolumeBalance_MND()
+                rb.getString("DefaultVolumeBalance_MND")
         };
     }
 

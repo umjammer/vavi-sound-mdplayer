@@ -11,6 +11,8 @@ import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.Map;
 
 import mdplayer.Chip;
 import mdplayer.Setting;
@@ -35,7 +37,7 @@ public abstract class BaseChip implements Chip {
 
     protected Setting setting = Setting.getInstance();
 
-    // for ym chips
+    // for ym chips TODO
     protected byte[] algM = {0x08, 0x08, 0x08, 0x08, 0x0c, 0x0e, 0x0e, 0x0f};
 
     @Override
@@ -49,6 +51,10 @@ public abstract class BaseChip implements Chip {
 
     @Override
     public void updateVol() {
+    }
+
+    public Map<String, Object> getInfo(int chipId) {
+        return Collections.emptyMap();
     }
 
     protected void fireEventHappened(String name, Object... args) {

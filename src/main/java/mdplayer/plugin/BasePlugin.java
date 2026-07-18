@@ -139,6 +139,7 @@ public abstract class BasePlugin<T extends BaseDriver> implements Plugin {
 
         this.paused = false;
         this.stopped = true;
+        this.fadeout = false;
 logger.log(Level.TRACE, "stop: " + this.stopped + ", " + this.hashCode());
     }
 
@@ -210,18 +211,26 @@ logger.log(Level.INFO, "stop: " + this.stopped);
         chipRegister.plugin(MidiPlugin.class).setFileName(playingFileName); // for ExportMIDI
         extendFiles = format.getExtendFiles(); // Additional files
         Common.playingFilePath = Path.of(playingFileName).getParent(); // TODO gross
+
+        // the YM2612 panel draws XGM songs differently; the chip carries the format for the view
+        chipRegister.chip(mdplayer.chips.Ym2612Chip.class).fileFormat = format;
     }
 
     @Override
     public void ff() {
         if (driverVirtual == null) return;
-        speed = (speed == 1) ? 4 : 1;
-        driverVirtual.speed = speed;
-        if (driverReal != null) driverReal.speed = speed;
+        speed(speed == 1 ? 4 : 1);
     }
 
     public void slow() {
-        speed = (speed == 1) ? 0.25 : 1;
+        speed(speed == 1 ? 0.25 : 1);
+    }
+
+    /** Plays at this rate, 1 being the rate the music was written at. */
+    public void speed(double value) {
+        if (driverVirtual == null) return;
+
+        speed = value;
         driverVirtual.speed = speed;
         if (driverReal != null) driverReal.speed = speed;
     }
@@ -360,7 +369,10 @@ logger.log(Level.INFO, "close enter");
     public void setVolume(String tag, Class<? extends mdplayer.Chip> c, boolean isAbs, int volume) {
         try {
             int v = Common.range((isAbs ? 0 : setting.getBalance().getVolume(tag, c)) + volume, -192, 20);
-            mds.setVolume(tag, chipRegister.chip(c).inst(0), v); // TODO vavi
+            mdplayer.Chip chip = chipRegister.chip(c);
+            if (chip != null) {
+                mds.setVolume(tag, chip.inst(0), v); // TODO vavi
+            }
             setting.getBalance().setVolume(tag, c, v);
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);

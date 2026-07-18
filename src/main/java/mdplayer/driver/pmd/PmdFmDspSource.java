@@ -10,6 +10,7 @@ import java.util.Arrays;
 
 import mdplayer.Common;
 import mdplayer.driver.BaseDriver;
+import mdplayer.driver.fmp.FmpFmDspSource;
 import musicDriverInterface.MetaData.Tag;
 import pmd.driver.PW;
 import pmd.driver.PW.partWork;
@@ -104,6 +105,36 @@ public class PmdFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
     public PmdFmDspSource() {
         Arrays.setAll(tracks, i -> new TrackStatus());
         Arrays.fill(pans, Pan.CENTER);
+        reset();
+    }
+
+    /**
+     * Clears everything that belongs to one song. A song brings its own driver, whose sample
+     * counter starts at 0 again, while the displayed clock only ever moves forwards - so without
+     * this the clock would stay frozen at the previous song's end until the new one rendered past
+     * it. Call it before every song of a play list.
+     */
+    public void reset() {
+        Arrays.stream(tracks).forEach(PmdFmDspSource::clear);
+        Arrays.fill(pans, Pan.CENTER);
+        Arrays.fill(ticks, 0);
+        Arrays.fill(keyOns, 0);
+        Arrays.fill(envelopes, 0);
+        Arrays.fill(comments, null);
+        commented = false;
+        work = null;
+        paused = false;
+        timerBCount = 0;
+        timerBStep = 0;
+        lastTimeCounter = 0;
+        loopTimerBCount = 0;
+        loopStartTimerBCount = 0;
+        timerBCountLoop = 0;
+        lastLoopCount = 0;
+        drumKeyOn = 0;
+        clock = 0;
+        lastClockNanos = 0;
+        shownFrames = 0;
     }
 
     /** the title shown on the file bar */

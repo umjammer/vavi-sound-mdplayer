@@ -29,6 +29,7 @@ public class YmF271Chip extends BaseChip {
 
     private final RSoundChip[] realChips = {null, null};
 
+    @Deprecated
     public final int[][][] register = {
             {null, null},
             {null, null}
@@ -84,7 +85,9 @@ public class YmF271Chip extends BaseChip {
         dumpData(model, "PCMData", srcOffset, buf, length);
     }
 
+    @Override
     public Map<String, Object> getInfo(int chipId) {
-        return context.mds.inst(YmF271Inst.class).getInfo(chipId);
+        YmF271Inst inst = context.mds.inst(YmF271Inst.class);
+        return inst == null ? null : inst.getView(chipId, "info", null);
     }
 }

@@ -83,7 +83,6 @@ public class S98Plugin extends BasePlugin<S98Driver> {
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ay8910Chip.class);
                 chip.clock = dInfo.clock / 4;
                 chip.option = null;
-                chipRegister.chip(Ay8910Chip.class).clock = chip.clock;
 //                hiyorimiDeviceFlag |= 0x2;
                 put(Ay8910Chip.class, chip);
                 break;
@@ -248,7 +247,6 @@ public class S98Plugin extends BasePlugin<S98Driver> {
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ay8910Chip.class);
                 chip.clock = dInfo.clock;
-                chipRegister.chip(Ay8910Chip.class).clock = chip.clock;
                 chip.option = null;
 //                hiyorimiDeviceFlag |= 0x2;
                 put(Ay8910Chip.class, chip);

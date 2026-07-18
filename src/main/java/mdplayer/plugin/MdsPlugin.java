@@ -67,7 +67,6 @@ public class MdsPlugin extends BasePlugin<MdsDriver> {
         chip.samplingRate = setting.getOutputDevice().getSampleRate();
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2612Chip.class);
         chip.clock = 7670454;
-        chipRegister.chip(Ym2612Chip.class).clock = 7670454;
         put(Ym2612Chip.class, chip);
 
         chip = new MDSound.Chip();

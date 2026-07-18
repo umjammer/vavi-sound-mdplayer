@@ -22,6 +22,7 @@ import mdsound.instrument.QSoundInst;
  * system property
  * <li>{@code mdplayer.variant.qsound} ... active chip index</li>
  * </p>
+ *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
@@ -66,20 +67,26 @@ public class QSoundChip extends BaseChip {
         }
     }
 
+    @Deprecated
     private final int[][] register = {
             new int[256], new int[256]
     };
 
+    @Override
     public Map<String, Object> getInfo(int chipId) {
         return Map.of("register", register[chipId]);
     }
 
     public void setMask(int chipId, int ch, boolean mask) {
         this.mask[chipId][ch] = mask;
+
+        PcmEnabledInstrument instrument = context.mds.inst(_inst(chipId));
+        if (instrument == null) return; // the song being played does not use this chip
+
         if (mask)
-            context.mds.inst(_inst(chipId)).setMask(chipId, ch);
+            instrument.setMask(chipId, ch);
         else
-            context.mds.inst(_inst(chipId)).resetMask(chipId, ch);
+            instrument.resetMask(chipId, ch);
     }
 
     public void writePcm(int chipId,
@@ -105,5 +112,10 @@ public class QSoundChip extends BaseChip {
 
     public void resetMask(int chipId, int ch) {
         setMask(chipId, ch, false);
+    }
+
+    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    public boolean getMask(int chipId, int ch) {
+        return ch < mask[chipId].length && mask[chipId][ch];
     }
 }

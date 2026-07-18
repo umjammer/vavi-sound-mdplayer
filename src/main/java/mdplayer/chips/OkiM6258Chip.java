@@ -6,6 +6,7 @@
 
 package mdplayer.chips;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
@@ -23,6 +24,7 @@ public class OkiM6258Chip extends BaseChip {
 
     private final boolean[] mask = {false, false};
 
+    @Deprecated
     public final boolean[] keyOn = {false, false};
 
     @Override
@@ -60,8 +62,12 @@ public class OkiM6258Chip extends BaseChip {
         }
     }
 
+    @Override
     public Map<String, Object> getInfo(int chipId) {
-        Map<String, Object> info = context.mds.inst(OkiM6258Inst.class).getInfo(chipId);
+        OkiM6258Inst inst = context.mds.inst(OkiM6258Inst.class);
+        if (inst == null) return null; // the song being played does not use this chip
+        // the instrument hands back an unmodifiable map, and this adds to it
+        Map<String, Object> info = new HashMap<>(inst.getView(chipId, "info", null));
         info.put("keyOn", keyOn[chipId]);
         return info;
     }
@@ -76,5 +82,10 @@ public class OkiM6258Chip extends BaseChip {
 
     public void resetMask(int chipId) {
         setMask(chipId, false);
+    }
+
+    /** the panel/main-window view of whether the chip is muted; this array is the source of truth */
+    public boolean getMask(int chipId) {
+        return mask[chipId];
     }
 }

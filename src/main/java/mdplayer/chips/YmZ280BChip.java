@@ -29,6 +29,7 @@ public class YmZ280BChip extends BaseChip {
 
     private final RSoundChip[] realChips = {null, null};
 
+    @Deprecated
     public final int[][] register = {null, null};
 
     @Override
@@ -75,6 +76,7 @@ public class YmZ280BChip extends BaseChip {
         dumpData(model, "PCMData", srcOffset, buf, length);
     }
 
+    @Override
     public Map<String, Object> getInfo(int chipId) {
         return Map.of("register", register[chipId]);
     }

@@ -26,6 +26,7 @@ import mdsound.instrument.Ym2413Inst;
  * system property
  * <li>{@code mdplayer.variant.ym2413} ... active chip index</li>
  * </p>
+ *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
@@ -35,18 +36,21 @@ public class Ym2413Chip extends BaseChip {
 
     private final RSoundChip[] realChips = {null, null};
 
+    // TODO eliminate cache like params, retrieve directly
+    @Deprecated
     public final int[][] register = {null, null};
-//    private final int[] registerRhythmB = {0, 0};
+    //    private final int[] registerRhythmB = {0, 0};
 //    private final int[] registerRhythm = {0, 0};
+    @Deprecated
     private final ChipKeyInfo[] keyInfo = {new ChipKeyInfo(14), new ChipKeyInfo(14)};
+    // TODO check cache nor not
     private final int[] fadeout = {0, 0};
+    @Deprecated
     private final boolean[] rm = {false, false};
     private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false}
     };
-
-    public int clock;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -191,6 +195,7 @@ public class Ym2413Chip extends BaseChip {
         }
     }
 
+    @Override
     public Map<String, Object> getInfo(int chipId) {
         return Map.of("register", register[chipId]);
     }
@@ -213,5 +218,10 @@ public class Ym2413Chip extends BaseChip {
     public void clearFadeout() {
         setFadeout(0, 0);
         setFadeout(1, 0);
+    }
+
+    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    public boolean getMask(int chipId, int ch) {
+        return ch < mask[chipId].length && mask[chipId][ch];
     }
 }

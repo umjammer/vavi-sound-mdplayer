@@ -6,6 +6,8 @@
 
 package mdplayer.chips;
 
+import java.util.Map;
+
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
@@ -24,6 +26,7 @@ import mdsound.instrument.C219Inst;
  * system property
  * <li>{@code mdplayer.variant.c140} ... active chip index</li>
  * </p>
+ *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
@@ -33,10 +36,14 @@ public class C140Chip extends BaseChip {
 
     private final RSoundChip[] realChips = {null, null};
 
+    // TODO eliminate cache like params, retrieve directly
+    @Deprecated
     public final byte[][] pcmRegister = {null, null};
 
+    @Deprecated
     public final boolean[][] pcmKeyOn = {null, null};
 
+    @Deprecated
     private static final boolean[][] mask = {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
                     false, false, false, false, false, false, false, false},
@@ -117,7 +124,7 @@ public class C140Chip extends BaseChip {
                 }
 //                realChips[chipId].setRegister(0x10006, romSize);
 
-                context.chipRegister.plugin(RealChipPlugin.class).realChip.SendData();
+                context.chipRegister.plugin(RealChipPlugin.class).realChip.sendData();
             }
         }
 
@@ -147,8 +154,9 @@ public class C140Chip extends BaseChip {
         return pcmRegister[chipId];
     }
 
-    public boolean[] getKeyOn(int chipId) {
-        return pcmKeyOn[chipId];
+    @Override
+    public Map<String, Object> getInfo(int chipId) {
+        return Map.of("keyOn", pcmKeyOn[chipId]);
     }
 
     public void setMask(int chipId, int ch) {
@@ -157,5 +165,10 @@ public class C140Chip extends BaseChip {
 
     public void resetMask(int chipId, int ch) {
         setMask(chipId, ch, false);
+    }
+
+    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    public boolean getMask(int chipId, int ch) {
+        return ch < C140Chip.mask[chipId].length && C140Chip.mask[chipId][ch];
     }
 }

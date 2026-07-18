@@ -34,10 +34,14 @@ public class Rf5C164Chip extends BaseChip {
 
     public void setMask(int chipId, int ch, boolean mask) {
         this.mask[chipId][ch] = mask;
+
+        Instrument instrument = context.mds.inst(inst(chipId));
+        if (instrument == null) return; // the song being played does not use this chip
+
         if (mask)
-            context.mds.inst(inst(chipId)).setMask(chipId, ch);
+            instrument.setMask(chipId, ch);
         else
-            context.mds.inst(inst(chipId)).resetMask(chipId, ch);
+            instrument.resetMask(chipId, ch);
     }
 
     public void writePcm(int chipId, int offset, int length, byte[] buf, int srcOffset, EnmModel model) {
@@ -64,8 +68,10 @@ public class Rf5C164Chip extends BaseChip {
             context.mds.inst(ScdPcmInst.class).writeMemory(chipId, offset, data);
     }
 
+    @Override
     public Map<String, Object> getInfo(int chipId) {
-        return context.mds.inst(ScdPcmInst.class).getInfo(chipId);
+        ScdPcmInst inst = context.mds.inst(ScdPcmInst.class);
+        return inst == null ? null : inst.getView(chipId, "info", null);
     }
 
     public void setMask(int chipId, int ch) {
@@ -74,5 +80,10 @@ public class Rf5C164Chip extends BaseChip {
 
     public void resetMask(int chipId, int ch) {
         setMask(chipId, ch, false);
+    }
+
+    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    public boolean getMask(int chipId, int ch) {
+        return ch < mask[chipId].length && mask[chipId][ch];
     }
 }

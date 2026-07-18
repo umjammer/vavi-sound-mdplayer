@@ -26,6 +26,7 @@ public class Y8950Chip extends BaseChip {
 
     public final int[][] register = {null, null};
 
+    @Deprecated
     private final ChipKeyInfo[] keyInfo = {new ChipKeyInfo(15), new ChipKeyInfo(15)};
 
     private final boolean[][] mask = {
@@ -138,6 +139,7 @@ public class Y8950Chip extends BaseChip {
         dumpData(model, "PCMData", srcOffset, buf, length);
     }
 
+    @Override
     public Map<String, Object> getInfo(int chipId) {
         return Map.of("register", register[chipId]);
     }
@@ -148,5 +150,10 @@ public class Y8950Chip extends BaseChip {
 
     public void resetMask(int chipId, int ch) {
         setMask(chipId, ch, false);
+    }
+
+    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    public boolean getMask(int chipId, int ch) {
+        return ch < mask[chipId].length && mask[chipId][ch];
     }
 }

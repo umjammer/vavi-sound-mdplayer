@@ -30,20 +30,23 @@ public class Ay8910Chip extends BaseChip {
 
     private final RSoundChip[] realChips = {null, null};
 
+    // TODO eliminate cache like params, retrieve directly
+    @Deprecated
     public final int[][] psgRegister = {null, null};
 
+    @Deprecated
     public final int[][] psgKeyOn = {null, null};
 
+    @Deprecated
     private final int[] fadeoutVolume = {0, 0};
 
+    @Deprecated
     public final int[][] psgVolume = {new int[3], new int[3]};
 
     private final boolean[][] mask = {
             {false, false, false},
             {false, false, false}
     };
-
-    public int clock;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -177,5 +180,10 @@ public class Ay8910Chip extends BaseChip {
     public void clearFadeout() {
         setFadeout(0, 0);
         setFadeout(1, 0);
+    }
+
+    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    public boolean getMask(int chipId, int ch) {
+        return ch < mask[chipId].length && mask[chipId][ch];
     }
 }

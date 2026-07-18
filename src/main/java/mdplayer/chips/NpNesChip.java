@@ -44,6 +44,7 @@ public class NpNesChip extends BaseChip {
 
     // vgm
     public static class DmcChip extends NpNesChip {
+
         private int dmcMask = 0;
 
         @Override
@@ -52,11 +53,12 @@ public class NpNesChip extends BaseChip {
             return new Class[] {NpNesInst.DmcInst.class};
         }
 
+        // TODO getInfo
         public int[] readDmc(int chipId) {
             int[] reg;
             try {
                 // for nsf
-                if (nsf.apu == null) reg = null;
+                if (nsf == null || nsf.apu == null) reg = null;
                 else if (nsf.apu.apu == null) reg = null;
                 else if (chipId == 1) reg = null;
                 else reg = nsf.dmc.dmc.reg;
@@ -75,9 +77,16 @@ public class NpNesChip extends BaseChip {
         public void resetDmcMask(int chipId, int ch) {
             resetMask(chipId, ch + 2);
         }
+
+        public boolean getDmcMask(int chipId, int ch) {
+            return (dmcMask & (1 << ch)) != 0;
+        }
+
+
     }
 
     public static class Mmc5Chip extends NpNesChip {
+
         private int mmc5Mask = 0;
         private final byte[] mmc5Regs = new byte[10];
 
@@ -87,12 +96,13 @@ public class NpNesChip extends BaseChip {
             return new Class[] {NpNesInst.Mmc5Inst.class};
         }
 
+        // TODO getInfo
         public byte[] readMmc5(int chipId) {
             // for nsf
-            if (nsf.mmc5 == null) return null;
+            if (nsf == null || nsf.mmc5 == null) return null;
             else if (chipId == 1) return null;
 
-            int[] dat = new int[] { 0 };
+            int[] dat = new int[] {0};
             for (int adr = 0x5000; adr < 0x5008; adr++) {
                 nsf.mmc5.read(adr, dat);
                 mmc5Regs[adr & 0x7] = (byte) dat[0];
@@ -105,6 +115,7 @@ public class NpNesChip extends BaseChip {
             return mmc5Regs;
         }
 
+        // TODO getInfo
         public NesMmc5 readMmc5(int chipId, EnmModel model) {
             fireEventHappened("led.on", chipId);
 
@@ -117,18 +128,26 @@ public class NpNesChip extends BaseChip {
 
         public void setMmc5Mask(int chipId, int ch) {
             mmc5Mask |= 1 << ch;
-            if (nsf.mmc5 != null)
+            // there is no nsf behind this unless an nsf is what is playing
+            if (nsf != null && nsf.mmc5 != null)
                 nsf.mmc5.setMask(mmc5Mask);
         }
 
         public void resetMmc5Mask(int chipId, int ch) {
             mmc5Mask &= ~(1 << ch);
-            if (nsf.mmc5 != null)
+            if (nsf != null && nsf.mmc5 != null)
                 nsf.mmc5.setMask(mmc5Mask);
         }
+
+        public boolean getMmc5Mask(int chipId, int ch) {
+            return (mmc5Mask & (1 << ch)) != 0;
+        }
+
+
     }
 
     public static class Vrc6Chip extends NpNesChip {
+
         private int vrc6Mask = 0;
 
         @Override
@@ -141,7 +160,7 @@ public class NpNesChip extends BaseChip {
             if (chipId != 0)
                 return;
             vrc6Mask |= 1 << ch;
-            if (nsf.vrc6 != null)
+            if (nsf != null && nsf.vrc6 != null)
                 nsf.vrc6.setMask(vrc6Mask);
         }
 
@@ -149,12 +168,17 @@ public class NpNesChip extends BaseChip {
             if (chipId != 0)
                 return;
             vrc6Mask &= ~(1 << ch);
-            if (nsf.vrc6 != null)
+            if (nsf != null && nsf.vrc6 != null)
                 nsf.vrc6.setMask(vrc6Mask);
         }
 
+        public boolean getVrc6Mask(int chipId, int ch) {
+            return (vrc6Mask & (1 << ch)) != 0;
+        }
+
+        // TODO getInfo
         public DeviceInfo.TrackInfo[] readVrc6(int chipId) {
-            if (nsf.vrc6 == null)
+            if (nsf == null || nsf.vrc6 == null)
                 return null;
             if (chipId != 0)
                 return null;
@@ -164,6 +188,7 @@ public class NpNesChip extends BaseChip {
     }
 
     public static class Vrc7Chip extends NpNesChip {
+
         private int vrc7Mask = 0;
         private final ChipKeyInfo[] vrc7KeyOn = {new ChipKeyInfo(14), new ChipKeyInfo(14)};
 
@@ -173,8 +198,9 @@ public class NpNesChip extends BaseChip {
             return new Class[] {NpNesInst.Vrc7Inst.class};
         }
 
+        // TODO getInfo
         public ChipKeyInfo getVRC7KeyInfo(int chipId) {
-            if (nsf.vrc7 == null)
+            if (nsf == null || nsf.vrc7 == null)
                 return null;
             if (chipId != 0)
                 return null;
@@ -189,8 +215,9 @@ public class NpNesChip extends BaseChip {
             return vrc7KeyOnRet[chipId];
         }
 
+        // TODO getInfo
         public int[] readVrc7(int chipId) {
-            if (nsf.vrc7 == null) return null;
+            if (nsf == null || nsf.vrc7 == null) return null;
             if (chipId != 0) return null;
 
             return nsf.vrc7.getRegs();
@@ -198,18 +225,23 @@ public class NpNesChip extends BaseChip {
 
         public void setVrc7Mask(int chipId, int ch) {
             vrc7Mask |= 1 << ch;
-            if (nsf.vrc7 != null)
+            if (nsf != null && nsf.vrc7 != null)
                 nsf.vrc7.setMask(vrc7Mask);
         }
 
         public void resetVrc7Mask(int chipId, int ch) {
             vrc7Mask &= ~(1 << ch);
-            if (nsf.vrc7 != null)
+            if (nsf != null && nsf.vrc7 != null)
                 nsf.vrc7.setMask(vrc7Mask);
+        }
+
+        public boolean getVrc7Mask(int chipId, int ch) {
+            return (vrc7Mask & (1 << ch)) != 0;
         }
     }
 
     public static class N163Chip extends NpNesChip {
+
         private int n163Mask = 0;
 
         @Override
@@ -218,8 +250,9 @@ public class NpNesChip extends BaseChip {
             return new Class[] {NpNesInst.N160Inst.class};
         }
 
+        // TODO getInfo
         public DeviceInfo.TrackInfo[] readN163(int chipId) {
-            if (nsf.n106 == null)
+            if (nsf == null || nsf.n106 == null)
                 return null;
             if (chipId != 0)
                 return null;
@@ -231,21 +264,27 @@ public class NpNesChip extends BaseChip {
             if (chipId != 0)
                 return;
             n163Mask |= 1 << ch;
-            if (nsf.n106 != null)
+            if (nsf != null && nsf.n106 != null)
                 nsf.n106.setMask(n163Mask);
         }
 
+        // TODO getInfo
         public void resetN163Mask(int chipId, int ch) {
             if (chipId != 0)
                 return;
             n163Mask &= ~(1 << ch);
-            if (nsf.n106 != null)
+            if (nsf != null && nsf.n106 != null)
                 nsf.n106.setMask(n163Mask);
+        }
+
+        public boolean getN163Mask(int chipId, int ch) {
+            return (n163Mask & (1 << ch)) != 0;
         }
     }
 
     // vgm
     public static class FdsChip extends NpNesChip {
+
         private int fdsMask = 0;
 
         @Override
@@ -254,10 +293,11 @@ public class NpNesChip extends BaseChip {
             return new Class[] {NpNesInst.FdsInst.class};
         }
 
+        // TODO getInfo
         public Map<String, Object> readFds(int chipId) {
 
             // for nsf
-            if (nsf.apu == null) return null;
+            if (nsf == null || nsf.apu == null) return null;
             else if (nsf.apu.apu == null) return null;
             else if (chipId == 1) return null;
             else {
@@ -267,14 +307,18 @@ public class NpNesChip extends BaseChip {
 
         public void setFdsMask(int chipId) {
             fdsMask |= 1;
-            if (nsf.fds != null)
+            if (nsf != null && nsf.fds != null)
                 nsf.fds.setMask(fdsMask);
         }
 
         public void resetFdsMask(int chipId) {
             fdsMask &= ~1;
-            if (nsf.fds != null)
+            if (nsf != null && nsf.fds != null)
                 nsf.fds.setMask(fdsMask);
+        }
+
+        public boolean getFdsMask(int chipId) {
+            return (fdsMask & 1) != 0;
         }
     }
 
@@ -288,12 +332,13 @@ public class NpNesChip extends BaseChip {
             return new Class[] {NpNesInst.Fme7Inst.class};
         }
 
+        // TODO getInfo
         public byte[] readS5B(int chipId) {
             // for nsf
-            if (nsf.fme7 == null) return null;
+            if (nsf == null || nsf.fme7 == null) return null;
             else if (chipId == 1) return null;
 
-            int[] dat = new int[] { 0 };
+            int[] dat = new int[] {0};
             for (int adr = 0x00; adr < 0x20; adr++) {
                 nsf.fme7.read(adr, dat);
                 s5bRegs[adr] = (byte) dat[0];
@@ -318,19 +363,21 @@ public class NpNesChip extends BaseChip {
                 case 0:
                 case 1:
                     apuMask |= 1 << ch;
-                    if (nsf.apu != null)
+                    if (nsf != null && nsf.apu != null)
                         nsf.apu.setMask(apuMask);
                     break;
                 case 2:
                 case 3:
                 case 4:
                     context.chipRegister.chip(NpNesChip.DmcChip.class).dmcMask |= 1 << (ch - 2);
-                    if (nsf.dmc != null)
+                    if (nsf != null && nsf.dmc != null)
                         nsf.dmc.setMask(context.chipRegister.chip(NpNesChip.DmcChip.class).dmcMask);
                     break;
             }
         }
-        context.mds.inst(NpNesInst.class).setMask(chipId, ch);
+        Instrument instrument = context.mds.inst(NpNesInst.class);
+        if (instrument == null) return; // the song being played does not use this chip
+        instrument.setMask(chipId, ch);
     }
 
     // vgm
@@ -340,27 +387,34 @@ public class NpNesChip extends BaseChip {
                 case 0:
                 case 1:
                     apuMask &= ~(1 << ch);
-                    if (nsf.apu != null)
+                    if (nsf != null && nsf.apu != null)
                         nsf.apu.setMask(apuMask);
                     break;
                 case 2:
                 case 3:
                 case 4:
                     context.chipRegister.chip(NpNesChip.DmcChip.class).dmcMask &= ~(1 << (ch - 2));
-                    if (nsf.dmc != null)
+                    if (nsf != null && nsf.dmc != null)
                         nsf.dmc.setMask(context.chipRegister.chip(NpNesChip.DmcChip.class).dmcMask);
                     break;
             }
         }
-        context.mds.inst(NpNesInst.class).resetMask(chipId, ch);
+        Instrument instrument = context.mds.inst(NpNesInst.class);
+        if (instrument == null) return; // the song being played does not use this chip
+        instrument.resetMask(chipId, ch);
+    }
+
+    public boolean getMask(int chipId, int ch) {
+        return (apuMask & (1 << ch)) != 0;
     }
 
     // vgm
+    @Override
     public Map<String, Object> getInfo(int chipId) {
         int[] reg;
 
         // for nsf
-        if (nsf.apu == null) reg = null;
+        if (nsf == null || nsf.apu == null) reg = null;
         else if (nsf.apu.apu == null) reg = null;
         else if (chipId == 1) reg = null;
         else reg = nsf.apu.apu.reg;
@@ -369,6 +423,7 @@ public class NpNesChip extends BaseChip {
     }
 
     // nsf
+    // TODO getInfo
     public int getVolume(int chip) {
 //logger.log(Level.INFO, "VOL: %d, %d, %d, %d, %d, %d, %d, %d".formatted(
 // context.mds.getChipInfo(NpNesInst.class).getTVolume(),
@@ -391,4 +446,5 @@ public class NpNesChip extends BaseChip {
             default -> throw new IllegalArgumentException("Unexpected value: " + chip);
         };
     }
+
 }

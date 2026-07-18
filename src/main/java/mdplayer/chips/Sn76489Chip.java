@@ -32,15 +32,19 @@ public class Sn76489Chip extends BaseChip {
 
     private final RSoundChip[] realChips = {null, null};
 
+    @Deprecated
     public final int[][] register = {null, null};
 
+    @Deprecated
     public final int[] pan = {0xff, 0xff};
 
+    @Deprecated
     public final int[][][] volumes = {
             {new int[2], new int[2], new int[2], new int[2]},
             {new int[2], new int[2], new int[2], new int[2]}
     };
 
+    @Deprecated
     public final int[] fadeout = {0, 0};
 
     public final boolean[][] mask = {
@@ -48,15 +52,16 @@ public class Sn76489Chip extends BaseChip {
             {false, false, false, false}
     };
 
+    @Deprecated
     private final int[] latchedRegister = {
             0, 0
     };
 
+    @Deprecated
     private final int[] noiseFreq = {
             0, 0
     };
 
-    public int clock;
 
     @SuppressWarnings("unchecked")
     private Class<? extends PannableInstrument> _inst(int chipId) {
@@ -189,6 +194,7 @@ public class Sn76489Chip extends BaseChip {
         }
     }
 
+    @Override
     public Map<String, Object> getInfo(int chipId) {
         return Map.of(
                 "volumes", volumes[chipId],
@@ -216,11 +222,17 @@ public class Sn76489Chip extends BaseChip {
                 ct.getUseEmu()[0] ? Common.EnmModel.VirtualModel : Common.EnmModel.RealModel);
     }
 
+    // ??? vgm
     public boolean ngpFlag = false;
 
     @Override
     public void clearFadeout() {
         setFadeout(0, 0);
         setFadeout(1, 0);
+    }
+
+    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    public boolean getMask(int chipId, int ch) {
+        return ch < mask[chipId].length && mask[chipId][ch];
     }
 }

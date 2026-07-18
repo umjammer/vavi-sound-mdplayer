@@ -230,9 +230,19 @@ logger.log(Level.DEBUG, result);
             }
         }
 
+        // getMusic() reads the metadata through getMetaData(), which works off srcBuf, and nothing
+        // has called load() on this path
+        this.srcBuf = buf;
+
         List<PlayList.Music> musics;
         if (entry == null) musics = getMusic(mc.fileName, buf, null, null, null);
         else musics = getMusic(mc.fileName, buf, mc.arcFileName, archive, entry);
+
+        // getMusic() only fills in what it reads out of the file; where the song came from is ours
+        for (PlayList.Music music : musics) {
+            if (music.fileName == null) music.fileName = mc.fileName;
+            if (music.arcFileName == null) music.arcFileName = mc.arcFileName;
+        }
 
         return musics;
     }

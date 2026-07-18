@@ -104,7 +104,6 @@ logger.log(Level.INFO, "MuSICA: AY: %b, SCC: %b, OPLL: %b".formatted(useAY, useS
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ay8910Chip.class);
             chip.clock = MuSICA.baseClockAY8910 / 2;
-            chipRegister.chip(Ay8910Chip.class).clock = MuSICA.baseClockAY8910;
 
             put(Ay8910Chip.class, chip);
         }
@@ -118,7 +117,6 @@ logger.log(Level.INFO, "MuSICA: AY: %b, SCC: %b, OPLL: %b".formatted(useAY, useS
             chip.clock = MuSICA.baseClockYM2413;
             chip.option = null;
             put(Ym2413Chip.class, chip);
-            chipRegister.chip(Ym2413Chip.class).clock = MuSICA.baseClockYM2413;
         }
 
         if (useSCC) {
@@ -130,7 +128,6 @@ logger.log(Level.INFO, "MuSICA: AY: %b, SCC: %b, OPLL: %b".formatted(useAY, useS
             chip.clock = MuSICA.baseClockK051649;
             chip.option = null;
             put(K051649Chip.class, chip);
-            chipRegister.chip(K051649Chip.class).clock = MuSICA.baseClockK051649;
         }
 
         mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, flatten());

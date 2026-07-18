@@ -322,6 +322,73 @@ Debug.println("stop");
         cdl.await();
     }
 
+    @Test
+    @DisplayName("test stop performance")
+    @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
+    void testStopPerformance() throws Exception {
+        String testFile = file;
+        if (testFile == null || !Files.exists(Path.of(testFile))) {
+            testFile = "src/test/resources/test.vgm";
+        }
+        int testTrack = track > 0 ? track : 1;
+
+        FileFormat format = FileFormat.getFileFormat(testFile);
+        format.load(Archives.getInputStream(new BufferedInputStream(Files.newInputStream(Path.of(testFile)))), null);
+        var plugin = (BasePlugin<? extends BaseDriver>) format.getPlugin();
+        plugin.setParams(format, Map.of(
+                "fileName", testFile,
+                "midiMode", 0,
+                "songNo", testTrack - 1)
+        );
+        audio.init(plugin);
+
+        ExecutorService es = Executors.newSingleThreadExecutor();
+        es.submit(() -> {
+            try {
+                audio.play();
+            } catch (Exception e) {
+                Debug.printStackTrace(e);
+            }
+        });
+
+        // Wait 1.5 seconds for the audio thread to start playing/rendering
+        Thread.sleep(1500);
+
+        long start = System.currentTimeMillis();
+        audio.stop();
+        long duration = System.currentTimeMillis() - start;
+
+        Debug.println("Stop took: " + duration + " ms");
+        es.shutdownNow();
+
+        org.junit.jupiter.api.Assertions.assertTrue(duration < 1000, "Stop took too long: " + duration + " ms");
+    }
+
+    @Test
+    void testJacksonSerialization() throws Exception {
+        mdplayer.Setting setting = new mdplayer.Setting();
+        setting.init();
+        var midiOut = setting.getMidiOut();
+        var list = new java.util.ArrayList<mdplayer.MidiOutInfo[]>();
+        mdplayer.MidiOutInfo info1 = new mdplayer.MidiOutInfo();
+        info1.id = 1;
+        info1.name = "TestMIDI1";
+        mdplayer.MidiOutInfo info2 = new mdplayer.MidiOutInfo();
+        info2.id = 2;
+        info2.name = "TestMIDI2";
+        list.add(new mdplayer.MidiOutInfo[]{info1, info2});
+        midiOut.setMidiOutInfos(list);
+
+        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+        vavi.util.serdes.Serdes.Util.serialize(setting, baos);
+        String xml = baos.toString(java.nio.charset.StandardCharsets.UTF_8);
+        System.out.println("Serialized XML:\n" + xml);
+
+        mdplayer.Setting loaded = new mdplayer.Setting();
+        vavi.util.serdes.Serdes.Util.deserialize(new java.io.ByteArrayInputStream(baos.toByteArray()), loaded);
+        System.out.println("Deserialized successfully!");
+    }
+
     /**
      * @param args 0: audio file
      */

@@ -34,14 +34,20 @@ public class OkiM6295Chip extends BaseChip {
 
     public void setMask(int chipId, int ch, boolean mask) {
         this.mask[chipId][ch] = mask;
+
+        Instrument instrument = context.mds.inst(inst(chipId), 0);
+        if (instrument == null) return; // the song being played does not use this chip
+
         if (mask)
-            context.mds.inst(inst(chipId), 0).setMask(chipId, 1 << ch);
+            instrument.setMask(chipId, 1 << ch);
         else
-            context.mds.inst(inst(chipId), 0).resetMask(chipId, 1 << ch);
+            instrument.resetMask(chipId, 1 << ch);
     }
 
+    @Override
     public Map<String, Object> getInfo(int chipId) {
-        return context.mds.inst(OkiM6295Inst.class, 0).getInfo(chipId);
+        OkiM6295Inst inst = context.mds.inst(OkiM6295Inst.class, 0);
+        return inst == null ? null : inst.getView(chipId, "info", null);
     }
 
     public void writePcm(int chipId, int romSize, int offset, int length, byte[] buf, int srcOffset, EnmModel model) {
@@ -68,5 +74,10 @@ public class OkiM6295Chip extends BaseChip {
 
     public void resetMask(int chipId, int ch) {
         setMask(chipId, ch, false);
+    }
+
+    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    public boolean getMask(int chipId, int ch) {
+        return ch < mask[chipId].length && mask[chipId][ch];
     }
 }

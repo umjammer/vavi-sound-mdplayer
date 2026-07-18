@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.ResourceBundle;
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
@@ -13,7 +14,6 @@ import mdplayer.PlayList;
 import mdplayer.driver.s98.S98Driver;
 import mdplayer.plugin.Plugin;
 import mdplayer.plugin.S98Plugin;
-import mdplayer.properties.Resources;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 import vavi.sound.SoundUtil;
@@ -30,6 +30,8 @@ import vavi.util.archive.Entry;
  * @version 0.00 2022-07-07 nsano initial version <br>
  */
 public class S98FileFormat extends BaseFileFormat {
+
+    private static final ResourceBundle rb = ResourceBundle.getBundle("mdplayer/properties/resources");
 
     @Override
     public String[] getExtensions() {
@@ -93,7 +95,7 @@ public class S98FileFormat extends BaseFileFormat {
     public String[] getPresetMixerBalance() {
         return new String[] {
                 "DriverBalance_S98.mbc",
-                Resources.getDefaultVolumeBalance_S98()
+                rb.getString("DefaultVolumeBalance_S98")
         };
     }
 

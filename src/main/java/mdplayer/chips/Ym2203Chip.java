@@ -25,6 +25,7 @@ import mdsound.instrument.YmFmYm2203Inst;
  * system property
  * <li>{@code mdplayer.variant.ym2203} ... active chip index</li>
  * </p>
+ *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
@@ -34,17 +35,20 @@ public class Ym2203Chip extends BaseChip {
 
     private final RSoundChip[] realChips = {null, null};
 
+    @Deprecated
     public final int[][] fmRegister = {null, null};
+    @Deprecated
     public final int[][] fmKeyOn = {null, null};
+    @Deprecated
     public final int[][] fmCh3SlotVolume = {new int[4], new int[4]};
+    @Deprecated
     private final int[] nowFadeoutVol = {0, 0};
+    @Deprecated
     public final int[][] fmVolume = {new int[9], new int[9]};
     private final boolean[][] maskFM = {
             {false, false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false, false}
     };
-
-    public int clock;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -260,6 +264,13 @@ public class Ym2203Chip extends BaseChip {
 
     public void setMask(int chipId, int ch, boolean mask, boolean noSend /* = false */) {
         maskFM[chipId][ch] = mask;
+        // FM ch3 and its extended slots mask as one
+        if (ch == 2 || (ch >= 6 && ch < 9)) {
+            maskFM[chipId][2] = mask;
+            maskFM[chipId][6] = mask;
+            maskFM[chipId][7] = mask;
+            maskFM[chipId][8] = mask;
+        }
 
         if (noSend) return;
 
@@ -324,6 +335,7 @@ public class Ym2203Chip extends BaseChip {
         }
     }
 
+    @Override
     public Map<String, Object> getInfo(int chipId) {
         return Map.of(
                 "volume", fmVolume[chipId],
@@ -351,5 +363,10 @@ public class Ym2203Chip extends BaseChip {
     public void clearFadeout() {
         setFadeout(0, 0);
         setFadeout(1, 0);
+    }
+
+    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    public boolean getMask(int chipId, int ch) {
+        return ch < maskFM[chipId].length && maskFM[chipId][ch];
     }
 }

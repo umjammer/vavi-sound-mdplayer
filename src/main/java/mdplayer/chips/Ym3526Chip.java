@@ -29,10 +29,13 @@ public class Ym3526Chip extends BaseChip {
 
     private final RSoundChip[] realChips = {null, null};
 
+    @Deprecated
     public final int[][] register = {null, null};
 
+    // TOCO check cache or not
     private final int[] fadeout = {0, 0};
 
+    @Deprecated
     private final ChipKeyInfo[] keyInfo = {
             new ChipKeyInfo(14), new ChipKeyInfo(14)
     };
@@ -201,6 +204,7 @@ public class Ym3526Chip extends BaseChip {
         }
     }
 
+    @Override
     public Map<String, Object> getInfo(int chipId) {
         return Map.of("register", register[chipId]);
     }
@@ -223,5 +227,10 @@ public class Ym3526Chip extends BaseChip {
     public void clearFadeout() {
         setFadeout(0, 0);
         setFadeout(1, 0);
+    }
+
+    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    public boolean getMask(int chipId, int ch) {
+        return ch < mask[chipId].length && mask[chipId][ch];
     }
 }

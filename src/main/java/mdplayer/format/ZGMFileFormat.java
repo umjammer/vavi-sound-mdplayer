@@ -6,12 +6,12 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.ResourceBundle;
 
 import mdplayer.PlayList;
 import mdplayer.driver.zgm.Zgm;
 import mdplayer.plugin.Plugin;
 import mdplayer.plugin.ZGMPlugin;
-import mdplayer.properties.Resources;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 import vavi.sound.SoundUtil;
@@ -26,6 +26,8 @@ import vavi.util.archive.Entry;
  * @version 0.00 2022-07-07 nsano initial version <br>
  */
 public class ZGMFileFormat extends BaseFileFormat {
+
+    private static final ResourceBundle rb = ResourceBundle.getBundle("mdplayer/properties/resources");
 
     @Override
     public String[] getExtensions() {
@@ -70,7 +72,7 @@ public class ZGMFileFormat extends BaseFileFormat {
     public String[] getPresetMixerBalance() {
         return new String[] {
                 "DriverBalance_ZGM.mbc",
-                Resources.getDefaultVolumeBalance_ZGM()
+                rb.getString("DefaultVolumeBalance_ZGM")
         };
     }
 

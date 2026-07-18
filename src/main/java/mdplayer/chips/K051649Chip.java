@@ -30,14 +30,19 @@ public class K051649Chip extends BaseChip {
 
     private final RSoundChip[] realChips = {null, null};
 
+    @Deprecated
     private final K051649 scc_k051649 = new K051649();
 
+    @Deprecated
     private int sccR_port;
 
+    @Deprecated
     private int sccR_offset;
 
+    @Deprecated
     private int sccR_dat;
 
+    @Deprecated
     public final byte[] keyOnOff = {
             0, 0
     };
@@ -46,8 +51,6 @@ public class K051649Chip extends BaseChip {
             {false, false, false, false, false},
             {false, false, false, false, false}
     };
-
-    public int clock;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -73,7 +76,6 @@ public class K051649Chip extends BaseChip {
         mask[chipId][ch] = false;
         write(chipId, (3 << 1) | 1, keyOnOff[chipId], EnmModel.VirtualModel);
     }
-
 
     public void write(int chipId, int adr, int data, EnmModel model) {
         fireEventHappened("led.on", chipId);
@@ -139,13 +141,20 @@ public class K051649Chip extends BaseChip {
         }
     }
 
+    @Override
     public Map<String, Object> getInfo(int chipId) {
-        return context.mds.inst(K051649Inst.class).getInfo(chipId);
+        K051649Inst inst = context.mds.inst(K051649Inst.class);
+        return inst == null ? null : inst.getView(chipId, "info", null);
     }
 
     @Override
     public void softReset(EnmModel model) {
         softReset(0, model);
         softReset(1, model);
+    }
+
+    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    public boolean getMask(int chipId, int ch) {
+        return ch < mask[chipId].length && mask[chipId][ch];
     }
 }
