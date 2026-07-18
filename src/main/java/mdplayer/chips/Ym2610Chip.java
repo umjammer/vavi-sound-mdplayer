@@ -9,7 +9,6 @@ package mdplayer.chips;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
-import mdplayer.MDChipParams.VolumeInfo;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
@@ -71,14 +70,11 @@ public class Ym2610Chip extends BaseChip {
     // TODO check cache or not
     private final int[] nowFadeoutVol = {0, 0};
 
-    @Deprecated
     private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false}
     };
 
-    @Deprecated
-    public int clock;
 
     @SuppressWarnings("unchecked")
     private Class<? extends AdpcmEnabledInstrument> _inst(int chipId) {
@@ -527,7 +523,8 @@ public class Ym2610Chip extends BaseChip {
 
     public void setMask(int chipId, int ch, boolean mask) {
         this.mask[chipId][ch] = mask;
-        if (ch >= 9 && ch < 12) {
+        // FM ch3 and its extended slots mask as one
+        if (ch == 2 || (ch >= 9 && ch < 12)) {
             this.mask[chipId][2] = mask;
             this.mask[chipId][9] = mask;
             this.mask[chipId][10] = mask;
@@ -650,46 +647,8 @@ public class Ym2610Chip extends BaseChip {
         dumpData(model, "ADPCMB", vgmAdr + 15, vgmBuf, bLen - 8);
     }
 
-    @Deprecated
-    public static class Params {
-
-        public boolean lfoSw = false;
-        public int lfoFrq = -1;
-        public int nfrq = -1;
-        public int efrq = -1;
-        public int etype = -1;
-
-        public final mdplayer.MDChipParams.Channel[] channels = {
-                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), // FM 0
-                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), // SSG 9
-                new mdplayer.MDChipParams.Channel(), // ADPCM 12
-                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel() // RHYTHM 13
-        };
+    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    public boolean getMask(int chipId, int ch) {
+        return ch < mask[chipId].length && mask[chipId][ch];
     }
-
-    @Deprecated
-    public final Params[] ym2610 = {new Params(), new Params()};
-    @Deprecated
-    public final Params[] ym2610_old = {new Params(), new Params()};
-
-    @Deprecated
-    public final VolumeInfo YM2610AdpcmA = new VolumeInfo();
-    @Deprecated
-    public final VolumeInfo YM2610AdpcmA_old = new VolumeInfo();
-    @Deprecated
-    public final VolumeInfo YM2610AdpcmB = new VolumeInfo();
-    @Deprecated
-    public final VolumeInfo YM2610AdpcmB_old = new VolumeInfo();
-    @Deprecated
-    public final VolumeInfo YM2610FM = new VolumeInfo();
-    @Deprecated
-    public final VolumeInfo YM2610FM_old = new VolumeInfo();
-    @Deprecated
-    public final VolumeInfo YM2610PSG = new VolumeInfo();
-    @Deprecated
-    public final VolumeInfo YM2610PSG_old = new VolumeInfo();
-    @Deprecated
-    public final VolumeInfo YM2610 = new VolumeInfo();
-    @Deprecated
-    public final VolumeInfo YM2610_old = new VolumeInfo();
 }

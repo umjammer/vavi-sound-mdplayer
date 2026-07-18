@@ -9,7 +9,6 @@ package mdplayer.chips;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
-import mdplayer.MDChipParams.VolumeInfo;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
@@ -54,7 +53,6 @@ public class YmF262Chip extends BaseChip {
     @Deprecated
     private final int[] registerRhythm = {0, 0};
 
-    @Deprecated
     private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
                     false, false, false, false, false, false, false},
@@ -280,26 +278,8 @@ public class YmF262Chip extends BaseChip {
         setFadeout(1, 0);
     }
 
-    @Deprecated
-    public static class Params {
-
-        public final mdplayer.MDChipParams.Channel[] channels = {
-                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(),
-                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(),
-                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(),
-                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), // FM 18
-                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel() // Rhythm 5
-        };
-
+    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    public boolean getMask(int chipId, int ch) {
+        return ch < mask[chipId].length && mask[chipId][ch];
     }
-
-    @Deprecated
-    public final Params[] ymf262 = new Params[] {new Params(), new Params()};
-    @Deprecated
-    public final Params[] ymf262_old = new Params[] {new Params(), new Params()};
-
-    @Deprecated
-    public final VolumeInfo YMF262 = new VolumeInfo(); // OPL3
-    @Deprecated
-    public final VolumeInfo YMF262_old = new VolumeInfo(); // OPL3
 }

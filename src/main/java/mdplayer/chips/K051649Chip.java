@@ -9,7 +9,6 @@ package mdplayer.chips;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
-import mdplayer.MDChipParams.VolumeInfo;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
@@ -48,14 +47,10 @@ public class K051649Chip extends BaseChip {
             0, 0
     };
 
-    @Deprecated
     public final boolean[][] mask = {
             {false, false, false, false, false},
             {false, false, false, false, false}
     };
-
-    @Deprecated
-    public int clock;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -148,7 +143,8 @@ public class K051649Chip extends BaseChip {
 
     @Override
     public Map<String, Object> getInfo(int chipId) {
-        return context.mds.inst(K051649Inst.class).getView(chipId, "info", null);
+        K051649Inst inst = context.mds.inst(K051649Inst.class);
+        return inst == null ? null : inst.getView(chipId, "info", null);
     }
 
     @Override
@@ -157,19 +153,8 @@ public class K051649Chip extends BaseChip {
         softReset(1, model);
     }
 
-    @Deprecated
-    public static class Params {
-
-        public final mdplayer.MDChipParams.Channel[] channels = {new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel()};
+    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    public boolean getMask(int chipId, int ch) {
+        return ch < mask[chipId].length && mask[chipId][ch];
     }
-
-    @Deprecated
-    public final Params[] k051649 = new Params[] {new Params(), new Params()};
-    @Deprecated
-    public final Params[] k051649_old = new Params[] {new Params(), new Params()};
-
-    @Deprecated
-    public final VolumeInfo K051649 = new VolumeInfo(); // K051
-    @Deprecated
-    public final VolumeInfo K051649_old = new VolumeInfo(); // K051
 }

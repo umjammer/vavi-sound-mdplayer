@@ -9,7 +9,6 @@ package mdplayer.chips;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
-import mdplayer.MDChipParams.VolumeInfo;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
@@ -55,14 +54,13 @@ public class Ym2612Chip extends BaseChip {
     public final int[][] ch3SlotVolume = {new int[4], new int[4]};
     // TODO check cache or not
     private final int[] fadeout = {0, 0};
-    @Deprecated
     private final boolean[][] mask = {
             {false, false, false, false, false, false},
             {false, false, false, false, false, false}
     };
 
-    @Deprecated
-    public int clock;
+    /** the format of the song being played; the panel draws a few things per format */
+    public FileFormat fileFormat = FileFormat.unknown;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -278,7 +276,8 @@ public class Ym2612Chip extends BaseChip {
     }
 
     private void setMask(int chipId, int ch, boolean mask) {
-        this.mask[chipId][ch] = mask;
+        // channels 6-8 are FM3's extended slots; they share ch2's mask slot (the array is 6 wide)
+        this.mask[chipId][ch < 6 ? ch : 2] = mask;
 
         int c = (ch < 3) ? ch : (ch - 3);
         int p = (ch < 3) ? 0 : 1;
@@ -344,28 +343,9 @@ public class Ym2612Chip extends BaseChip {
         setFadeout(1, 0);
     }
 
-    @Deprecated
-    public static class Params {
-
-        public FileFormat fileFormat = FileFormat.unknown;
-        public boolean lfoSw = false;
-        public int lfoFrq = -1;
-        public int timerA = -1;
-        public int timerB = -1;
-        public final int[] xpcmVolL = new int[] {-1, -1, -1, -1};
-        public final int[] xpcmVolR = new int[] {-1, -1, -1, -1};
-        public final int[] xpcmInst = new int[] {-1, -1, -1, -1};
-
-        public final mdplayer.MDChipParams.Channel[] channels = new mdplayer.MDChipParams.Channel[] {new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel()};
+    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    public boolean getMask(int chipId, int ch) {
+        // channels 6-8 are FM3's extended slots; they mask together with ch2
+        return mask[chipId][ch < 6 ? ch : 2];
     }
-
-    @Deprecated
-    public final Params[] ym2612 = new Params[] {new Params(), new Params()};
-    @Deprecated
-    public final Params[] ym2612_old = new Params[] {new Params(), new Params()};
-
-    @Deprecated
-    public final VolumeInfo YM2612 = new VolumeInfo();
-    @Deprecated
-    public final VolumeInfo YM2612_old = new VolumeInfo();
 }

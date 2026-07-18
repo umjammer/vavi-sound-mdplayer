@@ -18,6 +18,7 @@ import javax.sound.midi.MidiMessage;
 import javax.sound.midi.ShortMessage;
 import javax.swing.JOptionPane;
 
+import mdplayer.form.kb.ChannelParams;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.chips.Ym2203Chip;
 import mdplayer.chips.Ym2608Chip;
@@ -38,7 +39,6 @@ public class YM2612MIDI {
 
     private final Setting setting;
     private final MDSound mdsMIDI;
-    public final MDChipParams newParam;
     private final Audio audio = Audio.getInstance();
 
     public Runnable fadeout;
@@ -72,15 +72,15 @@ public class YM2612MIDI {
         _noteLogPtr = value;
     }
 
-    public YM2612MIDI(mdsound.MDSound mdsMIDI, MDChipParams newParam) {
+    public YM2612MIDI(mdsound.MDSound mdsMIDI) {
         this.setting = Setting.getInstance();
         this.mdsMIDI = mdsMIDI;
-        this.newParam = newParam;
 
         for (int ch = 0; ch < 6; ch++) {
             for (int n = 0; n < 100; n++) _noteLog[ch][n] = -1;
             _noteLogPtr[ch] = 0;
-            if (setting.getMidiKbd().getTones() != null && setting.getMidiKbd().getTones()[ch] != null)
+            // no chip to replay the saved tones into until a MIDI sound module exists (TODO above)
+            if (mdsMIDI != null && setting.getMidiKbd().getTones() != null && setting.getMidiKbd().getTones()[ch] != null)
                 voiceCopyChFromTone(ch, setting.getMidiKbd().getTones()[ch]);
         }
     }
@@ -1697,7 +1697,7 @@ public class YM2612MIDI {
         setTonesFromSettng();
     }
 
-    @Deprecated
+    /** the MIDI keyboard's shared state: what the engine plays and what the panel draws */
     public static class Params {
 
         public boolean lfoSw = false;
@@ -1707,12 +1707,13 @@ public class YM2612MIDI {
         public int selectCh = -1;
         public int selectParam = -1;
 
-        public final mdplayer.MDChipParams.Channel[] channels = {new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel()};
+        public final ChannelParams[] channels = {
+                new ChannelParams(), new ChannelParams(), new ChannelParams(), new ChannelParams(), new ChannelParams(),
+                new ChannelParams(), new ChannelParams(), new ChannelParams(), new ChannelParams()};
 
         public final int[][] noteLog = {new int[10], new int[10], new int[10], new int[10], new int[10], new int[10]};
         public final boolean[] useChannel = {false, false, false, false, false, false};
     }
 
-    @Deprecated
     public mdplayer.YM2612MIDI.Params ym2612Midi = new mdplayer.YM2612MIDI.Params();
 }

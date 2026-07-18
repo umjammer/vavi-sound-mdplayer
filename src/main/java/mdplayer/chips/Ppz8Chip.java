@@ -9,7 +9,6 @@ package mdplayer.chips;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
-import mdplayer.MDChipParams.VolumeInfo;
 import mdsound.Instrument;
 import mdsound.instrument.Ppz8Inst;
 
@@ -22,7 +21,6 @@ import mdsound.instrument.Ppz8Inst;
  */
 public class Ppz8Chip extends BaseChip {
 
-    @Deprecated
     private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false}
@@ -36,7 +34,8 @@ public class Ppz8Chip extends BaseChip {
 
     @Override
     public Map<String, Object> getInfo(int chipId) {
-        return context.mds.inst(Ppz8Inst.class).getView(chipId, "info", null);
+        Ppz8Inst inst = context.mds.inst(Ppz8Inst.class);
+        return inst == null ? null : inst.getView(chipId, "info", null);
     }
 
     public void writePcm(int chipId, int bank, int mode, byte[][] pcmData, EnmModel model) {
@@ -71,22 +70,8 @@ public class Ppz8Chip extends BaseChip {
         setMask(chipId, ch, false);
     }
 
-    @Deprecated
-    public static class Params {
-
-        public final mdplayer.MDChipParams.Channel[] channels = {
-                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(),
-                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel()
-        };
+    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    public boolean getMask(int chipId, int ch) {
+        return ch < mask[chipId].length && mask[chipId][ch];
     }
-
-    @Deprecated
-    public final Params[] ppz8 = {new Params(), new Params()};
-    @Deprecated
-    public final Params[] ppz8_old = {new Params(), new Params()};
-
-    @Deprecated
-    public final VolumeInfo PPZ8 = new VolumeInfo();
-    @Deprecated
-    public final VolumeInfo PPZ8_old = new VolumeInfo();
 }

@@ -16,7 +16,6 @@ import java.util.Map;
 
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
-import mdplayer.MDChipParams.VolumeInfo;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdplayer.Tables;
@@ -81,14 +80,11 @@ public class Ym2608Chip extends BaseChip {
     // TODO check cache or not
     private final int[] fadeout = {0, 0};
 
-    @Deprecated
     private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false}
     };
 
-    @Deprecated
-    public int clock;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -454,7 +450,8 @@ public class Ym2608Chip extends BaseChip {
 
     public void setMask(int chipId, int ch, boolean mask, boolean noSend/*=false*/) {
         this.mask[chipId][ch] = mask;
-        if (ch >= 9 && ch < 12) {
+        // FM ch3 and its extended slots mask as one
+        if (ch == 2 || (ch >= 9 && ch < 12)) {
             this.mask[chipId][2] = mask;
             this.mask[chipId][9] = mask;
             this.mask[chipId][10] = mask;
@@ -563,7 +560,7 @@ public class Ym2608Chip extends BaseChip {
     public Map<String, Object> getInfo(int chipId) {
         return Map.of(
                 "volume", volume[chipId],
-                "rythmVolume", rhythmVolume[chipId],
+                "rhythmVolume", rhythmVolume[chipId],
                 "ch3SlotVolume", /* ctYM2612.UseScci ? */ ch3SlotVolume[chipId] /* : context.mds.inst(inst[chipId]).readFMCh3SlotVolume(); */,
                 "adpcmVolume", adpcmVolume[chipId],
                 "register", register[chipId],
@@ -780,50 +777,8 @@ public class Ym2608Chip extends BaseChip {
         return n;
     }
 
-    @Deprecated
-    public static class Params {
-
-        public boolean lfoSw = false;
-        public int lfoFrq = -1;
-        public int nfrq = -1;
-        public int efrq = -1;
-        public int etype = -1;
-        public int timerA = -1;
-        public int timerB = -1;
-        public int rhythmTotalLevel = -1;
-        public int adpcmLevel = -1;
-
-        public final mdplayer.MDChipParams.Channel[] channels = {
-                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), // FM 0
-                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), // SSG 9
-                new mdplayer.MDChipParams.Channel(), // ADPCM 12
-                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel() // RHYTHM 13
-        };
+    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    public boolean getMask(int chipId, int ch) {
+        return ch < mask[chipId].length && mask[chipId][ch];
     }
-
-    @Deprecated
-    public final mdplayer.chips.Ym2608Chip.Params[] ym2608 = new mdplayer.chips.Ym2608Chip.Params[] {new mdplayer.chips.Ym2608Chip.Params(), new mdplayer.chips.Ym2608Chip.Params()};
-    @Deprecated
-    public final mdplayer.chips.Ym2608Chip.Params[] ym2608_old = new mdplayer.chips.Ym2608Chip.Params[] {new mdplayer.chips.Ym2608Chip.Params(), new mdplayer.chips.Ym2608Chip.Params()};
-
-    @Deprecated
-    public final VolumeInfo YM2608Adpcm = new VolumeInfo();
-    @Deprecated
-    public final VolumeInfo YM2608Adpcm_old = new VolumeInfo();
-    @Deprecated
-    public final VolumeInfo YM2608FM = new VolumeInfo();
-    @Deprecated
-    public final VolumeInfo YM2608FM_old = new VolumeInfo();
-    @Deprecated
-    public final VolumeInfo YM2608PSG = new VolumeInfo();
-    @Deprecated
-    public final VolumeInfo YM2608PSG_old = new VolumeInfo();
-    @Deprecated
-    public final VolumeInfo YM2608Rhythm = new VolumeInfo();
-    @Deprecated
-    public final VolumeInfo YM2608Rhythm_old = new VolumeInfo();
-    @Deprecated
-    public final VolumeInfo YM2608 = new VolumeInfo();
-    @Deprecated
-    public final VolumeInfo YM2608_old = new VolumeInfo();
 }

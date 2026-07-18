@@ -9,7 +9,6 @@ package mdplayer.chips;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
-import mdplayer.MDChipParams.VolumeInfo;
 import mdsound.Instrument;
 import mdsound.instrument.K054539Inst;
 
@@ -49,23 +48,4 @@ public class K054539Chip extends BaseChip {
 
         dumpData(model, "PCMData", srcOffset, buf, length);
     }
-
-    @Deprecated
-    public static class Params {
-
-        public final mdplayer.MDChipParams.Channel[] channels = new mdplayer.MDChipParams.Channel[] {
-                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(),
-                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel()
-        };
-    }
-
-    @Deprecated
-    public final Params[] k054539 = new Params[] {new Params(), new Params()};
-    @Deprecated
-    public final Params[] k054539_old = new Params[] {new Params(), new Params()};
-
-    @Deprecated
-    public final VolumeInfo K054539 = new VolumeInfo();
-    @Deprecated
-    public final VolumeInfo K054539_old = new VolumeInfo();
 }

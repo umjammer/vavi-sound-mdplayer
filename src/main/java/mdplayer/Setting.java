@@ -29,7 +29,6 @@ import tools.jackson.databind.ValueDeserializer;
 
 import static java.lang.System.getLogger;
 
-
 @Serdes(beanBinder = JacksonXMLBeanBinder.class)
 public class Setting implements Serializable, Cloneable {
 
@@ -3265,872 +3264,6 @@ public class Setting implements Serializable, Cloneable {
             _PMixerWH = value;
         }
 
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        private Point[] _PosRf5c164 = new Point[] {
-                EmptyPoint, EmptyPoint
-        };
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        public Point[] getPosRf5c164() {
-            return _PosRf5c164;
-        }
-
-        void setPosRf5c164(Point[] value) {
-            _PosRf5c164 = value;
-        }
-
-        private boolean[] _OpenRf5c164 = new boolean[] {
-                false, false
-        };
-
-        public boolean[] getOpenRf5c164() {
-            return _OpenRf5c164;
-        }
-
-        void setOpenRf5c164(boolean[] value) {
-            _OpenRf5c164 = value;
-        }
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        private Point[] _PosRf5c68 = new Point[] {
-                EmptyPoint, EmptyPoint
-        };
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        public Point[] getPosRf5c68() {
-            return _PosRf5c68;
-        }
-
-        void setPosRf5c68(Point[] value) {
-            _PosRf5c68 = value;
-        }
-
-        private boolean[] _OpenRf5c68 = new boolean[] {
-                false, false
-        };
-
-        public boolean[] getOpenRf5c68() {
-            return _OpenRf5c68;
-        }
-
-        void setOpenRf5c68(boolean[] value) {
-            _OpenRf5c68 = value;
-        }
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        private Point[] _PosYMF271 = new Point[] {
-                EmptyPoint, EmptyPoint
-        };
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        public Point[] getPosYMF271() {
-            return _PosYMF271;
-        }
-
-        void setPosYMF271(Point[] value) {
-            _PosYMF271 = value;
-        }
-
-        private boolean[] _OpenYMF271 = new boolean[] {
-                false, false
-        };
-
-        public boolean[] getOpenYMF271() {
-            return _OpenYMF271;
-        }
-
-        void setOpenYMF271(boolean[] value) {
-            _OpenYMF271 = value;
-        }
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        private Point[] _PosC140 = new Point[] {
-                EmptyPoint, EmptyPoint
-        };
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        public Point[] getPosC140() {
-            return _PosC140;
-        }
-
-        void setPosC140(Point[] value) {
-            _PosC140 = value;
-        }
-
-        private boolean[] openC140 = new boolean[] {
-                false, false
-        };
-
-        public boolean[] getOpenC140() {
-            return openC140;
-        }
-
-        void setOpenC140(boolean[] value) {
-            openC140 = value;
-        }
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        private Point[] posS5B = new Point[] {
-                EmptyPoint, EmptyPoint
-        };
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        public Point[] getPosS5B() {
-            return posS5B;
-        }
-
-        void setPosS5B(Point[] value) {
-            posS5B = value;
-        }
-
-        private boolean[] _OpenS5B = new boolean[] {
-                false, false
-        };
-
-        public boolean[] getOpenS5B() {
-            return _OpenS5B;
-        }
-
-        void setOpenS5B(boolean[] value) {
-            _OpenS5B = value;
-        }
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        private Point[] _PosDMG = new Point[] {
-                EmptyPoint, EmptyPoint
-        };
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        public Point[] getPosDMG() {
-            return _PosDMG;
-        }
-
-        void setPosDMG(Point[] value) {
-            _PosDMG = value;
-        }
-
-        private boolean[] _OpenDMG = new boolean[] {
-                false, false
-        };
-
-        public boolean[] getOpenDMG() {
-            return _OpenDMG;
-        }
-
-        void setOpenDMG(boolean[] value) {
-            _OpenDMG = value;
-        }
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        private Point[] _PosPPZ8 = new Point[] {
-                EmptyPoint, EmptyPoint
-        };
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        public Point[] getPosPPZ8() {
-            return _PosPPZ8;
-        }
-
-        void setPosPPZ8(Point[] value) {
-            _PosPPZ8 = value;
-        }
-
-        private boolean[] _OpenPPZ8 = new boolean[] {
-                false, false
-        };
-
-        public boolean[] getOpenPPZ8() {
-            return _OpenPPZ8;
-        }
-
-        void setOpenPPZ8(boolean[] value) {
-            _OpenPPZ8 = value;
-        }
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        private Point[] _PosYMZ280B = new Point[] {
-                EmptyPoint, EmptyPoint
-        };
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        public Point[] getPosYMZ280B() {
-            return _PosYMZ280B;
-        }
-
-        void setPosYMZ280B(Point[] value) {
-            _PosYMZ280B = value;
-        }
-
-        private boolean[] _OpenYMZ280B = new boolean[] {
-                false, false
-        };
-
-        public boolean[] getOpenYMZ280B() {
-            return _OpenYMZ280B;
-        }
-
-        void setOpenYMZ280B(boolean[] value) {
-            _OpenYMZ280B = value;
-        }
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        private Point[] _PosC352 = new Point[] {
-                EmptyPoint, EmptyPoint
-        };
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        public Point[] getPosC352() {
-            return _PosC352;
-        }
-
-        void setPosC352(Point[] value) {
-            _PosC352 = value;
-        }
-
-        private boolean[] openC352 = new boolean[] {
-                false, false
-        };
-
-        public boolean[] getOpenC352() {
-            return openC352;
-        }
-
-        void setOpenC352(boolean[] value) {
-            openC352 = value;
-        }
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        private Point[] _PosMultiPCM = new Point[] {
-                EmptyPoint, EmptyPoint
-        };
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        public Point[] getPosMultiPCM() {
-            return _PosMultiPCM;
-        }
-
-        void setPosMultiPCM(Point[] value) {
-            _PosMultiPCM = value;
-        }
-
-        private boolean[] _OpenMultiPCM = new boolean[] {
-                false, false
-        };
-
-        public boolean[] getOpenMultiPCM() {
-            return _OpenMultiPCM;
-        }
-
-        void setOpenMultiPCM(boolean[] value) {
-            _OpenMultiPCM = value;
-        }
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        private Point[] _PosGA20 = new Point[] {
-                EmptyPoint, EmptyPoint
-        };
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        public Point[] getPosGA20() {
-            return _PosGA20;
-        }
-
-        void setPosGA20(Point[] value) {
-            _PosGA20 = value;
-        }
-
-        private boolean[] _OpenGA20 = new boolean[] {
-                false, false
-        };
-
-        public boolean[] getOpenGA20() {
-            return _OpenGA20;
-        }
-
-        void setOpenGA20(boolean[] value) {
-            _OpenGA20 = value;
-        }
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        private Point[] _PosK053260 = new Point[] {
-                EmptyPoint, EmptyPoint
-        };
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        public Point[] getPosK053260() {
-            return _PosK053260;
-        }
-
-        void setPosK053260(Point[] value) {
-            _PosK053260 = value;
-        }
-
-        private boolean[] _OpenK053260 = new boolean[] {
-                false, false
-        };
-
-        public boolean[] getOpenK053260() {
-            return _OpenK053260;
-        }
-
-        void setOpenK053260(boolean[] value) {
-            _OpenK053260 = value;
-        }
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        private Point[] _PosK054539 = new Point[] {
-                EmptyPoint, EmptyPoint
-        };
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        public Point[] getPosK054539() {
-            return _PosK054539;
-        }
-
-        void setPosK054539(Point[] value) {
-            _PosK054539 = value;
-        }
-
-        private boolean[] _OpenK054539 = new boolean[] {
-                false, false
-        };
-
-        public boolean[] getOpenK054539() {
-            return _OpenK054539;
-        }
-
-        void setOpenK054539(boolean[] value) {
-            _OpenK054539 = value;
-        }
-
-        private boolean[] _OpenQSound = new boolean[] {
-                false, false
-        };
-
-        public boolean[] getOpenQSound() {
-            return _OpenQSound;
-        }
-
-        void setOpenQSound(boolean[] value) {
-            _OpenQSound = value;
-        }
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        private Point[] _PosYm2151 = new Point[] {
-                EmptyPoint, EmptyPoint
-        };
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        public Point[] getPosYm2151() {
-            return _PosYm2151;
-        }
-
-        void setPosYm2151(Point[] value) {
-            _PosYm2151 = value;
-        }
-
-        private boolean[] _OpenYm2151 = new boolean[] {
-                false, false
-        };
-
-        public boolean[] getOpenYm2151() {
-            return _OpenYm2151;
-        }
-
-        void setOpenYm2151(boolean[] value) {
-            _OpenYm2151 = value;
-        }
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        private Point[] _PosYm2608 = new Point[] {
-                EmptyPoint, EmptyPoint
-        };
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        public Point[] getPosYm2608() {
-            return _PosYm2608;
-        }
-
-        void setPosYm2608(Point[] value) {
-            _PosYm2608 = value;
-        }
-
-        private boolean[] _OpenYm2608 = new boolean[] {
-                false, false
-        };
-
-        public boolean[] getOpenYm2608() {
-            return _OpenYm2608;
-        }
-
-        void setOpenYm2608(boolean[] value) {
-            _OpenYm2608 = value;
-        }
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        private Point[] _PosYm2203 = new Point[] {
-                EmptyPoint, EmptyPoint
-        };
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        public Point[] getPosYm2203() {
-            return _PosYm2203;
-        }
-
-        void setPosYm2203(Point[] value) {
-            _PosYm2203 = value;
-        }
-
-        private boolean[] _OpenYm2203 = new boolean[] {
-                false, false
-        };
-
-        public boolean[] getOpenYm2203() {
-            return _OpenYm2203;
-        }
-
-        void setOpenYm2203(boolean[] value) {
-            _OpenYm2203 = value;
-        }
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        private Point[] _PosYm2610 = new Point[] {
-                EmptyPoint, EmptyPoint
-        };
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        public Point[] getPosYm2610() {
-            return _PosYm2610;
-        }
-
-        void setPosYm2610(Point[] value) {
-            _PosYm2610 = value;
-        }
-
-        private boolean[] _OpenYm2610 = new boolean[] {
-                false, false
-        };
-
-        public boolean[] getOpenYm2610() {
-            return _OpenYm2610;
-        }
-
-        void setOpenYm2610(boolean[] value) {
-            _OpenYm2610 = value;
-        }
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        private Point[] _PosYm2612 = new Point[] {
-                EmptyPoint, EmptyPoint
-        };
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        public Point[] getPosYm2612() {
-            return _PosYm2612;
-        }
-
-        void setPosYm2612(Point[] value) {
-            _PosYm2612 = value;
-        }
-
-        private boolean[] _OpenYm2612 = new boolean[] {
-                false, false
-        };
-
-        public boolean[] getOpenYm2612() {
-            return _OpenYm2612;
-        }
-
-        void setOpenYm2612(boolean[] value) {
-            _OpenYm2612 = value;
-        }
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        private Point[] _PosOKIM6258 = new Point[] {
-                EmptyPoint, EmptyPoint
-        };
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        public Point[] getPosOKIM6258() {
-            return _PosOKIM6258;
-        }
-
-        void setPosOKIM6258(Point[] value) {
-            _PosOKIM6258 = value;
-        }
-
-        private boolean[] _OpenOKIM6258 = new boolean[] {
-                false, false
-        };
-
-        public boolean[] getOpenOKIM6258() {
-            return _OpenOKIM6258;
-        }
-
-        void setOpenOKIM6258(boolean[] value) {
-            _OpenOKIM6258 = value;
-        }
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        private Point[] _PosOKIM6295 = new Point[] {
-                EmptyPoint, EmptyPoint
-        };
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        public Point[] getPosOKIM6295() {
-            return _PosOKIM6295;
-        }
-
-        void setPosOKIM6295(Point[] value) {
-            _PosOKIM6295 = value;
-        }
-
-        private boolean[] openOKIM6295 = new boolean[] {
-                false, false
-        };
-
-        public boolean[] getOpenOKIM6295() {
-            return openOKIM6295;
-        }
-
-        void setOpenOKIM6295(boolean[] value) {
-            openOKIM6295 = value;
-        }
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        private Point[] _PosSN76489 = new Point[] {
-                EmptyPoint, EmptyPoint
-        };
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        public Point[] getPosSN76489() {
-            return _PosSN76489;
-        }
-
-        void setPosSN76489(Point[] value) {
-            _PosSN76489 = value;
-        }
-
-        private boolean[] _OpenSN76489 = new boolean[] {
-                false, false
-        };
-
-        public boolean[] getOpenSN76489() {
-            return _OpenSN76489;
-        }
-
-        void setOpenSN76489(boolean[] value) {
-            _OpenSN76489 = value;
-        }
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        private Point[] _PosMIDI = new Point[] {
-                EmptyPoint, EmptyPoint
-        };
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        public Point[] getPosMIDI() {
-            return _PosMIDI;
-        }
-
-        void setPosMIDI(Point[] value) {
-            _PosMIDI = value;
-        }
-
-        private boolean[] _OpenMIDI = new boolean[] {
-                false, false
-        };
-
-        public boolean[] getOpenMIDI() {
-            return _OpenMIDI;
-        }
-
-        public void setOpenMIDI(boolean[] value) {
-            _OpenMIDI = value;
-        }
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        private Point[] _PosSegaPCM = new Point[] {
-                EmptyPoint, EmptyPoint
-        };
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        public Point[] getPosSegaPCM() {
-            return _PosSegaPCM;
-        }
-
-        void setPosSegaPCM(Point[] value) {
-            _PosSegaPCM = value;
-        }
-
-        private boolean[] _OpenSegaPCM = new boolean[] {
-                false, false
-        };
-
-        public boolean[] getOpenSegaPCM() {
-            return _OpenSegaPCM;
-        }
-
-        void setOpenSegaPCM(boolean[] value) {
-            _OpenSegaPCM = value;
-        }
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        private Point[] _PosAY8910 = new Point[] {
-                EmptyPoint, EmptyPoint
-        };
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        public Point[] getPosAY8910() {
-            return _PosAY8910;
-        }
-
-        void setPosAY8910(Point[] value) {
-            _PosAY8910 = value;
-        }
-
-        private boolean[] _OpenAY8910 = new boolean[] {
-                false, false
-        };
-
-        public boolean[] getOpenAY8910() {
-            return _OpenAY8910;
-        }
-
-        void setOpenAY8910(boolean[] value) {
-            _OpenAY8910 = value;
-        }
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        private Point[] _PosHuC6280 = new Point[] {
-                EmptyPoint, EmptyPoint
-        };
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        public Point[] getPosHuC6280() {
-            return _PosHuC6280;
-        }
-
-        void setPosHuC6280(Point[] value) {
-            _PosHuC6280 = value;
-        }
-
-        private boolean[] _OpenHuC6280 = new boolean[] {
-                false, false
-        };
-
-        public boolean[] getOpenHuC6280() {
-            return _OpenHuC6280;
-        }
-
-        void setOpenHuC6280(boolean[] value) {
-            _OpenHuC6280 = value;
-        }
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        private Point[] _PosK051649 = new Point[] {
-                EmptyPoint, EmptyPoint
-        };
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        public Point[] getPosK051649() {
-            return _PosK051649;
-        }
-
-        void setPosK051649(Point[] value) {
-            _PosK051649 = value;
-        }
-
-        private boolean[] _OpenK051649 = new boolean[] {
-                false, false
-        };
-
-        public boolean[] getOpenK051649() {
-            return _OpenK051649;
-        }
-
-        void setOpenK051649(boolean[] value) {
-            _OpenK051649 = value;
-        }
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        private Point[] _PosYm2413 = new Point[] {
-                EmptyPoint, EmptyPoint
-        };
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        public Point[] getPosYm2413() {
-            return _PosYm2413;
-        }
-
-        void setPosYm2413(Point[] value) {
-            _PosYm2413 = value;
-        }
-
-        private boolean[] _OpenYm2413 = new boolean[] {
-                false, false
-        };
-
-        public boolean[] getOpenYm2413() {
-            return _OpenYm2413;
-        }
-
-        void setOpenYm2413(boolean[] value) {
-            _OpenYm2413 = value;
-        }
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        private Point[] _PosYm3526 = new Point[] {
-                EmptyPoint, EmptyPoint
-        };
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        public Point[] getPosYm3526() {
-            return _PosYm3526;
-        }
-
-        void setPosYm3526(Point[] value) {
-            _PosYm3526 = value;
-        }
-
-        private boolean[] _OpenYm3526 = new boolean[] {
-                false, false
-        };
-
-        public boolean[] getOpenYm3526() {
-            return _OpenYm3526;
-        }
-
-        void setOpenYm3526(boolean[] value) {
-            _OpenYm3526 = value;
-        }
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        private Point[] _PosY8950 = new Point[] {
-                EmptyPoint, EmptyPoint
-        };
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        public Point[] getPosY8950() {
-            return _PosY8950;
-        }
-
-        void setPosY8950(Point[] value) {
-            _PosY8950 = value;
-        }
-
-        private boolean[] _OpenY8950 = new boolean[] {
-                false, false
-        };
-
-        public boolean[] getOpenY8950() {
-            return _OpenY8950;
-        }
-
-        void setOpenY8950(boolean[] value) {
-            _OpenY8950 = value;
-        }
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        private Point[] _PosYm3812 = new Point[] {
-                EmptyPoint, EmptyPoint
-        };
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        public Point[] getPosYm3812() {
-            return _PosYm3812;
-        }
-
-        void setPosYm3812(Point[] value) {
-            _PosYm3812 = value;
-        }
-
-        private boolean[] _OpenYm3812 = new boolean[] {
-                false, false
-        };
-
-        public boolean[] getOpenYm3812() {
-            return _OpenYm3812;
-        }
-
-        void setOpenYm3812(boolean[] value) {
-            _OpenYm3812 = value;
-        }
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        private Point[] _PosYmf262 = new Point[] {
-                EmptyPoint, EmptyPoint
-        };
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        public Point[] getPosYmf262() {
-            return _PosYmf262;
-        }
-
-        void setPosYmf262(Point[] value) {
-            _PosYmf262 = value;
-        }
-
-        private boolean[] _OpenYmf262 = new boolean[] {
-                false, false
-        };
-
-        public boolean[] getOpenYmf262() {
-            return _OpenYmf262;
-        }
-
-        void setOpenYmf262(boolean[] value) {
-            _OpenYmf262 = value;
-        }
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        private Point[] _PosYmf278b = new Point[] {
-                EmptyPoint, EmptyPoint
-        };
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        public Point[] getPosYmf278b() {
-            return _PosYmf278b;
-        }
-
-        void setPosYmf278b(Point[] value) {
-            _PosYmf278b = value;
-        }
-
-        private boolean[] _OpenYmf278b = new boolean[] {
-                false, false
-        };
-
-        public boolean[] getOpenYmf278b() {
-            return _OpenYmf278b;
-        }
-
-        void setOpenYmf278b(boolean[] value) {
-            _OpenYmf278b = value;
-        }
-
-        @JsonDeserialize(using = PointDeserializer.class)
-        private Point _PosYm2612MIDI = EmptyPoint;
-
-        @JsonDeserialize(using = PointDeserializer.class)
-        public Point getPosYm2612MIDI() {
-            return _PosYm2612MIDI;
-        }
-
-        public void setPosYm2612MIDI(Point value) {
-            _PosYm2612MIDI = value;
-        }
-
-        private boolean _OpenYm2612MIDI = false;
-
-        public boolean getOpenYm2612MIDI() {
-            return _OpenYm2612MIDI;
-        }
-
-        public void setOpenYm2612MIDI(boolean value) {
-            _OpenYm2612MIDI = value;
-        }
-
         @JsonDeserialize(using = PointDeserializer.class)
         private Point _PosMixer = EmptyPoint;
 
@@ -4175,202 +3308,6 @@ public class Setting implements Serializable, Cloneable {
             _OpenVSTeffectList = value;
         }
 
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        private Point[] _PosNESDMC = new Point[] {
-                EmptyPoint, EmptyPoint
-        };
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        public Point[] getPosNESDMC() {
-            return _PosNESDMC;
-        }
-
-        void setPosNESDMC(Point[] value) {
-            _PosNESDMC = value;
-        }
-
-        private boolean[] _OpenNESDMC = new boolean[] {
-                false, false
-        };
-
-        public boolean[] getOpenNESDMC() {
-            return _OpenNESDMC;
-        }
-
-        void setOpenNESDMC(boolean[] value) {
-            _OpenNESDMC = value;
-        }
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        private Point[] _PosFDS = new Point[] {
-                EmptyPoint, EmptyPoint
-        };
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        public Point[] getPosFDS() {
-            return _PosFDS;
-        }
-
-        void setPosFDS(Point[] value) {
-            _PosFDS = value;
-        }
-
-        private boolean[] _OpenFDS = new boolean[] {
-                false, false
-        };
-
-        public boolean[] getOpenFDS() {
-            return _OpenFDS;
-        }
-
-        void setOpenFDS(boolean[] value) {
-            _OpenFDS = value;
-        }
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        private Point[] _PosMMC5 = new Point[] {
-                EmptyPoint, EmptyPoint
-        };
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        public Point[] getPosMMC5() {
-            return _PosMMC5;
-        }
-
-        void setPosMMC5(Point[] value) {
-            _PosMMC5 = value;
-        }
-
-        private boolean[] _OpenMMC5 = new boolean[] {
-                false, false
-        };
-
-        public boolean[] getOpenMMC5() {
-            return _OpenMMC5;
-        }
-
-        void setOpenMMC5(boolean[] value) {
-            _OpenMMC5 = value;
-        }
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        private Point[] _PosVrc6 = new Point[] {
-                EmptyPoint, EmptyPoint
-        };
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        public Point[] getPosVrc6() {
-            return _PosVrc6;
-        }
-
-        void setPosVrc6(Point[] value) {
-            _PosVrc6 = value;
-        }
-
-        private boolean[] _OpenVrc6 = new boolean[] {
-                false, false
-        };
-
-        public boolean[] getOpenVrc6() {
-            return _OpenVrc6;
-        }
-
-        void setOpenVrc6(boolean[] value) {
-            _OpenVrc6 = value;
-        }
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        private Point[] _PosVrc7 = new Point[] {
-                EmptyPoint, EmptyPoint
-        };
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        public Point[] getPosVrc7() {
-            return _PosVrc7;
-        }
-
-        void setPosVrc7(Point[] value) {
-            _PosVrc7 = value;
-        }
-
-        private boolean[] _OpenVrc7 = new boolean[] {
-                false, false
-        };
-
-        public boolean[] getOpenVrc7() {
-            return _OpenVrc7;
-        }
-
-        void setOpenVrc7(boolean[] value) {
-            _OpenVrc7 = value;
-        }
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        private Point[] _PosN106 = new Point[] {
-                EmptyPoint, EmptyPoint
-        };
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        public Point[] getPosN106() {
-            return _PosN106;
-        }
-
-        void setPosN106(Point[] value) {
-            _PosN106 = value;
-        }
-
-        private boolean[] _OpenN106 = new boolean[] {
-                false, false
-        };
-
-        public boolean[] getOpenN106() {
-            return _OpenN106;
-        }
-
-        void setOpenN106(boolean[] value) {
-            _OpenN106 = value;
-        }
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        private Point[] _PosQSound = new Point[] {
-                EmptyPoint, EmptyPoint
-        };
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        public Point[] getPosQSound() {
-            return _PosQSound;
-        }
-
-        void setPosQSound(Point[] value) {
-            _PosQSound = value;
-        }
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        private Point[] _PosRegTest = new Point[] {
-                EmptyPoint, EmptyPoint
-        };
-
-        @JsonDeserialize(contentUsing = PointDeserializer.class)
-        public Point[] getPosRegTest() {
-            return _PosRegTest;
-        }
-
-        void setPosRegTest(Point[] value) {
-            _PosRegTest = value;
-        }
-
-        private boolean[] _OpenRegTest = new boolean[] {
-                false, false
-        };
-
-        public boolean[] getOpenRegTest() {
-            return _OpenRegTest;
-        }
-
-        void setOpenRegTest(boolean[] value) {
-            _OpenRegTest = value;
-        }
-
         @JsonDeserialize(using = PointDeserializer.class)
         private Point _PosVisWave = EmptyPoint;
 
@@ -4403,6 +3340,78 @@ public class Setting implements Serializable, Cloneable {
             _ChipSelect = value;
         }
 
+        // The values are flat strings ("x0,y0,x1,y1" / "open0,open1"), not arrays: the XML bean
+        // binder round-trips Map<String, String> but not maps of arrays.
+
+        /** saved window positions of provider views, id -> "x0,y0,x1,y1" */
+        private Map<String, String> viewPos = new HashMap<>();
+
+        public Map<String, String> getViewPos() {
+            return viewPos;
+        }
+
+        public void setViewPos(Map<String, String> value) {
+            viewPos = value;
+        }
+
+        /** which provider views were open on exit, id -> "open0,open1" */
+        private Map<String, String> viewOpen = new HashMap<>();
+
+        public Map<String, String> getViewOpen() {
+            return viewOpen;
+        }
+
+        public void setViewOpen(Map<String, String> value) {
+            viewOpen = value;
+        }
+
+        private static int[] ints(String s, int n) {
+            int[] a = new int[n];
+            if (s == null) return a;
+            String[] parts = s.split(",");
+            for (int i = 0; i < Math.min(n, parts.length); i++) {
+                try {
+                    a[i] = Integer.parseInt(parts[i].trim());
+                } catch (NumberFormatException ignored) {
+                }
+            }
+            return a;
+        }
+
+        /** the saved position of a provider view, or null when it has none yet */
+        public Point pos(String id, int chipId) {
+            String s = viewPos.get(id);
+            if (s == null) return null;
+            int[] a = ints(s, 4);
+            if (a[chipId * 2] <= 0 && a[chipId * 2 + 1] <= 0) return null;
+            return new Point(a[chipId * 2], a[chipId * 2 + 1]);
+        }
+
+        public void setPos(String id, int chipId, Point p) {
+            int[] a = ints(viewPos.get(id), 4);
+            a[chipId * 2] = p.x;
+            a[chipId * 2 + 1] = p.y;
+            viewPos.put(id, a[0] + "," + a[1] + "," + a[2] + "," + a[3]);
+        }
+
+        /** whether a provider view was open when the player exited */
+        public boolean isOpen(String id, int chipId) {
+            String s = viewOpen.get(id);
+            if (s == null) return false;
+            String[] parts = s.split(",");
+            return chipId < parts.length && Boolean.parseBoolean(parts[chipId].trim());
+        }
+
+        public void setOpen(String id, int chipId, boolean v) {
+            boolean[] a = {isOpen(id, 0), isOpen(id, 1)};
+            if (chipId < a.length) a[chipId] = v;
+            viewOpen.put(id, a[0] + "," + a[1]);
+        }
+
+        public void clearOpen() {
+            viewOpen.clear();
+        }
+
         @Override
         public Location clone() {
             Location location = new Location();
@@ -4418,73 +3427,14 @@ public class Setting implements Serializable, Cloneable {
             location._PMixerWH = this._PMixerWH;
             location._PosMixer = this._PosMixer;
             location._OpenMixer = this._OpenMixer;
-            location._PosRf5c164 = this._PosRf5c164;
-            location._OpenRf5c164 = this._OpenRf5c164;
-            location._PosRf5c68 = this._PosRf5c68;
-            location._OpenRf5c68 = this._OpenRf5c68;
-            location._PosC140 = this._PosC140;
-            location.openC140 = this.openC140;
-            location._PosPPZ8 = this._PosPPZ8;
-            location._OpenPPZ8 = this._OpenPPZ8;
-            location.posS5B = this.posS5B;
-            location._OpenS5B = this._OpenS5B;
-            location._PosDMG = this._PosDMG;
-            location._OpenDMG = this._OpenDMG;
-            location._PosYMZ280B = this._PosYMZ280B;
-            location._OpenYMZ280B = this._OpenYMZ280B;
-            location._PosC352 = this._PosC352;
-            location.openC352 = this.openC352;
-            location._PosQSound = this._PosQSound;
-            location._OpenQSound = this._OpenQSound;
-            location._PosYm2151 = this._PosYm2151;
-            location._OpenYm2151 = this._OpenYm2151;
-            location._PosYm2608 = this._PosYm2608;
-            location._OpenYm2608 = this._OpenYm2608;
-            location._PosYm2203 = this._PosYm2203;
-            location._OpenYm2203 = this._OpenYm2203;
-            location._PosYm2610 = this._PosYm2610;
-            location._OpenYm2610 = this._OpenYm2610;
-            location._PosYm2612 = this._PosYm2612;
-            location._OpenYm2612 = this._OpenYm2612;
-            location._PosYm3526 = this._PosYm3526;
-            location._OpenYm3526 = this._OpenYm3526;
-            location._PosY8950 = this._PosY8950;
-            location._OpenY8950 = this._OpenY8950;
-            location._PosYm3812 = this._PosYm3812;
-            location._OpenYm3812 = this._OpenYm3812;
-            location._PosYmf262 = this._PosYmf262;
-            location._OpenYmf262 = this._OpenYmf262;
-            location._PosYMF271 = this._PosYMF271;
-            location._OpenYMF271 = this._OpenYMF271;
-            location._PosYmf278b = this._PosYmf278b;
-            location._OpenYmf278b = this._OpenYmf278b;
-            location._PosOKIM6258 = this._PosOKIM6258;
-            location._OpenOKIM6258 = this._OpenOKIM6258;
-            location._PosOKIM6295 = this._PosOKIM6295;
-            location.openOKIM6295 = this.openOKIM6295;
-            location._PosSN76489 = this._PosSN76489;
-            location._OpenSN76489 = this._OpenSN76489;
-            location._PosSegaPCM = this._PosSegaPCM;
-            location._OpenSegaPCM = this._OpenSegaPCM;
-            location._PosAY8910 = this._PosAY8910;
-            location._OpenAY8910 = this._OpenAY8910;
-            location._PosHuC6280 = this._PosHuC6280;
-            location._OpenHuC6280 = this._OpenHuC6280;
-            location._PosK051649 = this._PosK051649;
-            location._OpenK051649 = this._OpenK051649;
-            location._PosYm2612MIDI = this._PosYm2612MIDI;
-            location._OpenYm2612MIDI = this._OpenYm2612MIDI;
             location._PosVSTeffectList = this._PosVSTeffectList;
             location._OpenVSTeffectList = this._OpenVSTeffectList;
-            location._PosVrc7 = this._PosVrc7;
-            location._OpenVrc7 = this._OpenVrc7;
-            location._PosMIDI = this._PosMIDI;
-            location._OpenMIDI = this._OpenMIDI;
-            location._PosRegTest = this._PosRegTest;
-            location._OpenRegTest = this._OpenRegTest;
             location._PosVisWave = this._PosVisWave;
             location._OpenVisWave = this._OpenVisWave;
             location._ChipSelect = this._ChipSelect;
+
+            location.viewPos = new HashMap<>(this.viewPos);
+            location.viewOpen = new HashMap<>(this.viewOpen);
 
             return location;
         }
@@ -4864,7 +3814,12 @@ public class Setting implements Serializable, Cloneable {
 
             if (Files.exists(fullPath) && Files.size(fullPath) > 10) {
                 try (InputStream sr = Files.newInputStream(fullPath)) {
-                    Serdes.Util.deserialize(sr, instance);
+                    // the binder never fills the bean it is handed — it builds a fresh one, so the
+                    // loaded state has to be moved into the instance everything already holds
+                    Setting loaded = Serdes.Util.deserialize(sr, instance);
+                    if (loaded != null && loaded != instance) {
+                        copyInto(loaded, instance);
+                    }
                 }
             }
         } catch (Exception ex) {
@@ -4874,6 +3829,19 @@ public class Setting implements Serializable, Cloneable {
         // fills in whatever the settings file did not carry, and everything on a first run
         instance.init();
         return instance;
+    }
+
+    /** Moves a freshly deserialized Setting's state into the singleton, field by field. */
+    private static void copyInto(Setting from, Setting to) {
+        for (java.lang.reflect.Field f : Setting.class.getDeclaredFields()) {
+            if (java.lang.reflect.Modifier.isStatic(f.getModifiers())) continue;
+            try {
+                f.setAccessible(true);
+                f.set(to, f.get(from));
+            } catch (ReflectiveOperationException e) {
+                logger.log(Level.WARNING, "could not restore setting field " + f.getName() + ": " + e);
+            }
+        }
     }
 
     public static class PointDeserializer extends ValueDeserializer<Point> {

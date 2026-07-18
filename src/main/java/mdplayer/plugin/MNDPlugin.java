@@ -77,7 +77,6 @@ public class MNDPlugin extends BasePlugin<MnDriver> {
             Function<String, InputStream> fn = Ym2608Chip::getOPNARyhthmStream;
             chip.option = new Object[] {fn};
             put(Ym2608Chip.class, chip);
-            chipRegister.chip(Ym2608Chip.class).clock = 8000000;
         }
 
         if (setting.getYM2608Type()[1].getUseEmu()[0]) {
@@ -97,7 +96,6 @@ public class MNDPlugin extends BasePlugin<MnDriver> {
             chip.option = new Object[] {fn};
 //            chip.option = new Object[] {Common.getApplicationFolder()};
             put(Ym2608Chip.class, chip);
-            chipRegister.chip(Ym2608Chip.class).clock = 8000000;
         }
 
         chip = new MDSound.Chip();

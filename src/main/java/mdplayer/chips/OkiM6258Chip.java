@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
-import mdplayer.MDChipParams.VolumeInfo;
 import mdsound.Instrument;
 import mdsound.instrument.OkiM6258Inst;
 
@@ -23,7 +22,6 @@ import mdsound.instrument.OkiM6258Inst;
  */
 public class OkiM6258Chip extends BaseChip {
 
-    @Deprecated
     private final boolean[] mask = {false, false};
 
     @Deprecated
@@ -66,8 +64,10 @@ public class OkiM6258Chip extends BaseChip {
 
     @Override
     public Map<String, Object> getInfo(int chipId) {
+        OkiM6258Inst inst = context.mds.inst(OkiM6258Inst.class);
+        if (inst == null) return null; // the song being played does not use this chip
         // the instrument hands back an unmodifiable map, and this adds to it
-        Map<String, Object> info = new HashMap<>(context.mds.inst(OkiM6258Inst.class).getView(chipId, "info", null));
+        Map<String, Object> info = new HashMap<>(inst.getView(chipId, "info", null));
         info.put("keyOn", keyOn[chipId]);
         return info;
     }
@@ -84,25 +84,8 @@ public class OkiM6258Chip extends BaseChip {
         setMask(chipId, false);
     }
 
-    @Deprecated
-    public static class Params {
-
-        public int pan = -1;
-        public int pantp = -1;
-        public int masterFreq = -1;
-        public int divider = -1;
-        public int pbFreq = -1;
-        public int volumeL = -1;
-        public int volumeR = -1;
-        public boolean keyon = false;
-        public Boolean mask = false;
+    /** the panel/main-window view of whether the chip is muted; this array is the source of truth */
+    public boolean getMask(int chipId) {
+        return mask[chipId];
     }
-
-    @Deprecated
-    public final Params[] okim6258 = new Params[] {new Params(), new Params()};
-
-    @Deprecated
-    public final VolumeInfo OKIM6258 = new VolumeInfo();
-    @Deprecated
-    public final VolumeInfo OKIM6258_old = new VolumeInfo();
 }

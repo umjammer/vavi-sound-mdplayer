@@ -1,0 +1,355 @@
+package mdplayer.form.sys.setting;
+
+import java.awt.event.ActionEvent;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
+import mdplayer.Setting;
+import mdplayer.form.SettingTab;
+import static java.lang.System.getLogger;
+
+/** the "SID" page of the settings dialog, split out of the original FormSetting */
+public class SettingSIDPanel extends SettingTab {
+
+    @Override
+    public int order() {
+        return 50;
+    }
+
+    private static final Logger logger = getLogger(SettingSIDPanel.class.getName());
+
+    private JPanel groupBox13;
+    private JLabel label22;
+    private JButton btnSIDCharacter;
+    private JButton btnSIDBasic;
+    private JButton btnSIDKernal;
+    private JTextArea tbSIDCharacter;
+    private JTextArea tbSIDBasic;
+    private JTextArea tbSIDKernal;
+    private JLabel label24;
+    private JLabel label23;
+    private JPanel groupBox14;
+    private JLabel label27;
+    private JLabel label26;
+    private JLabel label25;
+    private JCheckBox rdSIDQ1;
+    private JCheckBox rdSIDQ3;
+    private JCheckBox rdSIDQ2;
+    private JCheckBox rdSIDQ4;
+    private JTextArea tbSIDOutputBufferSize;
+    private JLabel label49;
+    private JLabel label51;
+    private JPanel groupBox28;
+    private JPanel groupBox27;
+    private JCheckBox rbSIDC64Model_PAL;
+    private JCheckBox rbSIDC64Model_DREAN;
+    private JCheckBox rbSIDC64Model_OLDNTSC;
+    private JCheckBox rbSIDC64Model_NTSC;
+    private JCheckBox rbSIDModel_8580;
+    private JCheckBox rbSIDModel_6581;
+    private JCheckBox cbSIDC64Model_Force;
+    private JCheckBox cbSIDModel_Force;
+
+    public SettingSIDPanel() {
+        this.groupBox28 = new JPanel();
+        this.cbSIDModel_Force = new JCheckBox();
+        this.rbSIDModel_8580 = new JCheckBox();
+        this.rbSIDModel_6581 = new JCheckBox();
+        this.groupBox27 = new JPanel();
+        this.cbSIDC64Model_Force = new JCheckBox();
+        this.rbSIDC64Model_DREAN = new JCheckBox();
+        this.rbSIDC64Model_OLDNTSC = new JCheckBox();
+        this.rbSIDC64Model_NTSC = new JCheckBox();
+        this.rbSIDC64Model_PAL = new JCheckBox();
+        this.groupBox14 = new JPanel();
+        this.label27 = new JLabel();
+        this.label26 = new JLabel();
+        this.label25 = new JLabel();
+        this.rdSIDQ1 = new JCheckBox();
+        this.rdSIDQ3 = new JCheckBox();
+        this.rdSIDQ2 = new JCheckBox();
+        this.rdSIDQ4 = new JCheckBox();
+        this.groupBox13 = new JPanel();
+        this.btnSIDBasic = new JButton();
+        this.btnSIDCharacter = new JButton();
+        this.btnSIDKernal = new JButton();
+        this.tbSIDCharacter = new JTextArea();
+        this.tbSIDBasic = new JTextArea();
+        this.tbSIDKernal = new JTextArea();
+        this.label24 = new JLabel();
+        this.label23 = new JLabel();
+        this.label22 = new JLabel();
+        this.tbSIDOutputBufferSize = new JTextArea();
+        this.label51 = new JLabel();
+        this.label49 = new JLabel();
+
+        //
+        // btnSIDBasic
+        //
+        this.btnSIDBasic.setName("btnSIDBasic");
+        this.btnSIDBasic.addActionListener(this::btnSIDBasic_Click);
+        //
+        // btnSIDCharacter
+        //
+        this.btnSIDCharacter.setName("btnSIDCharacter");
+        this.btnSIDCharacter.addActionListener(this::btnSIDCharacter_Click);
+        //
+        // btnSIDKernal
+        //
+        this.btnSIDKernal.setName("btnSIDKernal");
+        this.btnSIDKernal.addActionListener(this::btnSIDKernal_Click);
+        //
+        // cbSIDC64Model_Force
+        //
+        this.cbSIDC64Model_Force.setName("cbSIDC64Model_Force");
+        //
+        // cbSIDModel_Force
+        //
+        this.cbSIDModel_Force.setName("cbSIDModel_Force");
+        //
+        // groupBox13
+        //
+        this.groupBox13.add(this.btnSIDBasic);
+        this.groupBox13.add(this.btnSIDCharacter);
+        this.groupBox13.add(this.btnSIDKernal);
+        this.groupBox13.add(this.tbSIDCharacter);
+        this.groupBox13.add(this.tbSIDBasic);
+        this.groupBox13.add(this.tbSIDKernal);
+        this.groupBox13.add(this.label24);
+        this.groupBox13.add(this.label23);
+        this.groupBox13.add(this.label22);
+        this.groupBox13.setName("groupBox13");
+        //
+        // groupBox14
+        //
+        this.groupBox14.add(this.label27);
+        this.groupBox14.add(this.label26);
+        this.groupBox14.add(this.label25);
+        this.groupBox14.add(this.rdSIDQ1);
+        this.groupBox14.add(this.rdSIDQ3);
+        this.groupBox14.add(this.rdSIDQ2);
+        this.groupBox14.add(this.rdSIDQ4);
+        this.groupBox14.setName("groupBox14");
+        //
+        // groupBox27
+        //
+        this.groupBox27.add(this.cbSIDC64Model_Force);
+        this.groupBox27.add(this.rbSIDC64Model_DREAN);
+        this.groupBox27.add(this.rbSIDC64Model_OLDNTSC);
+        this.groupBox27.add(this.rbSIDC64Model_NTSC);
+        this.groupBox27.add(this.rbSIDC64Model_PAL);
+        this.groupBox27.setName("groupBox27");
+        //
+        // groupBox28
+        //
+        this.groupBox28.add(this.cbSIDModel_Force);
+        this.groupBox28.add(this.rbSIDModel_8580);
+        this.groupBox28.add(this.rbSIDModel_6581);
+        this.groupBox28.setName("groupBox28");
+        //
+        // label22
+        //
+        this.label22.setName("label22");
+        //
+        // label23
+        //
+        this.label23.setName("label23");
+        //
+        // label24
+        //
+        this.label24.setName("label24");
+        //
+        // label25
+        //
+        this.label25.setName("label25");
+        //
+        // label26
+        //
+        this.label26.setName("label26");
+        //
+        // label27
+        //
+        this.label27.setName("label27");
+        //
+        // label49
+        //
+        this.label49.setName("label49");
+        //
+        // label51
+        //
+        this.label51.setName("label51");
+        //
+        // rbSIDC64Model_DREAN
+        //
+        this.rbSIDC64Model_DREAN.setName("rbSIDC64Model_DREAN");
+        //
+        // rbSIDC64Model_NTSC
+        //
+        this.rbSIDC64Model_NTSC.setName("rbSIDC64Model_NTSC");
+        //
+        // rbSIDC64Model_OLDNTSC
+        //
+        this.rbSIDC64Model_OLDNTSC.setName("rbSIDC64Model_OLDNTSC");
+        //
+        // rbSIDC64Model_PAL
+        //
+        this.rbSIDC64Model_PAL.setSelected(true);
+        this.rbSIDC64Model_PAL.setName("rbSIDC64Model_PAL");
+        //
+        // rbSIDModel_6581
+        //
+        this.rbSIDModel_6581.setSelected(true);
+        this.rbSIDModel_6581.setName("rbSIDModel_6581");
+        //
+        // rbSIDModel_8580
+        //
+        this.rbSIDModel_8580.setName("rbSIDModel_8580");
+        //
+        // rdSIDQ1
+        //
+        this.rdSIDQ1.setSelected(true);
+        this.rdSIDQ1.setName("rdSIDQ1");
+        //
+        // rdSIDQ2
+        //
+        this.rdSIDQ2.setName("rdSIDQ2");
+        //
+        // rdSIDQ3
+        //
+        this.rdSIDQ3.setName("rdSIDQ3");
+        //
+        // rdSIDQ4
+        //
+        this.rdSIDQ4.setName("rdSIDQ4");
+        //
+        // tbSIDBasic
+        //
+        this.tbSIDBasic.setName("tbSIDBasic");
+        //
+        // tbSIDCharacter
+        //
+        this.tbSIDCharacter.setName("tbSIDCharacter");
+        //
+        // tbSIDKernal
+        //
+        this.tbSIDKernal.setName("tbSIDKernal");
+        //
+        // tbSIDOutputBufferSize
+        //
+        this.tbSIDOutputBufferSize.setName("tbSIDOutputBufferSize");
+        //
+        // tpSID
+        //
+        this.add(this.groupBox28);
+        this.add(this.groupBox27);
+        this.add(this.groupBox14);
+        this.add(this.groupBox13);
+        this.add(this.tbSIDOutputBufferSize);
+        this.add(this.label51);
+        this.add(this.label49);
+        this.setName("tpSID");
+    }
+
+    @Override
+    public void load(Setting setting) {
+        tbSIDKernal.setText(setting.getSid().romKernalPath);
+        tbSIDBasic.setText(setting.getSid().romBasicPath);
+        tbSIDCharacter.setText(setting.getSid().romCharacterPath);
+        switch (setting.getSid().quality) {
+        case 0:
+            rdSIDQ1.setSelected(true);
+            break;
+        case 1:
+            rdSIDQ2.setSelected(true);
+            break;
+        case 2:
+            rdSIDQ3.setSelected(true);
+            break;
+        case 3:
+            rdSIDQ4.setSelected(true);
+            break;
+        }
+        tbSIDOutputBufferSize.setText(String.valueOf(setting.getSid().outputBufferSize));
+        rbSIDC64Model_PAL.setSelected((setting.getSid().c64model == 0));
+        rbSIDC64Model_NTSC.setSelected((setting.getSid().c64model == 1));
+        rbSIDC64Model_OLDNTSC.setSelected((setting.getSid().c64model == 2));
+        rbSIDC64Model_DREAN.setSelected((setting.getSid().c64model == 3));
+        cbSIDC64Model_Force.setSelected(setting.getSid().c64modelForce);
+        rbSIDModel_6581.setSelected((setting.getSid().sidModel == 0));
+        rbSIDModel_8580.setSelected((setting.getSid().sidModel == 1));
+        cbSIDModel_Force.setSelected(setting.getSid().sidmodelForce);
+    }
+
+    @Override
+    public void apply(Setting setting) {
+        setting.setSid(new Setting.SID());
+        setting.getSid().romKernalPath = tbSIDKernal.getText();
+        setting.getSid().romBasicPath = tbSIDBasic.getText();
+        setting.getSid().romCharacterPath = tbSIDCharacter.getText();
+        if (rdSIDQ1.isSelected()) setting.getSid().quality = 0;
+        if (rdSIDQ2.isSelected()) setting.getSid().quality = 1;
+        if (rdSIDQ3.isSelected()) setting.getSid().quality = 2;
+        if (rdSIDQ4.isSelected()) setting.getSid().quality = 3;
+        try {
+            setting.getSid().outputBufferSize = Math.clamp(Integer.parseInt(tbSIDOutputBufferSize.getText()), 100, 999999);
+        } catch (Exception e) {
+            logger.log(Level.ERROR, e.getMessage(), e);
+            setting.getSid().outputBufferSize = 5000;
+        }
+        setting.getSid().c64model = rbSIDC64Model_PAL.isSelected() ? 0 : (
+                rbSIDC64Model_NTSC.isSelected() ? 1 : (
+                        rbSIDC64Model_OLDNTSC.isSelected() ? 2 : (
+                                rbSIDC64Model_DREAN.isSelected() ? 3 : 0)));
+        setting.getSid().c64modelForce = cbSIDC64Model_Force.isSelected();
+        setting.getSid().sidModel = rbSIDModel_6581.isSelected() ? 0 : (
+                rbSIDModel_8580.isSelected() ? 1 : 0);
+        setting.getSid().sidmodelForce = cbSIDModel_Force.isSelected();
+    }
+
+    private void btnSIDBasic_Click(ActionEvent ev) {
+        JFileChooser ofd = new JFileChooser();
+        ofd.setFileFilter(ofd.getAcceptAllFileFilter());
+        ofd.setDialogTitle("Select a file");
+//        ofd.RestoreDirectory = true;
+//        ofd.CheckPathExists = true;
+        ofd.setMultiSelectionEnabled(false);
+
+        if (ofd.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+        tbSIDBasic.setText(ofd.getSelectedFile().getName());
+    }
+
+    private void btnSIDCharacter_Click(ActionEvent ev) {
+        JFileChooser ofd = new JFileChooser();
+        ofd.setFileFilter(ofd.getAcceptAllFileFilter());
+        ofd.setDialogTitle("Select a file");
+//        ofd.RestoreDirectory = true;
+//        ofd.CheckPathExists = true;
+        ofd.setMultiSelectionEnabled(false);
+
+        if (ofd.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+        tbSIDCharacter.setText(ofd.getSelectedFile().getName());
+    }
+
+    private void btnSIDKernal_Click(ActionEvent ev) {
+        JFileChooser ofd = new JFileChooser();
+        ofd.setFileFilter(ofd.getAcceptAllFileFilter());
+        ofd.setDialogTitle("Select a file");
+//        ofd.RestoreDirectory = true;
+//        ofd.CheckPathExists = true;
+        ofd.setMultiSelectionEnabled(false);
+
+        if (ofd.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+        tbSIDKernal.setText(ofd.getSelectedFile().getName());
+    }
+}

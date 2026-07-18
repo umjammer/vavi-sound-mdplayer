@@ -34,7 +34,6 @@ public class MPcmChip extends BaseChip {
 
     private static final Logger logger = System.getLogger(MPcmChip.class.getName());
 
-    @Deprecated
     private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false}

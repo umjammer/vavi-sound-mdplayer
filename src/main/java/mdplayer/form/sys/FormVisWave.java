@@ -32,14 +32,14 @@ public class FormVisWave extends FormBase {
     public int x = -1;
     public int y = -1;
 
-    private final short[][] buf = new short[][] {new short[2048], new short[2048]};
+    private final short[][] buf = {new short[2048], new short[2048]};
     private Graphics2D g;
     private final BufferedImage bmp;
     private int dispType = 1;
     private double dispHeight = 1.0;
     private boolean fft = false;
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormVisWave.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(FormVisWave.class).node(FormVisWave.class.getSimpleName());
 
     /** where in {@link #buf} the next sample goes */
     private int writeIndex;
@@ -140,7 +140,6 @@ public class FormVisWave extends FormBase {
         }
     };
 
-    //    @Override
     protected boolean getShowWithoutActivation() {
         return true;
     }
@@ -192,6 +191,7 @@ public class FormVisWave extends FormBase {
     private final short[] destS = new short[2048];
     private final short[] destS2 = new short[2048];
     private final Tuple<Float, Float>[] fftsample; // Complex
+
     {
         fftsample = new Tuple[2048];
         for (int i = 0; i < fftsample.length; i++) {

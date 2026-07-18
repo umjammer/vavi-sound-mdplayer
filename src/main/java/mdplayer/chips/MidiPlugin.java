@@ -466,7 +466,4 @@ public class MidiPlugin implements Plugin {
             buffer[i + offset] += bufVirtualFunction_MIDIKeyboard[i];
         }
     }
-
-    public final MIDIParam[] midi = {new MIDIParam(), new MIDIParam()};
-    public final MIDIParam[] midi_old = {new MIDIParam(), new MIDIParam()};
 }

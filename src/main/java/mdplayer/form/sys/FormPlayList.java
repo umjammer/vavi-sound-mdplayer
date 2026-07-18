@@ -38,7 +38,9 @@ import java.util.Random;
 import java.util.ResourceBundle;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
+import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
+import javax.swing.JToggleButton;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -59,7 +61,6 @@ import javax.swing.table.DefaultTableModel;
 import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.Common.EnmArcType;
-import mdplayer.MDChipParams;
 import mdplayer.PlayList;
 import mdplayer.Setting;
 import mdplayer.format.FileFormat;
@@ -102,7 +103,7 @@ public class FormPlayList extends JFrame {
     private final Random rand = new Random();
     private boolean IsInitialOpenFolder = true;
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormPlayList.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(FormPlayList.class).node(FormPlayList.class.getSimpleName());
 
     private static final String[] sext = ".vgm;.vgz;.zip;.lzh;.nrd;.xgm;.zgm;.s98;.nsf;.hes;.sid;.mnd;.mgs;.mdr;.mdx;.mub;.muc;.m;.m2;.mz;.mml;.mid;.rcp;.wav;.mp3;.aiff;.m3u".split(";");
 
@@ -769,7 +770,7 @@ loopEx:
             logger.log(Level.ERROR, ex.getMessage(), ex);
         }
 
-        frmMain.oldParam = new MDChipParams();
+        frmMain.oldParam = new FormMain.ScreenParams();
 
         play();
     }
@@ -818,13 +819,46 @@ loopEx:
         m.moveRow(row, row, ind);
     }
 
-    private void toolStripButton1_Click(ActionEvent ev) {
-//        dgvList.getColumn(cols.clmTitle.ordinal()).setVisible = !tsbJapanese.isSelected();
-//        dgvList.Columns[cols.clmTitleJ.ordinal()].Visible = tsbJapanese.isSelected();
-//        dgvList.Columns[cols.clmGame.ordinal()].Visible = !tsbJapanese.isSelected();
-//        dgvList.Columns[cols.clmGameJ.ordinal()].Visible = tsbJapanese.isSelected();
-//        dgvList.Columns[cols.clmComposer.ordinal()].Visible = !tsbJapanese.isSelected();
-//        dgvList.Columns[cols.clmComposerJ.ordinal()].Visible = tsbJapanese.isSelected();
+    private void updateColumnVisibility() {
+        setColumnVisibility(cols.clmKey, false);
+        setColumnVisibility(cols.clmSongNo, false);
+        setColumnVisibility(cols.clmZipFileName, false);
+        setColumnVisibility(cols.clmFileName, false);
+
+        boolean showEN = tsbAll.isSelected() || tsbEnglish.isSelected();
+        boolean showJA = tsbAll.isSelected() || tsbJapanese.isSelected();
+
+        setColumnVisibility(cols.clmTitle, showEN);
+        setColumnVisibility(cols.clmTitleJ, showJA);
+        setColumnVisibility(cols.clmGame, showEN);
+        setColumnVisibility(cols.clmGameJ, showJA);
+        setColumnVisibility(cols.clmComposer, showEN);
+        setColumnVisibility(cols.clmComposerJ, showJA);
+    }
+
+    private void setColumnVisibility(cols column, boolean visible) {
+        var col = dgvList.getColumnModel().getColumn(column.ordinal());
+        if (visible) {
+            int preferredWidth = 100;
+            String baseName = column.name();
+            if (baseName.endsWith("J")) {
+                baseName = baseName.substring(0, baseName.length() - 1);
+            }
+            try {
+                preferredWidth = Integer.parseInt(resources.getString(baseName + ".Width").trim());
+            } catch (Exception ignored) {
+                if (column == cols.clmTitle || column == cols.clmTitleJ) preferredWidth = 200;
+                else if (column == cols.clmGame || column == cols.clmGameJ) preferredWidth = 200;
+                else if (column == cols.clmComposer || column == cols.clmComposerJ) preferredWidth = 150;
+            }
+            col.setPreferredWidth(preferredWidth);
+            col.setMinWidth(15);
+            col.setMaxWidth(Integer.MAX_VALUE);
+        } else {
+            col.setPreferredWidth(0);
+            col.setMinWidth(0);
+            col.setMaxWidth(0);
+        }
     }
 
     private final KeyListener frmPlayList_KeyDown = new KeyAdapter() {
@@ -1083,24 +1117,24 @@ loopEx:
      * ordinal is the column index, so the two must be kept in step.
      */
     enum cols {
-        clmPlayingNow,
         clmKey,
-        clmFileName,
+        clmSongNo,
         clmZipFileName,
-        clmDispFileName,
+        clmFileName,
+        clmPlayingNow,
         clmEXT,
         clmType,
         clmTitle,
         clmTitleJ,
+        clmDispFileName,
         clmGame,
         clmGameJ,
         clmComposer,
         clmComposerJ,
+        clmVGMby,
         clmConverted,
         clmNotes,
-        clmDuration,
-        clmVGMby,
-        clmSongNo
+        clmDuration
     }
 
     /** the designer's captions and widths, converted from frmPlayList.resx */
@@ -1183,7 +1217,13 @@ loopEx:
         this.tsbUp = new JButton();
         this.tsbDown = new JButton();
         this.toolStripSeparator4 = new JSeparator();
-        this.tsbJapanese = new JButton();
+        this.tsbAll = new JToggleButton("ALL");
+        this.tsbEnglish = new JToggleButton("EN");
+        this.tsbJapanese = new JToggleButton();
+        ButtonGroup langGroup = new ButtonGroup();
+        langGroup.add(tsbAll);
+        langGroup.add(tsbEnglish);
+        langGroup.add(tsbJapanese);
         this.toolStripSeparator6 = new JSeparator();
         this.tsbTextExt = new JButton();
         this.tsbMMLExt = new JButton();
@@ -1463,15 +1503,13 @@ loopEx:
 //        this.toolStrip1.GripStyle = JToolStripGripStyle.Hidden;
         this.toolStrip1.add(this.tsbOpenPlayList);
         this.toolStrip1.add(this.tsbSavePlayList);
-        this.toolStrip1.add(this.toolStripSeparator1);
         this.toolStrip1.add(this.tsbAddMusic);
         this.toolStrip1.add(this.tsbAddFolder);
-        this.toolStrip1.add(this.toolStripSeparator2);
         this.toolStrip1.add(this.tsbUp);
         this.toolStrip1.add(this.tsbDown);
-        this.toolStrip1.add(this.toolStripSeparator4);
+        this.toolStrip1.add(this.tsbAll);
+        this.toolStrip1.add(this.tsbEnglish);
         this.toolStrip1.add(this.tsbJapanese);
-        this.toolStrip1.add(this.toolStripSeparator6);
         this.toolStrip1.add(this.tsbTextExt);
         this.toolStrip1.add(this.tsbMMLExt);
         this.toolStrip1.add(this.tsbImgExt);
@@ -1525,11 +1563,22 @@ loopEx:
         //
         this.toolStripSeparator4.setName("toolStripSeparator4");
         //
+        // tsbAll
+        //
+        this.tsbAll.setName("tsbAll");
+        this.tsbAll.addActionListener(e -> updateColumnVisibility());
+        this.tsbAll.setSelected(true);
+        //
+        // tsbEnglish
+        //
+        this.tsbEnglish.setName("tsbEnglish");
+        this.tsbEnglish.addActionListener(e -> updateColumnVisibility());
+        //
         // tsbJapanese
         //
         this.tsbJapanese.setIcon(new ImageIcon(Common.getImage("japPL")));
         this.tsbJapanese.setName("tsbJapanese");
-        this.tsbJapanese.addActionListener(this::toolStripButton1_Click);
+        this.tsbJapanese.addActionListener(e -> updateColumnVisibility());
         //
         // toolStripSeparator6
         //
@@ -1568,6 +1617,7 @@ loopEx:
         this.setMinimumSize(new Dimension(400, 120));
         this.addWindowListener(this.windowListener);
         this.addKeyListener(this.frmPlayList_KeyDown);
+        updateColumnVisibility();
     }
 
     private JTable dgvList;
@@ -1587,7 +1637,9 @@ loopEx:
     private JMenuItem tsmiDelAllMusic;
     private JButton tsbAddFolder;
     private JSeparator toolStripSeparator4;
-    private JButton tsbJapanese;
+    private JToggleButton tsbJapanese;
+    private JToggleButton tsbEnglish;
+    private JToggleButton tsbAll;
     private JMenu typeSettingsToolStripMenuItem;
     private JMenuItem tsmiA;
     private JMenuItem tsmiB;

@@ -10,7 +10,6 @@ import java.util.Map;
 
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
-import mdplayer.MDChipParams.VolumeInfo;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
@@ -48,7 +47,6 @@ public class Sn76489Chip extends BaseChip {
     @Deprecated
     public final int[] fadeout = {0, 0};
 
-    @Deprecated
     public final boolean[][] mask = {
             {false, false, false, false},
             {false, false, false, false}
@@ -64,8 +62,6 @@ public class Sn76489Chip extends BaseChip {
             0, 0
     };
 
-    @Deprecated
-    public int clock;
 
     @SuppressWarnings("unchecked")
     private Class<? extends PannableInstrument> _inst(int chipId) {
@@ -235,18 +231,8 @@ public class Sn76489Chip extends BaseChip {
         setFadeout(1, 0);
     }
 
-    @Deprecated
-    public static class Params {
-        public final mdplayer.MDChipParams.Channel[] channels = new mdplayer.MDChipParams.Channel[] {new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel()};
+    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    public boolean getMask(int chipId, int ch) {
+        return ch < mask[chipId].length && mask[chipId][ch];
     }
-
-    @Deprecated
-    public final Params[] sn76489 = new Params[] {new Params(), new Params()};
-    @Deprecated
-    public final Params[] sn76489_old = new Params[] {new Params(), new Params()};
-
-    @Deprecated
-    public final VolumeInfo SN76489 = new VolumeInfo();
-    @Deprecated
-    public final VolumeInfo SN76489_old = new VolumeInfo();
 }

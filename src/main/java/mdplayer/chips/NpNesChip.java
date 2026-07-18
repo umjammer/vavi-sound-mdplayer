@@ -12,7 +12,6 @@ import java.util.Collections;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
-import mdplayer.MDChipParams.VolumeInfo;
 import mdplayer.driver.nsf.Nsf;
 import mdplayer.driver.nsf.NsfMdDriver;
 import mdsound.Instrument;
@@ -59,7 +58,7 @@ public class NpNesChip extends BaseChip {
             int[] reg;
             try {
                 // for nsf
-                if (nsf.apu == null) reg = null;
+                if (nsf == null || nsf.apu == null) reg = null;
                 else if (nsf.apu.apu == null) reg = null;
                 else if (chipId == 1) reg = null;
                 else reg = nsf.dmc.dmc.reg;
@@ -79,19 +78,11 @@ public class NpNesChip extends BaseChip {
             resetMask(chipId, ch + 2);
         }
 
-        @Deprecated
-        public static class Params {
-
-            public final mdplayer.MDChipParams.Channel[] sqrChannels = {new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel()};
-            public final mdplayer.MDChipParams.Channel triChannel = new mdplayer.MDChipParams.Channel();
-            public final mdplayer.MDChipParams.Channel noiseChannel = new mdplayer.MDChipParams.Channel();
-            public final mdplayer.MDChipParams.Channel dmcChannel = new mdplayer.MDChipParams.Channel();
+        public boolean getDmcMask(int chipId, int ch) {
+            return (dmcMask & (1 << ch)) != 0;
         }
 
-        @Deprecated
-        public final Params[] nesdmc = {new Params(), new Params()};
-        @Deprecated
-        public final Params[] nesdmc_old = {new Params(), new Params()};
+
     }
 
     public static class Mmc5Chip extends NpNesChip {
@@ -148,17 +139,11 @@ public class NpNesChip extends BaseChip {
                 nsf.mmc5.setMask(mmc5Mask);
         }
 
-        @Deprecated
-        public static class Params {
-
-            public final mdplayer.MDChipParams.Channel[] sqrChannels = {new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel()};
-            public final mdplayer.MDChipParams.Channel pcmChannel = new mdplayer.MDChipParams.Channel();
+        public boolean getMmc5Mask(int chipId, int ch) {
+            return (mmc5Mask & (1 << ch)) != 0;
         }
 
-        @Deprecated
-        public final Params[] mmc5 = {new Params(), new Params()};
-        @Deprecated
-        public final Params[] mmc5_old = {new Params(), new Params()};
+
     }
 
     public static class Vrc6Chip extends NpNesChip {
@@ -187,28 +172,19 @@ public class NpNesChip extends BaseChip {
                 nsf.vrc6.setMask(vrc6Mask);
         }
 
+        public boolean getVrc6Mask(int chipId, int ch) {
+            return (vrc6Mask & (1 << ch)) != 0;
+        }
+
         // TODO getInfo
         public DeviceInfo.TrackInfo[] readVrc6(int chipId) {
-            if (nsf.vrc6 == null)
+            if (nsf == null || nsf.vrc6 == null)
                 return null;
             if (chipId != 0)
                 return null;
 
             return nsf.vrc6.getTracksInfo();
         }
-
-        @Deprecated
-        public static class Params {
-
-            public final mdplayer.MDChipParams.Channel[] channels = {
-                    new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel()
-            };
-        }
-
-        @Deprecated
-        public final Params[] vrc6 = {new Params(), new Params()};
-        @Deprecated
-        public final Params[] vrc6_old = {new Params(), new Params()};
     }
 
     public static class Vrc7Chip extends NpNesChip {
@@ -224,7 +200,7 @@ public class NpNesChip extends BaseChip {
 
         // TODO getInfo
         public ChipKeyInfo getVRC7KeyInfo(int chipId) {
-            if (nsf.vrc7 == null)
+            if (nsf == null || nsf.vrc7 == null)
                 return null;
             if (chipId != 0)
                 return null;
@@ -259,18 +235,9 @@ public class NpNesChip extends BaseChip {
                 nsf.vrc7.setMask(vrc7Mask);
         }
 
-        @Deprecated
-        public static class Params {
-
-            public final mdplayer.MDChipParams.Channel[] channels = {
-                    new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel() // FM 6
-            };
+        public boolean getVrc7Mask(int chipId, int ch) {
+            return (vrc7Mask & (1 << ch)) != 0;
         }
-
-        @Deprecated
-        public final Params[] vrc7 = {new Params(), new Params()};
-        @Deprecated
-        public final Params[] vrc7_old = {new Params(), new Params()};
     }
 
     public static class N163Chip extends NpNesChip {
@@ -285,7 +252,7 @@ public class NpNesChip extends BaseChip {
 
         // TODO getInfo
         public DeviceInfo.TrackInfo[] readN163(int chipId) {
-            if (nsf.n106 == null)
+            if (nsf == null || nsf.n106 == null)
                 return null;
             if (chipId != 0)
                 return null;
@@ -310,19 +277,9 @@ public class NpNesChip extends BaseChip {
                 nsf.n106.setMask(n163Mask);
         }
 
-        @Deprecated
-        public static class Params {
-
-            public final mdplayer.MDChipParams.Channel[] channels = {
-                    new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(),
-                    new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel()
-            };
+        public boolean getN163Mask(int chipId, int ch) {
+            return (n163Mask & (1 << ch)) != 0;
         }
-
-        @Deprecated
-        public final Params[] n106 = {new Params(), new Params()};
-        @Deprecated
-        public final Params[] n106_old = {new Params(), new Params()};
     }
 
     // vgm
@@ -360,39 +317,9 @@ public class NpNesChip extends BaseChip {
                 nsf.fds.setMask(fdsMask);
         }
 
-        @Deprecated
-        public static class Params {
-
-            public final mdplayer.MDChipParams.Channel channel = new mdplayer.MDChipParams.Channel();
-            public final int[] wave = new int[32];
-            public final int[] mod = new int[32];
-
-            public boolean VolDir = false;
-            public int VolSpd = 0;
-            public int VolGain = 0;
-            public boolean VolDi = false;
-            public int VolFrq = 0;
-            public boolean VolHlR = false;
-
-            public boolean ModDir = false;
-            public int ModSpd = 0;
-            public int ModGain = 0;
-            public boolean ModDi = false;
-            public int ModFrq = 0;
-            public int ModCnt = 0;
-
-            public int EnvSpd = 0;
-            public boolean EnvVolSw = false;
-            public boolean EnvModSw = false;
-
-            public int MasterVol = 0;
-            public boolean WE = false;
+        public boolean getFdsMask(int chipId) {
+            return (fdsMask & 1) != 0;
         }
-
-        @Deprecated
-        public final Params[] fds = {new Params(), new Params()};
-        @Deprecated
-        public final Params[] fds_old = {new Params(), new Params()};
     }
 
     public static class Fme7Chip extends NpNesChip {
@@ -419,20 +346,6 @@ public class NpNesChip extends BaseChip {
 
             return s5bRegs;
         }
-
-        @Deprecated
-        public static class Params {
-
-            public int nfrq = -1;
-            public int efrq = -1;
-            public int etype = -1;
-            public final mdplayer.MDChipParams.Channel[] channels = new mdplayer.MDChipParams.Channel[] {new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel()};
-        }
-
-        @Deprecated
-        public final Params[] s5b = new Params[] {new Params(), new Params()};
-        @Deprecated
-        public final Params[] s5b_old = new Params[] {new Params(), new Params()};
     }
 
     private int apuMask = 0;
@@ -491,13 +404,17 @@ public class NpNesChip extends BaseChip {
         instrument.resetMask(chipId, ch);
     }
 
+    public boolean getMask(int chipId, int ch) {
+        return (apuMask & (1 << ch)) != 0;
+    }
+
     // vgm
     @Override
     public Map<String, Object> getInfo(int chipId) {
         int[] reg;
 
         // for nsf
-        if (nsf.apu == null) reg = null;
+        if (nsf == null || nsf.apu == null) reg = null;
         else if (nsf.apu.apu == null) reg = null;
         else if (chipId == 1) reg = null;
         else reg = nsf.apu.apu.reg;
@@ -530,20 +447,4 @@ public class NpNesChip extends BaseChip {
         };
     }
 
-    public final VolumeInfo APU = new VolumeInfo();
-    public final VolumeInfo APU_old = new VolumeInfo();
-    public final VolumeInfo DMC = new VolumeInfo();
-    public final VolumeInfo DMC_old = new VolumeInfo();
-    public final VolumeInfo FDS = new VolumeInfo();
-    public final VolumeInfo FDS_old = new VolumeInfo();
-    public final VolumeInfo MMC5 = new VolumeInfo();
-    public final VolumeInfo MMC5_old = new VolumeInfo();
-    public final VolumeInfo N160 = new VolumeInfo();
-    public final VolumeInfo N160_old = new VolumeInfo();
-    public final VolumeInfo VRC6 = new VolumeInfo();
-    public final VolumeInfo VRC6_old = new VolumeInfo();
-    public final VolumeInfo VRC7 = new VolumeInfo();
-    public final VolumeInfo VRC7_old = new VolumeInfo();
-    public final VolumeInfo FME7 = new VolumeInfo();
-    public final VolumeInfo FME7_old = new VolumeInfo();
 }

@@ -323,6 +323,48 @@ Debug.println("stop");
     }
 
     @Test
+    @DisplayName("test stop performance")
+    @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
+    void testStopPerformance() throws Exception {
+        String testFile = file;
+        if (testFile == null || !Files.exists(Path.of(testFile))) {
+            testFile = "src/test/resources/test.vgm";
+        }
+        int testTrack = track > 0 ? track : 1;
+
+        FileFormat format = FileFormat.getFileFormat(testFile);
+        format.load(Archives.getInputStream(new BufferedInputStream(Files.newInputStream(Path.of(testFile)))), null);
+        var plugin = (BasePlugin<? extends BaseDriver>) format.getPlugin();
+        plugin.setParams(format, Map.of(
+                "fileName", testFile,
+                "midiMode", 0,
+                "songNo", testTrack - 1)
+        );
+        audio.init(plugin);
+
+        ExecutorService es = Executors.newSingleThreadExecutor();
+        es.submit(() -> {
+            try {
+                audio.play();
+            } catch (Exception e) {
+                Debug.printStackTrace(e);
+            }
+        });
+
+        // Wait 1.5 seconds for the audio thread to start playing/rendering
+        Thread.sleep(1500);
+
+        long start = System.currentTimeMillis();
+        audio.stop();
+        long duration = System.currentTimeMillis() - start;
+
+        Debug.println("Stop took: " + duration + " ms");
+        es.shutdownNow();
+
+        org.junit.jupiter.api.Assertions.assertTrue(duration < 1000, "Stop took too long: " + duration + " ms");
+    }
+
+    @Test
     void testJacksonSerialization() throws Exception {
         mdplayer.Setting setting = new mdplayer.Setting();
         setting.init();

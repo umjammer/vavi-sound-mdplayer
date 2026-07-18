@@ -60,7 +60,6 @@ public class NDPPlugin extends BasePlugin<NdpDriver> {
                 };
             }
             put(Ay8910Chip.class, chip);
-            chipRegister.chip(Ay8910Chip.class).clock = Ndp.baseClockAY8910;
         }
 
         if (useOPLL) {
@@ -72,7 +71,6 @@ public class NDPPlugin extends BasePlugin<NdpDriver> {
             chip.clock = Ndp.baseClockYM2413;
             chip.option = null;
             put(Ym2413Chip.class, chip);
-            chipRegister.chip(Ym2413Chip.class).clock = Ndp.baseClockYM2413;
         }
 
         if (useSCC) {
@@ -84,7 +82,6 @@ public class NDPPlugin extends BasePlugin<NdpDriver> {
             chip.clock = Ndp.baseClockK051649;
             chip.option = null;
             put(K051649Chip.class, chip);
-            chipRegister.chip(K051649Chip.class).clock = Ndp.baseClockK051649;
         }
 
         mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, flatten());

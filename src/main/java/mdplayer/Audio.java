@@ -254,6 +254,7 @@ logger.log(Level.DEBUG, "line: " + e.getType());
                     }
                 }
             }
+            plugin.stop();
             plugin.chipRegister.plugin(RealChipPlugin.class).setThreadClosed(true);
 
             if (plugin instanceof SampledPlugin sampledPlugin) {

@@ -9,7 +9,6 @@ package mdplayer.chips;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
-import mdplayer.MDChipParams.VolumeInfo;
 import mdsound.Instrument;
 import mdsound.instrument.OkiM6295Inst;
 
@@ -22,7 +21,6 @@ import mdsound.instrument.OkiM6295Inst;
  */
 public class OkiM6295Chip extends BaseChip {
 
-    @Deprecated
     private final boolean[][] mask = {
             {false, false, false, false},
             {false, false, false, false}
@@ -48,7 +46,8 @@ public class OkiM6295Chip extends BaseChip {
 
     @Override
     public Map<String, Object> getInfo(int chipId) {
-        return context.mds.inst(OkiM6295Inst.class, 0).getView(chipId, "info", null);
+        OkiM6295Inst inst = context.mds.inst(OkiM6295Inst.class, 0);
+        return inst == null ? null : inst.getView(chipId, "info", null);
     }
 
     public void writePcm(int chipId, int romSize, int offset, int length, byte[] buf, int srcOffset, EnmModel model) {
@@ -77,23 +76,8 @@ public class OkiM6295Chip extends BaseChip {
         setMask(chipId, ch, false);
     }
 
-    @Deprecated
-    public static class Params {
-
-        public final mdplayer.MDChipParams.Channel[] channels = new mdplayer.MDChipParams.Channel[] {new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel()};
-
-        public int masterClock = 0;
-        public int pin7State = 0;
-        public final int[] nmkBank = new int[4];
+    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    public boolean getMask(int chipId, int ch) {
+        return ch < mask[chipId].length && mask[chipId][ch];
     }
-
-    @Deprecated
-    public final Params[] okim6295 = new Params[] {new Params(), new Params()};
-    @Deprecated
-    public final Params[] okim6295_old = new Params[] {new Params(), new Params()};
-
-    @Deprecated
-    public final VolumeInfo OKIM6295 = new VolumeInfo();
-    @Deprecated
-    public final VolumeInfo OKIM6295_old = new VolumeInfo();
 }

@@ -169,9 +169,8 @@ public class PlayList implements Serializable, Cloneable {
 
             if (Files.exists(fullPath) && Files.size(fullPath) > 10) {
                 try (InputStream sr = Files.newInputStream(fullPath)) {
-                    PlayList pl = new PlayList();
-                    Serdes.Util.deserialize(sr, pl);
-                    return pl;
+                    // the binder builds and returns a fresh bean; the one passed in stays empty
+                    return Serdes.Util.deserialize(sr, new PlayList());
                 }
             }
             return new PlayList();
@@ -225,25 +224,24 @@ public class PlayList implements Serializable, Cloneable {
         for (Music music : musics) {
             if (music == null || music.fileName == null) continue; // a half-written playlist entry has no file to show
             Object[] row = new Object[] {
-                " ", // clmPlayingNow
                 0, // clmKey
-                music.fileName, // clmFileName
+                music.songNo, // clmSongNo
                 music.arcFileName, // clmZipFileName
-                Path.of(music.fileName).getFileName().toString(), // clmDispFileName
+                music.fileName, // clmFileName
+                " ", // clmPlayingNow
                 extension(music.fileName), // clmEXT
                 music.type, // clmType
                 music.title, // clmTitle
                 music.titleJ, // clmTitleJ
+                Path.of(music.fileName).getFileName().toString(), // clmDispFileName
                 music.game, // clmGame
                 music.gameJ, // clmGameJ
-//                music.remark, // clmRemark
                 music.composer, // clmComposer
                 music.composerJ, // clmComposerJ
+                music.vgmby, // clmVGMby
                 music.converted, // clmConverted
                 music.notes, // clmNotes
                 music.duration, // clmDuration
-                music.vgmby, // clmVGMby
-                music.songNo, // clmSongNo
             };
             ret.add(row);
         }

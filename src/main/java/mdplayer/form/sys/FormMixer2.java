@@ -24,10 +24,6 @@ import java.io.File;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.prefs.Preferences;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -39,26 +35,17 @@ import javax.swing.filechooser.FileFilter;
 
 import mdplayer.Audio;
 import mdplayer.Chip;
+import mdplayer.chips.RealChipPlugin;
 import mdplayer.Common;
 import mdplayer.form.FrameBuffer;
-import mdplayer.MDChipParams;
 import mdplayer.PlayList;
 import mdplayer.form.ScreenPanel;
 import mdplayer.Setting;
 import mdplayer.form.VisVolume;
-import mdplayer.chips.*;
-import mdplayer.chips.NpNesChip.DmcChip;
-import mdplayer.chips.NpNesChip.FdsChip;
-import mdplayer.chips.NpNesChip.Fme7Chip;
-import mdplayer.chips.NpNesChip.Mmc5Chip;
-import mdplayer.chips.NpNesChip.N163Chip;
-import mdplayer.chips.NpNesChip.Vrc6Chip;
-import mdplayer.chips.NpNesChip.Vrc7Chip;
-import mdplayer.form.kb.wf.FormHuC6280;
 import vavi.util.compat.Tuple;
 
 import static java.lang.System.getLogger;
-import static mdsound.MDSound.Chip.MAIN_TAG;
+import mdplayer.form.kb.ViewProvider;
 
 
 public class FormMixer2 extends JFrame {
@@ -74,21 +61,63 @@ public class FormMixer2 extends JFrame {
     private final int zoom;
     private int chipn = -1;
 
-    private final MDChipParams newParam;
-    private final MDChipParams oldParam = new MDChipParams();
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormHuC6280.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(FormMixer2.class).node(FormMixer2.class.getSimpleName());
     final Audio audio = Audio.getInstance();
 
-    public FormMixer2(FormMain frm, int zoom, MDChipParams newParam) {
+    /**
+     * Draw state of one mixer slot — the fader position and the two-stage level meter.
+     * View state owned by this panel; the balance settings and {@link #visVolume} are
+     * the sources of truth.
+     */
+    private static class VolumeInfo {
+
+        int volume = -9999;
+        int visVolume1 = -1;
+        int visVolume2 = -1;
+        int visVol2Cnt = 30;
+    }
+
+    /** which meter of {@link #visVolume} feeds a slot, and its scaling */
+    private record VisSource(String key, int div) {}
+
+    /** per-slot meter sources, aligned with {@link #setVolume}; gimic slots have faders only */
+    private final VisSource[] visSources = new VisSource[64];
+
+    /** per-slot draw state, aligned with {@link #setVolume} plus the two gimic slots; null = unused slot */
+    private final VolumeInfo[] newVolumes = new VolumeInfo[64];
+    private final VolumeInfo[] oldVolumes = new VolumeInfo[64];
+
+    /** the two gimic fader slots follow the chip slots */
+    private static final int GIMIC_OPN = 62;
+    private static final int GIMIC_OPNA = 63;
+
+    private void initVolumeSlots() {
+        visSources[0] = new VisSource("master", 250);
+        for (ViewProvider p : ViewProvider.providers()) {
+            for (ViewProvider.MixerSlot s : p.mixerSlots()) {
+                visSources[s.slot()] = new VisSource(s.visKey(), s.visDiv());
+            }
+        }
+
+        for (int i = 0; i < newVolumes.length; i++) {
+            boolean used = i == 0 || i >= GIMIC_OPN || (i < setVolume.length && setVolume[i] != null);
+            if (used) {
+                newVolumes[i] = new VolumeInfo();
+                oldVolumes[i] = new VolumeInfo();
+            }
+        }
+    }
+
+    public FormMixer2(FormMain frm, int zoom) {
         parent = frm;
         this.zoom = zoom;
 
         initializeComponent();
         pbScreen.addMouseWheelListener(this.pbScreen_MouseWheel);
 
-        this.newParam = newParam;
+        initVolumeSlots();
         frameBuffer.add(pbScreen, Common.getImage("planeMixer"), null, zoom);
         screenInitMixer(frameBuffer);
         update();
@@ -186,1007 +215,105 @@ public class FormMixer2 extends JFrame {
             return;
         }
 
-        Function<Object, Integer> getVol = (volObj) -> {
-            if (volObj == null) return 0;
-            if (volObj instanceof int[]) {
-                int max = 0;
-                for (int v : (int[]) volObj) if (v > max) max = v;
-                return max;
-            } else if (volObj instanceof int[][]) {
-                int max = 0;
-                for (int[] row : (int[][]) volObj) {
-                    if (row != null) {
-                        for (int v : row) if (v > max) max = v;
-                    }
-                }
-                return max;
-            }
-            return 0;
-        };
-
-        BiFunction<Class<? extends Chip>, String, Object> chipInfo = (chipClass, key) -> {
-            try {
-                mdplayer.Chip chip = audio.plugin.chipRegister.chip(chipClass);
-                if (!(chip instanceof BaseChip)) return null;
-                Map<String, Object> info = ((BaseChip) chip).getInfo(0);
-                if (info == null) return null;
-                return info.get(key);
-            } catch (Exception e) {
-                return null;
-            }
-        };
-
-        Function<Class<? extends mdplayer.Chip>, Integer> getChipVol = (chipClass) -> {
-            try {
-                mdplayer.Chip chip = audio.plugin.chipRegister.chip(chipClass);
-                if (!(chip instanceof BaseChip)) return 0;
-                Map<String, Object> info = ((BaseChip) chip).getInfo(0);
-                if (info == null) return 0;
-                Object volObj = info.get("volume");
-                return getVol.apply(volObj);
-            } catch (Exception e) {
-                return 0;
-            }
-        };
-
-        visVolume.put("ym2151", getChipVol.apply(Ym2151Chip.class) * 5);
-
-        int ym2203FMVal = getChipVol.apply(Ym2203Chip.class) * 5;
-        int ym2203SSGVal = 0;
-        try {
-            int[] ym2203Reg = (int[]) chipInfo.apply(Ym2203Chip.class, "register");
-            if (ym2203Reg != null) {
-                int mixer = ym2203Reg[0x07];
-                for (int ch = 0; ch < 3; ch++) {
-                    boolean toneOn = (mixer & (0x01 << ch)) == 0;
-                    boolean noiseOn = (mixer & (0x08 << ch)) == 0;
-                    if (toneOn || noiseOn) {
-                        int v = (ym2203Reg[0x08 + ch] & 0xf) * 600;
-                        if (v > ym2203SSGVal) ym2203SSGVal = v;
-                    }
-                }
-            }
-        } catch (Exception e) {
+        for (ViewProvider p : ViewProvider.providers()) {
+            p.updateMeters(audio, visVolume);
         }
-        visVolume.put("ym2203FM", ym2203FMVal);
-        visVolume.put("ym2203SSG", ym2203SSGVal);
-        visVolume.put("ym2203", Math.max(ym2203FMVal, ym2203SSGVal));
-
-        visVolume.put("ym2612", getChipVol.apply(Ym2612Chip.class) * 5);
-
-        int ym2608FMVal = getChipVol.apply(Ym2608Chip.class) * 5;
-        int ym2608SSGVal = 0;
-        try {
-            int[][] ym2608Reg2D = (int[][]) chipInfo.apply(Ym2608Chip.class, "register");
-            if (ym2608Reg2D != null && ym2608Reg2D.length > 0) {
-                int mixer = ym2608Reg2D[0][0x07];
-                for (int ch = 0; ch < 3; ch++) {
-                    boolean toneOn = (mixer & (0x01 << ch)) == 0;
-                    boolean noiseOn = (mixer & (0x08 << ch)) == 0;
-                    if (toneOn || noiseOn) {
-                        int v = (ym2608Reg2D[0][0x08 + ch] & 0xf) * 600;
-                        if (v > ym2608SSGVal) ym2608SSGVal = v;
-                    }
-                }
-            }
-        } catch (Exception e) {
-        }
-        int ym2608APCMVal = 0;
-        try {
-            Object ym2608APCMVol = chipInfo.apply(Ym2608Chip.class, "adpcmVolume");
-            ym2608APCMVal = getVol.apply(ym2608APCMVol) * 5;
-        } catch (Exception e) {
-        }
-        int ym2608RtmVal = 0;
-        try {
-            Object ym2608RtmVol = chipInfo.apply(Ym2608Chip.class, "rythmVolume");
-            ym2608RtmVal = getVol.apply(ym2608RtmVol) * 5;
-        } catch (Exception e) {
-        }
-        visVolume.put("ym2608FM", ym2608FMVal);
-        visVolume.put("ym2608SSG", ym2608SSGVal);
-        visVolume.put("ym2608APCM", ym2608APCMVal);
-        visVolume.put("ym2608Rtm", ym2608RtmVal);
-        visVolume.put("ym2608", Math.max(Math.max(ym2608FMVal, ym2608SSGVal), Math.max(ym2608APCMVal, ym2608RtmVal)));
-
-        int ym2610FMVal = getChipVol.apply(Ym2610Chip.class) * 5;
-        int ym2610SSGVal = 0;
-        try {
-            int[][] ym2610Reg2D = (int[][]) chipInfo.apply(Ym2610Chip.class, "register");
-            if (ym2610Reg2D != null && ym2610Reg2D.length > 0) {
-                int mixer = ym2610Reg2D[0][0x07];
-                for (int ch = 0; ch < 3; ch++) {
-                    boolean toneOn = (mixer & (0x01 << ch)) == 0;
-                    boolean noiseOn = (mixer & (0x08 << ch)) == 0;
-                    if (toneOn || noiseOn) {
-                        int v = (ym2610Reg2D[0][0x08 + ch] & 0xf) * 600;
-                        if (v > ym2610SSGVal) ym2610SSGVal = v;
-                    }
-                }
-            }
-        } catch (Exception e) {
-        }
-        int ym2610APCMAVal = 0;
-        try {
-            Object ym2610APCMAVol = chipInfo.apply(Ym2610Chip.class, "adpcmAVolume");
-            ym2610APCMAVal = getVol.apply(ym2610APCMAVol) * 5;
-        } catch (Exception e) {
-        }
-        int ym2610APCMBVal = 0;
-        try {
-            Object ym2610APCMBVol = chipInfo.apply(Ym2610Chip.class, "adpcmBVolume");
-            ym2610APCMBVal = getVol.apply(ym2610APCMBVol) * 5;
-        } catch (Exception e) {
-        }
-        visVolume.put("ym2610FM", ym2610FMVal);
-        visVolume.put("ym2610SSG", ym2610SSGVal);
-        visVolume.put("ym2610APCMA", ym2610APCMAVal);
-        visVolume.put("ym2610APCMB", ym2610APCMBVal);
-        visVolume.put("ym2610", Math.max(Math.max(ym2610FMVal, ym2610SSGVal), Math.max(ym2610APCMAVal, ym2610APCMBVal)));
-
-        visVolume.put("ym2413", getChipVol.apply(Ym2413Chip.class) * 5);
-        visVolume.put("ym3526", getChipVol.apply(Ym3526Chip.class) * 5);
-        visVolume.put("y8950", getChipVol.apply(Y8950Chip.class) * 5);
-        visVolume.put("ym3812", getChipVol.apply(Ym3812Chip.class) * 5);
-        visVolume.put("ymf262", getChipVol.apply(YmF262Chip.class) * 5);
-        visVolume.put("ymf278b", getChipVol.apply(YmF278BChip.class) * 5);
-        visVolume.put("ymz280b", getChipVol.apply(YmZ280BChip.class) * 5);
-        visVolume.put("ymf271", getChipVol.apply(YmF271Chip.class) * 5);
-        visVolume.put("ay8910", getChipVol.apply(Ay8910Chip.class) * 5);
-        visVolume.put("sn76489", getChipVol.apply(Sn76489Chip.class) * 5);
-        visVolume.put("huc6280", getChipVol.apply(HuC6280Chip.class) * 5);
-        visVolume.put("rf5c164", getChipVol.apply(Rf5C164Chip.class) * 5);
-        visVolume.put("rf5c68", getChipVol.apply(Rf5C68Chip.class) * 5);
-        visVolume.put("pwm", getChipVol.apply(PwmChip.class) * 5);
-        visVolume.put("okim6258", getChipVol.apply(OkiM6258Chip.class) * 5);
-        visVolume.put("okim6295", getChipVol.apply(OkiM6295Chip.class) * 5);
-        visVolume.put("c140", getChipVol.apply(C140Chip.class) * 5);
-        visVolume.put("c352", getChipVol.apply(C352Chip.class) * 5);
-        visVolume.put("saa1099", getChipVol.apply(Saa1099Chip.class) * 5);
-        visVolume.put("ppz8", getChipVol.apply(Ppz8Chip.class) * 5);
-        int segaPCMVal = 0;
-        try {
-            byte[] segapcmReg = (byte[]) chipInfo.apply(SegaPcmChip.class, "register");
-            if (segapcmReg != null) {
-                for (int ch = 0; ch < 16; ch++) {
-                    int v = 0;
-                    if ((segapcmReg[0x86 + ch * 8] & 1) == 0) {
-                        int l = segapcmReg[ch * 8 + 2] & 0x7f;
-                        int r = segapcmReg[ch * 8 + 3] & 0x7f;
-                        v = Math.max(l, r) * 70;
-                    }
-                    if (v > segaPCMVal) segaPCMVal = v;
-                }
-            }
-        } catch (Exception e) {
-        }
-        visVolume.put("segaPCM", segaPCMVal * 3);
-
-        int multiPCMVal = 0;
-        try {
-            mdplayer.Chip chip = audio.plugin.chipRegister.chip(MultiPcmChip.class);
-            if (chip instanceof BaseChip) {
-                java.util.Map<String, Object> info = ((BaseChip) chip).getInfo(0);
-                if (info != null) {
-                    for (int ch = 0; ch < 28; ch++) {
-                        Boolean bit = (Boolean) info.get("channels." + ch + ".bit");
-                        if (bit != null && bit) {
-                            Integer inst1 = (Integer) info.get("channels." + ch + ".inst.1");
-                            Integer pan = (Integer) info.get("channels." + ch + ".pan");
-                            if (inst1 != null && pan != null) {
-                                int panL = (pan >> 4) & 0xf;
-                                int panR = pan & 0xf;
-                                int l = (0x7f - inst1) * panL / 0xf;
-                                int r = (0x7f - inst1) * panR / 0xf;
-                                int v = Math.max(l, r) * 70;
-                                if (v > multiPCMVal) multiPCMVal = v;
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-        }
-        visVolume.put("multiPCM", multiPCMVal);
-        visVolume.put("k051649", getChipVol.apply(K051649Chip.class) * 5);
-        visVolume.put("k053260", getChipVol.apply(K053260Chip.class) * 5);
-        visVolume.put("k054539", getChipVol.apply(K054539Chip.class) * 5);
-        visVolume.put("qSound", getChipVol.apply(QSoundChip.class) * 5);
-        visVolume.put("ga20", getChipVol.apply(Ga20Chip.class) * 5);
-
-        NpNesChip npNesChip = null;
-        try {
-            mdplayer.Chip chip = audio.plugin.chipRegister.chip(NpNesChip.class);
-            if (chip instanceof NpNesChip) npNesChip = (NpNesChip) chip;
-            if (npNesChip == null) {
-                chip = audio.plugin.chipRegister.chip(DmcChip.class);
-                if (chip instanceof NpNesChip) npNesChip = (NpNesChip) chip;
-            }
-            if (npNesChip == null) {
-                chip = audio.plugin.chipRegister.chip(FdsChip.class);
-                if (chip instanceof NpNesChip) npNesChip = (NpNesChip) chip;
-            }
-            if (npNesChip == null) {
-                chip = audio.plugin.chipRegister.chip(N163Chip.class);
-                if (chip instanceof NpNesChip) npNesChip = (NpNesChip) chip;
-            }
-            if (npNesChip == null) {
-                chip = audio.plugin.chipRegister.chip(Vrc6Chip.class);
-                if (chip instanceof NpNesChip) npNesChip = (NpNesChip) chip;
-            }
-            if (npNesChip == null) {
-                chip = audio.plugin.chipRegister.chip(Mmc5Chip.class);
-                if (chip instanceof NpNesChip) npNesChip = (NpNesChip) chip;
-            }
-            if (npNesChip == null) {
-                chip = audio.plugin.chipRegister.chip(Fme7Chip.class);
-                if (chip instanceof NpNesChip) npNesChip = (NpNesChip) chip;
-            }
-            if (npNesChip == null) {
-                chip = audio.plugin.chipRegister.chip(Vrc7Chip.class);
-                if (chip instanceof NpNesChip) npNesChip = (NpNesChip) chip;
-            }
-        } catch (Exception e) {
-        }
-
-        if (npNesChip != null) {
-            try {
-                visVolume.put("APU", npNesChip.getVolume(0) * 15);
-            } catch (Exception e) {
-            }
-            try {
-                visVolume.put("DMC", npNesChip.getVolume(1) * 15);
-            } catch (Exception e) {
-            }
-            try {
-                visVolume.put("FDS", npNesChip.getVolume(2) * 15);
-            } catch (Exception e) {
-            }
-            try {
-                visVolume.put("N160", npNesChip.getVolume(3) * 15);
-            } catch (Exception e) {
-            }
-            try {
-                visVolume.put("VRC6", npNesChip.getVolume(4) * 15);
-            } catch (Exception e) {
-            }
-            try {
-                visVolume.put("MMC5", npNesChip.getVolume(5) * 15);
-            } catch (Exception e) {
-            }
-            try {
-                visVolume.put("FME7", npNesChip.getVolume(6) * 15);
-            } catch (Exception e) {
-            }
-            try {
-                visVolume.put("VRC7", npNesChip.getVolume(7) * 15);
-            } catch (Exception e) {
-            }
-        }
-
-        visVolume.put("DMG", getChipVol.apply(DmgChip.class) * 5);
     }
 
     public void screenChangeParams() {
         updateVisualVolumes();
 
-        newParam.MasterVolume.Volume = parent.setting.getBalance().getMasterVolume();
-        audio.plugin.chipRegister.chip(Ym2151Chip.class).YM2151.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ym2151Chip.class);
-        audio.plugin.chipRegister.chip(Ym2203Chip.class).YM2203.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ym2203Chip.class);
-        audio.plugin.chipRegister.chip(Ym2203Chip.class).YM2203FM.Volume = parent.setting.getBalance().getVolume("FM", Ym2203Chip.class);
-        audio.plugin.chipRegister.chip(Ym2203Chip.class).YM2203PSG.Volume = parent.setting.getBalance().getVolume("PSG", Ym2203Chip.class);
-        audio.plugin.chipRegister.chip(Ym2612Chip.class).YM2612.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ym2612Chip.class);
-        audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ym2608Chip.class);
-        audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608FM.Volume = parent.setting.getBalance().getVolume("FM", Ym2608Chip.class);
-        audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608PSG.Volume = parent.setting.getBalance().getVolume("PSG", Ym2608Chip.class);
-        audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608Rhythm.Volume = parent.setting.getBalance().getVolume("Rhythm", Ym2608Chip.class);
-        audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608Adpcm.Volume = parent.setting.getBalance().getVolume("Adpcm", Ym2608Chip.class);
-        audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ym2610Chip.class);
-        audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610FM.Volume = parent.setting.getBalance().getVolume("FM", Ym2610Chip.class);
-        audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610PSG.Volume = parent.setting.getBalance().getVolume("PSG", Ym2610Chip.class);
-        audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610AdpcmA.Volume = parent.setting.getBalance().getVolume("AdpcmA", Ym2610Chip.class);
-        audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610AdpcmB.Volume = parent.setting.getBalance().getVolume("AdpcmB", Ym2610Chip.class);
-
-        audio.plugin.chipRegister.chip(Ym2413Chip.class).YM2413.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ym2413Chip.class);
-        audio.plugin.chipRegister.chip(Ym3526Chip.class).YM3526.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ym3526Chip.class);
-        audio.plugin.chipRegister.chip(Y8950Chip.class).Y8950.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Y8950Chip.class);
-        audio.plugin.chipRegister.chip(Ym3812Chip.class).YM3812.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ym3812Chip.class);
-        audio.plugin.chipRegister.chip(YmF262Chip.class).YMF262.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, YmF262Chip.class);
-        audio.plugin.chipRegister.chip(YmF278BChip.class).YMF278B.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, YmF278BChip.class);
-        audio.plugin.chipRegister.chip(YmZ280BChip.class).YMZ280B.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, YmZ280BChip.class);
-        audio.plugin.chipRegister.chip(YmF271Chip.class).YMF271.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, YmF271Chip.class);
-        audio.plugin.chipRegister.chip(Ay8910Chip.class).AY8910.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ay8910Chip.class);
-        audio.plugin.chipRegister.chip(Sn76489Chip.class).SN76489.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Sn76489Chip.class);
-        audio.plugin.chipRegister.chip(HuC6280Chip.class).HuC6280.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, HuC6280Chip.class);
-
-        audio.plugin.chipRegister.chip(Rf5C164Chip.class).RF5C164.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Rf5C164Chip.class);
-        audio.plugin.chipRegister.chip(Rf5C68Chip.class).RF5C68.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Rf5C68Chip.class);
-        audio.plugin.chipRegister.chip(PwmChip.class).PWM.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, PwmChip.class);
-        audio.plugin.chipRegister.chip(OkiM6258Chip.class).OKIM6258.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, OkiM6258Chip.class);
-        audio.plugin.chipRegister.chip(OkiM6295Chip.class).OKIM6295.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, OkiM6295Chip.class);
-        audio.plugin.chipRegister.chip(C140Chip.class).C140_.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, C140Chip.class);
-        audio.plugin.chipRegister.chip(C352Chip.class).C352.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, C352Chip.class);
-        audio.plugin.chipRegister.chip(Saa1099Chip.class).SAA1099.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Saa1099Chip.class);
-        audio.plugin.chipRegister.chip(Ppz8Chip.class).PPZ8.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ppz8Chip.class);
-        audio.plugin.chipRegister.chip(SegaPcmChip.class).SEGAPCM.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, SegaPcmChip.class);
-        audio.plugin.chipRegister.chip(MultiPcmChip.class).MultiPCM.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, MultiPcmChip.class);
-        audio.plugin.chipRegister.chip(K051649Chip.class).K051649.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, K051649Chip.class);
-        audio.plugin.chipRegister.chip(K053260Chip.class).K053260.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, K053260Chip.class);
-        audio.plugin.chipRegister.chip(K054539Chip.class).K054539.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, K054539Chip.class);
-        audio.plugin.chipRegister.chip(QSoundChip.class).QSound.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, QSoundChip.class);
-        audio.plugin.chipRegister.chip(Ga20Chip.class).GA20.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ga20Chip.class);
-
-        audio.plugin.chipRegister.chip(NpNesChip.class).APU.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, NesChip.class);
-        audio.plugin.chipRegister.chip(NpNesChip.class).DMC.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, DmcChip.class);
-        audio.plugin.chipRegister.chip(NpNesChip.class).FDS.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, FdsChip.class);
-        audio.plugin.chipRegister.chip(NpNesChip.class).MMC5.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Mmc5Chip.class);
-        audio.plugin.chipRegister.chip(NpNesChip.class).N160.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, N163Chip.class);
-        audio.plugin.chipRegister.chip(NpNesChip.class).VRC6.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Vrc6Chip.class);
-        audio.plugin.chipRegister.chip(NpNesChip.class).VRC7.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Vrc7Chip.class);
-        audio.plugin.chipRegister.chip(NpNesChip.class).FME7.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Fme7Chip.class);
-        audio.plugin.chipRegister.chip(DmgChip.class).DMG.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, DmgChip.class);
-
-        newParam.GimicOPN.Volume = parent.setting.getBalance().getGimicOPNVolume();
-        newParam.GimicOPNA.Volume = parent.setting.getBalance().getGimicOPNAVolume();
-
-
-        newParam.MasterVolume.VisVolume1 = Common.range(visVolume.get("master") / 250, 0, 44);
-        if (newParam.MasterVolume.VisVolume2 <= newParam.MasterVolume.VisVolume1) {
-            newParam.MasterVolume.VisVolume2 = newParam.MasterVolume.VisVolume1;
-            newParam.MasterVolume.VisVol2Cnt = 30;
+        newVolumes[0].volume = parent.setting.getBalance().getMasterVolume();
+        for (int i = 1; i < setVolume.length; i++) {
+            if (setVolume[i] != null) {
+                newVolumes[i].volume = parent.setting.getBalance().getVolume(setVolume[i].getItem1(), setVolume[i].getItem2());
+            }
         }
+        newVolumes[GIMIC_OPN].volume = parent.setting.getBalance().getGimicOPNVolume();
+        newVolumes[GIMIC_OPNA].volume = parent.setting.getBalance().getGimicOPNAVolume();
 
-        audio.plugin.chipRegister.chip(Ym2151Chip.class).YM2151.VisVolume1 = Common.range(visVolume.get("ym2151") / 200, 0, 44);
-        if (audio.plugin.chipRegister.chip(Ym2151Chip.class).YM2151.VisVolume2 <= audio.plugin.chipRegister.chip(Ym2151Chip.class).YM2151.VisVolume1) {
-            audio.plugin.chipRegister.chip(Ym2151Chip.class).YM2151.VisVolume2 = audio.plugin.chipRegister.chip(Ym2151Chip.class).YM2151.VisVolume1;
-            audio.plugin.chipRegister.chip(Ym2151Chip.class).YM2151.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(Ym2203Chip.class).YM2203.VisVolume1 = Common.range(visVolume.get("ym2203") / 200, 0, 44);
-        if (audio.plugin.chipRegister.chip(Ym2203Chip.class).YM2203.VisVolume2 <= audio.plugin.chipRegister.chip(Ym2203Chip.class).YM2203.VisVolume1) {
-            audio.plugin.chipRegister.chip(Ym2203Chip.class).YM2203.VisVolume2 = audio.plugin.chipRegister.chip(Ym2203Chip.class).YM2203.VisVolume1;
-            audio.plugin.chipRegister.chip(Ym2203Chip.class).YM2203.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(Ym2203Chip.class).YM2203FM.VisVolume1 = Common.range(visVolume.get("ym2203FM") / 200, 0, 44);
-        if (audio.plugin.chipRegister.chip(Ym2203Chip.class).YM2203FM.VisVolume2 <= audio.plugin.chipRegister.chip(Ym2203Chip.class).YM2203FM.VisVolume1) {
-            audio.plugin.chipRegister.chip(Ym2203Chip.class).YM2203FM.VisVolume2 = audio.plugin.chipRegister.chip(Ym2203Chip.class).YM2203FM.VisVolume1;
-            audio.plugin.chipRegister.chip(Ym2203Chip.class).YM2203FM.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(Ym2203Chip.class).YM2203PSG.VisVolume1 = Common.range(visVolume.get("ym2203SSG") / 120, 0, 44);
-        if (audio.plugin.chipRegister.chip(Ym2203Chip.class).YM2203PSG.VisVolume2 <= audio.plugin.chipRegister.chip(Ym2203Chip.class).YM2203PSG.VisVolume1) {
-            audio.plugin.chipRegister.chip(Ym2203Chip.class).YM2203PSG.VisVolume2 = audio.plugin.chipRegister.chip(Ym2203Chip.class).YM2203PSG.VisVolume1;
-            audio.plugin.chipRegister.chip(Ym2203Chip.class).YM2203PSG.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(Ym2612Chip.class).YM2612.VisVolume1 = Common.range(visVolume.get("ym2612") / 200, 0, 44);
-        if (audio.plugin.chipRegister.chip(Ym2612Chip.class).YM2612.VisVolume2 <= audio.plugin.chipRegister.chip(Ym2612Chip.class).YM2612.VisVolume1) {
-            audio.plugin.chipRegister.chip(Ym2612Chip.class).YM2612.VisVolume2 = audio.plugin.chipRegister.chip(Ym2612Chip.class).YM2612.VisVolume1;
-            audio.plugin.chipRegister.chip(Ym2612Chip.class).YM2612.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608.VisVolume1 = Common.range(visVolume.get("ym2608") / 200, 0, 44);
-        if (audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608.VisVolume2 <= audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608.VisVolume1) {
-            audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608.VisVolume2 = audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608.VisVolume1;
-            audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608FM.VisVolume1 = Common.range(visVolume.get("ym2608FM") / 200, 0, 44);
-        if (audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608FM.VisVolume2 <= audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608FM.VisVolume1) {
-            audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608FM.VisVolume2 = audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608FM.VisVolume1;
-            audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608FM.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608PSG.VisVolume1 = Common.range(visVolume.get("ym2608SSG") / 120, 0, 44);
-        if (audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608PSG.VisVolume2 <= audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608PSG.VisVolume1) {
-            audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608PSG.VisVolume2 = audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608PSG.VisVolume1;
-            audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608PSG.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608Rhythm.VisVolume1 = Common.range(visVolume.get("ym2608Rtm") / 200, 0, 44);
-        if (audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608Rhythm.VisVolume2 <= audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608Rhythm.VisVolume1) {
-            audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608Rhythm.VisVolume2 = audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608Rhythm.VisVolume1;
-            audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608Rhythm.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608Adpcm.VisVolume1 = Common.range(visVolume.get("ym2608APCM") / 200, 0, 44);
-        if (audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608Adpcm.VisVolume2 <= audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608Adpcm.VisVolume1) {
-            audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608Adpcm.VisVolume2 = audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608Adpcm.VisVolume1;
-            audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608Adpcm.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610.VisVolume1 = Common.range(visVolume.get("ym2610") / 200, 0, 44);
-        if (audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610.VisVolume2 <= audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610.VisVolume1) {
-            audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610.VisVolume2 = audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610.VisVolume1;
-            audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610FM.VisVolume1 = Common.range(visVolume.get("ym2610FM") / 200, 0, 44);
-        if (audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610FM.VisVolume2 <= audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610FM.VisVolume1) {
-            audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610FM.VisVolume2 = audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610FM.VisVolume1;
-            audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610FM.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610PSG.VisVolume1 = Common.range(visVolume.get("ym2610SSG") / 120, 0, 44);
-        if (audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610PSG.VisVolume2 <= audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610PSG.VisVolume1) {
-            audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610PSG.VisVolume2 = audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610PSG.VisVolume1;
-            audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610PSG.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610AdpcmA.VisVolume1 = Common.range(visVolume.get("ym2610APCMA") / 200, 0, 44);
-        if (audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610AdpcmA.VisVolume2 <= audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610AdpcmA.VisVolume1) {
-            audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610AdpcmA.VisVolume2 = audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610AdpcmA.VisVolume1;
-            audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610AdpcmA.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610AdpcmB.VisVolume1 = Common.range(visVolume.get("ym2610APCMB") / 200, 0, 44);
-        if (audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610AdpcmB.VisVolume2 <= audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610AdpcmB.VisVolume1) {
-            audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610AdpcmB.VisVolume2 = audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610AdpcmB.VisVolume1;
-            audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610AdpcmB.VisVol2Cnt = 30;
-        }
-
-
-        audio.plugin.chipRegister.chip(Ym2413Chip.class).YM2413.VisVolume1 = Common.range(visVolume.get("ym2413") / 200, 0, 44);
-        if (audio.plugin.chipRegister.chip(Ym2413Chip.class).YM2413.VisVolume2 <= audio.plugin.chipRegister.chip(Ym2413Chip.class).YM2413.VisVolume1) {
-            audio.plugin.chipRegister.chip(Ym2413Chip.class).YM2413.VisVolume2 = audio.plugin.chipRegister.chip(Ym2413Chip.class).YM2413.VisVolume1;
-            audio.plugin.chipRegister.chip(Ym2413Chip.class).YM2413.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(Ym3526Chip.class).YM3526.VisVolume1 = Common.range(visVolume.get("ym3526") / 200, 0, 44);
-        if (audio.plugin.chipRegister.chip(Ym3526Chip.class).YM3526.VisVolume2 <= audio.plugin.chipRegister.chip(Ym3526Chip.class).YM3526.VisVolume1) {
-            audio.plugin.chipRegister.chip(Ym3526Chip.class).YM3526.VisVolume2 = audio.plugin.chipRegister.chip(Ym3526Chip.class).YM3526.VisVolume1;
-            audio.plugin.chipRegister.chip(Ym3526Chip.class).YM3526.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(Y8950Chip.class).Y8950.VisVolume1 = Common.range(visVolume.get("y8950") / 200, 0, 44);
-        if (audio.plugin.chipRegister.chip(Y8950Chip.class).Y8950.VisVolume2 <= audio.plugin.chipRegister.chip(Y8950Chip.class).Y8950.VisVolume1) {
-            audio.plugin.chipRegister.chip(Y8950Chip.class).Y8950.VisVolume2 = audio.plugin.chipRegister.chip(Y8950Chip.class).Y8950.VisVolume1;
-            audio.plugin.chipRegister.chip(Y8950Chip.class).Y8950.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(Ym3812Chip.class).YM3812.VisVolume1 = Common.range(visVolume.get("ym3812") / 200, 0, 44);
-        if (audio.plugin.chipRegister.chip(Ym3812Chip.class).YM3812.VisVolume2 <= audio.plugin.chipRegister.chip(Ym3812Chip.class).YM3812.VisVolume1) {
-            audio.plugin.chipRegister.chip(Ym3812Chip.class).YM3812.VisVolume2 = audio.plugin.chipRegister.chip(Ym3812Chip.class).YM3812.VisVolume1;
-            audio.plugin.chipRegister.chip(Ym3812Chip.class).YM3812.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(YmF262Chip.class).YMF262.VisVolume1 = Common.range(visVolume.get("ymf262") / 200, 0, 44);
-        if (audio.plugin.chipRegister.chip(YmF262Chip.class).YMF262.VisVolume2 <= audio.plugin.chipRegister.chip(YmF262Chip.class).YMF262.VisVolume1) {
-            audio.plugin.chipRegister.chip(YmF262Chip.class).YMF262.VisVolume2 = audio.plugin.chipRegister.chip(YmF262Chip.class).YMF262.VisVolume1;
-            audio.plugin.chipRegister.chip(YmF262Chip.class).YMF262.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(YmF278BChip.class).YMF278B.VisVolume1 = Common.range(visVolume.get("ymf278b") / 200, 0, 44);
-        if (audio.plugin.chipRegister.chip(YmF278BChip.class).YMF278B.VisVolume2 <= audio.plugin.chipRegister.chip(YmF278BChip.class).YMF278B.VisVolume1) {
-            audio.plugin.chipRegister.chip(YmF278BChip.class).YMF278B.VisVolume2 = audio.plugin.chipRegister.chip(YmF278BChip.class).YMF278B.VisVolume1;
-            audio.plugin.chipRegister.chip(YmF278BChip.class).YMF278B.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(YmZ280BChip.class).YMZ280B.VisVolume1 = Common.range(visVolume.get("ymz280b") / 200, 0, 44);
-        if (audio.plugin.chipRegister.chip(YmZ280BChip.class).YMZ280B.VisVolume2 <= audio.plugin.chipRegister.chip(YmZ280BChip.class).YMZ280B.VisVolume1) {
-            audio.plugin.chipRegister.chip(YmZ280BChip.class).YMZ280B.VisVolume2 = audio.plugin.chipRegister.chip(YmZ280BChip.class).YMZ280B.VisVolume1;
-            audio.plugin.chipRegister.chip(YmZ280BChip.class).YMZ280B.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(YmF271Chip.class).YMF271.VisVolume1 = Common.range(visVolume.get("ymf271") / 200, 0, 44);
-        if (audio.plugin.chipRegister.chip(YmF271Chip.class).YMF271.VisVolume2 <= audio.plugin.chipRegister.chip(YmF271Chip.class).YMF271.VisVolume1) {
-            audio.plugin.chipRegister.chip(YmF271Chip.class).YMF271.VisVolume2 = audio.plugin.chipRegister.chip(YmF271Chip.class).YMF271.VisVolume1;
-            audio.plugin.chipRegister.chip(YmF271Chip.class).YMF271.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(Ay8910Chip.class).AY8910.VisVolume1 = Common.range(visVolume.get("ay8910") / 120, 0, 44);
-        if (audio.plugin.chipRegister.chip(Ay8910Chip.class).AY8910.VisVolume2 <= audio.plugin.chipRegister.chip(Ay8910Chip.class).AY8910.VisVolume1) {
-            audio.plugin.chipRegister.chip(Ay8910Chip.class).AY8910.VisVolume2 = audio.plugin.chipRegister.chip(Ay8910Chip.class).AY8910.VisVolume1;
-            audio.plugin.chipRegister.chip(Ay8910Chip.class).AY8910.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(Sn76489Chip.class).SN76489.VisVolume1 = Common.range(visVolume.get("sn76489") / 120, 0, 44);
-        if (audio.plugin.chipRegister.chip(Sn76489Chip.class).SN76489.VisVolume2 <= audio.plugin.chipRegister.chip(Sn76489Chip.class).SN76489.VisVolume1) {
-            audio.plugin.chipRegister.chip(Sn76489Chip.class).SN76489.VisVolume2 = audio.plugin.chipRegister.chip(Sn76489Chip.class).SN76489.VisVolume1;
-            audio.plugin.chipRegister.chip(Sn76489Chip.class).SN76489.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(HuC6280Chip.class).HuC6280.VisVolume1 = Common.range(visVolume.get("huc6280") / 120, 0, 44);
-        if (audio.plugin.chipRegister.chip(HuC6280Chip.class).HuC6280.VisVolume2 <= audio.plugin.chipRegister.chip(HuC6280Chip.class).HuC6280.VisVolume1) {
-            audio.plugin.chipRegister.chip(HuC6280Chip.class).HuC6280.VisVolume2 = audio.plugin.chipRegister.chip(HuC6280Chip.class).HuC6280.VisVolume1;
-            audio.plugin.chipRegister.chip(HuC6280Chip.class).HuC6280.VisVol2Cnt = 30;
-        }
-
-
-        audio.plugin.chipRegister.chip(Rf5C164Chip.class).RF5C164.VisVolume1 = Common.range(visVolume.get("rf5c164") / 200, 0, 44);
-        if (audio.plugin.chipRegister.chip(Rf5C164Chip.class).RF5C164.VisVolume2 <= audio.plugin.chipRegister.chip(Rf5C164Chip.class).RF5C164.VisVolume1) {
-            audio.plugin.chipRegister.chip(Rf5C164Chip.class).RF5C164.VisVolume2 = audio.plugin.chipRegister.chip(Rf5C164Chip.class).RF5C164.VisVolume1;
-            audio.plugin.chipRegister.chip(Rf5C164Chip.class).RF5C164.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(Rf5C68Chip.class).RF5C68.VisVolume1 = Common.range(visVolume.get("rf5c68") / 200, 0, 44);
-        if (audio.plugin.chipRegister.chip(Rf5C68Chip.class).RF5C68.VisVolume2 <= audio.plugin.chipRegister.chip(Rf5C68Chip.class).RF5C68.VisVolume1) {
-            audio.plugin.chipRegister.chip(Rf5C68Chip.class).RF5C68.VisVolume2 = audio.plugin.chipRegister.chip(Rf5C68Chip.class).RF5C68.VisVolume1;
-            audio.plugin.chipRegister.chip(Rf5C68Chip.class).RF5C68.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(PwmChip.class).PWM.VisVolume1 = Common.range(visVolume.get("pwm") / 200, 0, 44);
-        if (audio.plugin.chipRegister.chip(PwmChip.class).PWM.VisVolume2 <= audio.plugin.chipRegister.chip(PwmChip.class).PWM.VisVolume1) {
-            audio.plugin.chipRegister.chip(PwmChip.class).PWM.VisVolume2 = audio.plugin.chipRegister.chip(PwmChip.class).PWM.VisVolume1;
-            audio.plugin.chipRegister.chip(PwmChip.class).PWM.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(OkiM6258Chip.class).OKIM6258.VisVolume1 = Common.range(visVolume.get("okim6258") / 200, 0, 44);
-        if (audio.plugin.chipRegister.chip(OkiM6258Chip.class).OKIM6258.VisVolume2 <= audio.plugin.chipRegister.chip(OkiM6258Chip.class).OKIM6258.VisVolume1) {
-            audio.plugin.chipRegister.chip(OkiM6258Chip.class).OKIM6258.VisVolume2 = audio.plugin.chipRegister.chip(OkiM6258Chip.class).OKIM6258.VisVolume1;
-            audio.plugin.chipRegister.chip(OkiM6258Chip.class).OKIM6258.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(OkiM6295Chip.class).OKIM6295.VisVolume1 = Common.range(visVolume.get("okim6295") / 200, 0, 44);
-        if (audio.plugin.chipRegister.chip(OkiM6295Chip.class).OKIM6295.VisVolume2 <= audio.plugin.chipRegister.chip(OkiM6295Chip.class).OKIM6295.VisVolume1) {
-            audio.plugin.chipRegister.chip(OkiM6295Chip.class).OKIM6295.VisVolume2 = audio.plugin.chipRegister.chip(OkiM6295Chip.class).OKIM6295.VisVolume1;
-            audio.plugin.chipRegister.chip(OkiM6295Chip.class).OKIM6295.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(C140Chip.class).C140_.VisVolume1 = Common.range(visVolume.get("c140") / 200, 0, 44);
-        if (audio.plugin.chipRegister.chip(C140Chip.class).C140_.VisVolume2 <= audio.plugin.chipRegister.chip(C140Chip.class).C140_.VisVolume1) {
-            audio.plugin.chipRegister.chip(C140Chip.class).C140_.VisVolume2 = audio.plugin.chipRegister.chip(C140Chip.class).C140_.VisVolume1;
-            audio.plugin.chipRegister.chip(C140Chip.class).C140_.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(C352Chip.class).C352.VisVolume1 = Common.range(visVolume.get("c352") / 200, 0, 44);
-        if (audio.plugin.chipRegister.chip(C352Chip.class).C352.VisVolume2 <= audio.plugin.chipRegister.chip(C352Chip.class).C352.VisVolume1) {
-            audio.plugin.chipRegister.chip(C352Chip.class).C352.VisVolume2 = audio.plugin.chipRegister.chip(C352Chip.class).C352.VisVolume1;
-            audio.plugin.chipRegister.chip(C352Chip.class).C352.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(Saa1099Chip.class).SAA1099.VisVolume1 = Common.range(visVolume.get("saa1099") / 200, 0, 44);
-        if (audio.plugin.chipRegister.chip(Saa1099Chip.class).SAA1099.VisVolume2 <= audio.plugin.chipRegister.chip(Saa1099Chip.class).SAA1099.VisVolume1) {
-            audio.plugin.chipRegister.chip(Saa1099Chip.class).SAA1099.VisVolume2 = audio.plugin.chipRegister.chip(Saa1099Chip.class).SAA1099.VisVolume1;
-            audio.plugin.chipRegister.chip(Saa1099Chip.class).SAA1099.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(Ppz8Chip.class).PPZ8.VisVolume1 = Common.range(visVolume.get("ppz8") / 200, 0, 44);
-        if (audio.plugin.chipRegister.chip(Ppz8Chip.class).PPZ8.VisVolume2 <= audio.plugin.chipRegister.chip(Ppz8Chip.class).PPZ8.VisVolume1) {
-            audio.plugin.chipRegister.chip(Ppz8Chip.class).PPZ8.VisVolume2 = audio.plugin.chipRegister.chip(Ppz8Chip.class).PPZ8.VisVolume1;
-            audio.plugin.chipRegister.chip(Ppz8Chip.class).PPZ8.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(SegaPcmChip.class).SEGAPCM.VisVolume1 = Common.range(visVolume.get("segaPCM") / 200, 0, 44);
-        if (audio.plugin.chipRegister.chip(SegaPcmChip.class).SEGAPCM.VisVolume2 <= audio.plugin.chipRegister.chip(SegaPcmChip.class).SEGAPCM.VisVolume1) {
-            audio.plugin.chipRegister.chip(SegaPcmChip.class).SEGAPCM.VisVolume2 = audio.plugin.chipRegister.chip(SegaPcmChip.class).SEGAPCM.VisVolume1;
-            audio.plugin.chipRegister.chip(SegaPcmChip.class).SEGAPCM.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(MultiPcmChip.class).MultiPCM.VisVolume1 = Common.range(visVolume.get("multiPCM") / 200, 0, 44);
-        if (audio.plugin.chipRegister.chip(MultiPcmChip.class).MultiPCM.VisVolume2 <= audio.plugin.chipRegister.chip(MultiPcmChip.class).MultiPCM.VisVolume1) {
-            audio.plugin.chipRegister.chip(MultiPcmChip.class).MultiPCM.VisVolume2 = audio.plugin.chipRegister.chip(MultiPcmChip.class).MultiPCM.VisVolume1;
-            audio.plugin.chipRegister.chip(MultiPcmChip.class).MultiPCM.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(K051649Chip.class).K051649.VisVolume1 = Common.range(visVolume.get("k051649") / 200, 0, 44);
-        if (audio.plugin.chipRegister.chip(K051649Chip.class).K051649.VisVolume2 <= audio.plugin.chipRegister.chip(K051649Chip.class).K051649.VisVolume1) {
-            audio.plugin.chipRegister.chip(K051649Chip.class).K051649.VisVolume2 = audio.plugin.chipRegister.chip(K051649Chip.class).K051649.VisVolume1;
-            audio.plugin.chipRegister.chip(K051649Chip.class).K051649.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(K053260Chip.class).K053260.VisVolume1 = Common.range(visVolume.get("k053260") / 200, 0, 44);
-        if (audio.plugin.chipRegister.chip(K053260Chip.class).K053260.VisVolume2 <= audio.plugin.chipRegister.chip(K053260Chip.class).K053260.VisVolume1) {
-            audio.plugin.chipRegister.chip(K053260Chip.class).K053260.VisVolume2 = audio.plugin.chipRegister.chip(K053260Chip.class).K053260.VisVolume1;
-            audio.plugin.chipRegister.chip(K053260Chip.class).K053260.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(K054539Chip.class).K054539.VisVolume1 = Common.range(visVolume.get("k054539") / 200, 0, 44);
-        if (audio.plugin.chipRegister.chip(K054539Chip.class).K054539.VisVolume2 <= audio.plugin.chipRegister.chip(K054539Chip.class).K054539.VisVolume1) {
-            audio.plugin.chipRegister.chip(K054539Chip.class).K054539.VisVolume2 = audio.plugin.chipRegister.chip(K054539Chip.class).K054539.VisVolume1;
-            audio.plugin.chipRegister.chip(K054539Chip.class).K054539.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(QSoundChip.class).QSound.VisVolume1 = Common.range(visVolume.get("qSound") / 200, 0, 44);
-        if (audio.plugin.chipRegister.chip(QSoundChip.class).QSound.VisVolume2 <= audio.plugin.chipRegister.chip(QSoundChip.class).QSound.VisVolume1) {
-            audio.plugin.chipRegister.chip(QSoundChip.class).QSound.VisVolume2 = audio.plugin.chipRegister.chip(QSoundChip.class).QSound.VisVolume1;
-            audio.plugin.chipRegister.chip(QSoundChip.class).QSound.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(Ga20Chip.class).GA20.VisVolume1 = Common.range(visVolume.get("ga20") / 200, 0, 44);
-        if (audio.plugin.chipRegister.chip(Ga20Chip.class).GA20.VisVolume2 <= audio.plugin.chipRegister.chip(Ga20Chip.class).GA20.VisVolume1) {
-            audio.plugin.chipRegister.chip(Ga20Chip.class).GA20.VisVolume2 = audio.plugin.chipRegister.chip(Ga20Chip.class).GA20.VisVolume1;
-            audio.plugin.chipRegister.chip(Ga20Chip.class).GA20.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(NpNesChip.class).APU.VisVolume1 = Common.range(visVolume.get("APU") / 200, 0, 44);
-        if (audio.plugin.chipRegister.chip(NpNesChip.class).APU.VisVolume2 <= audio.plugin.chipRegister.chip(NpNesChip.class).APU.VisVolume1) {
-            audio.plugin.chipRegister.chip(NpNesChip.class).APU.VisVolume2 = audio.plugin.chipRegister.chip(NpNesChip.class).APU.VisVolume1;
-            audio.plugin.chipRegister.chip(NpNesChip.class).APU.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(NpNesChip.class).DMC.VisVolume1 = Common.range(visVolume.get("DMC") / 350, 0, 44);
-        if (audio.plugin.chipRegister.chip(NpNesChip.class).DMC.VisVolume2 <= audio.plugin.chipRegister.chip(NpNesChip.class).DMC.VisVolume1) {
-            audio.plugin.chipRegister.chip(NpNesChip.class).DMC.VisVolume2 = audio.plugin.chipRegister.chip(NpNesChip.class).DMC.VisVolume1;
-            audio.plugin.chipRegister.chip(NpNesChip.class).DMC.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(NpNesChip.class).FDS.VisVolume1 = Common.range(visVolume.get("FDS") / 200, 0, 44);
-        if (audio.plugin.chipRegister.chip(NpNesChip.class).FDS.VisVolume2 <= audio.plugin.chipRegister.chip(NpNesChip.class).FDS.VisVolume1) {
-            audio.plugin.chipRegister.chip(NpNesChip.class).FDS.VisVolume2 = audio.plugin.chipRegister.chip(NpNesChip.class).FDS.VisVolume1;
-            audio.plugin.chipRegister.chip(NpNesChip.class).FDS.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(NpNesChip.class).MMC5.VisVolume1 = Common.range(visVolume.get("MMC5") / 50, 0, 44);
-        if (audio.plugin.chipRegister.chip(NpNesChip.class).MMC5.VisVolume2 <= audio.plugin.chipRegister.chip(K054539Chip.class).K054539.VisVolume1) {
-            audio.plugin.chipRegister.chip(NpNesChip.class).MMC5.VisVolume2 = audio.plugin.chipRegister.chip(NpNesChip.class).MMC5.VisVolume1;
-            audio.plugin.chipRegister.chip(NpNesChip.class).MMC5.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(NpNesChip.class).N160.VisVolume1 = Common.range(visVolume.get("N160") / 50, 0, 44);
-        if (audio.plugin.chipRegister.chip(NpNesChip.class).N160.VisVolume2 <= audio.plugin.chipRegister.chip(NpNesChip.class).N160.VisVolume1) {
-            audio.plugin.chipRegister.chip(NpNesChip.class).N160.VisVolume2 = audio.plugin.chipRegister.chip(NpNesChip.class).N160.VisVolume1;
-            audio.plugin.chipRegister.chip(NpNesChip.class).N160.VisVol2Cnt = 30;
-        }
-        audio.plugin.chipRegister.chip(NpNesChip.class).VRC6.VisVolume1 = Common.range(visVolume.get("Vrc6Inst") / 50, 0, 44);
-        if (audio.plugin.chipRegister.chip(NpNesChip.class).VRC6.VisVolume2 <= audio.plugin.chipRegister.chip(NpNesChip.class).VRC6.VisVolume1) {
-            audio.plugin.chipRegister.chip(NpNesChip.class).VRC6.VisVolume2 = audio.plugin.chipRegister.chip(NpNesChip.class).VRC6.VisVolume1;
-            audio.plugin.chipRegister.chip(NpNesChip.class).VRC6.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(NpNesChip.class).VRC7.VisVolume1 = Common.range(visVolume.get("VRC7") / 50, 0, 44);
-        if (audio.plugin.chipRegister.chip(NpNesChip.class).VRC7.VisVolume2 <= audio.plugin.chipRegister.chip(NpNesChip.class).VRC7.VisVolume1) {
-            audio.plugin.chipRegister.chip(NpNesChip.class).VRC7.VisVolume2 = audio.plugin.chipRegister.chip(NpNesChip.class).VRC7.VisVolume1;
-            audio.plugin.chipRegister.chip(NpNesChip.class).VRC7.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(NpNesChip.class).FME7.VisVolume1 = Common.range(visVolume.get("FME7") / 50, 0, 44);
-        if (audio.plugin.chipRegister.chip(NpNesChip.class).FME7.VisVolume2 <= audio.plugin.chipRegister.chip(NpNesChip.class).FME7.VisVolume1) {
-            audio.plugin.chipRegister.chip(NpNesChip.class).FME7.VisVolume2 = audio.plugin.chipRegister.chip(NpNesChip.class).FME7.VisVolume1;
-            audio.plugin.chipRegister.chip(NpNesChip.class).FME7.VisVol2Cnt = 30;
-        }
-
-        audio.plugin.chipRegister.chip(DmgChip.class).DMG.VisVolume1 = Common.range(visVolume.get("DMG") / 50, 0, 44);
-        if (audio.plugin.chipRegister.chip(DmgChip.class).DMG.VisVolume2 <= audio.plugin.chipRegister.chip(DmgChip.class).DMG.VisVolume1) {
-            audio.plugin.chipRegister.chip(DmgChip.class).DMG.VisVolume2 = audio.plugin.chipRegister.chip(DmgChip.class).DMG.VisVolume1;
-            audio.plugin.chipRegister.chip(DmgChip.class).DMG.VisVol2Cnt = 30;
+        for (int i = 0; i < visSources.length; i++) {
+            VisSource src = visSources[i];
+            if (src == null) continue;
+            VolumeInfo vi = newVolumes[i];
+            vi.visVolume1 = Common.range(visVolume.get(src.key()) / src.div(), 0, 44);
+            if (vi.visVolume2 <= vi.visVolume1) {
+                vi.visVolume2 = vi.visVolume1;
+                vi.visVol2Cnt = 30;
+            }
         }
     }
 
     public void screenDrawParams() {
-        int num;
-        MDChipParams.VolumeInfo oVI, nVI;
-
-        num = 0;
-        oVI = oldParam.MasterVolume;
-        nVI = newParam.MasterVolume;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(Ym2151Chip.class).YM2151_old;
-        nVI = audio.plugin.chipRegister.chip(Ym2151Chip.class).YM2151;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(Ym2203Chip.class).YM2203_old;
-        nVI = audio.plugin.chipRegister.chip(Ym2203Chip.class).YM2203;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(Ym2203Chip.class).YM2203FM_old;
-        nVI = audio.plugin.chipRegister.chip(Ym2203Chip.class).YM2203FM;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(Ym2203Chip.class).YM2203PSG_old;
-        nVI = audio.plugin.chipRegister.chip(Ym2203Chip.class).YM2203PSG;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(Ym2612Chip.class).YM2612_old;
-        nVI = audio.plugin.chipRegister.chip(Ym2612Chip.class).YM2612;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608_old;
-        nVI = audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608FM_old;
-        nVI = audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608FM;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608PSG_old;
-        nVI = audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608PSG;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608Rhythm_old;
-        nVI = audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608Rhythm;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608Adpcm_old;
-        nVI = audio.plugin.chipRegister.chip(Ym2608Chip.class).YM2608Adpcm;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610_old;
-        nVI = audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610FM_old;
-        nVI = audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610FM;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610PSG_old;
-        nVI = audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610PSG;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610AdpcmA_old;
-        nVI = audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610AdpcmA;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610AdpcmB_old;
-        nVI = audio.plugin.chipRegister.chip(Ym2610Chip.class).YM2610AdpcmB;
-        drawVolAndFader(num, oVI, nVI);
-
-        num++;
-        oVI = audio.plugin.chipRegister.chip(Ym2413Chip.class).YM2413_old;
-        nVI = audio.plugin.chipRegister.chip(Ym2413Chip.class).YM2413;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(Ym3526Chip.class).YM3526_old;
-        nVI = audio.plugin.chipRegister.chip(Ym3526Chip.class).YM3526;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(Y8950Chip.class).Y8950_old;
-        nVI = audio.plugin.chipRegister.chip(Y8950Chip.class).Y8950;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(Ym3812Chip.class).YM3812_old;
-        nVI = audio.plugin.chipRegister.chip(Ym3812Chip.class).YM3812;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(YmF262Chip.class).YMF262_old;
-        nVI = audio.plugin.chipRegister.chip(YmF262Chip.class).YMF262;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(YmF278BChip.class).YMF278B_old;
-        nVI = audio.plugin.chipRegister.chip(YmF278BChip.class).YMF278B;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(YmZ280BChip.class).YMZ280B_old;
-        nVI = audio.plugin.chipRegister.chip(YmZ280BChip.class).YMZ280B;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(YmF271Chip.class).YMF271_old;
-        nVI = audio.plugin.chipRegister.chip(YmF271Chip.class).YMF271;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        num++;
-        oVI = audio.plugin.chipRegister.chip(Ay8910Chip.class).AY8910_old;
-        nVI = audio.plugin.chipRegister.chip(Ay8910Chip.class).AY8910;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(Sn76489Chip.class).SN76489_old;
-        nVI = audio.plugin.chipRegister.chip(Sn76489Chip.class).SN76489;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(HuC6280Chip.class).HuC6280_old;
-        nVI = audio.plugin.chipRegister.chip(HuC6280Chip.class).HuC6280;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(Saa1099Chip.class).SAA1099_old;
-        nVI = audio.plugin.chipRegister.chip(Saa1099Chip.class).SAA1099;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        num++;
-        num++;
-
-        num++;
-        num++;
-        num++;
-        oVI = audio.plugin.chipRegister.chip(Rf5C164Chip.class).RF5C164_old;
-        nVI = audio.plugin.chipRegister.chip(Rf5C164Chip.class).RF5C164;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(Rf5C68Chip.class).RF5C68_old;
-        nVI = audio.plugin.chipRegister.chip(Rf5C68Chip.class).RF5C68;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(PwmChip.class).PWM_old;
-        nVI = audio.plugin.chipRegister.chip(PwmChip.class).PWM;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(OkiM6258Chip.class).OKIM6258_old;
-        nVI = audio.plugin.chipRegister.chip(OkiM6258Chip.class).OKIM6258;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(OkiM6295Chip.class).OKIM6295_old;
-        nVI = audio.plugin.chipRegister.chip(OkiM6295Chip.class).OKIM6295;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(C140Chip.class).C140_old;
-        nVI = audio.plugin.chipRegister.chip(C140Chip.class).C140_;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(C352Chip.class).C352_old;
-        nVI = audio.plugin.chipRegister.chip(C352Chip.class).C352;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(SegaPcmChip.class).SEGAPCM_old;
-        nVI = audio.plugin.chipRegister.chip(SegaPcmChip.class).SEGAPCM;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(MultiPcmChip.class).MultiPCM_old;
-        nVI = audio.plugin.chipRegister.chip(MultiPcmChip.class).MultiPCM;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(K051649Chip.class).K051649_old;
-        nVI = audio.plugin.chipRegister.chip(K051649Chip.class).K051649;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(K053260Chip.class).K053260_old;
-        nVI = audio.plugin.chipRegister.chip(K053260Chip.class).K053260;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(K054539Chip.class).K054539_old;
-        nVI = audio.plugin.chipRegister.chip(K054539Chip.class).K054539;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(QSoundChip.class).QSound_old;
-        nVI = audio.plugin.chipRegister.chip(QSoundChip.class).QSound;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(Ga20Chip.class).GA20_old;
-        nVI = audio.plugin.chipRegister.chip(Ga20Chip.class).GA20;
-        drawVolAndFader(num, oVI, nVI);
-
-        num++;
-        oVI = audio.plugin.chipRegister.chip(NpNesChip.class).APU_old;
-        nVI = audio.plugin.chipRegister.chip(NpNesChip.class).APU;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(NpNesChip.class).DMC_old;
-        nVI = audio.plugin.chipRegister.chip(NpNesChip.class).DMC;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(NpNesChip.class).FDS_old;
-        nVI = audio.plugin.chipRegister.chip(NpNesChip.class).FDS;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(NpNesChip.class).MMC5_old;
-        nVI = audio.plugin.chipRegister.chip(NpNesChip.class).MMC5;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(NpNesChip.class).N160_old;
-        nVI = audio.plugin.chipRegister.chip(NpNesChip.class).N160;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(NpNesChip.class).VRC6_old;
-        nVI = audio.plugin.chipRegister.chip(NpNesChip.class).VRC6;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(NpNesChip.class).VRC7_old;
-        nVI = audio.plugin.chipRegister.chip(NpNesChip.class).VRC7;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(NpNesChip.class).FME7_old;
-        nVI = audio.plugin.chipRegister.chip(NpNesChip.class).FME7;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = audio.plugin.chipRegister.chip(DmgChip.class).DMG_old;
-        nVI = audio.plugin.chipRegister.chip(DmgChip.class).DMG;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        num++;
-        num++;
-        num++;
-        num++;
-        oVI = audio.plugin.chipRegister.chip(Ppz8Chip.class).PPZ8_old;
-        nVI = audio.plugin.chipRegister.chip(Ppz8Chip.class).PPZ8;
-        drawVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = oldParam.GimicOPN;
-        nVI = newParam.GimicOPN;
-        drawGVolAndFader(num, oVI, nVI);
-        num++;
-        oVI = oldParam.GimicOPNA;
-        nVI = newParam.GimicOPNA;
-        drawGVolAndFader(num, oVI, nVI);
+        for (int num = 0; num < newVolumes.length; num++) {
+            if (newVolumes[num] == null) continue;
+            if (num >= GIMIC_OPN) {
+                drawGVolAndFader(num, oldVolumes[num], newVolumes[num]);
+            } else {
+                drawVolAndFader(num, oldVolumes[num], newVolumes[num]);
+            }
+        }
     }
 
-    private void drawVolAndFader(int num, MDChipParams.VolumeInfo oVI, MDChipParams.VolumeInfo nVI) {
+    private void drawVolAndFader(int num, VolumeInfo oVI, VolumeInfo nVI) {
         drawFader(
                 frameBuffer,
                 5 + (num % 16) * 20,
                 16 + (num / 16) * 8 * 9,
                 num == 0 ? 0 : 1,
-                oVI.Volume,
-                nVI.Volume);
-        nVI.VisVol2Cnt--;
-        if (nVI.VisVol2Cnt == 0) {
-            nVI.VisVol2Cnt = 1;
-            if (nVI.VisVolume2 > 0) nVI.VisVolume2--;
+                oVI.volume,
+                nVI.volume);
+        nVI.visVol2Cnt--;
+        if (nVI.visVol2Cnt == 0) {
+            nVI.visVol2Cnt = 1;
+            if (nVI.visVolume2 > 0) nVI.visVolume2--;
         }
         MixerVolume(
                 frameBuffer,
                 2 + (num % 16) * 20,
                 10 + (num / 16) * 8 * 9,
-                oVI.VisVolume1,
-                nVI.VisVolume1,
-                oVI.VisVolume2,
-                nVI.VisVolume2);
-        oVI.Volume = nVI.Volume;
-        oVI.VisVolume1 = nVI.VisVolume1;
-        oVI.VisVolume2 = nVI.VisVolume2;
+                oVI.visVolume1,
+                nVI.visVolume1,
+                oVI.visVolume2,
+                nVI.visVolume2);
+        oVI.volume = nVI.volume;
+        oVI.visVolume1 = nVI.visVolume1;
+        oVI.visVolume2 = nVI.visVolume2;
     }
 
-    private void drawGVolAndFader(int num, MDChipParams.VolumeInfo oVI, MDChipParams.VolumeInfo nVI) {
+    private void drawGVolAndFader(int num, VolumeInfo oVI, VolumeInfo nVI) {
         drawGFader(
                 frameBuffer,
                 5 + (num % 16) * 20,
                 16 + (num / 16) * 8 * 9,
                 num == 0 ? 0 : 1,
-                oVI.Volume,
-                nVI.Volume);
-        nVI.VisVol2Cnt--;
-        if (nVI.VisVol2Cnt == 0) {
-            nVI.VisVol2Cnt = 1;
-            if (nVI.VisVolume2 > 0) nVI.VisVolume2--;
+                oVI.volume,
+                nVI.volume);
+        nVI.visVol2Cnt--;
+        if (nVI.visVol2Cnt == 0) {
+            nVI.visVol2Cnt = 1;
+            if (nVI.visVolume2 > 0) nVI.visVolume2--;
         }
         MixerVolume(
                 frameBuffer,
                 2 + (num % 16) * 20,
                 10 + (num / 16) * 8 * 9,
-                oVI.VisVolume1,
-                nVI.VisVolume1,
-                oVI.VisVolume2,
-                nVI.VisVolume2);
-        oVI.Volume = nVI.Volume;
-        oVI.VisVolume1 = nVI.VisVolume1;
-        oVI.VisVolume2 = nVI.VisVolume2;
+                oVI.visVolume1,
+                nVI.visVolume1,
+                oVI.visVolume2,
+                nVI.visVolume2);
+        oVI.volume = nVI.volume;
+        oVI.visVolume1 = nVI.visVolume1;
+        oVI.visVolume2 = nVI.visVolume2;
     }
 
     public void screenInit() {
         visVolume.put("master", -1);
-        visVolume.put("ym2151", -1);
-        visVolume.put("ym2203", -1);
-        visVolume.put("ym2203FM", -1);
-        visVolume.put("ym2203SSG", -1);
-        visVolume.put("ym2612", -1);
-        visVolume.put("ym2608", -1);
-        visVolume.put("ym2608APCM", -1);
-        visVolume.put("ym2608FM", -1);
-        visVolume.put("ym2608Rtm", -1);
-        visVolume.put("ym2608SSG", -1);
-        visVolume.put("ym2610", -1);
-        visVolume.put("ym2610APCMA", -1);
-        visVolume.put("ym2610APCMB", -1);
-        visVolume.put("ym2610FM", -1);
-        visVolume.put("ym2610SSG", -1);
-
-        visVolume.put("ym2413", -1);
-        visVolume.put("ym3526", -1);
-        visVolume.put("y8950", -1);
-        visVolume.put("ym3812", -1);
-        visVolume.put("ymf262", -1);
-        visVolume.put("ymf278b", -1);
-        visVolume.put("ymz280b", -1);
-        visVolume.put("ymf271", -1);
-        visVolume.put("ay8910", -1);
-        visVolume.put("sn76489", -1);
-        visVolume.put("huc6280", -1);
-
-        visVolume.put("rf5c164", -1);
-        visVolume.put("rf5c68", -1);
-        visVolume.put("pwm", -1);
-        visVolume.put("okim6258", -1);
-        visVolume.put("okim6295", -1);
-        visVolume.put("c140", -1);
-        visVolume.put("c352", -1);
-        visVolume.put("saa1099", -1);
-        visVolume.put("ppz8", -1);
-        visVolume.put("segaPCM", -1);
-        visVolume.put("multiPCM", -1);
-        visVolume.put("k051649", -1);
-        visVolume.put("k053260", -1);
-        visVolume.put("k054539", -1);
-        visVolume.put("qSound", -1);
-        visVolume.put("ga20", -1);
-
-        visVolume.put("APU", 0);
-        visVolume.put("DMC", 0);
-        visVolume.put("FDS", 0);
-        visVolume.put("MMC5", 0);
-        visVolume.put("N160", 0);
-        visVolume.put("Vrc6Inst", 0);
-        visVolume.put("VRC7", 0);
-        visVolume.put("FME7", 0);
-        visVolume.put("DMG", -1);
+        for (ViewProvider p : ViewProvider.providers()) {
+            for (ViewProvider.MixerSlot s : p.mixerSlots()) {
+                visVolume.put(s.visKey(), -1);
+            }
+        }
     }
 
     private final KeyListener frmMixer2_KeyDown = new KeyAdapter() {
@@ -1400,71 +527,20 @@ public class FormMixer2 extends JFrame {
     private JMenuItem tsmiLoadSongBalance;
     private JSeparator toolStripSeparator1;
 
+    /**
+     * fader slot -> (volume tag, chip), slot 0 is the master fader; filled from what each
+     * provider says about its place on the mixer skin
+     */
     @SuppressWarnings("unchecked")
-    private final Tuple<String, Class<? extends Chip>>[] setVolume = Arrays.<Tuple<String, Class<? extends Chip>>>asList(
-            null, // master
-            new Tuple<>(MAIN_TAG, Ym2151Chip.class),
-            new Tuple<>(MAIN_TAG, Ym2203Chip.class),
-            new Tuple<>("FM", Ym2203Chip.class),
-            new Tuple<>("PSG", Ym2203Chip.class),
-            new Tuple<>(MAIN_TAG, Ym2612Chip.class),
-            new Tuple<>(MAIN_TAG, Ym2608Chip.class),
-            new Tuple<>("FM", Ym2608Chip.class),
-            new Tuple<>("PSG", Ym2608Chip.class),
-            new Tuple<>("Rhythm", Ym2608Chip.class),
-            new Tuple<>("Adpcm", Ym2608Chip.class),
-            new Tuple<>(MAIN_TAG, Ym2610Chip.class),
-            new Tuple<>("FM", Ym2610Chip.class),
-            new Tuple<>("PSG", Ym2610Chip.class),
-            new Tuple<>("AdpcmA", Ym2610Chip.class),
-            new Tuple<>("AdpcmB", Ym2610Chip.class),
-            new Tuple<>(MAIN_TAG, Ym2413Chip.class),
-            new Tuple<>(MAIN_TAG, Ym3526Chip.class),
-            new Tuple<>(MAIN_TAG, Y8950Chip.class),
-            new Tuple<>(MAIN_TAG, Ym3812Chip.class),
-            new Tuple<>(MAIN_TAG, YmF262Chip.class),
-            new Tuple<>(MAIN_TAG, YmF278BChip.class),
-            new Tuple<>(MAIN_TAG, YmZ280BChip.class),
-            new Tuple<>(MAIN_TAG, YmF271Chip.class),
-            null,
-            new Tuple<>(MAIN_TAG, Ay8910Chip.class),
-            new Tuple<>(MAIN_TAG, Sn76489Chip.class),
-            new Tuple<>(MAIN_TAG, HuC6280Chip.class),
-            new Tuple<>(MAIN_TAG, Saa1099Chip.class),
-            null,
-            null,
-            null,
-            null,
-            null,
-            new Tuple<>(MAIN_TAG, Rf5C164Chip.class),
-            new Tuple<>(MAIN_TAG, Rf5C68Chip.class),
-            new Tuple<>(MAIN_TAG, PwmChip.class),
-            new Tuple<>(MAIN_TAG, OkiM6258Chip.class),
-            new Tuple<>(MAIN_TAG, OkiM6295Chip.class),
-            new Tuple<>(MAIN_TAG, C140Chip.class),
-            new Tuple<>(MAIN_TAG, C352Chip.class),
-            new Tuple<>(MAIN_TAG, SegaPcmChip.class),
-            new Tuple<>(MAIN_TAG, MultiPcmChip.class),
-            new Tuple<>(MAIN_TAG, K051649Chip.class),
-            new Tuple<>(MAIN_TAG, K053260Chip.class),
-            new Tuple<>(MAIN_TAG, K054539Chip.class),
-            new Tuple<>(MAIN_TAG, QSoundChip.class),
-            new Tuple<>(MAIN_TAG, Ga20Chip.class),
-            new Tuple<>(MAIN_TAG, NesChip.class),
-            new Tuple<>(MAIN_TAG, DmcChip.class),
-            new Tuple<>(MAIN_TAG, FdsChip.class),
-            new Tuple<>(MAIN_TAG, Mmc5Chip.class),
-            new Tuple<>(MAIN_TAG, N163Chip.class),
-            new Tuple<>(MAIN_TAG, Vrc6Chip.class),
-            new Tuple<>(MAIN_TAG, Vrc7Chip.class),
-            new Tuple<>(MAIN_TAG, Fme7Chip.class),
-            new Tuple<>(MAIN_TAG, DmgChip.class),
-            null,
-            null,
-            null,
-            null,
-            new Tuple<>(MAIN_TAG, Ppz8Chip.class)
-    ).toArray(Tuple[]::new);
+    private final Tuple<String, Class<? extends Chip>>[] setVolume = new Tuple[GIMIC_OPN];
+
+    {
+        for (ViewProvider p : ViewProvider.providers()) {
+            for (ViewProvider.MixerSlot s : p.mixerSlots()) {
+                setVolume[s.slot()] = new Tuple<>(s.tag(), s.chip());
+            }
+        }
+    }
 
 //#region draw buffer
 

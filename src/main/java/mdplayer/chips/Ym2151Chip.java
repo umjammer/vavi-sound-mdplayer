@@ -9,7 +9,6 @@ package mdplayer.chips;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
-import mdplayer.MDChipParams.VolumeInfo;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdplayer.Tables;
@@ -50,7 +49,6 @@ public class Ym2151Chip extends BaseChip {
 
     // TODO check cache or not
     private final int[] fadeout = {0, 0};
-    @Deprecated
     private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false}
@@ -404,29 +402,11 @@ public class Ym2151Chip extends BaseChip {
         return ret;
     }
 
-    @Deprecated
-    public static class Params {
 
-        public int ne = -1;
-        public int nfrq = -1;
-        public int lfrq = -1;
-        public int pmd = -1;
-        public int amd = -1;
-        public int waveform = -1;
-        public int lfosync = -1;
-        public final mdplayer.MDChipParams.Channel[] channels = {
-                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(),
-                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel()
-        };
+
+
+    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    public boolean getMask(int chipId, int ch) {
+        return ch < mask[chipId].length && mask[chipId][ch];
     }
-
-    @Deprecated
-    public final Params[] ym2151 = {new Params(), new Params()};
-    @Deprecated
-    public final Params[] ym2151_old = {new Params(), new Params()};
-
-    @Deprecated
-    public final VolumeInfo YM2151 = new VolumeInfo();
-    @Deprecated
-    public final VolumeInfo YM2151_old = new VolumeInfo();
 }

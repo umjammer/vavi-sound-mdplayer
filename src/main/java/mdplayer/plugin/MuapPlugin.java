@@ -84,7 +84,6 @@ public class MuapPlugin extends BasePlugin<MuapDriver> implements Compilable {
         Function<String, InputStream> fn = Ym2608Chip::getOPNARyhthmStream;
         chip.option = new Object[] {fn};
         put(Ym2608Chip.class, chip);
-        chipRegister.chip(Ym2608Chip.class).clock = 7987200;
 
         chip = new MDSound.Chip();
 
@@ -117,7 +116,6 @@ public class MuapPlugin extends BasePlugin<MuapDriver> implements Compilable {
             }
         }
         if (chip.clock != 0) {
-            chipRegister.chip(Ym2612Chip.class).clock = 7670454;
             put(Ym2612Chip.class, chip);
         }
 

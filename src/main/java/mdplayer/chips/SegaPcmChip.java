@@ -11,12 +11,12 @@ import java.lang.System.Logger.Level;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
-import mdplayer.MDChipParams.VolumeInfo;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdplayer.Tables;
@@ -42,7 +42,6 @@ public class SegaPcmChip extends BaseChip {
 
     private final RSoundChip[] realChips = {null, null};
 
-    @Deprecated
     private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,},
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,}
@@ -144,7 +143,9 @@ public class SegaPcmChip extends BaseChip {
 
     @Override
     public Map<String, Object> getInfo(int chipId) {
-        Map<String, Object> info = new HashMap<>(context.mds.inst(SegaPcmInst.class).getView(chipId, "info", null));
+        SegaPcmInst inst = context.mds.inst(SegaPcmInst.class);
+        if (inst == null) return Collections.emptyMap(); // the song being played does not use this chip
+        Map<String, Object> info = new HashMap<>(inst.getView(chipId, "info", null));
         if (!info.containsKey("register")) {
             info.put("register", register[chipId]);
         }
@@ -254,19 +255,8 @@ public class SegaPcmChip extends BaseChip {
         return n;
     }
 
-    @Deprecated
-    public static class Params {
-
-        public final mdplayer.MDChipParams.Channel[] channels = new mdplayer.MDChipParams.Channel[] {new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel()};
+    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    public boolean getMask(int chipId, int ch) {
+        return ch < mask[chipId].length && mask[chipId][ch];
     }
-
-    @Deprecated
-    public final Params[] segaPcm = new Params[] {new Params(), new Params()};
-    @Deprecated
-    public final Params[] segaPcm_old = new Params[] {new Params(), new Params()};
-
-    @Deprecated
-    public final VolumeInfo SEGAPCM = new VolumeInfo();
-    @Deprecated
-    public final VolumeInfo SEGAPCM_old = new VolumeInfo();
 }

@@ -9,7 +9,6 @@ package mdplayer.chips;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
-import mdplayer.MDChipParams.VolumeInfo;
 import mdsound.Instrument;
 import mdsound.instrument.ScdPcmInst;
 
@@ -22,7 +21,6 @@ import mdsound.instrument.ScdPcmInst;
  */
 public class Rf5C164Chip extends BaseChip {
 
-    @Deprecated
     private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false}
@@ -72,7 +70,8 @@ public class Rf5C164Chip extends BaseChip {
 
     @Override
     public Map<String, Object> getInfo(int chipId) {
-        return context.mds.inst(ScdPcmInst.class).getView(chipId, "info", null);
+        ScdPcmInst inst = context.mds.inst(ScdPcmInst.class);
+        return inst == null ? null : inst.getView(chipId, "info", null);
     }
 
     public void setMask(int chipId, int ch) {
@@ -83,19 +82,8 @@ public class Rf5C164Chip extends BaseChip {
         setMask(chipId, ch, false);
     }
 
-    @Deprecated
-    public static class Params {
-
-        public final mdplayer.MDChipParams.Channel[] channels = new mdplayer.MDChipParams.Channel[] {new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel()};
+    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    public boolean getMask(int chipId, int ch) {
+        return ch < mask[chipId].length && mask[chipId][ch];
     }
-
-    @Deprecated
-    public final mdplayer.chips.Rf5C164Chip.Params[] rf5c164 = new mdplayer.chips.Rf5C164Chip.Params[] {new mdplayer.chips.Rf5C164Chip.Params(), new mdplayer.chips.Rf5C164Chip.Params()};
-    @Deprecated
-    public final mdplayer.chips.Rf5C164Chip.Params[] rf5c164_old = new mdplayer.chips.Rf5C164Chip.Params[] {new mdplayer.chips.Rf5C164Chip.Params(), new mdplayer.chips.Rf5C164Chip.Params()};
-
-    @Deprecated
-    public final VolumeInfo RF5C164 = new VolumeInfo();
-    @Deprecated
-    public final VolumeInfo RF5C164_old = new VolumeInfo();
 }

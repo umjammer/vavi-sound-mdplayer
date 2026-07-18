@@ -9,7 +9,6 @@ package mdplayer.chips;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
-import mdplayer.MDChipParams.VolumeInfo;
 import mdplayer.RealChip.RC86ctlSoundChip;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
@@ -46,14 +45,10 @@ public class Ym2203Chip extends BaseChip {
     private final int[] nowFadeoutVol = {0, 0};
     @Deprecated
     public final int[][] fmVolume = {new int[9], new int[9]};
-    @Deprecated
     private final boolean[][] maskFM = {
             {false, false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false, false}
     };
-
-    @Deprecated
-    public int clock;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -269,6 +264,13 @@ public class Ym2203Chip extends BaseChip {
 
     public void setMask(int chipId, int ch, boolean mask, boolean noSend /* = false */) {
         maskFM[chipId][ch] = mask;
+        // FM ch3 and its extended slots mask as one
+        if (ch == 2 || (ch >= 6 && ch < 9)) {
+            maskFM[chipId][2] = mask;
+            maskFM[chipId][6] = mask;
+            maskFM[chipId][7] = mask;
+            maskFM[chipId][8] = mask;
+        }
 
         if (noSend) return;
 
@@ -363,29 +365,8 @@ public class Ym2203Chip extends BaseChip {
         setFadeout(1, 0);
     }
 
-    @Deprecated
-    public static class Params {
-        public int nfrq = -1;
-        public int efrq = -1;
-        public int etype = -1;
-        public final mdplayer.MDChipParams.Channel[] channels = new mdplayer.MDChipParams.Channel[] {new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel()};
+    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    public boolean getMask(int chipId, int ch) {
+        return ch < maskFM[chipId].length && maskFM[chipId][ch];
     }
-
-    @Deprecated
-    public final Params[] ym2203 = new Params[] {new Params(), new Params()};
-    @Deprecated
-    public final Params[] ym2203_old = new Params[] {new Params(), new Params()};
-
-    @Deprecated
-    public final VolumeInfo YM2203 = new VolumeInfo();
-    @Deprecated
-    public final VolumeInfo YM2203_old = new VolumeInfo();
-    @Deprecated
-    public final VolumeInfo YM2203FM = new VolumeInfo();
-    @Deprecated
-    public final VolumeInfo YM2203FM_old = new VolumeInfo();
-    @Deprecated
-    public final VolumeInfo YM2203PSG = new VolumeInfo();
-    @Deprecated
-    public final VolumeInfo YM2203PSG_old = new VolumeInfo();
 }

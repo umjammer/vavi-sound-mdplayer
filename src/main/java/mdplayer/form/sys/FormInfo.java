@@ -19,9 +19,17 @@ import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JTextField;
+import javax.swing.JPanel;
+import javax.swing.JTextPane;
 import javax.swing.SwingConstants;
 import javax.swing.Timer;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
+import javax.swing.text.BadLocationException;
+import java.awt.Graphics;
+import mdplayer.form.Layouts;
 
 import mdplayer.Audio;
 import mdplayer.Common;
@@ -46,7 +54,7 @@ public class FormInfo extends JFrame {
     public int lyricsIndex = 0;
     private Color culColor = new Color(192, 192, 255);
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormInfo.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(FormInfo.class).node(FormInfo.class.getSimpleName());
 
     public FormInfo(FormMain frm) {
         parent = frm;
@@ -80,7 +88,7 @@ public class FormInfo extends JFrame {
         rtbLyrics.setText(null);
 
         Audio audio = Audio.getInstance();
-        MetaData metaData = (audio.plugin.driverVirtual != null) ? audio.plugin.driverVirtual.metaData : null;
+        MetaData metaData = (audio.plugin != null && audio.plugin.driverVirtual != null) ? audio.plugin.driverVirtual.metaData : null;
         if (metaData == null) return;
 
         lblTitle.setText(metaData.getFirst(Tag.Title));
@@ -123,12 +131,12 @@ public class FormInfo extends JFrame {
     private final WindowListener windowListener = new WindowAdapter() {
         @Override
         public void windowClosed(WindowEvent e) {
-            if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
+            if (parent != null && parent.setting != null) {
                 parent.setting.getLocation().setPInfo(getLocation());
             } else {
-                parent.setting.getLocation().setPInfo(new Point(prefs.getInt("x", 0), prefs.getInt("y", 0)));
+                prefs.putInt("x", getLocation().x);
+                prefs.putInt("y", getLocation().y);
             }
-
             isClosed = true;
         }
 
@@ -138,28 +146,30 @@ public class FormInfo extends JFrame {
         }
     };
 
-//    @Override
-//    protected void WndProc(Message m) {
-//        if (parent != null) {
-//            parent.windowsMessage(m);
-//        }
-//
-//        super.WndProc(m);
-//    }
+    private void appendToTextPane(JTextPane tp, String msg, Color c) {
+        StyleContext sc = StyleContext.getDefaultStyleContext();
+        AttributeSet aset = sc.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Foreground, c);
+        int len = tp.getDocument().getLength();
+        try {
+            tp.getDocument().insertString(len, msg, aset);
+        } catch (BadLocationException e) {
+            logger.log(Level.ERROR, e.getMessage(), e);
+        }
+    }
 
     private void timer_Tick(ActionEvent ev) {
         if (lyrics == null || lyrics.isEmpty()) return;
+        if (Audio.getInstance().plugin == null) return;
 
         long cnt = Audio.getInstance().plugin.getDriverCounter();
 
         try {
             if (cnt >= lyrics.get(lyricsIndex).getItem1()) {
 
-                // lblLyrics.setText(lyrics[lyricsIndex].getItem3());
-                rtbLyrics.setText(null);
+                rtbLyrics.setText("");
 
                 int ind = 0;
-                rtbLyrics.setSelectionColor(culColor);
+                StringBuilder currentChunk = new StringBuilder();
                 while (ind < lyrics.get(lyricsIndex).getItem3().length()) {
                     char c = lyrics.get(lyricsIndex).getItem3().charAt(ind);
                     if (c == '\\') {
@@ -170,6 +180,10 @@ public class FormInfo extends JFrame {
                             case '\\':
                                 break;
                             case 'c':
+                                if (currentChunk.length() > 0) {
+                                    appendToTextPane(rtbLyrics, currentChunk.toString(), culColor);
+                                    currentChunk.setLength(0);
+                                }
                                 ind++;
                                 String n = String.valueOf(lyrics.get(lyricsIndex).getItem3().charAt(ind++));
                                 int r, g, b;
@@ -188,12 +202,14 @@ public class FormInfo extends JFrame {
                                     b = Integer.parseInt(n, 16);
                                 }
                                 culColor = new Color(r, g, b);
-                                rtbLyrics.setSelectionColor(culColor);
                                 continue;
                         }
                     }
-                    rtbLyrics.setText(String.valueOf(c));
+                    currentChunk.append(c);
                     ind++;
+                }
+                if (currentChunk.length() > 0) {
+                    appendToTextPane(rtbLyrics, currentChunk.toString(), culColor);
                 }
 
                 lyricsIndex++;
@@ -205,7 +221,6 @@ public class FormInfo extends JFrame {
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
             try {
-                rtbLyrics.setText(null);
                 rtbLyrics.setText("LYLIC PARSE ERROR");
             } catch (Exception ex) {
                 logger.log(Level.ERROR, e.getMessage(), e);
@@ -228,182 +243,168 @@ public class FormInfo extends JFrame {
         this.lblSystemJ = new JLabel();
         this.lblComposerJ = new JLabel();
         this.timer = new Timer(10, this::timer_Tick);
-        this.rtbLyrics = new JTextField();
+        this.rtbLyrics = new JTextPane();
 
         //
         // lblTitle
         //
-        this.lblTitle.setHorizontalAlignment(SwingConstants.CENTER);
+        this.lblTitle.setHorizontalAlignment(SwingConstants.LEFT);
         this.lblTitle.setVerticalAlignment(SwingConstants.TOP);
         this.lblTitle.setBackground(Color.black);
         this.lblTitle.setFont(new Font("Meyryo", Font.BOLD, 9));
         this.lblTitle.setForeground(new Color(192, 192, 255));
-        this.lblTitle.setLocation(new Point(40, 0));
+        this.lblTitle.setLocation(new Point(80, 0));
         this.lblTitle.setName("lblTitle");
-        this.lblTitle.setPreferredSize(new Dimension(284, 16));
-        // this.lblTitle.TabIndex = 2
+        this.lblTitle.setPreferredSize(new Dimension(240, 16));
         this.lblTitle.setText("01234567890123456789012345678901234567890123456789");
         //
         // lblTitleJ
         //
-        this.lblTitleJ.setHorizontalAlignment(SwingConstants.CENTER);
+        this.lblTitleJ.setHorizontalAlignment(SwingConstants.LEFT);
         this.lblTitleJ.setVerticalAlignment(SwingConstants.TOP);
         this.lblTitleJ.setBackground(Color.black);
         this.lblTitleJ.setFont(new Font("Meyryo", Font.BOLD, 9));
         this.lblTitleJ.setForeground(new Color(192, 192, 255));
-        this.lblTitleJ.setLocation(new Point(40, 16));
+        this.lblTitleJ.setLocation(new Point(80, 16));
         this.lblTitleJ.setName("lblTitleJ");
-        this.lblTitleJ.setPreferredSize(new Dimension(284, 16));
-        // this.lblTitleJ.TabIndex = 3
+        this.lblTitleJ.setPreferredSize(new Dimension(240, 16));
         this.lblTitleJ.setText("01234567890123456789012345678901234567890123456789");
         //
         // lblGame
         //
-        this.lblGame.setHorizontalAlignment(SwingConstants.CENTER);
+        this.lblGame.setHorizontalAlignment(SwingConstants.LEFT);
         this.lblGame.setVerticalAlignment(SwingConstants.TOP);
         this.lblGame.setBackground(Color.black);
         this.lblGame.setFont(new Font("Meyryo", Font.BOLD, 9));
         this.lblGame.setForeground(new Color(192, 192, 255));
-        this.lblGame.setLocation(new Point(40, 32));
+        this.lblGame.setLocation(new Point(80, 32));
         this.lblGame.setName("lblGame");
-        this.lblGame.setPreferredSize(new Dimension(284, 16));
-        // this.lblGame.TabIndex = 4
+        this.lblGame.setPreferredSize(new Dimension(240, 16));
         this.lblGame.setText("01234567890123456789012345678901234567890123456789");
         //
         // lblGameJ
         //
-        this.lblGameJ.setHorizontalAlignment(SwingConstants.CENTER);
+        this.lblGameJ.setHorizontalAlignment(SwingConstants.LEFT);
         this.lblGameJ.setVerticalAlignment(SwingConstants.TOP);
         this.lblGameJ.setBackground(Color.black);
         this.lblGameJ.setFont(new Font("Meyryo", Font.BOLD, 9));
         this.lblGameJ.setForeground(new Color(192, 192, 255));
-        this.lblGameJ.setLocation(new Point(40, 48));
+        this.lblGameJ.setLocation(new Point(80, 48));
         this.lblGameJ.setName("lblGameJ");
-        this.lblGameJ.setPreferredSize(new Dimension(284, 16));
-        // this.lblGameJ.TabIndex = 5
+        this.lblGameJ.setPreferredSize(new Dimension(240, 16));
         this.lblGameJ.setText("01234567890123456789012345678901234567890123456789");
         //
         // lblSystem
         //
-        this.lblSystem.setHorizontalAlignment(SwingConstants.CENTER);
+        this.lblSystem.setHorizontalAlignment(SwingConstants.LEFT);
         this.lblSystem.setVerticalAlignment(SwingConstants.TOP);
         this.lblSystem.setBackground(Color.black);
         this.lblSystem.setFont(new Font("Meyryo", Font.BOLD, 9));
         this.lblSystem.setForeground(new Color(192, 192, 255));
-        this.lblSystem.setLocation(new Point(40, 64));
+        this.lblSystem.setLocation(new Point(80, 64));
         this.lblSystem.setName("lblSystem");
-        this.lblSystem.setPreferredSize(new Dimension(284, 16));
-        // this.lblSystem.TabIndex = 6
+        this.lblSystem.setPreferredSize(new Dimension(240, 16));
         this.lblSystem.setText("01234567890123456789012345678901234567890123456789");
         //
         // lblComposer
         //
-        this.lblComposer.setHorizontalAlignment(SwingConstants.CENTER);
+        this.lblComposer.setHorizontalAlignment(SwingConstants.LEFT);
         this.lblComposer.setVerticalAlignment(SwingConstants.TOP);
         this.lblComposer.setBackground(Color.black);
         this.lblComposer.setFont(new Font("Meyryo", Font.BOLD, 9));
         this.lblComposer.setForeground(new Color(192, 192, 255));
-        this.lblComposer.setLocation(new Point(40, 96));
+        this.lblComposer.setLocation(new Point(80, 96));
         this.lblComposer.setName("lblComposer");
-        this.lblComposer.setPreferredSize(new Dimension(284, 16));
-        // this.lblComposer.TabIndex = 7
+        this.lblComposer.setPreferredSize(new Dimension(240, 16));
         this.lblComposer.setText("01234567890123456789012345678901234567890123456789");
         //
         // lblRelease
         //
-        this.lblRelease.setHorizontalAlignment(SwingConstants.CENTER);
+        this.lblRelease.setHorizontalAlignment(SwingConstants.LEFT);
         this.lblRelease.setVerticalAlignment(SwingConstants.TOP);
         this.lblRelease.setBackground(Color.black);
         this.lblRelease.setFont(new Font("Meyryo", Font.BOLD, 9));
         this.lblRelease.setForeground(new Color(192, 192, 255));
-        this.lblRelease.setLocation(new Point(40, 128));
+        this.lblRelease.setLocation(new Point(80, 128));
         this.lblRelease.setName("lblRelease");
-        this.lblRelease.setPreferredSize(new Dimension(284, 16));
-        // this.lblRelease.TabIndex = 8
+        this.lblRelease.setPreferredSize(new Dimension(240, 16));
         this.lblRelease.setText("01234567890123456789012345678901234567890123456789");
         //
         // lblVersion
         //
-        this.lblVersion.setHorizontalAlignment(SwingConstants.CENTER);
+        this.lblVersion.setHorizontalAlignment(SwingConstants.LEFT);
         this.lblVersion.setVerticalAlignment(SwingConstants.TOP);
         this.lblVersion.setBackground(Color.black);
         this.lblVersion.setFont(new Font("Meyryo", Font.BOLD, 9));
         this.lblVersion.setForeground(new Color(192, 192, 255));
-        this.lblVersion.setLocation(new Point(40, 144));
+        this.lblVersion.setLocation(new Point(80, 144));
         this.lblVersion.setName("lblVersion");
-        this.lblVersion.setPreferredSize(new Dimension(284, 16));
-        // this.lblVersion.TabIndex = 9
+        this.lblVersion.setPreferredSize(new Dimension(240, 16));
         this.lblVersion.setText("01234567890123456789012345678901234567890123456789");
         //
         // lblVGMBy
         //
-        this.lblVGMBy.setHorizontalAlignment(SwingConstants.CENTER);
+        this.lblVGMBy.setHorizontalAlignment(SwingConstants.LEFT);
         this.lblVGMBy.setVerticalAlignment(SwingConstants.TOP);
         this.lblVGMBy.setBackground(Color.black);
         this.lblVGMBy.setFont(new Font("Meyryo", Font.BOLD, 9));
         this.lblVGMBy.setForeground(new Color(192, 192, 255));
-        this.lblVGMBy.setLocation(new Point(40, 160));
+        this.lblVGMBy.setLocation(new Point(80, 160));
         this.lblVGMBy.setName("lblVGMBy");
-        this.lblVGMBy.setPreferredSize(new Dimension(284, 16));
-        // this.lblVGMBy.TabIndex = 10
+        this.lblVGMBy.setPreferredSize(new Dimension(240, 16));
         this.lblVGMBy.setText("01234567890123456789012345678901234567890123456789");
         //
         // lblNotes
         //
-        this.lblNotes.setHorizontalAlignment(SwingConstants.CENTER);
+        this.lblNotes.setHorizontalAlignment(SwingConstants.LEFT);
         this.lblNotes.setVerticalAlignment(SwingConstants.TOP);
         this.lblNotes.setBackground(Color.black);
         this.lblNotes.setFont(new Font("Meyryo", Font.BOLD, 9));
         this.lblNotes.setForeground(new Color(192, 192, 255));
-        this.lblNotes.setLocation(new Point(40, 176));
+        this.lblNotes.setLocation(new Point(80, 176));
         this.lblNotes.setName("lblNotes");
-        this.lblNotes.setPreferredSize(new Dimension(284, 16));
-        // this.lblNotes.TabIndex = 11
+        this.lblNotes.setPreferredSize(new Dimension(240, 16));
         this.lblNotes.setText("01234567890123456789012345678901234567890123456789");
         //
         // lblUsedChips
         //
-        this.lblUsedChips.setHorizontalAlignment(SwingConstants.CENTER);
+        this.lblUsedChips.setHorizontalAlignment(SwingConstants.LEFT);
         this.lblUsedChips.setVerticalAlignment(SwingConstants.TOP);
         this.lblUsedChips.setBackground(Color.black);
         this.lblUsedChips.setFont(new Font("Meyryo", Font.BOLD, 9));
         this.lblUsedChips.setForeground(new Color(192, 192, 255));
-        this.lblUsedChips.setLocation(new Point(40, 192));
+        this.lblUsedChips.setLocation(new Point(80, 192));
         this.lblUsedChips.setName("lblUsedChips");
-        this.lblUsedChips.setPreferredSize(new Dimension(284, 16));
-        // this.lblUsedChips.TabIndex = 12
+        this.lblUsedChips.setPreferredSize(new Dimension(240, 16));
         this.lblUsedChips.setText("01234567890123456789012345678901234567890123456789");
         //
         // lblSystemJ
         //
-        this.lblSystemJ.setHorizontalAlignment(SwingConstants.CENTER);
+        this.lblSystemJ.setHorizontalAlignment(SwingConstants.LEFT);
         this.lblSystemJ.setVerticalAlignment(SwingConstants.TOP);
         this.lblSystemJ.setBackground(Color.black);
         this.lblSystemJ.setFont(new Font("Meyryo", Font.BOLD, 9));
         this.lblSystemJ.setForeground(new Color(192, 192, 255));
-        this.lblSystemJ.setLocation(new Point(40, 80));
+        this.lblSystemJ.setLocation(new Point(80, 80));
         this.lblSystemJ.setName("lblSystemJ");
-        this.lblSystemJ.setPreferredSize(new Dimension(284, 16));
-        // this.lblSystemJ.TabIndex = 13
+        this.lblSystemJ.setPreferredSize(new Dimension(240, 16));
         this.lblSystemJ.setText("01234567890123456789012345678901234567890123456789");
         //
         // lblComposerJ
         //
-        this.lblComposerJ.setHorizontalAlignment(SwingConstants.CENTER);
+        this.lblComposerJ.setHorizontalAlignment(SwingConstants.LEFT);
         this.lblComposerJ.setVerticalAlignment(SwingConstants.TOP);
         this.lblComposerJ.setBackground(Color.black);
         this.lblComposerJ.setFont(new Font("Meyryo", Font.BOLD, 9));
         this.lblComposerJ.setForeground(new Color(192, 192, 255));
-        this.lblComposerJ.setLocation(new Point(40, 112));
+        this.lblComposerJ.setLocation(new Point(80, 112));
         this.lblComposerJ.setName("lblComposerJ");
-        this.lblComposerJ.setPreferredSize(new Dimension(284, 16));
+        this.lblComposerJ.setPreferredSize(new Dimension(240, 16));
         // this.lblComposerJ.TabIndex = 14
         this.lblComposerJ.setText("01234567890123456789012345678901234567890123456789");
         //
         // timer
         //
-//        this.timer.Interval = 10;
-//        this.timer.Tick += new System.EventHandler(this.timer_Tick);
         this.timer.start();
         //
         // rtbLyrics
@@ -420,9 +421,20 @@ public class FormInfo extends JFrame {
         //
         // frmInfo
         //
-        this.setBackground(Color.black);
+        JPanel contentPane = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                if (image != null) {
+                    g.drawImage(image, 0, 0, this);
+                }
+            }
+        };
+        contentPane.setBackground(Color.BLACK);
+        contentPane.setLayout(null);
+        this.setContentPane(contentPane);
+
         this.image = Common.getImage("planeB");
-        this.setPreferredSize(new Dimension(324, 229));
         this.getContentPane().add(this.rtbLyrics);
         this.getContentPane().add(this.lblComposerJ);
         this.getContentPane().add(this.lblSystemJ);
@@ -438,11 +450,26 @@ public class FormInfo extends JFrame {
         this.getContentPane().add(this.lblTitleJ);
         this.getContentPane().add(this.lblTitle);
         this.setIconImage(Common.getImage("Feli128"));
-        this.setMaximumSize(new Dimension(800, 268));
-        this.setMinimumSize(new Dimension(252, 268));
         this.setName("frmInfo");
         this.setTitle("Information");
+        this.setResizable(false);
         this.addWindowListener(this.windowListener);
+
+        Layouts.absolute(this.getContentPane());
+
+        // Determine size dynamically from components and background image
+        int width = 320;
+        int height = 224;
+        if (this.image != null) {
+            width = this.image.getWidth();
+            height = this.image.getHeight();
+        }
+        for (java.awt.Component component : this.getContentPane().getComponents()) {
+            width = Math.max(width, component.getX() + component.getWidth());
+            height = Math.max(height, component.getY() + component.getHeight());
+        }
+        this.getContentPane().setPreferredSize(new Dimension(width, height));
+        this.pack();
     }
 
     BufferedImage image;
@@ -460,5 +487,5 @@ public class FormInfo extends JFrame {
     private JLabel lblSystemJ;
     private JLabel lblComposerJ;
     private Timer timer;
-    private JTextField rtbLyrics;
+    JTextPane rtbLyrics;
 }

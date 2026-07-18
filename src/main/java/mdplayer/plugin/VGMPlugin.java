@@ -85,8 +85,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
                 chip.clock = driverVirtual.vgm.sn76489ClockValue |
                         (driverVirtual.vgm.sn76489NGPFlag ? 0x8000_0000 : 0);
 
-                chipRegister.chip(Sn76489Chip.class).clock = chip.clock & 0x7fff_ffff;
-
                 hiyorimiDeviceFlag |= (setting.getSN76489Type()[0].getUseReal()[0]) ? 0x1 : 0x2;
                 chipRegister.chip(Sn76489Chip.class).ngpFlag = driverVirtual.vgm.sn76489NGPFlag;
 
@@ -120,8 +118,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2612Chip.class);
                 chip.clock = driverVirtual.vgm.ym2612ClockValue;
-
-                chipRegister.chip(Ym2612Chip.class).clock = driverVirtual.vgm.ym2612ClockValue;
 
                 hiyorimiDeviceFlag |= (setting.getYM2612Type()[0].getUseReal()[0]) ? 0x1 : 0x2;
                 hiyorimiDeviceFlag |= (setting.getYM2612Type()[0].getUseReal()[0]
@@ -300,8 +296,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
                 chip.option = new Object[] {fn};
                 hiyorimiDeviceFlag |= 0x2;
 
-                chipRegister.chip(Ym2608Chip.class).clock = driverVirtual.vgm.ym2608ClockValue;
-
                 put(Ym2608Chip.class, chip);
             }
         }
@@ -335,8 +329,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2203Chip.class);
                 chip.clock = driverVirtual.vgm.ym2203ClockValue;
                 chip.option = null;
-
-                chipRegister.chip(Ym2203Chip.class).clock = driverVirtual.vgm.ym2203ClockValue;
 
                 hiyorimiDeviceFlag |= 0x2;
 
@@ -458,7 +450,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ay8910Chip.class);
                 chip.clock = (driverVirtual.vgm.ay8910ClockValue & 0x7fff_ffff) / 2;
-                chipRegister.chip(Ay8910Chip.class).clock = chip.clock;
                 chip.option = null;
 
                 hiyorimiDeviceFlag |= 0x2;
@@ -597,7 +588,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
                     chip.setVolumes.put("Rear", c352::setRearMute);
                 chip.option = new Object[] {(driverVirtual.vgm.c352ClockDivider)};
                 int divider = (driverVirtual.vgm.c352ClockDivider) != 0 ? (driverVirtual.vgm.c352ClockDivider) : 288;
-                chipRegister.chip(C352Chip.class).clock = chip.clock / divider;
                 C352.setOptions((driverVirtual.vgm.c352ClockValue >> 31));
                 hiyorimiDeviceFlag |= 0x2;
 
@@ -660,7 +650,6 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, K051649Chip.class);
                 chip.clock = driverVirtual.vgm.k051649ClockValue;
-                chipRegister.chip(K051649Chip.class).clock = chip.clock;
                 chip.option = null;
 
                 hiyorimiDeviceFlag |= 0x2;

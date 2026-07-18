@@ -9,7 +9,6 @@ package mdplayer.chips;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
-import mdplayer.MDChipParams.VolumeInfo;
 import mdplayer.Setting;
 import mdsound.Instrument;
 import mdsound.instrument.HuC6280Inst;
@@ -25,7 +24,6 @@ public class HuC6280Chip extends BaseChip {
 
     private final Setting.ChipType2[] chipTypes = setting.getHuC6280Type();
 
-    @Deprecated
     private final boolean[][] mask = {
             {false, false, false, false, false, false},
             {false, false, false, false, false, false}
@@ -77,7 +75,8 @@ public class HuC6280Chip extends BaseChip {
 
     @Override
     public Map<String, Object> getInfo(int chipId) {
-        return context.mds.inst(HuC6280Inst.class).getView(chipId, "info", null);
+        HuC6280Inst inst = context.mds.inst(HuC6280Inst.class);
+        return inst == null ? null : inst.getView(chipId, "info", null);
     }
 
     public void setMask(int chipId, int ch) {
@@ -88,24 +87,8 @@ public class HuC6280Chip extends BaseChip {
         setMask(chipId, ch, false);
     }
 
-    @Deprecated
-    public static class Params {
-
-        public int mvolL = -1;
-        public int mvolR = -1;
-        public int LfoCtrl = -1;
-        public int LfoFrq = -1;
-
-        public final mdplayer.MDChipParams.Channel[] channels = {new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel()};
+    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    public boolean getMask(int chipId, int ch) {
+        return ch < mask[chipId].length && mask[chipId][ch];
     }
-
-    @Deprecated
-    public final Params[] huc6280 = {new Params(), new Params()};
-    @Deprecated
-    public final Params[] huc6280_old = {new Params(), new Params()};
-
-    @Deprecated
-    public final VolumeInfo HuC6280 = new VolumeInfo();
-    @Deprecated
-    public final VolumeInfo HuC6280_old = new VolumeInfo();
 }

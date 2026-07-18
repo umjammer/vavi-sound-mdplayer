@@ -74,7 +74,6 @@ logger.log(Level.INFO, "MGSDRV: AY: %b, SCC: %b, OPLL: %b".formatted(useAY, useS
                 };
             }
             put(Ay8910Chip.class, chip);
-            chipRegister.chip(Ay8910Chip.class).clock = MgsDrv.baseClockAY8910;
         }
 
         if (useOPLL) {
@@ -86,7 +85,6 @@ logger.log(Level.INFO, "MGSDRV: AY: %b, SCC: %b, OPLL: %b".formatted(useAY, useS
             chip.clock = MgsDrv.baseClockYM2413;
             chip.option = null;
             put(Ym2413Chip.class, chip);
-            chipRegister.chip(Ym2413Chip.class).clock = MgsDrv.baseClockYM2413;
         }
 
         if (useSCC) {
@@ -98,7 +96,6 @@ logger.log(Level.INFO, "MGSDRV: AY: %b, SCC: %b, OPLL: %b".formatted(useAY, useS
             chip.clock = MgsDrv.baseClockK051649;
             chip.option = null;
             put(K051649Chip.class, chip);
-            chipRegister.chip(K051649Chip.class).clock = MgsDrv.baseClockK051649;
         }
 
         mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, flatten());

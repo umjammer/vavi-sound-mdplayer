@@ -211,6 +211,9 @@ logger.log(Level.INFO, "stop: " + this.stopped);
         chipRegister.plugin(MidiPlugin.class).setFileName(playingFileName); // for ExportMIDI
         extendFiles = format.getExtendFiles(); // Additional files
         Common.playingFilePath = Path.of(playingFileName).getParent(); // TODO gross
+
+        // the YM2612 panel draws XGM songs differently; the chip carries the format for the view
+        chipRegister.chip(mdplayer.chips.Ym2612Chip.class).fileFormat = format;
     }
 
     @Override

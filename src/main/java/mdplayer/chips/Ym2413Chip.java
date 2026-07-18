@@ -9,7 +9,6 @@ package mdplayer.chips;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
-import mdplayer.MDChipParams.VolumeInfo;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
@@ -48,14 +47,10 @@ public class Ym2413Chip extends BaseChip {
     private final int[] fadeout = {0, 0};
     @Deprecated
     private final boolean[] rm = {false, false};
-    @Deprecated
     private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false}
     };
-
-    @Deprecated
-    public int clock;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -225,22 +220,8 @@ public class Ym2413Chip extends BaseChip {
         setFadeout(1, 0);
     }
 
-    @Deprecated
-    public static class Params {
-
-        public final mdplayer.MDChipParams.Channel[] channels = {
-                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), // FM 9
-                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel() // Rhythm 5
-        };
+    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    public boolean getMask(int chipId, int ch) {
+        return ch < mask[chipId].length && mask[chipId][ch];
     }
-
-    @Deprecated
-    public final Params[] ym2413 = {new Params(), new Params()};
-    @Deprecated
-    public final Params[] ym2413_old = {new Params(), new Params()};
-
-    @Deprecated
-    public final VolumeInfo YM2413 = new VolumeInfo();
-    @Deprecated
-    public final VolumeInfo YM2413_old = new VolumeInfo();
 }

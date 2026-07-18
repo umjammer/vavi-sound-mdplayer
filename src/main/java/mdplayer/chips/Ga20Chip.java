@@ -9,7 +9,6 @@ package mdplayer.chips;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
-import mdplayer.MDChipParams.VolumeInfo;
 import mdsound.Instrument;
 import mdsound.instrument.Ga20Inst;
 
@@ -51,22 +50,4 @@ public class Ga20Chip extends BaseChip {
 
         dumpData(model, "PCMData", srcOffset, buf, length);
     }
-
-    @Deprecated
-    public static class Params {
-
-        public final mdplayer.MDChipParams.Channel[] channels = new mdplayer.MDChipParams.Channel[] {
-                new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel(), new mdplayer.MDChipParams.Channel()
-        };
-    }
-
-    @Deprecated
-    public final Params[] ga20 = new Params[] {new Params(), new Params()};
-    @Deprecated
-    public final Params[] ga20_old = new Params[] {new Params(), new Params()};
-
-    @Deprecated
-    public final VolumeInfo GA20 = new VolumeInfo();
-    @Deprecated
-    public final VolumeInfo GA20_old = new VolumeInfo();
 }

@@ -61,6 +61,10 @@ public class NesChip extends BaseChip {
         public void resetDmcMask(int chipId, int ch) {
             resetMask(chipId, ch + 2);
         }
+
+        public boolean getDmcMask(int chipId, int ch) {
+            return (dmcMask & (1 << ch)) != 0;
+        }
     }
 
     // vgm
@@ -148,6 +152,7 @@ public class NesChip extends BaseChip {
             switch (ch) {
                 case 0:
                 case 1:
+                    apuMask |= 1 << ch;
                     break;
                 case 2:
                 case 3:
@@ -167,6 +172,7 @@ public class NesChip extends BaseChip {
             switch (ch) {
                 case 0:
                 case 1:
+                    apuMask &= ~(1 << ch);
                     break;
                 case 2:
                 case 3:
@@ -178,6 +184,10 @@ public class NesChip extends BaseChip {
         Instrument instrument = context.mds.inst(NesInst.class);
         if (instrument == null) return; // the song being played does not use this chip
         instrument.resetMask(chipId, ch);
+    }
+
+    public boolean getMask(int chipId, int ch) {
+        return (apuMask & (1 << ch)) != 0;
     }
 
     // vgm
