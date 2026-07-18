@@ -5,6 +5,11 @@
   <artifactId>vavi-apps-mdplayer</artifactId>
   <version>0.0.17</version>
 
+  <properties>
+    <!-- the music file `mvn exec:exec` starts playing, none by default -->
+    <mdplayer.file/>
+  </properties>
+
   <profiles>
     <profile>
       <id>local</id>
@@ -130,6 +135,38 @@
         </plugins>
       </build>
     </profile>
+
+    <profile>
+      <!-- mvn -P run antrun:run -Dfile='foo.vgz' -->
+      <id>run</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <version>3.1.0</version>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <java classname="mdplayer.Program" fork="true">
+                  <classpath>
+                    <path refid="maven.compile.classpath"/>
+                    <path refid="maven.test.classpath"/>
+                  </classpath>
+                  <jvmarg value="-Djava.util.logging.config.file=${project.build.testOutputDirectory}/logging.properties" />
+                  <!-- jvmarg value="-Dswing.defaultlaf=com.formdev.flatlaf.FlatLightLaf" / -->
+                  <jvmarg value="-Dapple.laf.useScreenMenuBar=true" />
+                  <jvmarg value="-Dapple.awt.application.name=MDPlayer" />
+                  <arg value="${file}" />
+                </java>
+              </target>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
 
   <build>
@@ -164,6 +201,24 @@
             -Dmdplayer.variant.ymf262=@{mdplayer.variant.ymf262}
           </argLine>
           <trimStackTrace>false</trimStackTrace>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.2.0</version>
+        <configuration>
+          <!-- mvn exec:exec [-Dmdplayer.file=path/to/music] -->
+          <executable>${java.home}/bin/java</executable>
+          <arguments>
+            <argument>--add-opens=java.base/java.io=ALL-UNNAMED</argument>
+            <argument>--add-opens=java.base/sun.nio.ch=ALL-UNNAMED</argument>
+            <argument>--add-exports=java.desktop/com.sun.media.sound=ALL-UNNAMED</argument>
+            <argument>-classpath</argument>
+            <classpath/>
+            <argument>mdplayer.Program</argument>
+            <argument>${mdplayer.file}</argument>
+          </arguments>
         </configuration>
       </plugin>
     </plugins>
@@ -218,7 +273,7 @@
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
       <artifactId>vavi-sound-mdsound</artifactId>
-      <version>0.0.19</version>
+      <version>0.0.20</version>
     </dependency>
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
@@ -301,7 +356,7 @@
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
       <artifactId>vavi-util-screenscraping</artifactId>
-      <version>1.0.17</version>
+      <version>1.0.18</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>

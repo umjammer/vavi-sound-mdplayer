@@ -260,6 +260,8 @@ you can select a chip implementation variant by number.
     * ~~gbs: song no 9 -  wrong~~
     * zms: upstream STBL561 new patch (but this library doesn't slow)
     * fmp: startup is slow
+    * mxdrv: current-position counter reads 0
+    * mxdrv: pdx (see portable mdx)
  * chip class should handle one chip
  * ~~eliminate dotnet4j~~
  * ~~vgm spi selector~~
@@ -270,6 +272,18 @@ you can select a chip implementation variant by number.
  * \[ym] move ym2149ex to mdsound
  * ~~make VisWaveBuffer as one of view~~ 
  * ~~change fmdsp right top strings "for UNIX/..."~~
+ * json serdes impls are too heavy (own 2 spi), can we get by with annotation to fields
+ * ~~`Common#copyField` ... i don't like it~~
+ * `mdplayer.form` package
+   * ~~eliminate chip listing inside forms~~
+     * ~~view provider~~
+       * ~~kb from~~
+       * ~~settings~~
+   * ~~visualizer?~~
+   * ~~closing when playing~~ ... maybe because of jnuit runner of idea
+   * ~~heavy json serdes~~
+   * ~~FormRegTest open the same page, not reflected from which menu open~~
+   * ~~add a test traversing all settings tab~~
 
 ---
 
