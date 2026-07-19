@@ -12,6 +12,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.prefs.Preferences;
 
 import mdplayer.Common;
@@ -30,7 +31,7 @@ import mdplayer.form.View;
 
 public class FormSN76489 extends FormChipBase<FormSN76489.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormSN76489.class).node(FormSN76489.class.getSimpleName());
+    static final Preferences prefs = Preferences.userNodeForPackage(FormSN76489.class);
 
     public FormSN76489(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -397,8 +398,8 @@ public class FormSN76489 extends FormChipBase<FormSN76489.Params> {
                         audio.plugin.chipRegister.chip(mdplayer.chips.Sn76489Chip.class).getMask(chipId, ch));
         }
 
-        @Override public java.util.List<MixerSlot> mixerSlots() {
-            return java.util.List.of(new MixerSlot(26, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Sn76489Chip.class, "sn76489", 120));
+        @Override public List<MixerSlot> mixerSlots() {
+            return List.of(new MixerSlot(26, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Sn76489Chip.class, "sn76489", 120));
         }
     }
 }

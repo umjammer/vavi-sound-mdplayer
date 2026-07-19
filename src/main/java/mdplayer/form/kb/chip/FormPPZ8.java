@@ -12,6 +12,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
@@ -29,7 +30,7 @@ import mdplayer.form.View;
 
 public class FormPPZ8 extends FormChipBase<FormPPZ8.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormPPZ8.class).node(FormPPZ8.class.getSimpleName());
+    static final Preferences prefs = Preferences.userNodeForPackage(FormPPZ8.class);
 
     public FormPPZ8(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -383,8 +384,8 @@ public class FormPPZ8 extends FormChipBase<FormPPZ8.Params> {
             }
         }
 
-        @Override public java.util.List<MixerSlot> mixerSlots() {
-            return java.util.List.of(new MixerSlot(61, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Ppz8Chip.class, "ppz8", 200));
+        @Override public List<MixerSlot> mixerSlots() {
+            return List.of(new MixerSlot(61, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Ppz8Chip.class, "ppz8", 200));
         }
     }
 }

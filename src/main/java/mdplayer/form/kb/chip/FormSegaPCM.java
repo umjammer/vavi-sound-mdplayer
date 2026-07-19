@@ -12,6 +12,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
@@ -29,7 +30,7 @@ import mdplayer.form.View;
 
 public class FormSegaPCM extends FormChipBase<FormSegaPCM.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormSegaPCM.class).node(FormSegaPCM.class.getSimpleName());
+    static final Preferences prefs = Preferences.userNodeForPackage(FormSegaPCM.class);
 
     public FormSegaPCM(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -110,7 +111,6 @@ public class FormSegaPCM extends FormChipBase<FormSegaPCM.Params> {
                 }
 
                 for (ch = 0; ch < 16; ch++) parent.resetChannelMask(SegaPcmChip.class, chipId, ch);
-
             }
         }
     };
@@ -270,9 +270,13 @@ public class FormSegaPCM extends FormChipBase<FormSegaPCM.Params> {
     /** this panel's per-frame draw state, diffed new against old (see {@link FormChipBase}) */
     public static class Params {
 
-        public final ChannelParams[] channels = new ChannelParams[] {new ChannelParams(), new ChannelParams(), new ChannelParams(), new ChannelParams(), new ChannelParams(), new ChannelParams(), new ChannelParams(), new ChannelParams(), new ChannelParams(), new ChannelParams(), new ChannelParams(), new ChannelParams(), new ChannelParams(), new ChannelParams(), new ChannelParams(), new ChannelParams()};
+        public final ChannelParams[] channels = new ChannelParams[] {
+                new ChannelParams(), new ChannelParams(), new ChannelParams(), new ChannelParams(),
+                new ChannelParams(), new ChannelParams(), new ChannelParams(), new ChannelParams(),
+                new ChannelParams(), new ChannelParams(), new ChannelParams(), new ChannelParams(),
+                new ChannelParams(), new ChannelParams(), new ChannelParams(), new ChannelParams()
+        };
     }
-
 
     /** what this panel contributes to the GUI; see {@link ViewProvider} */
     public static class Provider implements ViewProvider {
@@ -308,8 +312,8 @@ public class FormSegaPCM extends FormChipBase<FormSegaPCM.Params> {
                         audio.plugin.chipRegister.chip(mdplayer.chips.SegaPcmChip.class).getMask(chipId, ch));
         }
 
-        @Override public java.util.List<MixerSlot> mixerSlots() {
-            return java.util.List.of(new MixerSlot(41, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.SegaPcmChip.class, "segaPCM", 200));
+        @Override public List<MixerSlot> mixerSlots() {
+            return List.of(new MixerSlot(41, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.SegaPcmChip.class, "segaPCM", 200));
         }
 
         @Override public void updateMeters(mdplayer.Audio audio, mdplayer.form.VisVolume visVolume) {

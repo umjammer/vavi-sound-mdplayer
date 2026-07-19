@@ -12,6 +12,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.prefs.Preferences;
 
 import mdplayer.Common;
@@ -30,7 +31,7 @@ import mdplayer.form.View;
 
 public class FormC140 extends FormChipBase<FormC140.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormC140.class).node(FormC140.class.getSimpleName());
+    static final Preferences prefs = Preferences.userNodeForPackage(FormC140.class);
 
     public FormC140(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -378,8 +379,8 @@ public class FormC140 extends FormChipBase<FormC140.Params> {
                         audio.plugin.chipRegister.chip(mdplayer.chips.C140Chip.class).getMask(chipId, ch));
         }
 
-        @Override public java.util.List<MixerSlot> mixerSlots() {
-            return java.util.List.of(new MixerSlot(39, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.C140Chip.class, "c140", 200));
+        @Override public List<MixerSlot> mixerSlots() {
+            return List.of(new MixerSlot(39, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.C140Chip.class, "c140", 200));
         }
     }
 }

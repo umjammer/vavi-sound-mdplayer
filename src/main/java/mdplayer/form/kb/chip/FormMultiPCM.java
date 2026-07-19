@@ -12,6 +12,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
@@ -28,7 +29,7 @@ import mdplayer.form.View;
 
 public class FormMultiPCM extends FormChipBase<FormMultiPCM.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormMultiPCM.class).node(FormMultiPCM.class.getSimpleName());
+    static final Preferences prefs = Preferences.userNodeForPackage(FormMultiPCM.class);
 
     public FormMultiPCM(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -318,8 +319,8 @@ public class FormMultiPCM extends FormChipBase<FormMultiPCM.Params> {
         @Override public Class<? extends mdplayer.Chip> chip() { return mdplayer.chips.MultiPcmChip.class; }
         @Override public View create(FormMain frm, int chipId, int zoom) { return new FormMultiPCM(frm, chipId, zoom); }
 
-        @Override public java.util.List<MixerSlot> mixerSlots() {
-            return java.util.List.of(new MixerSlot(42, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.MultiPcmChip.class, "multiPCM", 200));
+        @Override public List<MixerSlot> mixerSlots() {
+            return List.of(new MixerSlot(42, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.MultiPcmChip.class, "multiPCM", 200));
         }
 
         @Override public void updateMeters(mdplayer.Audio audio, mdplayer.form.VisVolume visVolume) {

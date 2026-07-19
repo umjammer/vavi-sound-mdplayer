@@ -12,6 +12,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
@@ -28,7 +29,7 @@ import mdplayer.form.View;
 
 public class FormOKIM6295 extends FormChipBase<FormOKIM6295.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormOKIM6295.class).node(FormOKIM6295.class.getSimpleName());
+    static final Preferences prefs = Preferences.userNodeForPackage(FormOKIM6295.class);
 
     public FormOKIM6295(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -342,8 +343,8 @@ public class FormOKIM6295 extends FormChipBase<FormOKIM6295.Params> {
                         audio.plugin.chipRegister.chip(mdplayer.chips.OkiM6295Chip.class).getMask(chipId, ch));
         }
 
-        @Override public java.util.List<MixerSlot> mixerSlots() {
-            return java.util.List.of(new MixerSlot(38, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.OkiM6295Chip.class, "okim6295", 200));
+        @Override public List<MixerSlot> mixerSlots() {
+            return List.of(new MixerSlot(38, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.OkiM6295Chip.class, "okim6295", 200));
         }
     }
 }

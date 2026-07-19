@@ -12,6 +12,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.prefs.Preferences;
 
 import mdplayer.Common;
@@ -21,6 +22,7 @@ import mdplayer.Tables;
 import mdplayer.chips.NesChip;
 import mdplayer.chips.NesChip.DmcChip;
 import mdplayer.chips.NpNesChip;
+import mdplayer.form.SettingTab;
 import mdplayer.form.kb.ChannelParams;
 import mdplayer.form.kb.Meters;
 import mdplayer.form.kb.ViewProvider;
@@ -31,9 +33,7 @@ import mdplayer.form.sys.setting.SettingNSFPanel;
 
 public class FormNESDMC extends FormChipBase<FormNESDMC.Params> {
 
-    //
-
-    static final Preferences prefs = Preferences.userNodeForPackage(FormNESDMC.class).node(FormNESDMC.class.getSimpleName());
+    static final Preferences prefs = Preferences.userNodeForPackage(FormNESDMC.class);
 
     public FormNESDMC(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -410,7 +410,6 @@ public class FormNESDMC extends FormChipBase<FormNESDMC.Params> {
         public final Channel dmcChannel = new Channel();
     }
 
-
     /** what this panel contributes to the GUI; see {@link ViewProvider} */
     public static class Provider implements ViewProvider {
 
@@ -420,10 +419,10 @@ public class FormNESDMC extends FormChipBase<FormNESDMC.Params> {
         @Override public Class<? extends mdplayer.Chip> chip() { return mdplayer.chips.NesChip.class; }
         @Override public String title(int chipId) { return "NES&DMC (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"); }
         @Override public View create(FormMain frm, int chipId, int zoom) { return new FormNESDMC(frm, chipId, zoom); }
-        @Override public java.util.List<mdplayer.form.SettingTab> settingTabs() { return java.util.List.of(new SettingNSFPanel()); }
+        @Override public List<SettingTab> settingTabs() { return List.of(new SettingNSFPanel()); }
 
-        @Override public java.util.List<Class<? extends mdplayer.Chip>> maskChips() {
-            return java.util.List.of(mdplayer.chips.NesChip.class, mdplayer.chips.NesChip.DmcChip.class);
+        @Override public List<Class<? extends mdplayer.Chip>> maskChips() {
+            return List.of(mdplayer.chips.NesChip.class, mdplayer.chips.NesChip.DmcChip.class);
         }
 
         @Override public void setChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
@@ -502,8 +501,8 @@ public class FormNESDMC extends FormChipBase<FormNESDMC.Params> {
                 forceChannelMask(audio, mdplayer.chips.NesChip.class, chipId, ch, false /* state is read per channel */);
         }
 
-        @Override public java.util.List<MixerSlot> mixerSlots() {
-            return java.util.List.of(new MixerSlot(48, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.NesChip.class, "APU", 200),
+        @Override public List<MixerSlot> mixerSlots() {
+            return List.of(new MixerSlot(48, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.NesChip.class, "APU", 200),
                     new MixerSlot(49, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.NesChip.DmcChip.class, "DMC", 350));
         }
 

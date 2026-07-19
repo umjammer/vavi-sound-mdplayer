@@ -3,13 +3,37 @@ package mdplayer;
 import java.awt.Frame;
 import java.io.File;
 import java.lang.reflect.Field;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import static org.junit.jupiter.api.Assertions.*;
 import mdplayer.form.sys.FormMain;
+import vavi.util.properties.annotation.Property;
+import vavi.util.properties.annotation.PropsEntity;
+
 
 @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
+@PropsEntity(url = "file:local.properties")
 public class RobotTest {
+
+    static boolean localPropertiesExists() {
+            return Files.exists(Paths.get("local.properties"));
+        }
+
+    @Property(name = "vavi.test.volume")
+    double volume = 0.2;
+
+    @BeforeEach
+    void setup() throws Exception {
+        if (localPropertiesExists()) {
+            PropsEntity.Util.bind(this);
+        }
+
+        System.setProperty("mdplayer.volume", "%4.2f".formatted(volume));
+    }
 
     @Test
     public void testArgumentStartupDelayAndFadeoutState() throws Exception {

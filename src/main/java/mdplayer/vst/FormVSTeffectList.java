@@ -47,7 +47,7 @@ public class FormVSTeffectList extends JFrame {
     private static final boolean isInitialOpenFolder = true;
     final Audio audio = Audio.getInstance();
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormVSTeffectList.class).node(FormVSTeffectList.class.getSimpleName());
+    static final Preferences prefs = Preferences.userNodeForPackage(FormVSTeffectList.class);
 
     public FormVSTeffectList(FormMain parent, Setting setting) {
         initializeComponent();

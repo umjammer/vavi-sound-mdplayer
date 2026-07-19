@@ -12,6 +12,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
@@ -32,7 +33,7 @@ import mdplayer.form.View;
 
 public class FormC352 extends FormChipBase<FormC352.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormC352.class).node(FormC352.class.getSimpleName());
+    static final Preferences prefs = Preferences.userNodeForPackage(FormC352.class);
 
     public FormC352(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -118,7 +119,7 @@ public class FormC352 extends FormChipBase<FormC352.Params> {
     };
 
     public void initScreen() {
-        boolean C352Type = false;// (chipId == 0) ? parent.setting.C352Type.UseScci : parent.setting.C352SType.UseScci;
+        boolean C352Type = false; // (chipId == 0) ? parent.setting.C352Type.UseScci : parent.setting.C352SType.UseScci;
         int tp = C352Type ? 1 : 0;
         for (int ch = 0; ch < 32; ch++) {
             for (int ot = 0; ot < 12 * 8; ot++) {
@@ -129,8 +130,8 @@ public class FormC352 extends FormChipBase<FormC352.Params> {
             //frameBuffer.drawFont8(296, ch * 8 + 8, 1, "   ");
             frameBuffer.drawPanType2P(24, ch * 8 + 8, 0, tp);
             drawChC140_P(frameBuffer, 0, 8 + ch * 8, ch, false, tp);
-            //frameBuffer.Volume(ch, 1,d, 0, tp);
-            //frameBuffer.Volume(ch, 2,d, 0, tp);
+            //frameBuffer.drawVolume(ch, 1,d, 0, tp);
+            //frameBuffer.drawVolume(ch, 2,d, 0, tp);
         }
     }
 
@@ -349,7 +350,6 @@ public class FormC352 extends FormChipBase<FormC352.Params> {
         };
     }
 
-
     /** what this panel contributes to the GUI; see {@link ViewProvider} */
     public static class Provider implements ViewProvider {
 
@@ -384,8 +384,8 @@ public class FormC352 extends FormChipBase<FormC352.Params> {
                         audio.plugin.chipRegister.chip(mdplayer.chips.C352Chip.class).getMask(chipId, ch));
         }
 
-        @Override public java.util.List<MixerSlot> mixerSlots() {
-            return java.util.List.of(new MixerSlot(40, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.C352Chip.class, "c352", 200));
+        @Override public List<MixerSlot> mixerSlots() {
+            return List.of(new MixerSlot(40, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.C352Chip.class, "c352", 200));
         }
     }
 }

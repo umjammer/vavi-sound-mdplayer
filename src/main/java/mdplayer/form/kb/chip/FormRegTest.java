@@ -184,7 +184,7 @@ public class FormRegTest extends FormChipBase<Void> {
         }
     }
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormRegTest.class).node(FormRegTest.class.getSimpleName());
+    static final Preferences prefs = Preferences.userNodeForPackage(FormRegTest.class);
 
     private final int formWidth;
     private final int formHeight;

@@ -66,7 +66,6 @@ public abstract class BaseChip implements Chip {
         if (!setting.getOther().getDumpSwitch()) return;
 
         try {
-
             Path fn = Path.of(setting.getOther().getDumpPath(), "%2$s_%3$s_%1$03d.bin".formatted(dumpCounter++, getClass().getSimpleName().replace("Chip", "_") + name, context.getDriver().metaData.getFirst(Tag.Title).replace("*", "").replace("?", "").replace(" ", "").replace("\"", "").replace("/", "")));
             try (OutputStream fs = Files.newOutputStream(fn)) {
                 fs.write(rom, adr, len);

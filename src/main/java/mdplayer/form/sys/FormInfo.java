@@ -1,6 +1,7 @@
 package mdplayer.form.sys;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Point;
@@ -54,7 +55,7 @@ public class FormInfo extends JFrame {
     public int lyricsIndex = 0;
     private Color culColor = new Color(192, 192, 255);
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormInfo.class).node(FormInfo.class.getSimpleName());
+    static final Preferences prefs = Preferences.userNodeForPackage(FormInfo.class);
 
     public FormInfo(FormMain frm) {
         parent = frm;
@@ -123,7 +124,6 @@ public class FormInfo extends JFrame {
         culColor = new Color(192, 192, 255);
     }
 
-    //    @Override
     protected boolean getShowWithoutActivation() {
         return true;
     }
@@ -464,7 +464,7 @@ public class FormInfo extends JFrame {
             width = this.image.getWidth();
             height = this.image.getHeight();
         }
-        for (java.awt.Component component : this.getContentPane().getComponents()) {
+        for (Component component : this.getContentPane().getComponents()) {
             width = Math.max(width, component.getX() + component.getWidth());
             height = Math.max(height, component.getY() + component.getHeight());
         }

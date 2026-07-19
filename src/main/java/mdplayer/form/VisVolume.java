@@ -15,7 +15,6 @@ public class VisVolume {
 
     public short master = 0;
 
-    // TODO this class should be respond realtime, map might be slow.
     private final Map<String, Integer> visVolumes = new HashMap<>();
 
     /** A meter nothing feeds reads zero, rather than throwing. */

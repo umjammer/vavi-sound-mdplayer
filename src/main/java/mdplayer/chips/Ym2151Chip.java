@@ -402,9 +402,6 @@ public class Ym2151Chip extends BaseChip {
         return ret;
     }
 
-
-
-
     /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
     public boolean getMask(int chipId, int ch) {
         return ch < mask[chipId].length && mask[chipId][ch];

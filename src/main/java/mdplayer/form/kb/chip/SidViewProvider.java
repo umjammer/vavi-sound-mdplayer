@@ -1,7 +1,10 @@
 package mdplayer.form.kb.chip;
 
+import java.util.List;
+
 import mdplayer.Chip;
 import mdplayer.chips.SidChip;
+import mdplayer.form.SettingTab;
 import mdplayer.form.View;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
@@ -17,5 +20,5 @@ public class SidViewProvider implements ViewProvider {
     @Override public boolean hasMenuItem() { return false; }
     @Override public boolean hasRegisterDump() { return true; }
     @Override public View create(FormMain frm, int chipId, int zoom) { return null; }
-    @Override public java.util.List<mdplayer.form.SettingTab> settingTabs() { return java.util.List.of(new SettingSIDPanel()); }
+    @Override public List<SettingTab> settingTabs() { return List.of(new SettingSIDPanel()); }
 }

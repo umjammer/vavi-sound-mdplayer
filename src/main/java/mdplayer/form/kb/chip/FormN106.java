@@ -1,5 +1,6 @@
 package mdplayer.form.kb.chip;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ComponentAdapter;
@@ -12,6 +13,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.prefs.Preferences;
 
 import mdplayer.Common;
@@ -30,7 +32,7 @@ import mdplayer.form.View;
 
 public class FormN106 extends FormChipBase<FormN106.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormN106.class).node(FormN106.class.getSimpleName());
+    static final Preferences prefs = Preferences.userNodeForPackage(FormN106.class);
 
     public FormN106(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -288,7 +290,6 @@ public class FormN106 extends FormChipBase<FormN106.Params> {
         };
     }
 
-
     /** what this panel contributes to the GUI; see {@link ViewProvider} */
     public static class Provider implements ViewProvider {
 
@@ -323,8 +324,8 @@ public class FormN106 extends FormChipBase<FormN106.Params> {
                         audio.plugin.chipRegister.chip(mdplayer.chips.NpNesChip.N163Chip.class).getN163Mask(chipId, ch));
         }
 
-        @Override public java.util.List<MixerSlot> mixerSlots() {
-            return java.util.List.of(new MixerSlot(52, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.NpNesChip.N163Chip.class, "N160", 50));
+        @Override public List<MixerSlot> mixerSlots() {
+            return List.of(new MixerSlot(52, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.NpNesChip.N163Chip.class, "N160", 50));
         }
 
         @Override public void updateMeters(mdplayer.Audio audio, mdplayer.form.VisVolume visVolume) {
@@ -332,7 +333,7 @@ public class FormN106 extends FormChipBase<FormN106.Params> {
             if (n160 >= 0) visVolume.put("N160", n160 * 15);
         }
 
-        @Override public void getInstCh(java.awt.Component parent, mdplayer.Audio audio, mdplayer.Setting setting, int ch, int chipId) {
+        @Override public void getInstCh(Component parent, mdplayer.Audio audio, mdplayer.Setting setting, int ch, int chipId) {
             new mdplayer.form.inst.MckInstWriter().write(parent, audio, chip(), ch, chipId);
         }
     }

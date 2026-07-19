@@ -12,6 +12,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
@@ -32,7 +33,7 @@ import mdplayer.form.View;
 
 public class FormGA20 extends FormChipBase<FormGA20.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormGA20.class).node(FormGA20.class.getSimpleName());
+    static final Preferences prefs = Preferences.userNodeForPackage(FormGA20.class);
 
     public FormGA20(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -253,7 +254,6 @@ public class FormGA20 extends FormChipBase<FormGA20.Params> {
         };
     }
 
-
     /** what this panel contributes to the GUI; see {@link ViewProvider} */
     public static class Provider implements ViewProvider {
 
@@ -262,8 +262,8 @@ public class FormGA20 extends FormChipBase<FormGA20.Params> {
         @Override public Class<? extends mdplayer.Chip> chip() { return mdplayer.chips.Ga20Chip.class; }
         @Override public View create(FormMain frm, int chipId, int zoom) { return new FormGA20(frm, chipId, zoom); }
 
-        @Override public java.util.List<MixerSlot> mixerSlots() {
-            return java.util.List.of(new MixerSlot(47, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Ga20Chip.class, "ga20", 200));
+        @Override public List<MixerSlot> mixerSlots() {
+            return List.of(new MixerSlot(47, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Ga20Chip.class, "ga20", 200));
         }
     }
 }

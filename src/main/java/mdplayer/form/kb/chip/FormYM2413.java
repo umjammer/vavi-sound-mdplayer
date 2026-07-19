@@ -1,5 +1,6 @@
 package mdplayer.form.kb.chip;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ComponentAdapter;
@@ -12,6 +13,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.prefs.Preferences;
 
 import mdplayer.Chip.ChipKeyInfo;
@@ -29,7 +31,7 @@ import mdplayer.form.View;
 
 public class FormYM2413 extends FormChipBase<FormYM2413.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormYM2413.class).node(FormYM2413.class.getSimpleName());
+    static final Preferences prefs = Preferences.userNodeForPackage(FormYM2413.class);
 
     public FormYM2413(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -514,11 +516,11 @@ public class FormYM2413 extends FormChipBase<FormYM2413.Params> {
                         audio.plugin.chipRegister.chip(mdplayer.chips.Ym2413Chip.class).getMask(chipId, ch));
         }
 
-        @Override public java.util.List<MixerSlot> mixerSlots() {
-            return java.util.List.of(new MixerSlot(16, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Ym2413Chip.class, "ym2413", 200));
+        @Override public List<MixerSlot> mixerSlots() {
+            return List.of(new MixerSlot(16, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Ym2413Chip.class, "ym2413", 200));
         }
 
-        @Override public void getInstCh(java.awt.Component parent, mdplayer.Audio audio, mdplayer.Setting setting, int ch, int chipId) {
+        @Override public void getInstCh(Component parent, mdplayer.Audio audio, mdplayer.Setting setting, int ch, int chipId) {
             if (setting.getOther().getInstFormat() == mdplayer.Common.EnmInstFormat.MML2VGM) {
                 // the OPLL has no MML2VGM writer
             } else if (setting.getOther().getInstFormat() == mdplayer.Common.EnmInstFormat.SendMML2VGM) {

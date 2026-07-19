@@ -12,6 +12,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.prefs.Preferences;
 
 import mdplayer.Common;
@@ -29,9 +30,7 @@ import mdplayer.form.View;
 
 public class FormMMC5 extends FormChipBase<FormMMC5.Params> {
 
-    //
-
-    static final Preferences prefs = Preferences.userNodeForPackage(FormMMC5.class).node(FormMMC5.class.getSimpleName());
+    static final Preferences prefs = Preferences.userNodeForPackage(FormMMC5.class);
 
     public FormMMC5(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -337,7 +336,6 @@ public class FormMMC5 extends FormChipBase<FormMMC5.Params> {
         public final Channel pcmChannel = new Channel();
     }
 
-
     /** what this panel contributes to the GUI; see {@link ViewProvider} */
     public static class Provider implements ViewProvider {
 
@@ -362,8 +360,8 @@ public class FormMMC5 extends FormChipBase<FormMMC5.Params> {
                 resetChannelMask(audio, mdplayer.chips.NpNesChip.Mmc5Chip.class, chipId, ch);
         }
 
-        @Override public java.util.List<MixerSlot> mixerSlots() {
-            return java.util.List.of(new MixerSlot(51, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.NpNesChip.Mmc5Chip.class, "MMC5", 50));
+        @Override public List<MixerSlot> mixerSlots() {
+            return List.of(new MixerSlot(51, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.NpNesChip.Mmc5Chip.class, "MMC5", 50));
         }
 
         @Override public void updateMeters(mdplayer.Audio audio, mdplayer.form.VisVolume visVolume) {

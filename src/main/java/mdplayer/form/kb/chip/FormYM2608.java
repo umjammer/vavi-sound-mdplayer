@@ -12,6 +12,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.prefs.Preferences;
 
 import mdplayer.Common;
@@ -31,7 +32,7 @@ import mdplayer.form.View;
 
 public class FormYM2608 extends FormChipBase<FormYM2608.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormYM2608.class).node(FormYM2608.class.getSimpleName());
+    static final Preferences prefs = Preferences.userNodeForPackage(FormYM2608.class);
 
     public FormYM2608(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -733,7 +734,6 @@ public class FormYM2608 extends FormChipBase<FormYM2608.Params> {
         };
     }
 
-
     /** what this panel contributes to the GUI; see {@link ViewProvider} */
     public static class Provider implements ViewProvider {
 
@@ -760,8 +760,8 @@ public class FormYM2608 extends FormChipBase<FormYM2608.Params> {
             // reapplying the YM2608 mask was disabled in the original and stays so
         }
 
-        @Override public java.util.List<MixerSlot> mixerSlots() {
-            return java.util.List.of(new MixerSlot(6, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Ym2608Chip.class, "ym2608", 200),
+        @Override public List<MixerSlot> mixerSlots() {
+            return List.of(new MixerSlot(6, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Ym2608Chip.class, "ym2608", 200),
                     new MixerSlot(7, "FM", mdplayer.chips.Ym2608Chip.class, "ym2608FM", 200),
                     new MixerSlot(8, "PSG", mdplayer.chips.Ym2608Chip.class, "ym2608SSG", 120),
                     new MixerSlot(9, "Rhythm", mdplayer.chips.Ym2608Chip.class, "ym2608Rtm", 200),

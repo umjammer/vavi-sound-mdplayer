@@ -12,6 +12,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.prefs.Preferences;
 
 import mdplayer.Common;
@@ -30,7 +31,7 @@ import mdplayer.form.View;
 
 public class FormVRC6 extends FormChipBase<FormVRC6.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormVRC6.class).node(FormVRC6.class.getSimpleName());
+    static final Preferences prefs = Preferences.userNodeForPackage(FormVRC6.class);
 
     public FormVRC6(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -296,8 +297,8 @@ public class FormVRC6 extends FormChipBase<FormVRC6.Params> {
                         audio.plugin.chipRegister.chip(mdplayer.chips.NpNesChip.Vrc6Chip.class).getVrc6Mask(chipId, ch));
         }
 
-        @Override public java.util.List<MixerSlot> mixerSlots() {
-            return java.util.List.of(new MixerSlot(53, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.NpNesChip.Vrc6Chip.class, "VRC6", 50));
+        @Override public List<MixerSlot> mixerSlots() {
+            return List.of(new MixerSlot(53, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.NpNesChip.Vrc6Chip.class, "VRC6", 50));
         }
 
         @Override public void updateMeters(mdplayer.Audio audio, mdplayer.form.VisVolume visVolume) {

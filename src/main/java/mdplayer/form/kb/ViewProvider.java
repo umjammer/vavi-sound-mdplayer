@@ -1,5 +1,6 @@
 package mdplayer.form.kb;
 
+import java.awt.Component;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
@@ -125,7 +126,7 @@ public interface ViewProvider {
      * format the user chose. The default asks {@link InstWriter#of} for the chosen format's
      * writer; chips with a format quirk of their own (OPLL and friends) override.
      */
-    default void getInstCh(java.awt.Component parent, Audio audio, mdplayer.Setting setting, int ch, int chipId) {
+    default void getInstCh(Component parent, Audio audio, mdplayer.Setting setting, int ch, int chipId) {
         InstWriter w = InstWriter.of(setting.getOther().getInstFormat());
         if (w != null) w.write(parent, audio, chip(), ch, chipId);
     }

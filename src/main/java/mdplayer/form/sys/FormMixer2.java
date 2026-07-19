@@ -63,7 +63,7 @@ public class FormMixer2 extends JFrame {
 
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormMixer2.class).node(FormMixer2.class.getSimpleName());
+    static final Preferences prefs = Preferences.userNodeForPackage(FormMixer2.class);
     final Audio audio = Audio.getInstance();
 
     /**
@@ -386,7 +386,7 @@ public class FormMixer2 extends JFrame {
 
     private void tsmiSaveDriverBalance_Click(ActionEvent ev) {
         try {
-            String retMsg = parent.SaveDriverBalance(parent.setting.getBalance().clone());
+            String retMsg = parent.saveDriverBalance(parent.setting.getBalance().clone());
             if (!retMsg.isEmpty()) {
                 JOptionPane.showMessageDialog(null, "The driver's Mixer-Balance [%s] has been saved to the settings folder.".formatted(retMsg), "Save", JOptionPane.INFORMATION_MESSAGE);
             }
@@ -400,7 +400,7 @@ public class FormMixer2 extends JFrame {
     private void tsmiSaveSongBalance_Click(ActionEvent ev) {
         try {
             Setting.Balance bln = parent.setting.getBalance().clone();
-            PlayList.Music ms = parent.GetPlayingMusicInfo();
+            PlayList.Music ms = parent.getPlayingMusicInfo();
             if (ms == null) {
                 JOptionPane.showMessageDialog(null, "Performance information could not be retrieved.\nPlease try again during or immediately after the performance.",
                         "Information acquisition failure", JOptionPane.ERROR_MESSAGE);

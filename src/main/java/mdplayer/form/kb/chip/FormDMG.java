@@ -12,6 +12,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
@@ -28,7 +29,7 @@ import mdplayer.form.View;
 
 public class FormDMG extends FormChipBase<FormDMG.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormDMG.class).node(FormDMG.class.getSimpleName());
+    static final Preferences prefs = Preferences.userNodeForPackage(FormDMG.class);
 
     public FormDMG(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -442,7 +443,6 @@ public class FormDMG extends FormChipBase<FormDMG.Params> {
         public final Channel[] channels = new Channel[] {new Channel(), new Channel(), new Channel(), new Channel()};
     }
 
-
     /** what this panel contributes to the GUI; see {@link ViewProvider} */
     public static class Provider implements ViewProvider {
 
@@ -475,8 +475,8 @@ public class FormDMG extends FormChipBase<FormDMG.Params> {
                         audio.plugin.chipRegister.chip(mdplayer.chips.DmgChip.class).getMask(chipId, ch));
         }
 
-        @Override public java.util.List<MixerSlot> mixerSlots() {
-            return java.util.List.of(new MixerSlot(56, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.DmgChip.class, "DMG", 50));
+        @Override public List<MixerSlot> mixerSlots() {
+            return List.of(new MixerSlot(56, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.DmgChip.class, "DMG", 50));
         }
     }
 }

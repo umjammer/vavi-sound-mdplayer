@@ -39,7 +39,7 @@ public class FormVisWave extends FormBase {
     private double dispHeight = 1.0;
     private boolean fft = false;
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormVisWave.class).node(FormVisWave.class.getSimpleName());
+    static final Preferences prefs = Preferences.userNodeForPackage(FormVisWave.class);
 
     /** where in {@link #buf} the next sample goes */
     private int writeIndex;

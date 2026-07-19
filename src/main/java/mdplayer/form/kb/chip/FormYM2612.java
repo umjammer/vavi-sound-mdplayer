@@ -12,6 +12,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.prefs.Preferences;
 
 import mdplayer.form.kb.ChannelParams;
@@ -35,7 +36,7 @@ import mdplayer.form.View;
 
 public class FormYM2612 extends FormChipBase<FormYM2612.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormYM2612.class).node(FormYM2612.class.getSimpleName());
+    static final Preferences prefs = Preferences.userNodeForPackage(FormYM2612.class);
 
     public FormYM2612(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -749,7 +750,6 @@ public class FormYM2612 extends FormChipBase<FormYM2612.Params> {
         public final Channel[] channels = new Channel[] {new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel()};
     }
 
-
     /** what this panel contributes to the GUI; see {@link ViewProvider} */
     public static class Provider implements ViewProvider {
 
@@ -760,7 +760,7 @@ public class FormYM2612 extends FormChipBase<FormYM2612.Params> {
         @Override public boolean hasRegisterDump() { return true; }
         @Override public String title(int chipId) { return "Ym2612Inst (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"); }
         @Override public View create(FormMain frm, int chipId, int zoom) { return new FormYM2612(frm, chipId, zoom); }
-        @Override public java.util.List<mdplayer.form.SettingTab> settingTabs() { return java.util.List.of(new SettingNukedPanel()); }
+        @Override public List<mdplayer.form.SettingTab> settingTabs() { return List.of(new SettingNukedPanel()); }
 
         @Override public void setChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
             if (ch >= 0 && ch < 9) {
@@ -776,7 +776,7 @@ public class FormYM2612 extends FormChipBase<FormYM2612.Params> {
 
         @Override public void forceChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
             if (ch >= 0 && ch < 9) {
-    if (mask)
+                if (mask)
                     audio.plugin.chipRegister.chip(mdplayer.chips.Ym2612Chip.class).setMask(chipId, ch);
                 else
                     audio.plugin.chipRegister.chip(mdplayer.chips.Ym2612Chip.class).resetMask(chipId, ch);
@@ -789,8 +789,8 @@ public class FormYM2612 extends FormChipBase<FormYM2612.Params> {
                         audio.plugin.chipRegister.chip(mdplayer.chips.Ym2612Chip.class).getMask(chipId, ch));
         }
 
-        @Override public java.util.List<MixerSlot> mixerSlots() {
-            return java.util.List.of(new MixerSlot(5, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Ym2612Chip.class, "ym2612", 200));
+        @Override public List<MixerSlot> mixerSlots() {
+            return List.of(new MixerSlot(5, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Ym2612Chip.class, "ym2612", 200));
         }
     }
 }

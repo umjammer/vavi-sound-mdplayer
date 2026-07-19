@@ -12,6 +12,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.prefs.Preferences;
 
 import mdplayer.Common;
@@ -32,7 +33,7 @@ import mdplayer.form.View;
 
 public class FormYM2610 extends FormChipBase<FormYM2610.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormYM2610.class).node(FormYM2610.class.getSimpleName());
+    static final Preferences prefs = Preferences.userNodeForPackage(FormYM2610.class);
 
     public FormYM2610(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -192,15 +193,15 @@ public class FormYM2610 extends FormChipBase<FormYM2610.Params> {
     }
 
     private static final byte[] md = {
-                    (byte) (0x08 << 4),
-                    (byte) (0x08 << 4),
-                    (byte) (0x08 << 4),
-                    (byte) (0x08 << 4),
-                    (byte) (0x0c << 4),
-                    (byte) (0x0e << 4),
-                    (byte) (0x0e << 4),
-                    (byte) (0x0f << 4)
-            };
+            (byte) (0x08 << 4),
+            (byte) (0x08 << 4),
+            (byte) (0x08 << 4),
+            (byte) (0x08 << 4),
+            (byte) (0x0c << 4),
+            (byte) (0x0e << 4),
+            (byte) (0x0e << 4),
+            (byte) (0x0f << 4)
+    };
 
     private static final float[] fmDivTbl = {6, 3, 2};
     private static final float[] ssgDivTbl = {4, 2, 1};
@@ -656,7 +657,6 @@ public class FormYM2610 extends FormChipBase<FormYM2610.Params> {
         };
     }
 
-
     /** what this panel contributes to the GUI; see {@link ViewProvider} */
     public static class Provider implements ViewProvider {
 
@@ -681,7 +681,7 @@ public class FormYM2610 extends FormChipBase<FormYM2610.Params> {
 
         @Override public void forceChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
             if (ch >= 0 && ch < 14) {
-    if (mask)
+                if (mask)
                     audio.plugin.chipRegister.chip(mdplayer.chips.Ym2610Chip.class).setMask(chipId, ch);
                 else
                     audio.plugin.chipRegister.chip(mdplayer.chips.Ym2610Chip.class).resetMask(chipId, ch);
@@ -694,8 +694,8 @@ public class FormYM2610 extends FormChipBase<FormYM2610.Params> {
                         audio.plugin.chipRegister.chip(mdplayer.chips.Ym2610Chip.class).getMask(chipId, ch));
         }
 
-        @Override public java.util.List<MixerSlot> mixerSlots() {
-            return java.util.List.of(new MixerSlot(11, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Ym2610Chip.class, "ym2610", 200),
+        @Override public List<MixerSlot> mixerSlots() {
+            return List.of(new MixerSlot(11, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Ym2610Chip.class, "ym2610", 200),
                     new MixerSlot(12, "FM", mdplayer.chips.Ym2610Chip.class, "ym2610FM", 200),
                     new MixerSlot(13, "PSG", mdplayer.chips.Ym2610Chip.class, "ym2610SSG", 120),
                     new MixerSlot(14, "AdpcmA", mdplayer.chips.Ym2610Chip.class, "ym2610APCMA", 200),

@@ -12,6 +12,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
@@ -28,7 +29,7 @@ import mdplayer.form.View;
 
 public class FormRf5c68 extends FormChipBase<FormRf5c68.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormRf5c68.class).node(FormRf5c68.class.getSimpleName());
+    static final Preferences prefs = Preferences.userNodeForPackage(FormRf5c68.class);
 
     public FormRf5c68(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -254,9 +255,11 @@ public class FormRf5c68 extends FormChipBase<FormRf5c68.Params> {
     /** this panel's per-frame draw state, diffed new against old (see {@link FormChipBase}) */
     public static class Params {
 
-        public final ChannelParams[] channels = new ChannelParams[] {new ChannelParams(), new ChannelParams(), new ChannelParams(), new ChannelParams(), new ChannelParams(), new ChannelParams(), new ChannelParams(), new ChannelParams()};
+        public final ChannelParams[] channels = new ChannelParams[] {
+                new ChannelParams(), new ChannelParams(), new ChannelParams(), new ChannelParams(),
+                new ChannelParams(), new ChannelParams(), new ChannelParams(), new ChannelParams()
+        };
     }
-
 
     /** what this panel contributes to the GUI; see {@link ViewProvider} */
     public static class Provider implements ViewProvider {
@@ -288,8 +291,8 @@ public class FormRf5c68 extends FormChipBase<FormRf5c68.Params> {
                         audio.plugin.chipRegister.chip(mdplayer.chips.Rf5C68Chip.class).getMask(chipId, ch));
         }
 
-        @Override public java.util.List<MixerSlot> mixerSlots() {
-            return java.util.List.of(new MixerSlot(35, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Rf5C68Chip.class, "rf5c68", 200));
+        @Override public List<MixerSlot> mixerSlots() {
+            return List.of(new MixerSlot(35, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Rf5C68Chip.class, "rf5c68", 200));
         }
     }
 }

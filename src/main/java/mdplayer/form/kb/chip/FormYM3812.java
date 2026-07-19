@@ -1,5 +1,6 @@
 package mdplayer.form.kb.chip;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ComponentAdapter;
@@ -12,6 +13,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.prefs.Preferences;
 
 import mdplayer.Chip.ChipKeyInfo;
@@ -30,7 +32,7 @@ import mdplayer.form.View;
 
 public class FormYM3812 extends FormChipBase<FormYM3812.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormYM3812.class).node(FormYM3812.class.getSimpleName());
+    static final Preferences prefs = Preferences.userNodeForPackage(FormYM3812.class);
 
     public FormYM3812(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -441,11 +443,11 @@ public class FormYM3812 extends FormChipBase<FormYM3812.Params> {
             }
         }
 
-        @Override public java.util.List<MixerSlot> mixerSlots() {
-            return java.util.List.of(new MixerSlot(19, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Ym3812Chip.class, "ym3812", 200));
+        @Override public List<MixerSlot> mixerSlots() {
+            return List.of(new MixerSlot(19, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Ym3812Chip.class, "ym3812", 200));
         }
 
-        @Override public void getInstCh(java.awt.Component parent, mdplayer.Audio audio, mdplayer.Setting setting, int ch, int chipId) {
+        @Override public void getInstCh(Component parent, mdplayer.Audio audio, mdplayer.Setting setting, int ch, int chipId) {
             if (setting.getOther().getInstFormat() == mdplayer.Common.EnmInstFormat.OPLI) {
                 new mdplayer.form.inst.OpliInstWriter().write(parent, audio, chip(), ch, chipId);
             } else {

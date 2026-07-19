@@ -1,5 +1,6 @@
 package mdplayer.form.kb.chip;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ComponentAdapter;
@@ -12,6 +13,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.prefs.Preferences;
 
 import mdplayer.Chip.ChipKeyInfo;
@@ -31,7 +33,7 @@ import mdplayer.form.View;
 
 public class FormVRC7 extends FormChipBase<FormVRC7.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormVRC7.class).node(FormVRC7.class.getSimpleName());
+    static final Preferences prefs = Preferences.userNodeForPackage(FormVRC7.class);
 
     public FormVRC7(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -39,8 +41,8 @@ public class FormVRC7 extends FormChipBase<FormVRC7.Params> {
         initializeComponent();
 
         frameBuffer.add(pbScreen, Common.getImage("planeVRC7"), null, zoom);
-        boolean VRC7Type = false;
-        int tp = VRC7Type ? 1 : 0;
+        boolean vrc7Type = false;
+        int tp = vrc7Type ? 1 : 0;
         drawScreenInitVRC7(frameBuffer, tp);
         update();
     }
@@ -381,10 +383,10 @@ public class FormVRC7 extends FormChipBase<FormVRC7.Params> {
     public static class Params {
 
         public final ChannelParams[] channels = {
-                new ChannelParams(), new ChannelParams(), new ChannelParams(), new ChannelParams(), new ChannelParams(), new ChannelParams() // FM 6
+                new ChannelParams(), new ChannelParams(), new ChannelParams(), new ChannelParams(),
+                new ChannelParams(), new ChannelParams() // FM 6
         };
     }
-
 
     /** what this panel contributes to the GUI; see {@link ViewProvider} */
     public static class Provider implements ViewProvider {
@@ -405,8 +407,8 @@ public class FormVRC7 extends FormChipBase<FormVRC7.Params> {
             audio.plugin.chipRegister.chip(mdplayer.chips.NpNesChip.Vrc7Chip.class).resetVrc7Mask(chipId, ch);
         }
 
-        @Override public java.util.List<MixerSlot> mixerSlots() {
-            return java.util.List.of(new MixerSlot(54, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.NpNesChip.Vrc7Chip.class, "VRC7", 50));
+        @Override public List<MixerSlot> mixerSlots() {
+            return List.of(new MixerSlot(54, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.NpNesChip.Vrc7Chip.class, "VRC7", 50));
         }
 
         @Override public void updateMeters(mdplayer.Audio audio, mdplayer.form.VisVolume visVolume) {
@@ -414,7 +416,7 @@ public class FormVRC7 extends FormChipBase<FormVRC7.Params> {
             if (vrc7 >= 0) visVolume.put("VRC7", vrc7 * 15);
         }
 
-        @Override public void getInstCh(java.awt.Component parent, mdplayer.Audio audio, mdplayer.Setting setting, int ch, int chipId) {
+        @Override public void getInstCh(Component parent, mdplayer.Audio audio, mdplayer.Setting setting, int ch, int chipId) {
             new mdplayer.form.inst.MgscInstWriter().write(parent, audio, chip(), ch, chipId);
         }
     }

@@ -81,8 +81,6 @@ public class NpNesChip extends BaseChip {
         public boolean getDmcMask(int chipId, int ch) {
             return (dmcMask & (1 << ch)) != 0;
         }
-
-
     }
 
     public static class Mmc5Chip extends NpNesChip {
@@ -142,8 +140,6 @@ public class NpNesChip extends BaseChip {
         public boolean getMmc5Mask(int chipId, int ch) {
             return (mmc5Mask & (1 << ch)) != 0;
         }
-
-
     }
 
     public static class Vrc6Chip extends NpNesChip {
@@ -446,5 +442,4 @@ public class NpNesChip extends BaseChip {
             default -> throw new IllegalArgumentException("Unexpected value: " + chip);
         };
     }
-
 }
