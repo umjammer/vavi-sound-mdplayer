@@ -283,7 +283,7 @@ public class Nsf {
         layer.detachAll();
         apuBus.detachAll();
 
-        ld = new LoopDetector.NESDetector(0);
+        ld = new LoopDetector.NESDetector(16); // C#: NESDetector() -> BasicDetector(bufbits = 16)
         ld.reset();
         stack.attach(ld);
 
