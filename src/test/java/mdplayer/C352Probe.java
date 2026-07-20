@@ -50,7 +50,7 @@ class C352Probe {
                 plugin.getDriver().render(buffer, 0, buffer.length);
             }
             Map<String, Object> info = chip.getInfo(0);
-            if (info == null) {
+            if (info.isEmpty()) {
                 System.err.println("--- block " + block + ": no c352");
                 continue;
             }

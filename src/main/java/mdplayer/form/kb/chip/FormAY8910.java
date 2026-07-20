@@ -100,21 +100,22 @@ public class FormAY8910 extends FormChipBase<FormAY8910.Params> {
 
     @Override
     public void changeScreenParams() {
-        int[] AY8910Register = (int[]) audio.plugin.chipRegister.chip(Ay8910Chip.class).getInfo(chipId).get("register");
+        int[] register = (int[]) audio.plugin.chipRegister.chip(Ay8910Chip.class).getInfo(chipId).get("register");
+        if (register == null) return;
 
         for (int ch = 0; ch < 3; ch++) { // SSG
 
             Channel channel = newParam.channels[ch];
 
-            boolean t = (AY8910Register[0x07] & (0x1 << ch)) == 0;
-            boolean n = (AY8910Register[0x07] & (0x8 << ch)) == 0;
-//logger.log(Level.TRACE, "r[8]=%x r[9]=%x r[10]=%x".formatted(AY8910Register[0x8], AY8910Register[0x9], AY8910Register[0xa]);
+            boolean t = (register[0x07] & (0x1 << ch)) == 0;
+            boolean n = (register[0x07] & (0x8 << ch)) == 0;
+//logger.log(Level.TRACE, "r[8]=%x r[9]=%x r[10]=%x".formatted(register[0x8], register[0x9], register[0xa]);
             channel.tn = (t ? 1 : 0) + (n ? 2 : 0);
-            newParam.nfrq = AY8910Register[0x06] & 0x1f;
-            newParam.efrq = AY8910Register[0x0c] * 0x100 + AY8910Register[0x0b];
-            newParam.etype = (AY8910Register[0x0d] & 0xf);
+            newParam.nfrq = register[0x06] & 0x1f;
+            newParam.efrq = register[0x0c] * 0x100 + register[0x0b];
+            newParam.etype = (register[0x0d] & 0xf);
 
-            int v = (AY8910Register[0x08 + ch] & 0x1f);
+            int v = (register[0x08 + ch] & 0x1f);
             v = Math.min(v, 15);
             channel.volume = (int) (((t || n) ? 1 : 0) * v * (20.0 / 16.0));
             if (!t && !n && channel.volume > 0) {
@@ -124,8 +125,8 @@ public class FormAY8910 extends FormChipBase<FormAY8910.Params> {
             if (channel.volume == 0) {
                 channel.note = -1;
             } else {
-                int ft = AY8910Register[0x00 + ch * 2];
-                int ct = AY8910Register[0x01 + ch * 2];
+                int ft = register[0x00 + ch * 2];
+                int ct = register[0x01 + ch * 2];
                 int tp = (ct << 8) | ft;
                 if (tp == 0)
                     tp = 1;

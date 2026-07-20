@@ -7,10 +7,7 @@
 package mdplayer.driver.sid;
 
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.util.concurrent.CountDownLatch;
 
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTune;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTuneInfo;

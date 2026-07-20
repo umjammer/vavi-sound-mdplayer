@@ -6,6 +6,8 @@
 
 package mdplayer.chips;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
@@ -87,29 +89,13 @@ public class YmF278BChip extends BaseChip {
         }
     }
 
-    // TODO getInfo
-    public int getRhythmKeyOn(int chipId) {
-        return registerRhythm[chipId];
-    }
-
-    // TODO getInfo
     public void resetRhythmKeyOn(int chipId) {
         registerRhythm[chipId] = 0;
-    }
-
-    // TODO getInfo
-    public int[] getPcmKeyOn(int chipId) {
-        return registerPcm[chipId];
     }
 
     public void resetPcmKeyOn(int chipId) {
         for (int i = 0; i < 24; i++)
             registerPcm[chipId][i] = 0;
-    }
-
-    // TODO getInfo
-    public int getFmKeyOn(int chipId) {
-        return registerFm[chipId];
     }
 
     public void resetFmKeyOn(int chipId) {
@@ -187,7 +173,8 @@ public class YmF278BChip extends BaseChip {
         }
     }
 
-    public void setMask(int chipId, int ch, boolean mask) {
+    @Override
+    protected void setMask(int chipId, int ch, boolean mask, Object... args) {
         this.mask[chipId][channel[ch]] = mask;
     }
 
@@ -211,18 +198,17 @@ public class YmF278BChip extends BaseChip {
 
     @Override
     public Map<String, Object> getInfo(int chipId) {
-        return Map.of("register", register[chipId]);
+        Instrument inst = context.mds.inst(inst(chipId));
+        if (inst == null) return Collections.emptyMap();
+        Map<String, Object> info = new HashMap<>();
+        info.put("register", register[chipId]);
+        info.put("rhythmKeyON", registerRhythm[chipId]);
+        info.put("pcmKeyOn", registerPcm[chipId]);
+        info.put("gmKeyOn", registerFm[chipId]);
+        return info;
     }
 
-    public void setMask(int chipId, int ch) {
-        setMask(chipId, ch, true);
-    }
-
-    public void resetMask(int chipId, int ch) {
-        setMask(chipId, ch, false);
-    }
-
-    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    @Override
     public boolean getMask(int chipId, int ch) {
         return ch < mask[chipId].length && mask[chipId][ch];
     }

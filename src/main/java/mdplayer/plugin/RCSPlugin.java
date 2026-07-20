@@ -5,7 +5,6 @@ import java.lang.System.Logger;
 import mdplayer.Common;
 import mdplayer.chips.MidiPlugin;
 import mdplayer.chips.OkiM6258Chip;
-import mdplayer.chips.Pcm8Chip;
 import mdplayer.driver.rcp.RcsDriver;
 import mdsound.Instrument;
 import mdsound.MDSound;

@@ -125,6 +125,7 @@ public class FormPPZ8 extends FormChipBase<FormPPZ8.Params> {
         return n;
     }
 
+    @Override
     public void initScreen() {
         boolean PPZ8Type = false; // (chipId == 0) ? parent.setting.PPZ8Type.UseScci : parent.setting.PPZ8SType.UseScci;
         int tp = PPZ8Type ? 1 : 0;
@@ -144,9 +145,10 @@ public class FormPPZ8 extends FormChipBase<FormPPZ8.Params> {
         }
     }
 
+    @Override
     public void changeScreenParams() {
         Map<String, Object> info = audio.plugin.chipRegister.chip(Ppz8Chip.class).getInfo(chipId);
-        if (info == null) return;
+        if (info.isEmpty()) return;
 
         for (int ch = 0; ch < 8; ch++) {
             if (info.get("channels." + ch + ".pan") == null) continue;
@@ -185,6 +187,7 @@ public class FormPPZ8 extends FormChipBase<FormPPZ8.Params> {
             newParam.channels[mch].mask = audio.plugin.chipRegister.chip(Ppz8Chip.class).getMask(chipId, mch);
     }
 
+    @Override
     public void drawScreenParams() {
         int tp = 0; // ((chipId == 0) ? parent.setting.PPZ8Type.UseScci : parent.setting.PPZ8SType.UseScci) ? 1 : 0;
 

@@ -6,6 +6,7 @@
 
 package mdplayer.chips;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -46,6 +47,7 @@ public class Ym2203Chip extends BaseChip {
     private final int[] nowFadeoutVol = {0, 0};
     @Deprecated
     public final int[][] fmVolume = {new int[9], new int[9]};
+
     private final boolean[][] maskFM = {
             {false, false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false, false}
@@ -263,7 +265,7 @@ public class Ym2203Chip extends BaseChip {
         }
     }
 
-    public void setMask(int chipId, int ch, boolean mask, boolean noSend /* = false */) {
+    private void setMask(int chipId, int ch, boolean mask, boolean noSend) {
         maskFM[chipId][ch] = mask;
         // FM ch3 and its extended slots mask as one
         if (ch == 2 || (ch >= 6 && ch < 9)) {
@@ -296,6 +298,7 @@ public class Ym2203Chip extends BaseChip {
             8, 8, 8, 8, 0xa, 0xe, 0xe, 0xf
     };
 
+    @Override
     public void setFadeout(int chipId, int v) {
         nowFadeoutVol[chipId] = v;
         for (int c = 0; c < 3; c++) {
@@ -343,24 +346,25 @@ public class Ym2203Chip extends BaseChip {
      */
     @Override
     public Map<String, Object> getInfo(int chipId) {
-        Map<String, Object> info = new HashMap<>();
-        info.putAll(Map.of(
-                "volume", fmVolume[chipId],
-                "ch3SlotVolume", /* ctYM2612.UseScci ? */ fmCh3SlotVolume[chipId] /*, context.mds.inst(inst[chipId]).readFMCh3SlotVolume(); */,
-                "register", fmRegister[chipId],
-                "keyOn", fmKeyOn[chipId]
-        ));
         Instrument inst = context.mds.inst(inst(chipId));
-        if (inst != null) info.putAll(inst.getView(chipId, "info", null));
+        if (inst == null) return Collections.emptyMap();
+        Map<String, Object> info = new HashMap<>();
+        info.put("volume", fmVolume[chipId]);
+        info.put("ch3SlotVolume", /* ctYM2612.UseScci ? */ fmCh3SlotVolume[chipId] /*, context.mds.inst(inst[chipId]).readFMCh3SlotVolume(); */);
+        info.put("register", fmRegister[chipId]);
+        info.put("keyOn", fmKeyOn[chipId]);
+        info.putAll(inst.getView(chipId, "info") != null ? inst.getView(chipId, "info") : Collections.emptyMap());
         return info;
     }
 
-    public void setMask(int chipId, int ch) {
-        setMask(chipId, ch, true, false);
-    }
-
-    public void resetMask(int chipId, int ch, boolean stopped) {
-        setMask(chipId, ch, false, stopped);
+    @Override
+    public void setMask(int chipId, int ch, boolean mask, Object... args) {
+        if (mask) {
+            setMask(chipId, ch, true, false);
+        } else {
+            boolean stopped = (boolean) args[0];
+            setMask(chipId, ch, false, stopped);
+        }
     }
 
     @Override
@@ -375,7 +379,7 @@ public class Ym2203Chip extends BaseChip {
         setFadeout(1, 0);
     }
 
-    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    @Override
     public boolean getMask(int chipId, int ch) {
         return ch < maskFM[chipId].length && maskFM[chipId][ch];
     }

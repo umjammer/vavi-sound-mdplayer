@@ -52,7 +52,7 @@ public class X1_010Reader extends PcmSlotReader {
 
     @Override
     protected boolean sounding(int ch) {
-        return info != null && boolOf(ch, "enable")
+        return boolOf(ch, "enable")
                 && Math.max(intOf(ch, "volumeL", 0), intOf(ch, "volumeR", 0)) > 0;
     }
 

@@ -82,6 +82,7 @@ public class FormS5B extends FormChipBase<FormS5B.Params> {
         }
     };
 
+    @Override
     public void changeScreenParams() {
         byte[] S5BRegister = (byte[]) audio.plugin.chipRegister.chip(Fme7Chip.class).getInfo(chipId).get("register");
         if (S5BRegister == null) return;
@@ -117,6 +118,7 @@ public class FormS5B extends FormChipBase<FormS5B.Params> {
         }
     }
 
+    @Override
     public void drawScreenParams() {
         //int tp = setting.S5BType.UseScci ? 1 : 0;
         int tp = 0;
@@ -139,6 +141,7 @@ public class FormS5B extends FormChipBase<FormS5B.Params> {
         oldParam.etype = frameBuffer.drawEType(33, 8, oldParam.etype, newParam.etype);
     }
 
+    @Override
     public void initScreen() {
         for (int c = 0; c < newParam.channels.length; c++) {
             newParam.channels[c].note = -1;

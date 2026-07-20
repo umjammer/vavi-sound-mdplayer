@@ -6,6 +6,7 @@
 
 package mdplayer.fmdsp;
 
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
@@ -60,7 +61,7 @@ public class OkiM6258Reader implements FmDspChipReader {
         prevSounding = false;
         prevRate = 0;
         active = false;
-        info = null;
+        info = Collections.emptyMap();
     }
 
     @Override
@@ -84,7 +85,7 @@ public class OkiM6258Reader implements FmDspChipReader {
             info = chip().getInfo(0);
         } catch (RuntimeException ignore) {
             // the chip exists but the song never loaded it
-            info = null;
+            info = Collections.emptyMap();
         }
     }
 
@@ -94,7 +95,7 @@ public class OkiM6258Reader implements FmDspChipReader {
     }
 
     private boolean sounding() {
-        return info != null && intOf("status") != 0;
+        return intOf("status") != 0;
     }
 
     @Override
@@ -113,7 +114,7 @@ public class OkiM6258Reader implements FmDspChipReader {
         out.name = "PCM";
         out.num = 1;
         out.pcmCh = 1;
-        if (info == null) return;
+        if (info.isEmpty()) return;
 
         boolean sounding = sounding();
         // the playback frequency the view reports, in kHz
@@ -143,6 +144,6 @@ public class OkiM6258Reader implements FmDspChipReader {
 
     @Override
     public boolean masked(Group group, int ch) {
-        return chip().getMask(0);
+        return chip().getMask(0, 0);
     }
 }

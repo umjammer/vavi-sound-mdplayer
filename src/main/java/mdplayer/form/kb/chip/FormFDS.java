@@ -85,6 +85,7 @@ public class FormFDS extends FormChipBase<FormFDS.Params> {
         }
     };
 
+    @Override
     public void changeScreenParams() {
         final double LOG2_440 = 8.7813597135246596040696824762152;
         final double LOG_2 = 0.69314718055994530941723212145818;
@@ -135,6 +136,7 @@ public class FormFDS extends FormChipBase<FormFDS.Params> {
         newParam.channel.mask = audio.plugin.chipRegister.chip(NpNesChip.FdsChip.class).getMask(chipId, -1);
     }
 
+    @Override
     public void drawScreenParams() {
         oldParam.channel.note = frameBuffer.drawKeyBoard(0, oldParam.channel.note, newParam.channel.note, 0);
         oldParam.channel.volume = frameBuffer.drawVolumeM(256, 8 + 0 * 8, 0, oldParam.channel.volume, newParam.channel.volume, 0);
@@ -200,6 +202,7 @@ public class FormFDS extends FormChipBase<FormFDS.Params> {
         }
     };
 
+    @Override
     public void initScreen() {
         newParam.channel.note = -1;
         newParam.channel.volume = -1;
@@ -361,7 +364,7 @@ public class FormFDS extends FormChipBase<FormFDS.Params> {
 
         @Override public void resetChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
             // the reset always went to the vgm-side FDS, kept as the original had it
-            audio.plugin.chipRegister.chip(mdplayer.chips.NesChip.FdsChip.class).resetFdsMask(chipId);
+            audio.plugin.chipRegister.chip(mdplayer.chips.NesChip.FdsChip.class).resetMask(chipId);
         }
 
         @Override public void reapplyChannelMasks(mdplayer.Audio audio, int chipId) {

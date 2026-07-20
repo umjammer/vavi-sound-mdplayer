@@ -71,6 +71,7 @@ public class FormMIDI extends FormBase implements View {
         update();
     }
 
+    @Override
     public void update() {
         frameBuffer.refresh(null);
     }
@@ -120,6 +121,7 @@ public class FormMIDI extends FormBase implements View {
         }
     };
 
+    @Override
     public void changeScreenParams() {
         MIDIParam prm = audio.plugin.chipRegister.plugin(MidiPlugin.class).get(chipId);
 
@@ -231,6 +233,7 @@ public class FormMIDI extends FormBase implements View {
 
     }
 
+    @Override
     public void drawScreenParams() {
         int module = newParam.MIDIModule;
 
@@ -421,6 +424,7 @@ public class FormMIDI extends FormBase implements View {
         }
     };
 
+    @Override
     public void initScreen() {
         int module = newParam.MIDIModule;
         newParam.LCD8850DisplayTime = 0;

@@ -13,15 +13,17 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.util.List;
+import java.util.Map;
 import java.util.prefs.Preferences;
 
 import mdplayer.Common;
-import mdplayer.form.ScreenPanel;
 import mdplayer.chips.YmZ280BChip;
+import mdplayer.form.ScreenPanel;
+import mdplayer.form.View;
 import mdplayer.form.kb.PcmChannelParams;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
-import mdplayer.form.View;
+import mdsound.MDSound;
 
 
 public class FormYMZ280B extends FormChipBase<FormYMZ280B.Params> {
@@ -112,12 +114,16 @@ public class FormYMZ280B extends FormChipBase<FormYMZ280B.Params> {
         }
     };
 
+    @Override
     public void initScreen() {
     }
 
+    @Override
     public void changeScreenParams() {
-        int[] reg = (int[]) audio.plugin.chipRegister.chip(YmZ280BChip.class).getInfo(chipId).get("register");
-        if (reg == null) return;
+        Map<String, Object> info = audio.plugin.chipRegister.chip(YmZ280BChip.class).getInfo(chipId);
+        if (info.isEmpty()) return;
+
+        int[] reg = (int[]) info.get("register");
 
         for (int ch = 0; ch < 8; ch++) {
             newParam.channels[ch].freq = (reg[0x0 + ch * 4] & 0xff) +
@@ -144,6 +150,7 @@ public class FormYMZ280B extends FormChipBase<FormYMZ280B.Params> {
         }
     }
 
+    @Override
     public void drawScreenParams() {
         for (int ch = 0; ch < 8; ch++) {
             Channel orc = oldParam.channels[ch];
@@ -212,12 +219,12 @@ public class FormYMZ280B extends FormChipBase<FormYMZ280B.Params> {
     public static class Provider implements ViewProvider {
 
         @Override public String id() { return "YMZ280B"; }
-        @Override public Class<? extends mdplayer.Chip> chip() { return mdplayer.chips.YmZ280BChip.class; }
+        @Override public Class<? extends mdplayer.Chip> chip() { return YmZ280BChip.class; }
         @Override public boolean hasRegisterDump() { return true; }
         @Override public View create(FormMain frm, int chipId, int zoom) { return new FormYMZ280B(frm, chipId, zoom); }
 
         @Override public List<MixerSlot> mixerSlots() {
-            return List.of(new MixerSlot(22, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.YmZ280BChip.class, "ymz280b", 200));
+            return List.of(new MixerSlot(22, MDSound.Chip.MAIN_TAG, YmZ280BChip.class, "ymz280b", 200));
         }
     }
 }

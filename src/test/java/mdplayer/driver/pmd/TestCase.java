@@ -204,7 +204,7 @@ Debug.println("filename: " + p);
             audio.close();
 
             c--;
-        };
+        }
 
         visualizer.stop();
         frame.setVisible(false);

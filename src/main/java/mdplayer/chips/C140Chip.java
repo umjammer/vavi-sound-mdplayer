@@ -6,14 +6,12 @@
 
 package mdplayer.chips;
 
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
-import mdplayer.driver.BaseDriver;
-import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.Instrument.PcmEnabledInstrument;
 import mdsound.chips.C140;
@@ -37,7 +35,7 @@ public class C140Chip extends BaseChip {
 
     private final RSoundChip[] realChips = {null, null};
 
-    private static final boolean[][] mask = {
+    private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
                     false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
@@ -61,15 +59,8 @@ public class C140Chip extends BaseChip {
     }
 
     @Override
-    public void init(BasePlugin<? extends BaseDriver> context) {
-        super.init(context);
-
-        for (int chipId = 0; chipId < 2; chipId++) {
-        }
-    }
-
-    public void setMask(int chipId, int ch, boolean mask) {
-        C140Chip.mask[chipId][ch] = mask;
+    public void setMask(int chipId, int ch, boolean mask, Object... args) {
+        this.mask[chipId][ch] = mask;
     }
 
     public void write(int chipId, int adr, int data, EnmModel model) {
@@ -143,29 +134,12 @@ public class C140Chip extends BaseChip {
     @Override
     public Map<String, Object> getInfo(int chipId) {
         Instrument inst = context.mds.inst(_inst(chipId));
-        // a panel polls whether or not the song loaded this chip, so never hand back null
-        if (inst == null) return Map.of("register", new byte[0x200], "keyOn", new boolean[24]);
-        Map<String, Object> info = inst.getView(chipId, "info", null);
-        // the panel wants the key states as one array
-        boolean[] keyOn = new boolean[24];
-        for (int ch = 0; ch < keyOn.length; ch++) {
-            keyOn[ch] = Boolean.TRUE.equals(info.get("channels." + ch + ".keyOn"));
-        }
-        Map<String, Object> result = new HashMap<>(info);
-        result.put("keyOn", keyOn);
-        return result;
+        if (inst == null) return Collections.emptyMap();
+        return inst.getView(chipId, "info");
     }
 
-    public void setMask(int chipId, int ch) {
-        setMask(chipId, ch, true);
-    }
-
-    public void resetMask(int chipId, int ch) {
-        setMask(chipId, ch, false);
-    }
-
-    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    @Override
     public boolean getMask(int chipId, int ch) {
-        return ch < C140Chip.mask[chipId].length && C140Chip.mask[chipId][ch];
+        return ch < mask[chipId].length && mask[chipId][ch];
     }
 }

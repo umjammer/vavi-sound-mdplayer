@@ -6,7 +6,7 @@
 
 package mdplayer.chips;
 
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
@@ -24,16 +24,14 @@ public class OkiM6258Chip extends BaseChip {
 
     private final boolean[] mask = {false, false};
 
-    @Deprecated
-    public final boolean[] keyOn = {false, false};
-
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Instrument>[] implementations() {
         return new Class[] {OkiM6258Inst.class};
     }
 
-    public void setMask(int chipId, boolean mask) {
+    @Override
+    protected void setMask(int chipId, int ch, boolean mask, Object... args) {
         this.mask[chipId] = mask;
 
         write(chipId, 0, 1, EnmModel.VirtualModel);
@@ -44,9 +42,6 @@ public class OkiM6258Chip extends BaseChip {
         fireEventHappened("led.on", chipId);
 
         if (port == 0x00) {
-            if ((data & 0x2) != 0)
-                keyOn[chipId] = true;
-
             if (mask[chipId]) {
                 if ((data & 0x2) != 0)
                     return;
@@ -65,27 +60,11 @@ public class OkiM6258Chip extends BaseChip {
     @Override
     public Map<String, Object> getInfo(int chipId) {
         OkiM6258Inst inst = context.mds.inst(OkiM6258Inst.class);
-        if (inst == null) return null; // the song being played does not use this chip
-        // the instrument hands back an unmodifiable map, and this adds to it
-        Map<String, Object> info = new HashMap<>(inst.getView(chipId, "info", null));
-        info.put("keyOn", keyOn[chipId]);
-        return info;
+        return inst == null ? Collections.emptyMap() : inst.getView(chipId, "info");
     }
 
-    public void resetKeyOn(int chipId) {
-        keyOn[chipId] = false;
-    }
-
-    public void setMask(int chipId) {
-        setMask(chipId, true);
-    }
-
-    public void resetMask(int chipId) {
-        setMask(chipId, false);
-    }
-
-    /** the panel/main-window view of whether the chip is muted; this array is the source of truth */
-    public boolean getMask(int chipId) {
+    @Override
+    public boolean getMask(int chipId, int ch) {
         return mask[chipId];
     }
 }

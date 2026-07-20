@@ -6,6 +6,9 @@
 
 package mdplayer.chips;
 
+import java.util.Collections;
+import java.util.Map;
+
 import mdplayer.Common.EnmModel;
 import mdsound.Instrument;
 import mdsound.instrument.X1_010Inst;
@@ -43,10 +46,9 @@ public class X1_010Chip extends BaseChip {
         dumpData(model, "PCMData", srcOffset, buf, length);
     }
 
-    /** the channel state as the chip has it now */
     @Override
-    public java.util.Map<String, Object> getInfo(int chipId) {
-        mdsound.instrument.X1_010Inst inst = context.mds.inst(mdsound.instrument.X1_010Inst.class);
-        return inst == null ? null : inst.getView(chipId, "info", null);
+    public Map<String, Object> getInfo(int chipId) {
+        X1_010Inst inst = context.mds.inst(X1_010Inst.class);
+        return inst == null ? Collections.emptyMap() : inst.getView(chipId, "info");
     }
 }

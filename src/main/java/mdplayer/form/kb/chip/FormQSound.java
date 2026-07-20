@@ -114,6 +114,7 @@ public class FormQSound extends FormChipBase<FormQSound.Params> {
         }
     };
 
+    @Override
     public void initScreen() {
         for (int ch = 0; ch < 16; ch++) {
             for (int ot = 0; ot < 12 * 8; ot++) {
@@ -124,6 +125,7 @@ public class FormQSound extends FormChipBase<FormQSound.Params> {
         }
     }
 
+    @Override
     public void changeScreenParams() {
         int[] qSoundRegister = (int[]) audio.plugin.chipRegister.chip(QSoundChip.class).getInfo(chipId).get("register");
 
@@ -184,6 +186,7 @@ public class FormQSound extends FormChipBase<FormQSound.Params> {
             newParam.channels[mch].mask = audio.plugin.chipRegister.chip(QSoundChip.class).getMask(chipId, mch);
     }
 
+    @Override
     public void drawScreenParams() {
         Channel oyc;
         Channel nyc;

@@ -70,16 +70,9 @@ public class MPcmChip extends BaseChip {
         context.mds.inst(inst(chipId)).write(chipId, port, addr, data);
     }
 
-    public void setMask(int chipId, int ch, boolean mask) {
+    @Override
+    protected void setMask(int chipId, int ch, boolean mask, Object... args) {
         this.mask[chipId][ch] = mask;
-    }
-
-    public void setMask(int chipId, int ch) {
-        setMask(chipId, ch, true);
-    }
-
-    public void resetMask(int chipId, int ch) {
-        setMask(chipId, ch, false);
     }
 
     public void keyOn(int chipId, int ch) {

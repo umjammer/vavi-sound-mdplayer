@@ -6,6 +6,7 @@
 
 package mdplayer.fmdsp;
 
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
@@ -65,9 +66,9 @@ public class SegaPcmReader implements FmDspChipReader {
     @Override
     public void reset() {
         regs = null;
-        java.util.Arrays.fill(prevPlayings, false);
+        Arrays.fill(prevPlayings, false);
         active = false;
-        java.util.Arrays.fill(slotChannels, -1);
+        Arrays.fill(slotChannels, -1);
         mappedChannels = 0;
     }
 
@@ -76,7 +77,7 @@ public class SegaPcmReader implements FmDspChipReader {
         regs = null;
         try {
             Map<String, Object> info = chip().getInfo(0);
-            if (info != null && info.get("register") instanceof byte[] r) regs = r;
+            if (!info.isEmpty() && info.get("register") instanceof byte[] r) regs = r;
         } catch (RuntimeException ignore) {
             // the chip exists but the song never loaded it
         }

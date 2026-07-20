@@ -86,6 +86,7 @@ public class FormSN76489 extends FormChipBase<FormSN76489.Params> {
         }
     };
 
+    @Override
     public void changeScreenParams() {
         int[] psgRegister = (int[]) audio.plugin.chipRegister.chip(Sn76489Chip.class).getInfo(chipId).get("register");
         int[] psgRegister1 = null;
@@ -165,6 +166,7 @@ public class FormSN76489 extends FormChipBase<FormSN76489.Params> {
             newParam.channels[mch].mask = audio.plugin.chipRegister.chip(Sn76489Chip.class).getMask(chipId, mch);
     }
 
+    @Override
     public void drawScreenParams() {
         boolean SN76489Type = (chipId == 0) ? parent.setting.getSN76489Type()[0].getUseReal()[0] : parent.setting.getSN76489Type()[1].getUseReal()[0];
         int tp = SN76489Type ? 1 : 0;
@@ -206,6 +208,7 @@ public class FormSN76489 extends FormChipBase<FormSN76489.Params> {
         }
     }
 
+    @Override
     public void initScreen() {
         for (int ch = 0; ch < 3; ch++) {
             newParam.channels[ch].note = -1;

@@ -107,52 +107,54 @@ public class FormYMF271 extends FormChipBase<FormYMF271.Params> {
         }
     }
 
+    @Override
     public void changeScreenParams() {
-        Map<String, Object> reg = audio.plugin.chipRegister.chip(YmF271Chip.class).getInfo(chipId);
-        if (reg == null) return; // the song being played does not use this chip
+        Map<String, Object> info = audio.plugin.chipRegister.chip(YmF271Chip.class).getInfo(chipId);
+        if (info.isEmpty()) return; // the song being played does not use this chip
+
         for (int i = 0; i < 48; i++) {
             int slot = YmF271Inst.slotTbl[i];
 
-            int volume = (int) reg.get("slots." + slot + ".volume");
-            int ch0Level = (int) reg.get("slots." + slot + ".ch0Level");
-            int ch1Level = (int) reg.get("slots." + slot + ".ch1Level");
+            int volume = (int) info.get("slots." + slot + ".volume");
+            int ch0Level = (int) info.get("slots." + slot + ".ch0Level");
+            int ch1Level = (int) info.get("slots." + slot + ".ch1Level");
             newParam.channels[slot].volumeL = Math.clamp(((long) volume * ch0Level) >> 23, 0, 19);
             newParam.channels[slot].volumeR = Math.clamp(((long) volume * ch1Level) >> 23, 0, 19);
-            newParam.channels[slot].pan = (int) reg.get("slots." + slot + ".pan");
-            newParam.channels[slot].pantp = (int) reg.get("slots." + slot + ".pantp");
-            newParam.channels[slot].inst[0] = (int) reg.get("slots." + slot + ".inst.0");
-            newParam.channels[slot].inst[1] = (int) reg.get("slots." + slot + ".inst.1");
-            newParam.channels[slot].inst[2] = (int) reg.get("slots." + slot + ".inst.2");
-            newParam.channels[slot].inst[3] = (int) reg.get("slots." + slot + ".inst.3");
-            newParam.channels[slot].inst[4] = (int) reg.get("slots." + slot + ".inst.4");
-            newParam.channels[slot].inst[5] = (int) reg.get("slots." + slot + ".inst.5");
-            newParam.channels[slot].inst[6] = (int) reg.get("slots." + slot + ".inst.6");
-            newParam.channels[slot].inst[7] = (int) reg.get("slots." + slot + ".inst.7");
-            newParam.channels[slot].inst[8] = (int) reg.get("slots." + slot + ".inst.8");
-            newParam.channels[slot].inst[9] = (int) reg.get("slots." + slot + ".inst.9");
-            newParam.channels[slot].inst[10] = (int) reg.get("slots." + slot + ".inst.10");
-            newParam.channels[slot].inst[11] = (int) reg.get("slots." + slot + ".inst.11");
-            newParam.channels[slot].inst[12] = (int) reg.get("slots." + slot + ".inst.12");
+            newParam.channels[slot].pan = (int) info.get("slots." + slot + ".pan");
+            newParam.channels[slot].pantp = (int) info.get("slots." + slot + ".pantp");
+            newParam.channels[slot].inst[0] = (int) info.get("slots." + slot + ".inst.0");
+            newParam.channels[slot].inst[1] = (int) info.get("slots." + slot + ".inst.1");
+            newParam.channels[slot].inst[2] = (int) info.get("slots." + slot + ".inst.2");
+            newParam.channels[slot].inst[3] = (int) info.get("slots." + slot + ".inst.3");
+            newParam.channels[slot].inst[4] = (int) info.get("slots." + slot + ".inst.4");
+            newParam.channels[slot].inst[5] = (int) info.get("slots." + slot + ".inst.5");
+            newParam.channels[slot].inst[6] = (int) info.get("slots." + slot + ".inst.6");
+            newParam.channels[slot].inst[7] = (int) info.get("slots." + slot + ".inst.7");
+            newParam.channels[slot].inst[8] = (int) info.get("slots." + slot + ".inst.8");
+            newParam.channels[slot].inst[9] = (int) info.get("slots." + slot + ".inst.9");
+            newParam.channels[slot].inst[10] = (int) info.get("slots." + slot + ".inst.10");
+            newParam.channels[slot].inst[11] = (int) info.get("slots." + slot + ".inst.11");
+            newParam.channels[slot].inst[12] = (int) info.get("slots." + slot + ".inst.12");
 
-            newParam.channels[slot].inst[13] = (int) reg.get("slots." + slot + ".inst.13");
-            newParam.channels[slot].inst[14] = (int) reg.get("slots." + slot + ".inst.14");
+            newParam.channels[slot].inst[13] = (int) info.get("slots." + slot + ".inst.13");
+            newParam.channels[slot].inst[14] = (int) info.get("slots." + slot + ".inst.14");
 
-            newParam.channels[slot].inst[15] = (int) reg.get("slots." + slot + ".inst.15");
-            newParam.channels[slot].inst[16] = (int) reg.get("slots." + slot + ".inst.16");
-            newParam.channels[slot].inst[17] = (int) reg.get("slots." + slot + ".inst.17");
+            newParam.channels[slot].inst[15] = (int) info.get("slots." + slot + ".inst.15");
+            newParam.channels[slot].inst[16] = (int) info.get("slots." + slot + ".inst.16");
+            newParam.channels[slot].inst[17] = (int) info.get("slots." + slot + ".inst.17");
 
-            newParam.channels[slot].inst[18] = (int) reg.get("slots." + slot + ".inst.18");
-            newParam.channels[slot].inst[19] = (int) reg.get("slots." + slot + ".inst.19");
-            newParam.channels[slot].inst[20] = (int) reg.get("slots." + slot + ".inst.20");
-            newParam.channels[slot].inst[21] = (int) reg.get("slots." + slot + ".inst.21");
+            newParam.channels[slot].inst[18] = (int) info.get("slots." + slot + ".inst.18");
+            newParam.channels[slot].inst[19] = (int) info.get("slots." + slot + ".inst.19");
+            newParam.channels[slot].inst[20] = (int) info.get("slots." + slot + ".inst.20");
+            newParam.channels[slot].inst[21] = (int) info.get("slots." + slot + ".inst.21");
 
-            newParam.channels[slot].inst[22] = (int) reg.get("slots." + slot + ".inst.22");
-            newParam.channels[slot].inst[23] = (int) reg.get("slots." + slot + ".inst.23");
-            newParam.channels[slot].inst[24] = (int) reg.get("slots." + slot + ".inst.24");
-            newParam.channels[slot].inst[25] = (int) reg.get("slots." + slot + ".inst.25");
+            newParam.channels[slot].inst[22] = (int) info.get("slots." + slot + ".inst.22");
+            newParam.channels[slot].inst[23] = (int) info.get("slots." + slot + ".inst.23");
+            newParam.channels[slot].inst[24] = (int) info.get("slots." + slot + ".inst.24");
+            newParam.channels[slot].inst[25] = (int) info.get("slots." + slot + ".inst.25");
 
             // note
-            if ((boolean) reg.get("slots." + slot + ".active")) {
+            if ((boolean) info.get("slots." + slot + ".active")) {
                 newParam.channels[slot].volumeL = Math.clamp(((long) volume * ch0Level) >> 23, 0, 19);
                 newParam.channels[slot].volumeR = Math.clamp(((long) volume * ch1Level) >> 23, 0, 19);
                 newParam.channels[slot].note = Common.searchSSGNote(newParam.channels[slot].inst[14]) + (((newParam.channels[slot].inst[13] + 8) & 0xf) - 11) * 12 - 7;
@@ -163,11 +165,12 @@ public class FormYMF271 extends FormChipBase<FormYMF271.Params> {
             }
 
             if (i % 4 == 0) {
-                newParam.channels[slot].tn = (int) reg.get("slots." + slot + ".sync");
+                newParam.channels[slot].tn = (int) info.get("slots." + slot + ".sync");
             }
         }
     }
 
+    @Override
     public void drawScreenParams() {
         for (int i = 0; i < 48; i++) {
             int slot = YmF271Inst.slotTbl[i];

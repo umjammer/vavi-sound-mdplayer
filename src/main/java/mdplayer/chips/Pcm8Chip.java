@@ -6,7 +6,6 @@
 
 package mdplayer.chips;
 
-import java.lang.System.Logger;
 import java.util.Objects;
 
 import mdplayer.Common.EnmModel;
@@ -90,14 +89,6 @@ public class Pcm8Chip extends BaseChip {
 
     public void setMask(int chipId, int ch, boolean mask) {
         this.mask[chipId][ch] = mask;
-    }
-
-    public void setMask(int chipId, int ch) {
-        setMask(chipId, ch, true);
-    }
-
-    public void resetMask(int chipId, int ch) {
-        setMask(chipId, ch, false);
     }
 
     //

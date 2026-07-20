@@ -88,6 +88,7 @@ public class FormVRC7 extends FormChipBase<FormVRC7.Params> {
         }
     };
 
+    @Override
     public void changeScreenParams() {
         int[] vrc7Register = (int[]) audio.plugin.chipRegister.chip(Vrc7Chip.class).getInfo(chipId).get("register");
         if (vrc7Register == null) return;
@@ -163,6 +164,7 @@ public class FormVRC7 extends FormChipBase<FormVRC7.Params> {
             newParam.channels[mch].mask = audio.plugin.chipRegister.chip(NpNesChip.Vrc7Chip.class).getMask(chipId, mch);
     }
 
+    @Override
     public void drawScreenParams() {
         int tp = 0;
 
@@ -196,6 +198,7 @@ public class FormVRC7 extends FormChipBase<FormVRC7.Params> {
         }
     }
 
+    @Override
     public void initScreen() {
         for (int ch = 0; ch < 6; ch++) {
             newParam.channels[ch].inst[0] = 0;

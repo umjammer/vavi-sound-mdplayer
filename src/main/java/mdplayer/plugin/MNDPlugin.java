@@ -74,7 +74,7 @@ public class MNDPlugin extends BasePlugin<MnDriver> {
                 chip.setVolumes.put("RHYTHM", opna::setVolume);
                 chip.setVolumes.put("ADPCM", opna::setVolume);
             }
-            Function<String, InputStream> fn = Ym2608Chip::getOPNARyhthmStream;
+            Function<String, InputStream> fn = chipRegister.chip(Ym2608Chip.class)::getOPNARyhthmStream;
             chip.option = new Object[] {fn};
             put(Ym2608Chip.class, chip);
         }
@@ -92,7 +92,7 @@ public class MNDPlugin extends BasePlugin<MnDriver> {
                 chip.setVolumes.put("RHYTHM", opna::setVolume);
                 chip.setVolumes.put("ADPCM", opna::setVolume);
             }
-            Function<String, InputStream> fn = Ym2608Chip::getOPNARyhthmStream;
+            Function<String, InputStream> fn = chipRegister.chip(Ym2608Chip.class)::getOPNARyhthmStream;
             chip.option = new Object[] {fn};
 //            chip.option = new Object[] {Common.getApplicationFolder()};
             put(Ym2608Chip.class, chip);

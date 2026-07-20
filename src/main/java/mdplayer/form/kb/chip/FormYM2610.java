@@ -13,6 +13,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.util.List;
+import java.util.Map;
 import java.util.prefs.Preferences;
 
 import mdplayer.Common;
@@ -145,6 +146,7 @@ public class FormYM2610 extends FormChipBase<FormYM2610.Params> {
         }
     };
 
+    @Override
     public void initScreen() {
         int tp = ((chipId == 0)
                 ? (parent.setting.getYM2610Type()[0].getUseReal()[0] || (parent.setting.getYM2610Type()[0].getUseReal().length > 1 && parent.setting.getYM2610Type()[0].getUseReal()[1]))
@@ -206,18 +208,22 @@ public class FormYM2610 extends FormChipBase<FormYM2610.Params> {
     private static final float[] fmDivTbl = {6, 3, 2};
     private static final float[] ssgDivTbl = {4, 2, 1};
 
+    @Override
     public void changeScreenParams() {
+        Map<String, Object> info = audio.plugin.chipRegister.chip(Ym2610Chip.class).getInfo(chipId);
+        if (info.isEmpty()) return;
+
         int delta;
         float frq;
 
-        int[][] YM2610Register = (int[][]) audio.plugin.chipRegister.chip(Ym2610Chip.class).getInfo(chipId).get("register");
-        int[] fmKeyYM2610 = (int[]) audio.plugin.chipRegister.chip(Ym2610Chip.class).getInfo(chipId).get("keyOn");
-        int[] YM2610Vol = (int[]) audio.plugin.chipRegister.chip(Ym2610Chip.class).getInfo(chipId).get("volume");
-        int[] YM2610Ch3SlotVol = (int[]) audio.plugin.chipRegister.chip(Ym2610Chip.class).getInfo(chipId).get("ch3SlotVolume");
-        int[][] YM2610Rhythm = (int[][]) audio.plugin.chipRegister.chip(Ym2610Chip.class).getInfo(chipId).get("rhythmVolume");
-        int[] YM2610AdpcmVol = (int[]) audio.plugin.chipRegister.chip(Ym2610Chip.class).getInfo(chipId).get("adpcmVolume");
+        int[][] register = (int[][]) info.get("register");
+        int[] fmKey = (int[]) info.get("keyOn");
+        int[] vol = (int[]) info.get("volume");
+        int[] ch3SlotVol = (int[]) info.get("ch3SlotVolume");
+        int[][] rhythm = (int[][]) info.get("rhythmVolume");
+        int[] adpcmVol = (int[]) info.get("adpcmVolume");
 
-        boolean isFmEx = (YM2610Register[chipId][0x27] & 0x40) > 0;
+        boolean isFmEx = (register[chipId][0x27] & 0x40) > 0;
         newParam.channels[2].ex = isFmEx;
 
         int defaultMasterClock = 8000000;
@@ -229,7 +235,7 @@ public class FormYM2610 extends FormChipBase<FormYM2610.Params> {
             masterClock = clock;
         }
 
-        int divInd = YM2610Register[0][0x2d];
+        int divInd = register[0][0x2d];
         if (divInd < 0 || divInd > 2) divInd = 0;
         float fmDiv = fmDivTbl[divInd];
         float ssgDiv = ssgDivTbl[divInd];
@@ -241,72 +247,72 @@ public class FormYM2610 extends FormChipBase<FormYM2610.Params> {
         //if (masterClock != 0)
         //    mul = masterClock / (float)defaultMasterClock;
 
-        newParam.lfoSw = (YM2610Register[0][0x22] & 0x8) != 0;
-        newParam.lfoFrq = (YM2610Register[0][0x22] & 0x7);
+        newParam.lfoSw = (register[0][0x22] & 0x8) != 0;
+        newParam.lfoFrq = (register[0][0x22] & 0x7);
 
         for (int ch = 0; ch < 6; ch++) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
             for (int i = 0; i < 4; i++) {
                 int ops = (i == 0) ? 0 : ((i == 1) ? 8 : ((i == 2) ? 4 : 12));
-                newParam.channels[ch].inst[i * 11 + 0] = YM2610Register[p][0x50 + ops + c] & 0x1f; //AR
-                newParam.channels[ch].inst[i * 11 + 1] = YM2610Register[p][0x60 + ops + c] & 0x1f; //DR
-                newParam.channels[ch].inst[i * 11 + 2] = YM2610Register[p][0x70 + ops + c] & 0x1f; //SR
-                newParam.channels[ch].inst[i * 11 + 3] = YM2610Register[p][0x80 + ops + c] & 0x0f; //RR
-                newParam.channels[ch].inst[i * 11 + 4] = (YM2610Register[p][0x80 + ops + c] & 0xf0) >> 4;//SL
-                newParam.channels[ch].inst[i * 11 + 5] = YM2610Register[p][0x40 + ops + c] & 0x7f;//TL
-                newParam.channels[ch].inst[i * 11 + 6] = (YM2610Register[p][0x50 + ops + c] & 0xc0) >> 6;//KS
-                newParam.channels[ch].inst[i * 11 + 7] = YM2610Register[p][0x30 + ops + c] & 0x0f;//ML
-                newParam.channels[ch].inst[i * 11 + 8] = (YM2610Register[p][0x30 + ops + c] & 0x70) >> 4;//DT
-                newParam.channels[ch].inst[i * 11 + 9] = (YM2610Register[p][0x60 + ops + c] & 0x80) >> 7;//AM
-                newParam.channels[ch].inst[i * 11 + 10] = YM2610Register[p][0x90 + ops + c] & 0x0f;//SG
+                newParam.channels[ch].inst[i * 11 + 0] = register[p][0x50 + ops + c] & 0x1f; // AR
+                newParam.channels[ch].inst[i * 11 + 1] = register[p][0x60 + ops + c] & 0x1f; // DR
+                newParam.channels[ch].inst[i * 11 + 2] = register[p][0x70 + ops + c] & 0x1f; // SR
+                newParam.channels[ch].inst[i * 11 + 3] = register[p][0x80 + ops + c] & 0x0f; // RR
+                newParam.channels[ch].inst[i * 11 + 4] = (register[p][0x80 + ops + c] & 0xf0) >> 4; // SL
+                newParam.channels[ch].inst[i * 11 + 5] = register[p][0x40 + ops + c] & 0x7f; // TL
+                newParam.channels[ch].inst[i * 11 + 6] = (register[p][0x50 + ops + c] & 0xc0) >> 6; // KS
+                newParam.channels[ch].inst[i * 11 + 7] = register[p][0x30 + ops + c] & 0x0f; // ML
+                newParam.channels[ch].inst[i * 11 + 8] = (register[p][0x30 + ops + c] & 0x70) >> 4; // DT
+                newParam.channels[ch].inst[i * 11 + 9] = (register[p][0x60 + ops + c] & 0x80) >> 7; // AM
+                newParam.channels[ch].inst[i * 11 + 10] = register[p][0x90 + ops + c] & 0x0f; // SG
             }
-            newParam.channels[ch].inst[44] = YM2610Register[p][0xb0 + c] & 0x07;//AL
-            newParam.channels[ch].inst[45] = (YM2610Register[p][0xb0 + c] & 0x38) >> 3;//FB
-            newParam.channels[ch].inst[46] = (YM2610Register[p][0xb4 + c] & 0x38) >> 4;//AMS
-            newParam.channels[ch].inst[47] = YM2610Register[p][0xb4 + c] & 0x07;//FMS
+            newParam.channels[ch].inst[44] = register[p][0xb0 + c] & 0x07; // AL
+            newParam.channels[ch].inst[45] = (register[p][0xb0 + c] & 0x38) >> 3; // FB
+            newParam.channels[ch].inst[46] = (register[p][0xb4 + c] & 0x38) >> 4; // AMS
+            newParam.channels[ch].inst[47] = register[p][0xb4 + c] & 0x07; // FMS
 
-            newParam.channels[ch].pan = (YM2610Register[p][0xb4 + c] & 0xc0) >> 6;
+            newParam.channels[ch].pan = (register[p][0xb4 + c] & 0xc0) >> 6;
 
             int freq = 0;
             int octav = 0;
             int n = -1;
             if (ch != 2 || !isFmEx) {
-                freq = YM2610Register[p][0xa0 + c] + (YM2610Register[p][0xa4 + c] & 0x07) * 0x100;
-                octav = (YM2610Register[p][0xa4 + c] & 0x38) >> 3;
+                freq = register[p][0xa0 + c] + (register[p][0xa4 + c] & 0x07) * 0x100;
+                octav = (register[p][0xa4 + c] & 0x38) >> 3;
                 float ff = freq / ((2 << 20) / (masterClock / (24 * fmDiv))) * (2 << (octav + 2));
                 ff /= 1038f;
 
-                if ((fmKeyYM2610[ch] & 1) != 0)
+                if ((fmKey[ch] & 1) != 0)
                     n = Math.clamp(Ym2608Chip.searchYM2608Adpcm(ff) - 1, 0, 95);
 
-                byte con = (byte) (fmKeyYM2610[ch]);
+                byte con = (byte) (fmKey[ch]);
                 int v = 127;
-                int m = md[YM2610Register[p][0xb0 + c] & 7];
+                int m = md[register[p][0xb0 + c] & 7];
                 // OP1
-                v = (((con & 0x10) != 0) && ((m & 0x10) != 0) && v > (YM2610Register[p][0x40 + c] & 0x7f)) ? (YM2610Register[p][0x40 + c] & 0x7f) : v;
+                v = (((con & 0x10) != 0) && ((m & 0x10) != 0) && v > (register[p][0x40 + c] & 0x7f)) ? (register[p][0x40 + c] & 0x7f) : v;
                 // OP3
-                v = (((con & 0x20) != 0) && ((m & 0x20) != 0) && v > (YM2610Register[p][0x44 + c] & 0x7f)) ? (YM2610Register[p][0x44 + c] & 0x7f) : v;
+                v = (((con & 0x20) != 0) && ((m & 0x20) != 0) && v > (register[p][0x44 + c] & 0x7f)) ? (register[p][0x44 + c] & 0x7f) : v;
                 // OP2
-                v = (((con & 0x40) != 0) && ((m & 0x40) != 0) && v > (YM2610Register[p][0x48 + c] & 0x7f)) ? (YM2610Register[p][0x48 + c] & 0x7f) : v;
+                v = (((con & 0x40) != 0) && ((m & 0x40) != 0) && v > (register[p][0x48 + c] & 0x7f)) ? (register[p][0x48 + c] & 0x7f) : v;
                 // OP4
-                v = (((con & 0x80) != 0) && ((m & 0x80) != 0) && v > (YM2610Register[p][0x4c + c] & 0x7f)) ? (YM2610Register[p][0x4c + c] & 0x7f) : v;
-                newParam.channels[ch].volumeL = Math.clamp((int) ((127 - v) / 127.0 * ((YM2610Register[p][0xb4 + c] & 0x80) != 0 ? 1 : 0) * YM2610Vol[ch] / 80.0), 0, 19);
-                newParam.channels[ch].volumeR = Math.clamp((int) ((127 - v) / 127.0 * ((YM2610Register[p][0xb4 + c] & 0x40) != 0 ? 1 : 0) * YM2610Vol[ch] / 80.0), 0, 19);
+                v = (((con & 0x80) != 0) && ((m & 0x80) != 0) && v > (register[p][0x4c + c] & 0x7f)) ? (register[p][0x4c + c] & 0x7f) : v;
+                newParam.channels[ch].volumeL = Math.clamp((int) ((127 - v) / 127.0 * ((register[p][0xb4 + c] & 0x80) != 0 ? 1 : 0) * vol[ch] / 80.0), 0, 19);
+                newParam.channels[ch].volumeR = Math.clamp((int) ((127 - v) / 127.0 * ((register[p][0xb4 + c] & 0x40) != 0 ? 1 : 0) * vol[ch] / 80.0), 0, 19);
             } else {
-                int m = md[YM2610Register[0][0xb0 + 2] & 7];
+                int m = md[register[0][0xb0 + 2] & 7];
                 if (parent.setting.getOther().getExAll()) m = 0xf0;
-                freq = YM2610Register[0][0xa9] + (YM2610Register[0][0xad] & 0x07) * 0x100;
-                octav = (YM2610Register[0][0xad] & 0x38) >> 3;
+                freq = register[0][0xa9] + (register[0][0xad] & 0x07) * 0x100;
+                octav = (register[0][0xad] & 0x38) >> 3;
                 float ff = freq / ((2 << 20) / (masterClock / (24 * fmDiv))) * (2 << (octav + 2));
                 ff /= 1038f;
 
-                if ((fmKeyYM2610[2] & 0x10) != 0 && ((m & 0x10) != 0))
+                if ((fmKey[2] & 0x10) != 0 && ((m & 0x10) != 0))
                     n = Math.clamp(Ym2608Chip.searchYM2608Adpcm(ff) - 1, 0, 95);
 
-                int v = ((m & 0x10) != 0) ? YM2610Register[p][0x40 + c] : 127;
-                newParam.channels[2].volumeL = Math.clamp((int) ((127 - v) / 127.0 * ((YM2610Register[0][0xb4 + 2] & 0x80) != 0 ? 1 : 0) * YM2610Ch3SlotVol[0] / 80.0), 0, 19);
-                newParam.channels[2].volumeR = Math.clamp((int) ((127 - v) / 127.0 * ((YM2610Register[0][0xb4 + 2] & 0x40) != 0 ? 1 : 0) * YM2610Ch3SlotVol[0] / 80.0), 0, 19);
+                int v = ((m & 0x10) != 0) ? register[p][0x40 + c] : 127;
+                newParam.channels[2].volumeL = Math.clamp((int) ((127 - v) / 127.0 * ((register[0][0xb4 + 2] & 0x80) != 0 ? 1 : 0) * ch3SlotVol[0] / 80.0), 0, 19);
+                newParam.channels[2].volumeR = Math.clamp((int) ((127 - v) / 127.0 * ((register[0][0xb4 + 2] & 0x40) != 0 ? 1 : 0) * ch3SlotVol[0] / 80.0), 0, 19);
             }
             newParam.channels[ch].note = n;
         }
@@ -318,23 +324,23 @@ public class FormYM2610 extends FormChipBase<FormYM2610.Params> {
             newParam.channels[ch].pan = 0;
 
             if (isFmEx) {
-                int m = md[YM2610Register[0][0xb0 + 2] & 7];
+                int m = md[register[0][0xb0 + 2] & 7];
                 if (parent.setting.getOther().getExAll()) m = 0xf0;
                 int op = ch - 5;
                 op = op == 1 ? 2 : (op == 2 ? 1 : op);
 
-                int freq = YM2610Register[0][0xa8 + c] + (YM2610Register[0][0xac + c] & 0x07) * 0x100;
-                int octav = (YM2610Register[0][0xac + c] & 0x38) >> 3;
+                int freq = register[0][0xa8 + c] + (register[0][0xac + c] & 0x07) * 0x100;
+                int octav = (register[0][0xac + c] & 0x38) >> 3;
                 int n = -1;
-                if ((fmKeyYM2610[2] & (0x10 << (ch - 5))) != 0 && ((m & (0x10 << op)) != 0)) {
+                if ((fmKey[2] & (0x10 << (ch - 5))) != 0 && ((m & (0x10 << op)) != 0)) {
                     float ff = freq / ((2 << 20) / (masterClock / (24 * fmDiv))) * (2 << (octav + 2));
                     ff /= 1038f;
                     n = Math.clamp(Ym2608Chip.searchYM2608Adpcm(ff) - 1, 0, 95);
                 }
                 newParam.channels[ch].note = n;
 
-                int v = ((m & (0x10 << op)) != 0) ? YM2610Register[0][0x42 + op * 4] : 127;
-                newParam.channels[ch].volumeL = Math.clamp((int) ((127 - v) / 127.0 * YM2610Ch3SlotVol[ch - 5] / 80.0), 0, 19);
+                int v = ((m & (0x10 << op)) != 0) ? register[0][0x42 + op * 4] : 127;
+                newParam.channels[ch].volumeL = Math.clamp((int) ((127 - v) / 127.0 * ch3SlotVol[ch - 5] / 80.0), 0, 19);
             } else {
                 newParam.channels[ch].note = -1;
                 newParam.channels[ch].volumeL = 0;
@@ -344,11 +350,11 @@ public class FormYM2610 extends FormChipBase<FormYM2610.Params> {
         for (int ch = 0; ch < 3; ch++) { // SSG
             Channel channel = newParam.channels[ch + 9];
 
-            boolean t = (YM2610Register[0][0x07] & (0x1 << ch)) == 0;
-            boolean n = (YM2610Register[0][0x07] & (0x8 << ch)) == 0;
+            boolean t = (register[0][0x07] & (0x1 << ch)) == 0;
+            boolean n = (register[0][0x07] & (0x8 << ch)) == 0;
             channel.tn = (t ? 1 : 0) + (n ? 2 : 0);
 
-            channel.volume = (int) (((t || n) ? 1 : 0) * (YM2610Register[0][0x08 + ch] & 0xf) * (20.0 / 16.0));
+            channel.volume = (int) (((t || n) ? 1 : 0) * (register[0][0x08 + ch] & 0xf) * (20.0 / 16.0));
             if (!t && !n && channel.volume > 0) {
                 channel.volume--;
             }
@@ -356,8 +362,8 @@ public class FormYM2610 extends FormChipBase<FormYM2610.Params> {
             if (channel.volume == 0) {
                 channel.note = -1;
             } else {
-                int ft = YM2610Register[0][0x00 + ch * 2];
-                int ct = YM2610Register[0][0x01 + ch * 2];
+                int ft = register[0][0x00 + ch * 2];
+                int ct = register[0][0x01 + ch * 2];
                 int tp = (ct << 8) | ft;
                 if (tp == 0) {
                     channel.note = -1;
@@ -369,45 +375,45 @@ public class FormYM2610 extends FormChipBase<FormYM2610.Params> {
             }
         }
 
-        newParam.nfrq = YM2610Register[0][0x06] & 0x1f;
-        newParam.efrq = YM2610Register[0][0x0c] * 0x100 + YM2610Register[0][0x0b];
-        newParam.etype = (YM2610Register[0][0x0d] & 0xf);
+        newParam.nfrq = register[0][0x06] & 0x1f;
+        newParam.efrq = register[0][0x0c] * 0x100 + register[0][0x0b];
+        newParam.etype = (register[0][0x0d] & 0xf);
 
         // ADPCM B
-        newParam.channels[12].pan = (YM2610Register[0][0x11] & 0xc0) >> 6;
-        if (YM2610AdpcmVol[0] != 0) {
-            newParam.channels[12].volumeL = Math.clamp((long) YM2610AdpcmVol[0] * YM2610Register[0][0x1b], 0, 19);
+        newParam.channels[12].pan = (register[0][0x11] & 0xc0) >> 6;
+        if (adpcmVol[0] != 0) {
+            newParam.channels[12].volumeL = Math.clamp((long) adpcmVol[0] * register[0][0x1b], 0, 19);
         } else {
             if (newParam.channels[12].volumeL > 0) newParam.channels[12].volumeL--;
         }
-        if (YM2610AdpcmVol[1] != 0) {
-            newParam.channels[12].volumeR = Math.clamp((long) YM2610AdpcmVol[1] * YM2610Register[0][0x1b], 0, 19);
+        if (adpcmVol[1] != 0) {
+            newParam.channels[12].volumeR = Math.clamp((long) adpcmVol[1] * register[0][0x1b], 0, 19);
         } else {
             if (newParam.channels[12].volumeR > 0) newParam.channels[12].volumeR--;
         }
-        delta = (YM2610Register[0][0x1a] << 8) | YM2610Register[0][0x19];
+        delta = (register[0][0x1a] << 8) | register[0][0x19];
         frq = delta / 9447.0f; // Delta=9447 at freq=8kHz
-        newParam.channels[12].note = (YM2610Register[0][0x10] & 0x80) != 0 ? Ym2608Chip.searchYM2608Adpcm(frq) : -1;
-        if ((YM2610Register[0][0x11] & 0xc0) == 0) {
+        newParam.channels[12].note = (register[0][0x10] & 0x80) != 0 ? Ym2608Chip.searchYM2608Adpcm(frq) : -1;
+        if ((register[0][0x11] & 0xc0) == 0) {
             newParam.channels[12].note = -1;
         }
 
-        int tl = YM2610Register[1][0x01] & 0x3f;
+        int tl = register[1][0x01] & 0x3f;
         for (int ch = 13; ch < 19; ch++) { // ADPCM a
-            newParam.channels[ch].pan = (YM2610Register[1][0x08 + ch - 13] & 0xc0) >> 6;
-            //newParam.channels[ch].volumeL = Math.min(Math.max(YM2610Rhythm[ch - 13][0] / 80, 0), 19);
-            //newParam.channels[ch].volumeR = Math.min(Math.max(YM2610Rhythm[ch - 13][1] / 80, 0), 19);
-            int il = YM2610Register[1][0x08 + ch - 13] & 0x1f;
+            newParam.channels[ch].pan = (register[1][0x08 + ch - 13] & 0xc0) >> 6;
+            //newParam.channels[ch].volumeL = Math.min(Math.max(rhythm[ch - 13][0] / 80, 0), 19);
+            //newParam.channels[ch].volumeR = Math.min(Math.max(rhythm[ch - 13][1] / 80, 0), 19);
+            int il = register[1][0x08 + ch - 13] & 0x1f;
 
-            if (YM2610Rhythm[ch - 13][0] != 0) {
-                newParam.channels[ch].volumeL = Math.clamp((long) YM2610Rhythm[ch - 13][0] * tl * il / 128, 0, 19);
-                //newParam.channels[12].volumeR = Math.min(Math.max(YM2610AdpcmVol[1] * YM2610Register[0][0x1b], 0), 19);
+            if (rhythm[ch - 13][0] != 0) {
+                newParam.channels[ch].volumeL = Math.clamp((long) rhythm[ch - 13][0] * tl * il / 128, 0, 19);
+                //newParam.channels[12].volumeR = Math.min(Math.max(adpcmVol[1] * register[0][0x1b], 0), 19);
             } else {
                 if (newParam.channels[ch].volumeL > 0) newParam.channels[ch].volumeL--;
             }
-            if (YM2610Rhythm[ch - 13][1] != 0) {
-                newParam.channels[ch].volumeR = Math.clamp((long) YM2610Rhythm[ch - 13][1] * tl * il / 128, 0, 19);
-                //newParam.channels[12].volumeR = Math.min(Math.max(YM2610AdpcmVol[1] * YM2610Register[0][0x1b], 0), 19);
+            if (rhythm[ch - 13][1] != 0) {
+                newParam.channels[ch].volumeR = Math.clamp((long) rhythm[ch - 13][1] * tl * il / 128, 0, 19);
+                //newParam.channels[12].volumeR = Math.min(Math.max(adpcmVol[1] * register[0][0x1b], 0), 19);
             } else {
                 if (newParam.channels[ch].volumeR > 0) newParam.channels[ch].volumeR--;
             }
@@ -418,6 +424,7 @@ public class FormYM2610 extends FormChipBase<FormYM2610.Params> {
             newParam.channels[mch].mask = audio.plugin.chipRegister.chip(Ym2610Chip.class).getMask(chipId, mch == 12 ? 13 : (mch == 13 ? 12 : mch));
     }
 
+    @Override
     public void drawScreenParams() {
         int tp = ((chipId == 0)
                 ? (parent.setting.getYM2610Type()[0].getUseReal()[0] || (parent.setting.getYM2610Type()[0].getUseReal().length > 1 && parent.setting.getYM2610Type()[0].getUseReal()[1]))

@@ -6,6 +6,7 @@
 
 package mdplayer.chips;
 
+import java.util.Collections;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
@@ -35,7 +36,7 @@ public class Ppz8Chip extends BaseChip {
     @Override
     public Map<String, Object> getInfo(int chipId) {
         Ppz8Inst inst = context.mds.inst(Ppz8Inst.class);
-        return inst == null ? null : inst.getView(chipId, "info", null);
+        return inst == null ? Collections.emptyMap() : inst.getView(chipId, "info");
     }
 
     public void writePcm(int chipId, int bank, int mode, byte[][] pcmData, EnmModel model) {
@@ -58,19 +59,12 @@ public class Ppz8Chip extends BaseChip {
         context.mds.inst(inst(chipId)).write(chipId, dPort, dAddr, dData);
     }
 
-    public void setMask(int chipId, int ch, boolean mask) {
+    @Override
+    public void setMask(int chipId, int ch, boolean mask, Object... args) {
         this.mask[chipId][ch] = mask;
     }
 
-    public void setMask(int chipId, int ch) {
-        setMask(chipId, ch, true);
-    }
-
-    public void resetMask(int chipId, int ch) {
-        setMask(chipId, ch, false);
-    }
-
-    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    @Override
     public boolean getMask(int chipId, int ch) {
         return ch < mask[chipId].length && mask[chipId][ch];
     }

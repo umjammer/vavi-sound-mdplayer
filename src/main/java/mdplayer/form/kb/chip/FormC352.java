@@ -118,6 +118,7 @@ public class FormC352 extends FormChipBase<FormC352.Params> {
         }
     };
 
+    @Override
     public void initScreen() {
         boolean C352Type = false; // (chipId == 0) ? parent.setting.C352Type.UseScci : parent.setting.C352SType.UseScci;
         int tp = C352Type ? 1 : 0;
@@ -157,9 +158,10 @@ public class FormC352 extends FormChipBase<FormC352.Params> {
         return n;
     }
 
+    @Override
     public void changeScreenParams() {
         Map<String, Object> info = audio.plugin.chipRegister.chip(C352Chip.class).getInfo(chipId);
-        if (info == null) return; // the song being played does not use this chip
+        if (info.isEmpty()) return; // the song being played does not use this chip
         int[] c352Register = (int[]) info.get("register");
         int[] c352key = (int[]) info.get("flags");
         // the registers are read back into a buffer the chip reuses, and the visualizer reads the
@@ -224,6 +226,7 @@ public class FormC352 extends FormChipBase<FormC352.Params> {
             newParam.channels[mch].mask = audio.plugin.chipRegister.chip(C352Chip.class).getMask(chipId, mch);
     }
 
+    @Override
     public void drawScreenParams() {
         Channel oyc;
         Channel nyc;

@@ -7,6 +7,7 @@
 package mdplayer.fmdsp;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
@@ -63,7 +64,7 @@ public class PokeyReader implements FmDspChipReader {
         Arrays.fill(prevSoundings, false);
         Arrays.fill(prevDivisors, 0);
         active = false;
-        info = null;
+        info = Collections.emptyMap();
     }
 
     @Override
@@ -87,7 +88,7 @@ public class PokeyReader implements FmDspChipReader {
             info = chip().getInfo(0);
         } catch (RuntimeException ignore) {
             // the chip exists but the song never loaded it
-            info = null;
+            info = Collections.emptyMap();
         }
     }
 
@@ -97,7 +98,7 @@ public class PokeyReader implements FmDspChipReader {
     }
 
     private boolean sounding(int ch) {
-        if (info == null) return false;
+        if (info.isEmpty()) return false;
         Object audible = info.get("channels." + ch + ".audible");
         return audible instanceof Boolean b && b && intOf(ch, "volume") > 0;
     }
@@ -121,7 +122,7 @@ public class PokeyReader implements FmDspChipReader {
         out.num = ch + 1;
         out.info = TrackInfo.SSG;
         out.pan = Pan.CENTER; // the chip is mono
-        if (info == null) return;
+        if (info.isEmpty()) return;
 
         boolean sounding = sounding(ch);
         int divisor = intOf(ch, "divisor");

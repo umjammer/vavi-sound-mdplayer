@@ -15,7 +15,7 @@ import mdplayer.driver.sid.libsidplayfp.builders.resid_builder.resid.Voice;
  */
 public class VoiceCompareTest {
 
-    public static void main(String[] args) throws Exception {
+    static void main(String[] args) throws Exception {
         Sid sid = new Sid(44100);
 
         // Configure all three voices identically: triangle waveform, gate on, freq=0x1000

@@ -63,11 +63,11 @@ public class Memory {
         } else if (pc >= 0xa000 && pc < 0xc000) {
             return exRAM.get(exRAMBank)[(pc - 0xa000) & 0xFFFF];
         } else if (pc >= 0xc000 && pc < 0xd000) {
-            return wkRAM.get(0)[(pc - 0xc000) & 0xFFFF];
+            return wkRAM.getFirst()[(pc - 0xc000) & 0xFFFF];
         } else if (pc >= 0xd000 && pc < 0xe000) {
             return wkRAM.get(wkRAMBank)[(pc - 0xd000) & 0xFFFF];
         } else if (pc >= 0xe000 && pc < 0xf000) {
-            return wkRAM.get(0)[(pc - 0xe000) & 0xFFFF];
+            return wkRAM.getFirst()[(pc - 0xe000) & 0xFFFF];
         } else if (pc >= 0xf000 && pc < 0xfe00) {
             return wkRAM.get(wkRAMBank)[(pc - 0xf000) & 0xFFFF];
         } else if (pc >= 0xfe00 && pc < 0xfea0) {
@@ -90,7 +90,7 @@ public class Memory {
             cartROMBank = dat & 0xFF;
             if (cartROMBank >= cartROM.length) throw new IllegalArgumentException("Switching to a non-existent Bank.");
         } else if ((pc >= 0x4000 && pc < 0x6000) || pc == 0xff70) {
-            ; // Ignore
+            // Ignore
         } else if (pc >= 0x8000 && pc < 0xa000) {
             vRAM.get(vRAMBank)[(pc - 0x8000) & 0xFFFF] = dat;
         } else if (pc >= 0xa000 && pc < 0xc000) {
@@ -106,7 +106,7 @@ public class Memory {
         } else if (pc >= 0xfe00 && pc < 0xfea0) {
             spriteAtrTbl[(pc - 0xfe00) & 0xFFFF] = dat;
         } else if (pc >= 0xfea0 && pc < 0xff00) {
-            ; //Not use
+            //Not use
         } else if (pc >= 0xff00 && pc < 0xff80) {
             io.write(pc, dat & 0xff);
         } else if (pc >= 0xff80 && pc < 0xffff) {

@@ -146,7 +146,7 @@ public class FormInfo extends JFrame {
         }
     };
 
-    private void appendToTextPane(JTextPane tp, String msg, Color c) {
+    private static void appendToTextPane(JTextPane tp, String msg, Color c) {
         StyleContext sc = StyleContext.getDefaultStyleContext();
         AttributeSet aset = sc.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Foreground, c);
         int len = tp.getDocument().getLength();
@@ -180,7 +180,7 @@ public class FormInfo extends JFrame {
                             case '\\':
                                 break;
                             case 'c':
-                                if (currentChunk.length() > 0) {
+                                if (!currentChunk.isEmpty()) {
                                     appendToTextPane(rtbLyrics, currentChunk.toString(), culColor);
                                     currentChunk.setLength(0);
                                 }
@@ -208,7 +208,7 @@ public class FormInfo extends JFrame {
                     currentChunk.append(c);
                     ind++;
                 }
-                if (currentChunk.length() > 0) {
+                if (!currentChunk.isEmpty()) {
                     appendToTextPane(rtbLyrics, currentChunk.toString(), culColor);
                 }
 

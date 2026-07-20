@@ -6,6 +6,7 @@
 
 package mdplayer.chips;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -61,7 +62,6 @@ public class YmF262Chip extends BaseChip {
                     false, false, false, false, false, false, false}
     };
 
-    // TODO check cache or not
     private final int[] fadeout = {0, 0};
 
     @Override
@@ -90,15 +90,13 @@ public class YmF262Chip extends BaseChip {
         }
     }
 
-    // TODO getInfo
-    public int getRhythmKeyON(int chipId) {
+    private int getRhythmKeyON(int chipId) {
         int r = registerRhythm[chipId];
         registerRhythm[chipId] = 0;
         return r;
     }
 
-    // TODO getInfo
-    public int getFmKeyON(int chipId) {
+    private int getFmKeyON(int chipId) {
         return registerFm[chipId];
     }
 
@@ -233,12 +231,14 @@ public class YmF262Chip extends BaseChip {
         }
     }
 
-    public void setMask(int chipId, int ch, boolean mask) {
+    @Override
+    protected void setMask(int chipId, int ch, boolean mask, Object... args) {
         this.mask[chipId][channel[ch]] = mask;
     }
 
+    @Override
     public void setFadeout(int chipId, int v) {
-        fadeout[chipId] = v >> 1;// 0-63 (v range: 0-127)
+        fadeout[chipId] = v >> 1; // 0-63 (v range: 0-127)
         for (int c = 0; c < 22; c++) {
             write(chipId, 0, 0x40 + c, register[chipId][0][0x40 + c], EnmModel.RealModel);
             write(chipId, 1, 0x40 + c, register[chipId][1][0x40 + c], EnmModel.RealModel);
@@ -254,33 +254,16 @@ public class YmF262Chip extends BaseChip {
         }
     }
 
-    /**
-     * The channel state as the chip has it now. Which emulator answers is a setting, and they do
-     * not all keep the register file, so this is what they can all say.
-     */
-    /**
-     * The channel state as the chip has it, and beside it the registers as they were written.
-     * <p>
-     * The visualizer wants the channel state, and gets it from whichever emulator the settings
-     * name. The register dump and the instrument export want the raw register file, which the
-     * emulators do not all keep - Nuked decodes into operators - so that part is still shadowed
-     * here rather than read back.
-     */
     @Override
     public Map<String, Object> getInfo(int chipId) {
         Instrument inst = context.mds.inst(inst(chipId));
+        if (inst == null) return Collections.emptyMap();
         Map<String, Object> info = new HashMap<>();
-        if (inst != null) info.putAll(inst.getView(chipId, "info", null));
         info.put("register", register[chipId]);
+        info.put("rhythmKeyON", getRhythmKeyON(chipId));
+        info.put("fmKeyON", getFmKeyON(chipId));
+        info.putAll(inst.getView(chipId, "info") != null ? inst.getView(chipId, "info") : Collections.emptyMap());
         return info;
-    }
-
-    public void setMask(int chipId, int ch) {
-        setMask(chipId, ch, true);
-    }
-
-    public void resetMask(int chipId, int ch) {
-        setMask(chipId, ch, false);
     }
 
     @Override
@@ -295,7 +278,7 @@ public class YmF262Chip extends BaseChip {
         setFadeout(1, 0);
     }
 
-    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    @Override
     public boolean getMask(int chipId, int ch) {
         return ch < mask[chipId].length && mask[chipId][ch];
     }

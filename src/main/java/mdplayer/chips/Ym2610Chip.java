@@ -6,6 +6,7 @@
 
 package mdplayer.chips;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -68,14 +69,12 @@ public class Ym2610Chip extends BaseChip {
     @Deprecated
     public final int[] adpcmPan = {0, 0};
 
-    // TODO check cache or not
     private final int[] nowFadeoutVol = {0, 0};
 
     private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false}
     };
-
 
     @SuppressWarnings("unchecked")
     private Class<? extends AdpcmEnabledInstrument> _inst(int chipId) {
@@ -522,7 +521,8 @@ public class Ym2610Chip extends BaseChip {
         }
     }
 
-    public void setMask(int chipId, int ch, boolean mask) {
+    @Override
+    protected void setMask(int chipId, int ch, boolean mask, Object... args) {
         this.mask[chipId][ch] = mask;
         // FM ch3 and its extended slots mask as one
         if (ch == 2 || (ch >= 9 && ch < 12)) {
@@ -570,6 +570,7 @@ public class Ym2610Chip extends BaseChip {
         }
     }
 
+    @Override
     public void setFadeout(int chipId, int v) {
         nowFadeoutVol[chipId] = v;
         for (int p = 0; p < 2; p++) {
@@ -593,35 +594,24 @@ public class Ym2610Chip extends BaseChip {
         write(chipId, 1, 0x0b, register[chipId][1][0x0b], EnmModel.RealModel);
     }
 
-    /**
-     * What the panels have always read, and beside it the channel state as the chip has it. The
-     * fmgen core keeps no register file, so the visualizer reads the channel view.
-     */
     @Override
     public Map<String, Object> getInfo(int chipId) {
-        Map<String, Object> info = new HashMap<>();
-        info.putAll(Map.of(
-                "volume", volume[chipId],
-                "rhythmVolume", rhythmVolume[chipId],
-                "adpcmVolume", adpcmVolume[chipId],
-                "ch3SlotVolume", /* ctYM2612.UseScci ? */ ch3SlotVolume[chipId] /* : context.mds.inst(_inst(chipId)).readFMCh3SlotVolume(); */,
-                "register", register[chipId],
-                "keyOn", keyOn[chipId]
-        ));
         Instrument inst = context.mds.inst(inst(chipId));
-        if (inst != null) info.putAll(inst.getView(chipId, "info", null));
+        if (inst == null) return Collections.emptyMap();
+        Map<String, Object> info = new HashMap<>();
+        info.put("volume", volume[chipId]);
+        info.put("rhythmVolume", rhythmVolume[chipId]);
+        info.put("adpcmVolume", adpcmVolume[chipId]);
+        info.put("ch3SlotVolume", /* ctYM2612.UseScci ? */ ch3SlotVolume[chipId] /* : context.mds.inst(_inst(chipId)).readFMCh3SlotVolume(); */);
+        info.put("register", register[chipId]);
+        info.put("keyOn", keyOn[chipId]);
+        info.putAll(inst.getView(chipId, "info") != null ? inst.getView(chipId, "info") : Collections.emptyMap());
         return info;
     }
 
-    public void setMask(int chipId, int ch) {
-        setMask(chipId, ch, true);
-    }
-
-    public void resetMask(int chipId, int ch) {
-        setMask(chipId, ch, false);
-    }
-
+    // TODO copied data
     private byte[][] ym2610AdpcmA = new byte[][] {null, null};
+    // TODO copied data
     private byte[][] ym2610AdpcmB = new byte[][] {null, null};
 
     public void writeAdpcmA(int chipId, byte[] vgmBuf, int vgmAdr, int bLen, int startAddress, int romSize, EnmModel model) {
@@ -656,7 +646,7 @@ public class Ym2610Chip extends BaseChip {
         dumpData(model, "ADPCMB", vgmAdr + 15, vgmBuf, bLen - 8);
     }
 
-    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    @Override
     public boolean getMask(int chipId, int ch) {
         return ch < mask[chipId].length && mask[chipId][ch];
     }

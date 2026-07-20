@@ -3069,7 +3069,7 @@ public class Cpu {
         int sp = reg.sp;
         byte b = mem.peekB(reg.pc);
         int r8 = b & 0xFF;
-        int offset = (byte) b;
+        int offset = b;
 
         reg.sp = (sp + offset) & 0xFFFF;
         reg.pc++;
@@ -3203,7 +3203,7 @@ public class Cpu {
         int sp = reg.sp;
         byte b = mem.peekB(reg.pc);
         int r8 = b & 0xFF;
-        int offset = (byte) b;
+        int offset = b;
 
         reg.setHl((sp + offset) & 0xFFFF);
         reg.pc++;

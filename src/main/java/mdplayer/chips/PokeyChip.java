@@ -6,6 +6,9 @@
 
 package mdplayer.chips;
 
+import java.util.Collections;
+import java.util.Map;
+
 import mdplayer.Common.EnmModel;
 import mdsound.Instrument;
 import mdsound.instrument.PokeyInst;
@@ -33,10 +36,9 @@ public class PokeyChip extends BaseChip {
         }
     }
 
-    /** the channel state as the chip has it now */
     @Override
-    public java.util.Map<String, Object> getInfo(int chipId) {
+    public Map<String, Object> getInfo(int chipId) {
         mdsound.instrument.PokeyInst inst = context.mds.inst(mdsound.instrument.PokeyInst.class);
-        return inst == null ? null : inst.getView(chipId, "info", null);
+        return inst == null ? Collections.emptyMap() : inst.getView(chipId, "info");
     }
 }

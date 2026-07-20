@@ -29,7 +29,7 @@ class LogoTitleTest {
     private static final int X = 312, Y = 1, W = 85, H = 12;
 
     /** renders one frame headless and returns the logo band */
-    private int[] band(String title) {
+    private static int[] band(String title) {
         FmDspVisualizer vis = new FmDspVisualizer(60);
         if (title != null) vis.setTitle(title);
         BufferedImage image = new BufferedImage(640, 400, BufferedImage.TYPE_INT_RGB);

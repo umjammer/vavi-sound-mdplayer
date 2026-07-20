@@ -82,20 +82,17 @@ public class RefactoringTest {
     );
 
     private static void getMenuItems(Component comp, List<JMenuItem> list) {
-        if (comp instanceof JMenu) {
-            JMenu menu = (JMenu) comp;
+        if (comp instanceof JMenu menu) {
             for (Component sub : menu.getMenuComponents()) {
                 getMenuItems(sub, list);
             }
         } else if (comp instanceof JMenuItem) {
             list.add((JMenuItem) comp);
-        } else if (comp instanceof JPopupMenu) {
-            JPopupMenu popup = (JPopupMenu) comp;
+        } else if (comp instanceof JPopupMenu popup) {
             for (Component sub : popup.getComponents()) {
                 getMenuItems(sub, list);
             }
-        } else if (comp instanceof Container) {
-            Container container = (Container) comp;
+        } else if (comp instanceof Container container) {
             for (Component sub : container.getComponents()) {
                 getMenuItems(sub, list);
             }
@@ -135,8 +132,7 @@ public class RefactoringTest {
         for (int i = 0; i < 100; i++) {
             Thread.sleep(100);
             for (Frame f : Frame.getFrames()) {
-                if (f instanceof FormMain) {
-                    FormMain fm = (FormMain) f;
+                if (f instanceof FormMain fm) {
                     try {
                         if (fm.isVisible() && audioField.get(fm) != null && frmPlayListField.get(fm) != null) {
                             mainFrame = fm;
@@ -233,8 +229,7 @@ public class RefactoringTest {
         for (int i = 0; i < 100; i++) {
             Thread.sleep(100);
             for (Frame f : Frame.getFrames()) {
-                if (f instanceof FormMain) {
-                    FormMain fm = (FormMain) f;
+                if (f instanceof FormMain fm) {
                     try {
                         if (fm.isVisible() && audioField.get(fm) != null && frmPlayListField.get(fm) != null) {
                             mainFrame = fm;
@@ -311,7 +306,7 @@ public class RefactoringTest {
             throw new RuntimeException("tcSetting tabbed pane not found");
         }
 
-        final JTabbedPane finalTcSetting = tcSetting;
+        JTabbedPane finalTcSetting = tcSetting;
         int tcCount = finalTcSetting.getTabCount();
         System.out.println("Selecting each tab in tcSetting (" + tcCount + " tabs)...");
 
@@ -330,7 +325,7 @@ public class RefactoringTest {
                     String nestedName = nested.getName();
                     System.out.println("Selecting each tab in nested tabbed pane: " + nestedName + " (" + nestedCount + " tabs)...");
                     for (int j = 0; j < nestedCount; j++) {
-                        final int nestedIdx = j;
+                        int nestedIdx = j;
                         String nestedTitle = nested.getTitleAt(nestedIdx);
                         System.out.println("Selecting nested tab: " + nestedTitle);
                         SwingUtilities.invokeAndWait(() -> nested.setSelectedIndex(nestedIdx));

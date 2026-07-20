@@ -6,6 +6,7 @@
 
 package mdplayer.chips;
 
+import java.util.Collections;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
@@ -32,14 +33,7 @@ public class Ay8910Chip extends BaseChip {
 
     private final RSoundChip[] realChips = {null, null};
 
-    // TODO eliminate cache like params, retrieve directly
-
-
-    @Deprecated
     private final int[] fadeoutVolume = {0, 0};
-
-    @Deprecated
-    public final int[][] psgVolume = {new int[3], new int[3]};
 
     private final boolean[][] mask = {
             {false, false, false},
@@ -71,18 +65,17 @@ public class Ay8910Chip extends BaseChip {
         fireEventHappened("led.on", chipId);
 
         if (model == EnmModel.VirtualModel)
-
-        // psg mixer
-        if (addr == 0x07) {
-            int maskData = 0;
-            if (mask[chipId][0])
-                maskData |= 0x9 << 0;
-            if (mask[chipId][1])
-                maskData |= 0x9 << 1;
-            if (mask[chipId][2])
-                maskData |= 0x9 << 2;
-            data |= maskData;
-        }
+            // psg mixer
+            if (addr == 0x07) {
+                int maskData = 0;
+                if (mask[chipId][0])
+                    maskData |= 0x9 << 0;
+                if (mask[chipId][1])
+                    maskData |= 0x9 << 1;
+                if (mask[chipId][2])
+                    maskData |= 0x9 << 2;
+                data |= maskData;
+            }
 
         // psg level
         if ((addr == 0x08 || addr == 0x09 || addr == 0x0a)) {
@@ -120,14 +113,16 @@ public class Ay8910Chip extends BaseChip {
         write(chipId, 0x0d, 0x00, model);
     }
 
-    public void setMask(int chipId, int ch, boolean mask) {
+    @Override
+    protected void setMask(int chipId, int ch, boolean mask, Object... args) {
         this.mask[chipId][ch] = mask;
 
         // re-send the level the chip already has, so the mute takes on the running note
-        int[] regs = registers(chipId);
+        int[] regs = (int[]) getInfo(chipId).get("register");
         if (regs != null) write(chipId, 0x8 + ch, regs[8 + ch], EnmModel.VirtualModel);
     }
 
+    @Override
     public void setFadeout(int chipId, int v) {
         fadeoutVolume[chipId] = v;
         // the levels were re-sent here for the real chip only, which no longer has a path
@@ -149,19 +144,11 @@ public class Ay8910Chip extends BaseChip {
         }
     }
 
+    @Override
     public Map<String, Object> getInfo(int chipId) {
         Instrument inst = context.mds.inst(inst(chipId));
-        // a panel polls whether or not the song loaded this chip, so never hand back null
-        return inst == null ? Map.of("register", new int[0x10])
-                : inst.getView(chipId, "register", null);
-    }
-
-    public void setMask(int chipId, int ch) {
-        setMask(chipId, ch, true);
-    }
-
-    public void resetMask(int chipId, int ch) {
-        setMask(chipId, ch, false);
+        if (inst == null) return Collections.emptyMap();
+        return Map.of("register", inst.getView(chipId, "register"));
     }
 
     @Override
@@ -176,14 +163,8 @@ public class Ay8910Chip extends BaseChip {
         setFadeout(1, 0);
     }
 
-    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    @Override
     public boolean getMask(int chipId, int ch) {
         return ch < mask[chipId].length && mask[chipId][ch];
-    }
-
-    /** the chip's register file, or null when the song has not loaded it */
-    private int[] registers(int chipId) {
-        Map<String, Object> info = getInfo(chipId);
-        return info != null && info.get("register") instanceof int[] r ? r : null;
     }
 }

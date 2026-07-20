@@ -78,11 +78,13 @@ public class FormRegTest extends FormChipBase<Void> {
 
         public RegisterManager() {
             addChip(YmF278BChip.class, 3, 0x100, select -> { // 0
-                return ((int[][]) audio.plugin.chipRegister.chip(YmF278BChip.class).getInfo(0).get("register"))[select];
+                Map<String, Object> info = audio.plugin.chipRegister.chip(YmF278BChip.class).getInfo(0);
+                return !info.isEmpty() && info.containsKey("register") ? ((int[][]) info.get("register"))[select] : null;
             });
 
             addChip(YmF262Chip.class, 2, 0x100, select -> { // 3
-                return ((int[][]) audio.plugin.chipRegister.chip(YmF262Chip.class).getInfo(0).get("register"))[select];
+                Map<String, Object> info = audio.plugin.chipRegister.chip(YmF262Chip.class).getInfo(0);
+                return !info.isEmpty() && info.containsKey("register") ? ((int[][]) info.get("register"))[select] : null;
             });
 
             addChip(Ym2151Chip.class, 1, 0x100, select -> { // 5
@@ -105,7 +107,7 @@ public class FormRegTest extends FormChipBase<Void> {
 
             addChip(SegaPcmChip.class, 1, 0x200, select -> {
                 Map<String, Object> info = audio.plugin.chipRegister.chip(SegaPcmChip.class).getInfo(0);
-                return info != null ? info.getOrDefault("register", null) : null;
+                return !info.isEmpty() ? info.getOrDefault("register", null) : null;
             });
 
             addChip(YmZ280BChip.class, 1, 0x100, select -> audio.plugin.chipRegister.chip(YmZ280BChip.class).getInfo(0).get("register"));
@@ -336,8 +338,7 @@ public class FormRegTest extends FormChipBase<Void> {
             @SuppressWarnings("unchecked")
             Map<String, Object> sidInfo = (Map<String, Object>) a;
             Object regObj = sidInfo.get("register");
-            if (!(regObj instanceof Integer[])) return;
-            Integer[] r = (Integer[]) regObj;
+            if (!(regObj instanceof Integer[] r)) return;
 
             // Voice Registers
 

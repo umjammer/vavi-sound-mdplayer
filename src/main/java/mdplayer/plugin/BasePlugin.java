@@ -13,7 +13,6 @@ import java.util.Set;
 import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Setting;
-import mdplayer.chips.MPcmChip;
 import mdplayer.chips.MidiPlugin;
 import mdplayer.chips.RealChipPlugin;
 import mdplayer.driver.BaseDriver;
@@ -70,6 +69,7 @@ public abstract class BasePlugin<T extends BaseDriver> implements Plugin {
     public String playingArcFileName;
     protected int songNo = 0;
     protected List<Tuple<String, byte[]>> extendFiles = null;
+    public Path playingFilePath;
 
     public boolean flgReinit = false;
     public boolean stopped = false;
@@ -151,6 +151,7 @@ logger.log(Level.TRACE, "stop: " + this.stopped + ", " + this.hashCode());
     }
 
     /** {@code super#prepare()} must be called inside inherited this method */
+    @Override
     public void prepare() {
         // The chip and sub-plugin instances are shared singletons (loaded once via
         // ServiceLoader and reused by every format plugin's ChipRegister), so their
@@ -212,10 +213,7 @@ logger.log(Level.INFO, "stop: " + this.stopped);
         this.songNo = (int) params.getOrDefault("songNo", 0);
         chipRegister.plugin(MidiPlugin.class).setFileName(playingFileName); // for ExportMIDI
         extendFiles = format.getExtendFiles(); // Additional files
-        Common.playingFilePath = Path.of(playingFileName).getParent(); // TODO gross
-
-        // the YM2612 panel draws XGM songs differently; the chip carries the format for the view
-        chipRegister.chip(mdplayer.chips.Ym2612Chip.class).fileFormat = format;
+        this.playingFilePath = Path.of(playingFileName).getParent();
     }
 
     @Override
@@ -386,5 +384,9 @@ logger.log(Level.INFO, "close enter");
     public void setMasterVolume(boolean isAbs, int volume) {
         masterVolume = Common.range((isAbs ? 0 : setting.getBalance().getMasterVolume()) + volume, -192, 20);
         setting.getBalance().setMasterVolume(masterVolume);
+    }
+
+    public FileFormat getFileFormat() {
+        return fileFormat;
     }
 }

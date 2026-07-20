@@ -98,7 +98,7 @@ class VisualizerSweepTest {
     }
 
     /** renders a moment of {@code path} and reports what its meters showed */
-    private Result play(Path path) throws Exception {
+    private static Result play(Path path) throws Exception {
         FileFormat format = FileFormat.getFileFormat(path.toString());
         format.load(Archives.getInputStream(new BufferedInputStream(Files.newInputStream(path))), null);
         @SuppressWarnings("unchecked")

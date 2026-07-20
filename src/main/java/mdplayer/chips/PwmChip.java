@@ -6,6 +6,9 @@
 
 package mdplayer.chips;
 
+import java.util.Collections;
+import java.util.Map;
+
 import mdplayer.Common.EnmModel;
 import mdsound.Instrument;
 import mdsound.instrument.PwmInst;
@@ -32,10 +35,9 @@ public class PwmChip extends BaseChip {
             context.mds.write(inst(chipId), chipId, 0, adr, data);
     }
 
-    /** the state of the DAC as the chip has it now */
     @Override
-    public java.util.Map<String, Object> getInfo(int chipId) {
+    public Map<String, Object> getInfo(int chipId) {
         PwmInst inst = context.mds.inst(PwmInst.class);
-        return inst == null ? null : inst.getView(chipId, "info", null);
+        return inst == null ? Collections.emptyMap() : inst.getView(chipId, "info");
     }
 }

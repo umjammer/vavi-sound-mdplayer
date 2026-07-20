@@ -171,7 +171,7 @@ public class YmMusic {
     private volatile boolean pause;
     private int streamInc;
     private int innerSamplePos;
-    private int replayRate;
+    private final int replayRate;
 
     private String songName;
     private String songAuthor;
@@ -528,7 +528,7 @@ public class YmMusic {
                 if (nbFrame == 0) {
                     throw new IllegalArgumentException("No frames in file");
                 }
-                loopFrame = (int) readLittleEndian32(bigMalloc, fileSize - 4);
+                loopFrame = readLittleEndian32(bigMalloc, fileSize - 4);
                 ymChip.setClock(ATARI_CLOCK);
                 setPlayerRate(50);
                 dataStreamOffset = 4;
@@ -561,7 +561,7 @@ public class YmMusic {
                 nbDrum = ctx.readMotorolaWord();
                 ymChip.setClock(ctx.readMotorolaDword());
                 setPlayerRate(ctx.readMotorolaWord());
-                loopFrame = (int) ctx.readMotorolaDword();
+                loopFrame = ctx.readMotorolaDword();
                 int skip = ctx.readMotorolaWord();
                 ctx.skip(skip);
                 if (ctx.remaining <= 0) {
@@ -583,14 +583,14 @@ public class YmMusic {
                                 throw new IllegalArgumentException("File too small");
                             }
                             drumTab[i].pData = new byte[drumTab[i].size];
-                            System.arraycopy(ctx.data, ctx.offset, drumTab[i].pData, 0, (int) drumTab[i].size);
+                            System.arraycopy(ctx.data, ctx.offset, drumTab[i].pData, 0, drumTab[i].size);
                             if ((attrib & A_DRUM4BITS) != 0) {
                                 byte[] pw = drumTab[i].pData;
                                 for (int j = 0; j < drumTab[i].size; j++) {
                                     pw[j] = (byte) (YM_VOLUME_TABLE[pw[j] & 15] >> 7);
                                 }
                             }
-                            ctx.skip((int) drumTab[i].size);
+                            ctx.skip(drumTab[i].size);
                         }
                     }
                     attrib &= ~A_DRUM4BITS;
@@ -655,15 +655,15 @@ public class YmMusic {
                 if ((sampleSize & 0xffff_ffffL) >= 0x8000_0000L) {
                     throw new IllegalArgumentException("Invalid sampleSize");
                 }
-                if (ctx.remaining < (int) sampleSize) {
+                if (ctx.remaining < sampleSize) {
                     throw new IllegalArgumentException("File too small");
                 }
 
                 bigSampleBuffer = new byte[(int) sampleSize];
-                System.arraycopy(ctx.data, ctx.offset, bigSampleBuffer, 0, (int) sampleSize);
+                System.arraycopy(ctx.data, ctx.offset, bigSampleBuffer, 0, sampleSize);
 
                 if ((attrib & A_DRUMSIGNED) == 0) {
-                    signSample(bigSampleBuffer, 0, (int) sampleSize);
+                    signSample(bigSampleBuffer, 0, sampleSize);
                     setAttrib(A_DRUMSIGNED);
                 }
 
@@ -686,10 +686,10 @@ public class YmMusic {
                 songType = YmFileType.YM_TRACKER1;
                 nbVoice = ctx.readMotorolaWord();
                 setPlayerRate(ctx.readMotorolaWord());
-                nbFrame = (int) ctx.readMotorolaDword();
-                loopFrame = (int) ctx.readMotorolaDword();
+                nbFrame = ctx.readMotorolaDword();
+                loopFrame = ctx.readMotorolaDword();
                 nbDrum = ctx.readMotorolaWord();
-                attrib = (int) ctx.readMotorolaDword();
+                attrib = ctx.readMotorolaDword();
                 songName = ctx.readNtString();
                 songAuthor = ctx.readNtString();
                 songComment = ctx.readNtString();
@@ -1148,16 +1148,16 @@ public class YmMusic {
         byte[] pSample = pVoice.pSample;
         int samplePos = pVoice.samplePos;
 
-        double stepD = (double) (pVoice.sampleFreq << YMTPREC);
-        stepD *= (double) (1 << trackerFreqShift);
-        stepD /= (double) replayRate;
+        double stepD = pVoice.sampleFreq << YMTPREC;
+        stepD *= 1 << trackerFreqShift;
+        stepD /= replayRate;
         int sampleInc = (int) stepD;
 
         int sampleEnd = (pVoice.sampleSize << YMTPREC);
         int repLen = (pVoice.repLen << YMTPREC);
 
         for (int i = 0; i < nbs; i++) {
-            int idx = (int) (samplePos >> YMTPREC);
+            int idx = samplePos >> YMTPREC;
             int va = pVolumeTab[volIdx + (pSample[idx] & 0xFF)];
             int vb = va;
             if (samplePos < (sampleEnd - (1L << YMTPREC))) {

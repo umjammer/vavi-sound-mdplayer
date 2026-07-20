@@ -121,6 +121,7 @@ public class FormVRC6 extends FormChipBase<FormVRC6.Params> {
         }
     };
 
+    @Override
     public void initScreen() {
         boolean VRC6Type = false;
         int tp = VRC6Type ? 1 : 0;
@@ -133,6 +134,7 @@ public class FormVRC6 extends FormChipBase<FormVRC6.Params> {
         }
     }
 
+    @Override
     public void changeScreenParams() {
         BasicTrackInfo[] info = (BasicTrackInfo[]) audio.plugin.chipRegister.chip(NpNesChip.Vrc6Chip.class).getInfo(0).get("tracksInfo");
         if (info == null) return;
@@ -159,6 +161,7 @@ public class FormVRC6 extends FormChipBase<FormVRC6.Params> {
             newParam.channels[mch].mask = audio.plugin.chipRegister.chip(NpNesChip.Vrc6Chip.class).getMask(chipId, mch);
     }
 
+    @Override
     public void drawScreenParams() {
         Channel oyc;
         Channel nyc;

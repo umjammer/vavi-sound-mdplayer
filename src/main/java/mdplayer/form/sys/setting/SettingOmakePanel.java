@@ -31,13 +31,13 @@ public class SettingOmakePanel extends SettingTab {
 
     private boolean IsInitialOpenFolder;
 
-    private JPanel groupBox5;
-    private JCheckBox cbDispFrameCounter;
-    private JLabel label14;
-    private JButton btVST;
-    private JTextArea tbVST;
-    private JLabel label67;
-    private JTextArea tbSCCbaseAddress;
+    private final JPanel groupBox5;
+    private final JCheckBox cbDispFrameCounter;
+    private final JLabel label14;
+    private final JButton btVST;
+    private final JTextArea tbVST;
+    private final JLabel label67;
+    private final JTextArea tbSCCbaseAddress;
 
     public SettingOmakePanel() {
         this.label67 = new JLabel();

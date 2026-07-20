@@ -64,7 +64,7 @@ public class K054539Reader extends PcmSlotReader {
     @Override
     public void poll() {
         super.poll();
-        regs = info != null && info.get("regs") instanceof int[] r ? r : null;
+        regs = info.get("regs") instanceof int[] r ? r : null;
     }
 
     @Override

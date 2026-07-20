@@ -115,6 +115,7 @@ public class FormK053260 extends FormChipBase<FormK053260.Params> {
         }
     };
 
+    @Override
     public void initScreen() {
         for (int ch = 0; ch < 4; ch++) {
             for (int ot = 0; ot < 12 * 8; ot++) {
@@ -127,9 +128,10 @@ public class FormK053260 extends FormChipBase<FormK053260.Params> {
         }
     }
 
+    @Override
     public void changeScreenParams() {
         Map<String, Object> info = audio.plugin.chipRegister.chip(K053260Chip.class).getInfo(chipId);
-        if (info == null) return;
+        if (info.isEmpty()) return;
 
         int clock = clock(K053260Inst.class);
         for (int ch = 0; ch < 4; ch++) {
@@ -162,7 +164,7 @@ public class FormK053260 extends FormChipBase<FormK053260.Params> {
         }
     }
 
-    private int searchNote(int freq, int clock) {
+    private static int searchNote(int freq, int clock) {
         int n = 0;
         for (int i = 0; i < 12 * 8; i++) {
             int a = (int) (0x10000
@@ -180,6 +182,7 @@ public class FormK053260 extends FormChipBase<FormK053260.Params> {
         return Math.clamp(n - 2, 0, 95);
     }
 
+    @Override
     public void drawScreenParams() {
         PcmChannelParams oyc;
         PcmChannelParams nyc;

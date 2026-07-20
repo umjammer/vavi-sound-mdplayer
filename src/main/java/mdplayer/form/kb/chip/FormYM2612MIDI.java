@@ -92,6 +92,7 @@ public class FormYM2612MIDI extends FormBase implements View {
         update();
     }
 
+    @Override
     public void update() {
         try {
             frameBuffer.refresh(null);
@@ -148,6 +149,7 @@ public class FormYM2612MIDI extends FormBase implements View {
         }
     };
 
+    @Override
     public void changeScreenParams() {
         try {
             if (newParam == null || parent == null || parent.setting == null || parent.setting.getMidiKbd() == null) {
@@ -230,6 +232,7 @@ public class FormYM2612MIDI extends FormBase implements View {
         }
     }
 
+    @Override
     public void drawScreenParams() {
         try {
             if (newParam == null || oldParam == null || parent == null || parent.setting == null
@@ -458,9 +461,7 @@ public class FormYM2612MIDI extends FormBase implements View {
 
     private void cmdTSave() {
         JFileChooser sfd = new JFileChooser();
-        Arrays.stream(extDescs).forEach(ed -> {
-            sfd.addChoosableFileFilter(new MyFileFilter(ed[0], ed[1]));
-        });
+        Arrays.stream(extDescs).forEach(ed -> sfd.addChoosableFileFilter(new MyFileFilter(ed[0], ed[1])));
         sfd.setDialogTitle("Save TonePallet files");
         if (!parent.setting.getOther().getDefaultDataPath().isEmpty() && Files.exists(Path.of(parent.setting.getOther().getDefaultDataPath())) && isInitialOpenFolder) {
             sfd.setCurrentDirectory(new File(parent.setting.getOther().getDefaultDataPath()));
@@ -484,9 +485,7 @@ public class FormYM2612MIDI extends FormBase implements View {
 
     private void cmdTLoad() {
         JFileChooser ofd = new JFileChooser();
-        Arrays.stream(extDescs).forEach(ed -> {
-            ofd.addChoosableFileFilter(new MyFileFilter(ed[0], ed[1]));
-        });
+        Arrays.stream(extDescs).forEach(ed -> ofd.addChoosableFileFilter(new MyFileFilter(ed[0], ed[1])));
         ofd.setDialogTitle("Read TonePallet file");
         if (!parent.setting.getOther().getDefaultDataPath().isEmpty() && Files.exists(Path.of(parent.setting.getOther().getDefaultDataPath())) && isInitialOpenFolder) {
             ofd.setCurrentDirectory(new File(parent.setting.getOther().getDefaultDataPath()));

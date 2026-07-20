@@ -106,7 +106,7 @@ public class C140Reader implements FmDspChipReader {
         regs = null;
         try {
             Map<String, Object> info = chip().getInfo(0);
-            if (info != null && info.get("register") instanceof byte[] r) regs = r;
+            if (info.get("register") instanceof byte[] r) regs = r;
         } catch (RuntimeException ignore) {
             // the chip exists but the song never loaded it
         }

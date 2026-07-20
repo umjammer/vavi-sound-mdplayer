@@ -34,7 +34,7 @@ public class MidiDriver extends BaseDriver {
 
         this.midi = new MID();
         midi.charset = Common.charset;
-        midi.musicStep = Common.VGMProcSampleRate / 60.0;;
+        midi.musicStep = Common.VGMProcSampleRate / 60.0;
         midi.send0 = (n, d) -> plugin.chipRegister.plugin(MidiPlugin.class).send(model, n, d, plugin.chipRegister.plugin(VstPlugin.class).vstDelta);
         midi.send2 = (n, d1, d2) -> plugin.chipRegister.plugin(MidiPlugin.class).send(model, n, d1, d2, plugin.chipRegister.plugin(VstPlugin.class).vstDelta);
         midi.send3 = (n, d1, d2, d) -> plugin.chipRegister.plugin(MidiPlugin.class).send(model, n, d1, d2, d, plugin.chipRegister.plugin(VstPlugin.class).vstDelta);

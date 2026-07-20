@@ -55,8 +55,8 @@ public class ZMSPlugin extends BasePlugin<ZmsDriver> implements Compilable {
         initChips();
     }
 
-    private String[] supportFile = null;
-    private String useCompiler = null;
+    private final String[] supportFile = null;
+    private final String useCompiler = null;
 
     @Override
     protected void initChips() {

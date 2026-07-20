@@ -2318,7 +2318,7 @@ public class FormMain extends JFrame {
             if (balance == null) return;
 
             // Mixer - Balance change processing
-            final Setting.Balance finalBalance = balance;
+            Setting.Balance finalBalance = balance;
             SwingUtilities.invokeLater(() -> {
                 setting.setBalance(finalBalance);
                 if (frmMixer2 != null) frmMixer2.update();

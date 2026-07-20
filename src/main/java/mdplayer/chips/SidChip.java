@@ -31,7 +31,7 @@ public class SidChip extends BaseChip {
 
     @Override
     public Map<String, Object> getInfo(int chipId) {
-        return sid != null ? Map.of("register",  sid.getRegisterFromSid()[chipId]) : Collections.emptyMap();
+        return sid == null ? Collections.emptyMap() : Map.of("register",  sid.getRegisterFromSid()[chipId]);
     }
 
     public void setDriver(SidDriver driver) {

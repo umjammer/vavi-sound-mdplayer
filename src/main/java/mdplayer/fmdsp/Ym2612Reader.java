@@ -40,7 +40,7 @@ public class Ym2612Reader extends OpnFmReader {
         keys = null;
         try {
             Map<String, Object> info = chip().getInfo(0);
-            if (info != null) {
+            if (!info.isEmpty()) {
                 if (info.get("register") instanceof int[][] r) regs = r;
                 if (info.get("keyOn") instanceof int[] k) keys = playerKeys(k);
             }

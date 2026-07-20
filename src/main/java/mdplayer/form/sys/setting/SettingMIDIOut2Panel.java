@@ -20,17 +20,17 @@ public class SettingMIDIOut2Panel extends SettingTab {
 
     private static final Logger logger = getLogger(SettingMIDIOut2Panel.class.getName());
 
-    private JPanel groupBox15;
-    private JButton btnBeforeSend_Default;
-    private JTextArea tbBeforeSend_Custom;
-    private JTextArea tbBeforeSend_XGReset;
-    private JLabel label34;
-    private JLabel label32;
-    private JTextArea tbBeforeSend_GSReset;
-    private JLabel label33;
-    private JTextArea tbBeforeSend_GMReset;
-    private JLabel label31;
-    private JLabel label35;
+    private final JPanel groupBox15;
+    private final JButton btnBeforeSend_Default;
+    private final JTextArea tbBeforeSend_Custom;
+    private final JTextArea tbBeforeSend_XGReset;
+    private final JLabel label34;
+    private final JLabel label32;
+    private final JTextArea tbBeforeSend_GSReset;
+    private final JLabel label33;
+    private final JTextArea tbBeforeSend_GMReset;
+    private final JLabel label31;
+    private final JLabel label35;
 
     public SettingMIDIOut2Panel() {
         this.groupBox15 = new JPanel();

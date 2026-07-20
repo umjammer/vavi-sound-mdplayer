@@ -97,14 +97,17 @@ public abstract class FormChipBase<P> extends FormBase implements View {
     }
 
     /** Reads this frame's chip state into {@link #newParam}. */
+    @Override
     public void changeScreenParams() {
     }
 
     /** Draws what changed between {@link #oldParam} and {@link #newParam}. */
+    @Override
     public void drawScreenParams() {
     }
 
     /** Draws the parts of the screen that never change. */
+    @Override
     public void initScreen() {
     }
 }

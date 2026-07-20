@@ -14,6 +14,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.util.List;
+import java.util.Map;
 import java.util.prefs.Preferences;
 
 import mdplayer.Chip.ChipKeyInfo;
@@ -93,21 +94,26 @@ public class FormYM3812 extends FormChipBase<FormYM3812.Params> {
         }
     };
 
+    @Override
     public void initScreen() {
         for (int c = 0; c < newParam.channels.length; c++) {
             newParam.channels[c].note = -1;
         }
     }
 
-    private final int[] slot1Tbl = {0, 1, 2, 6, 7, 8, 12, 13, 14};
-    private final int[] slot2Tbl = {3, 4, 5, 9, 10, 11, 15, 16, 17};
+    private static final int[] slot1Tbl = {0, 1, 2, 6, 7, 8, 12, 13, 14};
+    private static final int[] slot2Tbl = {3, 4, 5, 9, 10, 11, 15, 16, 17};
     private static final byte[] rhythmAdr = {0x53, 0x54, 0x52, 0x55, 0x51};
 
+    @Override
     public void changeScreenParams() {
-        int[] ym3812Register = (int[]) audio.plugin.chipRegister.chip(Ym3812Chip.class).getInfo(chipId).get("register");
+        Map<String, Object> info = audio.plugin.chipRegister.chip(Ym3812Chip.class).getInfo(chipId);
+        if (info.isEmpty()) return;
+
+        int[] register = (int[]) info.get("register");
         Channel nyc;
         int slot;
-        ChipKeyInfo ki = audio.plugin.chipRegister.chip(Ym3812Chip.class).getKeyInfo(chipId);
+        ChipKeyInfo ki = (ChipKeyInfo) info.get("keyInfo");
 
         mdsound.MDSound.Chip chipInfo = audio.plugin.mds.getChipInfo(Ym3812Inst.class);
         int masterClock = chipInfo == null ? 3579545 : chipInfo.clock; // 3579545 -> Default master clock
@@ -125,40 +131,40 @@ public class FormYM3812 extends FormChipBase<FormYM3812.Params> {
                 slot = (slot % 6) + 8 * (slot / 6);
 
                 // AR
-                nyc.inst[0 + i * 17] = ym3812Register[0x60 + slot] >> 4;
+                nyc.inst[0 + i * 17] = register[0x60 + slot] >> 4;
                 // DR
-                nyc.inst[1 + i * 17] = ym3812Register[0x60 + slot] & 0xf;
+                nyc.inst[1 + i * 17] = register[0x60 + slot] & 0xf;
                 // SL
-                nyc.inst[2 + i * 17] = ym3812Register[0x80 + slot] >> 4;
+                nyc.inst[2 + i * 17] = register[0x80 + slot] >> 4;
                 // RR
-                nyc.inst[3 + i * 17] = ym3812Register[0x80 + slot] & 0xf;
+                nyc.inst[3 + i * 17] = register[0x80 + slot] & 0xf;
                 // KL
-                nyc.inst[4 + i * 17] = ym3812Register[0x40 + slot] >> 6;
+                nyc.inst[4 + i * 17] = register[0x40 + slot] >> 6;
                 // TL
-                nyc.inst[5 + i * 17] = ym3812Register[0x40 + slot] & 0x3f;
+                nyc.inst[5 + i * 17] = register[0x40 + slot] & 0x3f;
                 // MT
-                nyc.inst[6 + i * 17] = ym3812Register[0x20 + slot] & 0xf;
+                nyc.inst[6 + i * 17] = register[0x20 + slot] & 0xf;
                 // AM
-                nyc.inst[7 + i * 17] = ym3812Register[0x20 + slot] >> 7;
+                nyc.inst[7 + i * 17] = register[0x20 + slot] >> 7;
                 // VB
-                nyc.inst[8 + i * 17] = (ym3812Register[0x20 + slot] >> 6) & 1;
+                nyc.inst[8 + i * 17] = (register[0x20 + slot] >> 6) & 1;
                 // EG
-                nyc.inst[9 + i * 17] = (ym3812Register[0x20 + slot] >> 5) & 1;
+                nyc.inst[9 + i * 17] = (register[0x20 + slot] >> 5) & 1;
                 // KR
-                nyc.inst[10 + i * 17] = (ym3812Register[0x20 + slot] >> 4) & 1;
+                nyc.inst[10 + i * 17] = (register[0x20 + slot] >> 4) & 1;
                 // WS
-                nyc.inst[13 + i * 17] = (ym3812Register[0xe0 + slot] & 3);
+                nyc.inst[13 + i * 17] = (register[0xe0 + slot] & 3);
             }
 
             // BL
-            nyc.inst[11] = (ym3812Register[0xb0 + c] >> 2) & 7;
+            nyc.inst[11] = (register[0xb0 + c] >> 2) & 7;
             // FNUM
-            nyc.inst[12] = ym3812Register[0xa0 + c] + ((ym3812Register[0xb0 + c] & 3) << 8);
+            nyc.inst[12] = register[0xa0 + c] + ((register[0xb0 + c] & 3) << 8);
 
             // FB
-            nyc.inst[15] = (ym3812Register[0xc0 + c] >> 1) & 7;
+            nyc.inst[15] = (register[0xc0 + c] >> 1) & 7;
             // CN
-            nyc.inst[14] = (ym3812Register[0xc0 + c] & 1);
+            nyc.inst[14] = (register[0xc0 + c] & 1);
 
             // FNUM / (2^19) * (mClock/72) * (2 ^ (block - 1))
             double fmus = (double) nyc.inst[12] / (1 << 19) * (masterClock / 72.0) * (1 << nyc.inst[11]);
@@ -175,14 +181,14 @@ public class FormYM3812 extends FormChipBase<FormYM3812.Params> {
                 }
                 nyc.volume = (19 * (64 - tl) / 64);
             } else {
-                if ((ym3812Register[0xb0 + c] & 0x20) == 0) nyc.note = -1;
+                if ((register[0xb0 + c] & 0x20) == 0) nyc.note = -1;
                 nyc.volume--;
                 if (nyc.volume < 0) nyc.volume = 0;
             }
 
         }
-        newParam.channels[9].dda = ((ym3812Register[0xbd] >> 7) & 0x01) != 0; // DA
-        newParam.channels[10].dda = ((ym3812Register[0xbd] >> 6) & 0x01) != 0; // DV
+        newParam.channels[9].dda = ((register[0xbd] >> 7) & 0x01) != 0; // DA
+        newParam.channels[10].dda = ((register[0xbd] >> 6) & 0x01) != 0; // DV
 
 //#region Acquisition of rhythm information
 
@@ -194,7 +200,7 @@ public class FormYM3812 extends FormChipBase<FormYM3812.Params> {
 
         for (int i = 0; i < 5; i++) {
             if (ki.on[i + 9]) {
-                newParam.channels[i + 9].volume = 19 - ((ym3812Register[rhythmAdr[i]] & 0x3f) >> 2);
+                newParam.channels[i + 9].volume = 19 - ((register[rhythmAdr[i]] & 0x3f) >> 2);
             } else {
                 newParam.channels[i + 9].volume--;
                 if (newParam.channels[i + 9].volume < 0) newParam.channels[i + 9].volume = 0;
@@ -208,6 +214,7 @@ public class FormYM3812 extends FormChipBase<FormYM3812.Params> {
             newParam.channels[mch].mask = audio.plugin.chipRegister.chip(Ym3812Chip.class).getMask(chipId, mch);
     }
 
+    @Override
     public void drawScreenParams() {
         boolean YM3812Type = (chipId == 0)
                 ? parent.setting.getYM3812Type()[0].getUseReal()[0]

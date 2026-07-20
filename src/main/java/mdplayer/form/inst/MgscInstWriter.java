@@ -7,7 +7,6 @@ import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.chips.K051649Chip;
-import mdplayer.chips.NpNesChip;
 import mdplayer.chips.NpNesChip.Vrc7Chip;
 import mdplayer.chips.Ym2413Chip;
 

@@ -26,7 +26,7 @@ class FileBarTest {
     /** the title starts here, and the PCM1 bar that shares its row starts at 463 */
     private static final int NAME_X = 137, PCM1_X = 463, ROW_Y = 324, ROW_H = 8;
 
-    private BufferedImage render(String filename) {
+    private static BufferedImage render(String filename) {
         FmDspVisualizer vis = new FmDspVisualizer(60);
         vis.setDataSource(new FmDspDataSource() {
             @Override public FftDataSource fft() { return null; }
@@ -58,7 +58,7 @@ class FileBarTest {
      * The rightmost pixel the title itself put on the row. The PCM1 bar and label are painted at
      * 463 whatever the title is, so the title's own ink is what differs from an empty bar.
      */
-    private int rightEdge(BufferedImage image) {
+    private static int rightEdge(BufferedImage image) {
         BufferedImage blank = render(null);
         int edge = -1;
         for (int y = ROW_Y; y < ROW_Y + ROW_H; y++) {

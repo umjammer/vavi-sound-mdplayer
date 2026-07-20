@@ -36,9 +36,6 @@ public class Ym2608Reader extends OpnFmReader {
         return chipRegister.chip(Ym2608Chip.class);
     }
 
-
-
-
     @Override protected boolean hasSsg() { return true; }
 
     @Override public String chipName() { return "OPNA"; }
@@ -62,19 +59,20 @@ public class Ym2608Reader extends OpnFmReader {
 
     @Override
     public boolean active(Group group) {
-        switch (group) {
-        case PCM:
-            if (!adpcmActive) adpcmActive = (adpcmControl() & 0x80) != 0;
-            return adpcmActive;
-        case RHYTHM:
-            if (!rhythmActive) {
-                int reg = rhythmKey();
-                rhythmActive = (reg & 0x80) == 0 && (reg & 0x3f) != 0;
+        return switch (group) {
+            case PCM -> {
+                if (!adpcmActive) adpcmActive = (adpcmControl() & 0x80) != 0;
+                yield adpcmActive;
             }
-            return rhythmActive;
-        default:
-            return super.active(group);
-        }
+            case RHYTHM -> {
+                if (!rhythmActive) {
+                    int reg = rhythmKey();
+                    rhythmActive = (reg & 0x80) == 0 && (reg & 0x3f) != 0;
+                }
+                yield rhythmActive;
+            }
+            default -> super.active(group);
+        };
     }
 
     @Override

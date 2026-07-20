@@ -42,8 +42,7 @@ public class AHX {
         @Override
         public boolean equals(Object obj) {
             if (this == obj) return true;
-            if (!(obj instanceof ByteSlice)) return false;
-            ByteSlice other = (ByteSlice) obj;
+            if (!(obj instanceof ByteSlice other)) return false;
             return this.array == other.array && this.offset == other.offset && this.length == other.length;
         }
 
@@ -208,7 +207,7 @@ public class AHX {
             loadSong(songBuffer, songBuffer.length);
         }
 
-        private String strcpy(byte[] sb, int ptr) {
+        private static String strcpy(byte[] sb, int ptr) {
             StringBuilder s = new StringBuilder();
             while ((sb[ptr] & 0xff) != 0) {
                 s.append((char) (sb[ptr++] & 0xff));
@@ -216,7 +215,7 @@ public class AHX {
             return s.toString();
         }
 
-        private int strlen(byte[] sb, int ptr) {
+        private static int strlen(byte[] sb, int ptr) {
             int sptr = ptr;
             while ((sb[ptr] & 0xff) != 0) {
                 ptr++;
@@ -1239,13 +1238,7 @@ public class AHX {
                 return wave;
             }
 
-            private static float clip(float x) {
-                if (x > 127.0f) return 127.0f;
-                if (x < -128.0f) return -128.0f;
-                return x;
-            }
-
-            private void generateFilterWaveforms(byte[] buffer, int bufferOff, byte[] low, int lowOff, byte[] high, int highOff) {
+            private static void generateFilterWaveforms(byte[] buffer, int bufferOff, byte[] low, int lowOff, byte[] high, int highOff) {
                 int[] lengthTable = {
                     3, 7, 0xf, 0x1f, 0x3f, 0x7f, 3, 7, 0xf, 0x1f, 0x3f, 0x7f,
                     0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f,
@@ -1261,20 +1254,20 @@ public class AHX {
                         float mid = 0.0f, lowVal = 0.0f;
                         for (int i = 0; i <= lengthTable[waves]; i++) {
                             float highVal = buffer[bufferOff + a0 + i] - mid - lowVal;
-                            highVal = clip(highVal);
+                            highVal = Math.clamp(highVal, -128.0f, 127.0f);
                             mid += highVal * fre;
-                            mid = clip(mid);
+                            mid = Math.clamp(mid, -128.0f, 127.0f);
                             lowVal += mid * fre;
-                            lowVal = clip(lowVal);
+                            lowVal = Math.clamp(lowVal, -128.0f, 127.0f);
                         }
 
                         for (int i = 0; i <= lengthTable[waves]; i++) {
                             float highVal = buffer[bufferOff + a0 + i] - mid - lowVal;
-                            highVal = clip(highVal);
+                            highVal = Math.clamp(highVal, -128.0f, 127.0f);
                             mid += highVal * fre;
-                            mid = clip(mid);
+                            mid = Math.clamp(mid, -128.0f, 127.0f);
                             lowVal += mid * fre;
-                            lowVal = clip(lowVal);
+                            lowVal = Math.clamp(lowVal, -128.0f, 127.0f);
                             low[lowOff + lowHigh] = (byte) lowVal;
                             high[highOff + lowHigh] = (byte) highVal;
                             lowHigh++;
@@ -1285,7 +1278,7 @@ public class AHX {
                 }
             }
 
-            private void generateTriangle(byte[] buffer, int offset, int len) {
+            private static void generateTriangle(byte[] buffer, int offset, int len) {
                 int d2 = len;
                 int d5 = d2 >> 2;
                 int d1 = 128 / d5;
@@ -1317,7 +1310,7 @@ public class AHX {
                 }
             }
 
-            private void generateSquare(byte[] buffer, int offset) {
+            private static void generateSquare(byte[] buffer, int offset) {
                 int edi = 0;
                 for (int ebx = 1; ebx <= 0x20; ebx++) {
                     for (int ecx = 0; ecx < (0x40 - ebx) * 2; ecx++) {
@@ -1329,7 +1322,7 @@ public class AHX {
                 }
             }
 
-            private void generateSawtooth(byte[] buffer, int offset, int len) {
+            private static void generateSawtooth(byte[] buffer, int offset, int len) {
                 int edi = 0;
                 int ebx = 256 / (len - 1);
                 int eax = -128;
@@ -1339,7 +1332,7 @@ public class AHX {
                 }
             }
 
-            private void generateWhiteNoise(byte[] buffer, int offset, int len) {
+            private static void generateWhiteNoise(byte[] buffer, int offset, int len) {
                 int eax = 0x41595321;
                 int bx;
                 int bptr = 0;
@@ -1370,7 +1363,7 @@ public class AHX {
         public static final int AHXOF_BOOST = 0;
         public static final int AHXOI_OVERSAMPLING = 1;
 
-        public float period2Freq(float period) {
+        public static float period2Freq(float period) {
             return 3579545.25f / period;
         }
 
@@ -1408,13 +1401,13 @@ public class AHX {
         }
 
         public int setOption(int option, int value) {
-            switch (option) {
-                case AHXOI_OVERSAMPLING:
+            return switch (option) {
+                case AHXOI_OVERSAMPLING -> {
                     oversampling = value;
-                    return 1;
-                default:
-                    throw new IllegalArgumentException("option");
-            }
+                    yield 1;
+                }
+                default -> throw new IllegalArgumentException("option");
+            };
         }
 
         public int setOption(int option, float value) {
@@ -1444,13 +1437,13 @@ public class AHX {
         }
 
         public int getOption(int option, float[] pValue) {
-            switch (option) {
-                case AHXOF_BOOST:
+            return switch (option) {
+                case AHXOF_BOOST -> {
                     pValue[0] = boost;
-                    return 1;
-                default:
-                    throw new IllegalArgumentException("option");
-            }
+                    yield 1;
+                }
+                default -> throw new IllegalArgumentException("option");
+            };
         }
 
         private static final int[] pos = { 0, 0, 0, 0 };

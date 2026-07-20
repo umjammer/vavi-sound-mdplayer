@@ -23,8 +23,6 @@ public class YmF262Reader extends OplReader {
         return chipRegister.chip(YmF262Chip.class);
     }
 
-
-
     /** the OPL3's two output enables, which are all the panning it has */
     @Override
     protected Pan pan(int ch) {

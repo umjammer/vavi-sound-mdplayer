@@ -107,18 +107,19 @@ public abstract class OpnFmReader implements FmDspChipReader {
 
     @Override
     public boolean active(Group group) {
-        switch (group) {
-        case FM:
-            if (!fmActive) fmActive = Arrays.stream(keyOns()).anyMatch(k -> k != 0);
-            return fmActive;
-        case SSG:
-            if (!ssgActive) {
-                for (int s = 0; s < 3 && !ssgActive; s++) ssgActive = ssgSounding(s);
+        return switch (group) {
+            case FM -> {
+                if (!fmActive) fmActive = Arrays.stream(keyOns()).anyMatch(k -> k != 0);
+                yield fmActive;
             }
-            return ssgActive;
-        default:
-            return false;
-        }
+            case SSG -> {
+                if (!ssgActive) {
+                    for (int s = 0; s < 3 && !ssgActive; s++) ssgActive = ssgSounding(s);
+                }
+                yield ssgActive;
+            }
+            default -> false;
+        };
     }
 
     @Override

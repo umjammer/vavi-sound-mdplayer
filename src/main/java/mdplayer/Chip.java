@@ -22,7 +22,7 @@ public interface Chip {
 
     abstract class Unused implements Chip {}
 
-    /** */
+    @Deprecated
     class ChipKeyInfo {
 
         public final boolean[] on;

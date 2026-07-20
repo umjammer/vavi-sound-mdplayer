@@ -193,7 +193,7 @@ public class STIL {
     private final String[] resultBug = {null};
 
     // final ios_base::openmode STILopenFlags = ios::in | ios::binary;
-    public final String STILopenFlags = "r"; // | ios::binary;
+    public static final String STILopenFlags = "r"; // | ios::binary;
 
     public static final float VERSION_NO = 3.0f;
 

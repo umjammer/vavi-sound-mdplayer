@@ -86,6 +86,7 @@ public class FormNESDMC extends FormChipBase<FormNESDMC.Params> {
         }
     };
 
+    @Override
     public void changeScreenParams() {
         final double LOG2_440 = 8.7813597135246596040696824762152;
         final double LOG_2 = 0.69314718055994530941723212145818;
@@ -163,11 +164,12 @@ public class FormNESDMC extends FormChipBase<FormNESDMC.Params> {
         // chip mask state is the source of truth (see FormMain.ForceChannelMaskNES for the split)
         newParam.sqrChannels[0].mask = audio.plugin.chipRegister.chip(NesChip.class).getMask(chipId, 0);
         newParam.sqrChannels[1].mask = audio.plugin.chipRegister.chip(NesChip.class).getMask(chipId, 1);
-        newParam.triChannel.mask = audio.plugin.chipRegister.chip(NesChip.DmcChip.class).getDmcMask(chipId, 0);
+        newParam.triChannel.mask = audio.plugin.chipRegister.chip(NesChip.DmcChip.class).getMask(chipId, 0);
         newParam.noiseChannel.mask = audio.plugin.chipRegister.chip(NpNesChip.DmcChip.class).getMask(chipId, 1);
         newParam.dmcChannel.mask = audio.plugin.chipRegister.chip(NpNesChip.DmcChip.class).getMask(chipId, 2);
     }
 
+    @Override
     public void drawScreenParams() {
         boolean ob;
         for (int i = 0; i < 2; i++) {
@@ -215,6 +217,7 @@ public class FormNESDMC extends FormChipBase<FormNESDMC.Params> {
         oldParam.dmcChannel.mask = drawChNESDMC(frameBuffer, 4, oldParam.dmcChannel.mask, newParam.dmcChannel.mask, 0);
     }
 
+    @Override
     public void initScreen() {
         for (int c = 0; c < newParam.sqrChannels.length; c++) {
             newParam.sqrChannels[c].note = -1;
@@ -436,7 +439,7 @@ public class FormNESDMC extends FormChipBase<FormNESDMC.Params> {
                     // the triangle channel goes through the vgm-side chip, the rest through the
                     // nsf-side one — kept as the original had it
                     mdplayer.chips.NesChip.DmcChip c = audio.plugin.chipRegister.chip(mdplayer.chips.NesChip.DmcChip.class);
-                    if (!c.getDmcMask(chipId, ch)) c.setMask(chipId, ch); else c.resetDmcMask(chipId, ch);
+                    if (!c.getMask(chipId, ch)) c.setMask(chipId, ch); else c.resetMask(chipId, ch);
                     break;
                 }
                 case 1:
@@ -456,19 +459,19 @@ public class FormNESDMC extends FormChipBase<FormNESDMC.Params> {
                         audio.plugin.chipRegister.chip(mdplayer.chips.NesChip.class).resetMask(chipId, ch);
                         break;
                     case 2:
-                        audio.plugin.chipRegister.chip(mdplayer.chips.NesChip.DmcChip.class).resetDmcMask(chipId, 0);
+                        audio.plugin.chipRegister.chip(mdplayer.chips.NesChip.DmcChip.class).resetMask(chipId, 0);
                         break;
                     case 3:
-                        audio.plugin.chipRegister.chip(mdplayer.chips.NesChip.DmcChip.class).resetDmcMask(chipId, 1);
+                        audio.plugin.chipRegister.chip(mdplayer.chips.NesChip.DmcChip.class).resetMask(chipId, 1);
                         break;
                     case 4:
-                        audio.plugin.chipRegister.chip(mdplayer.chips.NesChip.DmcChip.class).resetDmcMask(chipId, 2);
+                        audio.plugin.chipRegister.chip(mdplayer.chips.NesChip.DmcChip.class).resetMask(chipId, 2);
                         break;
                 }
                 return;
             }
             if (ch >= 0 && ch < 3) {
-                audio.plugin.chipRegister.chip(mdplayer.chips.NesChip.DmcChip.class).resetDmcMask(chipId, ch);
+                audio.plugin.chipRegister.chip(mdplayer.chips.NesChip.DmcChip.class).resetMask(chipId, ch);
             }
         }
 
@@ -482,16 +485,16 @@ public class FormNESDMC extends FormChipBase<FormNESDMC.Params> {
             } else if (ch == 2) {
                 // the triangle channel's mute lives on the vgm-side chip, the rest on the nsf-side
                 // one — matching where setChannelMask toggles them
-                if (audio.plugin.chipRegister.chip(mdplayer.chips.NesChip.DmcChip.class).getDmcMask(chipId, 0)) {
+                if (audio.plugin.chipRegister.chip(mdplayer.chips.NesChip.DmcChip.class).getMask(chipId, 0)) {
                     audio.plugin.chipRegister.chip(mdplayer.chips.NesChip.DmcChip.class).setMask(chipId, 0);
                 } else {
-                    audio.plugin.chipRegister.chip(mdplayer.chips.NesChip.DmcChip.class).resetDmcMask(chipId, 0);
+                    audio.plugin.chipRegister.chip(mdplayer.chips.NesChip.DmcChip.class).resetMask(chipId, 0);
                 }
             } else if (ch == 3 || ch == 4) {
                 if (audio.plugin.chipRegister.chip(mdplayer.chips.NpNesChip.DmcChip.class).getMask(chipId, ch - 2)) {
                     audio.plugin.chipRegister.chip(mdplayer.chips.NesChip.DmcChip.class).setMask(chipId, ch - 2);
                 } else {
-                    audio.plugin.chipRegister.chip(mdplayer.chips.NesChip.DmcChip.class).resetDmcMask(chipId, ch - 2);
+                    audio.plugin.chipRegister.chip(mdplayer.chips.NesChip.DmcChip.class).resetMask(chipId, ch - 2);
                 }
             }
         }

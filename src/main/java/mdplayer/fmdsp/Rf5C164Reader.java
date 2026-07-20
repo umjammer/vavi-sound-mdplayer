@@ -53,7 +53,7 @@ public class Rf5C164Reader extends PcmSlotReader {
 
     @Override
     protected boolean sounding(int ch) {
-        return info != null && boolOf(ch, "enable") && intOf(ch, "stepB", 0) > 0;
+        return boolOf(ch, "enable") && intOf(ch, "stepB", 0) > 0;
     }
 
     @Override

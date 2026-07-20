@@ -290,7 +290,7 @@ public class FmDspVisualizer extends JComponent {
     /** rows per {@link #SMALL_LC} glyph: the stock 6 plus one for the descenders. */
     private static final int SLCB = 7;
 
-    /** {@link #fontdat} with {@link #LOWERCASE} patched in over a-z, at a 7 row stride. */
+    /** {@link #fontRom} with {@link #LOWERCASE} patched in over a-z, at a 7 row stride. */
     private static final byte[] SMALL_LC = smallWithLowercase();
 
     private static byte[] smallWithLowercase() {
@@ -567,9 +567,7 @@ public class FmDspVisualizer extends JComponent {
         for (int yi = 0; yi < h; yi++) {
             int row = (y + yi) * PC98_W + x;
             int drow = off + yi * w;
-            for (int xi = 0; xi < w; xi++) {
-                vram[row + xi] = data[drow + xi];
-            }
+            if (w >= 0) System.arraycopy(data, drow + 0, vram, row + 0, w);
         }
     }
 
@@ -673,9 +671,7 @@ public class FmDspVisualizer extends JComponent {
         for (int yi = 0; yi < h; yi++) {
             int row = (y + yi) * PC98_W + x;
             int drow = yi * srcW + srcX;
-            for (int xi = 0; xi < w; xi++) {
-                vram[row + xi] = data[drow + xi];
-            }
+            if (w >= 0) System.arraycopy(data, drow + 0, vram, row + 0, w);
         }
     }
 
@@ -944,13 +940,13 @@ public class FmDspVisualizer extends JComponent {
             if (trackType != null) {
                 trackType = (trackType + "     ").substring(0, 5);
             } else {
-                switch (TYPE_OF[t.ordinal()]) {
-                case FM: trackType = "FM   "; break;
-                case SSG: trackType = "SSG  "; break;
-                case ADPCM: trackType = "ADPCM"; break;
-                case PPZ8: trackType = "PPZ8 "; break;
-                default: trackType = "     "; break;
-                }
+                trackType = switch (TYPE_OF[t.ordinal()]) {
+                    case FM -> "FM   ";
+                    case SSG -> "SSG  ";
+                    case ADPCM -> "ADPCM";
+                    case PPZ8 -> "PPZ8 ";
+                    default -> "     ";
+                };
             }
             putSmall(trackType, 1, TRACK_H * i, 2, true);
             putSmall("TRACK.", 1, TRACK_H * i + 6, 1, true);
@@ -1445,7 +1441,7 @@ public class FmDspVisualizer extends JComponent {
         TrackStatusSource ts = source != null ? source.trackStatus() : null;
 
         for (int c = 0; c < FMDSP_LEVEL_COUNT; c++) {
-            int level = lvl != null ? clamp(lvl.level(c), 0, 32767) : 0;
+            int level = lvl != null ? Math.clamp(lvl.level(c), 0, 32767) : 0;
             int pan = lvl != null ? panIndex(lvl.pan(c)) : 5;
 
             TrackId tid = levelToTrack(c);
@@ -1513,19 +1509,14 @@ public class FmDspVisualizer extends JComponent {
 
     private static int panIndex(LevelDataSource.Pan p) {
         if (p == null) return 5;
-        switch (p) {
-        case LEFT: return 0;
-        case MID_LEFT: return 1;
-        case CENTER: return 2;
-        case MID_RIGHT: return 3;
-        case RIGHT: return 4;
-        case NONE:
-        default: return 5;
-        }
-    }
-
-    private static int clamp(int v, int lo, int hi) {
-        return v < lo ? lo : (v > hi ? hi : v);
+        return switch (p) {
+            case LEFT -> 0;
+            case MID_LEFT -> 1;
+            case CENTER -> 2;
+            case MID_RIGHT -> 3;
+            case RIGHT -> 4;
+            default -> 5;
+        };
     }
 
     /** the row a meter column reads its key, pan and tone number from, see {@link LevelDataSource#track} */

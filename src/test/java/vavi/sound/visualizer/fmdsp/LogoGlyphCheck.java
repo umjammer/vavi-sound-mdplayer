@@ -24,7 +24,7 @@ class LogoGlyphCheck {
         dump("logo_p", FmDspSprites.s_logo_p, 15);
     }
 
-    private void dump(String name, byte[] data, int w) {
+    private static void dump(String name, byte[] data, int w) {
         int h = data.length / w;
         System.err.println("=== " + name + " " + w + "x" + h + " (" + data.length + " bytes)");
         for (int y = 0; y < h; y++) {

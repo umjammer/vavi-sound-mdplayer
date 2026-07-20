@@ -7,6 +7,7 @@
 package mdplayer.fmdsp;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
@@ -74,7 +75,7 @@ public class MultiPcmReader implements FmDspChipReader {
         Arrays.fill(slotChannels, -1);
         mappedChannels = 0;
         active = false;
-        info = null;
+        info = Collections.emptyMap();
     }
 
     @Override
@@ -98,7 +99,7 @@ public class MultiPcmReader implements FmDspChipReader {
             info = chip().getInfo(0);
         } catch (RuntimeException ignore) {
             // the chip exists but the song never loaded it
-            info = null;
+            info = Collections.emptyMap();
         }
         for (int ch = 0; ch < CHANNELS && mappedChannels < slotChannels.length; ch++) {
             if (sounding(ch) && slotOf(ch) < 0) {
@@ -115,7 +116,7 @@ public class MultiPcmReader implements FmDspChipReader {
     }
 
     private boolean sounding(int ch) {
-        if (info == null) return false;
+        if (info.isEmpty()) return false;
         Object playing = info.get("channels." + ch + ".playing");
         return playing != null && (boolean) playing;
     }
@@ -142,7 +143,7 @@ public class MultiPcmReader implements FmDspChipReader {
     public void read(Group group, int slot, FmDspChannel out) {
         out.name = "PCM";
         int ch = slotChannels[slot];
-        if (ch < 0 || info == null) return;
+        if (ch < 0 || info.isEmpty()) return;
 
         boolean sounding = sounding(ch);
         int note = intOf(ch, "note", -1);

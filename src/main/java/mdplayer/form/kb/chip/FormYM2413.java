@@ -14,6 +14,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.util.List;
+import java.util.Map;
 import java.util.prefs.Preferences;
 
 import mdplayer.Chip.ChipKeyInfo;
@@ -92,21 +93,25 @@ public class FormYM2413 extends FormChipBase<FormYM2413.Params> {
         }
     };
 
+    @Override
     public void changeScreenParams() {
-        int[] ym2413Register = (int[]) audio.plugin.chipRegister.chip(Ym2413Chip.class).getInfo(chipId).get("register");
+        Map<String, Object> info = audio.plugin.chipRegister.chip(Ym2413Chip.class).getInfo(chipId);
+        if (info.isEmpty()) return;
+
+        int[] register = (int[]) info.get("register");
         ChannelParams nyc;
-        ChipKeyInfo ki = audio.plugin.chipRegister.chip(Ym2413Chip.class).getKeyInfo(chipId);
+        ChipKeyInfo ki = (ChipKeyInfo) info.get("keyInfo");
 
         for (int ch = 0; ch < 9; ch++) {
             nyc = newParam.channels[ch];
 
-            nyc.inst[0] = (ym2413Register[0x30 + ch] & 0xf0) >> 4;
-            nyc.inst[1] = (ym2413Register[0x20 + ch] & 0x20) >> 5;
-            nyc.inst[2] = (ym2413Register[0x20 + ch] & 0x10) >> 4;
-            nyc.inst[3] = (ym2413Register[0x30 + ch] & 0x0f);
+            nyc.inst[0] = (register[0x30 + ch] & 0xf0) >> 4;
+            nyc.inst[1] = (register[0x20 + ch] & 0x20) >> 5;
+            nyc.inst[2] = (register[0x20 + ch] & 0x10) >> 4;
+            nyc.inst[3] = (register[0x30 + ch] & 0x0f);
 
-            int freq = ym2413Register[0x10 + ch] + ((ym2413Register[0x20 + ch] & 0x1) << 8);
-            int oct = ((ym2413Register[0x20 + ch] & 0xe) >> 1);
+            int freq = register[0x10 + ch] + ((register[0x20 + ch] & 0x1) << 8);
+            int oct = ((register[0x20 + ch] & 0xe) >> 1);
 
             nyc.note = SegaPcmChip.searchSegaPCMNote(freq / 172.0) + (oct - 4) * 12;
 
@@ -124,7 +129,7 @@ public class FormYM2413 extends FormChipBase<FormYM2413.Params> {
 
         // BD
         if (ki.on[9]) {
-            newParam.channels[9].volume = (19 - (ym2413Register[0x36] & 0x0f));
+            newParam.channels[9].volume = (19 - (register[0x36] & 0x0f));
         } else {
             newParam.channels[9].volume--;
             if (newParam.channels[9].volume < 0) newParam.channels[9].volume = 0;
@@ -132,7 +137,7 @@ public class FormYM2413 extends FormChipBase<FormYM2413.Params> {
 
         // SD
         if (ki.on[10]) {
-            newParam.channels[10].volume = (19 - (ym2413Register[0x37] & 0x0f));
+            newParam.channels[10].volume = (19 - (register[0x37] & 0x0f));
         } else {
             newParam.channels[10].volume--;
             if (newParam.channels[10].volume < 0) newParam.channels[10].volume = 0;
@@ -140,7 +145,7 @@ public class FormYM2413 extends FormChipBase<FormYM2413.Params> {
 
         // TOM
         if (ki.on[11]) {
-            newParam.channels[11].volume = 19 - ((ym2413Register[0x38] & 0xf0) >> 4);
+            newParam.channels[11].volume = 19 - ((register[0x38] & 0xf0) >> 4);
         } else {
             newParam.channels[11].volume--;
             if (newParam.channels[11].volume < 0) newParam.channels[11].volume = 0;
@@ -148,7 +153,7 @@ public class FormYM2413 extends FormChipBase<FormYM2413.Params> {
 
         // CYM
         if (ki.on[12]) {
-            newParam.channels[12].volume = 19 - (ym2413Register[0x38] & 0x0f);
+            newParam.channels[12].volume = 19 - (register[0x38] & 0x0f);
         } else {
             newParam.channels[12].volume--;
             if (newParam.channels[12].volume < 0) newParam.channels[12].volume = 0;
@@ -156,37 +161,37 @@ public class FormYM2413 extends FormChipBase<FormYM2413.Params> {
 
         // HH
         if (ki.on[13]) {
-            newParam.channels[13].volume = 19 - ((ym2413Register[0x37] & 0xf0) >> 4);
+            newParam.channels[13].volume = 19 - ((register[0x37] & 0xf0) >> 4);
         } else {
             newParam.channels[13].volume--;
             if (newParam.channels[13].volume < 0) newParam.channels[13].volume = 0;
         }
 
-        newParam.channels[0].inst[4] = (ym2413Register[0x02] & 0x3f); // TL
-        newParam.channels[0].inst[5] = (ym2413Register[0x03] & 0x07); // FB
+        newParam.channels[0].inst[4] = (register[0x02] & 0x3f); // TL
+        newParam.channels[0].inst[5] = (register[0x03] & 0x07); // FB
 
-        newParam.channels[0].inst[6] = (ym2413Register[0x04] & 0xf0) >> 4;  // AR
-        newParam.channels[0].inst[7] = (ym2413Register[0x04] & 0x0f);       // DR
-        newParam.channels[0].inst[8] = (ym2413Register[0x06] & 0xf0) >> 4;  // SL
-        newParam.channels[0].inst[9] = (ym2413Register[0x06] & 0x0f);       // RR
-        newParam.channels[0].inst[10] = (ym2413Register[0x02] & 0x80) >> 7; // KL
-        newParam.channels[0].inst[11] = (ym2413Register[0x00] & 0x0f);      // MT
-        newParam.channels[0].inst[12] = (ym2413Register[0x00] & 0x80) >> 7; // AM
-        newParam.channels[0].inst[13] = (ym2413Register[0x00] & 0x40) >> 6; // VB
-        newParam.channels[0].inst[14] = (ym2413Register[0x00] & 0x20) >> 5; // EG
-        newParam.channels[0].inst[15] = (ym2413Register[0x00] & 0x10) >> 4; // KR
-        newParam.channels[0].inst[16] = (ym2413Register[0x03] & 0x08) >> 3; // DM
-        newParam.channels[0].inst[17] = (ym2413Register[0x05] & 0xf0) >> 4; // AR
-        newParam.channels[0].inst[18] = (ym2413Register[0x05] & 0x0f);      // DR
-        newParam.channels[0].inst[19] = (ym2413Register[0x07] & 0xf0) >> 4; // SL
-        newParam.channels[0].inst[20] = (ym2413Register[0x07] & 0x0f);      // RR
-        newParam.channels[0].inst[21] = (ym2413Register[0x03] & 0x80) >> 7; // KL
-        newParam.channels[0].inst[22] = (ym2413Register[0x01] & 0x0f);      // MT
-        newParam.channels[0].inst[23] = (ym2413Register[0x01] & 0x80) >> 7; // AM
-        newParam.channels[0].inst[24] = (ym2413Register[0x01] & 0x40) >> 6; // VB
-        newParam.channels[0].inst[25] = (ym2413Register[0x01] & 0x20) >> 5; // EG
-        newParam.channels[0].inst[26] = (ym2413Register[0x01] & 0x10) >> 4; // KR
-        newParam.channels[0].inst[27] = (ym2413Register[0x03] & 0x10) >> 4; // DC
+        newParam.channels[0].inst[6] = (register[0x04] & 0xf0) >> 4;  // AR
+        newParam.channels[0].inst[7] = (register[0x04] & 0x0f);       // DR
+        newParam.channels[0].inst[8] = (register[0x06] & 0xf0) >> 4;  // SL
+        newParam.channels[0].inst[9] = (register[0x06] & 0x0f);       // RR
+        newParam.channels[0].inst[10] = (register[0x02] & 0x80) >> 7; // KL
+        newParam.channels[0].inst[11] = (register[0x00] & 0x0f);      // MT
+        newParam.channels[0].inst[12] = (register[0x00] & 0x80) >> 7; // AM
+        newParam.channels[0].inst[13] = (register[0x00] & 0x40) >> 6; // VB
+        newParam.channels[0].inst[14] = (register[0x00] & 0x20) >> 5; // EG
+        newParam.channels[0].inst[15] = (register[0x00] & 0x10) >> 4; // KR
+        newParam.channels[0].inst[16] = (register[0x03] & 0x08) >> 3; // DM
+        newParam.channels[0].inst[17] = (register[0x05] & 0xf0) >> 4; // AR
+        newParam.channels[0].inst[18] = (register[0x05] & 0x0f);      // DR
+        newParam.channels[0].inst[19] = (register[0x07] & 0xf0) >> 4; // SL
+        newParam.channels[0].inst[20] = (register[0x07] & 0x0f);      // RR
+        newParam.channels[0].inst[21] = (register[0x03] & 0x80) >> 7; // KL
+        newParam.channels[0].inst[22] = (register[0x01] & 0x0f);      // MT
+        newParam.channels[0].inst[23] = (register[0x01] & 0x80) >> 7; // AM
+        newParam.channels[0].inst[24] = (register[0x01] & 0x40) >> 6; // VB
+        newParam.channels[0].inst[25] = (register[0x01] & 0x20) >> 5; // EG
+        newParam.channels[0].inst[26] = (register[0x01] & 0x10) >> 4; // KR
+        newParam.channels[0].inst[27] = (register[0x03] & 0x10) >> 4; // DC
     
         // the chip itself is the source of truth for channel muting
         for (int mch = 0; mch < newParam.channels.length; mch++)
@@ -238,6 +243,7 @@ public class FormYM2413 extends FormChipBase<FormYM2413.Params> {
         dv = frameBuffer.drawVolumeXY(66, 20, 0, dv, newParam.channels[13].volume, tp);
     }
 
+    @Override
     public void drawScreenParams() {
         boolean YM2413Type = (chipId == 0)
                 ? parent.setting.getYM2413Type()[0].getUseReal()[0]
@@ -288,6 +294,7 @@ public class FormYM2413 extends FormChipBase<FormYM2413.Params> {
         }
     }
 
+    @Override
     public void initScreen() {
         for (int ch = 0; ch < 9; ch++) {
             newParam.channels[ch].inst[0] = 0;

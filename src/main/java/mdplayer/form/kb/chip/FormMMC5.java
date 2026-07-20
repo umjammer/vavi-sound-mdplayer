@@ -83,6 +83,7 @@ public class FormMMC5 extends FormChipBase<FormMMC5.Params> {
         }
     };
 
+    @Override
     public void changeScreenParams() {
         final double LOG2_440 = 8.7813597135246596040696824762152;
         final double LOG_2 = 0.69314718055994530941723212145818;
@@ -118,6 +119,7 @@ public class FormMMC5 extends FormChipBase<FormMMC5.Params> {
         newParam.pcmChannel.mask = audio.plugin.chipRegister.chip(NpNesChip.Mmc5Chip.class).getMask(chipId, 2);
     }
 
+    @Override
     public void drawScreenParams() {
         for (int i = 0; i < 2; i++) {
             oldParam.sqrChannels[i].note = frameBuffer.drawKeyBoard(i * 2, oldParam.sqrChannels[i].note, newParam.sqrChannels[i].note, 0);
@@ -136,6 +138,7 @@ public class FormMMC5 extends FormChipBase<FormMMC5.Params> {
         oldParam.pcmChannel.mask = drawChMMC5(frameBuffer, 2, oldParam.pcmChannel.mask, newParam.pcmChannel.mask, 0);
     }
 
+    @Override
     public void initScreen() {
         for (int c = 0; c < newParam.sqrChannels.length; c++) {
             newParam.sqrChannels[c].note = -1;

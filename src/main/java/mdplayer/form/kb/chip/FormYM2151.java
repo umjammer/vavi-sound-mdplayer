@@ -13,9 +13,11 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.util.List;
+import java.util.Map;
 import java.util.prefs.Preferences;
 
 import mdplayer.Common;
+import mdplayer.chips.Ym2608Chip;
 import mdplayer.form.FrameBuffer;
 import mdplayer.form.ScreenPanel;
 import mdplayer.Tables;
@@ -127,6 +129,7 @@ public class FormYM2151 extends FormChipBase<FormYM2151.Params> {
         }
     };
 
+    @Override
     public void initScreen() {
         boolean YM2151Type = (chipId == 0)
                 ? parent.setting.getYM2151Type()[0].getUseReal()[0]
@@ -170,10 +173,14 @@ public class FormYM2151 extends FormChipBase<FormYM2151.Params> {
             0x78,
     };
 
+    @Override
     public void changeScreenParams() {
-        int[] ym2151Register = (int[]) audio.plugin.chipRegister.chip(Ym2151Chip.class).getInfo(chipId).get("register");
-        int[] fmKeyYM2151 = (int[]) audio.plugin.chipRegister.chip(Ym2151Chip.class).getInfo(chipId).get("keyOn");
-        int[] fmYM2151Vol = (int[]) audio.plugin.chipRegister.chip(Ym2151Chip.class).getInfo(chipId).get("volume");
+        Map<String, Object> info = audio.plugin.chipRegister.chip(Ym2151Chip.class).getInfo(chipId);
+        if (info.isEmpty()) return;
+
+        int[] ym2151Register = (int[]) info.get("register");
+        int[] fmKeyYM2151 = (int[]) info.get("keyOn");
+        int[] fmYM2151Vol = (int[]) info.get("volume");
 
         for (int ch = 0; ch < 8; ch++) {
             for (int i = 0; i < 4; i++) {
@@ -230,8 +237,8 @@ public class FormYM2151 extends FormChipBase<FormYM2151.Params> {
         newParam.ne = ((ym2151Register[0x0f] & 0x80) >> 7);
         newParam.nfrq = ((ym2151Register[0x0f] & 0x1f) >> 0);
         newParam.lfrq = ((ym2151Register[0x18] & 0xff) >> 0);
-        newParam.pmd = (int) audio.plugin.chipRegister.chip(Ym2151Chip.class).getInfo(chipId).get("pmd");
-        newParam.amd = (int) audio.plugin.chipRegister.chip(Ym2151Chip.class).getInfo(chipId).get("amd");
+        newParam.pmd = (int) info.get("pmd");
+        newParam.amd = (int) info.get("amd");
         newParam.waveform = ((ym2151Register[0x1b] & 0x3) >> 0);
         newParam.lfosync = ((ym2151Register[0x01] & 0x02) >> 1);
     
@@ -240,6 +247,7 @@ public class FormYM2151 extends FormChipBase<FormYM2151.Params> {
             newParam.channels[mch].mask = audio.plugin.chipRegister.chip(Ym2151Chip.class).getMask(chipId, mch);
     }
 
+    @Override
     public void drawScreenParams() {
         for (int c = 0; c < 8; c++) {
             Channel oyc = oldParam.channels[c];
@@ -458,18 +466,18 @@ public class FormYM2151 extends FormChipBase<FormYM2151.Params> {
 
         @Override public void setChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
             mdplayer.chips.Ym2151Chip c = audio.plugin.chipRegister.chip(mdplayer.chips.Ym2151Chip.class);
-            if (!c.getMask(chipId, ch)) c.setMask(chipId, ch); else c.resetMask(chipId, ch, audio.plugin.stopped);
+            if (!c.getMask(chipId, ch)) c.setMask(chipId, ch); else c.setMask(chipId, ch, false, audio.plugin.stopped);
         }
 
         @Override public void resetChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
-            audio.plugin.chipRegister.chip(mdplayer.chips.Ym2151Chip.class).resetMask(chipId, ch, audio.plugin.stopped);
+            audio.plugin.chipRegister.chip(mdplayer.chips.Ym2151Chip.class).setMask(chipId, ch, false, audio.plugin.stopped);
         }
 
         @Override public void forceChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
             if (mask)
                 audio.plugin.chipRegister.chip(mdplayer.chips.Ym2151Chip.class).setMask(chipId, ch);
             else
-                audio.plugin.chipRegister.chip(mdplayer.chips.Ym2151Chip.class).resetMask(chipId, ch, audio.plugin.stopped);
+                audio.plugin.chipRegister.chip(mdplayer.chips.Ym2151Chip.class).setMask(chipId, ch, false, audio.plugin.stopped);
         }
 
         @Override public void reapplyChannelMasks(mdplayer.Audio audio, int chipId) {

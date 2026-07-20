@@ -6,6 +6,7 @@
 
 package mdplayer.chips;
 
+import java.util.Collections;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
@@ -32,7 +33,8 @@ public class OkiM6295Chip extends BaseChip {
         return new Class[] {OkiM6295Inst.class};
     }
 
-    public void setMask(int chipId, int ch, boolean mask) {
+    @Override
+    protected void setMask(int chipId, int ch, boolean mask, Object... args) {
         this.mask[chipId][ch] = mask;
 
         Instrument instrument = context.mds.inst(inst(chipId), 0);
@@ -47,7 +49,7 @@ public class OkiM6295Chip extends BaseChip {
     @Override
     public Map<String, Object> getInfo(int chipId) {
         OkiM6295Inst inst = context.mds.inst(OkiM6295Inst.class, 0);
-        return inst == null ? null : inst.getView(chipId, "info", null);
+        return inst == null ? Collections.emptyMap() : inst.getView(chipId, "info");
     }
 
     public void writePcm(int chipId, int romSize, int offset, int length, byte[] buf, int srcOffset, EnmModel model) {
@@ -68,15 +70,7 @@ public class OkiM6295Chip extends BaseChip {
         }
     }
 
-    public void setMask(int chipId, int ch) {
-        setMask(chipId, ch, true);
-    }
-
-    public void resetMask(int chipId, int ch) {
-        setMask(chipId, ch, false);
-    }
-
-    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    @Override
     public boolean getMask(int chipId, int ch) {
         return ch < mask[chipId].length && mask[chipId][ch];
     }

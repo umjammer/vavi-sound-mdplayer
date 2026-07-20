@@ -13,6 +13,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.util.List;
+import java.util.Map;
 import java.util.prefs.Preferences;
 
 import mdplayer.Common;
@@ -106,12 +107,16 @@ public class FormYM2203 extends FormChipBase<FormYM2203.Params> {
     private static final float[] fmDivTbl = {6, 3, 2};
     private static final float[] ssgDivTbl = {4, 2, 1};
 
+    @Override
     public void changeScreenParams() {
+        Map<String, Object> info = audio.plugin.chipRegister.chip(Ym2203Chip.class).getInfo(chipId);
+        if (info.isEmpty()) return;
+
         boolean isFmEx;
-        int[] ym2203Register = (int[]) audio.plugin.chipRegister.chip(Ym2203Chip.class).getInfo(chipId).get("register");
-        int[] fmKeyYM2203 = (int[]) audio.plugin.chipRegister.chip(Ym2203Chip.class).getInfo(chipId).get("keyOn");
-        int[] ym2203Vol = (int[]) audio.plugin.chipRegister.chip(Ym2203Chip.class).getInfo(chipId).get("volume");
-        int[] ym2203Ch3SlotVol = (int[]) audio.plugin.chipRegister.chip(Ym2203Chip.class).getInfo(chipId).get("ch3SlotVolume");
+        int[] ym2203Register = (int[]) info.get("register");
+        int[] fmKeyYM2203 = (int[]) info.get("keyOn");
+        int[] ym2203Vol = (int[]) info.get("volume");
+        int[] ym2203Ch3SlotVol = (int[]) info.get("ch3SlotVolume");
 
         isFmEx = (ym2203Register[0x27] & 0x40) > 0;
         newParam.channels[2].ex = isFmEx;
@@ -256,6 +261,7 @@ public class FormYM2203 extends FormChipBase<FormYM2203.Params> {
             newParam.channels[mch].mask = audio.plugin.chipRegister.chip(Ym2203Chip.class).getMask(chipId, mch);
     }
 
+    @Override
     public void drawScreenParams() {
         boolean YM2203Type = (chipId == 0)
                 ? parent.setting.getYM2203Type()[0].getUseReal()[0]
@@ -305,6 +311,7 @@ public class FormYM2203 extends FormChipBase<FormYM2203.Params> {
         oldParam.etype = frameBuffer.drawEType(33, 32, oldParam.etype, newParam.etype);
     }
 
+    @Override
     public void initScreen() {
         boolean YM2203Type = (chipId == 0)
                 ? parent.setting.getYM2203Type()[0].getUseReal()[0]
@@ -546,7 +553,7 @@ public class FormYM2203 extends FormChipBase<FormYM2203.Params> {
 
         @Override public void resetChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
             if (ch >= 0 && ch < 9) {
-                audio.plugin.chipRegister.chip(mdplayer.chips.Ym2203Chip.class).resetMask(chipId, ch, audio.plugin.stopped);
+                audio.plugin.chipRegister.chip(mdplayer.chips.Ym2203Chip.class).setMask(chipId, ch, false, audio.plugin.stopped);
             }
         }
 
@@ -555,7 +562,7 @@ public class FormYM2203 extends FormChipBase<FormYM2203.Params> {
     if (mask)
                     audio.plugin.chipRegister.chip(mdplayer.chips.Ym2203Chip.class).setMask(chipId, ch);
                 else
-                    audio.plugin.chipRegister.chip(mdplayer.chips.Ym2203Chip.class).resetMask(chipId, ch, audio.plugin.stopped);
+                    audio.plugin.chipRegister.chip(mdplayer.chips.Ym2203Chip.class).setMask(chipId, ch, false, audio.plugin.stopped);
             }
         }
 

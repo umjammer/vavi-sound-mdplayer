@@ -115,6 +115,7 @@ public class FormSegaPCM extends FormChipBase<FormSegaPCM.Params> {
         }
     };
 
+    @Override
     public void initScreen() {
         boolean SEGAPCMType = (chipId == 0) ? parent.setting.getSEGAPCMType()[0].getUseReal()[0] : parent.setting.getSEGAPCMType()[1].getUseReal()[0];
         int tp = SEGAPCMType ? 1 : 0;
@@ -134,47 +135,18 @@ public class FormSegaPCM extends FormChipBase<FormSegaPCM.Params> {
         }
     }
 
+    @Override
     public void changeScreenParams() {
-//        MDSound.segapcm.segapcm_state segapcmState = audio.GetSegaPCMRegister(chipId);
-//        if (segapcmState != null && segapcmState.ram != null && segapcmState.rom != null) {
-//            for (int ch = 0; ch < 16; ch++) {
-//                int l = segapcmState.ram[ch * 8 + 2] & 0x7f;
-//                int r = segapcmState.ram[ch * 8 + 3] & 0x7f;
-//                int dt = segapcmState.ram[ch * 8 + 7];
-//                double ml = dt / 256.0;
-//
-//                int ptrRom = segapcmState.ptrRom + ((segapcmState.ram[ch * 8 + 0x86] & segapcmState.bankmask) << segapcmState.bankshift);
-//                int addr = (int) (((segapcmState.ram[ch * 8 + 0x85] & 0xff) << 16) | ((segapcmState.ram[ch * 8 + 0x84] & 0xff) << 8) | (segapcmState.low[ch] & 0xff));
-//                int vdt = 0;
-//                if (ptrRom + ((addr >> 8) & segapcmState.rgnmask) < segapcmState.rom.length) {
-//                    vdt = Math.abs((byte) (segapcmState.rom[ptrRom + ((addr >> 8) & segapcmState.rgnmask)]) - 0x80);
-//                }
-//                byte end = (byte) (segapcmState.ram[ch * 8 + 6] + 1);
-//                if ((segapcmState.ram[ch * 8 + 0x86] & 1) != 0) vdt = 0;
-//                if ((addr >> 16) == end) {
-//                    if ((segapcmState.ram[ch * 8 + 0x86] & 2) == 0)
-//                        ml = 0;
-//                }
-//
-//                newParam.channels[ch].volumeL = Math.min(Math.max((l * vdt) >> 8, 0), 19);
-//                newParam.channels[ch].volumeR = Math.min(Math.max((r * vdt) >> 8, 0), 19);
-//                if (newParam.channels[ch].volumeL == 0 && newParam.channels[ch].volumeR == 0) {
-//                    ml = 0;
-//                }
-//                newParam.channels[ch].note = (ml == 0 || vdt == 0) ? -1 : (common.searchSegaPCMNote(ml));
-//                newParam.channels[ch].pan = (r >> 3) * 0x10 + (l >> 3);
-//            }
-//        }
-
         Map<String, Object> info = audio.plugin.chipRegister.chip(SegaPcmChip.class).getInfo(chipId);
-        if (info == null) return; // the song being played does not use this chip
-        byte[] segapcmReg = (byte[]) info.get("register");
-        if (segapcmReg != null) {
+        if (info.isEmpty()) return; // the song being played does not use this chip
+
+        byte[] register = (byte[]) info.get("register");
+        if (register != null) {
             for (int ch = 0; ch < 16; ch++) {
-                int l = segapcmReg[ch * 8 + 2] & 0x7f;
-                int r = segapcmReg[ch * 8 + 3] & 0x7f;
-                int dt = segapcmReg[ch * 8 + 7] & 0xff;
-                int ctrl = segapcmReg[ch * 8 + 0x86] & 0xff;
+                int l = register[ch * 8 + 2] & 0x7f;
+                int r = register[ch * 8 + 3] & 0x7f;
+                int dt = register[ch * 8 + 7] & 0xff;
+                int ctrl = register[ch * 8 + 0x86] & 0xff;
                 double ml = dt / 256.0;
 
                 // the chip has no key on of its own to read, so a sounding channel is one
@@ -202,6 +174,7 @@ public class FormSegaPCM extends FormChipBase<FormSegaPCM.Params> {
             newParam.channels[mch].mask = audio.plugin.chipRegister.chip(SegaPcmChip.class).getMask(chipId, mch);
     }
 
+    @Override
     public void drawScreenParams() {
         int tp = ((chipId == 0) ? parent.setting.getSEGAPCMType()[0].getUseReal()[0] : parent.setting.getSEGAPCMType()[1].getUseReal()[0]) ? 1 : 0;
 

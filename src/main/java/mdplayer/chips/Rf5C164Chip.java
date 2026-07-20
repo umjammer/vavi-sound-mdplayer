@@ -6,6 +6,7 @@
 
 package mdplayer.chips;
 
+import java.util.Collections;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
@@ -32,7 +33,8 @@ public class Rf5C164Chip extends BaseChip {
         return new Class[] {ScdPcmInst.class};
     }
 
-    public void setMask(int chipId, int ch, boolean mask) {
+    @Override
+    public void setMask(int chipId, int ch, boolean mask, Object... args) {
         this.mask[chipId][ch] = mask;
 
         Instrument instrument = context.mds.inst(inst(chipId));
@@ -71,18 +73,10 @@ public class Rf5C164Chip extends BaseChip {
     @Override
     public Map<String, Object> getInfo(int chipId) {
         ScdPcmInst inst = context.mds.inst(ScdPcmInst.class);
-        return inst == null ? null : inst.getView(chipId, "info", null);
+        return inst == null ? Collections.emptyMap() : inst.getView(chipId, "info");
     }
 
-    public void setMask(int chipId, int ch) {
-        setMask(chipId, ch, true);
-    }
-
-    public void resetMask(int chipId, int ch) {
-        setMask(chipId, ch, false);
-    }
-
-    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    @Override
     public boolean getMask(int chipId, int ch) {
         return ch < mask[chipId].length && mask[chipId][ch];
     }

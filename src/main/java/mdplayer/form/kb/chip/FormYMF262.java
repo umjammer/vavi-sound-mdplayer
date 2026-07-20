@@ -14,18 +14,22 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.util.List;
+import java.util.Map;
 import java.util.prefs.Preferences;
 
+import mdplayer.Audio;
 import mdplayer.Common;
-import mdplayer.form.FrameBuffer;
-import mdplayer.form.ScreenPanel;
 import mdplayer.Tables;
 import mdplayer.chips.SegaPcmChip;
 import mdplayer.chips.YmF262Chip;
+import mdplayer.form.FrameBuffer;
+import mdplayer.form.ScreenPanel;
+import mdplayer.form.View;
+import mdplayer.form.inst.OpliInstWriter;
+import mdplayer.form.inst.SendMml2vgmInstWriter;
 import mdplayer.form.kb.ChannelParams;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
-import mdplayer.form.View;
 
 
 public class FormYMF262 extends FormChipBase<FormYMF262.Params> {
@@ -93,6 +97,7 @@ public class FormYMF262 extends FormChipBase<FormYMF262.Params> {
     private static final int[] slot2Tbl = {3, 9, 4, 10, 5, 11, 15, 16, 17, 21, 27, 22, 28, 23, 29, 33, 34, 35};
     private static final int[] chTbl = {0, 3, 1, 4, 2, 5, 6, 7, 8};
 
+    @Override
     public void initScreen() {
         for (int c = 0; c < newParam.channels.length; c++) {
             newParam.channels[c].note = -1;
@@ -107,8 +112,12 @@ public class FormYMF262 extends FormChipBase<FormYMF262.Params> {
         drawScreenInitYMF262(frameBuffer, tp);
     }
 
+    @Override
     public void changeScreenParams() {
-        int[][] ymf262Register = (int[][]) audio.plugin.chipRegister.chip(YmF262Chip.class).getInfo(chipId).get("register");
+        Map<String, Object> info = audio.plugin.chipRegister.chip(YmF262Chip.class).getInfo(chipId);
+        if (info.isEmpty()) return;;
+
+        int[][] register = (int[][]) info.get("register");
         Channel nyc;
         int slot;
         int slotP;
@@ -128,38 +137,38 @@ public class FormYMF262 extends FormChipBase<FormYMF262.Params> {
                 slot = (slot % 6) + 8 * (slot / 6);
 
                 // AR
-                nyc.inst[0 + i * 17] = ymf262Register[slotP][0x60 + slot] >> 4;
+                nyc.inst[0 + i * 17] = register[slotP][0x60 + slot] >> 4;
                 // DR
-                nyc.inst[1 + i * 17] = ymf262Register[slotP][0x60 + slot] & 0xf;
+                nyc.inst[1 + i * 17] = register[slotP][0x60 + slot] & 0xf;
                 // SL
-                nyc.inst[2 + i * 17] = ymf262Register[slotP][0x80 + slot] >> 4;
+                nyc.inst[2 + i * 17] = register[slotP][0x80 + slot] >> 4;
                 // RR
-                nyc.inst[3 + i * 17] = ymf262Register[slotP][0x80 + slot] & 0xf;
+                nyc.inst[3 + i * 17] = register[slotP][0x80 + slot] & 0xf;
                 // KL
-                nyc.inst[4 + i * 17] = ymf262Register[slotP][0x40 + slot] >> 6;
+                nyc.inst[4 + i * 17] = register[slotP][0x40 + slot] >> 6;
                 // TL
-                nyc.inst[5 + i * 17] = ymf262Register[slotP][0x40 + slot] & 0x3f;
+                nyc.inst[5 + i * 17] = register[slotP][0x40 + slot] & 0x3f;
                 // MT
-                nyc.inst[6 + i * 17] = ymf262Register[slotP][0x20 + slot] & 0xf;
+                nyc.inst[6 + i * 17] = register[slotP][0x20 + slot] & 0xf;
                 // AM
-                nyc.inst[7 + i * 17] = ymf262Register[slotP][0x20 + slot] >> 7;
+                nyc.inst[7 + i * 17] = register[slotP][0x20 + slot] >> 7;
                 // VB
-                nyc.inst[8 + i * 17] = (ymf262Register[slotP][0x20 + slot] >> 6) & 1;
+                nyc.inst[8 + i * 17] = (register[slotP][0x20 + slot] >> 6) & 1;
                 // EG
-                nyc.inst[9 + i * 17] = (ymf262Register[slotP][0x20 + slot] >> 5) & 1;
+                nyc.inst[9 + i * 17] = (register[slotP][0x20 + slot] >> 5) & 1;
                 // KR
-                nyc.inst[10 + i * 17] = (ymf262Register[slotP][0x20 + slot] >> 4) & 1;
+                nyc.inst[10 + i * 17] = (register[slotP][0x20 + slot] >> 4) & 1;
                 // WS
-                nyc.inst[13 + i * 17] = (ymf262Register[slotP][0xe0 + slot] & 7);
+                nyc.inst[13 + i * 17] = (register[slotP][0xe0 + slot] & 7);
             }
         }
 
-        newParam.channels[18].dda = ((ymf262Register[1][0xbd] >> 7) & 0x01) != 0; // DA
-        newParam.channels[19].dda = ((ymf262Register[1][0xbd] >> 6) & 0x01) != 0; // DV
+        newParam.channels[18].dda = ((register[1][0xbd] >> 7) & 0x01) != 0; // DA
+        newParam.channels[19].dda = ((register[1][0xbd] >> 6) & 0x01) != 0; // DV
 
         // ConnectSelect
         for (int c = 0; c < 6; c++) {
-            newParam.channels[c].dda = (ymf262Register[1][0x04] & (0x1 << c)) != 0;
+            newParam.channels[c].dda = (register[1][0x04] & (0x1 << c)) != 0;
             newParam.channels[c].inst[34] = newParam.channels[c].dda ? 1 : 0; // [
             newParam.channels[c].inst[35] = newParam.channels[c].dda ? 2 : 0; // ]
             if (newParam.channels[c].dda) {
@@ -197,7 +206,7 @@ public class FormYMF262 extends FormChipBase<FormYMF262.Params> {
             }
         }
 
-        int ko = audio.plugin.chipRegister.chip(YmF262Chip.class).getFmKeyON(chipId);
+        int ko = (int) info.get("fmKeyON");
 
         for (int c = 0; c < 18; c++) {
             nyc = newParam.channels[c];
@@ -211,20 +220,20 @@ public class FormYMF262 extends FormChipBase<FormYMF262.Params> {
             int kadr = isOp4 ? (adr / 2) : adr;
             adr = chTbl[adr];
 
-            //BL
-            nyc.inst[11] = (ymf262Register[p][0xb0 + adr] >> 2) & 7;
-            //FNUM
-            nyc.inst[12] = ymf262Register[p][0xa0 + adr] + ((ymf262Register[p][0xb0 + adr] & 3) << 8);
+            // BL
+            nyc.inst[11] = (register[p][0xb0 + adr] >> 2) & 7;
+            // FNUM
+            nyc.inst[12] = register[p][0xa0 + adr] + ((register[p][0xb0 + adr] & 3) << 8);
 
-            //FB
-            nyc.inst[15] = (ymf262Register[p][0xc0 + adr] >> 1) & 7;
-            //CN
-            nyc.inst[14] = (ymf262Register[p][0xc0 + adr] & 1);
-            //PAN
-            nyc.inst[36] = ymf262Register[p][0xc0 + adr] & 0x30;
+            // FB
+            nyc.inst[15] = (register[p][0xc0 + adr] >> 1) & 7;
+            // CN
+            nyc.inst[14] = (register[p][0xc0 + adr] & 1);
+            // PAN
+            nyc.inst[36] = register[p][0xc0 + adr] & 0x30;
             nyc.inst[36] = ((nyc.inst[36] >> 5) & 1) | ((nyc.inst[36] >> 3) & 2); //00RL0000 -> 000000LR
-            //modFlg
-            int n = ymf262Register[p][0xc0 + adr] & 1;
+            // modFlg
+            int n = register[p][0xc0 + adr] & 1;
             nyc.inst[16] = n == 0 ? 0 : 1;
             nyc.inst[33] = 1;
 
@@ -262,7 +271,7 @@ public class FormYMF262 extends FormChipBase<FormYMF262.Params> {
 
 //#region Acquisition of rhythm information
 
-        int r = audio.plugin.chipRegister.chip(YmF262Chip.class).getRhythmKeyON(chipId);
+        int r = (int) info.get("rhythmKeyON");
 
         // slot14 TL 0x51 HH
         // slot15 TL 0x52 TOM
@@ -272,7 +281,7 @@ public class FormYMF262 extends FormChipBase<FormYMF262.Params> {
 
         // BD
         if ((r & 0x10) != 0) {
-            newParam.channels[18].volume = 19 - ((ymf262Register[0][0x53] & 0x3f) >> 2);
+            newParam.channels[18].volume = 19 - ((register[0][0x53] & 0x3f) >> 2);
         } else {
             newParam.channels[18].volume--;
             if (newParam.channels[18].volume < 0) newParam.channels[18].volume = 0;
@@ -280,7 +289,7 @@ public class FormYMF262 extends FormChipBase<FormYMF262.Params> {
 
         // SD
         if ((r & 0x08) != 0) {
-            newParam.channels[19].volume = 19 - ((ymf262Register[0][0x54] & 0x3f) >> 2);
+            newParam.channels[19].volume = 19 - ((register[0][0x54] & 0x3f) >> 2);
         } else {
             newParam.channels[19].volume--;
             if (newParam.channels[19].volume < 0) newParam.channels[19].volume = 0;
@@ -288,7 +297,7 @@ public class FormYMF262 extends FormChipBase<FormYMF262.Params> {
 
         // TOM
         if ((r & 0x04) != 0) {
-            newParam.channels[20].volume = 19 - ((ymf262Register[0][0x52] & 0x3f) >> 2);
+            newParam.channels[20].volume = 19 - ((register[0][0x52] & 0x3f) >> 2);
         } else {
             newParam.channels[20].volume--;
             if (newParam.channels[20].volume < 0) newParam.channels[20].volume = 0;
@@ -296,7 +305,7 @@ public class FormYMF262 extends FormChipBase<FormYMF262.Params> {
 
         // CYM
         if ((r & 0x02) != 0) {
-            newParam.channels[21].volume = 19 - ((ymf262Register[0][0x55] & 0x3f) >> 2);
+            newParam.channels[21].volume = 19 - ((register[0][0x55] & 0x3f) >> 2);
         } else {
             newParam.channels[21].volume--;
             if (newParam.channels[21].volume < 0) newParam.channels[21].volume = 0;
@@ -304,21 +313,22 @@ public class FormYMF262 extends FormChipBase<FormYMF262.Params> {
 
         // HH
         if ((r & 0x01) != 0) {
-            newParam.channels[22].volume = 19 - ((ymf262Register[0][0x51] & 0x3f) >> 2);
+            newParam.channels[22].volume = 19 - ((register[0][0x51] & 0x3f) >> 2);
         } else {
             newParam.channels[22].volume--;
             if (newParam.channels[22].volume < 0) newParam.channels[22].volume = 0;
         }
 
-        //Audio.resetYMF278BRyhthmKeyON(chipId);
+        //audio.plugin.chipRegister.chip(YmF262Chip.class).resetRyhthmKeyON(chipId);
 
 //#endregion
-    
+
         // the chip itself is the source of truth for channel muting
         for (int mch = 0; mch < newParam.channels.length; mch++)
             newParam.channels[mch].mask = audio.plugin.chipRegister.chip(YmF262Chip.class).getMask(chipId, mch);
     }
 
+    @Override
     public void drawScreenParams() {
         boolean ChipType2 = (chipId == 0)
                 ? parent.setting.getYMF262Type()[0].getUseReal()[0]
@@ -576,39 +586,39 @@ public class FormYMF262 extends FormChipBase<FormYMF262.Params> {
         @Override public String id() { return "YMF262"; }
         @Override public String menuText() { return "OPL3"; }
         @Override public String category() { return "opl"; }
-        @Override public Class<? extends mdplayer.Chip> chip() { return mdplayer.chips.YmF262Chip.class; }
+        @Override public Class<? extends mdplayer.Chip> chip() { return YmF262Chip.class; }
         @Override public boolean hasRegisterDump() { return true; }
         @Override public View create(FormMain frm, int chipId, int zoom) { return new FormYMF262(frm, chipId, zoom); }
 
-        @Override public void setChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+        @Override public void setChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
             if (ch >= 0 && ch < 23) {
-                mdplayer.chips.YmF262Chip c = audio.plugin.chipRegister.chip(mdplayer.chips.YmF262Chip.class);
+                YmF262Chip c = audio.plugin.chipRegister.chip(YmF262Chip.class);
                 if (!c.getMask(chipId, ch)) c.setMask(chipId, ch); else c.resetMask(chipId, ch);
             }
         }
 
-        @Override public void resetChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
-            audio.plugin.chipRegister.chip(mdplayer.chips.YmF262Chip.class).resetMask(chipId, ch);
+        @Override public void resetChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+            audio.plugin.chipRegister.chip(YmF262Chip.class).resetMask(chipId, ch);
         }
 
-        @Override public void forceChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
+        @Override public void forceChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
             if (ch >= 0 && ch < 24) {
                 if (mask)
-                    audio.plugin.chipRegister.chip(mdplayer.chips.YmF262Chip.class).setMask(chipId, ch);
+                    audio.plugin.chipRegister.chip(YmF262Chip.class).setMask(chipId, ch);
                 else
-                    audio.plugin.chipRegister.chip(mdplayer.chips.YmF262Chip.class).resetMask(chipId, ch);
+                    audio.plugin.chipRegister.chip(YmF262Chip.class).resetMask(chipId, ch);
             }
         }
 
         @Override public List<MixerSlot> mixerSlots() {
-            return List.of(new MixerSlot(20, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.YmF262Chip.class, "ymf262", 200));
+            return List.of(new MixerSlot(20, mdsound.MDSound.Chip.MAIN_TAG, YmF262Chip.class, "ymf262", 200));
         }
 
         @Override public void getInstCh(Component parent, mdplayer.Audio audio, mdplayer.Setting setting, int ch, int chipId) {
             if (setting.getOther().getInstFormat() == mdplayer.Common.EnmInstFormat.OPLI) {
-                new mdplayer.form.inst.OpliInstWriter().write(parent, audio, chip(), ch, chipId);
+                new OpliInstWriter().write(parent, audio, chip(), ch, chipId);
             } else {
-                new mdplayer.form.inst.SendMml2vgmInstWriter().write(parent, audio, chip(), ch, chipId);
+                new SendMml2vgmInstWriter().write(parent, audio, chip(), ch, chipId);
             }
         }
     }
