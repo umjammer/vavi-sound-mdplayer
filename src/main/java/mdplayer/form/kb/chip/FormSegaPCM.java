@@ -169,15 +169,18 @@ public class FormSegaPCM extends FormChipBase<FormSegaPCM.Params> {
         Map<String, Object> info = audio.plugin.chipRegister.chip(SegaPcmChip.class).getInfo(chipId);
         if (info == null) return; // the song being played does not use this chip
         byte[] segapcmReg = (byte[]) info.get("register");
-        boolean[] segapcmKeyOn = (boolean[]) info.get("keyOn");
         if (segapcmReg != null) {
             for (int ch = 0; ch < 16; ch++) {
                 int l = segapcmReg[ch * 8 + 2] & 0x7f;
                 int r = segapcmReg[ch * 8 + 3] & 0x7f;
-                int dt = segapcmReg[ch * 8 + 7];
+                int dt = segapcmReg[ch * 8 + 7] & 0xff;
+                int ctrl = segapcmReg[ch * 8 + 0x86] & 0xff;
                 double ml = dt / 256.0;
 
-                if (segapcmKeyOn[ch]) {
+                // the chip has no key on of its own to read, so a sounding channel is one
+                boolean playing = (ctrl & 0x01) == 0 && dt > 0 && (l | r) != 0;
+
+                if (playing) {
                     newParam.channels[ch].note = SegaPcmChip.searchSegaPCMNote(ml);
                     newParam.channels[ch].volumeL = Math.clamp((l * 1) >> 1, 0, 19);
                     newParam.channels[ch].volumeR = Math.clamp((r * 1) >> 1, 0, 19);
@@ -191,8 +194,6 @@ public class FormSegaPCM extends FormChipBase<FormSegaPCM.Params> {
                 }
 
                 newParam.channels[ch].pan = ((l >> 3) & 0xf) | (((r >> 3) & 0xf) << 4);
-
-                segapcmKeyOn[ch] = false;
             }
         }
     

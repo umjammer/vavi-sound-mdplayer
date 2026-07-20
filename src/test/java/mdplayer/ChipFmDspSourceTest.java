@@ -357,7 +357,7 @@ class ChipFmDspSourceTest {
 
     @Test
     @DisplayName("a 9 channel opl3 gets 9 rows and 9 meters, not the opna's 6")
-    @Disabled("error to be fixed")
+    @Disabled("error") // TODO
     void testOpl3Meters() {
         var opl3 = chipRegister.chip(mdplayer.chips.YmF262Chip.class);
         for (int ch = 0; ch < 9; ch++) {
