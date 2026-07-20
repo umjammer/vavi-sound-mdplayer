@@ -420,7 +420,7 @@ logger.log(Level.DEBUG, "stop: " + plugin.stopped);
         plugin.getDriver().fireEventHappened(this, "master", buffer, offset);
 
         for (var i : plugin.mds.getFirstInstruments()) {
-            var vs = i.getView(-1, "volume", null);
+            var vs = i.getView(0, "volume", null);
         }
     }
 

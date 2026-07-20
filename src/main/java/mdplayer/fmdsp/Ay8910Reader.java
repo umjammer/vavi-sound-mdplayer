@@ -1,0 +1,144 @@
+/*
+ * Copyright (c) 2026 by Naohide Sano, All rights reserved.
+ *
+ * Programmed by Naohide Sano
+ */
+
+package mdplayer.fmdsp;
+
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.Set;
+
+import mdplayer.ChipRegister;
+import mdplayer.chips.Ay8910Chip;
+import vavi.sound.visualizer.fmdsp.LevelDataSource.Pan;
+import vavi.sound.visualizer.fmdsp.TrackInfo;
+
+
+/**
+ * PSG (AY-3-8910 / YM2149): the same register file as the OPN family's SSG section, on the SSG
+ * rows.
+ *
+ * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
+ * @version 0.00 2026-07-19 nsano initial version <br>
+ */
+public class Ay8910Reader implements FmDspChipReader {
+
+    /** the PSG's usual MSX clock [Hz] */
+    private static final double clock = 1789772.5;
+
+    private ChipRegister chipRegister;
+
+    private final boolean[] prevSoundings = new boolean[3];
+    private final int[] prevPeriods = new int[3];
+    private boolean active;
+
+    /** the chip's register file, read back once a frame */
+    private int[] regs;
+
+    private Ay8910Chip chip() {
+        return chipRegister.chip(Ay8910Chip.class);
+    }
+
+    @Override
+    public String chipName() {
+        return "PSG";
+    }
+
+    @Override
+    public void bind(ChipRegister chipRegister) {
+        this.chipRegister = chipRegister;
+    }
+
+    @Override
+    public void reset() {
+        Arrays.fill(prevSoundings, false);
+        Arrays.fill(prevPeriods, 0);
+        active = false;
+    }
+
+    @Override
+    public Set<Group> groups() {
+        return EnumSet.of(Group.SSG);
+    }
+
+    @Override
+    public int priority() {
+        return 85;
+    }
+
+    @Override
+    public boolean ready() {
+        if (chipRegister == null) return false;
+        Ay8910Chip chip = chip();
+        return chip != null;
+    }
+
+    @Override
+    public void poll() {
+        regs = null;
+        try {
+            java.util.Map<String, Object> info = chip().getInfo(0);
+            if (info != null && info.get("register") instanceof int[] r) regs = r;
+        } catch (RuntimeException ignore) {
+            // the chip exists but the song never loaded it
+        }
+    }
+
+    @Override
+    public boolean active(Group group) {
+        if (!active) {
+            for (int s = 0; s < 3 && !active; s++) active = sounding(s);
+        }
+        return active;
+    }
+
+    private boolean sounding(int s) {
+        int[] regs = this.regs;
+        if (regs == null) return false;
+        int level = regs[0x08 + s] & 0x1f;
+        boolean tone = (regs[0x07] & (1 << s)) == 0;
+        boolean noise = (regs[0x07] & (8 << s)) == 0;
+        return (tone || noise) && level > 0;
+    }
+
+    @Override
+    public int channels(Group group) {
+        return 3;
+    }
+
+    @Override
+    public void read(Group group, int s, FmDspChannel out) {
+        int[] regs = this.regs;
+        if (regs == null) return;
+        int period = (regs[s * 2] & 0xff) | ((regs[s * 2 + 1] & 0x0f) << 8);
+        int level = regs[0x08 + s] & 0x1f;
+        // a part on the hardware envelope has no readable level, meter it at full scale
+        if ((level & 0x10) != 0) level = 15;
+        boolean tone = (regs[0x07] & (1 << s)) == 0;
+        boolean noise = (regs[0x07] & (8 << s)) == 0;
+        boolean sounding = (tone || noise) && level > 0;
+
+        out.name = "SSG";
+        out.num = s + 1;
+        out.info = TrackInfo.SSG;
+        out.sounding = sounding;
+        out.keyOn = sounding && (!prevSoundings[s] || period != prevPeriods[s]);
+        prevSoundings[s] = sounding;
+        prevPeriods[s] = period;
+
+        out.note = period > 0 ? Notes.noteOf(clock / (16.0 * period)) : -1;
+        out.volume = level;
+        out.ssgTone = tone;
+        out.ssgNoise = noise;
+        // one step of the 16 level table is 3 dB
+        out.amplitude = Math.pow(10, (Math.min(level, 15) - 15) * 3.0 / 20);
+        out.pan = Pan.CENTER;
+    }
+
+    @Override
+    public boolean masked(Group group, int ch) {
+        return chip().getMask(0, ch);
+    }
+}

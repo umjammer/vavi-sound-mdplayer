@@ -94,6 +94,8 @@ public class MidiPlugin implements Plugin {
 
     @Override
     public void close() {
+        // whatever is still keyed on would otherwise be left sounding at an out we no longer hold
+        allSoundOff();
         export.close();
         if (fallbackSynth != null && fallbackSynth.isOpen()) {
             fallbackSynth.close();
@@ -182,6 +184,156 @@ public class MidiPlugin implements Plugin {
 //        vstMng.sendMIDIout(model, num, data, deltaFrames);
     }
 
+    /** the sixteen MIDI channels, as the last note on left them */
+    private static final int MIDI_CHANNELS = 16;
+
+    private final int[] notes = new int[MIDI_CHANNELS];
+    private final int[] velocities = new int[MIDI_CHANNELS];
+    private final int[] programs = new int[MIDI_CHANNELS];
+    private final int[] volumes = new int[MIDI_CHANNELS];
+    private final int[] pans = new int[MIDI_CHANNELS];
+
+    {
+        java.util.Arrays.fill(volumes, 100); // the General MIDI default
+        java.util.Arrays.fill(pans, 64);
+    }
+
+    /**
+     * Remembers what the channel is playing.
+     * <p>
+     * A MIDI driver emulates no chip and the synth it plays into reports nothing back, so this is
+     * the only view of the music there is. It records the last note on of each channel, its
+     * program, and the two controllers a display cares about.
+     * <p>
+     * Fed from {@link MidiStreamParser#emit}, not from the bytes handed to {@link #send}: a driver
+     * emulating a hardware MIDI port (ZMS, MID) writes one byte at a time and leans on running
+     * status, so the raw buffer often holds no status byte at all and frequently just one byte.
+     * Only the parser knows which message those bytes belong to.
+     */
+    private void observe(int status, int len, int d1, int d2) {
+        int ch = status & 0x0f;
+        switch (status & 0xf0) {
+            case 0x90 -> { // note on, or note off when the velocity is zero
+                if (len < 2) return;
+                if (d2 == 0) {
+                    if (d1 == notes[ch]) velocities[ch] = 0;
+                } else {
+                    notes[ch] = d1;
+                    velocities[ch] = d2;
+                }
+            }
+            case 0x80 -> { // note off
+                if (len < 1) return;
+                if (d1 == notes[ch]) velocities[ch] = 0;
+            }
+            case 0xb0 -> { // controllers: 7 is the volume, 10 the pan
+                if (len < 2) return;
+                if (d1 == 7) volumes[ch] = d2;
+                if (d1 == 10) pans[ch] = d2;
+            }
+            case 0xc0 -> {
+                if (len < 1) return;
+                programs[ch] = d1;
+            }
+            default -> {
+            }
+        }
+    }
+
+    /** what each channel is playing, for the visualizer */
+    public int note(int ch) {
+        return notes[ch];
+    }
+
+    public int velocity(int ch) {
+        return velocities[ch];
+    }
+
+    public int program(int ch) {
+        return programs[ch];
+    }
+
+    public int volume(int ch) {
+        return volumes[ch];
+    }
+
+    public int pan(int ch) {
+        return pans[ch];
+    }
+
+    /**
+     * Silences every channel of every MIDI out.
+     * <p>
+     * Stopping a MIDI driver only stops it sending: whatever it had keyed on is still held down at
+     * the synthesizer, which keeps sounding a chord for as long as the note is sustained - a chip
+     * driver has no equivalent because stopping the emulation stops the sound with it. Sent on
+     * stop, so the song ends when the player says it ends.
+     */
+    public void allSoundOff() {
+        if (outs == null) return;
+        for (Receiver out : outs) {
+            if (out == null) continue;
+            for (int ch = 0; ch < MIDI_CHANNELS; ch++) {
+                try {
+                    send(out, ShortMessage.CONTROL_CHANGE, ch, 64, 0); // release the damper first
+                    send(out, ShortMessage.CONTROL_CHANGE, ch, 120, 0); // all sound off
+                    send(out, ShortMessage.CONTROL_CHANGE, ch, 123, 0); // all notes off
+                    // Those two controllers are what a synthesizer is supposed to answer, and the
+                    // OPL3 one this falls back to does not: it kept sounding the last chord of
+                    // every song. A note off for every key is what it does answer.
+                    for (int note = 0; note < 128; note++) {
+                        send(out, ShortMessage.NOTE_OFF, ch, note, 0);
+                    }
+                } catch (InvalidMidiDataException | IllegalStateException e) {
+                    logger.log(Level.DEBUG, "all sound off: " + e.getMessage());
+                }
+            }
+        }
+        java.util.Arrays.fill(velocities, 0);
+    }
+
+    private static void send(Receiver out, int command, int channel, int data1, int data2)
+            throws InvalidMidiDataException {
+        ShortMessage sm = new ShortMessage();
+        sm.setMessage(command, channel, data1, data2);
+        out.send(sm, -1);
+    }
+
+    /**
+     * How many MIDI messages have gone out since the plugin was made. A MIDI driver renders no
+     * audio of its own, so this is how a test tells "playing" from "not playing at all".
+     */
+    private long sentMessages;
+
+    public long sentMessages() {
+        return sentMessages;
+    }
+
+    /**
+     * How many voices the fallback synthesizer is still sounding, {@code -1} when there is no
+     * fallback synthesizer. The only way to tell whether a song was really silenced: the notes go
+     * out to a synthesizer that otherwise reports nothing back.
+     */
+    public int activeVoices() {
+        if (fallbackSynth == null || !fallbackSynth.isOpen()) return -1;
+        var voices = fallbackSynth.getVoiceStatus();
+        if (voices == null) return -1; // the OPL3 synthesizer does not report its voices
+        int active = 0;
+        for (var voice : voices) {
+            if (voice.active) active++;
+        }
+        return active;
+    }
+
+    /** forgets the last song's notes; the channels are shared between songs */
+    public void clearChannels() {
+        java.util.Arrays.fill(notes, 0);
+        java.util.Arrays.fill(velocities, 0);
+        java.util.Arrays.fill(programs, 0);
+        java.util.Arrays.fill(volumes, 100);
+        java.util.Arrays.fill(pans, 64);
+    }
+
     /** stream parser per receiver, keyed by receiver identity */
     private final Map<Receiver, MidiStreamParser> parsers = new HashMap<>();
 
@@ -190,7 +342,7 @@ public class MidiPlugin implements Plugin {
      * status) into complete {@link MidiMessage}s and forwards them to a {@link Receiver}, the
      * way a hardware MIDI out port consumes bytes.
      */
-    static class MidiStreamParser {
+    class MidiStreamParser {
         private final Receiver receiver;
         private int status = 0; // current running status byte, 0 = none
         private final byte[] data = new byte[2];
@@ -265,6 +417,8 @@ public class MidiPlugin implements Plugin {
         }
 
         private void emit(int status, int len, int d1, int d2) {
+            observe(status, len, d1, d2);
+            sentMessages++;
             try {
                 ShortMessage sm = new ShortMessage();
                 switch (len) {
@@ -409,6 +563,10 @@ public class MidiPlugin implements Plugin {
 //    public static final VstMng vstMng = new VstMng();
 
     public void releaseAll() {
+        // before the outs go: closing a receiver does not silence the synthesizer behind it, and
+        // the fallback one outlives every song, so a note still held here would ring forever with
+        // nothing left to send it a note off
+        allSoundOff();
         if (!outs.isEmpty()) {
             for (int i = 0; i < outs.size(); i++) {
                 if (outs.get(i) != null) {

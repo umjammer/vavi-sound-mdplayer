@@ -3,12 +3,14 @@ package mdplayer.driver.mxdrv;
 import java.io.BufferedInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 
 import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
 import mdplayer.format.FileFormat;
 import mdplayer.plugin.BasePlugin;
+import mdsound.MDSound.Chip;
 import vavi.util.archive.Archives;
 
 import org.junit.jupiter.api.Disabled;
@@ -46,7 +48,7 @@ public class MxProbe {
 
         java.lang.reflect.Field f = mdsound.MDSound.class.getDeclaredField("chips");
         f.setAccessible(true);
-        java.util.List<mdsound.MDSound.Chip> cs = (java.util.List<mdsound.MDSound.Chip>) f.get(plugin.mds);
+        List<Chip> cs = (List<mdsound.MDSound.Chip>) f.get(plugin.mds);
         for (mdsound.MDSound.Chip c : cs) {
             System.err.printf("XXX chip: %s id=%d rate=%d resampler=%d vol=%d%n", c.instrument.getClass().getSimpleName(), c.id, c.samplingRate, c.resampler, c.volume);
             if (c.instrument instanceof mdsound.instrument.X68kYm2151Inst x) {

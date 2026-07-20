@@ -12,9 +12,11 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
+import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.form.FrameBuffer;
 import mdplayer.form.ScreenPanel;
@@ -30,7 +32,7 @@ import mdplayer.form.View;
 
 public class FormFDS extends FormChipBase<FormFDS.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormFDS.class).node(FormFDS.class.getSimpleName());
+    static final Preferences prefs = Preferences.userNodeForPackage(FormFDS.class);
 
     public FormFDS(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -88,13 +90,13 @@ public class FormFDS extends FormChipBase<FormFDS.Params> {
         final double LOG_2 = 0.69314718055994530941723212145818;
         final int NOTE_440HZ = 12 * 4 + 9;
 
-        Map<String, Object> reg = audio.plugin.chipRegister.chip(NpNesChip.FdsChip.class).readFds(chipId);
+        Map<String, Object> reg = audio.plugin.chipRegister.chip(NpNesChip.FdsChip.class).getInfo(chipId);
         int freq;
         int vol;
         int note;
-        if (reg != null) {
-            freq = (int) reg.get("lastFreq");
-            vol = (int) reg.get("lastVol");
+        if (!reg.isEmpty()) {
+            freq = (int) reg.get("freq");
+            vol = (int) reg.get("vol");
             note = -15 + (int) ((12 * (Math.log(freq) / LOG_2 - LOG2_440) + NOTE_440HZ + 0.5));
             note = note < 0 ? -1 : (note > 120 ? -1 : note);
             note = vol == 0 ? -1 : note;
@@ -130,7 +132,7 @@ public class FormFDS extends FormChipBase<FormFDS.Params> {
             newParam.WE = (boolean) reg.get("WE");
         }
     
-        newParam.channel.mask = audio.plugin.chipRegister.chip(NpNesChip.FdsChip.class).getFdsMask(chipId);
+        newParam.channel.mask = audio.plugin.chipRegister.chip(NpNesChip.FdsChip.class).getMask(chipId, -1);
     }
 
     public void drawScreenParams() {
@@ -230,7 +232,6 @@ public class FormFDS extends FormChipBase<FormFDS.Params> {
 
     private void initializeComponent() {
         this.pbScreen = new ScreenPanel();
-        //((System.ComponentModel.ISupportInitialize)(this.pbScreen)).BeginInit();
 
         //
         // pbScreen
@@ -239,25 +240,17 @@ public class FormFDS extends FormChipBase<FormFDS.Params> {
         this.pbScreen.setLocation(new Point(0, 0));
         this.pbScreen.setName("pbScreen");
         this.pbScreen.setPreferredSize(new Dimension(320, 56));
-        // this.pbScreen.TabIndex = 0
-        // this.pbScreen.TabStop = false;
         this.pbScreen.addMouseListener(this.pbScreen_MouseClick);
         //
         // frmFDS
         //
-//            this.AutoScaleDimensions = new DimensionF(6F, 12F);
-//            this.AutoScaleMode = JAutoScaleMode.Font;
         this.setPreferredSize(new Dimension(320, 56));
         this.getContentPane().add(this.pbScreen);
-//        this.FormBorderStyle = JFormBorderStyle.FixedSingle;
         this.setIconImage(Common.getImage("Feli128"));
-//        this.MaximizeBox = false;
         this.setName("frmFDS");
         this.setTitle("FDS");
         this.addWindowListener(this.windowListener);
         this.addComponentListener(this.componentListener);
-        //((System.ComponentModel.ISupportInitialize)(this.pbScreen)).EndInit();
-//            this.ResumeLayout(false);
     }
 
     BufferedImage image;
@@ -349,7 +342,6 @@ public class FormFDS extends FormChipBase<FormFDS.Params> {
         public boolean WE = false;
     }
 
-
     /** what this panel contributes to the GUI; see {@link ViewProvider} */
     public static class Provider implements ViewProvider {
 
@@ -358,13 +350,13 @@ public class FormFDS extends FormChipBase<FormFDS.Params> {
         @Override public Class<? extends mdplayer.Chip> chip() { return mdplayer.chips.NpNesChip.FdsChip.class; }
         @Override public View create(FormMain frm, int chipId, int zoom) { return new FormFDS(frm, chipId, zoom); }
 
-        @Override public java.util.List<Class<? extends mdplayer.Chip>> maskChips() {
-            return java.util.List.of(mdplayer.chips.NpNesChip.FdsChip.class, mdplayer.chips.NesChip.FdsChip.class);
+        @Override public List<Class<? extends Chip>> maskChips() {
+            return List.of(mdplayer.chips.NpNesChip.FdsChip.class, mdplayer.chips.NesChip.FdsChip.class);
         }
 
         @Override public void setChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
             mdplayer.chips.NpNesChip.FdsChip c = audio.plugin.chipRegister.chip(mdplayer.chips.NpNesChip.FdsChip.class);
-            if (!c.getFdsMask(chipId)) c.setFdsMask(chipId); else c.resetFdsMask(chipId);
+            if (!c.getMask(chipId, -1)) c.setMask(chipId, -1); else c.resetMask(chipId, -1);
         }
 
         @Override public void resetChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
@@ -376,8 +368,8 @@ public class FormFDS extends FormChipBase<FormFDS.Params> {
             resetChannelMask(audio, mdplayer.chips.NpNesChip.FdsChip.class, chipId, 0);
         }
 
-        @Override public java.util.List<MixerSlot> mixerSlots() {
-            return java.util.List.of(new MixerSlot(50, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.NpNesChip.FdsChip.class, "FDS", 200));
+        @Override public List<MixerSlot> mixerSlots() {
+            return List.of(new MixerSlot(50, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.NpNesChip.FdsChip.class, "FDS", 200));
         }
 
         @Override public void updateMeters(mdplayer.Audio audio, mdplayer.form.VisVolume visVolume) {

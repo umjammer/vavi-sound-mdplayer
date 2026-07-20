@@ -73,7 +73,6 @@ import mdplayer.Chip;
 import mdplayer.form.ChipLEDs;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
-import mdplayer.form.DoubleBuffer;
 import mdplayer.form.FrameBuffer;
 import mdplayer.form.View;
 import mdplayer.form.kb.chip.FormRegTest;
@@ -108,6 +107,7 @@ import static java.lang.System.getLogger;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 
+
 public class FormMain extends JFrame {
 
     private static final Logger logger = getLogger(FormMain.class.getName());
@@ -128,7 +128,7 @@ public class FormMain extends JFrame {
     static final Point empty = new Point(0, 0);
 
     private BufferedImage pbRf5c164Screen;
-    private DoubleBuffer screen;
+    private FrameBuffer mainScreen = new FrameBuffer();
     private int pWidth = 0;
     private int pHeight = 0;
 
@@ -471,7 +471,6 @@ public class FormMain extends JFrame {
         public void windowClosing(WindowEvent e) {
             frmMain_FormClosing(e);
         }
-
     };
 
     private void frmMain_Load(WindowEvent ev) {
@@ -493,10 +492,7 @@ public class FormMain extends JFrame {
 
         logger.log(Level.INFO, "frmMain_Load:STEP 06");
 
-        screen = new DoubleBuffer(pbScreen, Common.getImage("planeMain"), 1);
-        screen.setting = setting;
-        //oldParam = new ScreenParams();
-        //newParam = new ScreenParams();
+        mainScreen.add(pbScreen, Common.getImage("planeMain"), null, 1);
         reqAllScreenInit = true;
 
         logger.log(Level.INFO, "frmMain_Load:STEP 07");
@@ -752,7 +748,7 @@ public class FormMain extends JFrame {
         getContentPane().setPreferredSize(new Dimension(w, h));
 
         componentListener.componentResized(null);
-        RelocateOpeButton(zoom);
+        relocateOpeButton(zoom);
         pack();
 
         for (Map.Entry<ViewProvider, View[]> e : views.entrySet()) {
@@ -841,8 +837,7 @@ public class FormMain extends JFrame {
             // Reallocate when resizing
 //            if (screen != null) screen.setVisible(false);
 
-            screen = new DoubleBuffer(pbScreen, Common.getImage("planeMain"), setting.getOther().getZoom());
-            screen.setting = setting;
+            mainScreen.add(pbScreen, Common.getImage("planeMain"), null, setting.getOther().getZoom());
             reqAllScreenInit = true;
             //screen.screenInitAll();
         }
@@ -882,7 +877,7 @@ public class FormMain extends JFrame {
             ym2612MIDI.close();
 
         // release
-        screen.close();
+        closeScreen();
 
         setting.getLocation().setOInfo(false);
         setting.getLocation().setOPlayList(false);
@@ -1194,7 +1189,6 @@ public class FormMain extends JFrame {
         this.setting = setting;
         this.setting.save();
 
-        screen.setting = this.setting;
         frmPlayList.setting = this.setting;
         //oldParam = new ScreenParams();
         //newParam = new ScreenParams();
@@ -1312,9 +1306,9 @@ public class FormMain extends JFrame {
 
     private void allScreenInit() {
         //oldParam = new ScreenParams();
-        drawTimer(screen.mainScreen, 0, oldParam.Cminutes, oldParam.Csecond, oldParam.Cmillisecond, newParam.Cminutes, newParam.Csecond, newParam.Cmillisecond);
-        drawTimer(screen.mainScreen, 1, oldParam.TCminutes, oldParam.TCsecond, oldParam.TCmillisecond, newParam.TCminutes, newParam.TCsecond, newParam.TCmillisecond);
-        drawTimer(screen.mainScreen, 2, oldParam.LCminutes, oldParam.LCsecond, oldParam.LCmillisecond, newParam.LCminutes, newParam.LCsecond, newParam.LCmillisecond);
+        drawTimer(mainScreen, 0, oldParam.Cminutes, oldParam.Csecond, oldParam.Cmillisecond, newParam.Cminutes, newParam.Csecond, newParam.Cmillisecond);
+        drawTimer(mainScreen, 1, oldParam.TCminutes, oldParam.TCsecond, oldParam.TCmillisecond, newParam.TCminutes, newParam.TCsecond, newParam.TCmillisecond);
+        drawTimer(mainScreen, 2, oldParam.LCminutes, oldParam.LCsecond, oldParam.LCmillisecond, newParam.LCminutes, newParam.LCsecond, newParam.LCmillisecond);
         screenInit(null);
 
         for (View[] slot : views.values()) {
@@ -1509,7 +1503,7 @@ public class FormMain extends JFrame {
     }
 
     private void screenDrawParams() {
-        if (screen == null || screen.mainScreen == null) return;
+        if (mainScreen == null) return;
         // drawing
 
         for (int i = 0; i < lstOpeButtonActive.length; i++) {
@@ -1521,9 +1515,9 @@ public class FormMain extends JFrame {
             }
         }
 
-        drawTimer(screen.mainScreen, 0, oldParam.Cminutes, oldParam.Csecond, oldParam.Cmillisecond, newParam.Cminutes, newParam.Csecond, newParam.Cmillisecond);
-        drawTimer(screen.mainScreen, 1, oldParam.TCminutes, oldParam.TCsecond, oldParam.TCmillisecond, newParam.TCminutes, newParam.TCsecond, newParam.TCmillisecond);
-        drawTimer(screen.mainScreen, 2, oldParam.LCminutes, oldParam.LCsecond, oldParam.LCmillisecond, newParam.LCminutes, newParam.LCsecond, newParam.LCmillisecond);
+        drawTimer(mainScreen, 0, oldParam.Cminutes, oldParam.Csecond, oldParam.Cmillisecond, newParam.Cminutes, newParam.Csecond, newParam.Cmillisecond);
+        drawTimer(mainScreen, 1, oldParam.TCminutes, oldParam.TCsecond, oldParam.TCmillisecond, newParam.TCminutes, newParam.TCsecond, newParam.TCmillisecond);
+        drawTimer(mainScreen, 2, oldParam.LCminutes, oldParam.LCsecond, oldParam.LCmillisecond, newParam.LCminutes, newParam.LCsecond, newParam.LCmillisecond);
 
         // C# took these by ref, so drawTimer marked them itself; Java has to do it here or every
         // frame would redraw the digits
@@ -1539,7 +1533,7 @@ public class FormMain extends JFrame {
 
         // nothing is loaded yet: the skin, the buttons and the timers are all there is to show
         if (audio.plugin == null) {
-            screen.refresh(null);
+            refreshScreen();
             return;
         }
 
@@ -1548,27 +1542,27 @@ public class FormMain extends JFrame {
         // still lit and faded — they are how we know which chips a song is actually using.
         chipLED.fade();
 
-        screen.mainScreen.drawFont4(1, 9, 1, audio.plugin.isDataBlock(EnmModel.VirtualModel) ? "VD" : "  ");
-        screen.mainScreen.drawFont4(321 - 16, 9, 1, isPcmRAMWrite(EnmModel.VirtualModel) ? "VP" : "  ");
-        screen.mainScreen.drawFont4(1, 17, 1, audio.plugin.isDataBlock(EnmModel.RealModel) ? "RD" : "  ");
-        screen.mainScreen.drawFont4(321 - 16, 17, 1, isPcmRAMWrite(EnmModel.RealModel) ? "RP" : "  ");
+        mainScreen.drawFont4(1, 9, 1, audio.plugin.isDataBlock(EnmModel.VirtualModel) ? "VD" : "  ");
+        mainScreen.drawFont4(321 - 16, 9, 1, isPcmRAMWrite(EnmModel.VirtualModel) ? "VP" : "  ");
+        mainScreen.drawFont4(1, 17, 1, audio.plugin.isDataBlock(EnmModel.RealModel) ? "RD" : "  ");
+        mainScreen.drawFont4(321 - 16, 17, 1, isPcmRAMWrite(EnmModel.RealModel) ? "RP" : "  ");
 
         if (setting.getDebug_DispFrameCounter()) {
             long v = audio.plugin.getVirtualFrameCounter();
-            if (v != -1) screen.mainScreen.drawFont8(0, 0, 0, "EMU        : %12d ".formatted(v));
+            if (v != -1) mainScreen.drawFont8(0, 0, 0, "EMU        : %12d ".formatted(v));
             long r = audio.plugin.getRealFrameCounter();
-            if (r != -1) screen.mainScreen.drawFont8(0, 8, 0, "REAL CHIP  : %12d ".formatted(r));
+            if (r != -1) mainScreen.drawFont8(0, 8, 0, "REAL CHIP  : %12d ".formatted(r));
             long d = r - v;
             if (r != -1 && v != -1)
-                screen.mainScreen.drawFont8(0, 16, 0, "R.CHIP-EMU : %12d ".formatted(d));
-            screen.mainScreen.drawFont8(0, 24, 0, "PROC TIME  : %12d ".formatted(audio.plugin.procTimePer1Frame));
+                mainScreen.drawFont8(0, 16, 0, "R.CHIP-EMU : %12d ".formatted(d));
+            mainScreen.drawFont8(0, 24, 0, "PROC TIME  : %12d ".formatted(audio.plugin.procTimePer1Frame));
         }
 
         int[] od = {oldParam.MasterDrag};
         int[] ov = {oldParam.MasterHover};
         int[] oval1 = {oldParam.Master};
         int[] oval2 = {oldParam.MasterVis};
-        drawFaderH(screen.mainScreen, 23 * 8, 14,
+        drawFaderH(mainScreen, 23 * 8, 14,
                 newParam.MasterDrag, newParam.MasterHover, newParam.Master, newParam.MasterVis,
                 od, ov, oval1, oval2);
         oldParam.MasterDrag = od[0];
@@ -1580,7 +1574,7 @@ public class FormMain extends JFrame {
         int[] tov = {oldParam.TimeLineHover};
         int[] toval1 = {oldParam.TimeLine};
         int[] toval2 = {oldParam.TimeLineVis};
-        drawFaderH(screen.mainScreen, 23 * 8, 30,
+        drawFaderH(mainScreen, 23 * 8, 30,
                 newParam.TimeLineDrag, newParam.TimeLineHover, newParam.TimeLine, newParam.TimeLineVis,
                 tod, tov, toval1, toval2);
         oldParam.TimeLineDrag = tod[0];
@@ -1588,7 +1582,7 @@ public class FormMain extends JFrame {
         oldParam.TimeLine = toval1[0];
         oldParam.TimeLineVis = toval2[0];
 
-        screen.refresh(null);
+        refreshScreen();
 
         audio.plugin.updateVol();
 
@@ -1646,42 +1640,42 @@ public class FormMain extends JFrame {
         chipLED.clear();
 
         //byte[] chips = audio.GetChipStatus();
-        //screen.mainScreen.drawChipName(14 * 4, 0 * 8, 0,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.PriOPN, chips[0]);
-        //screen.mainScreen.drawChipName(18 * 4, 0 * 8, 1,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.PriOPN2, chips[1]);
-        //screen.mainScreen.drawChipName(23 * 4, 0 * 8, 2,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.PriOPNA, chips[2]);
-        //screen.mainScreen.drawChipName(28 * 4, 0 * 8, 3,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.PriOPNB, chips[3]);
-        //screen.mainScreen.drawChipName(33 * 4, 0 * 8, 4,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.PriOPM, chips[4]);
-        //screen.mainScreen.drawChipName(37 * 4, 0 * 8, 5,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.PriDCSG, chips[5]);
-        //screen.mainScreen.drawChipName(42 * 4, 0 * 8, 6,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.PriRF5C, chips[6]);
-        //screen.mainScreen.drawChipName(47 * 4, 0 * 8, 7,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.PriPWM, chips[7]);
-        //screen.mainScreen.drawChipName(51 * 4, 0 * 8, 8,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.PriOKI5, chips[8]);
-        //screen.mainScreen.drawChipName(56 * 4, 0 * 8, 9,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.PriOKI9, chips[9]);
-        //screen.mainScreen.drawChipName(61 * 4, 0 * 8, 10,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.PriC140, chips[10]);
-        //screen.mainScreen.drawChipName(66 * 4, 0 * 8, 11,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.PriSPCM, chips[11]);
-        //screen.mainScreen.drawChipName(4 * 4, 0 * 8, 12,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.PriAY10, chips[12]);
-        //screen.mainScreen.drawChipName(9 * 4, 0 * 8, 13,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.PriOPLL, chips[13]);
-        //screen.mainScreen.drawChipName(71 * 4, 0 * 8, 14,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.PriHuC8, chips[14]);
+        //mainScreen.drawChipName(14 * 4, 0 * 8, 0,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.PriOPN, chips[0]);
+        //mainScreen.drawChipName(18 * 4, 0 * 8, 1,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.PriOPN2, chips[1]);
+        //mainScreen.drawChipName(23 * 4, 0 * 8, 2,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.PriOPNA, chips[2]);
+        //mainScreen.drawChipName(28 * 4, 0 * 8, 3,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.PriOPNB, chips[3]);
+        //mainScreen.drawChipName(33 * 4, 0 * 8, 4,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.PriOPM, chips[4]);
+        //mainScreen.drawChipName(37 * 4, 0 * 8, 5,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.PriDCSG, chips[5]);
+        //mainScreen.drawChipName(42 * 4, 0 * 8, 6,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.PriRF5C, chips[6]);
+        //mainScreen.drawChipName(47 * 4, 0 * 8, 7,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.PriPWM, chips[7]);
+        //mainScreen.drawChipName(51 * 4, 0 * 8, 8,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.PriOKI5, chips[8]);
+        //mainScreen.drawChipName(56 * 4, 0 * 8, 9,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.PriOKI9, chips[9]);
+        //mainScreen.drawChipName(61 * 4, 0 * 8, 10,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.PriC140, chips[10]);
+        //mainScreen.drawChipName(66 * 4, 0 * 8, 11,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.PriSPCM, chips[11]);
+        //mainScreen.drawChipName(4 * 4, 0 * 8, 12,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.PriAY10, chips[12]);
+        //mainScreen.drawChipName(9 * 4, 0 * 8, 13,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.PriOPLL, chips[13]);
+        //mainScreen.drawChipName(71 * 4, 0 * 8, 14,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.PriHuC8, chips[14]);
 
-        //screen.mainScreen.drawChipName(14 * 4, 1 * 8, 0,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.SecOPN, chips[128 + 0]);
-        //screen.mainScreen.drawChipName(18 * 4, 1 * 8, 1,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.SecOPN2, chips[128 + 1]);
-        //screen.mainScreen.drawChipName(23 * 4, 1 * 8, 2,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.SecOPNA, chips[128 + 2]);
-        //screen.mainScreen.drawChipName(28 * 4, 1 * 8, 3,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.SecOPNB, chips[128 + 3]);
-        //screen.mainScreen.drawChipName(33 * 4, 1 * 8, 4,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.SecOPM, chips[128 + 4]);
-        //screen.mainScreen.drawChipName(37 * 4, 1 * 8, 5,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.SecDCSG, chips[128 + 5]);
-        //screen.mainScreen.drawChipName(42 * 4, 1 * 8, 6,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.SecRF5C, chips[128 + 6]);
-        //screen.mainScreen.drawChipName(47 * 4, 1 * 8, 7,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.SecPWM, chips[128 + 7]);
-        //screen.mainScreen.drawChipName(51 * 4, 1 * 8, 8,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.SecOKI5, chips[128 + 8]);
-        //screen.mainScreen.drawChipName(56 * 4, 1 * 8, 9,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.SecOKI9, chips[128 + 9]);
-        //screen.mainScreen.drawChipName(61 * 4, 1 * 8, 10,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.SecC140, chips[128 + 10]);
-        //screen.mainScreen.drawChipName(66 * 4, 1 * 8, 11,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.SecSPCM, chips[128 + 11]);
-        //screen.mainScreen.drawChipName(4 * 4, 1 * 8, 12,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.SecAY10, chips[128 + 12]);
-        //screen.mainScreen.drawChipName(9 * 4, 1 * 8, 13,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.SecOPLL, chips[128 + 13]);
-        //screen.mainScreen.drawChipName(71 * 4, 0 * 8, 14,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.SecHuC8, chips[128 + 14]);
+        //mainScreen.drawChipName(14 * 4, 1 * 8, 0,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.SecOPN, chips[128 + 0]);
+        //mainScreen.drawChipName(18 * 4, 1 * 8, 1,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.SecOPN2, chips[128 + 1]);
+        //mainScreen.drawChipName(23 * 4, 1 * 8, 2,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.SecOPNA, chips[128 + 2]);
+        //mainScreen.drawChipName(28 * 4, 1 * 8, 3,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.SecOPNB, chips[128 + 3]);
+        //mainScreen.drawChipName(33 * 4, 1 * 8, 4,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.SecOPM, chips[128 + 4]);
+        //mainScreen.drawChipName(37 * 4, 1 * 8, 5,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.SecDCSG, chips[128 + 5]);
+        //mainScreen.drawChipName(42 * 4, 1 * 8, 6,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.SecRF5C, chips[128 + 6]);
+        //mainScreen.drawChipName(47 * 4, 1 * 8, 7,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.SecPWM, chips[128 + 7]);
+        //mainScreen.drawChipName(51 * 4, 1 * 8, 8,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.SecOKI5, chips[128 + 8]);
+        //mainScreen.drawChipName(56 * 4, 1 * 8, 9,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.SecOKI9, chips[128 + 9]);
+        //mainScreen.drawChipName(61 * 4, 1 * 8, 10,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.SecC140, chips[128 + 10]);
+        //mainScreen.drawChipName(66 * 4, 1 * 8, 11,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.SecSPCM, chips[128 + 11]);
+        //mainScreen.drawChipName(4 * 4, 1 * 8, 12,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.SecAY10, chips[128 + 12]);
+        //mainScreen.drawChipName(9 * 4, 1 * 8, 13,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.SecOPLL, chips[128 + 13]);
+        //mainScreen.drawChipName(71 * 4, 0 * 8, 14,audio.plugin.chipRegister.chip(chipLEDChip.class).chipLED_old.SecHuC8, chips[128 + 14]);
 
-        screen.mainScreen.drawFont4(1, 9, 1, audio.plugin != null && audio.plugin.isDataBlock(EnmModel.VirtualModel) ? "VD" : "  ");
-        screen.mainScreen.drawFont4(321 - 16, 9, 1, isPcmRAMWrite(EnmModel.VirtualModel) ? "VP" : "  ");
-        screen.mainScreen.drawFont4(1, 17, 1, audio.plugin != null && audio.plugin.isDataBlock(EnmModel.RealModel) ? "RD" : "  ");
-        screen.mainScreen.drawFont4(321 - 16, 17, 1, isPcmRAMWrite(EnmModel.RealModel) ? "RP" : "  ");
+        mainScreen.drawFont4(1, 9, 1, audio.plugin != null && audio.plugin.isDataBlock(EnmModel.VirtualModel) ? "VD" : "  ");
+        mainScreen.drawFont4(321 - 16, 9, 1, isPcmRAMWrite(EnmModel.VirtualModel) ? "VP" : "  ");
+        mainScreen.drawFont4(1, 17, 1, audio.plugin != null && audio.plugin.isDataBlock(EnmModel.RealModel) ? "RD" : "  ");
+        mainScreen.drawFont4(321 - 16, 17, 1, isPcmRAMWrite(EnmModel.RealModel) ? "RP" : "  ");
 
         oldParam.Cminutes = -1;
         oldParam.Csecond = -1;
@@ -1708,7 +1702,7 @@ public class FormMain extends JFrame {
 
         frmPlayList.stop();
         OpeManager.requestToAudio(new Request(enmRequest.Stop, null, this::screenInit));
-        //audio.Stop();
+        //audio.stop();
         //screenInit();
     }
 
@@ -1729,7 +1723,6 @@ public class FormMain extends JFrame {
     }
 
     public void play() {
-
 //        if (audio.isPaused()) {
 //            audio.pause();
 //        }
@@ -1790,14 +1783,10 @@ public class FormMain extends JFrame {
 
     private void playData() {
         try {
-
             if (audio.isPaused()) {
                 audio.pause();
             }
-            //stop();
 
-            //oldParam = new ScreenParams();
-            //newParam = new ScreenParams();
             reqAllScreenInit = true;
 
             if (setting.getOther().getWavSwitch()) {
@@ -1858,11 +1847,9 @@ public class FormMain extends JFrame {
         while (!req.getEnd()) {
             try { Thread.sleep(10); } catch (InterruptedException ignored) {}
         }
-        //audio.Stop();
 
         screenInit(null);
 
-        //frmPlayList.nextPlay();
         frmPlayList.nextPlayMode(newButtonMode[9]);
     }
 
@@ -1892,7 +1879,7 @@ public class FormMain extends JFrame {
         opeButtonMode.setToolTipText(modeTip[newButtonMode[9]]);
     }
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormMain.class).node(FormMain.class.getSimpleName());
+    static final Preferences prefs = Preferences.userNodeForPackage(FormMain.class);
 
     private String[] fileOpen(boolean isMultiSelection) {
         JFileChooser ofd = new JFileChooser();
@@ -1923,9 +1910,9 @@ public class FormMain extends JFrame {
         if (!setting.getOther().getDefaultDataPath().isEmpty() && Files.exists(Path.of(setting.getOther().getDefaultDataPath())) && isInitialOpenFolder) {
             ofd.setCurrentDirectory(new File(setting.getOther().getDefaultDataPath()));
 //        } else {
-//            ofd.RestoreDirectory = true;
+//            ofd.restoreDirectory = true;
         }
-//        ofd.CheckPathExists = true;
+//        ofd.checkPathExists = true;
         ofd.setMultiSelectionEnabled(isMultiSelection);
 
         if (ofd.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
@@ -2116,6 +2103,8 @@ public class FormMain extends JFrame {
         if (p != null) p.forceChannelMask(audio, chip, chipId, ch, mask);
     }
 
+//#region midi
+
     private void startMIDIInMonitoring() {
 
         if (setting.getMidiKbd().getMidiInDeviceName().isEmpty()) {
@@ -2285,6 +2274,8 @@ public class FormMain extends JFrame {
         ym2612MIDI.changeSelectedParamValue(n);
     }
 
+//#endregion
+
     private void loadPresetMixerBalance(String playingFileName, String playingArcFileName, FileFormat format) {
         if (!setting.getAutoBalance().getUseThis()) return;
 
@@ -2350,7 +2341,7 @@ public class FormMain extends JFrame {
         }
     }
 
-    private void ManualSavePresetMixerBalance(boolean isDriverBalance, String playingFileName, String playingArcFileName, FileFormat format, Setting.Balance balance) {
+    private void manualSavePresetMixerBalance(boolean isDriverBalance, String playingFileName, String playingArcFileName, FileFormat format, Setting.Balance balance) {
         if (!setting.getAutoBalance().getUseThis()) return;
 
         try {
@@ -2377,19 +2368,19 @@ public class FormMain extends JFrame {
         }
     }
 
-    public String SaveDriverBalance(Setting.Balance balance) {
+    public String saveDriverBalance(Setting.Balance balance) {
         PlayList.Music music = frmPlayList.getPlayingSongInfo();
         if (music == null) {
             throw new IllegalStateException("Performance information could not be obtained. Please try again during or immediately after performance has finished.");
         }
 
         FileFormat fmt = music.format;
-        ManualSavePresetMixerBalance(true, "", "", fmt, balance);
+        manualSavePresetMixerBalance(true, "", "", fmt, balance);
 
         return fmt.toString();
     }
 
-    public PlayList.Music GetPlayingMusicInfo() {
+    public PlayList.Music getPlayingMusicInfo() {
         PlayList.Music music = frmPlayList.getPlayingSongInfo();
         return music;
     }
@@ -2730,7 +2721,7 @@ public class FormMain extends JFrame {
     };
     private JButton[] lstOpeButtonControl;
 
-    private void RelocateOpeButton(int zoom) {
+    private void relocateOpeButton(int zoom) {
         // the skin lays the buttons out in two rows — transport on top (y 9), the rest below
         // (y 25) — not the single row the earlier port flattened them into; under the content
         // pane's null layout a bare setLocation() would also leave each button 0x0 and invisible,
@@ -3582,6 +3573,27 @@ public class FormMain extends JFrame {
             _fatalError = value;
         }
     }
+
+//#region double buffer
+
+    private void refreshScreen() {
+        try {
+            if (mainScreen != null) {
+                mainScreen.refresh(null);
+            }
+        } catch (Exception ex) {
+            logger.log(Level.ERROR, ex.getMessage(), ex);
+        }
+    }
+
+    private void closeScreen() {
+        if (mainScreen != null) {
+            mainScreen.remove(null);
+            mainScreen = null;
+        }
+    }
+
+//#endregion
 
 //#region draw buffer
 

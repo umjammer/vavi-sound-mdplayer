@@ -12,6 +12,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.prefs.Preferences;
 
 import mdplayer.Common;
@@ -27,7 +28,7 @@ import mdplayer.form.View;
 
 public class FormYM2151 extends FormChipBase<FormYM2151.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormYM2151.class).node(FormYM2151.class.getSimpleName());
+    static final Preferences prefs = Preferences.userNodeForPackage(FormYM2151.class);
 
     public FormYM2151(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -446,7 +447,6 @@ public class FormYM2151 extends FormChipBase<FormYM2151.Params> {
         };
     }
 
-
     /** what this panel contributes to the GUI; see {@link ViewProvider} */
     public static class Provider implements ViewProvider {
 
@@ -478,8 +478,8 @@ public class FormYM2151 extends FormChipBase<FormYM2151.Params> {
                         audio.plugin.chipRegister.chip(mdplayer.chips.Ym2151Chip.class).getMask(chipId, ch));
         }
 
-        @Override public java.util.List<MixerSlot> mixerSlots() {
-            return java.util.List.of(new MixerSlot(1, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Ym2151Chip.class, "ym2151", 200));
+        @Override public List<MixerSlot> mixerSlots() {
+            return List.of(new MixerSlot(1, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Ym2151Chip.class, "ym2151", 200));
         }
     }
 }

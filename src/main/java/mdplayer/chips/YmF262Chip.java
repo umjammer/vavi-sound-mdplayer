@@ -6,6 +6,7 @@
 
 package mdplayer.chips;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
@@ -253,9 +254,25 @@ public class YmF262Chip extends BaseChip {
         }
     }
 
+    /**
+     * The channel state as the chip has it now. Which emulator answers is a setting, and they do
+     * not all keep the register file, so this is what they can all say.
+     */
+    /**
+     * The channel state as the chip has it, and beside it the registers as they were written.
+     * <p>
+     * The visualizer wants the channel state, and gets it from whichever emulator the settings
+     * name. The register dump and the instrument export want the raw register file, which the
+     * emulators do not all keep - Nuked decodes into operators - so that part is still shadowed
+     * here rather than read back.
+     */
     @Override
     public Map<String, Object> getInfo(int chipId) {
-        return Map.of("register", register[chipId]);
+        Instrument inst = context.mds.inst(inst(chipId));
+        Map<String, Object> info = new HashMap<>();
+        if (inst != null) info.putAll(inst.getView(chipId, "info", null));
+        info.put("register", register[chipId]);
+        return info;
     }
 
     public void setMask(int chipId, int ch) {

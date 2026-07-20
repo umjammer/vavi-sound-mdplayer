@@ -6,6 +6,8 @@ import java.awt.Frame;
 import java.awt.Window;
 import java.io.File;
 import java.lang.reflect.Field;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -14,6 +16,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import javax.swing.JButton;
@@ -21,10 +24,48 @@ import javax.swing.JTabbedPane;
 import mdplayer.form.sys.FormMain;
 import mdplayer.form.sys.FormPlayList;
 import mdplayer.form.sys.FormSetting;
+import vavi.util.properties.annotation.Property;
+import vavi.util.properties.annotation.PropsEntity;
 
 
 @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
+@PropsEntity(url = "file:local.properties")
 public class RefactoringTest {
+
+    static boolean localPropertiesExists() {
+        return Files.exists(Paths.get("local.properties"));
+    }
+
+    @Property(name = "vavi.test.volume")
+    double volume = 0.2;
+
+    /**
+     * Keeps the windows off the visible screen.
+     * <p>
+     * This test opens and closes the whole UI, which flashes the monitor every run - unpleasant to
+     * sit next to. AWT cannot do this headless, a real frame needs a display, but it can be put
+     * where no one has to look at it. Pass {@code -Dmdplayer.test.gui.visible=true} to watch it.
+     */
+    private static void hideWindowsOffScreen() {
+        if (Boolean.getBoolean("mdplayer.test.gui.visible")) return;
+        System.setProperty("apple.awt.UIElement", "true"); // no dock icon, no focus stealing
+        java.awt.Toolkit.getDefaultToolkit().addAWTEventListener(event -> {
+            if (event.getSource() instanceof Window w && w.getX() > -30000) {
+                w.setLocation(-32000, -32000);
+            }
+        }, java.awt.AWTEvent.WINDOW_EVENT_MASK | java.awt.AWTEvent.COMPONENT_EVENT_MASK);
+    }
+
+    @BeforeEach
+    void setup() throws Exception {
+        hideWindowsOffScreen();
+
+        if (localPropertiesExists()) {
+            PropsEntity.Util.bind(this);
+        }
+
+        System.setProperty("mdplayer.volume", "%4.2f".formatted(volume));
+    }
 
     private static final Set<String> IGNORED_NAMES = Set.of(
         "tsmiOpenFile",
@@ -111,8 +152,8 @@ public class RefactoringTest {
             throw new RuntimeException("frmMain not found or not visible");
         }
 
-        final FormMain finalMain = mainFrame;
-        final FormPlayList playlistFrame = (FormPlayList) frmPlayListField.get(finalMain);
+        FormMain finalMain = mainFrame;
+        FormPlayList playlistFrame = (FormPlayList) frmPlayListField.get(finalMain);
 
         System.out.println("frmMain found! Preparing test song in playlist...");
         File testSong = new File("src/test/resources/test.vgm");
@@ -209,8 +250,8 @@ public class RefactoringTest {
             throw new RuntimeException("frmMain not found or not visible");
         }
 
-        final FormMain finalMain = mainFrame;
-        final FormPlayList playlistFrame = (FormPlayList) frmPlayListField.get(finalMain);
+        FormMain finalMain = mainFrame;
+        FormPlayList playlistFrame = (FormPlayList) frmPlayListField.get(finalMain);
 
         // Get cmsMenu using reflection
         Field cmsMenuField = FormMain.class.getDeclaredField("cmsMenu");
@@ -233,7 +274,7 @@ public class RefactoringTest {
         }
 
         System.out.println("Opening settings dialog...");
-        final JMenuItem finalOption = tsmiOption;
+        JMenuItem finalOption = tsmiOption;
         SwingUtilities.invokeLater(finalOption::doClick);
 
         FormSetting settingFrame = null;
@@ -275,7 +316,7 @@ public class RefactoringTest {
         System.out.println("Selecting each tab in tcSetting (" + tcCount + " tabs)...");
 
         for (int i = 0; i < tcCount; i++) {
-            final int index = i;
+            int index = i;
             String tabTitle = finalTcSetting.getTitleAt(index);
             System.out.println("Selecting tab: " + tabTitle);
             SwingUtilities.invokeAndWait(() -> finalTcSetting.setSelectedIndex(index));
@@ -313,7 +354,7 @@ public class RefactoringTest {
             throw new RuntimeException("btnOK button not found");
         }
 
-        final JButton finalBtnOK = btnOK;
+        JButton finalBtnOK = btnOK;
         SwingUtilities.invokeAndWait(finalBtnOK::doClick);
         Thread.sleep(500);
 

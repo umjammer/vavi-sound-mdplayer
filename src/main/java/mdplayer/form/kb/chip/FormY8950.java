@@ -12,6 +12,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.prefs.Preferences;
 
 import mdplayer.Chip.ChipKeyInfo;
@@ -30,14 +31,14 @@ import mdplayer.form.View;
 
 public class FormY8950 extends FormChipBase<FormY8950.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormY8950.class).node(FormY8950.class.getSimpleName());
+    static final Preferences prefs = Preferences.userNodeForPackage(FormY8950.class);
 
     public FormY8950(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
         initializeComponent();
 
         frameBuffer.add(pbScreen, Common.getImage("planeY8950"), null, zoom);
-        boolean Y8950Type = false;// (chipId == 0) ? parent.setting.Y8950Type.UseScci : parent.setting.Y8950Type.UseScci;
+        boolean Y8950Type = false; // (chipId == 0) ? parent.setting.Y8950Type.UseScci : parent.setting.Y8950Type.UseScci;
         int tp = Y8950Type ? 1 : 0;
         drawScreenInitY8950(frameBuffer, tp);
         update();
@@ -159,43 +160,43 @@ public class FormY8950 extends FormChipBase<FormY8950.Params> {
                 }
                 slot = (slot % 6) + 8 * (slot / 6);
 
-                //AR
+                // AR
                 nyc.inst[0 + i * 17] = Y8950Register[0x60 + slot] >> 4;
-                //DR
+                // DR
                 nyc.inst[1 + i * 17] = Y8950Register[0x60 + slot] & 0xf;
-                //SL
+                // SL
                 nyc.inst[2 + i * 17] = Y8950Register[0x80 + slot] >> 4;
-                //RR
+                // RR
                 nyc.inst[3 + i * 17] = Y8950Register[0x80 + slot] & 0xf;
-                //KL
+                // KL
                 nyc.inst[4 + i * 17] = Y8950Register[0x40 + slot] >> 6;
-                //TL
+                // TL
                 nyc.inst[5 + i * 17] = Y8950Register[0x40 + slot] & 0x3f;
-                //MT
+                // MT
                 nyc.inst[6 + i * 17] = Y8950Register[0x20 + slot] & 0xf;
-                //AM
+                // AM
                 nyc.inst[7 + i * 17] = Y8950Register[0x20 + slot] >> 7;
-                //VB
+                // VB
                 nyc.inst[8 + i * 17] = (Y8950Register[0x20 + slot] >> 6) & 1;
-                //EG
+                // EG
                 nyc.inst[9 + i * 17] = (Y8950Register[0x20 + slot] >> 5) & 1;
-                //KR
+                // KR
                 nyc.inst[10 + i * 17] = (Y8950Register[0x20 + slot] >> 4) & 1;
             }
 
-            //BL
+            // BL
             nyc.inst[11] = (Y8950Register[0xb0 + c] >> 2) & 7;
-            //FNUM
+            // FNUM
             nyc.inst[12] = Y8950Register[0xa0 + c] + ((Y8950Register[0xb0 + c] & 3) << 8);
 
-            //FB
+            // FB
             nyc.inst[15] = (Y8950Register[0xc0 + c] >> 1) & 7;
-            //CN
+            // CN
             nyc.inst[14] = (Y8950Register[0xc0 + c] & 1);
 
             // FNUM / (2^19) * (mClock/72) * (2 ^ (block - 1))
             double fmus = (double) nyc.inst[12] / (1 << 19) * (masterClock / 72.0) * (1 << nyc.inst[11]);
-            nyc.note = SegaPcmChip.searchSegaPCMNote(fmus / 523.3);//523.3 -> c4
+            nyc.note = SegaPcmChip.searchSegaPCMNote(fmus / 523.3); // 523.3 -> c4
 
             if (ki.on[c]) {
                 int tl1 = nyc.inst[5 + 0 * 17];
@@ -429,7 +430,6 @@ public class FormY8950 extends FormChipBase<FormY8950.Params> {
         };
     }
 
-
     /** what this panel contributes to the GUI; see {@link ViewProvider} */
     public static class Provider implements ViewProvider {
 
@@ -452,15 +452,15 @@ public class FormY8950 extends FormChipBase<FormY8950.Params> {
 
         @Override public void forceChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
             if (ch >= 0 && ch < 15) {
-    if (mask)
+                if (mask)
                     audio.plugin.chipRegister.chip(mdplayer.chips.Y8950Chip.class).setMask(chipId, ch);
                 else
                     audio.plugin.chipRegister.chip(mdplayer.chips.Y8950Chip.class).resetMask(chipId, ch);
             }
         }
 
-        @Override public java.util.List<MixerSlot> mixerSlots() {
-            return java.util.List.of(new MixerSlot(18, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Y8950Chip.class, "y8950", 200));
+        @Override public List<MixerSlot> mixerSlots() {
+            return List.of(new MixerSlot(18, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Y8950Chip.class, "y8950", 200));
         }
     }
 }

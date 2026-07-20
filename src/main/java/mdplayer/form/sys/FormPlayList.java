@@ -103,7 +103,7 @@ public class FormPlayList extends JFrame {
     private final Random rand = new Random();
     private boolean IsInitialOpenFolder = true;
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormPlayList.class).node(FormPlayList.class.getSimpleName());
+    static final Preferences prefs = Preferences.userNodeForPackage(FormPlayList.class);
 
     private static final String[] sext = ".vgm;.vgz;.zip;.lzh;.nrd;.xgm;.zgm;.s98;.nsf;.hes;.sid;.mnd;.mgs;.mdr;.mdx;.mub;.muc;.m;.m2;.mz;.mml;.mid;.rcp;.wav;.mp3;.aiff;.m3u".split(";");
 
@@ -219,7 +219,7 @@ public class FormPlayList extends JFrame {
             logger.log(Level.INFO, "  music " + i + ": fileName=" + m.fileName + ", title=" + m.title + ", game=" + m.game);
         }
 
-        if (dgvList.getRowCount() < 1 && playList.getMusics().size() > 0) {
+        if (dgvList.getRowCount() < 1 && !playList.getMusics().isEmpty()) {
             logger.log(Level.INFO, "dgvList is empty but playList.getMusics() is not! Refreshing...");
             refresh();
             logger.log(Level.INFO, "After refresh: dgvList.getRowCount()=" + dgvList.getRowCount());
@@ -540,7 +540,6 @@ loopEx:
         playList.getMusics().clear();
         playIndex = -1;
         oldPlayIndex = -1;
-
     }
 
     private void tsbOpenPlayList_Click(ActionEvent ev) {
@@ -735,7 +734,7 @@ loopEx:
             logger.log(Level.ERROR, ex.getMessage(), ex);
         }
 
-        //Play();
+        //play();
     }
 
     static final String[] _exts = {
@@ -1249,151 +1248,24 @@ loopEx:
         //
         // dgvList
         //
-//        this.dgvList.AllowDrop = true;
-//        this.dgvList.AllowUserToAddRows = false;
-//        this.dgvList.AllowUserToDeleteRows = false;
-//        this.dgvList.AllowUserToResizeRows = false;
-//        this.dgvList.BackgroundColor = Color.black;
-//        this.dgvList.BorderStyle = JBorderStyle.None;
-//        this.dgvList.CellBorderStyle = JTableCellBorderStyle.None;
-//        JListCellStyle1.Alignment = JTableContentAlignment.MiddleLeft;
-//        JListCellStyle1.setBackground(Color.black);
-//        JListCellStyle1.setFont(new Font("Meyryo", 8.25F, FontStyle.Regular, GraphicsUnit.Point, ((byte) (128))));
-//        JListCellStyle1.setForeColor = Color.MenuHighlight;
-//        JListCellStyle1.Selectio.setBackground(Color.Highlight);
-//        JListCellStyle1.SelectionForeColor = Color.HighlightText;
-//        JListCellStyle1.WrapMode = JTableTriState.False;
-//        this.dgvList.ColumnHeadersDefaultCellStyle = JListCellStyle1;
-//        //resources.ApplyResources(this.dgvList, "dgvList");
-//        this.dgvList.ColumnHeadersHeightSizeMode = JTableColumnHeadersHeightSizeMode.DisableResizing;
-//        this.dgvList.EditMode = JTableEditMode.EditProgrammatically;
-//        this.dgvList.setName("dgvList");
-//        this.dgvList.RowHeadersBorderStyle = JTableHeaderBorderStyle.None;
-//        JListCellStyle3.setHoAlignment = JTableContentAlignment.MiddleLeft;
-//        JListCellStyle3.setBackground(Color.black);
-//        JListCellStyle3.setFont(new Font("Meyryo", 8.25F, Font.BOLD, GraphicsUnit.Point, ((byte) (128))));
-//        JListCellStyle3.ForeColor = Color.Window;
-//        JListCellStyle3.Selectio.setBackground(Color.Highlight);
-//        JListCellStyle3.SelectionForeColor = Color.HighlightText;
-//        JListCellStyle3.WrapMode = JTableTriState.True;
-//        this.dgvList.RowHeadersDefaultCellStyle = JListCellStyle3;
-//        this.dgvList.RowHeadersVisible = false;
-//        JListCellStyle4.setBackground(Color.black);
-//        JListCellStyle4.setFont(new Font("Meyryo", 8.25F, Font.BOLD, GraphicsUnit.Point, ((byte) (128))));
-//        JListCellStyle4.setForeColor = new Color(((byte) (192)), ((byte) (192)), ((byte) (255)));
-//        this.dgvList.RowsDefaultCellStyle = JListCellStyle4;
-//        this.dgvList.RowTemplate.ContextMenuStrip = this.cmsPlayList;
-//        this.dgvList.RowTemplate.DefaultCellStyle.Alignment = JTableContentAlignment.MiddleLeft;
-//        this.dgvList.RowTemplate.getHeight() = 10;
-//        this.dgvList.RowTemplate.setEditable(Xtrue);
-//        this.dgvList.setSelectionMode(FullRowSelect);
-//        this.dgvList.ShowCellErrors = false;
-//        this.dgvList.ShowEditingIcon = false;
-//        this.dgvList.ShowRowErrors = false;
-//        this.dgvList.CellDoubleClick += new JTableCellEventHandler(this.dgvList_CellDoubleClick);
         this.dgvList.addMouseListener(this.dgvList_CellMouseClick);
         new DropTarget(dgvList, DnDConstants.ACTION_COPY_OR_MOVE, dgvList_DragDrop, true);
         //
-        // clmKey
-        //
-//        this.clmKey.setName(cols.clmKey.ordinal());
-//        this.clmKey.SortMode = JTableColumnSortMode.NotSortable;
-        //
-        // clmSongNo
-        //
-//        this.clmSongNo.setName(cols.clmSongNo.ordinal());
-        //
-        // clmZipFileName
-        //
-//        this.clmZipFileName.setName(cols.clmZipFileName.ordinal());
-        //
-        // clmFileName
-        //
-//        this.clmFileName.setName(cols.clmFileName.ordinal());
-//        this.clmFileName.SortMode = JTableColumnSortMode.NotSortable;
-        //
-        // clmPlayingNow
-        //
-//        this.clmPlayingNow.setName(cols.clmPlayingNow.ordinal());
-//        this.clmPlayingNow.Resizable = JTableTriState.False;
-//        this.clmPlayingNow.SortMode = JTableColumnSortMode.NotSortable;
-        //
         // clmEXT
         //
-//        this.clmEXT.setName(cols.clmEXT.ordinal());
         this.clmEXT.setEditable(false);
-//        this.clmEXT.SortMode = JTableColumnSortMode.NotSortable;
         //
         // clmType
         //
-//        this.clmType.setName(cols.clmType.ordinal());
         this.clmType.setEditable(false);
-//        this.clmType.SortMode = JTableColumnSortMode.NotSortable;
         //
         // clmTitle
         //
-//        this.clmTitle.setName(cols.clmTitle.ordinal());
         this.clmTitle.setEditable(false);
-//        this.clmTitle.SortMode = JTableColumnSortMode.NotSortable;
-        //
-        // clmTitleJ
-        //
-//        this.clmTitleJ.setName(cols.clmTitleJ.ordinal());
-//        this.clmTitleJ.SortMode = JTableColumnSortMode.NotSortable;
-        //
-        // clmDispFileName
-        //
-//        this.clmDispFileName.setName(cols.clmDispFileName.ordinal());
         //
         // clmGame
         //
-//        this.clmGame.setName(cols.clmGame.ordinal());
         this.clmGame.setEditable(false);
-//        this.clmGame.SortMode = JTableColumnSortMode.NotSortable;
-        //
-        // clmGameJ
-        //
-//        this.clmGameJ.setName(cols.clmGameJ.ordinal());
-//        this.clmGameJ.SortMode = JTableColumnSortMode.NotSortable;
-        //
-        // clmComposer
-        //
-//        this.clmComposer.setName(cols.clmComposer.ordinal());
-//        this.clmComposer.SortMode = JTableColumnSortMode.NotSortable;
-        //
-        // clmComposerJ
-        //
-//        this.clmComposerJ.setName(cols.clmComposerJ.ordinal());
-//            this.clmComposerJ.SortMode = JTableColumnSortMode.NotSortable;
-        //
-        // clmVGMby
-        //
-//        this.clmVGMby.setName(cols.clmVGMby.ordinal());
-//            this.clmVGMby.SortMode = JTableColumnSortMode.NotSortable;
-        //
-        // clmConverted
-        //
-//        this.clmConverted.setName(cols.clmConverted.ordinal());
-//            this.clmConverted.SortMode = JTableColumnSortMode.NotSortable;
-        //
-        // clmNotes
-        //
-//        this.clmNotes.setName(cols.clmNotes.ordinal());
-//        this.clmNotes.SortMode = JTableColumnSortMode.NotSortable;
-        //
-        // clmDuration
-        //
-//        JListCellStyle2.Alignment = JTableContentAlignment.MiddleRight;
-//        this.clmDuration.DefaultCellStyle = JListCellStyle2;
-//        this.clmDuration.setName(cols.clmDuration.ordinal());
-//        this.clmDuration.SortMode = JTableColumnSortMode.NotSortable;
-        //
-        // clmSpacer
-        //
-//        this.clmSpacer.AutoSizeMode = JTableAutoSizeColumnMode.Fill;
-//        this.clmSpacer.setName(cols.clmSpacer.ordinal());
-//        this.clmSpacer.setEditable(false);
-//        this.clmSpacer.SortMode = JTableColumnSortMode.NotSortable;
         //
         // cmsPlayList
         //
@@ -1500,7 +1372,6 @@ loopEx:
         //
         // toolStrip1
         //
-//        this.toolStrip1.GripStyle = JToolStripGripStyle.Hidden;
         this.toolStrip1.add(this.tsbOpenPlayList);
         this.toolStrip1.add(this.tsbSavePlayList);
         this.toolStrip1.add(this.tsbAddMusic);

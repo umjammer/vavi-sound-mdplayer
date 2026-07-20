@@ -29,11 +29,6 @@ public class YmF271Chip extends BaseChip {
 
     private final RSoundChip[] realChips = {null, null};
 
-    @Deprecated
-    public final int[][][] register = {
-            {null, null},
-            {null, null}
-    };
 
     @Override
     @SuppressWarnings("unchecked")
@@ -46,16 +41,6 @@ public class YmF271Chip extends BaseChip {
         super.init(context);
 
         for (int chipId = 0; chipId < 2; chipId++) {
-            register[chipId] = new int[][] {new int[0x100], new int[0x100], new int[0x100], new int[0x100], new int[0x100], new int[0x100], new int[0x100]};
-            for (int i = 0; i < 0x100; i++) {
-                register[chipId][0][i] = 0;
-                register[chipId][1][i] = 0;
-                register[chipId][2][i] = 0;
-                register[chipId][3][i] = 0;
-                register[chipId][4][i] = 0;
-                register[chipId][5][i] = 0;
-                register[chipId][6][i] = 0;
-            }
         }
     }
 
@@ -63,7 +48,6 @@ public class YmF271Chip extends BaseChip {
         fireEventHappened("led.on", chipId);
 
         if (model == EnmModel.VirtualModel)
-            register[chipId][port][addr] = data;
 
         if (model == EnmModel.VirtualModel) {
             if (!chipTypes[chipId].getUseReal()[0]) {

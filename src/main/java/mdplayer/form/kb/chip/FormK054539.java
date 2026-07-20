@@ -12,6 +12,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
@@ -31,7 +32,7 @@ import mdplayer.form.View;
 
 public class FormK054539 extends FormChipBase<FormK054539.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormK054539.class).node(FormK054539.class.getSimpleName());
+    static final Preferences prefs = Preferences.userNodeForPackage(FormK054539.class);
 
     private static final int[] pantbl = {
             0 * 5 + 4, 1 * 5 + 4, 1 * 5 + 4, 2 * 5 + 4, 2 * 5 + 4, 3 * 5 + 4, 3 * 5 + 4,
@@ -324,7 +325,6 @@ public class FormK054539 extends FormChipBase<FormK054539.Params> {
         };
     }
 
-
     /** what this panel contributes to the GUI; see {@link ViewProvider} */
     public static class Provider implements ViewProvider {
 
@@ -333,8 +333,8 @@ public class FormK054539 extends FormChipBase<FormK054539.Params> {
         @Override public Class<? extends mdplayer.Chip> chip() { return mdplayer.chips.K054539Chip.class; }
         @Override public View create(FormMain frm, int chipId, int zoom) { return new FormK054539(frm, chipId, zoom); }
 
-        @Override public java.util.List<MixerSlot> mixerSlots() {
-            return java.util.List.of(new MixerSlot(45, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.K054539Chip.class, "k054539", 200));
+        @Override public List<MixerSlot> mixerSlots() {
+            return List.of(new MixerSlot(45, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.K054539Chip.class, "k054539", 200));
         }
     }
 }

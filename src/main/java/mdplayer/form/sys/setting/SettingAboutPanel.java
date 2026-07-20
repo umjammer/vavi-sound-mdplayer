@@ -14,7 +14,6 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.lang.System.Logger;
 import java.net.URI;
-import java.util.Properties;
 import java.util.ResourceBundle;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -184,26 +183,8 @@ public class SettingAboutPanel extends SettingTab {
         return "vavi-apps-mdplayer";
     }
 
-    static {
-        try {
-            try (InputStream is = SettingAboutPanel.class.getResourceAsStream("/META-INF/maven/vavi/vavi-apps-mdplayer/pom.properties")) {
-                if (is != null) {
-                    Properties props = new Properties();
-                    props.load(is);
-                    version = props.getProperty("version", "undefined in pom.properties");
-                } else {
-                    version = System.getProperty("vavi.test.version", "undefined");
-                }
-            }
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
-    static final String version;
-
     public String getAssemblyVersion() {
-        return version;
+        return Common.version;
     }
 
     public String getAssemblyDescription() {

@@ -6,6 +6,7 @@
 
 package mdplayer.chips;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
@@ -592,16 +593,24 @@ public class Ym2610Chip extends BaseChip {
         write(chipId, 1, 0x0b, register[chipId][1][0x0b], EnmModel.RealModel);
     }
 
+    /**
+     * What the panels have always read, and beside it the channel state as the chip has it. The
+     * fmgen core keeps no register file, so the visualizer reads the channel view.
+     */
     @Override
     public Map<String, Object> getInfo(int chipId) {
-        return Map.of(
+        Map<String, Object> info = new HashMap<>();
+        info.putAll(Map.of(
                 "volume", volume[chipId],
                 "rhythmVolume", rhythmVolume[chipId],
                 "adpcmVolume", adpcmVolume[chipId],
                 "ch3SlotVolume", /* ctYM2612.UseScci ? */ ch3SlotVolume[chipId] /* : context.mds.inst(_inst(chipId)).readFMCh3SlotVolume(); */,
                 "register", register[chipId],
                 "keyOn", keyOn[chipId]
-        );
+        ));
+        Instrument inst = context.mds.inst(inst(chipId));
+        if (inst != null) info.putAll(inst.getView(chipId, "info", null));
+        return info;
     }
 
     public void setMask(int chipId, int ch) {

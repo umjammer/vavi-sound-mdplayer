@@ -12,6 +12,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.prefs.Preferences;
 
 import mdplayer.Common;
@@ -21,6 +22,7 @@ import mdplayer.form.ScreenPanel;
 import mdplayer.Tables;
 import mdplayer.chips.MidiPlugin;
 import mdplayer.form.FormBase;
+import mdplayer.form.SettingTab;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
 import mdplayer.form.View;
@@ -55,7 +57,7 @@ public class FormMIDI extends FormBase implements View {
     private final FrameBuffer frameBuffer = new FrameBuffer();
     private String notes = "";
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormMIDI.class).node(FormMIDI.class.getSimpleName());
+    static final Preferences prefs = Preferences.userNodeForPackage(FormMIDI.class);
 
     public FormMIDI(FormMain frm, int chipId, int zoom) {
         super(frm);
@@ -724,8 +726,8 @@ public class FormMIDI extends FormBase implements View {
 
         @Override public String id() { return "MIDI"; }
         @Override public View create(FormMain frm, int chipId, int zoom) { return new FormMIDI(frm, chipId, zoom); }
-        @Override public java.util.List<mdplayer.form.SettingTab> settingTabs() {
-            return java.util.List.of(new SettingMIDIOutPanel(),
+        @Override public List<SettingTab> settingTabs() {
+            return List.of(new SettingMIDIOutPanel(),
                     new SettingMIDIOut2Panel(),
                     new SettingMIDIExpPanel());
         }

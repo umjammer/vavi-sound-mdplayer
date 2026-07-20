@@ -12,26 +12,26 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.prefs.Preferences;
 
 import mdplayer.Common;
+import mdplayer.Tables;
+import mdplayer.chips.NpNesChip.Fme7Chip;
 import mdplayer.form.FrameBuffer;
 import mdplayer.form.ScreenPanel;
-import mdplayer.Tables;
-import mdplayer.chips.NpNesChip;
-import mdplayer.chips.NpNesChip.Fme7Chip;
+import mdplayer.form.View;
 import mdplayer.form.kb.ChannelParams;
 import mdplayer.form.kb.Meters;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
 
 import static mdplayer.Common.searchSSGNote;
-import mdplayer.form.View;
 
 
 public class FormS5B extends FormChipBase<FormS5B.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormS5B.class).node(FormS5B.class.getSimpleName());
+    static final Preferences prefs = Preferences.userNodeForPackage(FormS5B.class);
 
     public FormS5B(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -83,7 +83,7 @@ public class FormS5B extends FormChipBase<FormS5B.Params> {
     };
 
     public void changeScreenParams() {
-        byte[] S5BRegister = audio.plugin.chipRegister.chip(NpNesChip.Fme7Chip.class).readS5B(chipId);
+        byte[] S5BRegister = (byte[]) audio.plugin.chipRegister.chip(Fme7Chip.class).getInfo(chipId).get("register");
         if (S5BRegister == null) return;
 
         for (int ch = 0; ch < 3; ch++) { //SSG
@@ -282,8 +282,8 @@ public class FormS5B extends FormChipBase<FormS5B.Params> {
         @Override public String category() { return "nes"; }
         @Override public View create(FormMain frm, int chipId, int zoom) { return new FormS5B(frm, chipId, zoom); }
 
-        @Override public java.util.List<MixerSlot> mixerSlots() {
-            return java.util.List.of(new MixerSlot(55, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.NpNesChip.Fme7Chip.class, "FME7", 50));
+        @Override public List<MixerSlot> mixerSlots() {
+            return List.of(new MixerSlot(55, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.NpNesChip.Fme7Chip.class, "FME7", 50));
         }
 
         @Override public void updateMeters(mdplayer.Audio audio, mdplayer.form.VisVolume visVolume) {

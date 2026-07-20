@@ -12,6 +12,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
@@ -31,7 +32,7 @@ import mdplayer.form.View;
 
 public class FormK053260 extends FormChipBase<FormK053260.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormK053260.class).node(FormK053260.class.getSimpleName());
+    static final Preferences prefs = Preferences.userNodeForPackage(FormK053260.class);
 
     public FormK053260(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -176,7 +177,7 @@ public class FormK053260 extends FormChipBase<FormK053260.Params> {
                 n = i;
             }
         }
-        return Math.min(Math.max(n - 2, 0), 95);
+        return Math.clamp(n - 2, 0, 95);
     }
 
     public void drawScreenParams() {
@@ -325,7 +326,6 @@ public class FormK053260 extends FormChipBase<FormK053260.Params> {
         };
     }
 
-
     /** what this panel contributes to the GUI; see {@link ViewProvider} */
     public static class Provider implements ViewProvider {
 
@@ -334,8 +334,8 @@ public class FormK053260 extends FormChipBase<FormK053260.Params> {
         @Override public Class<? extends mdplayer.Chip> chip() { return mdplayer.chips.K053260Chip.class; }
         @Override public View create(FormMain frm, int chipId, int zoom) { return new FormK053260(frm, chipId, zoom); }
 
-        @Override public java.util.List<MixerSlot> mixerSlots() {
-            return java.util.List.of(new MixerSlot(44, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.K053260Chip.class, "k053260", 200));
+        @Override public List<MixerSlot> mixerSlots() {
+            return List.of(new MixerSlot(44, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.K053260Chip.class, "k053260", 200));
         }
     }
 }

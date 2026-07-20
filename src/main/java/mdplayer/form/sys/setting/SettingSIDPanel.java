@@ -315,8 +315,8 @@ public class SettingSIDPanel extends SettingTab {
         JFileChooser ofd = new JFileChooser();
         ofd.setFileFilter(ofd.getAcceptAllFileFilter());
         ofd.setDialogTitle("Select a file");
-//        ofd.RestoreDirectory = true;
-//        ofd.CheckPathExists = true;
+//        ofd.restoreDirectory = true;
+//        ofd.checkPathExists = true;
         ofd.setMultiSelectionEnabled(false);
 
         if (ofd.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
@@ -329,8 +329,8 @@ public class SettingSIDPanel extends SettingTab {
         JFileChooser ofd = new JFileChooser();
         ofd.setFileFilter(ofd.getAcceptAllFileFilter());
         ofd.setDialogTitle("Select a file");
-//        ofd.RestoreDirectory = true;
-//        ofd.CheckPathExists = true;
+//        ofd.restoreDirectory = true;
+//        ofd.checkPathExists = true;
         ofd.setMultiSelectionEnabled(false);
 
         if (ofd.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
@@ -343,8 +343,8 @@ public class SettingSIDPanel extends SettingTab {
         JFileChooser ofd = new JFileChooser();
         ofd.setFileFilter(ofd.getAcceptAllFileFilter());
         ofd.setDialogTitle("Select a file");
-//        ofd.RestoreDirectory = true;
-//        ofd.CheckPathExists = true;
+//        ofd.restoreDirectory = true;
+//        ofd.checkPathExists = true;
         ofd.setMultiSelectionEnabled(false);
 
         if (ofd.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {

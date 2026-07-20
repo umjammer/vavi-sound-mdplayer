@@ -63,7 +63,7 @@ public final class Meters {
         try {
             NpNesChip nes = npNesChip(audio);
             if (nes == null) return -1;
-            return nes.getVolume(index);
+            return (int) nes.getInfo(index).get("volume");
         } catch (Exception e) {
             return -1;
         }

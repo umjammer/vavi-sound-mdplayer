@@ -182,6 +182,8 @@ logger.log(Level.TRACE, "stop: " + this.stopped + ", " + this.hashCode());
 logger.log(Level.TRACE, "stop enter: " + this.stopped);
         if (!this.stopped) {
             this.stopped = true;
+            // a MIDI driver leaves its notes held down at the synthesizer, see MidiPlugin#allSoundOff
+            chipRegister.plugin(MidiPlugin.class).allSoundOff();
 logger.log(Level.INFO, "stop: " + this.stopped);
         }
     }

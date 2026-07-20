@@ -175,4 +175,14 @@ public class HvlDriver extends BaseDriver {
 
         return written;
     }
+
+    /**
+     * The replayer's voices, for the visualizer. HVL renders its own audio and registers no chip,
+     * so this is the only view of what its channels are doing.
+     *
+     * @return null before the song has started
+     */
+    public HVL.Tune getTune() {
+        return tune;
+    }
 }

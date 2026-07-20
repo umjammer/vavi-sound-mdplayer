@@ -6,6 +6,7 @@
 
 package mdplayer.chips;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
@@ -24,10 +25,14 @@ public class Y8950Chip extends BaseChip {
 
     private final Setting.ChipType2[] chipTypes = setting.getY8950Type();
 
-    public final int[][] register = {null, null};
-
     @Deprecated
     private final ChipKeyInfo[] keyInfo = {new ChipKeyInfo(15), new ChipKeyInfo(15)};
+
+    /**
+     * The registers as they were written. The visualizer does not read this - it asks the chip -
+     * but the register dump and the instrument export need a raw file the OPL core cannot give.
+     */
+    private final int[][] register = {new int[0x100], new int[0x100]};
 
     private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false},
@@ -38,16 +43,6 @@ public class Y8950Chip extends BaseChip {
     @SuppressWarnings("unchecked")
     public Class<? extends Instrument>[] implementations() {
         return new Class[] {Y8950Inst.class};
-    }
-
-    @Override
-    public void reset() {
-        for (int chipId = 0; chipId < 2; chipId++) {
-            register[chipId] = new int[0x100];
-            for (int i = 0; i < 0x100; i++) {
-                register[chipId][i] = 0;
-            }
-        }
     }
 
     public ChipKeyInfo getKeyInfo(int chipId) {
@@ -65,6 +60,7 @@ public class Y8950Chip extends BaseChip {
 
         if (model == EnmModel.VirtualModel) {
             register[chipId][addr] = data;
+
             if (addr >= 0xb0 && addr <= 0xb8) {
                 int ch = addr - 0xb0;
                 int k = (data >> 5) & 1;
@@ -139,9 +135,21 @@ public class Y8950Chip extends BaseChip {
         dumpData(model, "PCMData", srcOffset, buf, length);
     }
 
+    /**
+     * The channel state the visualizer reads, and beside it the registers as they were written.
+     * <p>
+     * The shared OPL core behind this chip decodes its registers into operators and keeps no file,
+     * so the raw registers the dump panel and the instrument export want cannot be read back and
+     * are still shadowed here. The channel state comes from the chip.
+     */
     @Override
     public Map<String, Object> getInfo(int chipId) {
-        return Map.of("register", register[chipId]);
+        Instrument inst = context.mds.inst(inst(chipId));
+        // a panel polls whether or not the song loaded this chip, so never hand back null
+        if (inst == null) return Map.of("register", register[chipId]);
+        Map<String, Object> info = new HashMap<>(inst.getView(chipId, "info", null));
+        info.put("register", register[chipId]);
+        return info;
     }
 
     public void setMask(int chipId, int ch) {

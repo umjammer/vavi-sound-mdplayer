@@ -12,6 +12,7 @@ import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
@@ -21,11 +22,13 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Properties;
 import java.util.function.Consumer;
 import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 
+import mdplayer.form.sys.setting.SettingAboutPanel;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 import vavi.awt.dnd.BasicDTListener;
@@ -476,4 +479,22 @@ logger.log(Level.DEBUG, "delete attributes: " + dir);
             return true;
         }
     }
+
+    static {
+        try {
+            try (InputStream is = SettingAboutPanel.class.getResourceAsStream("/META-INF/maven/vavi/vavi-apps-mdplayer/pom.properties")) {
+                if (is != null) {
+                    Properties props = new Properties();
+                    props.load(is);
+                    version = props.getProperty("version", "undefined in pom.properties");
+                } else {
+                    version = System.getProperty("vavi.test.version", "undefined");
+                }
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    public static final String version;
 }

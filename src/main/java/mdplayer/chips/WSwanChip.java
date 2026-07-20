@@ -40,4 +40,11 @@ public class WSwanChip extends BaseChip {
             context.mds.inst(WSwanInst.class).writeMemory(chipId, port, data);
         }
     }
+
+    /** the channel state as the chip has it now */
+    @Override
+    public java.util.Map<String, Object> getInfo(int chipId) {
+        WSwanInst inst = context.mds.inst(WSwanInst.class);
+        return inst == null ? null : inst.getView(chipId, "info", null);
+    }
 }

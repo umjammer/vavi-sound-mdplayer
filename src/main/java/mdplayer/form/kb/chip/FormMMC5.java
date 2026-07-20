@@ -12,6 +12,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.prefs.Preferences;
 
 import mdplayer.Common;
@@ -29,9 +30,7 @@ import mdplayer.form.View;
 
 public class FormMMC5 extends FormChipBase<FormMMC5.Params> {
 
-    //
-
-    static final Preferences prefs = Preferences.userNodeForPackage(FormMMC5.class).node(FormMMC5.class.getSimpleName());
+    static final Preferences prefs = Preferences.userNodeForPackage(FormMMC5.class);
 
     public FormMMC5(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -89,7 +88,7 @@ public class FormMMC5 extends FormChipBase<FormMMC5.Params> {
         final double LOG_2 = 0.69314718055994530941723212145818;
         final int NOTE_440HZ = 12 * 4 + 9;
 
-        byte[] reg = audio.plugin.chipRegister.chip(NpNesChip.Mmc5Chip.class).readMmc5(chipId);
+        byte[] reg = (byte[]) audio.plugin.chipRegister.chip(Mmc5Chip.class).getInfo(chipId).get("register");
         int freq;
         int vol;
         int note;
@@ -114,9 +113,9 @@ public class FormMMC5 extends FormChipBase<FormMMC5.Params> {
             newParam.pcmChannel.volume = Math.min(newParam.pcmChannel.volume, 19);
         }
     
-        newParam.sqrChannels[0].mask = audio.plugin.chipRegister.chip(NpNesChip.Mmc5Chip.class).getMmc5Mask(chipId, 0);
-        newParam.sqrChannels[1].mask = audio.plugin.chipRegister.chip(NpNesChip.Mmc5Chip.class).getMmc5Mask(chipId, 1);
-        newParam.pcmChannel.mask = audio.plugin.chipRegister.chip(NpNesChip.Mmc5Chip.class).getMmc5Mask(chipId, 2);
+        newParam.sqrChannels[0].mask = audio.plugin.chipRegister.chip(NpNesChip.Mmc5Chip.class).getMask(chipId, 0);
+        newParam.sqrChannels[1].mask = audio.plugin.chipRegister.chip(NpNesChip.Mmc5Chip.class).getMask(chipId, 1);
+        newParam.pcmChannel.mask = audio.plugin.chipRegister.chip(NpNesChip.Mmc5Chip.class).getMask(chipId, 2);
     }
 
     public void drawScreenParams() {
@@ -337,7 +336,6 @@ public class FormMMC5 extends FormChipBase<FormMMC5.Params> {
         public final Channel pcmChannel = new Channel();
     }
 
-
     /** what this panel contributes to the GUI; see {@link ViewProvider} */
     public static class Provider implements ViewProvider {
 
@@ -349,12 +347,12 @@ public class FormMMC5 extends FormChipBase<FormMMC5.Params> {
         @Override public void setChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
             if (ch >= 0 && ch < 3) {
                 mdplayer.chips.NpNesChip.Mmc5Chip c = audio.plugin.chipRegister.chip(mdplayer.chips.NpNesChip.Mmc5Chip.class);
-                if (!c.getMmc5Mask(chipId, ch)) c.setMmc5Mask(chipId, ch); else c.resetMmc5Mask(chipId, ch);
+                if (!c.getMask(chipId, ch)) c.setMask(chipId, ch); else c.resetMask(chipId, ch);
             }
         }
 
         @Override public void resetChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
-            audio.plugin.chipRegister.chip(mdplayer.chips.NpNesChip.Mmc5Chip.class).resetMmc5Mask(chipId, ch);
+            audio.plugin.chipRegister.chip(mdplayer.chips.NpNesChip.Mmc5Chip.class).resetMask(chipId, ch);
         }
 
         @Override public void reapplyChannelMasks(mdplayer.Audio audio, int chipId) {
@@ -362,8 +360,8 @@ public class FormMMC5 extends FormChipBase<FormMMC5.Params> {
                 resetChannelMask(audio, mdplayer.chips.NpNesChip.Mmc5Chip.class, chipId, ch);
         }
 
-        @Override public java.util.List<MixerSlot> mixerSlots() {
-            return java.util.List.of(new MixerSlot(51, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.NpNesChip.Mmc5Chip.class, "MMC5", 50));
+        @Override public List<MixerSlot> mixerSlots() {
+            return List.of(new MixerSlot(51, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.NpNesChip.Mmc5Chip.class, "MMC5", 50));
         }
 
         @Override public void updateMeters(mdplayer.Audio audio, mdplayer.form.VisVolume visVolume) {

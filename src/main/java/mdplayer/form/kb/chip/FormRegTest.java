@@ -99,7 +99,7 @@ public class FormRegTest extends FormChipBase<Void> {
 
             addChip(Ym2612Chip.class, 1, 0x200, select -> audio.plugin.chipRegister.chip(Ym2612Chip.class).getInfo(0).get("register"));
 
-            addChip(C140Chip.class, 1, 0x200, select -> audio.plugin.chipRegister.chip(C140Chip.class).read(0));
+            addChip(C140Chip.class, 1, 0x200, select -> audio.plugin.chipRegister.chip(C140Chip.class).getInfo(0).get("register"));
 
             addChip(QSoundChip.class, 1, 0x200, select -> audio.plugin.chipRegister.chip(QSoundChip.class).getInfo(0));
 
@@ -112,7 +112,7 @@ public class FormRegTest extends FormChipBase<Void> {
 
             addChip(Sn76489Chip.class, 1, 8, select -> audio.plugin.chipRegister.chip(Sn76489Chip.class).getInfo(0).get("register"));
 
-            addChip(Ay8910Chip.class, 1, 16, select -> audio.plugin.chipRegister.chip(Ay8910Chip.class).read(0));
+            addChip(Ay8910Chip.class, 1, 16, select -> audio.plugin.chipRegister.chip(Ay8910Chip.class).getInfo(0).get("register"));
 
             addChip(C352Chip.class, 1, 0x400, select -> audio.plugin.chipRegister.chip(C352Chip.class).getInfo(0));
 
@@ -184,7 +184,7 @@ public class FormRegTest extends FormChipBase<Void> {
         }
     }
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormRegTest.class).node(FormRegTest.class.getSimpleName());
+    static final Preferences prefs = Preferences.userNodeForPackage(FormRegTest.class);
 
     private final int formWidth;
     private final int formHeight;

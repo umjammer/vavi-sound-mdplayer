@@ -22,6 +22,8 @@ import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.JFileChooser;
 import javax.swing.JMenu;
@@ -30,21 +32,22 @@ import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 
 import mdplayer.Common;
-import mdplayer.form.FrameBuffer;
-import mdplayer.form.ScreenPanel;
 import mdplayer.Tables;
 import mdplayer.YM2612MIDI;
 import mdplayer.chips.MidiPlugin;
 import mdplayer.form.FormBase;
+import mdplayer.form.FrameBuffer;
+import mdplayer.form.ScreenPanel;
+import mdplayer.form.SettingTab;
+import mdplayer.form.View;
 import mdplayer.form.kb.ChannelParams;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
 import mdplayer.form.sys.FormTPGet;
 import mdplayer.form.sys.FormTPPut;
+import mdplayer.form.sys.setting.SettingMIDIKBDPanel;
 
 import static java.lang.System.getLogger;
-import mdplayer.form.View;
-import mdplayer.form.sys.setting.SettingMIDIKBDPanel;
 
 
 public class FormYM2612MIDI extends FormBase implements View {
@@ -74,7 +77,7 @@ public class FormYM2612MIDI extends FormBase implements View {
     private final FrameBuffer frameBuffer = new FrameBuffer();
     private boolean hasError = false;
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormYM2612MIDI.class).node(FormYM2612MIDI.class.getSimpleName());
+    static final Preferences prefs = Preferences.userNodeForPackage(FormYM2612MIDI.class);
 
     public FormYM2612MIDI(FormMain frm, int zoom, YM2612MIDI.Params newParam) {
         super(frm);
@@ -429,88 +432,47 @@ public class FormYM2612MIDI extends FormBase implements View {
 //        parent.ym2612Midi_SetTonesFromSetting();
     }
 
-    private boolean IsInitialOpenFolder = true;
+    private boolean isInitialOpenFolder = true;
+
+    private static class MyFileFilter extends FileFilter {
+        String ext, desc;
+        MyFileFilter(String ext, String desc) {
+            this.ext = ext; this.desc = desc;
+        }
+        @Override public boolean accept(File f) {
+            return f.getName().toLowerCase().endsWith(ext);
+        }
+        @Override public String getDescription() {
+            return desc;
+        }
+    }
+
+    private static final String[][] extDescs = {
+        {".xml", "XML file(*.xml)"},
+        {".gwi", "MML2VGM file(*.gwi)"},
+        {".mwi", "FMP7 file(*.mwi)"},
+        {".mml", "NRTDRV file(*.mml)"},
+        {".mml", "MXDRV file(*.mml)"},
+        {".mml", "MusicLALF file(*.mml)"},
+    };
 
     private void cmdTSave() {
         JFileChooser sfd = new JFileChooser();
-        sfd.addChoosableFileFilter(new FileFilter() {
-            @Override
-            public boolean accept(File f) {
-                return f.getName().toLowerCase().endsWith(".xml");
-            }
-
-            @Override
-            public String getDescription() {
-                return "XML file(*.xml)";
-            }
-        });
-        sfd.addChoosableFileFilter(new FileFilter() {
-            @Override
-            public boolean accept(File f) {
-                return f.getName().toLowerCase().endsWith(".gwi");
-            }
-
-            @Override
-            public String getDescription() {
-                return "MML2VGM file(*.gwi)";
-            }
-        });
-        sfd.addChoosableFileFilter(new FileFilter() {
-            @Override
-            public boolean accept(File f) {
-                return f.getName().toLowerCase().endsWith(".mwi");
-            }
-
-            @Override
-            public String getDescription() {
-                return "FMP7 file(*.mwi)";
-            }
-        });
-        sfd.addChoosableFileFilter(new FileFilter() {
-            @Override
-            public boolean accept(File f) {
-                return f.getName().toLowerCase().endsWith(".mml");
-            }
-
-            @Override
-            public String getDescription() {
-                return "NRTDRV file(*.mml)";
-            }
-        });
-        sfd.addChoosableFileFilter(new FileFilter() {
-            @Override
-            public boolean accept(File f) {
-                return f.getName().toLowerCase().endsWith(".mml");
-            }
-
-            @Override
-            public String getDescription() {
-                return "MXDRV file(*.mml)";
-            }
-        });
-        sfd.addChoosableFileFilter(new FileFilter() {
-            @Override
-            public boolean accept(File f) {
-                return f.getName().toLowerCase().endsWith(".mml");
-            }
-
-            @Override
-            public String getDescription() {
-                return "MusicLALF file(*.mml)";
-            }
+        Arrays.stream(extDescs).forEach(ed -> {
+            sfd.addChoosableFileFilter(new MyFileFilter(ed[0], ed[1]));
         });
         sfd.setDialogTitle("Save TonePallet files");
-        if (!parent.setting.getOther().getDefaultDataPath().isEmpty() && Files.exists(Path.of(parent.setting.getOther().getDefaultDataPath())) && IsInitialOpenFolder) {
+        if (!parent.setting.getOther().getDefaultDataPath().isEmpty() && Files.exists(Path.of(parent.setting.getOther().getDefaultDataPath())) && isInitialOpenFolder) {
             sfd.setCurrentDirectory(new File(parent.setting.getOther().getDefaultDataPath()));
         } else {
-//            sfd.RestoreDirectory = true;
+//            sfd.testoreDirectory = true;
         }
-//        sfd.CheckPathExists = true;
+//        sfd.checkPathExists = true;
 
         if (sfd.showSaveDialog(null) != JFileChooser.APPROVE_OPTION) {
             return;
         }
-        IsInitialOpenFolder = false;
+        isInitialOpenFolder = false;
 
         try {
 //            parent.ym2612Midi_SaveTonePallet(sfd.getSelectedFile().getPath(), Common.getFilterIndex(sfd) + 1);
@@ -522,84 +484,21 @@ public class FormYM2612MIDI extends FormBase implements View {
 
     private void cmdTLoad() {
         JFileChooser ofd = new JFileChooser();
-        ofd.addChoosableFileFilter(new FileFilter() {
-            @Override
-            public boolean accept(File f) {
-                return f.getName().toLowerCase().endsWith(".xml");
-            }
-
-            @Override
-            public String getDescription() {
-                return "XML file(*.xml)";
-            }
-        });
-        ofd.addChoosableFileFilter(new FileFilter() {
-            @Override
-            public boolean accept(File f) {
-                return f.getName().toLowerCase().endsWith(".gwi");
-            }
-
-            @Override
-            public String getDescription() {
-                return "MML2VGM file(*.gwi)";
-            }
-        });
-        ofd.addChoosableFileFilter(new FileFilter() {
-            @Override
-            public boolean accept(File f) {
-                return f.getName().toLowerCase().endsWith(".mwi");
-            }
-
-            @Override
-            public String getDescription() {
-                return "FMP7 file(*.mwi)";
-            }
-        });
-        ofd.addChoosableFileFilter(new FileFilter() {
-            @Override
-            public boolean accept(File f) {
-                return f.getName().toLowerCase().endsWith(".mml");
-            }
-
-            @Override
-            public String getDescription() {
-                return "NRTDRV file(*.mml)";
-            }
-        });
-        ofd.addChoosableFileFilter(new FileFilter() {
-            @Override
-            public boolean accept(File f) {
-                return f.getName().toLowerCase().endsWith(".mml");
-            }
-
-            @Override
-            public String getDescription() {
-                return "MXDRV file(*.mml)";
-            }
-        });
-        ofd.addChoosableFileFilter(new FileFilter() {
-            @Override
-            public boolean accept(File f) {
-                return f.getName().toLowerCase().endsWith(".mml");
-            }
-
-            @Override
-            public String getDescription() {
-                return "MusicLALF file(*.mml)";
-            }
+        Arrays.stream(extDescs).forEach(ed -> {
+            ofd.addChoosableFileFilter(new MyFileFilter(ed[0], ed[1]));
         });
         ofd.setDialogTitle("Read TonePallet file");
-        if (!parent.setting.getOther().getDefaultDataPath().isEmpty() && Files.exists(Path.of(parent.setting.getOther().getDefaultDataPath())) && IsInitialOpenFolder) {
+        if (!parent.setting.getOther().getDefaultDataPath().isEmpty() && Files.exists(Path.of(parent.setting.getOther().getDefaultDataPath())) && isInitialOpenFolder) {
             ofd.setCurrentDirectory(new File(parent.setting.getOther().getDefaultDataPath()));
         } else {
-//            ofd.RestoreDirectory = true;
+//            ofd.restoreDirectory = true;
         }
-//        ofd.CheckPathExists = true;
+//        ofd.checkPathExists = true;
 
         if (ofd.showOpenDialog(null) != JFileChooser.APPROVE_OPTION) {
             return;
         }
-        IsInitialOpenFolder = false;
+        isInitialOpenFolder = false;
 
         try {
 //            parent.ym2612Midi_LoadTonePallet(ofd.getSelectedFile().getPath(), Common.getFilterIndex(ofd) + 1);
@@ -821,8 +720,8 @@ public class FormYM2612MIDI extends FormBase implements View {
         @Override public String category() { return "opn"; }
         @Override public boolean perChip() { return false; }
         @Override public boolean hasMenuItem() { return false; }
-        @Override public java.awt.Point defaultOffset() { return new java.awt.Point(328, 0); }
+        @Override public Point defaultOffset() { return new Point(328, 0); }
         @Override public View create(FormMain frm, int chipId, int zoom) { return new FormYM2612MIDI(frm, zoom, frm.ym2612MidiParams()); }
-        @Override public java.util.List<mdplayer.form.SettingTab> settingTabs() { return java.util.List.of(new SettingMIDIKBDPanel()); }
+        @Override public List<SettingTab> settingTabs() { return List.of(new SettingMIDIKBDPanel()); }
     }
 }

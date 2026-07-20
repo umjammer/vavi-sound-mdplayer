@@ -24,7 +24,6 @@ import javax.swing.JFrame;
 
 import mdplayer.Audio;
 import mdplayer.driver.BaseDriver;
-import mdplayer.driver.fmp.FmpFmDspSource;
 import mdplayer.format.FileFormat;
 import mdplayer.plugin.BasePlugin;
 import vavi.sound.visualizer.fmdsp.FmDspVisualizer;

@@ -13,6 +13,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
@@ -56,7 +57,7 @@ public class FormHuC6280 extends FormChipBase<FormHuC6280.Params> {
 
     BufferedImage image;
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormHuC6280.class).node(FormHuC6280.class.getSimpleName());
+    static final Preferences prefs = Preferences.userNodeForPackage(FormHuC6280.class);
 
     public FormHuC6280(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -422,7 +423,6 @@ public class FormHuC6280 extends FormChipBase<FormHuC6280.Params> {
         public final Channel[] channels = {new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel()};
     }
 
-
     /** what this panel contributes to the GUI; see {@link ViewProvider} */
     public static class Provider implements ViewProvider {
 
@@ -454,8 +454,8 @@ public class FormHuC6280 extends FormChipBase<FormHuC6280.Params> {
                         audio.plugin.chipRegister.chip(mdplayer.chips.HuC6280Chip.class).getMask(chipId, ch));
         }
 
-        @Override public java.util.List<MixerSlot> mixerSlots() {
-            return java.util.List.of(new MixerSlot(27, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.HuC6280Chip.class, "huc6280", 120));
+        @Override public List<MixerSlot> mixerSlots() {
+            return List.of(new MixerSlot(27, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.HuC6280Chip.class, "huc6280", 120));
         }
     }
 }

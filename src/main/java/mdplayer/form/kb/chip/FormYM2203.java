@@ -12,6 +12,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.prefs.Preferences;
 
 import mdplayer.Common;
@@ -32,7 +33,7 @@ import mdplayer.form.View;
 
 public class FormYM2203 extends FormChipBase<FormYM2203.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormYM2203.class).node(FormYM2203.class.getSimpleName());
+    static final Preferences prefs = Preferences.userNodeForPackage(FormYM2203.class);
 
     public FormYM2203(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -564,8 +565,8 @@ public class FormYM2203 extends FormChipBase<FormYM2203.Params> {
                         audio.plugin.chipRegister.chip(mdplayer.chips.Ym2203Chip.class).getMask(chipId, ch));
         }
 
-        @Override public java.util.List<MixerSlot> mixerSlots() {
-            return java.util.List.of(new MixerSlot(2, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Ym2203Chip.class, "ym2203", 200),
+        @Override public List<MixerSlot> mixerSlots() {
+            return List.of(new MixerSlot(2, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Ym2203Chip.class, "ym2203", 200),
                     new MixerSlot(3, "FM", mdplayer.chips.Ym2203Chip.class, "ym2203FM", 200),
                     new MixerSlot(4, "PSG", mdplayer.chips.Ym2203Chip.class, "ym2203SSG", 120));
         }

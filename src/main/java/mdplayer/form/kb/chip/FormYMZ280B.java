@@ -12,6 +12,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.prefs.Preferences;
 
 import mdplayer.Common;
@@ -25,7 +26,7 @@ import mdplayer.form.View;
 
 public class FormYMZ280B extends FormChipBase<FormYMZ280B.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormYMZ280B.class).node(FormYMZ280B.class.getSimpleName());
+    static final Preferences prefs = Preferences.userNodeForPackage(FormYMZ280B.class);
 
     public FormYMZ280B(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -215,8 +216,8 @@ public class FormYMZ280B extends FormChipBase<FormYMZ280B.Params> {
         @Override public boolean hasRegisterDump() { return true; }
         @Override public View create(FormMain frm, int chipId, int zoom) { return new FormYMZ280B(frm, chipId, zoom); }
 
-        @Override public java.util.List<MixerSlot> mixerSlots() {
-            return java.util.List.of(new MixerSlot(22, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.YmZ280BChip.class, "ymz280b", 200));
+        @Override public List<MixerSlot> mixerSlots() {
+            return List.of(new MixerSlot(22, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.YmZ280BChip.class, "ymz280b", 200));
         }
     }
 }

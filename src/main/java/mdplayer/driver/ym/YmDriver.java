@@ -232,4 +232,20 @@ public class YmDriver extends BaseDriver {
 
         return written;
     }
+
+    /**
+     * The YM2149's registers as the chip has them, for the visualizer. The Atari's music is
+     * rendered here rather than through a {@link mdplayer.ChipRegister} chip, so this is the only
+     * way to see what its three channels are doing.
+     *
+     * @return null before the song has started
+     */
+    public int[] getPsgRegisters() {
+        if (music == null || music.ymChip == null) return null;
+        int[] regs = new int[16];
+        for (int i = 0; i < regs.length; i++) {
+            regs[i] = music.ymChip.readRegister(i) & 0xff;
+        }
+        return regs;
+    }
 }

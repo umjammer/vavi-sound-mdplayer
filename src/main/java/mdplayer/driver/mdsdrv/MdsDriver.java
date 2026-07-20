@@ -99,14 +99,9 @@ public class MdsDriver extends BaseDriver {
             lp = Math.max(lp, 0);
             curLoop = lp;
 
-            // NOTE: the underlying vavi.sound.mdsdrv driver stubs getStatus() and
-            // getNowLoopCounter() to always return 0, so it exposes no end-of-song
-            // information. Treating getStatus() == 0 as "stopped" (as a status-aware
-            // driver such as mucom88 would) makes this driver report itself stopped
-            // on the very first frame, which aborts playback for any consumer that
-            // honours the flag (Audio.play(), the SPI stream, frmMain's getVGMStopped()).
-            // Only a genuine error state (< 0) means stopped here.
-            if (mdsDriver.getStatus() < 0) {
+            // 0 = every track reached its finish command, < 0 = nothing loaded.
+            // (vavi-sound-mdsdrv 0.4.7+; earlier versions stubbed this to a constant 0.)
+            if (mdsDriver.getStatus() < 1) {
                 stopped = true;
             }
         } catch (Exception ex) {

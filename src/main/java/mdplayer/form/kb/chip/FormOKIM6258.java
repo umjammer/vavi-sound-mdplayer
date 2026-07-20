@@ -12,6 +12,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
@@ -26,7 +27,7 @@ import mdplayer.form.View;
 
 public class FormOKIM6258 extends FormChipBase<FormOKIM6258.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormOKIM6258.class).node(FormOKIM6258.class.getSimpleName());
+    static final Preferences prefs = Preferences.userNodeForPackage(FormOKIM6258.class);
 
     public FormOKIM6258(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -281,7 +282,6 @@ public class FormOKIM6258 extends FormChipBase<FormOKIM6258.Params> {
         public Boolean mask = false;
     }
 
-
     /** what this panel contributes to the GUI; see {@link ViewProvider} */
     public static class Provider implements ViewProvider {
 
@@ -299,8 +299,8 @@ public class FormOKIM6258 extends FormChipBase<FormOKIM6258.Params> {
             audio.plugin.chipRegister.chip(mdplayer.chips.OkiM6258Chip.class).resetMask(chipId);
         }
 
-        @Override public java.util.List<MixerSlot> mixerSlots() {
-            return java.util.List.of(new MixerSlot(37, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.OkiM6258Chip.class, "okim6258", 200));
+        @Override public List<MixerSlot> mixerSlots() {
+            return List.of(new MixerSlot(37, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.OkiM6258Chip.class, "okim6258", 200));
         }
     }
 }

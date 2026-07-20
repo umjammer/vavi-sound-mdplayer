@@ -47,30 +47,10 @@ public class SegaPcmChip extends BaseChip {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,}
     };
 
-    @Deprecated
-    public final byte[][] register = {
-            null, null
-    };
-
-    @Deprecated
-    public final boolean[][] keyOn = {
-            null, null
-    };
-
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Instrument>[] implementations() {
         return new Class[] {SegaPcmInst.class};
-    }
-
-    @Override
-    public void init(BasePlugin<? extends BaseDriver> context) {
-        super.init(context);
-
-        for (int chipId = 0; chipId < 2; chipId++) {
-            register[chipId] = new byte[0x200];
-            keyOn[chipId] = new boolean[16];
-        }
     }
 
     public void setMask(int chipId, int ch, boolean mask) {
@@ -82,12 +62,8 @@ public class SegaPcmChip extends BaseChip {
 
         if ((model == EnmModel.VirtualModel && (chipTypes[chipId] == null || !chipTypes[chipId].getUseReal()[0])) ||
                 (model == EnmModel.RealModel && (realChips != null && realChips[chipId] != null))) {
-            register[chipId][offset & 0x1ff] = (byte) data;
-
             if ((offset & 0x87) == 0x86) {
                 int ch = (offset >> 3) & 0xf;
-                if ((data & 0x01) == 0)
-                    keyOn[chipId][ch] = true;
                 data = mask[chipId][ch] ? data | 0x01 : data;
             }
         }
@@ -145,12 +121,8 @@ public class SegaPcmChip extends BaseChip {
     public Map<String, Object> getInfo(int chipId) {
         SegaPcmInst inst = context.mds.inst(SegaPcmInst.class);
         if (inst == null) return Collections.emptyMap(); // the song being played does not use this chip
-        Map<String, Object> info = new HashMap<>(inst.getView(chipId, "info", null));
-        if (!info.containsKey("register")) {
-            info.put("register", register[chipId]);
-        }
-        info.put("keyOn", keyOn[chipId]);
-        return info;
+        // the view reads the register file back out of the chip, so there is nothing to add
+        return new HashMap<>(inst.getView(chipId, "info", null));
     }
 
     public void setMask(int chipId, int ch) {
@@ -161,8 +133,8 @@ public class SegaPcmChip extends BaseChip {
         setMask(chipId, ch, false);
     }
 
-    private void dumpDataForSegaPCM(mdplayer.Common.EnmModel model, String chipName, int adr, byte[] romData, int len) {
-        if (model == mdplayer.Common.EnmModel.RealModel) return;
+    private void dumpDataForSegaPCM(EnmModel model, String chipName, int adr, byte[] romData, int len) {
+        if (model == EnmModel.RealModel) return;
         if (!setting.getOther().getDumpSwitch()) return;
 
         try {

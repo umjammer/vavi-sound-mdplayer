@@ -1,5 +1,6 @@
 package mdplayer.form.kb.chip;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ComponentAdapter;
@@ -12,6 +13,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
@@ -54,11 +56,9 @@ public class FormK051649 extends FormChipBase<FormK051649.Params> {
         this.addComponentListener(this.componentListener);
     }
 
-    // //#endregion
-
     BufferedImage image;
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormK051649.class).node(FormK051649.class.getSimpleName());
+    static final Preferences prefs = Preferences.userNodeForPackage(FormK051649.class);
 
     public FormK051649(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -278,9 +278,10 @@ public class FormK051649 extends FormChipBase<FormK051649.Params> {
     /** this panel's per-frame draw state, diffed new against old (see {@link FormChipBase}) */
     public static class Params {
 
-        public final Channel[] channels = {new Channel(), new Channel(), new Channel(), new Channel(), new Channel()};
+        public final Channel[] channels = {
+                new Channel(), new Channel(), new Channel(), new Channel(), new Channel()
+        };
     }
-
 
     /** what this panel contributes to the GUI; see {@link ViewProvider} */
     public static class Provider implements ViewProvider {
@@ -302,11 +303,11 @@ public class FormK051649 extends FormChipBase<FormK051649.Params> {
             audio.plugin.chipRegister.chip(mdplayer.chips.K051649Chip.class).resetMask(chipId, ch);
         }
 
-        @Override public java.util.List<MixerSlot> mixerSlots() {
-            return java.util.List.of(new MixerSlot(43, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.K051649Chip.class, "k051649", 200));
+        @Override public List<MixerSlot> mixerSlots() {
+            return List.of(new MixerSlot(43, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.K051649Chip.class, "k051649", 200));
         }
 
-        @Override public void getInstCh(java.awt.Component parent, mdplayer.Audio audio, mdplayer.Setting setting, int ch, int chipId) {
+        @Override public void getInstCh(Component parent, mdplayer.Audio audio, mdplayer.Setting setting, int ch, int chipId) {
             if (setting.getOther().getInstFormat() == mdplayer.Common.EnmInstFormat.MGSCSCC_PLAIN) {
                 new mdplayer.form.inst.MgscSccPlainInstWriter().write(parent, audio, chip(), ch, chipId);
             } else {

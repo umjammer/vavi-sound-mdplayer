@@ -12,6 +12,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.prefs.Preferences;
 
 import mdplayer.Chip.ChipKeyInfo;
@@ -30,7 +31,7 @@ import mdplayer.form.View;
 
 public class FormYM3526 extends FormChipBase<FormYM3526.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormYM3526.class).node(FormYM3526.class.getSimpleName());
+    static final Preferences prefs = Preferences.userNodeForPackage(FormYM3526.class);
 
     public FormYM3526(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -96,8 +97,8 @@ public class FormYM3526 extends FormChipBase<FormYM3526.Params> {
         }
     }
 
-    private final int[] slot1Tbl = {0, 1, 2, 6, 7, 8, 12, 13, 14};
-    private final int[] slot2Tbl = {3, 4, 5, 9, 10, 11, 15, 16, 17};
+    private static final int[] slot1Tbl = {0, 1, 2, 6, 7, 8, 12, 13, 14};
+    private static final int[] slot2Tbl = {3, 4, 5, 9, 10, 11, 15, 16, 17};
     private static final byte[] rhythmAdr = {0x53, 0x54, 0x52, 0x55, 0x51};
 
     public void changeScreenParams() {
@@ -398,9 +399,7 @@ public class FormYM3526 extends FormChipBase<FormYM3526.Params> {
                 new Channel(), new Channel(), new Channel(), new Channel(), // FM 9
                 new Channel(), new Channel(), new Channel(), new Channel(), new Channel() // Rhythm 5
         };
-
     }
-
 
     /** what this panel contributes to the GUI; see {@link ViewProvider} */
     public static class Provider implements ViewProvider {
@@ -424,15 +423,15 @@ public class FormYM3526 extends FormChipBase<FormYM3526.Params> {
 
         @Override public void forceChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
             if (ch >= 0 && ch < 14) {
-    if (mask)
+                if (mask)
                     audio.plugin.chipRegister.chip(mdplayer.chips.Ym3526Chip.class).setMask(chipId, ch);
                 else
                     audio.plugin.chipRegister.chip(mdplayer.chips.Ym3526Chip.class).resetMask(chipId, ch);
             }
         }
 
-        @Override public java.util.List<MixerSlot> mixerSlots() {
-            return java.util.List.of(new MixerSlot(17, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Ym3526Chip.class, "ym3526", 200));
+        @Override public List<MixerSlot> mixerSlots() {
+            return List.of(new MixerSlot(17, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Ym3526Chip.class, "ym3526", 200));
         }
     }
 }

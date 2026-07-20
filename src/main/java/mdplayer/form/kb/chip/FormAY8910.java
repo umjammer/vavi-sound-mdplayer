@@ -9,6 +9,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.List;
 
 import mdplayer.Common;
 import mdplayer.form.FrameBuffer;
@@ -99,7 +100,7 @@ public class FormAY8910 extends FormChipBase<FormAY8910.Params> {
 
     @Override
     public void changeScreenParams() {
-        int[] AY8910Register = audio.plugin.chipRegister.chip(Ay8910Chip.class).read(chipId);
+        int[] AY8910Register = (int[]) audio.plugin.chipRegister.chip(Ay8910Chip.class).getInfo(chipId).get("register");
 
         for (int ch = 0; ch < 3; ch++) { // SSG
 
@@ -327,8 +328,8 @@ public class FormAY8910 extends FormChipBase<FormAY8910.Params> {
                         audio.plugin.chipRegister.chip(mdplayer.chips.Ay8910Chip.class).getMask(chipId, ch));
         }
 
-        @Override public java.util.List<MixerSlot> mixerSlots() {
-            return java.util.List.of(new MixerSlot(25, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Ay8910Chip.class, "ay8910", 120));
+        @Override public List<MixerSlot> mixerSlots() {
+            return List.of(new MixerSlot(25, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Ay8910Chip.class, "ay8910", 120));
         }
     }
 }

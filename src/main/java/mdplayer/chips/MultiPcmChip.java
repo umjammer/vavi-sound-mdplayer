@@ -21,6 +21,10 @@ import mdsound.instrument.MultiPcmInst;
  */
 public class MultiPcmChip extends BaseChip {
 
+    private static final int CHANNELS = 28;
+
+    private final int[] mask = {0, 0};
+
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Instrument>[] implementations() {
@@ -36,12 +40,43 @@ public class MultiPcmChip extends BaseChip {
         }
     }
 
+    /**
+     * The channel state as the chip has it now. This fires no led event: it is a read, and a view
+     * polling it at frame rate would otherwise hold the led on for the whole song.
+     */
     @Override
     public Map<String, Object> getInfo(int chipId) {
-        fireEventHappened("led.on", chipId);
-
         MultiPcmInst inst = context.mds.inst(MultiPcmInst.class);
         return inst == null ? null : inst.getView(chipId, "info", null);
+    }
+
+    public void setMask(int chipId, int ch, boolean mask) {
+        if (mask) {
+            this.mask[chipId] |= 1 << ch;
+        } else {
+            this.mask[chipId] &= ~(1 << ch);
+        }
+
+        Instrument instrument = context.mds.inst(inst(chipId), 0);
+        if (instrument == null) return; // the song being played does not use this chip
+
+        if (mask)
+            instrument.setMask(chipId, 1 << ch);
+        else
+            instrument.resetMask(chipId, 1 << ch);
+    }
+
+    public void setMask(int chipId, int ch) {
+        setMask(chipId, ch, true);
+    }
+
+    public void resetMask(int chipId, int ch) {
+        setMask(chipId, ch, false);
+    }
+
+    /** the panel/main-window view of whether a channel is muted */
+    public boolean getMask(int chipId, int ch) {
+        return ch < CHANNELS && (mask[chipId] & (1 << ch)) != 0;
     }
 
     public void setBank(int chipId, int ch, int addr, EnmModel model) {

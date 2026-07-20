@@ -1,6 +1,7 @@
 package mdplayer.form.kb.chip;
 
 import java.awt.Dimension;
+import java.util.List;
 
 import mdplayer.form.FormBase;
 import mdplayer.form.View;
@@ -35,8 +36,8 @@ public class FormSAA1099 extends FormBase {
         @Override public boolean hasMenuItem() { return false; }
         @Override public View create(FormMain frm, int chipId, int zoom) { return null; }
 
-        @Override public java.util.List<MixerSlot> mixerSlots() {
-            return java.util.List.of(new MixerSlot(28, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Saa1099Chip.class, "saa1099", 200));
+        @Override public List<MixerSlot> mixerSlots() {
+            return List.of(new MixerSlot(28, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Saa1099Chip.class, "saa1099", 200));
         }
     }
 }
