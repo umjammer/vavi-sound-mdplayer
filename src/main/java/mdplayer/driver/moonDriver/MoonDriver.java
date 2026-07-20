@@ -132,7 +132,8 @@ logger.log(Level.DEBUG, "type: " + mtype);
     public byte[] compile(byte[] vgmBuf) {
         if (moonDriverCompiler == null) moonDriverCompiler = ICompiler.factory("moonDriver.compiler.Compiler");
         moonDriverCompiler.init();
-        moonDriverCompiler.setCompileSwitch("SRC");
+        // no "SRC": we only consume the returned binary, and it makes the compiler
+        // dump intermediate effect.h/define.inc next to the mml.
         moonDriverCompiler.setCompileSwitch("MoonDriverOption=-i");
         moonDriverCompiler.setCompileSwitch("MoonDriverOption=%s".formatted(plugin.playingFileName));
 
