@@ -465,10 +465,15 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
                 status.ssgNoise = channel.ssgNoise;
                 status.ppz8Ch = channel.pcmCh;
 
-                noteLength(row, status, channel.keyOn, channel.sounding, channel.note);
+                if (noteLength(row, status, channel.keyOn, channel.sounding, channel.note, channel.sampled)) {
+                    // streaming: the pitch is a playback rate, so the note it lands nearest is an
+                    // artefact of the arithmetic and not something the song ever played
+                    status.key = 0xff;
+                    status.actualKey = 0xff;
+                }
 
                 if (level >= 0) {
-                    envelope(level, channel.keyOn, channel.sounding, channel.amplitude);
+                    envelope(level, channel.keyOn, channel.sounding, channel.amplitude, channel.measured);
                     pans[level] = channel.pan;
                     levelTracks[level] = TrackId.values()[row];
                 }
@@ -530,7 +535,13 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
      * towards the sustain level while the key is held, and releases otherwise. Note that this is
      * an envelope, not a measurement - see the class comment.
      */
-    private void envelope(int c, boolean keyOn, boolean sounding, double amplitude) {
+    private void envelope(int c, boolean keyOn, boolean sounding, double amplitude, boolean measured) {
+        if (measured) {
+            // already an envelope, and the real one: hold the peak and let it fall, but do not
+            // scale it down to a sustain level the chip is not actually at
+            envelopes[c] = Math.max(amplitude, envelopes[c] * levelRelease);
+            return;
+        }
         if (keyOn) {
             envelopes[c] = amplitude;
         } else if (sounding) {
@@ -549,7 +560,8 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
      * The lengths are kept at the full resolution of the note clock and only divided by
      * {@link #barScale} on the way out, so lengthening the notes never loses the short ones.
      */
-    private void noteLength(int row, TrackStatus status, boolean keyOn, boolean sounding, int note) {
+    private boolean noteLength(int row, TrackStatus status, boolean keyOn, boolean sounding, int note,
+                               boolean sampled) {
         // A key on is only seen when the key actually goes down between two snapshots. MXDRV keys
         // off and back on inside one, so its rows look permanently held and would never measure a
         // note at all; a pitch change on a held row is the same event as far as the bar cares.
@@ -566,12 +578,47 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
             // resting: nothing is counting down
             status.ticks = 0;
             status.ticksLeft = 0;
-            return;
+            return false;
         }
         long elapsed = keyOnTicks[row] < 0 ? 0 : noteTicks - keyOnTicks[row];
+        if (sampled && elapsed > streamHold) {
+            // A sampled voice that has been sounding this long without being re-struck is not
+            // playing a note, it is streaming - a whole part, or a whole track, rendered as one
+            // endless sample the way an arcade board does it. There is no note and no length in
+            // that, only sound, so both meters stay off and the level meter carries the row.
+            status.ticks = 0;
+            status.ticksLeft = 0;
+            return true;
+        }
+        if (noteLengths[row] == 0) {
+            // Nothing measured yet, so this is the row's first note: it is being held and how long
+            // it runs is not known yet. The bar says held, full, and empties when the note does. An
+            // empty bar would say the row was silent, which is what every first note used to show.
+            status.ticks = barFullScale;
+            status.ticksLeft = barFullScale;
+            return false;
+        }
         status.ticks = noteLengths[row] / barScale;
         status.ticksLeft = (int) Math.max(0, noteLengths[row] - elapsed) / barScale;
+        return false;
     }
+
+    /**
+     * How long a sampled voice may sound without being re-struck before it counts as streaming
+     * rather than playing a note: longer than the bar itself can represent.
+     * <p>
+     * Deliberately not a number of seconds. The note clock is driven by the driver's own sample
+     * counter, which not every driver advances at the same rate, so a threshold in seconds would
+     * only be true for some of them. Measured against the bar it is exact whatever the rate - a
+     * note too long for the bar to draw is one the bar has nothing to say about.
+     * <p>
+     * Four bars' worth rather than one, which lands somewhere between five and twenty seconds
+     * depending on the driver. A single bar caught a PMD ADPCM part holding a long note and blanked
+     * a key that was really being played; nothing sequenced holds one sample this long, while a
+     * streamed track holds it for minutes, so the cost of waiting is a few seconds of a held note
+     * being drawn before the row goes quiet.
+     */
+    private static final int streamHold = barFullScale * 4;
 
     /**
      * Picks {@link #barScale} from the notes that are sounding, before the rows are filled: the

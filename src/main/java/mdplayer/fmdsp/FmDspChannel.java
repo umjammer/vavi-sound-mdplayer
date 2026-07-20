@@ -34,6 +34,21 @@ public class FmDspChannel {
     /** linear output level 0..1 the level meter attacks to */
     public double amplitude;
 
+    /**
+     * Whether {@link #amplitude} is the sound the chip actually made, rather than what its
+     * registers say it should be making. A measured one is already an envelope, so the source
+     * shows it as it is instead of putting its own attack and sustain over the top of it.
+     */
+    public boolean measured;
+
+    /**
+     * Whether this is a sampled voice, i.e. one whose {@link #note} is worked back from a playback
+     * rate rather than played as a note. It matters for a part that is streamed rather than
+     * sequenced - a whole track as one endless sample, which arcade boards do - where the rate is
+     * fixed and the note it lands nearest means nothing at all. See {@code ChipFmDspSource#stream}.
+     */
+    public boolean sampled;
+
     public Pan pan = Pan.CENTER;
 
     public TrackInfo info = TrackInfo.NORMAL;
@@ -60,6 +75,8 @@ public class FmDspChannel {
         note = -1;
         volume = 0;
         amplitude = 0;
+        measured = false;
+        sampled = false;
         pan = Pan.CENTER;
         info = TrackInfo.NORMAL;
         ssgTone = false;

@@ -84,13 +84,21 @@ public class YmZ280BChip extends BaseChip {
     /**
      * The register shadow the panel reads, and beside it the channel state as the chip itself has
      * it - the emulator moves a voice on by itself, so only it knows whether one is still sounding.
+     * <p>
+     * {@code output} is the sample the chip last mixed, which is the only thing here that moves
+     * with the music: a channel's level register is a setting the song writes once, so a part
+     * streamed as one long sample holds it for minutes. See {@code PcmSlotReader#outputLevel}.
      */
     @Override
     public Map<String, Object> getInfo(int chipId) {
         Map<String, Object> info = new HashMap<>();
         info.put("register", register[chipId]);
         YmZ280BInst inst = context.mds.inst(YmZ280BInst.class);
-        if (inst != null) info.putAll(inst.getView(chipId, "info", null));
+        if (inst != null) {
+            info.putAll(inst.getView(chipId, "info", null));
+            Object output = inst.getView(chipId, "volume", null).get(inst.getName());
+            if (output instanceof Integer i) info.put("output", i);
+        }
         return info;
     }
 }

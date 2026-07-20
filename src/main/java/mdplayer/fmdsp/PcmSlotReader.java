@@ -86,6 +86,8 @@ public abstract class PcmSlotReader implements FmDspChipReader {
         mappedChannels = 0;
         active = false;
         info = null;
+        peak = 0;
+        loudest = 0;
     }
 
     @Override
@@ -136,6 +138,7 @@ public abstract class PcmSlotReader implements FmDspChipReader {
     @Override
     public void read(Group group, int slot, FmDspChannel out) {
         out.name = "PCM";
+        out.sampled = true; // every channel here plays a sample at a rate, it does not play notes
         int ch = slotChannels[slot];
         if (ch < 0 || info == null) return;
 
@@ -172,6 +175,39 @@ public abstract class PcmSlotReader implements FmDspChipReader {
         Object value = info.get("channels." + ch + "." + field);
         return value instanceof Boolean b && b;
     }
+
+    /**
+     * How loud the chip actually is right now, {@code 0} to {@code 1}, or {@code -1} when it does
+     * not report an {@code output} sample.
+     * <p>
+     * A sampled channel's level register is a setting, not a level: a part streamed as one long
+     * sample sets it once and the meter then sits frozen for the whole song, which is what it used
+     * to do. The chip's mixed output is the only thing to hand that moves with the music. It is one
+     * sample per frame, so it is peak followed - a bare sample crosses zero and would flicker - and
+     * being the mix, it says the same thing for every channel of a chip sounding more than one at
+     * a time. That is still worth more than a bar that never moves.
+     */
+    protected double outputLevel() {
+        Object value = info == null ? null : info.get("output");
+        if (!(value instanceof Integer sample)) return -1;
+        int level = Math.abs(sample);
+        // Against the full scale of a sample this would barely leave the floor: a chip mixing eight
+        // voices keeps headroom for all of them, and one song uses a quarter of it. The reference
+        // is the loudest the chip has been in this song instead, so the meter uses its full height,
+        // with a floor under it so that a song that is quiet throughout still looks quiet.
+        loudest = Math.max(loudest, level);
+        peak = Math.max(level, peak * peakDecay);
+        return Math.min(peak / Math.max(loudest, quietest), 1);
+    }
+
+    private double peak;
+    private int loudest;
+
+    /** how fast the peak follower falls, per snapshot */
+    private static final double peakDecay = 0.9;
+
+    /** the quietest a chip can be and still fill the meter, an eighth of a sample's full scale */
+    private static final int quietest = Short.MAX_VALUE / 8;
 
     /** a left and right level of any depth, as one of the pans the display has */
     protected static Pan panOf(int l, int r) {

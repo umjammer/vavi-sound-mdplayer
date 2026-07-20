@@ -73,8 +73,13 @@ public class YmZ280BReader extends PcmSlotReader {
         int pan = intOf(ch, "pan", 8);
         double frequency = frequencyOf(ch);
 
-        out.volume = level;
-        out.amplitude = level / levelMax;
+        // the display counts volume the way every other row does, 0 to 127, not the register's 255
+        out.volume = (int) (level / levelMax * 127);
+        // what is actually being heard, which already has the level register in it - the register
+        // alone is a setting a streamed part writes once and then holds for the whole song
+        double output = outputLevel();
+        out.amplitude = output < 0 ? level / levelMax : output;
+        out.measured = output >= 0;
         out.pan = panOf(0x10 - pan, pan);
         out.note = frequency > 0 ? Notes.noteOfRatio(frequency / referenceRate) : -1;
     }

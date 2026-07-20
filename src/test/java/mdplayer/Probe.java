@@ -5,7 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 
-import mdplayer.chips.MidiPlugin;
+import mdplayer.chips.YmZ280BChip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.format.FileFormat;
 import mdplayer.plugin.BasePlugin;
@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 
-/** scratch: does stopping a MIDI song actually silence the synthesizer? */
+/** scratch: what are a YMZ280B song's channels actually doing over time? */
 class Probe {
 
     @Test
@@ -34,30 +34,26 @@ class Probe {
         plugin.paused = false;
         plugin.fadeout = false;
 
-        MidiPlugin midi = plugin.chipRegister.plugin(MidiPlugin.class);
         short[] buffer = new short[1024];
         BaseDriver d = plugin.getDriver();
-        int seconds = Integer.getInteger("probe.seconds", 10);
-        int lastLoop = -1;
+        int seconds = Integer.getInteger("probe.seconds", 20);
+        String last = "";
         for (int i = 0; i < 44100 * seconds / buffer.length; i++) {
             d.render(buffer, 0, buffer.length);
-            if (d instanceof mdplayer.driver.ahx.AhxDriver ahx && i % 400 == 0) {
-                var p = ahx.getPlayer();
-                System.err.printf("%.1fs posNr=%d/%d noteNr=%d tempo=%d end=%d%n",
-                        (double) i * buffer.length / 44100, p.posNr, p.song.positionNr,
-                        p.noteNr, p.tempo, p.songEndReached);
+            if (i % 10 != 0) continue;
+            var info = plugin.chipRegister.chip(YmZ280BChip.class).getInfo(0);
+            StringBuilder sb = new StringBuilder();
+            for (int ch = 0; ch < 8; ch++) {
+                Object playing = info.get("channels." + ch + ".playing");
+                if (!(playing instanceof Boolean b) || !b) continue;
+                sb.append(ch).append(":f=").append(info.get("channels." + ch + ".frequency"))
+                        .append(",l=").append(info.get("channels." + ch + ".level")).append("  ");
             }
-            if (d.curLoop != lastLoop || d.stopped || plugin.stopped) {
-                System.err.printf("%.1fs curLoop=%d stopped=%b/%b counter=%d total=%d%n",
-                        (double) i * buffer.length / 44100, d.curLoop, d.stopped, plugin.stopped,
-                        d.counter, d.totalCounter);
-                lastLoop = d.curLoop;
-                if (d.stopped || plugin.stopped) break;
+            String now = sb.toString();
+            if (!now.equals(last)) {
+                System.err.printf("%.2fs %s%n", (double) i * buffer.length / 44100, now);
+                last = now;
             }
         }
-        System.err.println("end: voices=" + midi.activeVoices() + " sent=" + midi.sentMessages());
-
-        plugin.stop();
-        midi.allSoundOff();
     }
 }
