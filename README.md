@@ -21,14 +21,14 @@ this is a fork of [MDPlayer](https://github.com/kuma4649/MDPlayer)
 | MDS                             | mega drive       | ✅️<sup>*</sup> |    -     | driver                | [vavi-sound-mdsdrv](https://github.com/umjammer/vavi-sound-mdsdrv)   | (*) 🐛  [pcm has problem](https://github.com/umjammer/vavi-sound-mdsdrv/issues/1) |
 | MUC/MUB                         | PC88 MUCOM88     |       ✅️       |    ✅     | driver                | [vavi-sound-mucom88](https://github.com/umjammer/vavi-sound-mucom88) | ~~🐛 \[compiler] same as c# but both wrong~~                                      |
 | S98                             | PC98             |       ✅️       |    -     | built-in              |                                                                      |                                                                                   |
-| MML/M/M2/MZ                     | PC98 PMD         |       ✅️       |    ✅️    | driver                | [vavi-sound-pmd](https://github.com/umjammer/vavi-sound-pmd)         | for commercial                                                                    |
-| MPI/OPI</br>MVI/OVI</br>MZI/OZI | PC98 FMP         |       ✅️       |    ✅️    | built-in*             |                                                                      | for freeware                                                                      |
+| MML/M/M2/MZ                     | PC98 PMD         |       ✅️       |    ✅️    | driver                | [vavi-sound-pmd](https://github.com/umjammer/vavi-sound-pmd)         | used for commercial mainly                                                        |
+| MPI/OPI</br>MVI/OVI</br>MZI/OZI | PC98 FMP         |       ✅️       |    ✅️    | built-in*             |                                                                      | used for freeware mainly                                                          |
 | MUS/O/OX/OY                     | PC98 muap98      |       ✅        |    ✅️    | driver                | [vavi-sound-muap](https://github.com/umjammer/vavi-sound-muap)       |                                                                                   | 
 | MDX                             | X68k MXDRV       |       ✅️       |    -     | built-in              |                                                                      |                                                                                   |
 | MND                             | X68k MNDRV       |      ✅️ ️      |    -     | built-in              |                                                                      |                                                                                   |
 | ZMD/ZMS                         | X68k ZMusic      |       ✅️       |    ✅️    | built-in*             |                                                                      |                                                                                   |
 | NRD                             | X1 NRTDRV        |       ✅️       |    -     | built-in              |                                                                      |                                                                                   |
-| MDL/MDR                         | MSX MoonDriver   |       ✅️       |    🚧    | ~~built-in~~, driver  | [vavi-sound-moon](https://github.com/umjammer/vavi-sound-moon)       | 🐛 \[compiler] same as c# but both wrong                                          |
+| MDL/MDR                         | MSX MoonDriver   |       ✅️       |    ✅️    | ~~built-in~~, driver  | [vavi-sound-moon](https://github.com/umjammer/vavi-sound-moon)       | ~~🐛 \[compiler] same as c# but both wrong~~                                      |
 | MGS                             | MSX MGSDRV       |       ✅️       |    -     | built-in              |                                                                      |                                                                                   |
 | NDP                             | MSX NDP          |       ✅️       |    -     | built-in*             |                                                                      |                                                                                   |
 | BGM/MSD                         | MSX MuSICA       |       ✅️       |    ✅️    | built-in*             |                                                                      | original also often fails                                                         |
@@ -263,6 +263,7 @@ you can select a chip implementation variant by number.
     * mxdrv: current-position counter reads 0
     * mxdrv: pdx (see portable mdx)
  * chip class should handle one chip
+ * real chip is one of instrument?
  * ~~eliminate dotnet4j~~
  * ~~vgm spi selector~~
    * ~~vavi-sound-smu (wip)~~
