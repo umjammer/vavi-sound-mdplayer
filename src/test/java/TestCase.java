@@ -4,15 +4,22 @@
  * Programmed by Naohide Sano
  */
 
+import java.awt.BorderLayout;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -22,18 +29,28 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 
+import javax.swing.JFrame;
+
 import com.github.kwhat.jnativehook.GlobalScreen;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
 import mdplayer.Audio;
+import mdplayer.ChipFmDspSource;
+import mdplayer.Common;
+import mdplayer.MidiOutInfo;
+import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
 import mdplayer.format.FileFormat;
 import mdplayer.plugin.BasePlugin;
 import musicDriverInterface.MetaData;
+import vavi.sound.visualizer.fmdsp.FmDspVisualizer;
+import vavi.sound.visualizer.fmdsp.LeftMode;
+import vavi.sound.visualizer.fmdsp.RightMode;
 import vavi.util.Debug;
 import vavi.util.archive.Archives;
 import vavi.util.properties.annotation.Property;
 import vavi.util.properties.annotation.PropsEntity;
+import vavi.util.serdes.Serdes;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -101,6 +118,10 @@ public class TestCase {
 
     @Property
     String ext;
+
+    /** PC-98 font rom, the comment lines have no Japanese glyphs without it */
+    @Property(name = "fmdsp.fontRom")
+    String fontRom;
 
     @Property(name = "multi.1")
     String multi1;
@@ -369,24 +390,184 @@ Debug.println("stop");
         mdplayer.Setting setting = new mdplayer.Setting();
         setting.init();
         var midiOut = setting.getMidiOut();
-        var list = new java.util.ArrayList<mdplayer.MidiOutInfo[]>();
-        mdplayer.MidiOutInfo info1 = new mdplayer.MidiOutInfo();
+        var list = new ArrayList<MidiOutInfo[]>();
+        MidiOutInfo info1 = new mdplayer.MidiOutInfo();
         info1.id = 1;
         info1.name = "TestMIDI1";
-        mdplayer.MidiOutInfo info2 = new mdplayer.MidiOutInfo();
+        MidiOutInfo info2 = new mdplayer.MidiOutInfo();
         info2.id = 2;
         info2.name = "TestMIDI2";
         list.add(new mdplayer.MidiOutInfo[]{info1, info2});
         midiOut.setMidiOutInfos(list);
 
-        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-        vavi.util.serdes.Serdes.Util.serialize(setting, baos);
-        String xml = baos.toString(java.nio.charset.StandardCharsets.UTF_8);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        Serdes.Util.serialize(setting, baos);
+        String xml = baos.toString(StandardCharsets.UTF_8);
         System.out.println("Serialized XML:\n" + xml);
 
-        mdplayer.Setting loaded = new mdplayer.Setting();
-        vavi.util.serdes.Serdes.Util.deserialize(new java.io.ByteArrayInputStream(baos.toByteArray()), loaded);
+        Setting loaded = new Setting();
+        Serdes.Util.deserialize(new ByteArrayInputStream(baos.toByteArray()), loaded);
         System.out.println("Deserialized successfully!");
+    }
+
+    /**
+     * Plays the file of the {@code generic} property of local.properties with the chip-cache
+     * source - any format mdplayer knows, no driver-specific source involved.
+     */
+    @Test
+    @DisplayName("play anything w/ fmdsp visualizer via the generic chip source")
+    @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
+    void testPlay() throws Exception {
+Debug.println("filename: " + file);
+        Audio audio = Audio.getInstance();
+
+        FileFormat format = FileFormat.getFileFormat(file);
+        format.load(Archives.getInputStream(new BufferedInputStream(Files.newInputStream(Path.of(file)))), null);
+        var plugin = (BasePlugin<? extends BaseDriver>) format.getPlugin();
+        plugin.setParams(format, Map.of("fileName", file));
+
+        ChipFmDspSource source = new ChipFmDspSource();
+        source.bind(plugin);
+        source.setFilename(Path.of(file).getFileName().toString());
+
+        FmDspVisualizer visualizer = new FmDspVisualizer(60);
+        visualizer.setTitle("MDDSP");
+        visualizer.setVersion(Common.version.equals("undefined") ? null : Common.version);
+        visualizer.setDataSource(source);
+        if (fontRom != null && Files.exists(Path.of(fontRom))) {
+            visualizer.setFontRom(Files.readAllBytes(Path.of(fontRom)));
+        }
+
+        JFrame frame = new JFrame();
+        frame.setTitle(Path.of(file).getFileName() + " - generic");
+        frame.setLayout(new BorderLayout());
+        frame.add(visualizer, BorderLayout.CENTER);
+        frame.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                int code = e.getKeyCode();
+                if (code >= KeyEvent.VK_F1 && code <= KeyEvent.VK_F10) {
+                    visualizer.setPaletteIndex(code - KeyEvent.VK_F1);
+                } else if (code == KeyEvent.VK_F11) {
+                    if (e.isShiftDown()) {
+                        RightMode[] r = RightMode.values();
+                        visualizer.setRightMode(r[(visualizer.getRightMode().ordinal() + 1) % r.length]);
+                    } else {
+                        LeftMode[] l = LeftMode.values();
+                        visualizer.setLeftMode(l[(visualizer.getLeftMode().ordinal() + 1) % l.length]);
+                    }
+                } else if (code == KeyEvent.VK_SPACE) {
+                    audio.pause();
+                    source.setPaused(audio.isPaused());
+                }
+            }
+        });
+        frame.pack();
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
+        frame.requestFocusInWindow();
+
+        audio.init(plugin);
+        audio.addGenericListener(source::update);
+        visualizer.start();
+        audio.play();
+        audio.close();
+        visualizer.stop();
+        frame.setVisible(false);
+        frame.dispose();
+    }
+
+    /**
+     * Plays the file of the {@code generic} property of local.properties with the chip-cache
+     * source - any format mdplayer knows, no driver-specific source involved.
+     */
+    @Test
+    @DisplayName("play multiple w/ fmdsp visualizer via the generic chip source")
+    @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
+    void testMultiPlay() throws Exception {
+        Audio audio = Audio.getInstance();
+
+        ChipFmDspSource source = new ChipFmDspSource();
+
+        FmDspVisualizer visualizer = new FmDspVisualizer(60);
+        visualizer.setTitle("MDDSP");
+        visualizer.setVersion(Common.version.equals("undefined") ? null : Common.version);
+        visualizer.setDataSource(source);
+        if (fontRom != null && Files.exists(Path.of(fontRom))) {
+            visualizer.setFontRom(Files.readAllBytes(Path.of(fontRom)));
+        }
+
+        AtomicReference<CountDownLatch> cdl = new AtomicReference<>();
+
+        JFrame frame = new JFrame();
+        frame.setLayout(new BorderLayout());
+        frame.add(visualizer, BorderLayout.CENTER);
+        frame.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                int code = e.getKeyCode();
+                if (code >= KeyEvent.VK_F1 && code <= KeyEvent.VK_F10) {
+                    visualizer.setPaletteIndex(code - KeyEvent.VK_F1);
+                } else if (code == KeyEvent.VK_F11) {
+                    if (e.isShiftDown()) {
+                        RightMode[] r = RightMode.values();
+                        visualizer.setRightMode(r[(visualizer.getRightMode().ordinal() + 1) % r.length]);
+                    } else {
+                        LeftMode[] l = LeftMode.values();
+                        visualizer.setLeftMode(l[(visualizer.getLeftMode().ordinal() + 1) % l.length]);
+                    }
+                } else if (code == KeyEvent.VK_SPACE) {
+                    audio.pause();
+                    source.setPaused(audio.isPaused());
+                } else if (code == KeyEvent.VK_N) {
+                    if (e.isControlDown()) {
+                        cdl.get().countDown();
+                    }
+                }
+            }
+        });
+        frame.pack();
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
+        frame.requestFocusInWindow();
+
+        List<Path> files = listFilesInLocalProperties();
+        Collections.shuffle(files);
+
+        for (Path path : files) {
+            this.file = path.toString();
+Debug.print("play: " + file + " ---------------------------------------------------------------------");
+            // every song brings its own format, plugin and driver: hoisting these out of the loop
+            // leaves every song after the first playing through the first one's plugin, so the
+            // driver - and the name the display takes from it - never changes
+            FileFormat format = FileFormat.getFileFormat(file);
+            format.load(Archives.getInputStream(new BufferedInputStream(Files.newInputStream(path))), null);
+            var plugin = (BasePlugin<? extends BaseDriver>) format.getPlugin();
+            plugin.setParams(format, Map.of("fileName", file));
+            frame.setTitle(Path.of(file).getFileName() + " - generic");
+
+            audio.init(plugin);
+            audio.addGenericListener(source::update);
+            // the chips are shared singletons, so last song's state has to go before this one
+            source.reset();
+            source.bind(plugin);
+            source.setFilename(Path.of(file).getFileName().toString());
+            visualizer.start();
+            ExecutorService es = Executors.newSingleThreadExecutor();
+            cdl.set(new CountDownLatch(1));
+            es.submit(() -> { try { audio.play(); cdl.get().countDown(); } catch (Exception e) { Debug.printStackTrace(e); }});
+Debug.print("await");
+            cdl.get().await();
+Debug.println("await: broke");
+            es.shutdownNow();
+Debug.println("stop");
+            audio.stop();
+            audio.close();
+            visualizer.stop();
+        }
+
+        frame.setVisible(false);
+        frame.dispose();
     }
 
     /**
