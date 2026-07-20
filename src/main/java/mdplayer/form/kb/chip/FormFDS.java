@@ -90,13 +90,13 @@ public class FormFDS extends FormChipBase<FormFDS.Params> {
         final double LOG_2 = 0.69314718055994530941723212145818;
         final int NOTE_440HZ = 12 * 4 + 9;
 
-        Map<String, Object> reg = audio.plugin.chipRegister.chip(NpNesChip.FdsChip.class).readFds(chipId);
+        Map<String, Object> reg = audio.plugin.chipRegister.chip(NpNesChip.FdsChip.class).getInfo(chipId);
         int freq;
         int vol;
         int note;
-        if (reg != null) {
-            freq = (int) reg.get("lastFreq");
-            vol = (int) reg.get("lastVol");
+        if (!reg.isEmpty()) {
+            freq = (int) reg.get("freq");
+            vol = (int) reg.get("vol");
             note = -15 + (int) ((12 * (Math.log(freq) / LOG_2 - LOG2_440) + NOTE_440HZ + 0.5));
             note = note < 0 ? -1 : (note > 120 ? -1 : note);
             note = vol == 0 ? -1 : note;
@@ -132,7 +132,7 @@ public class FormFDS extends FormChipBase<FormFDS.Params> {
             newParam.WE = (boolean) reg.get("WE");
         }
     
-        newParam.channel.mask = audio.plugin.chipRegister.chip(NpNesChip.FdsChip.class).getFdsMask(chipId);
+        newParam.channel.mask = audio.plugin.chipRegister.chip(NpNesChip.FdsChip.class).getMask(chipId, -1);
     }
 
     public void drawScreenParams() {
@@ -356,7 +356,7 @@ public class FormFDS extends FormChipBase<FormFDS.Params> {
 
         @Override public void setChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
             mdplayer.chips.NpNesChip.FdsChip c = audio.plugin.chipRegister.chip(mdplayer.chips.NpNesChip.FdsChip.class);
-            if (!c.getFdsMask(chipId)) c.setFdsMask(chipId); else c.resetFdsMask(chipId);
+            if (!c.getMask(chipId, -1)) c.setMask(chipId, -1); else c.resetMask(chipId, -1);
         }
 
         @Override public void resetChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {

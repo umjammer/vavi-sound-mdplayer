@@ -162,6 +162,9 @@ public class FormC352 extends FormChipBase<FormC352.Params> {
         if (info == null) return; // the song being played does not use this chip
         int[] c352Register = (int[]) info.get("register");
         int[] c352key = (int[]) info.get("flags");
+        // the registers are read back into a buffer the chip reuses, and the visualizer reads the
+        // same one, so nothing here may write to it
+        boolean[] keyOff = new boolean[32];
 
         for (int ch = 0; ch < 32; ch++) {
             newParam.channels[ch].note = searchC352Note(c352Register[ch * 8 + 2]);
@@ -182,7 +185,7 @@ public class FormC352 extends FormChipBase<FormC352.Params> {
                 if ((c352key[ch] & 0x8000) == 0) {
                     newParam.channels[ch].note = -1;
 
-                    c352Register[ch * 8 + 3] = c352Register[ch * 8 + 3] & 0xbfff;
+                    keyOff[ch] = true;
                     if (newParam.channels[ch].volumeL > 0) newParam.channels[ch].volumeL--;
                     if (newParam.channels[ch].volumeR > 0) newParam.channels[ch].volumeR--;
                     if (newParam.channels[ch].volumeRL > 0) newParam.channels[ch].volumeRL--;
@@ -190,7 +193,8 @@ public class FormC352 extends FormChipBase<FormC352.Params> {
                 }
             }
 
-            int d = c352Register[ch * 8 + 3];
+            // a channel the chip has finished with shows no key on, whatever the register says
+            int d = keyOff[ch] ? c352Register[ch * 8 + 3] & 0xbfff : c352Register[ch * 8 + 3];
             newParam.channels[ch].bit[0] = (d & 0x8000) != 0;
             newParam.channels[ch].bit[1] = (d & 0x4000) != 0;
             newParam.channels[ch].bit[2] = (d & 0x2000) != 0;

@@ -178,4 +178,14 @@ public class AhxDriver extends BaseDriver {
 
         return written;
     }
+
+    /**
+     * The replayer's voices, for the visualizer. AHX renders its own audio and registers no chip,
+     * so this is the only view of what its four channels are doing.
+     *
+     * @return null before the song has started
+     */
+    public AHXPlayer getPlayer() {
+        return player;
+    }
 }

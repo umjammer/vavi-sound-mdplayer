@@ -23,12 +23,6 @@ import mdsound.instrument.C352Inst;
  */
 public class C352Chip extends BaseChip {
 
-    @Deprecated
-    public final int[][] register = {null, null};
-
-    @Deprecated
-    public final int[][] keyOn = {null, null};
-
     private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
                     false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false},
@@ -42,16 +36,6 @@ public class C352Chip extends BaseChip {
         return new Class[] {C352Inst.class};
     }
 
-    @Override
-    public void init(BasePlugin<? extends BaseDriver> context) {
-        super.init(context);
-
-        for (int chipId = 0; chipId < 2; chipId++) {
-            register[chipId] = new int[0x203];
-            keyOn[chipId] = new int[32];
-        }
-    }
-
     public void setMask(int chipId, int ch, boolean mask) {
         this.mask[chipId][ch] = mask;
     }
@@ -59,9 +43,6 @@ public class C352Chip extends BaseChip {
     public void write(int chipId, int adr, int data, EnmModel model) {
         fireEventHappened("led.on", chipId);
 
-        if (adr < register[chipId].length)
-            register[chipId][adr] = data;
-        int c = adr / 8;
         if (adr < 0x100 && (adr % 8) == 3 && mask[chipId][adr / 8]) {
             data &= 0xbfff;
         }
@@ -82,8 +63,10 @@ public class C352Chip extends BaseChip {
     public Map<String, Object> getInfo(int chipId) {
         C352Inst inst = context.mds.inst(C352Inst.class);
         if (inst == null) return null; // the song being played does not use this chip
+        // read back from the chip rather than shadowing the writes: the emulator moves the flags
+        // on by itself, so a copy taken on write would never show a sample running out
         return Map.of(
-                "register", register[chipId],
+                "register", inst.getView(chipId, "register", null).get("register"),
                 "flags", inst.getView(chipId, "flags", null).get("flags")
         );
     }

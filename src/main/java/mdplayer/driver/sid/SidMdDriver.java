@@ -16,7 +16,6 @@ import mdplayer.chips.SidChip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTuneInfo.Model;
 import mdplayer.plugin.BasePlugin;
-import mdsound.VisWaveBuffer;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 import vavi.util.ByteUtil;
@@ -206,7 +205,7 @@ public class SidMdDriver extends BaseDriver implements SidDriver {
             
             for (int i = 0; i < toCopy / 2; i++) {
                 processOneFrame();
-                this.visWB.enq(b[offset + written + i * 2], b[offset + written + i * 2 + 1]);
+                fireEventHappened(this, "wave.buffer", b[offset + written + i * 2], b[offset + written + i * 2 + 1]);
             }
 
             written += toCopy;
@@ -253,6 +252,4 @@ logger.log(Level.INFO, "songNo: " + sid.song + " / " + sid.songs);
     public int getSongs() {
         return sid.songs;
     }
-
-    final VisWaveBuffer visWB = new VisWaveBuffer();
 }

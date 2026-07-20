@@ -100,7 +100,7 @@ public class FormAY8910 extends FormChipBase<FormAY8910.Params> {
 
     @Override
     public void changeScreenParams() {
-        int[] AY8910Register = audio.plugin.chipRegister.chip(Ay8910Chip.class).read(chipId);
+        int[] AY8910Register = (int[]) audio.plugin.chipRegister.chip(Ay8910Chip.class).getInfo(chipId).get("register");
 
         for (int ch = 0; ch < 3; ch++) { // SSG
 

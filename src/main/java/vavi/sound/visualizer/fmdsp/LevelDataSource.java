@@ -49,4 +49,36 @@ public interface LevelDataSource {
 
     /** Pan position to display. */
     Pan pan(int channel);
+
+    /**
+     * Label drawn above the channel's meter, up to 3 characters (e.g. {@code "OPM"}). As soon as
+     * any channel provides one, the built-in PC-98 label row is replaced by the provided labels.
+     */
+    default String label(int channel) {
+        return null;
+    }
+
+    /**
+     * The track row whose key, pan and tone number the meter column displays underneath itself,
+     * or null when the column has none (the drum meter). Defaults to the fixed PC-98 assignment;
+     * a source that hands its meter columns out dynamically overrides this so the readout follows
+     * the same chip as the meter.
+     */
+    default TrackId track(int channel) {
+        return switch (channel) {
+            case 0 -> TrackId.FM_1;
+            case 1 -> TrackId.FM_2;
+            case 2 -> TrackId.FM_3;
+            case 3 -> TrackId.FM_4;
+            case 4 -> TrackId.FM_5;
+            case 5 -> TrackId.FM_6;
+            case 6 -> TrackId.SSG_1;
+            case 7 -> TrackId.SSG_2;
+            case 8 -> TrackId.SSG_3;
+            case 9 -> null; // rhythm
+            case 10 -> TrackId.ADPCM;
+            case 11, 12, 13, 14, 15, 16, 17, 18 -> TrackId.values()[TrackId.PPZ8_1.ordinal() + channel - 11];
+            default -> null;
+        };
+    }
 }

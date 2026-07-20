@@ -19,7 +19,7 @@ import static java.lang.System.getLogger;
 
 
 /**
- * NsfChip.
+ * NsfChip. (for vgm)
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
@@ -39,7 +39,7 @@ public class NesChip extends BaseChip {
         }
 
         // TODO getInfo
-        public int[] readDmc(int chipId, EnmModel model) {
+        public int[] getInfo(int chipId, EnmModel model) {
             fireEventHappened("led.on", chipId);
 
             if (model == EnmModel.VirtualModel) {
@@ -54,8 +54,8 @@ public class NesChip extends BaseChip {
             }
         }
 
-        public void setDmcMask(int chipId, int ch) {
-            setMask(chipId, ch + 2);
+        public void setMask(int chipId, int ch) {
+            super.setMask(chipId, ch + 2);
         }
 
         public void resetDmcMask(int chipId, int ch) {
@@ -188,6 +188,28 @@ public class NesChip extends BaseChip {
 
     public boolean getMask(int chipId, int ch) {
         return (apuMask & (1 << ch)) != 0;
+    }
+
+    /**
+     * The emulator's live APU registers, {@code 0x4000} relative, or null when the song has no
+     * NES. Unlike {@link #readApu} this fires no led event: a view polling the state at frame
+     * rate would otherwise hold the led on for the whole song.
+     */
+    public int[] apuRegisters(int chipId) {
+        if (context == null) return null;
+        NesInst instrument = context.mds.inst(NesInst.class);
+        return instrument == null ? null : instrument.readApu(chipId);
+    }
+
+    /**
+     * The emulator's live triangle, noise and delta PCM registers, {@code 0x4008} relative - the
+     * APU proper only carries the two pulses. {@code 0x4015}, which both halves see, lands at
+     * {@code 0x0d} here. Null when the song has no NES; fires no led event.
+     */
+    public int[] dmcRegisters(int chipId) {
+        if (context == null) return null;
+        NesInst instrument = context.mds.inst(NesInst.class);
+        return instrument == null ? null : instrument.readDmc(chipId);
     }
 
     // vgm

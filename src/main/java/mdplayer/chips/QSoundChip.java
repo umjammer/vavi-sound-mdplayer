@@ -73,8 +73,19 @@ public class QSoundChip extends BaseChip {
     };
 
     @Override
+    /**
+     * The register shadow the panel reads, and beside it the channel state as the chip itself has
+     * it - only the emulator knows whether a voice is still sounding.
+     */
     public Map<String, Object> getInfo(int chipId) {
-        return Map.of("register", register[chipId]);
+        java.util.Map<String, Object> info = new java.util.HashMap<>();
+        info.put("register", register[chipId]);
+        // two emulators answer for this chip and a song picks one, so ask whichever is loaded
+        mdsound.instrument.QSoundInst inst = context.mds.inst(mdsound.instrument.QSoundInst.class);
+        if (inst != null) info.putAll(inst.getView(chipId, "info", null));
+        mdsound.instrument.CtrQSoundInst ctr = context.mds.inst(mdsound.instrument.CtrQSoundInst.class);
+        if (ctr != null) info.putAll(ctr.getView(chipId, "info", null));
+        return info;
     }
 
     public void setMask(int chipId, int ch, boolean mask) {

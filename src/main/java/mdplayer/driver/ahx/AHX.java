@@ -163,7 +163,8 @@ public class AHX {
             -253, -250, -244, -235, -224, -212, -197, -180, -161, -141, -120, -97, -74, -49, -24
         };
 
-        private static final int[] PERIOD_TABLE = {
+        /** note index to Amiga period; public so a view can turn a voice's period back into a note */
+        public static final int[] PERIOD_TABLE = {
             0x0000, 0x0D60, 0x0CA0, 0x0BE8, 0x0B40, 0x0A98, 0x0A00, 0x0970,
             0x08E8, 0x0868, 0x07F0, 0x0780, 0x0714, 0x06B0, 0x0650, 0x05F4,
             0x05A0, 0x054C, 0x0500, 0x04B8, 0x0474, 0x0434, 0x03F8, 0x03C0,

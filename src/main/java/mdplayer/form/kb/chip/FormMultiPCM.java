@@ -331,7 +331,7 @@ public class FormMultiPCM extends FormChipBase<FormMultiPCM.Params> {
                     java.util.Map<String, Object> info = base.getInfo(0);
                     if (info != null) {
                         for (int ch = 0; ch < 28; ch++) {
-                            Boolean bit = (Boolean) info.get("channels." + ch + ".bit");
+                            Boolean bit = (Boolean) info.get("channels." + ch + ".bit.0");
                             if (bit != null && bit) {
                                 Integer inst1 = (Integer) info.get("channels." + ch + ".inst.1");
                                 Integer pan = (Integer) info.get("channels." + ch + ".pan");

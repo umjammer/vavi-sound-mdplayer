@@ -6,6 +6,7 @@
 
 package mdplayer.chips;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
@@ -36,14 +37,6 @@ public class C140Chip extends BaseChip {
 
     private final RSoundChip[] realChips = {null, null};
 
-    // TODO eliminate cache like params, retrieve directly
-    @Deprecated
-    public final byte[][] pcmRegister = {null, null};
-
-    @Deprecated
-    public final boolean[][] pcmKeyOn = {null, null};
-
-    @Deprecated
     private static final boolean[][] mask = {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
                     false, false, false, false, false, false, false, false},
@@ -72,8 +65,6 @@ public class C140Chip extends BaseChip {
         super.init(context);
 
         for (int chipId = 0; chipId < 2; chipId++) {
-            pcmRegister[chipId] = new byte[0x200];
-            pcmKeyOn[chipId] = new boolean[24];
         }
     }
 
@@ -86,15 +77,10 @@ public class C140Chip extends BaseChip {
 
         if ((model == EnmModel.VirtualModel && (chipTypes[chipId] == null || !chipTypes[chipId].getUseReal()[0])) ||
                 (model == EnmModel.RealModel && (realChips != null && realChips[chipId] != null))) {
-            pcmRegister[chipId][adr] = (byte) data;
             int ch = adr >> 4;
-            switch (adr & 0xf) {
-                case 0x05:
-                    if ((data & 0x80) != 0) {
-                        pcmKeyOn[chipId][ch] = true;
-                        data = mask[chipId][ch] ? data & 0x7f : data;
-                    }
-                    break;
+            // a muted channel never gets its key on through
+            if ((adr & 0xf) == 0x05 && (data & 0x80) != 0 && mask[chipId][ch]) {
+                data &= 0x7f;
             }
         }
 
@@ -150,13 +136,24 @@ public class C140Chip extends BaseChip {
         }
     }
 
-    public byte[] read(int chipId) {
-        return pcmRegister[chipId];
-    }
-
+    /**
+     * The register file and the key state as the chip has them now. Its key clears itself when a
+     * sample that does not loop runs out, which a copy taken on the way in could never show.
+     */
     @Override
     public Map<String, Object> getInfo(int chipId) {
-        return Map.of("keyOn", pcmKeyOn[chipId]);
+        Instrument inst = context.mds.inst(_inst(chipId));
+        // a panel polls whether or not the song loaded this chip, so never hand back null
+        if (inst == null) return Map.of("register", new byte[0x200], "keyOn", new boolean[24]);
+        Map<String, Object> info = inst.getView(chipId, "info", null);
+        // the panel wants the key states as one array
+        boolean[] keyOn = new boolean[24];
+        for (int ch = 0; ch < keyOn.length; ch++) {
+            keyOn[ch] = Boolean.TRUE.equals(info.get("channels." + ch + ".keyOn"));
+        }
+        Map<String, Object> result = new HashMap<>(info);
+        result.put("keyOn", keyOn);
+        return result;
     }
 
     public void setMask(int chipId, int ch) {

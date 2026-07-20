@@ -8,8 +8,10 @@ package vavi.sound.visualizer.fmdsp;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
@@ -113,6 +115,8 @@ public class FmDspVisualizer extends JComponent {
     private static final int FILEBAR_TRI_H = 3;
     private static final int FILEBAR_FILENAME_X = FILEBAR_TRI_X + 8;
     private static final int PCM1FILEBAR_X = 463;
+    /** the room the song title has, up to the PCM1 bar that shares its row */
+    private static final int FILEBAR_FILENAME_W = PCM1FILEBAR_X - 2 - FILEBAR_FILENAME_X;
     private static final int PCM1FILETXT_X = PCM1FILEBAR_X + 5;
     private static final int PCM1FILETRI_X = PCM1FILETXT_X + 21;
     private static final int PCM1FILENAME_X = PCM1FILETRI_X + 8;
@@ -366,10 +370,16 @@ public class FmDspVisualizer extends JComponent {
     /** @see #setSubtitle(String) */
     private String subtitle = "for JAVA/SWING vavi-apps-mdplayer";
 
+    /** @see #setTitle(String) */
+    private String title;
+
+    /** @see #setVersion(String) */
+    private String version;
+
     /** PC-98 font ROM, null when it was not supplied */
     private byte[] fontRom;
     private final Palette palette = new Palette();
-    private LeftMode leftMode = LeftMode.OPNA;
+    private LeftMode leftMode = LeftMode.AUTO;
     private RightMode rightMode = RightMode.DEFAULT;
 
     private final byte[] vram = new byte[PC98_W * PC98_H];
@@ -443,6 +453,11 @@ public class FmDspVisualizer extends JComponent {
      */
     private TrackId[] tracks() {
         return switch (leftMode) {
+            case AUTO -> {
+                TrackStatusSource ts = source != null ? source.trackStatus() : null;
+                TrackId[] disp = ts != null ? ts.displayTracks() : null;
+                yield disp != null && disp.length > 0 ? disp : TRACK_DISP;
+            }
             case OPN -> TRACK_DISP_OPN;
             case PPZ8 -> TRACK_DISP_PPZ8;
             default -> TRACK_DISP;
@@ -475,6 +490,27 @@ public class FmDspVisualizer extends JComponent {
      */
     public void setSubtitle(String subtitle) {
         this.subtitle = subtitle;
+    }
+
+    /**
+     * Replaces the pre-rendered "FMDSP" logo with a custom title.
+     * <p>
+     * A title that the logo art can spell - anything made of F, M, D, S and P, such as
+     * {@code "MDDSP"} - is cut from the artwork itself and pasted letter by letter, so it is the
+     * original lettering rather than an imitation of it. Any other title is rasterized with a
+     * bold vector font sized to the 12 px band, since the logo is art and the bundled bitmap
+     * fonts only go up to 6x8. {@code null} restores the logo.
+     */
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    /**
+     * Replaces the version shown next to "VER", where the original has "0.1.14". ANK only.
+     * {@code null} restores the built-in version.
+     */
+    public void setVersion(String version) {
+        this.version = version;
     }
 
     /** Start the repaint timer. */
@@ -583,6 +619,121 @@ public class FmDspVisualizer extends JComponent {
         putline(s, fmdsp_medium_dat, MFW, MFH, MFB, x, y, color, bg);
     }
 
+    /** the custom title as a 1-bit mask at the logo's height, see {@link #blitTitle} */
+    private boolean[] titleMask;
+    private int titleMaskW;
+    private String renderedTitle;
+
+    /** the room the title has: the logo band, up to the "MUSIC FILE SELECTOR" line beside it */
+    private static final int LOGO_MAX_W = TOP_MUS_X - 2 - LOGO_FM_X;
+
+    /** the gap the logo art leaves between two of its letters */
+    private static final int LOGO_GAP = 2;
+
+    /** a letter of the "FMDSP" logo art: which sprite it is in, and its columns there */
+    private record LogoGlyph(byte[] sprite, int spriteW, int x, int w) {}
+
+    /**
+     * The letters the logo art actually contains. A title spelled only from these is set in the
+     * original artwork rather than a font - "MDDSP" is the same M, D, S and P, with the D reused.
+     */
+    private static final Map<Character, LogoGlyph> LOGO_GLYPHS = Map.of(
+            'F', new LogoGlyph(s_logo_fm, LOGO_FM_W, 0, 14),
+            'M', new LogoGlyph(s_logo_fm, LOGO_FM_W, 16, 15),
+            'D', new LogoGlyph(s_logo_ds, LOGO_DS_W, 0, 15),
+            'S', new LogoGlyph(s_logo_ds, LOGO_DS_W, 17, 15),
+            'P', new LogoGlyph(s_logo_p, LOGO_P_W, 0, 15));
+
+    /**
+     * Sets the title in the logo's own letters, cut from the sprites and pasted side by side with
+     * the spacing the art uses. Returns false when a letter is not in the artwork or the result
+     * would not fit, leaving the caller to fall back to the font.
+     */
+    private boolean blitTitleFromLogo() {
+        int w = 0;
+        for (int i = 0; i < title.length(); i++) {
+            LogoGlyph glyph = LOGO_GLYPHS.get(Character.toUpperCase(title.charAt(i)));
+            if (glyph == null) return false;
+            w += (i > 0 ? LOGO_GAP : 0) + glyph.w();
+        }
+        if (w == 0 || w > LOGO_MAX_W) return false;
+
+        int x = LOGO_FM_X;
+        for (int i = 0; i < title.length(); i++) {
+            LogoGlyph glyph = LOGO_GLYPHS.get(Character.toUpperCase(title.charAt(i)));
+            if (i > 0) x += LOGO_GAP;
+            vramblitSub(x, LOGO_Y, glyph.sprite(), glyph.spriteW(), glyph.x(), glyph.w(), LOGO_H);
+            x += glyph.w();
+        }
+        return true;
+    }
+
+    /** {@link #vramblit} of a column range of a wider sprite, shading and all */
+    private void vramblitSub(int x, int y, byte[] data, int srcW, int srcX, int w, int h) {
+        for (int yi = 0; yi < h; yi++) {
+            int row = (y + yi) * PC98_W + x;
+            int drow = yi * srcW + srcX;
+            for (int xi = 0; xi < w; xi++) {
+                vram[row + xi] = data[drow + xi];
+            }
+        }
+    }
+
+    /**
+     * Draws {@link #title} where the logo sits.
+     * <p>
+     * The logo is sprite art and the bundled bitmap fonts only go up to 6x8, so the title is
+     * rasterized with a vector font instead - bold, aliased (the VRAM is palette indexed), and
+     * sized to the largest that still fits the 12 px band and the width up to the "VER" sprite.
+     * A short title therefore comes out as heavy as the original art; a long one shrinks rather
+     * than overrun the header. The mask is rebuilt only when the title changes.
+     */
+    private void blitTitle() {
+        // a title the logo art can spell is cut from the art itself
+        if (blitTitleFromLogo()) return;
+
+        int maxW = LOGO_MAX_W;
+        if (!title.equals(renderedTitle)) {
+            titleMaskW = 0;
+            titleMask = new boolean[maxW * LOGO_H];
+            BufferedImage mask = new BufferedImage(maxW, LOGO_H, BufferedImage.TYPE_INT_RGB);
+            Graphics2D g = mask.createGraphics();
+            try {
+                g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
+                        RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
+                g.setColor(Color.WHITE);
+                for (int size = LOGO_H * 2; size >= 6; size--) {
+                    Font font = new Font(Font.SANS_SERIF, Font.BOLD, size);
+                    // the ink, not the metrics: the band has no room for the font's leading
+                    Rectangle ink = font.createGlyphVector(g.getFontRenderContext(), title)
+                            .getPixelBounds(null, 0, 0);
+                    if (ink.width > maxW || ink.height > LOGO_H) continue;
+
+                    g.setFont(font);
+                    // flush left, centred in what is left of the band
+                    g.drawString(title, -ink.x, -ink.y + (LOGO_H - ink.height) / 2);
+                    titleMaskW = ink.width;
+                    break;
+                }
+            } finally {
+                g.dispose();
+            }
+            for (int y = 0; y < LOGO_H; y++) {
+                for (int x = 0; x < maxW; x++) {
+                    titleMask[y * maxW + x] = (mask.getRGB(x, y) & 0xff) > 127;
+                }
+            }
+            renderedTitle = title;
+        }
+        for (int y = 0; y < LOGO_H; y++) {
+            for (int x = 0; x < titleMaskW; x++) {
+                if (titleMask[y * maxW + x]) {
+                    vram[(LOGO_Y + y) * PC98_W + LOGO_FM_X + x] = 2;
+                }
+            }
+        }
+    }
+
     /**
      * Draws with one of the fmdsp bitmap fonts, which are ANK only: a full width character has no
      * glyph, so nothing is drawn for it, but the cursor advances exactly as in the C code.
@@ -639,6 +790,43 @@ public class FmDspVisualizer extends JComponent {
                 xo += ROM_W * 2;
             }
         }
+    }
+
+    /**
+     * Clips {@code s} to {@code maxW} pixels, ending it with an ellipsis when it does not fit,
+     * the way a text field does - the file bar has other labels to its right and
+     * {@link #putline} would otherwise draw straight over them.
+     * <p>
+     * Widths follow putline's own advance rules, so a full width character counts as the
+     * {@code fw + 8} it advances even though the ANK fonts have no glyph for it.
+     *
+     * @param fw width of one character of the font it will be drawn with
+     */
+    private static String ellipsize(String s, int fw, int maxW) {
+        if (s == null) return null;
+
+        int w = 0;
+        for (int i = 0; i < s.length(); i++) {
+            w += advanceOf(s.charAt(i), fw);
+        }
+        if (w <= maxW) return s;
+
+        int room = maxW - 3 * fw; // "..." is three ANK characters
+        if (room <= 0) return "";
+        StringBuilder sb = new StringBuilder(s.length());
+        int used = 0;
+        for (int i = 0; i < s.length(); i++) {
+            int advance = advanceOf(s.charAt(i), fw);
+            if (used + advance > room) break;
+            used += advance;
+            sb.append(s.charAt(i));
+        }
+        return sb.append("...").toString();
+    }
+
+    /** what {@link #putline} moves the cursor by for {@code c} */
+    private static int advanceOf(char c, int fw) {
+        return ankOf(c) >= 0 ? fw : fw + 8;
     }
 
     /** ANK code of {@code c}, or -1 when it is a full width character. */
@@ -704,7 +892,8 @@ public class FmDspVisualizer extends JComponent {
         for (int x = 74; x < PC98_W; x++) {
             vram[332 * PC98_W + x] = 7;
         }
-        putMedium(w != null ? w.filename() : null, FILEBAR_FILENAME_X, PLAYING_Y, 2, false);
+        putMedium(ellipsize(w != null ? w.filename() : null, MFW, FILEBAR_FILENAME_W),
+                FILEBAR_FILENAME_X, PLAYING_Y, 2, false);
 
         vramblit(PCM1FILEBAR_X, PLAYING_Y, s_filebar, 0, FILEBAR_W, FILEBAR_H);
         putSmall("PCM1", PCM1FILETXT_X, PLAYING_Y + 1, 2, false);
@@ -748,15 +937,20 @@ public class FmDspVisualizer extends JComponent {
             }
         }
         TrackId[] disp = tracks();
+        TrackStatusSource ts = source != null ? source.trackStatus() : null;
         for (int i = 0; i < disp.length; i++) {
             TrackId t = disp[i];
-            String trackType;
-            switch (TYPE_OF[t.ordinal()]) {
-            case FM: trackType = "FM   "; break;
-            case SSG: trackType = "SSG  "; break;
-            case ADPCM: trackType = "ADPCM"; break;
-            case PPZ8: trackType = "PPZ8 "; break;
-            default: trackType = "     "; break;
+            String trackType = ts != null ? ts.trackTypeName(t) : null;
+            if (trackType != null) {
+                trackType = (trackType + "     ").substring(0, 5);
+            } else {
+                switch (TYPE_OF[t.ordinal()]) {
+                case FM: trackType = "FM   "; break;
+                case SSG: trackType = "SSG  "; break;
+                case ADPCM: trackType = "ADPCM"; break;
+                case PPZ8: trackType = "PPZ8 "; break;
+                default: trackType = "     "; break;
+                }
             }
             putSmall(trackType, 1, TRACK_H * i, 2, true);
             putSmall("TRACK.", 1, TRACK_H * i + 6, 1, true);
@@ -771,10 +965,28 @@ public class FmDspVisualizer extends JComponent {
             }
         }
 
+        // a short display list ({@link LeftMode#AUTO}) leaves rows over: draw their keyboard and
+        // bar chrome without any labels, so they read as unused tracks rather than holes
+        for (int i = disp.length; i < TRACK_DISP_CNT; i++) {
+            vramblit(KEY_LEFT_X, TRACK_H * i + KEY_Y, s_key_left, 0, KEY_LEFT_W, KEY_H);
+            for (int j = 0; j < KEY_OCTAVES; j++) {
+                vramblit(KEY_X + KEY_W * j, TRACK_H * i + KEY_Y, s_key_bg, 0, KEY_W, KEY_H);
+            }
+            vramblit(KEY_X + KEY_W * KEY_OCTAVES, TRACK_H * i + KEY_Y, s_key_right, 0, KEY_RIGHT_W, KEY_H);
+            vramblitColor(BAR_L_X, TRACK_H * i + BAR_Y, s_bar_l, 0, BAR_L_W, BAR_H, 3);
+            for (int j = 0; j < BAR_CNT; j++) {
+                vramblitColor(BAR_X + BAR_W * j, TRACK_H * i + BAR_Y, s_bar, 0, BAR_W, BAR_H, 3);
+            }
+        }
+
         // ORIGINAL-style header chrome
-        vramblit(LOGO_FM_X, LOGO_Y, s_logo_fm, 0, LOGO_FM_W, LOGO_H);
-        vramblit(LOGO_DS_X, LOGO_Y, s_logo_ds, 0, LOGO_DS_W, LOGO_H);
-        vramblit(LOGO_P_X, LOGO_Y, s_logo_p, 0, LOGO_P_W, LOGO_H);
+        if (title == null) {
+            vramblit(LOGO_FM_X, LOGO_Y, s_logo_fm, 0, LOGO_FM_W, LOGO_H);
+            vramblit(LOGO_DS_X, LOGO_Y, s_logo_ds, 0, LOGO_DS_W, LOGO_H);
+            vramblit(LOGO_P_X, LOGO_Y, s_logo_p, 0, LOGO_P_W, LOGO_H);
+        } else {
+            blitTitle();
+        }
         putSmall("MUS", TOP_MUS_X, TOP_MUSIC_Y, 2, true);
         putSmall("IC", TOP_IC_X, TOP_MUSIC_Y, 2, true);
         putSmall("F", TOP_F_X, TOP_MUSIC_Y, 2, true);
@@ -785,9 +997,13 @@ public class FmDspVisualizer extends JComponent {
         putSmall("D", TOP_D_X, TOP_MUSIC_Y, 2, true);
         putSmall("ISPLAY", TOP_ISPLAY_X, TOP_MUSIC_Y, 2, true);
         vramblit(TOP_VER_X, VER_Y, s_ver, 0, VER_W, VER_H);
-        putSmall(VER0 + ".", VER_0_X, TOP_MUSIC_Y, 2, true);
-        putSmall(VER1 + ".", VER_1_X, TOP_MUSIC_Y, 2, true);
-        putSmall(VER2, VER_2_X, TOP_MUSIC_Y, 2, true);
+        if (version == null) {
+            putSmall(VER0 + ".", VER_0_X, TOP_MUSIC_Y, 2, true);
+            putSmall(VER1 + ".", VER_1_X, TOP_MUSIC_Y, 2, true);
+            putSmall(VER2, VER_2_X, TOP_MUSIC_Y, 2, true);
+        } else {
+            putSmall(version, VER_0_X, TOP_MUSIC_Y, 2, true);
+        }
 
         if (subtitle == null) {
             vramblit(TOP_MUS_X, TOP_TEXT_Y, s_text, 0, TOP_TEXT_W, TOP_TEXT_H);
@@ -906,12 +1122,27 @@ public class FmDspVisualizer extends JComponent {
         putSmall("PAN", LEVEL_TEXT_X, LEVEL_TEXT_Y + 8, 1, true);
         putSmall("PROG", LEVEL_TEXT_X - 5, LEVEL_TEXT_Y + 16, 1, true);
         putSmall("KEY", LEVEL_TEXT_X, LEVEL_TEXT_Y + 23, 1, true);
-        putSmall("FM1", LEVEL_X + LEVEL_W * 0, LEVEL_TRACK_Y, 7, true);
-        putSmall("FM4", LEVEL_X + LEVEL_W * 3, LEVEL_TRACK_Y, 7, true);
-        putSmall("SSG", LEVEL_X + LEVEL_W * 6, LEVEL_TRACK_Y, 7, true);
-        putSmall("RHY", LEVEL_X + LEVEL_W * 9, LEVEL_TRACK_Y, 7, true);
-        putSmall("ADP", LEVEL_X + LEVEL_W * 10, LEVEL_TRACK_Y, 7, true);
-        putSmall("PPZ", LEVEL_X + LEVEL_W * 11, LEVEL_TRACK_Y, 7, true);
+        LevelDataSource lv = source != null ? source.level() : null;
+        boolean customLabels = false;
+        if (lv != null) {
+            for (int c = 0; c < FMDSP_LEVEL_COUNT; c++) {
+                String label = lv.label(c);
+                if (label != null) {
+                    customLabels = true;
+                    // the source keeps these short enough for the span it labels
+                    putSmall(label.length() > 4 ? label.substring(0, 4) : label,
+                            LEVEL_X + LEVEL_W * c, LEVEL_TRACK_Y, 7, true);
+                }
+            }
+        }
+        if (!customLabels) {
+            putSmall("FM1", LEVEL_X + LEVEL_W * 0, LEVEL_TRACK_Y, 7, true);
+            putSmall("FM4", LEVEL_X + LEVEL_W * 3, LEVEL_TRACK_Y, 7, true);
+            putSmall("SSG", LEVEL_X + LEVEL_W * 6, LEVEL_TRACK_Y, 7, true);
+            putSmall("RHY", LEVEL_X + LEVEL_W * 9, LEVEL_TRACK_Y, 7, true);
+            putSmall("ADP", LEVEL_X + LEVEL_W * 10, LEVEL_TRACK_Y, 7, true);
+            putSmall("PPZ", LEVEL_X + LEVEL_W * 11, LEVEL_TRACK_Y, 7, true);
+        }
         for (int y = 0; y < 63; y++) {
             vram[(LEVEL_Y + y) * PC98_W + LEVEL_X - 2] = 2;
             if ((y % 2) == 0) vram[(LEVEL_Y + y) * PC98_W + LEVEL_X - 3] = 2;
@@ -927,6 +1158,11 @@ public class FmDspVisualizer extends JComponent {
 
     private void trackWithoutKey(TrackId t, TrackStatus track, boolean masked, int y) {
         int tracknum = NUM_OF[t.ordinal()];
+        TrackStatusSource ts = source != null ? source.trackStatus() : null;
+        if (ts != null) {
+            int custom = ts.trackNumber(t);
+            if (custom >= 0) tracknum = custom;
+        }
         int d1 = masked ? 10 : (tracknum / 10) % 10;
         int d2 = masked ? 10 : tracknum % 10;
         blitNum(NUM_X + NUM_W * 0, y + 1, d1);
@@ -1292,28 +1528,9 @@ public class FmDspVisualizer extends JComponent {
         return v < lo ? lo : (v > hi ? hi : v);
     }
 
-    private static TrackId levelToTrack(int channel) {
-        switch (channel) {
-        case 0: return TrackId.FM_1;
-        case 1: return TrackId.FM_2;
-        case 2: return TrackId.FM_3;
-        case 3: return TrackId.FM_4;
-        case 4: return TrackId.FM_5;
-        case 5: return TrackId.FM_6;
-        case 6: return TrackId.SSG_1;
-        case 7: return TrackId.SSG_2;
-        case 8: return TrackId.SSG_3;
-        case 9: return null; // rhythm
-        case 10: return TrackId.ADPCM;
-        case 11: return TrackId.PPZ8_1;
-        case 12: return TrackId.PPZ8_2;
-        case 13: return TrackId.PPZ8_3;
-        case 14: return TrackId.PPZ8_4;
-        case 15: return TrackId.PPZ8_5;
-        case 16: return TrackId.PPZ8_6;
-        case 17: return TrackId.PPZ8_7;
-        case 18: return TrackId.PPZ8_8;
-        default: return null;
-        }
+    /** the row a meter column reads its key, pan and tone number from, see {@link LevelDataSource#track} */
+    private TrackId levelToTrack(int channel) {
+        LevelDataSource lv = source != null ? source.level() : null;
+        return lv != null ? lv.track(channel) : null;
     }
 }

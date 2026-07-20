@@ -18,17 +18,17 @@ import java.util.prefs.Preferences;
 
 import mdplayer.Chip.ChipKeyInfo;
 import mdplayer.Common;
-import mdplayer.form.FrameBuffer;
-import mdplayer.form.ScreenPanel;
 import mdplayer.Tables;
 import mdplayer.chips.NpNesChip;
 import mdplayer.chips.NpNesChip.Vrc7Chip;
 import mdplayer.chips.SegaPcmChip;
+import mdplayer.form.FrameBuffer;
+import mdplayer.form.ScreenPanel;
+import mdplayer.form.View;
 import mdplayer.form.kb.ChannelParams;
 import mdplayer.form.kb.Meters;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
-import mdplayer.form.View;
 
 
 public class FormVRC7 extends FormChipBase<FormVRC7.Params> {
@@ -89,11 +89,11 @@ public class FormVRC7 extends FormChipBase<FormVRC7.Params> {
     };
 
     public void changeScreenParams() {
-        int[] vrc7Register = audio.plugin.chipRegister.chip(NpNesChip.Vrc7Chip.class).readVrc7(chipId);
+        int[] vrc7Register = (int[]) audio.plugin.chipRegister.chip(Vrc7Chip.class).getInfo(chipId).get("register");
         if (vrc7Register == null) return;
 
         // Get whether there was a key-on (one-shot)
-        ChipKeyInfo ki = audio.plugin.chipRegister.chip(NpNesChip.Vrc7Chip.class).getVRC7KeyInfo(chipId);
+        ChipKeyInfo ki = (ChipKeyInfo) audio.plugin.chipRegister.chip(Vrc7Chip.class).getInfo(chipId).get("keyInfo");
 
         for (int ch = 0; ch < 6; ch++) {
             ChannelParams nyc = newParam.channels[ch];
@@ -160,7 +160,7 @@ public class FormVRC7 extends FormChipBase<FormVRC7.Params> {
         newParam.channels[0].inst[27] = (vrc7Register[0x03] & 0x10) >> 4; // DC
     
         for (int mch = 0; mch < newParam.channels.length; mch++)
-            newParam.channels[mch].mask = audio.plugin.chipRegister.chip(NpNesChip.Vrc7Chip.class).getVrc7Mask(chipId, mch);
+            newParam.channels[mch].mask = audio.plugin.chipRegister.chip(NpNesChip.Vrc7Chip.class).getMask(chipId, mch);
     }
 
     public void drawScreenParams() {
@@ -399,12 +399,12 @@ public class FormVRC7 extends FormChipBase<FormVRC7.Params> {
         @Override public void setChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
             if (ch >= 0 && ch < 6) {
                 mdplayer.chips.NpNesChip.Vrc7Chip c = audio.plugin.chipRegister.chip(mdplayer.chips.NpNesChip.Vrc7Chip.class);
-                if (!c.getVrc7Mask(chipId, ch)) c.setVrc7Mask(chipId, ch); else c.resetVrc7Mask(chipId, ch);
+                if (!c.getMask(chipId, ch)) c.setMask(chipId, ch); else c.resetMask(chipId, ch);
             }
         }
 
         @Override public void resetChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
-            audio.plugin.chipRegister.chip(mdplayer.chips.NpNesChip.Vrc7Chip.class).resetVrc7Mask(chipId, ch);
+            audio.plugin.chipRegister.chip(mdplayer.chips.NpNesChip.Vrc7Chip.class).resetMask(chipId, ch);
         }
 
         @Override public List<MixerSlot> mixerSlots() {

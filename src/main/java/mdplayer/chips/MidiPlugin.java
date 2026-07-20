@@ -176,10 +176,90 @@ public class MidiPlugin implements Plugin {
         // Some drivers (e.g. ZMS emulating an X68000 MIDI board) emit a raw MIDI byte stream one
         // byte at a time using running status, others (e.g. RCP) emit complete messages; a per
         // receiver stream parser assembles both into whole MidiMessages before dispatching them.
+        observe(data);
         parsers.computeIfAbsent(out, MidiStreamParser::new).feed(data);
         if (num < params.length) params[num].sendBuffer(data);
 
 //        vstMng.sendMIDIout(model, num, data, deltaFrames);
+    }
+
+    /** the sixteen MIDI channels, as the last note on left them */
+    private static final int MIDI_CHANNELS = 16;
+
+    private final int[] notes = new int[MIDI_CHANNELS];
+    private final int[] velocities = new int[MIDI_CHANNELS];
+    private final int[] programs = new int[MIDI_CHANNELS];
+    private final int[] volumes = new int[MIDI_CHANNELS];
+    private final int[] pans = new int[MIDI_CHANNELS];
+
+    {
+        java.util.Arrays.fill(volumes, 100); // the General MIDI default
+        java.util.Arrays.fill(pans, 64);
+    }
+
+    /**
+     * Remembers what the channel is playing.
+     * <p>
+     * A MIDI driver emulates no chip and the synth it plays into reports nothing back, so this is
+     * the only view of the music there is. It records the last note on of each channel, its
+     * program, and the two controllers a display cares about.
+     */
+    private void observe(byte[] data) {
+        if (data.length < 2) return;
+        int status = data[0] & 0xff;
+        int ch = status & 0x0f;
+        switch (status & 0xf0) {
+            case 0x90 -> { // note on, or note off when the velocity is zero
+                if (data.length < 3) return;
+                if ((data[2] & 0x7f) == 0) {
+                    if ((data[1] & 0x7f) == notes[ch]) velocities[ch] = 0;
+                } else {
+                    notes[ch] = data[1] & 0x7f;
+                    velocities[ch] = data[2] & 0x7f;
+                }
+            }
+            case 0x80 -> { // note off
+                if ((data[1] & 0x7f) == notes[ch]) velocities[ch] = 0;
+            }
+            case 0xb0 -> { // controllers: 7 is the volume, 10 the pan
+                if (data.length < 3) return;
+                if ((data[1] & 0x7f) == 7) volumes[ch] = data[2] & 0x7f;
+                if ((data[1] & 0x7f) == 10) pans[ch] = data[2] & 0x7f;
+            }
+            case 0xc0 -> programs[ch] = data[1] & 0x7f;
+            default -> {
+            }
+        }
+    }
+
+    /** what each channel is playing, for the visualizer */
+    public int note(int ch) {
+        return notes[ch];
+    }
+
+    public int velocity(int ch) {
+        return velocities[ch];
+    }
+
+    public int program(int ch) {
+        return programs[ch];
+    }
+
+    public int volume(int ch) {
+        return volumes[ch];
+    }
+
+    public int pan(int ch) {
+        return pans[ch];
+    }
+
+    /** forgets the last song's notes; the channels are shared between songs */
+    public void clearChannels() {
+        java.util.Arrays.fill(notes, 0);
+        java.util.Arrays.fill(velocities, 0);
+        java.util.Arrays.fill(programs, 0);
+        java.util.Arrays.fill(volumes, 100);
+        java.util.Arrays.fill(pans, 64);
     }
 
     /** stream parser per receiver, keyed by receiver identity */

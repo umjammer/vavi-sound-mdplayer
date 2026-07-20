@@ -24,7 +24,7 @@ public class MgscInstWriter implements InstWriter {
         if (chip == Ym2413Chip.class) {
             register = (int[]) audio.plugin.chipRegister.chip(Ym2413Chip.class).getInfo(chipId).get("register");
         } else if (chip == Vrc7Chip.class) {
-            int[] r = audio.plugin.chipRegister.chip(NpNesChip.Vrc7Chip.class).readVrc7(chipId);
+            int[] r = (int[]) audio.plugin.chipRegister.chip(Vrc7Chip.class).getInfo(chipId).get("register");
             if (r == null) return;
             register = new int[r.length];
             System.arraycopy(r, 0, register, 0, r.length);

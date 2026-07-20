@@ -6,6 +6,7 @@
 
 package mdplayer.chips;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
@@ -34,8 +35,6 @@ public class Ym3812Chip extends BaseChip {
 
     private final RSoundChip[] realChips = {null, null};
 
-    @Deprecated
-    public final int[][] register = {null, null};
 
     // check cache or not
     private final int[] fadeout = {0, 0};
@@ -64,11 +63,6 @@ public class Ym3812Chip extends BaseChip {
         super.init(context);
 
         for (int chipId = 0; chipId < 2; chipId++) {
-            register[chipId] = new int[0x100];
-            for (int i = 0; i < 0x100; i++) {
-                register[chipId][i] = 0;
-                register[chipId][i] = 0;
-            }
 
             fadeout[chipId] = 0;
         }
@@ -76,8 +70,6 @@ public class Ym3812Chip extends BaseChip {
 
     public void write(int chipId, int addr, int data, EnmModel model) {
         fireEventHappened("led.on", chipId);
-
-        register[chipId][addr] = data;
 
         if (addr >= 0x40 && addr <= 0x55) { // TL
             int ksl = data & 0xc0;
@@ -90,12 +82,11 @@ public class Ym3812Chip extends BaseChip {
             if (ch % 8 > 2)
                 cr = true;
             else {
-                int cnt = register[chipId][0xc0 + (ch / 8) * 3 + (ch % 8)] & 1;
-                if (cnt == 1)
-                    cr = true;
+                // the chip knows its own connection and rhythm settings, both written earlier
+                cr = isCarrier(chipId, twoOpChannel, (ch % 8) / 3);
             }
 
-            if (ch >= 0x10 && (register[chipId][0xbd] & 0x20) != 0) {
+            if (ch >= 0x10 && isRhythm(chipId)) {
                 cr = true;
             }
 
@@ -197,7 +188,6 @@ public class Ym3812Chip extends BaseChip {
     public void setFadeout(int chipId, int v) {
         fadeout[chipId] = v >> 1;// 0-63 (v range: 0-127)
         for (int c = 0; c < 22; c++) {
-            write(chipId, 0x40 + c, register[chipId][0x40 + c], EnmModel.RealModel);
         }
     }
 
@@ -210,9 +200,19 @@ public class Ym3812Chip extends BaseChip {
         }
     }
 
+    /**
+     * The channel state the visualizer reads, and beside it the register file the register dump
+     * and the instrument export want. The Dosbox core keeps the registers, so both come from the
+     * chip; the MAME core decodes them away and answers only the channels.
+     */
     @Override
     public Map<String, Object> getInfo(int chipId) {
-        return Map.of("register", register[chipId]);
+        Instrument inst = context.mds.inst(inst(chipId));
+        // a panel polls whether or not the song loaded this chip, so never hand back null
+        if (inst == null) return Map.of("register", new int[0x100]);
+        Map<String, Object> info = new HashMap<>(inst.getView(chipId, "info", null));
+        info.putAll(inst.getView(chipId, "register", null));
+        return info;
     }
 
     public void setMask(int chipId, int ch) {
@@ -238,5 +238,17 @@ public class Ym3812Chip extends BaseChip {
     /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
     public boolean getMask(int chipId, int ch) {
         return ch < mask[chipId].length && mask[chipId][ch];
+    }
+
+    /** whether the operator is a carrier, as the chip has its connection set */
+    private boolean isCarrier(int chipId, int ch, int slot) {
+        Ym3812Inst inst = context.mds.inst(Ym3812Inst.class);
+        return inst == null || inst.isCarrier(chipId, ch, slot);
+    }
+
+    /** whether the rhythm section is on, as the chip has it */
+    private boolean isRhythm(int chipId) {
+        Ym3812Inst inst = context.mds.inst(Ym3812Inst.class);
+        return inst != null && inst.isRhythm(chipId);
     }
 }

@@ -161,7 +161,7 @@ public class FormC140 extends FormChipBase<FormC140.Params> {
     }
 
     public void changeScreenParams() {
-        byte[] c140State = audio.plugin.chipRegister.chip(C140Chip.class).read(chipId);
+        byte[] c140State = (byte[]) audio.plugin.chipRegister.chip(C140Chip.class).getInfo(chipId).get("registers");
         boolean[] c140KeyOn = (boolean[]) audio.plugin.chipRegister.chip(C140Chip.class).getInfo(chipId).get("keyOn");
         if (c140State != null) {
             for (int ch = 0; ch < 24; ch++) {

@@ -6,6 +6,7 @@
 
 package mdplayer.chips;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
@@ -342,14 +343,24 @@ public class Ym2151Chip extends BaseChip {
         }
     }
 
+    /**
+     * What the panels have always read, and beside it the channel state as the chip has it. The
+     * fmgen OPM keeps no register file - it decodes into operators - so the visualizer reads the
+     * channel view while the register dump still gets the shadow.
+     */
+    @Override
     public Map<String, Object> getInfo(int chipId) {
-        return Map.of(
+        Map<String, Object> info = new HashMap<>();
+        info.putAll(Map.of(
                 "volume", volume[chipId],
                 "register", register[chipId],
                 "keyOn", keyOn[chipId],
                 "pmd", pmd[chipId],
                 "amd", amd[chipId]
-        );
+        ));
+        Instrument inst = context.mds.inst(inst(chipId));
+        if (inst != null) info.putAll(inst.getView(chipId, "info", null));
+        return info;
     }
 
     public void setMask(int chipId, int ch) {

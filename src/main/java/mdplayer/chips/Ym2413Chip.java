@@ -37,8 +37,6 @@ public class Ym2413Chip extends BaseChip {
     private final RSoundChip[] realChips = {null, null};
 
     // TODO eliminate cache like params, retrieve directly
-    @Deprecated
-    public final int[][] register = {null, null};
     //    private final int[] registerRhythmB = {0, 0};
 //    private final int[] registerRhythm = {0, 0};
     @Deprecated
@@ -68,10 +66,6 @@ public class Ym2413Chip extends BaseChip {
         super.init(context);
 
         for (int chipId = 0; chipId < 2; chipId++) {
-            register[chipId] = new int[0x39];
-            for (int i = 0; i < 0x39; i++) {
-                register[chipId][i] = 0;
-            }
 //            registerRhythm[0] = 0;
 //            registerRhythm[1] = 0;
 //            registerRhythmB[0] = 0;
@@ -86,7 +80,6 @@ public class Ym2413Chip extends BaseChip {
         fireEventHappened("led.on", chipId);
 
         if (model == EnmModel.VirtualModel)
-            register[chipId][addr] = data;
 
         if (addr == 0x0e) {
             rm[chipId] = (data & 0x20) != 0;
@@ -179,25 +172,28 @@ public class Ym2413Chip extends BaseChip {
     public void setMask(int chipId, int ch, boolean mask) {
         this.mask[chipId][ch] = mask;
 
+        // re-send what the chip already has, so the mute takes effect on the running note
+        int[] regs = registers(chipId);
+        if (regs == null) return;
         if (ch < 9) {
-            write(chipId, 0x20 + ch, register[chipId][0x20 + ch], EnmModel.VirtualModel);
-            write(chipId, 0x20 + ch, register[chipId][0x20 + ch], EnmModel.RealModel);
+            write(chipId, 0x20 + ch, regs[0x20 + ch], EnmModel.VirtualModel);
         } else if (ch < 14) {
-            write(chipId, 0x0e, register[chipId][0x0e], EnmModel.VirtualModel);
-            write(chipId, 0x0e, register[chipId][0x0e], EnmModel.RealModel);
+            write(chipId, 0x0e, regs[0x0e], EnmModel.VirtualModel);
         }
     }
 
     public void setFadeout(int chipId, int v) {
         fadeout[chipId] = v / (128 / 16);
-        for (int c = 0; c < 9; c++) {
-            write(chipId, 0x30 + c, register[chipId][0x30 + c], EnmModel.RealModel);
-        }
+        // the levels were re-sent here for the real chip only, which no longer has a path
     }
 
+    /** the registers as the chip has them; every emulator behind this one keeps the file */
     @Override
     public Map<String, Object> getInfo(int chipId) {
-        return Map.of("register", register[chipId]);
+        Instrument inst = context.mds.inst(inst(chipId));
+        // a panel polls whether or not the song loaded this chip, so never hand back null
+        return inst == null ? Map.of("register", new int[0x40])
+                : inst.getView(chipId, "register", null);
     }
 
     public void setMask(int chipId, int ch) {
@@ -223,5 +219,11 @@ public class Ym2413Chip extends BaseChip {
     /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
     public boolean getMask(int chipId, int ch) {
         return ch < mask[chipId].length && mask[chipId][ch];
+    }
+
+    /** the chip's register file, or null when the song has not loaded it */
+    private int[] registers(int chipId) {
+        Map<String, Object> info = getInfo(chipId);
+        return info != null && info.get("register") instanceof int[] r ? r : null;
     }
 }

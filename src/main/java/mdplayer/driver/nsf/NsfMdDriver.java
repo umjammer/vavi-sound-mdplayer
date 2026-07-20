@@ -106,7 +106,7 @@ public class NsfMdDriver extends BaseDriver implements NsfDriver {
 
         metaData = getMetaData(dataBuf);
 
-        nsf.getVolume = plugin.chipRegister.chip(NpNesChip.class)::getVolume;
+        nsf.getVolume = plugin.chipRegister.chip(NpNesChip.class)::getInfo;
 
         nsf.init(setting.getNsf().getHPF(), setting.getNsf().getLPF());
     }

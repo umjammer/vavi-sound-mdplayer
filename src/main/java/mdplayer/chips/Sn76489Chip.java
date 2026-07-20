@@ -33,7 +33,12 @@ public class Sn76489Chip extends BaseChip {
     private final RSoundChip[] realChips = {null, null};
 
     @Deprecated
-    public final int[][] register = {null, null};
+    /**
+     * The registers as they were written. Views must not read this - {@link #getInfo} asks the
+     * chip instead. It survives because the real chip path has no emulator to ask: when the song
+     * is driving hardware over SCCI, this is the only record of what was sent.
+     */
+    private final int[][] register = {null, null};
 
     @Deprecated
     public final int[] pan = {0xff, 0xff};
@@ -195,10 +200,17 @@ public class Sn76489Chip extends BaseChip {
     }
 
     @Override
+    /**
+     * The registers as the chip has them, beside the state the player keeps itself - the panning
+     * and the Neo Geo Pocket flag are the player's own, not the chip's.
+     */
     public Map<String, Object> getInfo(int chipId) {
+        Instrument inst = context.mds.inst(inst(chipId));
+        int[] regs = inst == null ? new int[8]
+                : (int[]) inst.getView(chipId, "register", null).get(inst.getName());
         return Map.of(
                 "volumes", volumes[chipId],
-                "register", register[chipId],
+                "register", regs == null ? new int[8] : regs,
                 "pan", pan[chipId],
                 "flag", ngpFlag
         );

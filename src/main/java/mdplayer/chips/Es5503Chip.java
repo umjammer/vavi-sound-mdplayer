@@ -45,4 +45,11 @@ public class Es5503Chip extends BaseChip {
 
         dumpData(model, "PCMData", srcOffset, buf, length);
     }
+
+    /** the channel state as the chip has it now */
+    @Override
+    public java.util.Map<String, Object> getInfo(int chipId) {
+        mdsound.instrument.Es5503Inst inst = context.mds.inst(mdsound.instrument.Es5503Inst.class);
+        return inst == null ? null : inst.getView(chipId, "info", null);
+    }
 }

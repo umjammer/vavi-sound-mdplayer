@@ -32,4 +32,11 @@ public class PokeyChip extends BaseChip {
             context.mds.write(inst(chipId), chipId, 0, port, data);
         }
     }
+
+    /** the channel state as the chip has it now */
+    @Override
+    public java.util.Map<String, Object> getInfo(int chipId) {
+        mdsound.instrument.PokeyInst inst = context.mds.inst(mdsound.instrument.PokeyInst.class);
+        return inst == null ? null : inst.getView(chipId, "info", null);
+    }
 }

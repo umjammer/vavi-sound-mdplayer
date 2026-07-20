@@ -88,7 +88,7 @@ public class FormMMC5 extends FormChipBase<FormMMC5.Params> {
         final double LOG_2 = 0.69314718055994530941723212145818;
         final int NOTE_440HZ = 12 * 4 + 9;
 
-        byte[] reg = audio.plugin.chipRegister.chip(NpNesChip.Mmc5Chip.class).readMmc5(chipId);
+        byte[] reg = (byte[]) audio.plugin.chipRegister.chip(Mmc5Chip.class).getInfo(chipId).get("register");
         int freq;
         int vol;
         int note;
@@ -113,9 +113,9 @@ public class FormMMC5 extends FormChipBase<FormMMC5.Params> {
             newParam.pcmChannel.volume = Math.min(newParam.pcmChannel.volume, 19);
         }
     
-        newParam.sqrChannels[0].mask = audio.plugin.chipRegister.chip(NpNesChip.Mmc5Chip.class).getMmc5Mask(chipId, 0);
-        newParam.sqrChannels[1].mask = audio.plugin.chipRegister.chip(NpNesChip.Mmc5Chip.class).getMmc5Mask(chipId, 1);
-        newParam.pcmChannel.mask = audio.plugin.chipRegister.chip(NpNesChip.Mmc5Chip.class).getMmc5Mask(chipId, 2);
+        newParam.sqrChannels[0].mask = audio.plugin.chipRegister.chip(NpNesChip.Mmc5Chip.class).getMask(chipId, 0);
+        newParam.sqrChannels[1].mask = audio.plugin.chipRegister.chip(NpNesChip.Mmc5Chip.class).getMask(chipId, 1);
+        newParam.pcmChannel.mask = audio.plugin.chipRegister.chip(NpNesChip.Mmc5Chip.class).getMask(chipId, 2);
     }
 
     public void drawScreenParams() {
@@ -347,12 +347,12 @@ public class FormMMC5 extends FormChipBase<FormMMC5.Params> {
         @Override public void setChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
             if (ch >= 0 && ch < 3) {
                 mdplayer.chips.NpNesChip.Mmc5Chip c = audio.plugin.chipRegister.chip(mdplayer.chips.NpNesChip.Mmc5Chip.class);
-                if (!c.getMmc5Mask(chipId, ch)) c.setMmc5Mask(chipId, ch); else c.resetMmc5Mask(chipId, ch);
+                if (!c.getMask(chipId, ch)) c.setMask(chipId, ch); else c.resetMask(chipId, ch);
             }
         }
 
         @Override public void resetChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
-            audio.plugin.chipRegister.chip(mdplayer.chips.NpNesChip.Mmc5Chip.class).resetMmc5Mask(chipId, ch);
+            audio.plugin.chipRegister.chip(mdplayer.chips.NpNesChip.Mmc5Chip.class).resetMask(chipId, ch);
         }
 
         @Override public void reapplyChannelMasks(mdplayer.Audio audio, int chipId) {

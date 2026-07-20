@@ -16,7 +16,7 @@ public class MckInstWriter implements InstWriter {
     @Override
     public void write(Component parent, Audio audio, Class<? extends Chip> chip, int ch, int chipId) {
         if (chip == N163Chip.class) {
-            NesN106.TrackInfo[] info = (NesN106.TrackInfo[]) audio.plugin.chipRegister.chip(NpNesChip.N163Chip.class).readN163(0);
+            NesN106.TrackInfo[] info = (NesN106.TrackInfo[]) audio.plugin.chipRegister.chip(NpNesChip.N163Chip.class).getInfo(0).get("tracksInfo");
             if (info == null) return;
 
             StringBuilder n = new StringBuilder("@Nxx = { ");

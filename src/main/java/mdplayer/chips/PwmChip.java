@@ -31,4 +31,11 @@ public class PwmChip extends BaseChip {
         if (model == EnmModel.VirtualModel)
             context.mds.write(inst(chipId), chipId, 0, adr, data);
     }
+
+    /** the state of the DAC as the chip has it now */
+    @Override
+    public java.util.Map<String, Object> getInfo(int chipId) {
+        PwmInst inst = context.mds.inst(PwmInst.class);
+        return inst == null ? null : inst.getView(chipId, "info", null);
+    }
 }
