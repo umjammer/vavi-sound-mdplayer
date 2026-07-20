@@ -144,6 +144,13 @@ public class AHX {
         public int stepWaitFrames;
         public int getNewPosition;
         public int songEndReached;
+
+        /**
+         * The speed past which a song counts as parked rather than playing. Real songs run at 3 to
+         * 8 frames a row, i.e. a row every 60 to 160 ms at the AHX 50 Hz; at this one a row lasts
+         * more than a second.
+         */
+        private static final int stallTempo = 0x40;
         public int timingValue;
         public int patternBreak;
         public int mainVolume;
@@ -442,6 +449,10 @@ public class AHX {
                 case 0xb: // Position Jump
                     posJump = posJump * 100 + (fxParam & 0x0f) + (fxParam >> 4) * 10;
                     patternBreak = 1;
+                    // a jump that does not go forward is the song looping back on itself, which is
+                    // the only end a song written this way has: it never walks off the last
+                    // position, so the check in play() would wait for a wrap that never comes
+                    if (posJump <= posNr) songEndReached = 1;
                     break;
                 case 0xd: // Patternbreak
                     posJump = posNr + 1;
@@ -477,6 +488,11 @@ public class AHX {
                     break;
                 case 0xf: // Speed
                     tempo = fxParam;
+                    // Speed zero stops the song outright, and a speed this far past anything
+                    // musical - a row would last seconds - is how a song that does not loop parks
+                    // itself at the end instead. Either way it is over: without this the player
+                    // waits for a position wrap that never comes and the track never ends.
+                    if (fxParam == 0 || fxParam >= stallTempo) songEndReached = 1;
                     break;
             }
 

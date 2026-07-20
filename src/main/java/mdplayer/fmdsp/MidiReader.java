@@ -14,13 +14,15 @@ import java.util.function.Supplier;
 import mdplayer.ChipRegister;
 import mdplayer.chips.MidiPlugin;
 import mdplayer.driver.BaseDriver;
+import mdplayer.driver.mid.MidiDriver;
 import mdplayer.driver.rcp.RcpDriver;
 import mdplayer.driver.rcp.RcsDriver;
+import mdplayer.driver.zms.ZmsDriver;
 import vavi.sound.visualizer.fmdsp.LevelDataSource.Pan;
 
 
 /**
- * The MIDI drivers - RCP and RCS - which emulate no chip at all.
+ * The MIDI drivers - RCP, RCS, MID and ZMS - which emulate no chip at all.
  * <p>
  * There is nothing to read back: the notes go out to a synthesizer that reports nothing, so what
  * is shown is what went past {@link MidiPlugin} on its way there. A MIDI note is already a note,
@@ -91,7 +93,8 @@ public class MidiReader implements FmDspChipReader {
     public boolean ready() {
         if (driver == null || midi() == null) return false;
         BaseDriver d = driver.get();
-        return d instanceof RcpDriver || d instanceof RcsDriver;
+        return d instanceof RcpDriver || d instanceof RcsDriver
+                || d instanceof MidiDriver || d instanceof ZmsDriver;
     }
 
     @Override

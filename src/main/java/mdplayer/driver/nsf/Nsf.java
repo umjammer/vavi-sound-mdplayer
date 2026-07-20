@@ -283,7 +283,14 @@ public class Nsf {
         layer.detachAll();
         apuBus.detachAll();
 
-        ld = new LoopDetector.NESDetector(16); // C#: NESDetector() -> BasicDetector(bufbits = 16)
+        // The detector matches the last 30 s of writes against every earlier point in the ring, so
+        // the ring has to hold a whole loop plus those 30 s. 16 bits - what the C# had - holds
+        // 65536, which is plenty for an APU only song writing a few hundred a second but nowhere
+        // near an expansion chip one: Thunder Force IV's N163 song writes ~7000 a second, so its
+        // 30 s signature alone wants 210000 and the detector gave up before comparing anything.
+        // 20 bits holds 1048576: that song's 55 s loop plus its signature needs ~610000, and even
+        // at 7000 writes a second there is room for a two and a half minute loop. 8 MB per song.
+        ld = new LoopDetector.NESDetector(20);
         ld.reset();
         stack.attach(ld);
 

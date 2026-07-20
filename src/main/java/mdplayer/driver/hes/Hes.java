@@ -50,48 +50,7 @@ public class Hes {
             return false;
         }
 
-        @Override
-        public boolean isLooped(int time_in_ms, int match_second, int match_interval) {
-            int i, j;
-            int match_size, match_length;
-
-            if (time_in_ms - currentTime < match_interval)
-                return false;
-
-            currentTime = time_in_ms;
-
-            if (bIdx <= bLast)
-                return false;
-            if (wSpeed != 0)
-                wSpeed = (wSpeed + bIdx - bLast) / 2;
-            else
-                wSpeed = bIdx - bLast; // First Time
-            bLast = bIdx;
-
-            match_size = wSpeed * match_second / match_interval;
-            match_length = bufSize - match_size;
-
-            if (match_length < 0)
-                return false;
-
-//            logger.log(Level.TRACE, "match_length:%d".formatted(match_length));
-//            logger.log(Level.TRACE, "match_size  :%d".formatted(match_size));
-            for (i = 0; i < match_length; i++) {
-                for (j = 0; j < match_size; j++) {
-                    if (streamBuf[(bIdx + j + match_length) & bufMask] !=
-                            streamBuf[(bIdx + i + j) & bufMask]) {
-                        break;
-                    }
-                }
-                //logger.log(Level.TRACE, "j  :%d".formatted(j));
-                if (j == match_size) {
-                    loopStart = timeBuf[(bIdx + i) & bufMask];
-                    loopEnd = timeBuf[(bIdx + match_length) & bufMask];
-                    return true;
-                }
-            }
-            return false;
-        }
+        // isLooped was a verbatim copy of the base one, buffer index bug included; it now inherits
 
         @Override
         public int getLoopStart() {

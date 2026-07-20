@@ -347,6 +347,12 @@ public class Ym2151Chip extends BaseChip {
      * What the panels have always read, and beside it the channel state as the chip has it. The
      * fmgen OPM keeps no register file - it decodes into operators - so the visualizer reads the
      * channel view while the register dump still gets the shadow.
+     * <p>
+     * Not every instrument answers for itself: the X68Sound OPM behind MDX and ZMS decodes straight
+     * into its operators and offers no view at all, which used to leave the visualizer with nothing
+     * to show. The channel state is therefore derived from this class's own register shadow first,
+     * and only then overwritten by whatever the instrument does report - that one is closer to the
+     * chip, this one merely always exists.
      */
     @Override
     public Map<String, Object> getInfo(int chipId) {
@@ -358,9 +364,37 @@ public class Ym2151Chip extends BaseChip {
                 "pmd", pmd[chipId],
                 "amd", amd[chipId]
         ));
+        info.putAll(shadowInfo(chipId));
         Instrument inst = context.mds.inst(inst(chipId));
         if (inst != null) info.putAll(inst.getView(chipId, "info", null));
         return info;
+    }
+
+    /** the channel state the visualizer wants, read out of the register shadow */
+    private Map<String, Object> shadowInfo(int chipId) {
+        Map<String, Object> info = new HashMap<>();
+        info.put("timerB", register[chipId][0x12]);
+        for (int ch = 0; ch < 8; ch++) {
+            int panFlCon = register[chipId][0x20 + ch];
+            info.put("channels." + ch + ".keyOn", (keyOn[chipId][ch] & 1) != 0);
+            info.put("channels." + ch + ".keyCode", register[chipId][0x28 + ch]);
+            info.put("channels." + ch + ".totalLevel", carrierTotalLevel(chipId, ch, panFlCon & 0x07));
+            info.put("channels." + ch + ".pan", (panFlCon >> 6) & 0x03);
+        }
+        return info;
+    }
+
+    /** the loudest carrier of channel {@code ch}, i.e. the one that sets how loud the channel is */
+    private int carrierTotalLevel(int chipId, int ch, int al) {
+        int tl = 127;
+        for (int i = 0; i < 4; i++) {
+            // the TL registers run m1, m2, c1, c2 while the algorithm mask runs m1, c1, m2, c2
+            int slot = (i == 0) ? 0 : ((i == 1) ? 2 : ((i == 2) ? 1 : 3));
+            if ((algM[al] & (1 << slot)) != 0) {
+                tl = Math.min(tl, register[chipId][0x60 + i * 8 + ch] & 0x7f);
+            }
+        }
+        return tl;
     }
 
     public void setMask(int chipId, int ch) {

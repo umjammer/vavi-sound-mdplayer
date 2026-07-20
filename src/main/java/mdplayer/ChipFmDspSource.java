@@ -86,6 +86,18 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
     /** the tempo the tick counter falls back to when no chip programs TimerB (VGM and friends) */
     private static final int defaultTimerB = 200;
 
+    /**
+     * The clock the note length bar is measured against [Hz].
+     * <p>
+     * Deliberately not the TimerB tick: that runs at ~62 Hz for a stream that programs no TimerB
+     * and ~133 Hz for a typical OPM song, so a sixteenth note measured barely one or two of the
+     * bar's 64 columns - four counts each - and the bar read as broken. PMD and FMP do not have
+     * this problem because they read a length out of the part in the driver's own clock, where a
+     * quarter note is 96. This rate reproduces that scale: a quarter note at 120 bpm is 120 counts,
+     * a sixteenth is 30, and the bar's 255 count full scale is a bit over a second.
+     */
+    private static final double noteTickHz = 240;
+
     /** snapshots per second, the cadence the driver-specific sources use as well */
     private static final int snapshotRate = 120;
 
@@ -147,6 +159,42 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
 
     private final double[] envelopes = new double[LevelDataSource.COUNT];
 
+    /**
+     * Tick count of each row's last key on, {@code -1} before the first one. The bar over the
+     * keyboard wants the note's remaining length; a register file does not carry one, so the
+     * length is measured between key ons instead - see {@link #noteLengths}.
+     */
+    private final long[] keyOnTicks = new long[TrackId.COUNT];
+
+    /**
+     * The measured length of each row's previous note, in {@link #noteTickHz} counts, {@code 0}
+     * until the row has played two. A chip snapshot only learns a note's length once the next one
+     * starts, so the bar shows the note that is playing counting down against the length of the one
+     * before it - right for the steady runs that fill most parts, and re-scaled by the next key on
+     * when the part changes. A sequenced driver reads the real length out of the part, which is why
+     * {@code PmdFmDspSource} and {@code FmpFmDspSource} do not need any of this.
+     */
+    private final int[] noteLengths = new int[TrackId.COUNT];
+
+    /** the note each row played at the last snapshot, {@code -1} while it rests */
+    private final int[] lastNotes = new int[TrackId.COUNT];
+
+    /** the bar is 64 columns of 4 counts each, see {@code BAR_CNT} */
+    private static final int barFullScale = 255;
+
+    /**
+     * What the note clock is divided by before it reaches the bar, so that the longest note being
+     * played fits the bar's 255 counts instead of pinning it full.
+     * <p>
+     * The clock itself has to be fine - a sixteenth note is only a fraction of a second, and at a
+     * coarse rate it rounds away to no columns at all - but a fine clock alone makes anything over
+     * a second sit at full scale. Dividing by a power of two chosen from the notes actually
+     * sounding keeps both ends: short notes stay detailed, long ones still count down. It is one
+     * divider for every row, so rows remain comparable with each other, and it follows the music
+     * because a row that has stopped no longer counts towards it.
+     */
+    private int barScale = 1;
+
     private final Pan[] pans = new Pan[LevelDataSource.COUNT];
 
     /** row assignment of this song, in the order the readers became active */
@@ -174,6 +222,9 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
 
     private long lastCounter;
     private double timerBStep;
+    /** the note length clock, see {@link #noteTickHz} */
+    private long noteTicks;
+    private double noteTickStep;
     private long loopStartTimerBCount;
     private int lastLoopCount;
 
@@ -229,6 +280,10 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
         Arrays.fill(levelTracks, null);
         dispTracks = null;
         Arrays.fill(envelopes, 0);
+        Arrays.fill(keyOnTicks, -1);
+        Arrays.fill(noteLengths, 0);
+        Arrays.fill(lastNotes, -1);
+        barScale = 1;
         Arrays.fill(pans, Pan.CENTER);
         Arrays.fill(comments, null);
         work = null;
@@ -236,6 +291,8 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
         timerBCount = 0;
         timerB = 0;
         timerBStep = 0;
+        noteTicks = 0;
+        noteTickStep = 0;
         lastCounter = 0;
         loopTimerBCount = 0;
         loopStartTimerBCount = 0;
@@ -296,6 +353,10 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
         }
 
         allocateMeters();
+        // before fill: the per-row note length bar measures itself against the tick counter,
+        // and its scale comes from the notes the previous snapshot left sounding
+        state();
+        scaleBar();
 
         fill(Group.FM);
         fill(Group.SSG);
@@ -304,7 +365,6 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
 
         nameCollisions();
         updateDisplayTracks();
-        state();
     }
 
     /**
@@ -405,6 +465,8 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
                 status.ssgNoise = channel.ssgNoise;
                 status.ppz8Ch = channel.pcmCh;
 
+                noteLength(row, status, channel.keyOn, channel.sounding, channel.note);
+
                 if (level >= 0) {
                     envelope(level, channel.keyOn, channel.sounding, channel.amplitude);
                     pans[level] = channel.pan;
@@ -478,6 +540,60 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
         }
     }
 
+    /**
+     * Fills the note length bar of row {@code row}: {@link TrackStatus#ticks} is the length the
+     * row's previous note ran for, which the renderer marks as the note's start, and
+     * {@link TrackStatus#ticksLeft} is how much of it the note that is playing has left.
+     * A note that outlives the measurement holds the bar at empty rather than wrapping around.
+     * <p>
+     * The lengths are kept at the full resolution of the note clock and only divided by
+     * {@link #barScale} on the way out, so lengthening the notes never loses the short ones.
+     */
+    private void noteLength(int row, TrackStatus status, boolean keyOn, boolean sounding, int note) {
+        // A key on is only seen when the key actually goes down between two snapshots. MXDRV keys
+        // off and back on inside one, so its rows look permanently held and would never measure a
+        // note at all; a pitch change on a held row is the same event as far as the bar cares.
+        boolean started = keyOn || (sounding && note >= 0 && note != lastNotes[row]);
+        lastNotes[row] = sounding ? note : -1;
+        if (started) {
+            if (keyOnTicks[row] >= 0) {
+                long measured = noteTicks - keyOnTicks[row];
+                noteLengths[row] = (int) Math.min(measured, maxNoteLength);
+            }
+            keyOnTicks[row] = noteTicks;
+        }
+        if (!sounding && !started) {
+            // resting: nothing is counting down
+            status.ticks = 0;
+            status.ticksLeft = 0;
+            return;
+        }
+        long elapsed = keyOnTicks[row] < 0 ? 0 : noteTicks - keyOnTicks[row];
+        status.ticks = noteLengths[row] / barScale;
+        status.ticksLeft = (int) Math.max(0, noteLengths[row] - elapsed) / barScale;
+    }
+
+    /**
+     * Picks {@link #barScale} from the notes that are sounding, before the rows are filled: the
+     * smallest power of two that brings the longest of them inside the bar. A row that has stopped
+     * does not count, so an opening drone does not coarsen the rest of the song.
+     */
+    private void scaleBar() {
+        int longest = 0;
+        for (int row = 0; row < lastNotes.length; row++) {
+            if (lastNotes[row] >= 0) longest = Math.max(longest, noteLengths[row]);
+        }
+        int scale = 1;
+        while (longest / scale > barFullScale) scale <<= 1;
+        barScale = scale;
+    }
+
+    /**
+     * The longest note the bar will measure, past which it stops counting down and simply stays
+     * full - about a minute even at the coarsest scale, which no note outlives musically.
+     */
+    private static final int maxNoteLength = (int) (noteTickHz * 60);
+
     /** MML key: high nibble octave, low nibble note, 0xff while the part rests */
     static int keyOf(int note) {
         return note < 0 ? 0xff : (note / 12) << 4 | note % 12;
@@ -530,6 +646,17 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
         timerB = tb;
 
         long counter = d.counter;
+        // MXDRV never advances its sample counter - it is clocked by the PCM8 chip, which does not
+        // report back - so a note clock hung off the counter alone would stand still and every MDX
+        // row would show an empty bar. Fall back to counting snapshots, which arrive at a known
+        // rate in the player.
+        noteTickStep += counter > lastCounter
+                ? (counter - lastCounter) * (noteTickHz / Common.VGMProcSampleRate)
+                : noteTickHz / snapshotRate;
+        while (noteTickStep >= 1) {
+            noteTickStep -= 1;
+            noteTicks++;
+        }
         timerBStep += (counter - lastCounter) * (timerBStepHz / Common.VGMProcSampleRate);
         lastCounter = counter;
         int overflow = (256 - tb) << 4;

@@ -19,6 +19,10 @@ import vavi.sound.visualizer.fmdsp.TrackId;
 import vavi.sound.visualizer.fmdsp.TrackStatus;
 import vavi.util.archive.Archives;
 
+import vavi.util.properties.annotation.Property;
+import vavi.util.properties.annotation.PropsEntity;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
@@ -29,7 +33,48 @@ import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
  * <p>
  * Run with {@code -Dvavi.test=diag -Ddiag.file=<path>}.
  */
+@PropsEntity(url = "file:local.properties")
 class ChipCacheCheck {
+
+    /**
+     * The drivers that boot a real X68000/MSX/PC-98 binary look for it relative to these, and
+     * fail to load at all without them - the same set {@code TestCase} binds.
+     */
+    @Property(name = "mdplayer.fmp.dir") String fmpDir;
+    @Property(name = "mdplayer.fmp.pvi") String fmpPvi;
+    @Property(name = "mdplayer.zms.dir") String zmsDir;
+    @Property(name = "mdplayer.mgs.dir") String mgsDir;
+    @Property(name = "mdplayer.ndp.dir") String ndpDir;
+    @Property(name = "mdplayer.musica.dir") String musicaDir;
+    @Property(name = "muap.dir.dta") String muapDirDta;
+    @Property(name = "muap.dir.pcm") String muapDirPcm;
+
+    @Property(name = "mdplayer.variant.pcm8") int variantPcm8;
+    @Property(name = "mdplayer.variant.mpcm") int variantMpcm;
+    @Property(name = "mdplayer.variant.ym2151") int variantYm2151;
+    @Property(name = "mdplayer.variant.ym2413") int variantYm2413;
+    @Property(name = "mdplayer.variant.ymf262") int variantYmf262;
+    @Property(name = "mdplayer.variant.ay8910") int variantAy8910;
+
+    @BeforeEach
+    void setup() throws Exception {
+        if (!Files.exists(Path.of("local.properties"))) return;
+        PropsEntity.Util.bind(this);
+        System.setProperty("mdplayer.fmp.dir", fmpDir);
+        System.setProperty("mdplayer.fmp.pvi", fmpPvi);
+        System.setProperty("mdplayer.zms.dir", zmsDir);
+        System.setProperty("mdplayer.mgs.dir", mgsDir);
+        System.setProperty("mdplayer.ndp.dir", ndpDir);
+        System.setProperty("mdplayer.musica.dir", musicaDir);
+        System.setProperty("muap.dir.dta", muapDirDta);
+        System.setProperty("muap.dir.pcm", muapDirPcm);
+        System.setProperty("mdplayer.variant.pcm8", String.valueOf(variantPcm8));
+        System.setProperty("mdplayer.variant.mpcm", String.valueOf(variantMpcm));
+        System.setProperty("mdplayer.variant.ym2151", String.valueOf(variantYm2151));
+        System.setProperty("mdplayer.variant.ym2413", String.valueOf(variantYm2413));
+        System.setProperty("mdplayer.variant.ymf262", String.valueOf(variantYmf262));
+        System.setProperty("mdplayer.variant.ay8910", String.valueOf(variantAy8910));
+    }
 
     @Test
     @EnabledIfSystemProperty(named = "vavi.test", matches = "diag")
@@ -68,7 +113,9 @@ class ChipCacheCheck {
                 source.readStatus(t, status);
                 sb.append(t).append(":playing=").append(status.playing)
                         .append(",key=").append(Integer.toHexString(status.key))
-                        .append(",vol=").append(status.volume).append("  ");
+                        .append(",vol=").append(status.volume)
+                        .append(",bar=").append(status.ticksLeft).append('/').append(status.ticks)
+                        .append("  ");
             }
             System.err.println(sb);
             System.err.println("levels=" + IntStream.range(0, 19).map(source::level).boxed().toList());
