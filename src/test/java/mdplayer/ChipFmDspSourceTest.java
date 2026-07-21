@@ -58,7 +58,8 @@ class ChipFmDspSourceTest {
         // to a real emulator and read back, so the chips need a context whose writes land somewhere
         plugin = EmulatedPlugin.of(new mdsound.instrument.C352Inst(), new mdsound.instrument.Saa1099Inst(),
                 new mdsound.instrument.SegaPcmInst(), new mdsound.instrument.C140Inst(), new mdsound.instrument.Sn76489Inst(), new mdsound.instrument.NukedYmF262Inst(),
-                new mdsound.instrument.Ym2608Inst(), new mdsound.instrument.Ym2203Inst(), new mdsound.instrument.Ym2151Inst());
+                new mdsound.instrument.Ym2608Inst(), new mdsound.instrument.Ym2203Inst(), new mdsound.instrument.Ym2151Inst(),
+                new mdsound.instrument.YmF278BInst());
         chipRegister = plugin.chipRegister;
         // a chip only forwards writes to its emulator when the settings say to use one, which a
         // played song arranges and a test has to say for itself
