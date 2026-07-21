@@ -285,6 +285,7 @@ you can select a chip implementation variant by number.
    * ~~heavy json serdes~~
    * ~~FormRegTest open the same page, not reflected from which menu open~~
    * ~~add a test traversing all settings tab~~
+ * volume leveling
 
 ---
 
