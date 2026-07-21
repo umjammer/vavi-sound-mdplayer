@@ -465,6 +465,15 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
                 status.ssgNoise = channel.ssgNoise;
                 status.ppz8Ch = channel.pcmCh;
 
+                // a re-struck note re-attacks the meter. MXDRV keys off and back on inside one
+                // snapshot, so its FM rows never show a key-on edge; without this their meters
+                // would sit pinned at the sustain floor. A pitch change on a held row is the same
+                // event, as it is for the note bar - but not for a streamed sample, whose pitch is
+                // a playback rate that drifts every snapshot. Read before noteLength updates it.
+                boolean restruck = channel.keyOn
+                        || (!channel.sampled && channel.sounding && channel.note >= 0
+                            && channel.note != lastNotes[row]);
+
                 if (noteLength(row, status, channel.keyOn, channel.sounding, channel.note, channel.sampled)) {
                     // streaming: the pitch is a playback rate, so the note it lands nearest is an
                     // artefact of the arithmetic and not something the song ever played
@@ -473,7 +482,7 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
                 }
 
                 if (level >= 0) {
-                    envelope(level, channel.keyOn, channel.sounding, channel.amplitude, channel.measured);
+                    envelope(level, restruck, channel.sounding, channel.amplitude, channel.measured);
                     pans[level] = channel.pan;
                     levelTracks[level] = TrackId.values()[row];
                 }
