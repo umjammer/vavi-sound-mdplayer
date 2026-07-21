@@ -148,7 +148,8 @@ public class Ay8910Chip extends BaseChip {
     public Map<String, Object> getInfo(int chipId) {
         Instrument inst = context.mds.inst(inst(chipId));
         if (inst == null) return Collections.emptyMap();
-        return Map.of("register", inst.getView(chipId, "register"));
+        // getView already answers a {"register": int[]} map; don't wrap it in another
+        return inst.getView(chipId, "register");
     }
 
     @Override
