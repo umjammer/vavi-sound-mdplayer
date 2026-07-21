@@ -213,9 +213,6 @@ public class FormYM2610 extends FormChipBase<FormYM2610.Params> {
         Map<String, Object> info = audio.plugin.chipRegister.chip(Ym2610Chip.class).getInfo(chipId);
         if (info.isEmpty()) return;
 
-        int delta;
-        float frq;
-
         int[][] register = (int[][]) info.get("register");
         int[] fmKey = (int[]) info.get("keyOn");
         int[] vol = (int[]) info.get("volume");
@@ -391,8 +388,8 @@ public class FormYM2610 extends FormChipBase<FormYM2610.Params> {
         } else {
             if (newParam.channels[12].volumeR > 0) newParam.channels[12].volumeR--;
         }
-        delta = (register[0][0x1a] << 8) | register[0][0x19];
-        frq = delta / 9447.0f; // Delta=9447 at freq=8kHz
+        int delta = (register[0][0x1a] << 8) | register[0][0x19];
+        float frq = delta / 9447.0f; // Delta=9447 at freq=8kHz
         newParam.channels[12].note = (register[0][0x10] & 0x80) != 0 ? Ym2608Chip.searchYM2608Adpcm(frq) : -1;
         if ((register[0][0x11] & 0xc0) == 0) {
             newParam.channels[12].note = -1;

@@ -23,7 +23,6 @@ import javax.swing.JScrollPane;
 
 import mdplayer.Chip;
 import mdplayer.Common;
-import mdplayer.form.ScreenPanel;
 import mdplayer.chips.Ay8910Chip;
 import mdplayer.chips.C140Chip;
 import mdplayer.chips.C352Chip;
@@ -45,9 +44,10 @@ import mdplayer.chips.YmF278BChip;
 import mdplayer.chips.YmZ280BChip;
 import mdplayer.driver.sid.SidDriver;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTuneInfo.Model;
+import mdplayer.form.ScreenPanel;
+import mdplayer.form.View;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
-import mdplayer.form.View;
 
 
 public class FormRegTest extends FormChipBase<Void> {
@@ -129,10 +129,10 @@ public class FormRegTest extends FormChipBase<Void> {
             addChip(SidChip.class, 3, 0x19, chipId1 -> audio.plugin.chipRegister.chip(SidChip.class).getInfo(chipId1));
         }
 
-        private void addChip(Class<? extends Chip> ChipName, int Max, int regSize, Function<Integer, Object> p) {
+        private void addChip(Class<? extends Chip> chipName, int max, int regSize, Function<Integer, Object> p) {
             int BaseIndex = chipData.size();
-            for (int i = 0; i < Max; i++) {
-                chipData.add(new ChipData(ChipName, BaseIndex, regSize, Max, p));
+            for (int i = 0; i < max; i++) {
+                chipData.add(new ChipData(chipName, BaseIndex, regSize, max, p));
             }
         }
 

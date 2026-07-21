@@ -87,7 +87,7 @@ public class FormRf5c68 extends FormChipBase<FormRf5c68.Params> {
         Map<String, Object> info = audio.plugin.chipRegister.chip(Rf5C68Chip.class).getInfo(chipId);
         if (info.isEmpty()) return;
 
-        //int[][] volumes = (int[][]) audio.plugin.chipRegister.chip(Rf5C68Chip.class).getInfo(chipId).get("volume");
+        //int[][] volumes = (int[][]) info.get("volume");
         for (int ch = 0; ch < 8; ch++) {
             if (newParam.channels[ch].volume > 0) newParam.channels[ch].volume--;
 
@@ -97,10 +97,10 @@ public class FormRf5c68 extends FormChipBase<FormRf5c68.Params> {
                     newParam.channels[ch].volume = (int) info.get("channel." + ch + ".env");
                     info.put("channel." + ch + ".keyOn", false);
                 }
-                int MUL_L = (newParam.channels[ch].volume * ((int) info.get("channel." + ch + ".pan") & 0x0F)) >> 5;
-                int MUL_R = (newParam.channels[ch].volume * ((int) info.get("channel." + ch + ".pan") >> 4)) >> 5;
-                newParam.channels[ch].volumeL = Math.clamp(MUL_L / 3, 0, 19);
-                newParam.channels[ch].volumeR = Math.clamp(MUL_R / 3, 0, 19);
+                int mulL = (newParam.channels[ch].volume * ((int) info.get("channel." + ch + ".pan") & 0x0F)) >> 5;
+                int mulR = (newParam.channels[ch].volume * ((int) info.get("channel." + ch + ".pan") >> 4)) >> 5;
+                newParam.channels[ch].volumeL = Math.clamp(mulL / 3, 0, 19);
+                newParam.channels[ch].volumeR = Math.clamp(mulR / 3, 0, 19);
             } else {
                 newParam.channels[ch].volume = 0;
                 newParam.channels[ch].volumeL = 0;

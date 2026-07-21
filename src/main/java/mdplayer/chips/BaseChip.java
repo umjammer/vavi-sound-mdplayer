@@ -79,11 +79,11 @@ public abstract class BaseChip implements Chip {
 
     protected void setMask(int chipId, int ch, boolean mask, Object... args) {}
 
-    public void setMask(int chipId, int ch) {
+    public final void setMask(int chipId, int ch) {
         setMask(chipId, ch, true);
     }
 
-    public void resetMask(int chipId, int ch) {
+    public final void resetMask(int chipId, int ch) {
         setMask(chipId, ch, false);
     }
 

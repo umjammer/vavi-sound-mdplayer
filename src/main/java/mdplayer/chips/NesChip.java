@@ -6,7 +6,8 @@
 
 package mdplayer.chips;
 
-import java.lang.System.Logger;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
@@ -14,8 +15,6 @@ import mdsound.Instrument;
 import mdsound.instrument.NesInst;
 import mdsound.instrument.NesInst.DmcInst;
 import mdsound.instrument.NesInst.FdsInst;
-
-import static java.lang.System.getLogger;
 
 
 /**
@@ -25,8 +24,6 @@ import static java.lang.System.getLogger;
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
 public class NesChip extends BaseChip {
-
-    private static final Logger logger = getLogger(NesChip.class.getName());
 
     // vgm
     public static class DmcChip extends NesChip {
@@ -48,13 +45,12 @@ public class NesChip extends BaseChip {
         }
 
         @Override
-        public void setMask(int chipId, int ch) {
-            super.setMask(chipId, ch + 2);
-        }
-
-        @Override
-        public void resetMask(int chipId, int ch) {
-            super.resetMask(chipId, ch + 2);
+        protected void setMask(int chipId, int ch, boolean mask, Object... args) {
+            if (mask) {
+                super.setMask(chipId, ch + 2, true);
+            } else {
+                super.setMask(chipId, ch + 2, false);
+            }
         }
 
         @Override
@@ -82,16 +78,17 @@ public class NesChip extends BaseChip {
 //            }
         }
 
-        public void setMask(int chipId) {
-            FdsInst instrument = context.mds.inst(FdsInst.class);
-            if (instrument == null) return; // the song being played does not use this chip
-            instrument.setFDSMask(chipId);
-        }
-
-        public void resetMask(int chipId) {
-            FdsInst instrument = context.mds.inst(FdsInst.class);
-            if (instrument == null) return; // the song being played does not use this chip
-            instrument.resetFDSMask(chipId);
+        @Override
+        protected void setMask(int chipId, int ch, boolean mask, Object... args) {
+            if (mask) {
+                FdsInst instrument = context.mds.inst(FdsInst.class);
+                if (instrument == null) return; // the song being played does not use this chip
+                instrument.setFDSMask(chipId);
+            } else  {
+                FdsInst instrument = context.mds.inst(FdsInst.class);
+                if (instrument == null) return; // the song being played does not use this chip
+                instrument.resetFDSMask(chipId);
+            }
         }
     }
 
@@ -124,54 +121,53 @@ public class NesChip extends BaseChip {
         fireEventHappened("led.on", chipId);
 
 //        if (!ctNES[chipId].UseScci) {
-        NesInst instrument = context.mds.inst(NesInst.class);
-        return Map.of(
-                "register", instrument != null ? instrument.readApu(chipId) : new int[0x20],
-                "dmcRegister", instrument != null ? instrument.readDmc(chipId): new int[0x20]
-        );
+        NesInst inst = context.mds.inst(NesInst.class);
+        if (inst == null) return Collections.emptyMap();
+        Map<String, Object> info = new HashMap<>();
+        info.put("register", inst.readApu(chipId));
+        info.put("dmcRegister", inst.readDmc(chipId));
+        return info;
 //        }
     }
 
     // vgm
     @Override
-    public void setMask(int chipId, int ch) {
-        if (chipId == 0) {
-            switch (ch) {
-                case 0:
-                case 1:
-                    apuMask |= 1 << ch;
-                    break;
-                case 2:
-                case 3:
-                case 4:
-                    context.chipRegister.chip(NesChip.DmcChip.class).dmcMask |= 1 << (ch - 2);
-                    break;
+    protected void setMask(int chipId, int ch, boolean mask, Object... args) {
+        if (mask) {
+            if (chipId == 0) {
+                switch (ch) {
+                    case 0:
+                    case 1:
+                        apuMask |= 1 << ch;
+                        break;
+                    case 2:
+                    case 3:
+                    case 4:
+                        context.chipRegister.chip(NesChip.DmcChip.class).dmcMask |= 1 << (ch - 2);
+                        break;
+                }
             }
-        }
-        Instrument instrument = context.mds.inst(NesInst.class);
-        if (instrument == null) return; // the song being played does not use this chip
-        instrument.setMask(chipId, ch);
-    }
-
-    // vgm
-    @Override
-    public void resetMask(int chipId, int ch) {
-        if (chipId == 0) {
-            switch (ch) {
-                case 0:
-                case 1:
-                    apuMask &= ~(1 << ch);
-                    break;
-                case 2:
-                case 3:
-                case 4:
-                    context.chipRegister.chip(NesChip.DmcChip.class).dmcMask &= ~(1 << (ch - 2));
-                    break;
+            Instrument instrument = context.mds.inst(NesInst.class);
+            if (instrument == null) return; // the song being played does not use this chip
+            instrument.setMask(chipId, ch);
+        } else {
+            if (chipId == 0) {
+                switch (ch) {
+                    case 0:
+                    case 1:
+                        apuMask &= ~(1 << ch);
+                        break;
+                    case 2:
+                    case 3:
+                    case 4:
+                        context.chipRegister.chip(NesChip.DmcChip.class).dmcMask &= ~(1 << (ch - 2));
+                        break;
+                }
             }
+            Instrument instrument = context.mds.inst(NesInst.class);
+            if (instrument == null) return; // the song being played does not use this chip
+            instrument.resetMask(chipId, ch);
         }
-        Instrument instrument = context.mds.inst(NesInst.class);
-        if (instrument == null) return; // the song being played does not use this chip
-        instrument.resetMask(chipId, ch);
     }
 
     @Override

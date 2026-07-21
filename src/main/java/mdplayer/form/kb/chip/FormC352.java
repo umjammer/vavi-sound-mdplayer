@@ -162,6 +162,7 @@ public class FormC352 extends FormChipBase<FormC352.Params> {
     public void changeScreenParams() {
         Map<String, Object> info = audio.plugin.chipRegister.chip(C352Chip.class).getInfo(chipId);
         if (info.isEmpty()) return; // the song being played does not use this chip
+
         int[] c352Register = (int[]) info.get("register");
         int[] c352key = (int[]) info.get("flags");
         // the registers are read back into a buffer the chip reuses, and the visualizer reads the

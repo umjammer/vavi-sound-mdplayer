@@ -13,6 +13,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.util.List;
+import java.util.Map;
 import java.util.prefs.Preferences;
 
 import mdplayer.Common;
@@ -88,42 +89,38 @@ public class FormNESDMC extends FormChipBase<FormNESDMC.Params> {
 
     @Override
     public void changeScreenParams() {
-        final double LOG2_440 = 8.7813597135246596040696824762152;
-        final double LOG_2 = 0.69314718055994530941723212145818;
-        final int NOTE_440HZ = 12 * 4 + 9;
+        Map<String, Object> info = audio.plugin.chipRegister.chip(NpNesChip.class).getInfo(chipId);
+        if (info.isEmpty()) return;
 
-        int[] reg = (int[]) audio.plugin.chipRegister.chip(NpNesChip.class).getInfo(chipId).get("register");
-        int freq;
-        int vol;
-        int note;
-        if (reg != null) {
-            for (int i = 0; i < 2; i++) {
-                freq = (reg[3 + i * 4] & 0x07) * 0x100 + reg[2 + i * 4];
-                vol = reg[i * 4] & 0xf;
-                note = 104 - (int) ((12 * (Math.log(freq) / LOG_2 - LOG2_440) + NOTE_440HZ + 0.5));
-                note = vol == 0 ? -1 : note;
-                newParam.sqrChannels[i].note = note;
-                newParam.sqrChannels[i].volume = Math.min((int) ((vol) * 1.33), 19);
-                newParam.sqrChannels[i].nfrq = (reg[1 + i * 4] & 0x70) >> 4;      // Period
-                newParam.sqrChannels[i].pan = (reg[1 + i * 4] & 0x07);            // Shift
-                newParam.sqrChannels[i].pantp = (reg[3 + i * 4] & 0xf8) >> 3;     // Length counter load
-                newParam.sqrChannels[i].kf = (reg[i * 4] & 0xc0) >> 6;            // Duty
-                newParam.sqrChannels[i].dda = ((reg[i * 4] & 0x20) >> 5) != 0;    // LengthCounter
-                newParam.sqrChannels[i].noise = ((reg[i * 4] & 0x10) >> 4) != 0;  // constantVolume
-                newParam.sqrChannels[i].volumeL = ((reg[1 + i * 4] & 0x80) >> 7); // Sweep unit enabled
-                newParam.sqrChannels[i].volumeR = ((reg[1 + i * 4] & 0x08) >> 3); // negate
-            }
+        int[] reg = (int[]) info.get("register");
+        for (int i = 0; i < 2; i++) {
+            int freq = (reg[3 + i * 4] & 0x07) * 0x100 + reg[2 + i * 4];
+            int vol = reg[i * 4] & 0xf;
+            int note = 104 - (int) ((12 * (Math.log(freq) / LOG_2 - LOG2_440) + NOTE_440HZ + 0.5));
+            note = vol == 0 ? -1 : note;
+            newParam.sqrChannels[i].note = note;
+            newParam.sqrChannels[i].volume = Math.min((int) ((vol) * 1.33), 19);
+            newParam.sqrChannels[i].nfrq = (reg[1 + i * 4] & 0x70) >> 4;      // Period
+            newParam.sqrChannels[i].pan = (reg[1 + i * 4] & 0x07);            // Shift
+            newParam.sqrChannels[i].pantp = (reg[3 + i * 4] & 0xf8) >> 3;     // Length counter load
+            newParam.sqrChannels[i].kf = (reg[i * 4] & 0xc0) >> 6;            // Duty
+            newParam.sqrChannels[i].dda = ((reg[i * 4] & 0x20) >> 5) != 0;    // LengthCounter
+            newParam.sqrChannels[i].noise = ((reg[i * 4] & 0x10) >> 4) != 0;  // constantVolume
+            newParam.sqrChannels[i].volumeL = ((reg[1 + i * 4] & 0x80) >> 7); // Sweep unit enabled
+            newParam.sqrChannels[i].volumeR = ((reg[1 + i * 4] & 0x08) >> 3); // negate
         }
 
-        int[] reg2 = (int[]) audio.plugin.chipRegister.chip(NpNesChip.DmcChip.class).getInfo(chipId).get("register");
-        if (reg2 == null) return;
+        Map<String, Object> info2 = audio.plugin.chipRegister.chip(NpNesChip.DmcChip.class).getInfo(chipId);
+        if (info2.isEmpty()) return;
+
+        int[] reg2 = (int[]) info2.get("register");
 
         int tri = reg2[0x10];
         int noi = reg2[0x11];
         int dpc = reg2[0x12];
 
-        freq = (reg2[3] & 0x07) * 0x100 + reg2[2];
-        note = 92 - (int) ((12 * (Math.log(freq) / LOG_2 - LOG2_440) + NOTE_440HZ + 0.5));
+        int freq = (reg2[3] & 0x07) * 0x100 + reg2[2];
+        int note = 92 - (int) ((12 * (Math.log(freq) / LOG_2 - LOG2_440) + NOTE_440HZ + 0.5));
         newParam.triChannel.note = (reg2[0] & 0x7f) == 0 ? -1 : note;
         if ((reg2[0] & 0x80) == 0) {
             if ((reg2[13] & 0x04) == 0)

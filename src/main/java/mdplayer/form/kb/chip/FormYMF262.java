@@ -118,15 +118,14 @@ public class FormYMF262 extends FormChipBase<FormYMF262.Params> {
         if (info.isEmpty()) return;;
 
         int[][] register = (int[][]) info.get("register");
-        Channel nyc;
-        int slot;
-        int slotP;
 
         // FM
         for (int c = 0; c < 18; c++) {
-            nyc = newParam.channels[c];
+            Channel nyc = newParam.channels[c];
             for (int i = 0; i < 2; i++) {
 
+                int slot;
+                int slotP;
                 if (i == 0) {
                     slot = slot1Tbl[c] % 18;
                     slotP = slot1Tbl[c] / 18;
@@ -209,7 +208,7 @@ public class FormYMF262 extends FormChipBase<FormYMF262.Params> {
         int ko = (int) info.get("fmKeyON");
 
         for (int c = 0; c < 18; c++) {
-            nyc = newParam.channels[c];
+            Channel nyc = newParam.channels[c];
 
             int p = c / 9;
             boolean isOp4 = false;
@@ -231,7 +230,7 @@ public class FormYMF262 extends FormChipBase<FormYMF262.Params> {
             nyc.inst[14] = (register[p][0xc0 + adr] & 1);
             // PAN
             nyc.inst[36] = register[p][0xc0 + adr] & 0x30;
-            nyc.inst[36] = ((nyc.inst[36] >> 5) & 1) | ((nyc.inst[36] >> 3) & 2); //00RL0000 -> 000000LR
+            nyc.inst[36] = ((nyc.inst[36] >> 5) & 1) | ((nyc.inst[36] >> 3) & 2); // 00RL0000 -> 000000LR
             // modFlg
             int n = register[p][0xc0 + adr] & 1;
             nyc.inst[16] = n == 0 ? 0 : 1;

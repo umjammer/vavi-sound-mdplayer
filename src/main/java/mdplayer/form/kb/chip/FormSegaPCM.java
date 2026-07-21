@@ -141,34 +141,33 @@ public class FormSegaPCM extends FormChipBase<FormSegaPCM.Params> {
         if (info.isEmpty()) return; // the song being played does not use this chip
 
         byte[] register = (byte[]) info.get("register");
-        if (register != null) {
-            for (int ch = 0; ch < 16; ch++) {
-                int l = register[ch * 8 + 2] & 0x7f;
-                int r = register[ch * 8 + 3] & 0x7f;
-                int dt = register[ch * 8 + 7] & 0xff;
-                int ctrl = register[ch * 8 + 0x86] & 0xff;
-                double ml = dt / 256.0;
 
-                // the chip has no key on of its own to read, so a sounding channel is one
-                boolean playing = (ctrl & 0x01) == 0 && dt > 0 && (l | r) != 0;
+        for (int ch = 0; ch < 16; ch++) {
+            int l = register[ch * 8 + 2] & 0x7f;
+            int r = register[ch * 8 + 3] & 0x7f;
+            int dt = register[ch * 8 + 7] & 0xff;
+            int ctrl = register[ch * 8 + 0x86] & 0xff;
+            double ml = dt / 256.0;
 
-                if (playing) {
-                    newParam.channels[ch].note = SegaPcmChip.searchSegaPCMNote(ml);
-                    newParam.channels[ch].volumeL = Math.clamp((l * 1) >> 1, 0, 19);
-                    newParam.channels[ch].volumeR = Math.clamp((r * 1) >> 1, 0, 19);
-                } else {
-                    newParam.channels[ch].volumeL -= newParam.channels[ch].volumeL > 0 ? 1 : 0;
-                    newParam.channels[ch].volumeR -= newParam.channels[ch].volumeR > 0 ? 1 : 0;
+            // the chip has no key on of its own to read, so a sounding channel is one
+            boolean playing = (ctrl & 0x01) == 0 && dt > 0 && (l | r) != 0;
 
-                    if (newParam.channels[ch].volumeL == 0 && newParam.channels[ch].volumeR == 0) {
-                        newParam.channels[ch].note = -1;
-                    }
+            if (playing) {
+                newParam.channels[ch].note = SegaPcmChip.searchSegaPCMNote(ml);
+                newParam.channels[ch].volumeL = Math.clamp((l * 1) >> 1, 0, 19);
+                newParam.channels[ch].volumeR = Math.clamp((r * 1) >> 1, 0, 19);
+            } else {
+                newParam.channels[ch].volumeL -= newParam.channels[ch].volumeL > 0 ? 1 : 0;
+                newParam.channels[ch].volumeR -= newParam.channels[ch].volumeR > 0 ? 1 : 0;
+
+                if (newParam.channels[ch].volumeL == 0 && newParam.channels[ch].volumeR == 0) {
+                    newParam.channels[ch].note = -1;
                 }
-
-                newParam.channels[ch].pan = ((l >> 3) & 0xf) | (((r >> 3) & 0xf) << 4);
             }
+
+            newParam.channels[ch].pan = ((l >> 3) & 0xf) | (((r >> 3) & 0xf) << 4);
         }
-    
+
         // the chip itself is the source of truth for channel muting
         for (int mch = 0; mch < newParam.channels.length; mch++)
             newParam.channels[mch].mask = audio.plugin.chipRegister.chip(SegaPcmChip.class).getMask(chipId, mch);

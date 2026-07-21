@@ -84,9 +84,8 @@ public class YmZ280BChip extends BaseChip {
         if (inst == null) return Collections.emptyMap();
         Map<String, Object> info = new HashMap<>();
         info.put("register", register[chipId]);
+        info.put("output", inst.getView(chipId, "volume").get(inst.getName()));
         info.putAll(inst.getView(chipId, "info"));
-        Object output = inst.getView(chipId, "volume").get(inst.getName());
-        if (output instanceof Integer i) info.put("output", i);
         return info;
     }
 }

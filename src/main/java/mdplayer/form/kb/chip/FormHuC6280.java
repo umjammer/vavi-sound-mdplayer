@@ -112,7 +112,6 @@ public class FormHuC6280 extends FormChipBase<FormHuC6280.Params> {
 
     @Override
     public void changeScreenParams() {
-
         Map<String, Object> chip = audio.plugin.chipRegister.chip(HuC6280Chip.class).getInfo(chipId);
         if (chip.isEmpty()) return;
 

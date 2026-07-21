@@ -125,7 +125,6 @@ public class FormYM2608 extends FormChipBase<FormYM2608.Params> {
         Map<String, Object> info = audio.plugin.chipRegister.chip(Ym2608Chip.class).getInfo(chipId);
         if (info.isEmpty()) return;
 
-        boolean isFmEx;
         int[][] ym2608Register = (int[][]) info.get("register");
         int[] fmKeyYM2608 = (int[]) info.get("keyOn");
         int[] ym2608Vol = (int[]) info.get("volume");
@@ -138,7 +137,7 @@ public class FormYM2608 extends FormChipBase<FormYM2608.Params> {
         newParam.rhythmTotalLevel = ym2608Register[0][0x11];
         newParam.adpcmLevel = ym2608Register[1][0x0b];
 
-        isFmEx = (ym2608Register[0][0x27] & 0x40) > 0;
+        boolean isFmEx = (ym2608Register[0][0x27] & 0x40) > 0;
         newParam.channels[2].ex = isFmEx;
 
         int defaultMasterClock = 7987200;

@@ -14,6 +14,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.util.List;
+import java.util.Map;
 import java.util.prefs.Preferences;
 
 import mdplayer.Chip.ChipKeyInfo;
@@ -90,28 +91,29 @@ public class FormVRC7 extends FormChipBase<FormVRC7.Params> {
 
     @Override
     public void changeScreenParams() {
-        int[] vrc7Register = (int[]) audio.plugin.chipRegister.chip(Vrc7Chip.class).getInfo(chipId).get("register");
-        if (vrc7Register == null) return;
+        Map<String, Object> info = audio.plugin.chipRegister.chip(Vrc7Chip.class).getInfo(chipId);
+        if (info.isEmpty()) return;
 
+        int[] register = (int[]) info.get("register");
         // Get whether there was a key-on (one-shot)
-        ChipKeyInfo ki = (ChipKeyInfo) audio.plugin.chipRegister.chip(Vrc7Chip.class).getInfo(chipId).get("keyInfo");
+        ChipKeyInfo ki = (ChipKeyInfo) info.get("keyInfo");
 
         for (int ch = 0; ch < 6; ch++) {
             ChannelParams nyc = newParam.channels[ch];
 
             // Tone Number
-            nyc.inst[0] = (vrc7Register[0x30 + ch] & 0xf0) >> 4;
+            nyc.inst[0] = (register[0x30 + ch] & 0xf0) >> 4;
             // Get sustain
-            nyc.inst[1] = (vrc7Register[0x20 + ch] & 0x20) >> 5;
+            nyc.inst[1] = (register[0x20 + ch] & 0x20) >> 5;
             // Current key-on state
-            nyc.inst[2] = (vrc7Register[0x20 + ch] & 0x10) >> 4;
+            nyc.inst[2] = (register[0x20 + ch] & 0x10) >> 4;
             // Volume
-            nyc.inst[3] = (vrc7Register[0x30 + ch] & 0x0f);
+            nyc.inst[3] = (register[0x30 + ch] & 0x0f);
 
             // Playback frequency
-            int freq = vrc7Register[0x10 + ch] + ((vrc7Register[0x20 + ch] & 0x1) << 8);
+            int freq = register[0x10 + ch] + ((register[0x20 + ch] & 0x1) << 8);
             // Octave
-            int oct = ((vrc7Register[0x20 + ch] & 0xe) >> 1);
+            int oct = ((register[0x20 + ch] & 0xe) >> 1);
             // Get the approximate pitch from the frequency and octave information
             nyc.note = SegaPcmChip.searchSegaPCMNote(freq / 172.0) + (oct - 4) * 12;
 
@@ -134,31 +136,31 @@ public class FormVRC7 extends FormChipBase<FormVRC7.Params> {
             }
         }
 
-        newParam.channels[0].inst[4] = (vrc7Register[0x02] & 0x3f); // TL
-        newParam.channels[0].inst[5] = (vrc7Register[0x03] & 0x07); // FB
+        newParam.channels[0].inst[4] = (register[0x02] & 0x3f); // TL
+        newParam.channels[0].inst[5] = (register[0x03] & 0x07); // FB
 
-        newParam.channels[0].inst[6] = (vrc7Register[0x04] & 0xf0) >> 4;  // AR
-        newParam.channels[0].inst[7] = (vrc7Register[0x04] & 0x0f);       // DR
-        newParam.channels[0].inst[8] = (vrc7Register[0x06] & 0xf0) >> 4;  // SL
-        newParam.channels[0].inst[9] = (vrc7Register[0x06] & 0x0f);       // RR
-        newParam.channels[0].inst[10] = (vrc7Register[0x02] & 0x80) >> 7; // KL
-        newParam.channels[0].inst[11] = (vrc7Register[0x00] & 0x0f);      // MT
-        newParam.channels[0].inst[12] = (vrc7Register[0x00] & 0x80) >> 7; // AM
-        newParam.channels[0].inst[13] = (vrc7Register[0x00] & 0x40) >> 6; // VB
-        newParam.channels[0].inst[14] = (vrc7Register[0x00] & 0x20) >> 5; // EG
-        newParam.channels[0].inst[15] = (vrc7Register[0x00] & 0x10) >> 4; // KR
-        newParam.channels[0].inst[16] = (vrc7Register[0x03] & 0x08) >> 3; // DM
-        newParam.channels[0].inst[17] = (vrc7Register[0x05] & 0xf0) >> 4; // AR
-        newParam.channels[0].inst[18] = (vrc7Register[0x05] & 0x0f);      // DR
-        newParam.channels[0].inst[19] = (vrc7Register[0x07] & 0xf0) >> 4; // SL
-        newParam.channels[0].inst[20] = (vrc7Register[0x07] & 0x0f);      // RR
-        newParam.channels[0].inst[21] = (vrc7Register[0x03] & 0x80) >> 7; // KL
-        newParam.channels[0].inst[22] = (vrc7Register[0x01] & 0x0f);      // MT
-        newParam.channels[0].inst[23] = (vrc7Register[0x01] & 0x80) >> 7; // AM
-        newParam.channels[0].inst[24] = (vrc7Register[0x01] & 0x40) >> 6; // VB
-        newParam.channels[0].inst[25] = (vrc7Register[0x01] & 0x20) >> 5; // EG
-        newParam.channels[0].inst[26] = (vrc7Register[0x01] & 0x10) >> 4; // KR
-        newParam.channels[0].inst[27] = (vrc7Register[0x03] & 0x10) >> 4; // DC
+        newParam.channels[0].inst[6] = (register[0x04] & 0xf0) >> 4;  // AR
+        newParam.channels[0].inst[7] = (register[0x04] & 0x0f);       // DR
+        newParam.channels[0].inst[8] = (register[0x06] & 0xf0) >> 4;  // SL
+        newParam.channels[0].inst[9] = (register[0x06] & 0x0f);       // RR
+        newParam.channels[0].inst[10] = (register[0x02] & 0x80) >> 7; // KL
+        newParam.channels[0].inst[11] = (register[0x00] & 0x0f);      // MT
+        newParam.channels[0].inst[12] = (register[0x00] & 0x80) >> 7; // AM
+        newParam.channels[0].inst[13] = (register[0x00] & 0x40) >> 6; // VB
+        newParam.channels[0].inst[14] = (register[0x00] & 0x20) >> 5; // EG
+        newParam.channels[0].inst[15] = (register[0x00] & 0x10) >> 4; // KR
+        newParam.channels[0].inst[16] = (register[0x03] & 0x08) >> 3; // DM
+        newParam.channels[0].inst[17] = (register[0x05] & 0xf0) >> 4; // AR
+        newParam.channels[0].inst[18] = (register[0x05] & 0x0f);      // DR
+        newParam.channels[0].inst[19] = (register[0x07] & 0xf0) >> 4; // SL
+        newParam.channels[0].inst[20] = (register[0x07] & 0x0f);      // RR
+        newParam.channels[0].inst[21] = (register[0x03] & 0x80) >> 7; // KL
+        newParam.channels[0].inst[22] = (register[0x01] & 0x0f);      // MT
+        newParam.channels[0].inst[23] = (register[0x01] & 0x80) >> 7; // AM
+        newParam.channels[0].inst[24] = (register[0x01] & 0x40) >> 6; // VB
+        newParam.channels[0].inst[25] = (register[0x01] & 0x20) >> 5; // EG
+        newParam.channels[0].inst[26] = (register[0x01] & 0x10) >> 4; // KR
+        newParam.channels[0].inst[27] = (register[0x03] & 0x10) >> 4; // DC
     
         for (int mch = 0; mch < newParam.channels.length; mch++)
             newParam.channels[mch].mask = audio.plugin.chipRegister.chip(NpNesChip.Vrc7Chip.class).getMask(chipId, mch);

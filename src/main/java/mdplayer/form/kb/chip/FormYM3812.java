@@ -111,8 +111,6 @@ public class FormYM3812 extends FormChipBase<FormYM3812.Params> {
         if (info.isEmpty()) return;
 
         int[] register = (int[]) info.get("register");
-        Channel nyc;
-        int slot;
         ChipKeyInfo ki = (ChipKeyInfo) info.get("keyInfo");
 
         mdsound.MDSound.Chip chipInfo = audio.plugin.mds.getChipInfo(Ym3812Inst.class);
@@ -120,9 +118,10 @@ public class FormYM3812 extends FormChipBase<FormYM3812.Params> {
 
         // FM
         for (int c = 0; c < 9; c++) {
-            nyc = newParam.channels[c];
+            Channel nyc = newParam.channels[c];
             for (int i = 0; i < 2; i++) {
 
+                int slot;
                 if (i == 0) {
                     slot = slot1Tbl[c];
                 } else {
@@ -443,7 +442,7 @@ public class FormYM3812 extends FormChipBase<FormYM3812.Params> {
 
         @Override public void forceChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
             if (ch >= 0 && ch < 14) {
-    if (mask)
+                if (mask)
                     audio.plugin.chipRegister.chip(mdplayer.chips.Ym3812Chip.class).setMask(chipId, ch);
                 else
                     audio.plugin.chipRegister.chip(mdplayer.chips.Ym3812Chip.class).resetMask(chipId, ch);

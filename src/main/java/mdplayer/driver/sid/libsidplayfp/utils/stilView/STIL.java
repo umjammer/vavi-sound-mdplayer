@@ -1022,7 +1022,7 @@ public class STIL {
 
         // Find it : the table.
         String entry = new String(entryStr.array()).formatted(pathLen);
-        // dirList::iterator elem = dirs.find(entry);
+        //dirList::iterator elem = dirs.find(entry);
         Tuple<String, Integer> elem = null;
         for (Tuple<String, Integer> t : dirs) {
             if (t.getItem1().equals(entry)) {

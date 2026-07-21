@@ -13,6 +13,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.util.List;
+import java.util.Map;
 import java.util.prefs.Preferences;
 
 import mdplayer.Common;
@@ -85,26 +86,22 @@ public class FormMMC5 extends FormChipBase<FormMMC5.Params> {
 
     @Override
     public void changeScreenParams() {
-        final double LOG2_440 = 8.7813597135246596040696824762152;
-        final double LOG_2 = 0.69314718055994530941723212145818;
-        final int NOTE_440HZ = 12 * 4 + 9;
+        Map<String, Object> info = audio.plugin.chipRegister.chip(Mmc5Chip.class).getInfo(chipId);
+        if (info.isEmpty()) return;;
 
-        byte[] reg = (byte[]) audio.plugin.chipRegister.chip(Mmc5Chip.class).getInfo(chipId).get("register");
-        int freq;
-        int vol;
-        int note;
+        byte[] reg = (byte[]) info.get("register");
         if (reg != null) {
             for (int i = 0; i < 2; i++) {
-                freq = (reg[3 + i * 4] & 0x07) * 0x100 + reg[2 + i * 4];
-                vol = reg[i * 4] & 0xf;
-                note = 104 - (int) ((12 * (Math.log(freq) / LOG_2 - LOG2_440) + NOTE_440HZ + 0.5));
+                int freq = (reg[3 + i * 4] & 0x07) * 0x100 + reg[2 + i * 4];
+                int vol = reg[i * 4] & 0xf;
+                int note = 104 - (int) ((12 * (Math.log(freq) / LOG_2 - LOG2_440) + NOTE_440HZ + 0.5));
                 note = vol == 0 ? -1 : note;
                 newParam.sqrChannels[i].note = note;
                 newParam.sqrChannels[i].volume = Math.min((int) ((vol) * 1.33), 19);
-                newParam.sqrChannels[i].pantp = (reg[3 + i * 4] & 0xf8) >> 3;//Length counter load
-                newParam.sqrChannels[i].kf = (reg[i * 4] & 0xc0) >> 6;//Duty
-                newParam.sqrChannels[i].dda = ((reg[i * 4] & 0x20) >> 5) != 0;//LengthCounter
-                newParam.sqrChannels[i].noise = ((reg[i * 4] & 0x10) >> 4) != 0;//constantVolume
+                newParam.sqrChannels[i].pantp = (reg[3 + i * 4] & 0xf8) >> 3; // Length counter load
+                newParam.sqrChannels[i].kf = (reg[i * 4] & 0xc0) >> 6; // Duty
+                newParam.sqrChannels[i].dda = ((reg[i * 4] & 0x20) >> 5) != 0; // LengthCounter
+                newParam.sqrChannels[i].noise = ((reg[i * 4] & 0x10) >> 4) != 0; // constantVolume
             }
 
             newParam.pcmChannel.dda = (reg[8] & 0x80) != 0;

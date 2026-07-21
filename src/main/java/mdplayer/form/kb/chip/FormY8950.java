@@ -148,17 +148,16 @@ public class FormY8950 extends FormChipBase<FormY8950.Params> {
         if (info.isEmpty()) return;
 
         int[] register = (int[]) info.get("register");
-        Channel nyc;
-        int slot;
         ChipKeyInfo ki = (ChipKeyInfo) info.get("keyInfo");
         mdsound.MDSound.Chip chipInfo = audio.plugin.mds.getChipInfo(Y8950Inst.class);
         int masterClock = chipInfo == null ? 3579545 : chipInfo.clock;
 
         // FM
         for (int c = 0; c < 9; c++) {
-            nyc = newParam.channels[c];
+            Channel nyc = newParam.channels[c];
             for (int i = 0; i < 2; i++) {
 
+                int slot;
                 if (i == 0) {
                     slot = slot1Tbl[c];
                 } else {

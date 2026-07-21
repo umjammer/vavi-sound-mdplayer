@@ -42,6 +42,10 @@ public abstract class FormChipBase<P> extends FormBase implements View {
     /** the component that frame buffer is presented on */
     protected ScreenPanel pbScreen;
 
+    protected static final double LOG2_440 = 8.7813597135246596040696824762152;
+    protected static final double LOG_2 = 0.69314718055994530941723212145818;
+    protected static final int NOTE_440HZ = 12 * 4 + 9;
+
     public FormChipBase() {
     }
 

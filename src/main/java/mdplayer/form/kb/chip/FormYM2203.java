@@ -112,13 +112,12 @@ public class FormYM2203 extends FormChipBase<FormYM2203.Params> {
         Map<String, Object> info = audio.plugin.chipRegister.chip(Ym2203Chip.class).getInfo(chipId);
         if (info.isEmpty()) return;
 
-        boolean isFmEx;
         int[] ym2203Register = (int[]) info.get("register");
         int[] fmKeyYM2203 = (int[]) info.get("keyOn");
         int[] ym2203Vol = (int[]) info.get("volume");
         int[] ym2203Ch3SlotVol = (int[]) info.get("ch3SlotVolume");
 
-        isFmEx = (ym2203Register[0x27] & 0x40) > 0;
+        boolean isFmEx = (ym2203Register[0x27] & 0x40) > 0;
         newParam.channels[2].ex = isFmEx;
 
         int defaultMasterClock = 7987200 / 2;
@@ -559,7 +558,7 @@ public class FormYM2203 extends FormChipBase<FormYM2203.Params> {
 
         @Override public void forceChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
             if (ch >= 0 && ch < 9) {
-    if (mask)
+                if (mask)
                     audio.plugin.chipRegister.chip(mdplayer.chips.Ym2203Chip.class).setMask(chipId, ch);
                 else
                     audio.plugin.chipRegister.chip(mdplayer.chips.Ym2203Chip.class).setMask(chipId, ch, false, audio.plugin.stopped);

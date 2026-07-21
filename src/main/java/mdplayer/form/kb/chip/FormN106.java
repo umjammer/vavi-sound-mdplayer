@@ -14,6 +14,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.util.List;
+import java.util.Map;
 import java.util.prefs.Preferences;
 
 import mdplayer.Common;
@@ -141,35 +142,35 @@ public class FormN106 extends FormChipBase<FormN106.Params> {
 
     @Override
     public void changeScreenParams() {
-        NesN106.TrackInfo[] info = (NesN106.TrackInfo[]) audio.plugin.chipRegister.chip(NpNesChip.N163Chip.class).getInfo(0).get("tracksInfo"); // TODO not abstracted
-        if (info == null) return;
+        Map<String, Object> info = audio.plugin.chipRegister.chip(NpNesChip.N163Chip.class).getInfo(chipId);
+        if (info.isEmpty()) return;
 
-        Channel nyc;
+        NesN106.TrackInfo[] trackInfo = (NesN106.TrackInfo[]) info.get("tracksInfo"); // TODO not abstracted
 
         for (int ch = 0; ch < 8; ch++) {
-            nyc = newParam.channels[ch];
+            Channel nyc = newParam.channels[ch];
 
-            nyc.bit[0] = info[ch].getKeyStatus();
-            nyc.bit[1] = info[ch].getHalt();
+            nyc.bit[0] = trackInfo[ch].getKeyStatus();
+            nyc.bit[1] = trackInfo[ch].getHalt();
 
-            int v = info[ch].getVolume() * 2;
+            int v = trackInfo[ch].getVolume() * 2;
             nyc.volume = Math.min(v, 19);
-            nyc.volumeR = info[ch].getVolume();
+            nyc.volumeR = trackInfo[ch].getVolume();
 
-            nyc.freq = info[ch].getFreq();
-            v = info[ch].getNote(info[ch].getFreqHz()) - 4 * 12;
+            nyc.freq = trackInfo[ch].getFreq();
+            v = trackInfo[ch].getNote(trackInfo[ch].getFreqHz()) - 4 * 12;
             nyc.note = (nyc.volumeL == 0 || !nyc.bit[0]) ? -1 : v;
 
-            nyc.bank = info[ch].waveLen & 127;
-            nyc.bank = nyc.bank <= 0 ? (info[ch].waveLen > 127 ? 127 : 0) : nyc.bank;
+            nyc.bank = trackInfo[ch].waveLen & 127;
+            nyc.bank = nyc.bank <= 0 ? (trackInfo[ch].waveLen > 127 ? 127 : 0) : nyc.bank;
             if (nyc.aryWave16bit == null) nyc.aryWave16bit = new short[280];
             for (int i = 0; i < 280; i++) {
                 if (i < nyc.bank) {
-                    nyc.aryWave16bit[i] = info[ch].wave[i];
+                    nyc.aryWave16bit[i] = trackInfo[ch].wave[i];
                 } else {
                     if (i != 279) nyc.aryWave16bit[i] = nyc.aryWave16bit[i + 1];
                     else {
-                        int w = ((byte) info[ch].getOutput() >> 4) + 8;
+                        int w = ((byte) trackInfo[ch].getOutput() >> 4) + 8;
                         nyc.aryWave16bit[i] = (short) (w + 16);
                     }
                 }

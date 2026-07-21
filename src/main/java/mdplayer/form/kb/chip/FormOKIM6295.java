@@ -315,7 +315,6 @@ public class FormOKIM6295 extends FormChipBase<FormOKIM6295.Params> {
         public final int[] nmkBank = new int[4];
     }
 
-
     /** what this panel contributes to the GUI; see {@link ViewProvider} */
     public static class Provider implements ViewProvider {
 

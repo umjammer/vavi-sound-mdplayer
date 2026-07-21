@@ -99,11 +99,10 @@ public class FormYM2413 extends FormChipBase<FormYM2413.Params> {
         if (info.isEmpty()) return;
 
         int[] register = (int[]) info.get("register");
-        ChannelParams nyc;
         ChipKeyInfo ki = (ChipKeyInfo) info.get("keyInfo");
 
         for (int ch = 0; ch < 9; ch++) {
-            nyc = newParam.channels[ch];
+            ChannelParams nyc = newParam.channels[ch];
 
             nyc.inst[0] = (register[0x30 + ch] & 0xf0) >> 4;
             nyc.inst[1] = (register[0x20 + ch] & 0x20) >> 5;
@@ -122,10 +121,9 @@ public class FormYM2413 extends FormChipBase<FormYM2413.Params> {
                 nyc.volumeL--;
                 if (nyc.volumeL < 0) nyc.volumeL = 0;
             }
-
         }
 
-        //int r = audio.getYM2413RyhthmKeyON(chipId);
+        //int r = audio.plugin.chipRegister.chip(Ym2413Chip.class).getRhythmKeyON(chipId);
 
         // BD
         if (ki.on[9]) {
@@ -510,7 +508,7 @@ public class FormYM2413 extends FormChipBase<FormYM2413.Params> {
 
         @Override public void forceChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
             if (ch >= 0 && ch < 14) {
-    if (mask)
+                if (mask)
                     audio.plugin.chipRegister.chip(mdplayer.chips.Ym2413Chip.class).setMask(chipId, ch);
                 else
                     audio.plugin.chipRegister.chip(mdplayer.chips.Ym2413Chip.class).resetMask(chipId, ch);

@@ -109,8 +109,6 @@ public class FormYM3526 extends FormChipBase<FormYM3526.Params> {
         if (info.isEmpty()) return;
 
         int[] register = (int[]) info.get("register");
-        Channel nyc;
-        int slot = 0;
         ChipKeyInfo ki = (ChipKeyInfo) info.get("keyInfo");
 
         mdsound.MDSound.Chip chipInfo = audio.plugin.mds.getChipInfo(Ym3526Inst.class);
@@ -118,9 +116,10 @@ public class FormYM3526 extends FormChipBase<FormYM3526.Params> {
 
         // FM
         for (int c = 0; c < 9; c++) {
-            nyc = newParam.channels[c];
+            Channel nyc = newParam.channels[c];
             for (int i = 0; i < 2; i++) {
 
+                int slot;
                 if (i == 0) {
                     slot = slot1Tbl[c];
                 } else {

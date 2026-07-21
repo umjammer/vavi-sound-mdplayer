@@ -108,15 +108,14 @@ public class FormYMF278B extends FormChipBase<FormYMF278B.Params> {
         if (info.isEmpty()) return;
 
         int[][] register = (int[][]) info.get("register");
-        Channel nyc;
-        int slot;
-        int slotP;
 
         // FM
         for (int c = 0; c < 18; c++) {
-            nyc = newParam.channels[c];
+            Channel nyc = newParam.channels[c];
             for (int i = 0; i < 2; i++) {
 
+                int slot;
+                int slotP;
                 if (i == 0) {
                     slot = slot1Tbl[c] % 18;
                     slotP = slot1Tbl[c] / 18;
@@ -203,7 +202,7 @@ public class FormYMF278B extends FormChipBase<FormYMF278B.Params> {
         int ko = (int) info.get("fmKeyOn");
 
         for (int c = 0; c < 18; c++) {
-            nyc = newParam.channels[c];
+            Channel nyc = newParam.channels[c];
 
             int p = c / 9;
             int cadr = c % 9;
@@ -350,7 +349,7 @@ public class FormYMF278B extends FormChipBase<FormYMF278B.Params> {
         int[] pcmKey = (int[]) info.get("pcmKeyOn");
         int[] mdPCMKey = (audio.plugin.driverVirtual instanceof BuiltInMoonDriver moonDriver) ? moonDriver.getPCMKeyOn() : null; // TODO gross
         for (int c = 23; c < 23 + 24; c++) {
-            nyc = newParam.channels[c];
+            Channel nyc = newParam.channels[c];
             // Pan
             nyc.pan = (register[2][0x68 + (c - 23)] & 0xf);
             nyc.pan = (nyc.pan == 8 ? 0 :
@@ -422,6 +421,7 @@ public class FormYMF278B extends FormChipBase<FormYMF278B.Params> {
             // Wav
             nyc.inst[12] = (register[2][0x08 + (c - 23)]) + ((register[2][0x20 + (c - 23)] & 0x1) << 8);
         }
+
         audio.plugin.chipRegister.chip(YmF278BChip.class).resetPcmKeyOn(chipId);
     
         // the chip itself is the source of truth for channel muting
@@ -479,8 +479,8 @@ public class FormYMF278B extends FormChipBase<FormYMF278B.Params> {
             oyc.mask = drawChYMF278B(frameBuffer, c, oyc.mask, nyc.mask, tp);
 
             //frameBuffer.drawInstNumber((c % 3) * 16 + 37, (c / 3) * 2 + 24,oyc.inst[0], nyc.inst[0]);
-            //frameBuffer.SUSFlag((c % 3) * 16 + 41, (c / 3) * 2 + 24,oyc.inst[1], nyc.inst[1]);
-            //frameBuffer.SUSFlag((c % 3) * 16 + 44, (c / 3) * 2 + 24,oyc.inst[2], nyc.inst[2]);
+            //frameBuffer.drawSUSFlag((c % 3) * 16 + 41, (c / 3) * 2 + 24,oyc.inst[1], nyc.inst[1]);
+            //frameBuffer.drawSUSFlag((c % 3) * 16 + 44, (c / 3) * 2 + 24,oyc.inst[2], nyc.inst[2]);
             //frameBuffer.drawInstNumber((c % 3) * 16 + 46, (c / 3) * 2 + 24,oyc.inst[3], nyc.inst[3]);
         }
 
@@ -817,7 +817,7 @@ public class FormYMF278B extends FormChipBase<FormYMF278B.Params> {
 
         @Override public void forceChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
             if (ch >= 0 && ch < 47) {
-    if (mask)
+                if (mask)
                     audio.plugin.chipRegister.chip(mdplayer.chips.YmF278BChip.class).setMask(chipId, ch);
                 else
                     audio.plugin.chipRegister.chip(mdplayer.chips.YmF278BChip.class).resetMask(chipId, ch);

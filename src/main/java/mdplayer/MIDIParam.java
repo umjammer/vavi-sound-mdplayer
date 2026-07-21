@@ -1,5 +1,6 @@
 package mdplayer;
 
+// view (same as Chip#getInfo)
 public class MIDIParam {
 
     public int MIDIModule = 0; // 0:GMIDI 1:XG 2:GS

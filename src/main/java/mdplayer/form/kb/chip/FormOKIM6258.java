@@ -87,18 +87,12 @@ public class FormOKIM6258 extends FormChipBase<FormOKIM6258.Params> {
         Map<String, Object> info = audio.plugin.chipRegister.chip(OkiM6258Chip.class).getInfo(chipId);
         if (info.isEmpty()) return;
 
-        switch (((int) info.get("pan")) & 0x3) {
-            case 0:
-            case 3:
-                newParam.pan = 3;
-                break;
-            case 1:
-                newParam.pan = 2;
-                break;
-            case 2:
-                newParam.pan = 1;
-                break;
-        }
+        newParam.pan = switch (((int) info.get("pan")) & 0x3) {
+            case 0, 3 -> 3;
+            case 1 -> 2;
+            case 2 -> 1;
+            default -> 3; // TODO
+        };
 
         newParam.masterFreq = (int) info.get("masterFreq");
         newParam.divider = (int) info.get("divider");

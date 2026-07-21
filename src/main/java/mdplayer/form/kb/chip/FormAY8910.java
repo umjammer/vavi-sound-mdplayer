@@ -10,6 +10,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.util.List;
+import java.util.Map;
 
 import mdplayer.Common;
 import mdplayer.form.FrameBuffer;
@@ -100,8 +101,10 @@ public class FormAY8910 extends FormChipBase<FormAY8910.Params> {
 
     @Override
     public void changeScreenParams() {
-        int[] register = (int[]) audio.plugin.chipRegister.chip(Ay8910Chip.class).getInfo(chipId).get("register");
-        if (register == null) return;
+        Map<String, Object> info = audio.plugin.chipRegister.chip(Ay8910Chip.class).getInfo(chipId);
+        if (info.isEmpty()) return;
+
+        int[] register = (int[]) info.get("register");
 
         for (int ch = 0; ch < 3; ch++) { // SSG
 

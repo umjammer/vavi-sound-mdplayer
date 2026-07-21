@@ -165,6 +165,8 @@ public class FormC140 extends FormChipBase<FormC140.Params> {
     @Override
     public void changeScreenParams() {
         Map<String, Object> info = audio.plugin.chipRegister.chip(C140Chip.class).getInfo(chipId);
+        if (info.isEmpty()) return;
+
         byte[] c140State = (byte[]) info.get("registers");
         boolean[] c140KeyOn = new boolean[24];
         for (int ch = 0; ch < c140KeyOn.length; ch++) {

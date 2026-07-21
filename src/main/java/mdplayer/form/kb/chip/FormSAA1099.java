@@ -22,7 +22,7 @@ public class FormSAA1099 extends FormBase {
         //
         this.setPreferredSize(new Dimension(800, 450));
         this.setName("frmSAA1099");
-        this.setTitle("frmSAA1099");
+        this.setTitle("SAA1099");
     }
 
     /**
