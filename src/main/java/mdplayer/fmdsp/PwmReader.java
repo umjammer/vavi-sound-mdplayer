@@ -6,6 +6,7 @@
 
 package mdplayer.fmdsp;
 
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
@@ -54,7 +55,7 @@ public class PwmReader implements FmDspChipReader {
     public void reset() {
         prevSounding = false;
         active = false;
-        info = null;
+        info = Collections.emptyMap();
     }
 
     @Override
@@ -78,17 +79,17 @@ public class PwmReader implements FmDspChipReader {
             info = chip().getInfo(0);
         } catch (RuntimeException ignore) {
             // the chip exists but the song never loaded it
-            info = null;
+            info = Collections.emptyMap();
         }
     }
 
     private int intOf(String field) {
-        Object value = info == null ? null : info.get(field);
+        Object value = info.get(field);
         return value instanceof Integer i ? i : 0;
     }
 
     private boolean sounding() {
-        return info != null && (intOf("outputL") != 0 || intOf("outputR") != 0);
+        return intOf("outputL") != 0 || intOf("outputR") != 0;
     }
 
     @Override
@@ -107,7 +108,7 @@ public class PwmReader implements FmDspChipReader {
         out.name = "PCM";
         out.num = 1;
         out.pcmCh = 1;
-        if (info == null) return;
+        if (info.isEmpty()) return;
 
         boolean sounding = sounding();
         int left = Math.abs(intOf("outputL"));

@@ -1,14 +1,18 @@
 package mdplayer.form.sys;
 
-import java.awt.Dimension;
 import javax.swing.JFrame;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
-import static org.junit.jupiter.api.Assertions.*;
 
 import mdplayer.Audio;
+import mdplayer.driver.VgmDriver;
+import mdplayer.plugin.BasePlugin;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 
 @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
 public class FormInfoTest {
@@ -16,8 +20,8 @@ public class FormInfoTest {
     @Test
     public void testFormInfo() throws Exception {
         Audio audio = Audio.getInstance();
-        mdplayer.plugin.BasePlugin plugin = new mdplayer.plugin.VGMPlugin();
-        plugin.driverVirtual = new mdplayer.driver.VgmDriver();
+        BasePlugin<VgmDriver> plugin = new mdplayer.plugin.VGMPlugin();
+        plugin.driverVirtual = new VgmDriver();
         plugin.driverVirtual.metaData = new musicDriverInterface.MetaData();
         audio.plugin = plugin;
         

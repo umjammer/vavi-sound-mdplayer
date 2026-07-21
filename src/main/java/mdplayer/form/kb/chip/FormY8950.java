@@ -13,20 +13,21 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.util.List;
+import java.util.Map;
 import java.util.prefs.Preferences;
 
 import mdplayer.Chip.ChipKeyInfo;
 import mdplayer.Common;
-import mdplayer.form.FrameBuffer;
-import mdplayer.form.ScreenPanel;
 import mdplayer.Tables;
 import mdplayer.chips.SegaPcmChip;
 import mdplayer.chips.Y8950Chip;
+import mdplayer.form.FrameBuffer;
+import mdplayer.form.ScreenPanel;
+import mdplayer.form.View;
 import mdplayer.form.kb.ChannelParams;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
 import mdsound.instrument.Y8950Inst;
-import mdplayer.form.View;
 
 
 public class FormY8950 extends FormChipBase<FormY8950.Params> {
@@ -130,6 +131,7 @@ public class FormY8950 extends FormChipBase<FormY8950.Params> {
         componentListener.componentResized(null);
     }
 
+    @Override
     public void initScreen() {
         for (int c = 0; c < newParam.channels.length; c++) {
             newParam.channels[c].note = -1;
@@ -140,19 +142,22 @@ public class FormY8950 extends FormChipBase<FormY8950.Params> {
     private static final int[] slot2Tbl = {3, 4, 5, 9, 10, 11, 15, 16, 17};
     private static final byte[] rhythmAdr = {0x53, 0x54, 0x52, 0x55, 0x51};
 
+    @Override
     public void changeScreenParams() {
-        int[] Y8950Register = (int[]) audio.plugin.chipRegister.chip(Y8950Chip.class).getInfo(chipId).get("register");
-        Channel nyc;
-        int slot;
-        ChipKeyInfo ki = audio.plugin.chipRegister.chip(Y8950Chip.class).getKeyInfo(chipId);
+        Map<String, Object> info = audio.plugin.chipRegister.chip(Y8950Chip.class).getInfo(chipId);
+        if (info.isEmpty()) return;
+
+        int[] register = (int[]) info.get("register");
+        ChipKeyInfo ki = (ChipKeyInfo) info.get("keyInfo");
         mdsound.MDSound.Chip chipInfo = audio.plugin.mds.getChipInfo(Y8950Inst.class);
         int masterClock = chipInfo == null ? 3579545 : chipInfo.clock;
 
-        //FM
+        // FM
         for (int c = 0; c < 9; c++) {
-            nyc = newParam.channels[c];
+            Channel nyc = newParam.channels[c];
             for (int i = 0; i < 2; i++) {
 
+                int slot;
                 if (i == 0) {
                     slot = slot1Tbl[c];
                 } else {
@@ -161,38 +166,38 @@ public class FormY8950 extends FormChipBase<FormY8950.Params> {
                 slot = (slot % 6) + 8 * (slot / 6);
 
                 // AR
-                nyc.inst[0 + i * 17] = Y8950Register[0x60 + slot] >> 4;
+                nyc.inst[0 + i * 17] = register[0x60 + slot] >> 4;
                 // DR
-                nyc.inst[1 + i * 17] = Y8950Register[0x60 + slot] & 0xf;
+                nyc.inst[1 + i * 17] = register[0x60 + slot] & 0xf;
                 // SL
-                nyc.inst[2 + i * 17] = Y8950Register[0x80 + slot] >> 4;
+                nyc.inst[2 + i * 17] = register[0x80 + slot] >> 4;
                 // RR
-                nyc.inst[3 + i * 17] = Y8950Register[0x80 + slot] & 0xf;
+                nyc.inst[3 + i * 17] = register[0x80 + slot] & 0xf;
                 // KL
-                nyc.inst[4 + i * 17] = Y8950Register[0x40 + slot] >> 6;
+                nyc.inst[4 + i * 17] = register[0x40 + slot] >> 6;
                 // TL
-                nyc.inst[5 + i * 17] = Y8950Register[0x40 + slot] & 0x3f;
+                nyc.inst[5 + i * 17] = register[0x40 + slot] & 0x3f;
                 // MT
-                nyc.inst[6 + i * 17] = Y8950Register[0x20 + slot] & 0xf;
+                nyc.inst[6 + i * 17] = register[0x20 + slot] & 0xf;
                 // AM
-                nyc.inst[7 + i * 17] = Y8950Register[0x20 + slot] >> 7;
+                nyc.inst[7 + i * 17] = register[0x20 + slot] >> 7;
                 // VB
-                nyc.inst[8 + i * 17] = (Y8950Register[0x20 + slot] >> 6) & 1;
+                nyc.inst[8 + i * 17] = (register[0x20 + slot] >> 6) & 1;
                 // EG
-                nyc.inst[9 + i * 17] = (Y8950Register[0x20 + slot] >> 5) & 1;
+                nyc.inst[9 + i * 17] = (register[0x20 + slot] >> 5) & 1;
                 // KR
-                nyc.inst[10 + i * 17] = (Y8950Register[0x20 + slot] >> 4) & 1;
+                nyc.inst[10 + i * 17] = (register[0x20 + slot] >> 4) & 1;
             }
 
             // BL
-            nyc.inst[11] = (Y8950Register[0xb0 + c] >> 2) & 7;
+            nyc.inst[11] = (register[0xb0 + c] >> 2) & 7;
             // FNUM
-            nyc.inst[12] = Y8950Register[0xa0 + c] + ((Y8950Register[0xb0 + c] & 3) << 8);
+            nyc.inst[12] = register[0xa0 + c] + ((register[0xb0 + c] & 3) << 8);
 
             // FB
-            nyc.inst[15] = (Y8950Register[0xc0 + c] >> 1) & 7;
+            nyc.inst[15] = (register[0xc0 + c] >> 1) & 7;
             // CN
-            nyc.inst[14] = (Y8950Register[0xc0 + c] & 1);
+            nyc.inst[14] = (register[0xc0 + c] & 1);
 
             // FNUM / (2^19) * (mClock/72) * (2 ^ (block - 1))
             double fmus = (double) nyc.inst[12] / (1 << 19) * (masterClock / 72.0) * (1 << nyc.inst[11]);
@@ -207,14 +212,14 @@ public class FormY8950 extends FormChipBase<FormY8950.Params> {
                 }
                 nyc.volume = (19 * (64 - tl) / 64);
             } else {
-                if ((Y8950Register[0xb0 + c] & 0x20) == 0) nyc.note = -1;
+                if ((register[0xb0 + c] & 0x20) == 0) nyc.note = -1;
                 nyc.volume--;
                 if (nyc.volume < 0) nyc.volume = 0;
             }
 
         }
-        newParam.channels[9].dda = ((Y8950Register[0xbd] >> 7) & 0x01) != 0;//DA
-        newParam.channels[10].dda = ((Y8950Register[0xbd] >> 6) & 0x01) != 0;//DV
+        newParam.channels[9].dda = ((register[0xbd] >> 7) & 0x01) != 0;//DA
+        newParam.channels[10].dda = ((register[0xbd] >> 6) & 0x01) != 0;//DV
 
 //#region Acquisition of rhythm information
 
@@ -226,7 +231,7 @@ public class FormY8950 extends FormChipBase<FormY8950.Params> {
 
         for (int i = 0; i < 5; i++) {
             if (ki.on[i + 9]) {
-                newParam.channels[i + 9].volume = 19 - ((Y8950Register[rhythmAdr[i]] & 0x3f) >> 2);
+                newParam.channels[i + 9].volume = 19 - ((register[rhythmAdr[i]] & 0x3f) >> 2);
             } else {
                 newParam.channels[i + 9].volume--;
                 if (newParam.channels[i + 9].volume < 0) newParam.channels[i + 9].volume = 0;
@@ -238,7 +243,7 @@ public class FormY8950 extends FormChipBase<FormY8950.Params> {
 //#region ADPCM
 
         // Delta
-        newParam.channels[14].inst[12] = Y8950Register[0x10] + (Y8950Register[0x11] << 8);
+        newParam.channels[14].inst[12] = register[0x10] + (register[0x11] << 8);
 
         if (ki.on[14]) {
             // fSample = deltaN * 50KHz / (2^16)
@@ -248,7 +253,7 @@ public class FormY8950 extends FormChipBase<FormY8950.Params> {
 
             if (newParam.channels[14].note != pnt) {
                 newParam.channels[14].note = pnt;
-                int tl = Y8950Register[0x12];
+                int tl = register[0x12];
                 newParam.channels[14].volume = pnt == -1 ? 0 : Common.range(tl >> 3, 0, 19);
             } else {
                 newParam.channels[14].volume--;
@@ -270,6 +275,7 @@ public class FormY8950 extends FormChipBase<FormY8950.Params> {
             newParam.channels[mch].mask = audio.plugin.chipRegister.chip(Y8950Chip.class).getMask(chipId, mch);
     }
 
+    @Override
     public void drawScreenParams() {
         int tp = 0; // parent.setting.YMF262Type.UseScci ? 1 : 0;
         Channel oyc;

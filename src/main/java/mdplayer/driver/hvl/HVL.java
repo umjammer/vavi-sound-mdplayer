@@ -371,7 +371,7 @@ public class HVL {
         }
 
         public void hvl_DecodeFrame(short[] buf1, int offset1, short[] buf2, int offset2, int bufmod) {
-            int samples = (int) (ht_Frequency / 50 / ht_SpeedMultiplier);
+            int samples = ht_Frequency / 50 / ht_SpeedMultiplier;
             int loops = ht_SpeedMultiplier;
             int shortStride = bufmod / 2;
 
@@ -2124,8 +2124,8 @@ public class HVL {
                 ht.ht_Instruments[i].ins_PList.pls_Entries[j].ple_Waveform = (byte) (buf[bptr_idx + 1] & 7);
                 ht.ht_Instruments[i].ins_PList.pls_Entries[j].ple_Fixed = (short) ((buf[bptr_idx + 2] >> 6) & 1);
                 ht.ht_Instruments[i].ins_PList.pls_Entries[j].ple_Note = (byte) (buf[bptr_idx + 2] & 0x3f);
-                ht.ht_Instruments[i].ins_PList.pls_Entries[j].ple_FXParam[0] = (byte) buf[bptr_idx + 3];
-                ht.ht_Instruments[i].ins_PList.pls_Entries[j].ple_FXParam[1] = (byte) buf[bptr_idx + 4];
+                ht.ht_Instruments[i].ins_PList.pls_Entries[j].ple_FXParam[0] = buf[bptr_idx + 3];
+                ht.ht_Instruments[i].ins_PList.pls_Entries[j].ple_FXParam[1] = buf[bptr_idx + 4];
                 bptr_idx += 5;
             }
         }

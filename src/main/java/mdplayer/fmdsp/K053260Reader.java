@@ -8,7 +8,6 @@ package mdplayer.fmdsp;
 
 import mdplayer.chips.BaseChip;
 import mdplayer.chips.K053260Chip;
-import vavi.sound.visualizer.fmdsp.LevelDataSource.Pan;
 
 
 /**
@@ -55,7 +54,7 @@ public class K053260Reader extends PcmSlotReader {
 
     @Override
     protected boolean sounding(int ch) {
-        return info != null && intOf(ch, "play", 0) != 0;
+        return intOf(ch, "play", 0) != 0;
     }
 
     @Override

@@ -6,6 +6,7 @@
 
 package mdplayer.chips;
 
+import java.util.Collections;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
@@ -53,11 +54,11 @@ public class Saa1099Chip extends BaseChip {
     @Override
     public Map<String, Object> getInfo(int chipId) {
         Saa1099Inst inst = context.mds.inst(Saa1099Inst.class);
-        if (inst == null) return null; // the song being played does not use this chip
-        return inst.getView(chipId, "channels", null);
+        return inst == null ? Collections.emptyMap() : inst.getView(chipId, "channels");
     }
 
-    public void setMask(int chipId, int ch, boolean mask) {
+    @Override
+    public void setMask(int chipId, int ch, boolean mask, Object... args) {
         Saa1099Inst inst = context.mds.inst(Saa1099Inst.class);
         if (mask) {
             this.mask[chipId] |= 1 << ch;
@@ -68,15 +69,7 @@ public class Saa1099Chip extends BaseChip {
         }
     }
 
-    public void setMask(int chipId, int ch) {
-        setMask(chipId, ch, true);
-    }
-
-    public void resetMask(int chipId, int ch) {
-        setMask(chipId, ch, false);
-    }
-
-    /** the panel/main-window view of whether a channel is muted */
+    @Override
     public boolean getMask(int chipId, int ch) {
         return ch < CHANNELS && (mask[chipId] & (1 << ch)) != 0;
     }

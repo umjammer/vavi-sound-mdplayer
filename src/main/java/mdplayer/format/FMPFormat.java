@@ -61,6 +61,7 @@ public class FMPFormat extends BaseFileFormat implements FileFormat.SampledFileF
         return ext.length() > 3 && ext.charAt(1) == 'm';
     }
 
+    @Override
     public String getCompiledFilename() {
         String ext = this.filename.substring(this.filename.lastIndexOf('.'));
         return changeExtension(this.filename,

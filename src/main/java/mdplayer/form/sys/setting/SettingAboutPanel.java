@@ -43,14 +43,14 @@ public class SettingAboutPanel extends SettingTab {
     private static final ResourceBundle rb2 = ResourceBundle.getBundle("mdplayer/properties/resources");
     private static final ResourceBundle rb = ResourceBundle.getBundle("mdplayer/form/sys/frmSetting");
 
-    private JComponent tableLayoutPanel;
-    private JLabel logoBufferedImage;
-    private JLabel labelProductName;
-    private JLabel labelVersion;
-    private JLabel labelCopyright;
-    private JLabel labelCompanyName;
-    private JTextArea textBoxDescription;
-    private JLabel llOpenGithub;
+    private final JComponent tableLayoutPanel;
+    private final JLabel logoBufferedImage;
+    private final JLabel labelProductName;
+    private final JLabel labelVersion;
+    private final JLabel labelCopyright;
+    private final JLabel labelCompanyName;
+    private final JTextArea textBoxDescription;
+    private final JLabel llOpenGithub;
 
     public SettingAboutPanel() {
         this.tableLayoutPanel = new JComponent() {};

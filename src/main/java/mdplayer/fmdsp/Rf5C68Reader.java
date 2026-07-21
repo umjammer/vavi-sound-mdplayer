@@ -60,7 +60,7 @@ public class Rf5C68Reader extends PcmSlotReader {
 
     @Override
     protected boolean sounding(int ch) {
-        if (info == null) return false;
+        if (info.isEmpty()) return false;
         return value(ch, "enable") instanceof Boolean enabled && enabled
                 && value(ch, "key") instanceof Boolean key && key;
     }

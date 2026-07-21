@@ -23,27 +23,27 @@ public class SettingMIDIExpPanel extends SettingTab {
 
     private static final Logger logger = getLogger(SettingMIDIExpPanel.class.getName());
 
-    private JCheckBox cbUseMIDIExport;
-    private JPanel gbMIDIExport;
-    private JCheckBox cbMIDIUseVOPM;
-    private JPanel groupBox6;
-    private JCheckBox cbMIDIYM2612;
-    private JCheckBox cbMIDISN76489Sec;
-    private JCheckBox cbMIDIYM2612Sec;
-    private JCheckBox cbMIDISN76489;
-    private JCheckBox cbMIDIYM2151;
-    private JCheckBox cbMIDIYM2610BSec;
-    private JCheckBox cbMIDIYM2151Sec;
-    private JCheckBox cbMIDIYM2610B;
-    private JCheckBox cbMIDIYM2203;
-    private JCheckBox cbMIDIYM2608Sec;
-    private JCheckBox cbMIDIYM2203Sec;
-    private JCheckBox cbMIDIYM2608;
-    private JCheckBox cbMIDIPlayless;
-    private JButton btnMIDIOutputPath;
-    private JLabel lblOutputPath;
-    private JTextArea tbMIDIOutputPath;
-    private JCheckBox cbMIDIKeyOnFnum;
+    private final JCheckBox cbUseMIDIExport;
+    private final JPanel gbMIDIExport;
+    private final JCheckBox cbMIDIUseVOPM;
+    private final JPanel groupBox6;
+    private final JCheckBox cbMIDIYM2612;
+    private final JCheckBox cbMIDISN76489Sec;
+    private final JCheckBox cbMIDIYM2612Sec;
+    private final JCheckBox cbMIDISN76489;
+    private final JCheckBox cbMIDIYM2151;
+    private final JCheckBox cbMIDIYM2610BSec;
+    private final JCheckBox cbMIDIYM2151Sec;
+    private final JCheckBox cbMIDIYM2610B;
+    private final JCheckBox cbMIDIYM2203;
+    private final JCheckBox cbMIDIYM2608Sec;
+    private final JCheckBox cbMIDIYM2203Sec;
+    private final JCheckBox cbMIDIYM2608;
+    private final JCheckBox cbMIDIPlayless;
+    private final JButton btnMIDIOutputPath;
+    private final JLabel lblOutputPath;
+    private final JTextArea tbMIDIOutputPath;
+    private final JCheckBox cbMIDIKeyOnFnum;
 
     public SettingMIDIExpPanel() {
         this.cbUseMIDIExport = new JCheckBox();

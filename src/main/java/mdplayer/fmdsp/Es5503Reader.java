@@ -55,7 +55,7 @@ public class Es5503Reader extends PcmSlotReader {
 
     @Override
     protected boolean sounding(int osc) {
-        return info != null && boolOf(osc, "enable") && intOf(osc, "volume", 0) > 0;
+        return boolOf(osc, "enable") && intOf(osc, "volume", 0) > 0;
     }
 
     @Override

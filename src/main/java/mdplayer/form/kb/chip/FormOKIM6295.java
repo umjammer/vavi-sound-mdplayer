@@ -82,9 +82,10 @@ public class FormOKIM6295 extends FormChipBase<FormOKIM6295.Params> {
         }
     };
 
+    @Override
     public void changeScreenParams() {
         Map<String, Object> info = audio.plugin.chipRegister.chip(OkiM6295Chip.class).getInfo(chipId);
-        if (info == null) return;
+        if (info.isEmpty()) return;
 
         for (int c = 0; c < 4; c++) {
             PcmChannelParams nyc = newParam.channels[c];
@@ -110,6 +111,7 @@ public class FormOKIM6295 extends FormChipBase<FormOKIM6295.Params> {
             newParam.channels[mch].mask = audio.plugin.chipRegister.chip(OkiM6295Chip.class).getMask(chipId, mch);
     }
 
+    @Override
     public void drawScreenParams() {
         int tp = parent.setting.getHuC6280Type()[0].getUseReal()[0] ? 1 : 0;
 
@@ -129,6 +131,7 @@ public class FormOKIM6295 extends FormChipBase<FormOKIM6295.Params> {
         oldParam.pin7State = frameBuffer.font4HexByte(80, 40, 0, oldParam.pin7State, newParam.pin7State);
     }
 
+    @Override
     public void initScreen() {
     }
 
@@ -311,7 +314,6 @@ public class FormOKIM6295 extends FormChipBase<FormOKIM6295.Params> {
         public int pin7State = 0;
         public final int[] nmkBank = new int[4];
     }
-
 
     /** what this panel contributes to the GUI; see {@link ViewProvider} */
     public static class Provider implements ViewProvider {

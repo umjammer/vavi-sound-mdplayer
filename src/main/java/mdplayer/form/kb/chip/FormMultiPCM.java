@@ -115,6 +115,7 @@ public class FormMultiPCM extends FormChipBase<FormMultiPCM.Params> {
         }
     };
 
+    @Override
     public void initScreen() {
         boolean multiPCMType = false;// (chipId == 0) ? parent.setting.multiPCMType.UseScci : parent.setting.MultiPCMSType.UseScci;
         int tp = multiPCMType ? 1 : 0;
@@ -154,9 +155,10 @@ public class FormMultiPCM extends FormChipBase<FormMultiPCM.Params> {
         return n;
     }
 
+    @Override
     public void changeScreenParams() {
         Map<String, Object> info = audio.plugin.chipRegister.chip(MultiPcmChip.class).getInfo(chipId);
-        if (info == null) return;
+        if (info.isEmpty()) return;
 
         for (int ch = 0; ch < 28; ch++) {
             newParam.channels[ch].pan = (int) info.get("channels." + ch + ".pan");
@@ -197,6 +199,7 @@ public class FormMultiPCM extends FormChipBase<FormMultiPCM.Params> {
         }
     }
 
+    @Override
     public void drawScreenParams() {
         PcmChannelParams oyc;
         PcmChannelParams nyc;
@@ -328,8 +331,8 @@ public class FormMultiPCM extends FormChipBase<FormMultiPCM.Params> {
             try {
                 mdplayer.Chip chip = audio.plugin.chipRegister.chip(mdplayer.chips.MultiPcmChip.class);
                 if (chip instanceof mdplayer.chips.BaseChip base) {
-                    java.util.Map<String, Object> info = base.getInfo(0);
-                    if (info != null) {
+                    Map<String, Object> info = base.getInfo(0);
+                    if (!info.isEmpty()) {
                         for (int ch = 0; ch < 28; ch++) {
                             Boolean bit = (Boolean) info.get("channels." + ch + ".bit.0");
                             if (bit != null && bit) {

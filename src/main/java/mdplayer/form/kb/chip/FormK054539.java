@@ -121,6 +121,7 @@ public class FormK054539 extends FormChipBase<FormK054539.Params> {
         }
     };
 
+    @Override
     public void initScreen() {
         int tp = 0;
         for (int ch = 0; ch < 8; ch++) {
@@ -133,7 +134,7 @@ public class FormK054539 extends FormChipBase<FormK054539.Params> {
         }
     }
 
-    private int searchK054539Note(int freq, int clock) {
+    private static int searchK054539Note(int freq, int clock) {
         if (clock >= 1000000) clock /= 384;
         int hz = (int) (clock / (0x10000 / (double) freq));
 
@@ -150,11 +151,12 @@ public class FormK054539 extends FormChipBase<FormK054539.Params> {
         return n + 1;
     }
 
+    @Override
     public void changeScreenParams() {
         Map<String, Object> info = audio.plugin.chipRegister.chip(K054539Chip.class).getInfo(chipId);
-        if (info == null) return;
+        if (info.isEmpty()) return;
 
-        int[] regs = (int[]) info.get("regs");
+        int[] regs = (int[]) info.get("register");
         int clock = clock(K054539Inst.class);
 
         for (int ch = 0; ch < 8; ch++) {
@@ -199,6 +201,7 @@ public class FormK054539 extends FormChipBase<FormK054539.Params> {
         }
     }
 
+    @Override
     public void drawScreenParams() {
         Channel oyc;
         Channel nyc;

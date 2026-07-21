@@ -80,94 +80,95 @@ public class FormDMG extends FormChipBase<FormDMG.Params> {
         }
     };
 
+    @Override
     public void changeScreenParams() {
-        Map<String, Object> dat = audio.plugin.chipRegister.chip(DmgChip.class).getInfo(chipId);
-        if (dat == null) return;
+        Map<String, Object> info = audio.plugin.chipRegister.chip(DmgChip.class).getInfo(chipId);
+        if (info.isEmpty()) return;
 
         // pan
-        newParam.channels[0].pan = (int) dat.get("channels.0.pan");
-        newParam.channels[1].pan = (int) dat.get("channels.1.pan");
-        newParam.channels[2].pan = (int) dat.get("channels.2.pan");
-        newParam.channels[3].pan = (int) dat.get("channels.3.pan");
+        newParam.channels[0].pan = (int) info.get("channels.0.pan");
+        newParam.channels[1].pan = (int) info.get("channels.1.pan");
+        newParam.channels[2].pan = (int) info.get("channels.2.pan");
+        newParam.channels[3].pan = (int) info.get("channels.3.pan");
 
         // freq
-        newParam.channels[0].freq = (int) dat.get("channels.0.freq");
-        newParam.channels[1].freq = (int) dat.get("channels.1.freq");
-        newParam.channels[2].freq = (int) dat.get("channels.2.freq");
-        newParam.channels[3].freq = (int) dat.get("channels.3.freq");
-        newParam.channels[3].bit[47] = (boolean) dat.get("channels.3.bit.47");
-        newParam.channels[3].srcFreq = (int) dat.get("channels.3.srcFreq");
+        newParam.channels[0].freq = (int) info.get("channels.0.freq");
+        newParam.channels[1].freq = (int) info.get("channels.1.freq");
+        newParam.channels[2].freq = (int) info.get("channels.2.freq");
+        newParam.channels[3].freq = (int) info.get("channels.3.freq");
+        newParam.channels[3].bit[47] = (boolean) info.get("channels.3.bit.47");
+        newParam.channels[3].srcFreq = (int) info.get("channels.3.srcFreq");
 
         // CC
-        newParam.channels[0].bit[0] = (boolean) dat.get("channels.0.bit.0");
-        newParam.channels[1].bit[0] = (boolean) dat.get("channels.1.bit.0");
-        newParam.channels[2].bit[0] = (boolean) dat.get("channels.2.bit.0");
-        newParam.channels[3].bit[0] = (boolean) dat.get("channels.3.bit.0");
+        newParam.channels[0].bit[0] = (boolean) info.get("channels.0.bit.0");
+        newParam.channels[1].bit[0] = (boolean) info.get("channels.1.bit.0");
+        newParam.channels[2].bit[0] = (boolean) info.get("channels.2.bit.0");
+        newParam.channels[3].bit[0] = (boolean) info.get("channels.3.bit.0");
 
         // Ini
-        newParam.channels[0].bit[1] = (boolean) dat.get("channels.0.bit.1");
-        newParam.channels[1].bit[1] = (boolean) dat.get("channels.1.bit.1");
-        newParam.channels[2].bit[1] = (boolean) dat.get("channels.2.bit.1");
-        newParam.channels[3].bit[1] = (boolean) dat.get("channels.3.bit.1");
+        newParam.channels[0].bit[1] = (boolean) info.get("channels.0.bit.1");
+        newParam.channels[1].bit[1] = (boolean) info.get("channels.1.bit.1");
+        newParam.channels[2].bit[1] = (boolean) info.get("channels.2.bit.1");
+        newParam.channels[3].bit[1] = (boolean) info.get("channels.3.bit.1");
 
         // Env.Dir
-        newParam.channels[0].bit[2] = (boolean) dat.get("channels.0.bit.2");
-        newParam.channels[1].bit[2] = (boolean) dat.get("channels.1.bit.2");
+        newParam.channels[0].bit[2] = (boolean) info.get("channels.0.bit.2");
+        newParam.channels[1].bit[2] = (boolean) info.get("channels.1.bit.2");
         //newParam.channels[2].bit[2] = nothing
-        newParam.channels[3].bit[2] = (boolean) dat.get("channels.3.bit.2");
+        newParam.channels[3].bit[2] = (boolean) info.get("channels.3.bit.2");
 
         // Sweep Dec
-        newParam.channels[0].bit[3] = (boolean) dat.get("channels.0.bit.3");
+        newParam.channels[0].bit[3] = (boolean) info.get("channels.0.bit.3");
 
         // Env.Spd
-        newParam.channels[0].inst[0] = (int) dat.get("channels.0.inst.0");
-        newParam.channels[1].inst[0] = (int) dat.get("channels.1.inst.0");
+        newParam.channels[0].inst[0] = (int) info.get("channels.0.inst.0");
+        newParam.channels[1].inst[0] = (int) info.get("channels.1.inst.0");
         //newParam.channels[2].inst[0] = nothing
-        newParam.channels[3].inst[0] = (int) dat.get("channels.3.inst.0");
+        newParam.channels[3].inst[0] = (int) info.get("channels.3.inst.0");
 
         // Env.Vol
-        newParam.channels[0].inst[1] = (int) dat.get("channels.0.inst.1");
-        newParam.channels[1].inst[1] = (int) dat.get("channels.1.inst.1");
+        newParam.channels[0].inst[1] = (int) info.get("channels.0.inst.1");
+        newParam.channels[1].inst[1] = (int) info.get("channels.1.inst.1");
         //newParam.channels[2].inst[1] = nothing
-        newParam.channels[3].inst[1] = (int) dat.get("channels.3.inst.1");
+        newParam.channels[3].inst[1] = (int) info.get("channels.3.inst.1");
 
         // Len
-        newParam.channels[0].inst[2] = (int) dat.get("channels.0.inst.2");
-        newParam.channels[1].inst[2] = (int) dat.get("channels.1.inst.2");
+        newParam.channels[0].inst[2] = (int) info.get("channels.0.inst.2");
+        newParam.channels[1].inst[2] = (int) info.get("channels.1.inst.2");
         //newParam.channels[2].inst[2] = nothing
-        newParam.channels[3].inst[2] = (int) dat.get("channels.3.inst.2");
+        newParam.channels[3].inst[2] = (int) info.get("channels.3.inst.2");
 
         // Duty
-        newParam.channels[0].inst[3] = (int) dat.get("channels.0.inst.3");
-        newParam.channels[1].inst[3] = (int) dat.get("channels.1.inst.3");
+        newParam.channels[0].inst[3] = (int) info.get("channels.0.inst.3");
+        newParam.channels[1].inst[3] = (int) info.get("channels.1.inst.3");
         // newParam.channels[2].inst[3] = nothing
         // newParam.channels[3].inst[3] = nothing
 
         // Sweep time
-        newParam.channels[0].inst[4] = (int) dat.get("channels.0.inst.4");
+        newParam.channels[0].inst[4] = (int) info.get("channels.0.inst.4");
         // Sweep shift
-        newParam.channels[0].inst[5] = (int) dat.get("channels.0.inst.5");
+        newParam.channels[0].inst[5] = (int) info.get("channels.0.inst.5");
 
         // Len
-        newParam.channels[2].inst[4] = (int) dat.get("channels.2.inst.4");
+        newParam.channels[2].inst[4] = (int) info.get("channels.2.inst.4");
         // Vol
-        newParam.channels[2].inst[5] = (int) dat.get("channels.2.inst.5");
+        newParam.channels[2].inst[5] = (int) info.get("channels.2.inst.5");
 
         // wf
         for (int i = 0; i < 16; i++) {
-            newParam.wf[i * 2] = (byte) dat.get("wf." + i * 2);
-            newParam.wf[i * 2 + 1] = (byte) dat.get("wf." + i * 2 + 1);
+            newParam.wf[i * 2] = (byte) info.get("wf." + i * 2);
+            newParam.wf[i * 2 + 1] = (byte) info.get("wf." + i * 2 + 1);
         }
 
         int r = 10;
-        newParam.channels[0].volumeL = (int) dat.get("channels.0.volumeL");
-        newParam.channels[0].volumeR = (int) dat.get("channels.0.volumeR");
-        newParam.channels[1].volumeL = (int) dat.get("channels.1.volumeL");
-        newParam.channels[1].volumeR = (int) dat.get("channels.1.volumeR");
-        newParam.channels[2].volumeL = (int) dat.get("channels.2.volumeL");
-        newParam.channels[2].volumeR = (int) dat.get("channels.2.volumeR");
-        newParam.channels[3].volumeL = (int) dat.get("channels.3.volumeL");
-        newParam.channels[3].volumeR = (int) dat.get("channels.3.volumeR");
+        newParam.channels[0].volumeL = (int) info.get("channels.0.volumeL");
+        newParam.channels[0].volumeR = (int) info.get("channels.0.volumeR");
+        newParam.channels[1].volumeL = (int) info.get("channels.1.volumeL");
+        newParam.channels[1].volumeR = (int) info.get("channels.1.volumeR");
+        newParam.channels[2].volumeL = (int) info.get("channels.2.volumeL");
+        newParam.channels[2].volumeR = (int) info.get("channels.2.volumeR");
+        newParam.channels[3].volumeL = (int) info.get("channels.3.volumeL");
+        newParam.channels[3].volumeR = (int) info.get("channels.3.volumeR");
 
         float ftone;
 
@@ -184,6 +185,7 @@ public class FormDMG extends FormChipBase<FormDMG.Params> {
             newParam.channels[mch].mask = audio.plugin.chipRegister.chip(DmgChip.class).getMask(chipId, mch);
     }
 
+    @Override
     public void drawScreenParams() {
         Channel oyc = oldParam.channels[0];
         Channel nyc = newParam.channels[0];
@@ -253,6 +255,7 @@ public class FormDMG extends FormChipBase<FormDMG.Params> {
         WaveFormToDMG(frameBuffer, 168, 58, oldParam.wf, newParam.wf); // wave form
     }
 
+    @Override
     public void initScreen() {
         for (int c = 0; c < 3; c++) {
             newParam.channels[c].note = -1;

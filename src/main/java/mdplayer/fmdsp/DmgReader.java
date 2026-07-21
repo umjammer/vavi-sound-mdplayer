@@ -7,6 +7,7 @@
 package mdplayer.fmdsp;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
@@ -91,7 +92,7 @@ public class DmgReader implements FmDspChipReader {
             info = chip().getInfo(0);
         } catch (RuntimeException ignore) {
             // the chip exists but the song never loaded it
-            info = null;
+            info = Collections.emptyMap();
         }
     }
 
@@ -101,7 +102,7 @@ public class DmgReader implements FmDspChipReader {
     }
 
     private boolean sounding(int ch) {
-        if (info == null) return false;
+        if (info.isEmpty()) return false;
         Object playing = info.get("channels." + ch + ".playing");
         return playing instanceof Boolean b && b;
     }
@@ -124,7 +125,7 @@ public class DmgReader implements FmDspChipReader {
         out.name = "SSG";
         out.num = ch + 1;
         out.info = TrackInfo.SSG;
-        if (info == null) return;
+        if (info.isEmpty()) return;
 
         boolean sounding = sounding(ch);
         int freq = intOf(ch, "freq");

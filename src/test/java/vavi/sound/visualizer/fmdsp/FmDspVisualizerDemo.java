@@ -24,7 +24,7 @@ public final class FmDspVisualizerDemo {
 
     private FmDspVisualizerDemo() {}
 
-    public static void main(String[] args) {
+    static void main(String[] args) {
         SwingUtilities.invokeLater(FmDspVisualizerDemo::launch);
     }
 
@@ -108,7 +108,7 @@ public final class FmDspVisualizerDemo {
                 double f = i / (double) FftDataSource.LENGTH;
                 double envelope = Math.exp(-f * 2.5) * 28;
                 double wob = Math.sin(t * 2.0 + i * 0.3) * 0.5 + 0.5;
-                int v = (int) Math.max(0, Math.min(31, envelope * wob + rnd.nextInt(3)));
+                int v = (int) Math.clamp(envelope * wob + rnd.nextInt(3), 0, 31);
                 out[i] = v;
             }
         }
@@ -125,13 +125,13 @@ public final class FmDspVisualizerDemo {
         @Override
         public Pan pan(int channel) {
             int idx = (channel + (int) (t() * 0.5)) % 5;
-            switch (Math.floorMod(idx, 5)) {
-            case 0: return Pan.LEFT;
-            case 1: return Pan.MID_LEFT;
-            case 2: return Pan.CENTER;
-            case 3: return Pan.MID_RIGHT;
-            default: return Pan.RIGHT;
-            }
+            return switch (Math.floorMod(idx, 5)) {
+                case 0 -> Pan.LEFT;
+                case 1 -> Pan.MID_LEFT;
+                case 2 -> Pan.CENTER;
+                case 3 -> Pan.MID_RIGHT;
+                default -> Pan.RIGHT;
+            };
         }
 
         // ----- Tracks -----
@@ -181,12 +181,12 @@ public final class FmDspVisualizerDemo {
 
         @Override
         public String comment(int line) {
-            switch (line) {
-            case 0: return "FMDSP Java Swing port - demo source";
-            case 1: return "F1..F10 palette  /  F11 layout  /  SPACE pause";
-            case 2: return "ESC quit";
-            default: return null;
-            }
+            return switch (line) {
+                case 0 -> "FMDSP Java Swing port - demo source";
+                case 1 -> "F1..F10 palette  /  F11 layout  /  SPACE pause";
+                case 2 -> "ESC quit";
+                default -> null;
+            };
         }
     }
 }

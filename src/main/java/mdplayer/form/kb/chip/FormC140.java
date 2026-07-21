@@ -13,20 +13,21 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.util.List;
+import java.util.Map;
 import java.util.prefs.Preferences;
 
 import mdplayer.Common;
-import mdplayer.form.FrameBuffer;
-import mdplayer.form.ScreenPanel;
 import mdplayer.Tables;
 import mdplayer.chips.C140Chip;
+import mdplayer.form.FrameBuffer;
+import mdplayer.form.ScreenPanel;
+import mdplayer.form.View;
 import mdplayer.form.kb.PcmChannelParams;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
 import mdsound.instrument.C140Inst;
 
 import static mdplayer.form.FrameBuffer.rType;
-import mdplayer.form.View;
 
 
 public class FormC140 extends FormChipBase<FormC140.Params> {
@@ -141,6 +142,7 @@ public class FormC140 extends FormChipBase<FormC140.Params> {
         return n;
     }
 
+    @Override
     public void initScreen() {
         boolean C140Type = (chipId == 0) ? parent.setting.getC140Type()[0].getUseReal()[0] : parent.setting.getC140Type()[1].getUseReal()[0];
         int tp = C140Type ? 1 : 0;
@@ -160,9 +162,17 @@ public class FormC140 extends FormChipBase<FormC140.Params> {
         }
     }
 
+    @Override
     public void changeScreenParams() {
-        byte[] c140State = (byte[]) audio.plugin.chipRegister.chip(C140Chip.class).getInfo(chipId).get("registers");
-        boolean[] c140KeyOn = (boolean[]) audio.plugin.chipRegister.chip(C140Chip.class).getInfo(chipId).get("keyOn");
+        Map<String, Object> info = audio.plugin.chipRegister.chip(C140Chip.class).getInfo(chipId);
+        if (info.isEmpty()) return;
+
+        byte[] c140State = (byte[]) info.get("registers");
+        boolean[] c140KeyOn = new boolean[24];
+        for (int ch = 0; ch < c140KeyOn.length; ch++) {
+            c140KeyOn[ch] = Boolean.TRUE.equals(info.get("channels." + ch + ".keyOn"));
+        }
+
         if (c140State != null) {
             for (int ch = 0; ch < 24; ch++) {
                 int frequency = c140State[ch * 16 + 2] * 256 + c140State[ch * 16 + 3];
@@ -196,7 +206,6 @@ public class FormC140 extends FormChipBase<FormC140.Params> {
                 newParam.channels[ch].sadr = ((c140State[ch * 16 + 6] & 0xff) << 8) | (c140State[ch * 16 + 7] & 0xff);
                 newParam.channels[ch].eadr = ((c140State[ch * 16 + 8] & 0xff) << 8) | (c140State[ch * 16 + 9] & 0xff);
                 newParam.channels[ch].ladr = ((c140State[ch * 16 + 10] & 0xff) << 8) | (c140State[ch * 16 + 11] & 0xff);
-
             }
         }
     
@@ -205,6 +214,7 @@ public class FormC140 extends FormChipBase<FormC140.Params> {
             newParam.channels[mch].mask = audio.plugin.chipRegister.chip(C140Chip.class).getMask(chipId, mch);
     }
 
+    @Override
     public void drawScreenParams() {
         int tp = ((chipId == 0) ? parent.setting.getC140Type()[0].getUseReal()[0] : parent.setting.getC140Type()[1].getUseReal()[0]) ? 1 : 0;
 

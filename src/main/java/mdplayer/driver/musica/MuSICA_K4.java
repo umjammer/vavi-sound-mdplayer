@@ -186,7 +186,7 @@ public class MuSICA_K4 {
                 z80.getRegisters().getIX() & 0xffff, z80.getRegisters().getIY() & 0xffff));
     }
 
-    private void callEXTBIO(BeforeInstructionFetchEvent args, Z80Processor z80) {
+    private static void callEXTBIO(BeforeInstructionFetchEvent args, Z80Processor z80) {
         byte funcType = z80.getRegisters().getD();
         byte function = z80.getRegisters().getE();
 
@@ -207,7 +207,7 @@ public class MuSICA_K4 {
         z80.executeRet();
     }
 
-    private void EXTBIO_MemoryMapper(BeforeInstructionFetchEvent args, byte function) {
+    private static void EXTBIO_MemoryMapper(BeforeInstructionFetchEvent args, byte function) {
         Z80Processor z80 = (Z80Processor) args.getSource();
 
         switch (function) {

@@ -6,6 +6,7 @@
 
 package mdplayer.chips;
 
+import java.util.Collections;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
@@ -46,22 +47,6 @@ public class DmgChip extends BaseChip {
         }
     }
 
-    public void setMask(int chipId, int ch) {
-        mask[chipId][ch] = true;
-
-        Instrument instrument = context.mds.inst(inst(chipId));
-        if (instrument == null) return; // the song being played does not use this chip
-        instrument.setMask(chipId, ch);
-    }
-
-    public void resetMask(int chipId, int ch) {
-        mask[chipId][ch] = false;
-
-        Instrument instrument = context.mds.inst(inst(chipId));
-        if (instrument == null) return; // the song being played does not use this chip
-        instrument.resetMask(chipId, ch);
-    }
-
     public int read(int chipId, int addr) {
         if (chipId == 1) return 0;
 
@@ -69,15 +54,30 @@ public class DmgChip extends BaseChip {
     }
 
     @Override
-    public Map<String, Object> getInfo(int chipId) {
-        if (chipId == 1) return null;
+    protected void setMask(int chipId, int ch, boolean mask, Object... args) {
+        if (mask) {
+            this.mask[chipId][ch] = true;
 
-        DmgInst inst = context.mds.inst(DmgInst.class);
-        return inst == null ? null : inst.getView(chipId, "info", null);
+            Instrument instrument = context.mds.inst(inst(chipId));
+            if (instrument == null) return; // the song being played does not use this chip
+            instrument.setMask(chipId, ch);
+        } else {
+            this.mask[chipId][ch] = false;
+
+            Instrument instrument = context.mds.inst(inst(chipId));
+            if (instrument == null) return; // the song being played does not use this chip
+            instrument.resetMask(chipId, ch);
+        }
     }
 
-    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    @Override
     public boolean getMask(int chipId, int ch) {
         return ch < mask[chipId].length && mask[chipId][ch];
+    }
+
+    @Override
+    public Map<String, Object> getInfo(int chipId) {
+        DmgInst inst = context.mds.inst(DmgInst.class);
+        return chipId == 1 || inst == null ? Collections.emptyMap() : inst.getView(chipId, "info");
     }
 }

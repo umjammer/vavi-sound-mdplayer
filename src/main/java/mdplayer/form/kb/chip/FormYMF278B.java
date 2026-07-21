@@ -14,19 +14,20 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.util.List;
+import java.util.Map;
 import java.util.prefs.Preferences;
 
 import mdplayer.Common;
-import mdplayer.form.FrameBuffer;
-import mdplayer.form.ScreenPanel;
 import mdplayer.Tables;
 import mdplayer.chips.SegaPcmChip;
 import mdplayer.chips.YmF278BChip;
 import mdplayer.driver.moonDriver.BuiltInMoonDriver;
+import mdplayer.form.FrameBuffer;
+import mdplayer.form.ScreenPanel;
+import mdplayer.form.View;
 import mdplayer.form.kb.ChannelParams;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
-import mdplayer.form.View;
 
 
 public class FormYMF278B extends FormChipBase<FormYMF278B.Params> {
@@ -94,23 +95,27 @@ public class FormYMF278B extends FormChipBase<FormYMF278B.Params> {
     private static final int[] slot2Tbl = {3, 9, 4, 10, 5, 11, 15, 16, 17, 21, 27, 22, 28, 23, 29, 33, 34, 35};
     private static final int[] chTbl = {0, 3, 1, 4, 2, 5, 6, 7, 8};
 
+    @Override
     public void initScreen() {
         for (int c = 0; c < newParam.channels.length; c++) {
             newParam.channels[c].note = -1;
         }
     }
 
+    @Override
     public void changeScreenParams() {
-        int[][] ymf278bRegister = (int[][]) audio.plugin.chipRegister.chip(YmF278BChip.class).getInfo(chipId).get("register");
-        Channel nyc;
-        int slot;
-        int slotP;
+        Map<String, Object> info = audio.plugin.chipRegister.chip(YmF278BChip.class).getInfo(chipId);
+        if (info.isEmpty()) return;
+
+        int[][] register = (int[][]) info.get("register");
 
         // FM
         for (int c = 0; c < 18; c++) {
-            nyc = newParam.channels[c];
+            Channel nyc = newParam.channels[c];
             for (int i = 0; i < 2; i++) {
 
+                int slot;
+                int slotP;
                 if (i == 0) {
                     slot = slot1Tbl[c] % 18;
                     slotP = slot1Tbl[c] / 18;
@@ -121,42 +126,42 @@ public class FormYMF278B extends FormChipBase<FormYMF278B.Params> {
                 slot = (slot % 6) + 8 * (slot / 6);
 
                 // AR
-                nyc.inst[0 + i * 17] = ymf278bRegister[slotP][0x60 + slot] >> 4;
+                nyc.inst[0 + i * 17] = register[slotP][0x60 + slot] >> 4;
                 // DR
-                nyc.inst[1 + i * 17] = ymf278bRegister[slotP][0x60 + slot] & 0xf;
+                nyc.inst[1 + i * 17] = register[slotP][0x60 + slot] & 0xf;
                 // SL
-                nyc.inst[2 + i * 17] = ymf278bRegister[slotP][0x80 + slot] >> 4;
+                nyc.inst[2 + i * 17] = register[slotP][0x80 + slot] >> 4;
                 // RR
-                nyc.inst[3 + i * 17] = ymf278bRegister[slotP][0x80 + slot] & 0xf;
+                nyc.inst[3 + i * 17] = register[slotP][0x80 + slot] & 0xf;
                 // KL
-                nyc.inst[4 + i * 17] = ymf278bRegister[slotP][0x40 + slot] >> 6;
+                nyc.inst[4 + i * 17] = register[slotP][0x40 + slot] >> 6;
                 // TL
-                nyc.inst[5 + i * 17] = ymf278bRegister[slotP][0x40 + slot] & 0x3f;
+                nyc.inst[5 + i * 17] = register[slotP][0x40 + slot] & 0x3f;
                 // MT
-                nyc.inst[6 + i * 17] = ymf278bRegister[slotP][0x20 + slot] & 0xf;
+                nyc.inst[6 + i * 17] = register[slotP][0x20 + slot] & 0xf;
                 // AM
-                nyc.inst[7 + i * 17] = ymf278bRegister[slotP][0x20 + slot] >> 7;
+                nyc.inst[7 + i * 17] = register[slotP][0x20 + slot] >> 7;
                 // VB
-                nyc.inst[8 + i * 17] = (ymf278bRegister[slotP][0x20 + slot] >> 6) & 1;
+                nyc.inst[8 + i * 17] = (register[slotP][0x20 + slot] >> 6) & 1;
                 // EG
-                nyc.inst[9 + i * 17] = (ymf278bRegister[slotP][0x20 + slot] >> 5) & 1;
+                nyc.inst[9 + i * 17] = (register[slotP][0x20 + slot] >> 5) & 1;
                 // KR
-                nyc.inst[10 + i * 17] = (ymf278bRegister[slotP][0x20 + slot] >> 4) & 1;
+                nyc.inst[10 + i * 17] = (register[slotP][0x20 + slot] >> 4) & 1;
                 // WS
-                nyc.inst[13 + i * 17] = (ymf278bRegister[slotP][0xe0 + slot] & 7);
+                nyc.inst[13 + i * 17] = (register[slotP][0xe0 + slot] & 7);
             }
         }
 
-        newParam.channels[18].dda = ((ymf278bRegister[1][0xbd] >> 7) & 0x01) != 0; // DA
-        newParam.channels[19].dda = ((ymf278bRegister[1][0xbd] >> 6) & 0x01) != 0; // DV
-        newParam.channels[20].freq = ymf278bRegister[2][0xf8] & 0x7; // FM MIX_L
-        newParam.channels[21].freq = ymf278bRegister[2][0xf8] >> 3;  // FM MIX_R
-        newParam.channels[22].freq = ymf278bRegister[2][0xf9] & 0x7; // PCM MIX_L
-        newParam.channels[23].freq = ymf278bRegister[2][0xf9] >> 3;  // PCM MIX_R
+        newParam.channels[18].dda = ((register[1][0xbd] >> 7) & 0x01) != 0; // DA
+        newParam.channels[19].dda = ((register[1][0xbd] >> 6) & 0x01) != 0; // DV
+        newParam.channels[20].freq = register[2][0xf8] & 0x7; // FM MIX_L
+        newParam.channels[21].freq = register[2][0xf8] >> 3;  // FM MIX_R
+        newParam.channels[22].freq = register[2][0xf9] & 0x7; // PCM MIX_L
+        newParam.channels[23].freq = register[2][0xf9] >> 3;  // PCM MIX_R
 
         // ConnectSelect
         for (int c = 0; c < 6; c++) {
-            newParam.channels[c].dda = (ymf278bRegister[1][0x04] & (0x1 << c)) != 0;
+            newParam.channels[c].dda = (register[1][0x04] & (0x1 << c)) != 0;
             newParam.channels[c].inst[34] = newParam.channels[c].dda ? 1 : 0;
             newParam.channels[c].inst[35] = newParam.channels[c].dda ? 2 : 0;
             if (newParam.channels[c].dda) {
@@ -194,10 +199,10 @@ public class FormYMF278B extends FormChipBase<FormYMF278B.Params> {
             }
         }
 
-        int ko = audio.plugin.chipRegister.chip(YmF278BChip.class).getFmKeyOn(chipId);
+        int ko = (int) info.get("fmKeyOn");
 
         for (int c = 0; c < 18; c++) {
-            nyc = newParam.channels[c];
+            Channel nyc = newParam.channels[c];
 
             int p = c / 9;
             int cadr = c % 9;
@@ -205,19 +210,19 @@ public class FormYMF278B extends FormChipBase<FormYMF278B.Params> {
             int adr = chTbl[cadr];
 
             // BL
-            nyc.inst[11] = (ymf278bRegister[p][0xb0 + adr] >> 2) & 7;
+            nyc.inst[11] = (register[p][0xb0 + adr] >> 2) & 7;
             // FNUM
-            nyc.inst[12] = ymf278bRegister[p][0xa0 + adr] + ((ymf278bRegister[p][0xb0 + adr] & 3) << 8);
+            nyc.inst[12] = register[p][0xa0 + adr] + ((register[p][0xb0 + adr] & 3) << 8);
 
             // FB
-            nyc.inst[15] = (ymf278bRegister[p][0xc0 + adr] >> 1) & 7;
+            nyc.inst[15] = (register[p][0xc0 + adr] >> 1) & 7;
             // CN
-            nyc.inst[14] = (ymf278bRegister[p][0xc0 + adr] & 1);
+            nyc.inst[14] = (register[p][0xc0 + adr] & 1);
             // PAN
-            nyc.inst[36] = ymf278bRegister[p][0xc0 + adr] & 0x30;
+            nyc.inst[36] = register[p][0xc0 + adr] & 0x30;
             nyc.inst[36] = ((nyc.inst[36] >> 5) & 1) | ((nyc.inst[36] >> 3) & 2); // 00RL0000 -> 000000LR
             // modFlg
-            int n = ymf278bRegister[p][0xc0 + adr] & 1;
+            int n = register[p][0xc0 + adr] & 1;
             nyc.inst[16] = n == 0 ? 0 : 1;
             nyc.inst[33] = 1;
 
@@ -231,7 +236,7 @@ public class FormYMF278B extends FormChipBase<FormYMF278B.Params> {
             Channel csub = fouropControl ? newParam.channels[c + 1] : null;
             boolean fouropMode = ccnt != null && ccnt.dda;
 
-            int cnt2 = fouropControl ? ymf278bRegister[p][0xc3 + adr] & 1 : 0;
+            int cnt2 = fouropControl ? register[p][0xc3 + adr] & 1 : 0;
 
             boolean chmask = fouropMode && !fouropControl;
 
@@ -288,9 +293,9 @@ public class FormYMF278B extends FormChipBase<FormYMF278B.Params> {
 
         }
 
-        //Audio.resetYMF278BFMKeyON(chipId);
+        //audio.plugin.chipRegister.chip(YmF278BChip.class).resetFMKeyON(chipId);
 
-        int r = audio.plugin.chipRegister.chip(YmF278BChip.class).getRhythmKeyOn(chipId);
+        int r = (int) info.get("rhythmKeyOn");
 
         // slot14 TL 0x51 HH
         // slot15 TL 0x52 TOM
@@ -300,7 +305,7 @@ public class FormYMF278B extends FormChipBase<FormYMF278B.Params> {
 
         // BD
         if ((r & 0x10) != 0) {
-            newParam.channels[18].volume = 19 - ((ymf278bRegister[0][0x53] & 0x3f) >> 2);
+            newParam.channels[18].volume = 19 - ((register[0][0x53] & 0x3f) >> 2);
         } else {
             newParam.channels[18].volume--;
             if (newParam.channels[18].volume < 0) newParam.channels[18].volume = 0;
@@ -308,7 +313,7 @@ public class FormYMF278B extends FormChipBase<FormYMF278B.Params> {
 
         // SD
         if ((r & 0x08) != 0) {
-            newParam.channels[19].volume = 19 - ((ymf278bRegister[0][0x54] & 0x3f) >> 2);
+            newParam.channels[19].volume = 19 - ((register[0][0x54] & 0x3f) >> 2);
         } else {
             newParam.channels[19].volume--;
             if (newParam.channels[19].volume < 0) newParam.channels[19].volume = 0;
@@ -316,7 +321,7 @@ public class FormYMF278B extends FormChipBase<FormYMF278B.Params> {
 
         // TOM
         if ((r & 0x04) != 0) {
-            newParam.channels[20].volume = 19 - ((ymf278bRegister[0][0x52] & 0x3f) >> 2);
+            newParam.channels[20].volume = 19 - ((register[0][0x52] & 0x3f) >> 2);
         } else {
             newParam.channels[20].volume--;
             if (newParam.channels[20].volume < 0) newParam.channels[20].volume = 0;
@@ -324,7 +329,7 @@ public class FormYMF278B extends FormChipBase<FormYMF278B.Params> {
 
         // CYM
         if ((r & 0x02) != 0) {
-            newParam.channels[21].volume = 19 - ((ymf278bRegister[0][0x55] & 0x3f) >> 2);
+            newParam.channels[21].volume = 19 - ((register[0][0x55] & 0x3f) >> 2);
         } else {
             newParam.channels[21].volume--;
             if (newParam.channels[21].volume < 0) newParam.channels[21].volume = 0;
@@ -332,7 +337,7 @@ public class FormYMF278B extends FormChipBase<FormYMF278B.Params> {
 
         // HH
         if ((r & 0x01) != 0) {
-            newParam.channels[22].volume = 19 - ((ymf278bRegister[0][0x51] & 0x3f) >> 2);
+            newParam.channels[22].volume = 19 - ((register[0][0x51] & 0x3f) >> 2);
         } else {
             newParam.channels[22].volume--;
             if (newParam.channels[22].volume < 0) newParam.channels[22].volume = 0;
@@ -341,20 +346,20 @@ public class FormYMF278B extends FormChipBase<FormYMF278B.Params> {
         audio.plugin.chipRegister.chip(YmF278BChip.class).resetRhythmKeyOn(chipId);
 
         // PCM
-        int[] pcmKey = audio.plugin.chipRegister.chip(YmF278BChip.class).getPcmKeyOn(chipId);
-        int[] mdPCMKey = (audio.plugin.driverVirtual instanceof BuiltInMoonDriver moonDriver) ? moonDriver.getPCMKeyOn() : null;
+        int[] pcmKey = (int[]) info.get("pcmKeyOn");
+        int[] mdPCMKey = (audio.plugin.driverVirtual instanceof BuiltInMoonDriver moonDriver) ? moonDriver.getPCMKeyOn() : null; // TODO gross
         for (int c = 23; c < 23 + 24; c++) {
-            nyc = newParam.channels[c];
+            Channel nyc = newParam.channels[c];
             // Pan
-            nyc.pan = (ymf278bRegister[2][0x68 + (c - 23)] & 0xf);
+            nyc.pan = (register[2][0x68 + (c - 23)] & 0xf);
             nyc.pan = (nyc.pan == 8 ? 0 :
                     (
                             (nyc.pan < 8 ? (15 - nyc.pan * 2) : 15) + ((nyc.pan > 8 ? (nyc.pan * 2 - 18) : 15) << 4)
                     ));
             // Oct
-            nyc.inst[13] = (ymf278bRegister[2][0x38 + (c - 23)] >> 4);
+            nyc.inst[13] = (register[2][0x38 + (c - 23)] >> 4);
             // F-Num
-            nyc.inst[14] = (ymf278bRegister[2][0x20 + (c - 23)] >> 1) + ((ymf278bRegister[2][0x38 + (c - 23)] & 0x7) << 7);
+            nyc.inst[14] = (register[2][0x20 + (c - 23)] >> 1) + ((register[2][0x38 + (c - 23)] & 0x7) << 7);
             if (mdPCMKey == null) {
                 // Other than moonDriver
                 // Volume
@@ -362,8 +367,8 @@ public class FormYMF278B extends FormChipBase<FormYMF278B.Params> {
                     // note
                     nyc.note = ((nyc.inst[13] + 7) & 0xf) * 12 + Common.searchPCMNote(nyc.inst[14], 1) - 5;
                     //logger.log(Level.TRACE, "%x %x".formatted(nyc.inst[13], nyc.inst[14]));
-                    nyc.volumeL = (127 - (ymf278bRegister[2][0x50 + (c - 23)] >> 1)) * (nyc.pan & 0xf) / 16 / 6;
-                    nyc.volumeR = (127 - (ymf278bRegister[2][0x50 + (c - 23)] >> 1)) * (nyc.pan >> 4) / 16 / 6;
+                    nyc.volumeL = (127 - (register[2][0x50 + (c - 23)] >> 1)) * (nyc.pan & 0xf) / 16 / 6;
+                    nyc.volumeR = (127 - (register[2][0x50 + (c - 23)] >> 1)) * (nyc.pan >> 4) / 16 / 6;
                 } else {
                     if (pcmKey[c - 23] == 2) {
                         nyc.note = -1;
@@ -379,8 +384,8 @@ public class FormYMF278B extends FormChipBase<FormYMF278B.Params> {
                     // note
                     nyc.note = mdPCMKey[c - 23];
                     //logger.log(Level.TRACE, "%x %x".formatted(nyc.inst[13], nyc.inst[14]));
-                    nyc.volumeL = (127 - (ymf278bRegister[2][0x50 + (c - 23)] >> 1)) * (nyc.pan & 0xf) / 16 / 6;
-                    nyc.volumeR = (127 - (ymf278bRegister[2][0x50 + (c - 23)] >> 1)) * (nyc.pan >> 4) / 16 / 6;
+                    nyc.volumeL = (127 - (register[2][0x50 + (c - 23)] >> 1)) * (nyc.pan & 0xf) / 16 / 6;
+                    nyc.volumeR = (127 - (register[2][0x50 + (c - 23)] >> 1)) * (nyc.pan >> 4) / 16 / 6;
                 } else {
                     if (mdPCMKey[c - 23] == -1) nyc.note = -1;
                     nyc.volumeL--;
@@ -390,32 +395,33 @@ public class FormYMF278B extends FormChipBase<FormYMF278B.Params> {
                 }
             }
             // AR
-            nyc.inst[0] = (ymf278bRegister[2][0x98 + (c - 23)] >> 4);
+            nyc.inst[0] = (register[2][0x98 + (c - 23)] >> 4);
             // D1
-            nyc.inst[1] = (ymf278bRegister[2][0x98 + (c - 23)]) & 0xf;
+            nyc.inst[1] = (register[2][0x98 + (c - 23)]) & 0xf;
             // DL
-            nyc.inst[2] = (ymf278bRegister[2][0xb0 + (c - 23)] >> 4);
+            nyc.inst[2] = (register[2][0xb0 + (c - 23)] >> 4);
             // D2
-            nyc.inst[3] = (ymf278bRegister[2][0xb0 + (c - 23)]) & 0xf;
+            nyc.inst[3] = (register[2][0xb0 + (c - 23)]) & 0xf;
             // RC
-            nyc.inst[4] = (ymf278bRegister[2][0xc8 + (c - 23)] >> 4);
+            nyc.inst[4] = (register[2][0xc8 + (c - 23)] >> 4);
             // RR
-            nyc.inst[5] = (ymf278bRegister[2][0xc8 + (c - 23)]) & 0xf;
+            nyc.inst[5] = (register[2][0xc8 + (c - 23)]) & 0xf;
             // AM
-            nyc.inst[6] = (ymf278bRegister[2][0xe0 + (c - 23)]) & 0x7;
+            nyc.inst[6] = (register[2][0xe0 + (c - 23)]) & 0x7;
             // Vib
-            nyc.inst[7] = (ymf278bRegister[2][0x80 + (c - 23)]) & 0x7;
+            nyc.inst[7] = (register[2][0x80 + (c - 23)]) & 0x7;
             // Lfo
-            nyc.inst[8] = (ymf278bRegister[2][0x80 + (c - 23)] >> 3) & 0x7;
+            nyc.inst[8] = (register[2][0x80 + (c - 23)] >> 3) & 0x7;
             // Reverb
-            nyc.inst[9] = (ymf278bRegister[2][0x38 + (c - 23)] >> 3) & 0x1;
+            nyc.inst[9] = (register[2][0x38 + (c - 23)] >> 3) & 0x1;
             // LD
-            nyc.inst[10] = (ymf278bRegister[2][0x50 + (c - 23)] & 0x1);
+            nyc.inst[10] = (register[2][0x50 + (c - 23)] & 0x1);
             // TL
-            nyc.inst[11] = (ymf278bRegister[2][0x50 + (c - 23)] >> 1);
+            nyc.inst[11] = (register[2][0x50 + (c - 23)] >> 1);
             // Wav
-            nyc.inst[12] = (ymf278bRegister[2][0x08 + (c - 23)]) + ((ymf278bRegister[2][0x20 + (c - 23)] & 0x1) << 8);
+            nyc.inst[12] = (register[2][0x08 + (c - 23)]) + ((register[2][0x20 + (c - 23)] & 0x1) << 8);
         }
+
         audio.plugin.chipRegister.chip(YmF278BChip.class).resetPcmKeyOn(chipId);
     
         // the chip itself is the source of truth for channel muting
@@ -423,6 +429,7 @@ public class FormYMF278B extends FormChipBase<FormYMF278B.Params> {
             newParam.channels[mch].mask = audio.plugin.chipRegister.chip(YmF278BChip.class).getMask(chipId, mch);
     }
 
+    @Override
     public void drawScreenParams() {
         boolean YMF278BType = (chipId == 0)
                 ? parent.setting.getYMF278BType()[0].getUseReal()[0]
@@ -472,8 +479,8 @@ public class FormYMF278B extends FormChipBase<FormYMF278B.Params> {
             oyc.mask = drawChYMF278B(frameBuffer, c, oyc.mask, nyc.mask, tp);
 
             //frameBuffer.drawInstNumber((c % 3) * 16 + 37, (c / 3) * 2 + 24,oyc.inst[0], nyc.inst[0]);
-            //frameBuffer.SUSFlag((c % 3) * 16 + 41, (c / 3) * 2 + 24,oyc.inst[1], nyc.inst[1]);
-            //frameBuffer.SUSFlag((c % 3) * 16 + 44, (c / 3) * 2 + 24,oyc.inst[2], nyc.inst[2]);
+            //frameBuffer.drawSUSFlag((c % 3) * 16 + 41, (c / 3) * 2 + 24,oyc.inst[1], nyc.inst[1]);
+            //frameBuffer.drawSUSFlag((c % 3) * 16 + 44, (c / 3) * 2 + 24,oyc.inst[2], nyc.inst[2]);
             //frameBuffer.drawInstNumber((c % 3) * 16 + 46, (c / 3) * 2 + 24,oyc.inst[3], nyc.inst[3]);
         }
 
@@ -810,7 +817,7 @@ public class FormYMF278B extends FormChipBase<FormYMF278B.Params> {
 
         @Override public void forceChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
             if (ch >= 0 && ch < 47) {
-    if (mask)
+                if (mask)
                     audio.plugin.chipRegister.chip(mdplayer.chips.YmF278BChip.class).setMask(chipId, ch);
                 else
                     audio.plugin.chipRegister.chip(mdplayer.chips.YmF278BChip.class).resetMask(chipId, ch);

@@ -44,8 +44,8 @@ class NesProbe {
             for (int i = 0; i < 44100 * 2 / buffer.length; i++) {
                 plugin.getDriver().render(buffer, 0, buffer.length);
             }
-            int[] apu = chip.apuRegisters(0);
-            int[] dmc = chip.dmcRegisters(0);
+            int[] apu = (int[]) chip.getInfo(0).get("register");
+            int[] dmc =(int[]) chip.getInfo(0).get("dmcRegister");
             System.err.printf("--- block %d  apuStatus(0x15)=%02x dmcStatus(0x0d)=%02x%n",
                     block, apu[0x15], dmc[0x0d]);
             for (int ch = 0; ch < 2; ch++) {

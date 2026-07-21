@@ -19,17 +19,17 @@ public class SettingPlayListPanel extends SettingTab {
 
     private static final Logger logger = getLogger(SettingPlayListPanel.class.getName());
 
-    private JPanel groupBox17;
-    private JTextArea tbImageExt;
-    private JTextArea tbMMLExt;
-    private JTextArea tbTextExt;
-    private JLabel label1;
-    private JLabel label3;
-    private JLabel label2;
-    private JCheckBox cbEmptyPlayList;
-    private JCheckBox cbAutoOpenImg;
-    private JCheckBox cbAutoOpenMML;
-    private JCheckBox cbAutoOpenText;
+    private final JPanel groupBox17;
+    private final JTextArea tbImageExt;
+    private final JTextArea tbMMLExt;
+    private final JTextArea tbTextExt;
+    private final JLabel label1;
+    private final JLabel label3;
+    private final JLabel label2;
+    private final JCheckBox cbEmptyPlayList;
+    private final JCheckBox cbAutoOpenImg;
+    private final JCheckBox cbAutoOpenMML;
+    private final JCheckBox cbAutoOpenText;
 
     public SettingPlayListPanel() {
         this.groupBox17 = new JPanel();

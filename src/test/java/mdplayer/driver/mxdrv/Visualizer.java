@@ -31,11 +31,11 @@ public class Visualizer extends JPanel {
     /** Copy of the value written to the OPM register */
     private int[] m_opmRegs;
     /** Has there been an update to the OPM register? */
-    private boolean[] m_opmRegsUpdated = new boolean[0x100];
+    private final boolean[] m_opmRegsUpdated = new boolean[0x100];
     /** KeyOn state */
-    private boolean[] m_keyOnFlagsForFm = new boolean[8];
-    private boolean[] m_logicalSumOfKeyOnFlagsForFm = new boolean[8];
-    private boolean[] m_logicalSumOfKeyOnFlagsForPcm = new boolean[8];
+    private final boolean[] m_keyOnFlagsForFm = new boolean[8];
+    private final boolean[] m_logicalSumOfKeyOnFlagsForFm = new boolean[8];
+    private final boolean[] m_logicalSumOfKeyOnFlagsForPcm = new boolean[8];
 
     /** */
     public void update(GenericEvent event) {
@@ -90,13 +90,13 @@ public class Visualizer extends JPanel {
     public static final int WINDOW_WIDTH = 512;
     public static final int WINDOW_HEIGHT = 512;
 
-    private static int[] elapsedFrames = new int[256];
+    private static final int[] elapsedFrames = new int[256];
     private static final int NUM_PIXELS_PER_COLUMN = 64;
     private static final int NUM_PIXELS_PER_ROW = 8;
     private static final int NUM_PIXELS_PER_BIT = 7;
 
-    private static int[] keyOnLevelMeters = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    private static int[] keyOffLevelMeters = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    private static final int[] keyOnLevelMeters = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    private static final int[] keyOffLevelMeters = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
     private static final int KEY_DISPLAY_X = 32;
     private static final int KEY_DISPLAY_Y = 256;

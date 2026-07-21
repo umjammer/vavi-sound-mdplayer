@@ -6,6 +6,7 @@
 
 package mdplayer.chips;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -48,12 +49,12 @@ public class Ym2151Chip extends BaseChip {
             {0, 0, 0, 0, 0, 0, 0, 0}
     };
 
-    // TODO check cache or not
     private final int[] fadeout = {0, 0};
     private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false}
     };
+
     @Deprecated
     public final int[] amd = {-1, -1};
     @Deprecated
@@ -324,6 +325,7 @@ public class Ym2151Chip extends BaseChip {
         return realChips[chipId].dClock;
     }
 
+    @Override
     public void setFadeout(int chipId, int v) {
         fadeout[chipId] = v;
         for (int c = 0; c < 8; c++) {
@@ -356,17 +358,16 @@ public class Ym2151Chip extends BaseChip {
      */
     @Override
     public Map<String, Object> getInfo(int chipId) {
-        Map<String, Object> info = new HashMap<>();
-        info.putAll(Map.of(
-                "volume", volume[chipId],
-                "register", register[chipId],
-                "keyOn", keyOn[chipId],
-                "pmd", pmd[chipId],
-                "amd", amd[chipId]
-        ));
-        info.putAll(shadowInfo(chipId));
         Instrument inst = context.mds.inst(inst(chipId));
-        if (inst != null) info.putAll(inst.getView(chipId, "info", null));
+        if (inst == null) return Collections.emptyMap();
+        Map<String, Object> info = new HashMap<>();
+        info.put("volume", volume[chipId]);
+        info.put("register", register[chipId]);
+        info.put("keyOn", keyOn[chipId]);
+        info.put("pmd", pmd[chipId]);
+        info.put("amd", amd[chipId]);
+        info.putAll(shadowInfo(chipId));
+        info.putAll(inst.getView(chipId, "info") != null ? inst.getView(chipId, "info") : Collections.emptyMap());
         return info;
     }
 
@@ -397,12 +398,14 @@ public class Ym2151Chip extends BaseChip {
         return tl;
     }
 
-    public void setMask(int chipId, int ch) {
-        setMask(chipId, ch, true, false);
-    }
-
-    public void resetMask(int chipId, int ch, boolean stopped) {
-        setMask(chipId, ch, false, stopped);
+    @Override
+    public void setMask(int chipId, int ch, boolean mask, Object... args) {
+        if (mask) {
+            setMask(chipId, ch, true, false);
+        } else {
+            boolean stopped = (boolean) args[0];
+            setMask(chipId, ch, false, stopped);
+        }
     }
 
     @Override
@@ -447,7 +450,7 @@ public class Ym2151Chip extends BaseChip {
         return ret;
     }
 
-    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    @Override
     public boolean getMask(int chipId, int ch) {
         return ch < mask[chipId].length && mask[chipId][ch];
     }

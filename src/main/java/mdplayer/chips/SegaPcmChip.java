@@ -20,8 +20,6 @@ import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdplayer.Tables;
-import mdplayer.driver.BaseDriver;
-import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.instrument.SegaPcmInst;
 import musicDriverInterface.MetaData.Tag;
@@ -53,7 +51,8 @@ public class SegaPcmChip extends BaseChip {
         return new Class[] {SegaPcmInst.class};
     }
 
-    public void setMask(int chipId, int ch, boolean mask) {
+    @Override
+    protected void setMask(int chipId, int ch, boolean mask, Object... args) {
         this.mask[chipId][ch] = mask;
     }
 
@@ -120,17 +119,7 @@ public class SegaPcmChip extends BaseChip {
     @Override
     public Map<String, Object> getInfo(int chipId) {
         SegaPcmInst inst = context.mds.inst(SegaPcmInst.class);
-        if (inst == null) return Collections.emptyMap(); // the song being played does not use this chip
-        // the view reads the register file back out of the chip, so there is nothing to add
-        return new HashMap<>(inst.getView(chipId, "info", null));
-    }
-
-    public void setMask(int chipId, int ch) {
-        setMask(chipId, ch, true);
-    }
-
-    public void resetMask(int chipId, int ch) {
-        setMask(chipId, ch, false);
+        return inst == null ? Collections.emptyMap() : inst.getView(chipId, "info");
     }
 
     private void dumpDataForSegaPCM(EnmModel model, String chipName, int adr, byte[] romData, int len) {
@@ -227,7 +216,7 @@ public class SegaPcmChip extends BaseChip {
         return n;
     }
 
-    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    @Override
     public boolean getMask(int chipId, int ch) {
         return ch < mask[chipId].length && mask[chipId][ch];
     }

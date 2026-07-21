@@ -58,8 +58,7 @@ public class RobotTest {
         for (int i = 0; i < 200; i++) {
             Thread.sleep(20);
             for (Frame f : Frame.getFrames()) {
-                if (f instanceof FormMain) {
-                    FormMain fm = (FormMain) f;
+                if (f instanceof FormMain fm) {
                     if (fm.isVisible()) {
                         mainFrame = fm;
                         windowOpenedTime = System.currentTimeMillis();
@@ -117,7 +116,7 @@ public class RobotTest {
 
         // 4. Simulate closing the window (WINDOW_CLOSING) while playing
         System.out.println("Simulating window close button (WINDOW_CLOSING) while playing...");
-        final FormMain finalMain = mainFrame;
+        FormMain finalMain = mainFrame;
         javax.swing.SwingUtilities.invokeAndWait(() -> {
             finalMain.setDefaultCloseOperation(javax.swing.JFrame.DISPOSE_ON_CLOSE);
             finalMain.dispatchEvent(new java.awt.event.WindowEvent(finalMain, java.awt.event.WindowEvent.WINDOW_CLOSING));

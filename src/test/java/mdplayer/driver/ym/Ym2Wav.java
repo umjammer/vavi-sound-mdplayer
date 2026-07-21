@@ -43,7 +43,7 @@ public class Ym2Wav {
     private static final int ID_FMT  = 0x20746D66;
     private static final int ID_DATA = 0x61746164;
 
-    public static void main(String[] args) throws Exception {
+    static void main(String[] args) throws Exception {
 
         String platform = System.getProperty("os.arch").contains("64") ? "64bit" : "32bit";
 

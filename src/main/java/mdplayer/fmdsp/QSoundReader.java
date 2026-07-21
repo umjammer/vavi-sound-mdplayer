@@ -56,7 +56,7 @@ public class QSoundReader extends PcmSlotReader {
 
     @Override
     protected boolean sounding(int ch) {
-        return info != null && intOf(ch, "rate", 0) != 0 && intOf(ch, "volume", 0) != 0;
+        return intOf(ch, "rate", 0) != 0 && intOf(ch, "volume", 0) != 0;
     }
 
     @Override

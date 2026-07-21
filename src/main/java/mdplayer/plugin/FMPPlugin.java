@@ -88,7 +88,7 @@ public class FMPPlugin extends BasePlugin<FmpDriver> implements Compilable {
             chip.setVolumes.put("ADPCM", ym2608::setVolume);
         }
         chip.clock = FMP.baseClock;
-        Function<String, InputStream> fn = Ym2608Chip::getOPNARyhthmStream;
+        Function<String, InputStream> fn = chipRegister.chip(Ym2608Chip.class)::getOPNARyhthmStream;
         chip.option = new Object[] {fn};
         put(Ym2608Chip.class, chip);
 

@@ -59,6 +59,8 @@ public class TestCase {
         if (localPropertiesExists()) {
             PropsEntity.Util.bind(this);
         }
+
+volume /= 16; // adhoc fix for large volume
     }
 
     @Test

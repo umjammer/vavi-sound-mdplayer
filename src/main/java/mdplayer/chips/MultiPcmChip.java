@@ -6,6 +6,7 @@
 
 package mdplayer.chips;
 
+import java.util.Collections;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
@@ -20,8 +21,6 @@ import mdsound.instrument.MultiPcmInst;
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
 public class MultiPcmChip extends BaseChip {
-
-    private static final int CHANNELS = 28;
 
     private final int[] mask = {0, 0};
 
@@ -47,10 +46,11 @@ public class MultiPcmChip extends BaseChip {
     @Override
     public Map<String, Object> getInfo(int chipId) {
         MultiPcmInst inst = context.mds.inst(MultiPcmInst.class);
-        return inst == null ? null : inst.getView(chipId, "info", null);
+        return inst == null ? Collections.emptyMap() : inst.getView(chipId, "info");
     }
 
-    public void setMask(int chipId, int ch, boolean mask) {
+    @Override
+    protected void setMask(int chipId, int ch, boolean mask, Object... args) {
         if (mask) {
             this.mask[chipId] |= 1 << ch;
         } else {
@@ -66,17 +66,9 @@ public class MultiPcmChip extends BaseChip {
             instrument.resetMask(chipId, 1 << ch);
     }
 
-    public void setMask(int chipId, int ch) {
-        setMask(chipId, ch, true);
-    }
-
-    public void resetMask(int chipId, int ch) {
-        setMask(chipId, ch, false);
-    }
-
-    /** the panel/main-window view of whether a channel is muted */
+    @Override
     public boolean getMask(int chipId, int ch) {
-        return ch < CHANNELS && (mask[chipId] & (1 << ch)) != 0;
+        return ch < MultiPcmInst.CHANNELS && (mask[chipId] & (1 << ch)) != 0;
     }
 
     public void setBank(int chipId, int ch, int addr, EnmModel model) {

@@ -13,6 +13,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.util.List;
+import java.util.Map;
 import java.util.prefs.Preferences;
 
 import mdplayer.Common;
@@ -82,22 +83,25 @@ public class FormS5B extends FormChipBase<FormS5B.Params> {
         }
     };
 
+    @Override
     public void changeScreenParams() {
-        byte[] S5BRegister = (byte[]) audio.plugin.chipRegister.chip(Fme7Chip.class).getInfo(chipId).get("register");
-        if (S5BRegister == null) return;
+        Map<String, Object> info = audio.plugin.chipRegister.chip(Fme7Chip.class).getInfo(chipId);
+        if (info.isEmpty()) return;
+
+        byte[] register = (byte[]) info.get("register");
 
         for (int ch = 0; ch < 3; ch++) { //SSG
             Channel channel = newParam.channels[ch];
 
-            boolean t = (S5BRegister[0x07] & (0x1 << ch)) == 0;
-            boolean n = (S5BRegister[0x07] & (0x8 << ch)) == 0;
-            //logger.log(Level.TRACE, "r[8]=%x r[9]=%x r[10]=%x".formatted(S5BRegister[0x8], S5BRegister[0x9], S5BRegister[0xa]));
+            boolean t = (register[0x07] & (0x1 << ch)) == 0;
+            boolean n = (register[0x07] & (0x8 << ch)) == 0;
+            //logger.log(Level.TRACE, "r[8]=%x r[9]=%x r[10]=%x".formatted(register[0x8], register[0x9], register[0xa]));
             channel.tn = (t ? 1 : 0) + (n ? 2 : 0);
-            newParam.nfrq = S5BRegister[0x06] & 0x1f;
-            newParam.efrq = (S5BRegister[0x0c] & 0xff) * 0x100 + (S5BRegister[0x0b] & 0xff);
-            newParam.etype = (S5BRegister[0x0d] & 0xf);
+            newParam.nfrq = register[0x06] & 0x1f;
+            newParam.efrq = (register[0x0c] & 0xff) * 0x100 + (register[0x0b] & 0xff);
+            newParam.etype = (register[0x0d] & 0xf);
 
-            int v = (S5BRegister[0x08 + ch] & 0x1f);
+            int v = (register[0x08 + ch] & 0x1f);
             v = Math.min(v, 15);
             channel.volume = (int) (((t || n) ? 1 : 0) * v * (20.0 / 16.0));
             if (!t && !n && channel.volume > 0) {
@@ -107,8 +111,8 @@ public class FormS5B extends FormChipBase<FormS5B.Params> {
             if (channel.volume == 0) {
                 channel.note = -1;
             } else {
-                int ft = S5BRegister[0x00 + ch * 2];
-                int ct = S5BRegister[0x01 + ch * 2];
+                int ft = register[0x00 + ch * 2];
+                int ct = register[0x01 + ch * 2];
                 int tp = (ct << 8) | ft;
                 if (tp == 0) tp = 1;
                 float ftone = 1789772 / (8.0f * (float) tp);
@@ -117,6 +121,7 @@ public class FormS5B extends FormChipBase<FormS5B.Params> {
         }
     }
 
+    @Override
     public void drawScreenParams() {
         //int tp = setting.S5BType.UseScci ? 1 : 0;
         int tp = 0;
@@ -139,6 +144,7 @@ public class FormS5B extends FormChipBase<FormS5B.Params> {
         oldParam.etype = frameBuffer.drawEType(33, 8, oldParam.etype, newParam.etype);
     }
 
+    @Override
     public void initScreen() {
         for (int c = 0; c < newParam.channels.length; c++) {
             newParam.channels[c].note = -1;

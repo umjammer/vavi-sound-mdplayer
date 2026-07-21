@@ -146,7 +146,7 @@ class PtrTest {
         assertEquals("cdef", new String(sliceArray(result)));
     }
 
-    private byte[] sliceArray(ByteBuffer buf) {
+    private static byte[] sliceArray(ByteBuffer buf) {
         byte[] arr = new byte[buf.remaining()];
         buf.get(arr);
         return arr;

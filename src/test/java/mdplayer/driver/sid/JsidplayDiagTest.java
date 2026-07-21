@@ -13,14 +13,12 @@ import java.nio.file.Paths;
 import libsidplay.common.SamplingRate;
 import libsidplay.config.IConfig;
 import libsidplay.sidtune.SidTune;
-import libsidplay.sidtune.SidTuneError;
 import sidplay.Player;
 import sidplay.audio.Audio;
 import sidplay.audio.AudioDriver;
 import sidplay.audio.JWAVDriver.JWAVStreamDriver;
 import sidplay.ini.IniConfig;
 import sidplay.player.State;
-import vavi.util.ByteUtil;
 
 
 /**
@@ -29,7 +27,7 @@ import vavi.util.ByteUtil;
  */
 public class JsidplayDiagTest {
 
-    public static void main(String[] args) throws Exception {
+    static void main(String[] args) throws Exception {
         if (args.length < 2) {
             System.out.println("Usage: JsidplayDiagTest <sid_file> <muteMode 0=all|1=v0|2=v1|3=v2> [outRaw]");
             return;

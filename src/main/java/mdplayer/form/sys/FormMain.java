@@ -285,18 +285,6 @@ public class FormMain extends JFrame {
 
         logger.log(Level.INFO, "Audio initialization process begins at startup");
 
-        // Warm up the Java Sound system on a background thread to prevent latency when the first song starts
-        new Thread(() -> {
-            try {
-                javax.sound.sampled.AudioFormat format = new javax.sound.sampled.AudioFormat(44100, 16, 2, true, false);
-                javax.sound.sampled.SourceDataLine line = javax.sound.sampled.AudioSystem.getSourceDataLine(format);
-                line.open(format);
-                line.start();
-                line.close();
-            } catch (Exception ignored) {
-            }
-        }, "mdplayer-audio-warmup").start();
-
 //        ym2612MIDI = new mdplayer.YM2612MIDI(audio.plugin.chipRegister.plugin(MidiPlugin.class).mds, newParam);
 //        ym2612MIDI.fadeout = this::fadeout;
 //        ym2612MIDI.next = this::next;
@@ -2330,7 +2318,7 @@ public class FormMain extends JFrame {
             if (balance == null) return;
 
             // Mixer - Balance change processing
-            final Setting.Balance finalBalance = balance;
+            Setting.Balance finalBalance = balance;
             SwingUtilities.invokeLater(() -> {
                 setting.setBalance(finalBalance);
                 if (frmMixer2 != null) frmMixer2.update();

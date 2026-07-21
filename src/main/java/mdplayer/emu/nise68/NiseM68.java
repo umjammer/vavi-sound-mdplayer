@@ -6677,7 +6677,7 @@ public class NiseM68 {
         }
 
 //#if DEBUG
-        nimo.append("," + dnimo);
+        nimo.append(",").append(dnimo);
 //#endif
 
         cycle[0] = Cycle.MovemToReg_l0[cycle[0]] + cyc;

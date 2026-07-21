@@ -32,12 +32,12 @@ public class Sn76489Chip extends BaseChip {
 
     private final RSoundChip[] realChips = {null, null};
 
-    @Deprecated
     /**
      * The registers as they were written. Views must not read this - {@link #getInfo} asks the
      * chip instead. It survives because the real chip path has no emulator to ask: when the song
      * is driving hardware over SCCI, this is the only record of what was sent.
      */
+    @Deprecated
     private final int[][] register = {null, null};
 
     @Deprecated
@@ -49,7 +49,6 @@ public class Sn76489Chip extends BaseChip {
             {new int[2], new int[2], new int[2], new int[2]}
     };
 
-    @Deprecated
     public final int[] fadeout = {0, 0};
 
     public final boolean[][] mask = {
@@ -156,10 +155,6 @@ public class Sn76489Chip extends BaseChip {
         }
     }
 
-    public void setMask(int chipId, int ch, boolean mask) {
-        this.mask[chipId][ch] = mask;
-    }
-
     private void write(int chipId, int data) {
         if ((data & 0x80) != 0) {
             // Latch/data byte %1 cc t dddd
@@ -191,6 +186,7 @@ public class Sn76489Chip extends BaseChip {
         }
     }
 
+    @Override
     public void setFadeout(int chipId, int v) {
         fadeout[chipId] = (v & 0x78) >> 3;
         for (int c = 0; c < 4; c++) {
@@ -199,15 +195,15 @@ public class Sn76489Chip extends BaseChip {
         }
     }
 
-    @Override
     /**
      * The registers as the chip has them, beside the state the player keeps itself - the panning
      * and the Neo Geo Pocket flag are the player's own, not the chip's.
      */
+    @Override
     public Map<String, Object> getInfo(int chipId) {
         Instrument inst = context.mds.inst(inst(chipId));
         int[] regs = inst == null ? new int[8]
-                : (int[]) inst.getView(chipId, "register", null).get(inst.getName());
+                : (int[]) inst.getView(chipId, "register").get(inst.getName());
         return Map.of(
                 "volumes", volumes[chipId],
                 "register", regs == null ? new int[8] : regs,
@@ -216,14 +212,15 @@ public class Sn76489Chip extends BaseChip {
         );
     }
 
-    public void setMask(int chipId, int ch) {
-        setMask(chipId, ch, true);
-        sendVolumeForced(chipId, ch);
-    }
-
-    public void resetMask(int chipId, int ch) {
-        setMask(chipId, ch, false);
-        sendVolumeForced(chipId, ch);
+    @Override
+    public void setMask(int chipId, int ch, boolean mask, Object... args) {
+        if (mask) {
+            this.mask[chipId][ch] = true;
+            sendVolumeForced(chipId, ch);
+        } else {
+            this.mask[chipId][ch] = false;
+            sendVolumeForced(chipId, ch);
+        }
     }
 
     protected void sendVolumeForced(int chipId, int ch) {
@@ -243,7 +240,7 @@ public class Sn76489Chip extends BaseChip {
         setFadeout(1, 0);
     }
 
-    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    @Override
     public boolean getMask(int chipId, int ch) {
         return ch < mask[chipId].length && mask[chipId][ch];
     }

@@ -7,6 +7,7 @@
 package mdplayer.fmdsp;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
@@ -59,7 +60,7 @@ public class YmF271Reader implements FmDspChipReader {
         Arrays.fill(prevActives, false);
         Arrays.fill(prevFns, 0);
         active = false;
-        info = null;
+        info = Collections.emptyMap();
     }
 
     @Override
@@ -83,7 +84,7 @@ public class YmF271Reader implements FmDspChipReader {
             info = chip().getInfo(0);
         } catch (RuntimeException ignore) {
             // the chip exists but the song never loaded it
-            info = null;
+            info = Collections.emptyMap();
         }
     }
 
@@ -94,7 +95,7 @@ public class YmF271Reader implements FmDspChipReader {
     }
 
     private boolean sounding(int ch) {
-        if (info == null) return false;
+        if (info.isEmpty()) return false;
         Object on = info.get("slots." + ch + ".active");
         return on instanceof Boolean b && b;
     }
@@ -116,7 +117,7 @@ public class YmF271Reader implements FmDspChipReader {
     public void read(Group group, int ch, FmDspChannel out) {
         out.name = "FM";
         out.num = ch + 1;
-        if (info == null) return;
+        if (info.isEmpty()) return;
 
         boolean sounding = sounding(ch);
         // the F-number the view files under its instrument fields, used only to spot a re-strike

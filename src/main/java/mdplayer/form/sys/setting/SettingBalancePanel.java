@@ -21,24 +21,24 @@ public class SettingBalancePanel extends SettingTab {
 
     private static final Logger logger = getLogger(SettingBalancePanel.class.getName());
 
-    private JCheckBox cbAutoBalanceUseThis;
-    private JPanel groupBox18;
-    private JPanel groupBox24;
-    private JPanel groupBox21;
-    private JCheckBox rbAutoBalanceNotSaveSongBalance;
-    private JCheckBox rbAutoBalanceSamePositionAsSongData;
-    private JCheckBox rbAutoBalanceSaveSongBalance;
-    private JPanel groupBox22;
-    private JLabel label4;
-    private JPanel groupBox23;
-    private JPanel groupBox19;
-    private JCheckBox rbAutoBalanceNotLoadSongBalance;
-    private JCheckBox rbAutoBalanceLoadSongBalance;
-    private JPanel groupBox20;
-    private JCheckBox rbAutoBalanceNotLoadDriverBalance;
-    private JCheckBox rbAutoBalanceLoadDriverBalance;
-    private JPanel groupBox25;
-    private JCheckBox rbAutoBalanceNotSamePositionAsSongData;
+    private final JCheckBox cbAutoBalanceUseThis;
+    private final JPanel groupBox18;
+    private final JPanel groupBox24;
+    private final JPanel groupBox21;
+    private final JCheckBox rbAutoBalanceNotSaveSongBalance;
+    private final JCheckBox rbAutoBalanceSamePositionAsSongData;
+    private final JCheckBox rbAutoBalanceSaveSongBalance;
+    private final JPanel groupBox22;
+    private final JLabel label4;
+    private final JPanel groupBox23;
+    private final JPanel groupBox19;
+    private final JCheckBox rbAutoBalanceNotLoadSongBalance;
+    private final JCheckBox rbAutoBalanceLoadSongBalance;
+    private final JPanel groupBox20;
+    private final JCheckBox rbAutoBalanceNotLoadDriverBalance;
+    private final JCheckBox rbAutoBalanceLoadDriverBalance;
+    private final JPanel groupBox25;
+    private final JCheckBox rbAutoBalanceNotSamePositionAsSongData;
 
     public SettingBalancePanel() {
         this.groupBox25 = new JPanel();

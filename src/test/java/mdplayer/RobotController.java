@@ -4,7 +4,7 @@ import java.awt.Robot;
 import java.awt.event.InputEvent;
 
 public class RobotController {
-    public static void main(String[] args) {
+    static void main(String[] args) {
         try {
             long pid = Long.parseLong(args[0]);
             int x = Integer.parseInt(args[1]);

@@ -13,20 +13,21 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.util.List;
+import java.util.Map;
 import java.util.prefs.Preferences;
 
 import mdplayer.Common;
-import mdplayer.form.FrameBuffer;
-import mdplayer.form.ScreenPanel;
 import mdplayer.Tables;
 import mdplayer.chips.Sn76489Chip;
+import mdplayer.form.FrameBuffer;
+import mdplayer.form.ScreenPanel;
+import mdplayer.form.View;
 import mdplayer.form.kb.ChannelParams;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
 import mdsound.instrument.Sn76489Inst;
 
 import static mdplayer.Common.searchSSGNote;
-import mdplayer.form.View;
 
 
 public class FormSN76489 extends FormChipBase<FormSN76489.Params> {
@@ -86,15 +87,17 @@ public class FormSN76489 extends FormChipBase<FormSN76489.Params> {
         }
     };
 
+    @Override
     public void changeScreenParams() {
-        int[] psgRegister = (int[]) audio.plugin.chipRegister.chip(Sn76489Chip.class).getInfo(chipId).get("register");
-        int[] psgRegister1 = null;
-        int psgRegisterPan = (int) audio.plugin.chipRegister.chip(Sn76489Chip.class).getInfo(chipId).get("pan");
-        int[][] psgVol = (int[][]) audio.plugin.chipRegister.chip(Sn76489Chip.class).getInfo(chipId).get("volumes");
-        int[][] psgVol1 = null;
-        boolean NGPFlag = (boolean) audio.plugin.chipRegister.chip(Sn76489Chip.class).getInfo(chipId).get("flag");
+        Map<String, Object> info = audio.plugin.chipRegister.chip(Sn76489Chip.class).getInfo(chipId);
+        if (info.isEmpty()) return;
 
-        if (NGPFlag && chipId == 1) {
+        int[] register = (int[]) info.get("register");
+        int registerPan = (int) info.get("pan");
+        int[][] vol = (int[][]) info.get("volumes");
+        boolean ngpFlag = (boolean) info.get("flag");
+
+        if (ngpFlag && chipId == 1) {
             for (int ch = 0; ch < 4; ch++) {
                 newParam.channels[ch].note = -1;
 
@@ -105,22 +108,22 @@ public class FormSN76489 extends FormChipBase<FormSN76489.Params> {
             // Noise Ch
             newParam.channels[3].freq = 0;
         } else {
-            if (psgRegister != null) {
-                if (NGPFlag) {
-                    psgVol1 = (int[][]) audio.plugin.chipRegister.chip(Sn76489Chip.class).getInfo(1).get("volumes");
-                    psgRegister1 = (int[]) audio.plugin.chipRegister.chip(Sn76489Chip.class).getInfo(1).get("register");
+            if (register != null) {
+                if (ngpFlag) {
+                    int[][] psgVol1 = (int[][]) audio.plugin.chipRegister.chip(Sn76489Chip.class).getInfo(1).get("volumes");
+                    int[] psgRegister1 = (int[]) audio.plugin.chipRegister.chip(Sn76489Chip.class).getInfo(1).get("register");
 
                     // Tone Ch
                     for (int ch = 0; ch < 3; ch++) {
-                        if (psgRegister[ch * 2 + 1] != 15) {
-                            float fTone = clock(Sn76489Inst.class) / (2.0f * psgRegister[ch * 2] * 16.0f);
+                        if (register[ch * 2 + 1] != 15) {
+                            float fTone = clock(Sn76489Inst.class) / (2.0f * register[ch * 2] * 16.0f);
 
                             newParam.channels[ch].note = searchSSGNote(fTone);
                         } else {
                             newParam.channels[ch].note = -1;
                         }
 
-                        newParam.channels[ch].volumeL = Math.clamp((int) ((psgVol[ch][0]) / (15.0 / 19.0)), 0, 19);
+                        newParam.channels[ch].volumeL = Math.clamp((int) ((vol[ch][0]) / (15.0 / 19.0)), 0, 19);
                         newParam.channels[ch].volumeR = Math.clamp((int) ((psgVol1[ch][0]) / (15.0 / 19.0)), 0, 19);
                         newParam.channels[ch].pan = Math.clamp(newParam.channels[ch].volumeR, 0, 15) * 0x10 +
                                 Math.clamp(newParam.channels[ch].volumeL, 0, 15);
@@ -129,48 +132,48 @@ public class FormSN76489 extends FormChipBase<FormSN76489.Params> {
                     // Noise Ch
                     newParam.channels[3].note = psgRegister1[6];
                     newParam.channels[3].freq = psgRegister1[4];//ch3Freq
-                    newParam.channels[3].volumeL = Math.clamp((int) ((psgVol[3][0]) / (15.0 / 19.0)), 0, 19);
+                    newParam.channels[3].volumeL = Math.clamp((int) ((vol[3][0]) / (15.0 / 19.0)), 0, 19);
                     newParam.channels[3].volumeR = Math.clamp((int) ((psgVol1[3][0]) / (15.0 / 19.0)), 0, 19);
                     newParam.channels[3].pan = Math.clamp(newParam.channels[3].volumeR, 0, 15) * 0x10 +
                             Math.clamp(newParam.channels[3].volumeL, 0, 15);
                 } else {
                     // Tone Ch
                     for (int ch = 0; ch < 3; ch++) {
-                        if (psgRegister[ch * 2 + 1] != 15) {
-                            newParam.channels[ch].note = searchPSGNote(psgRegister[ch * 2]);
+                        if (register[ch * 2 + 1] != 15) {
+                            newParam.channels[ch].note = searchPSGNote(register[ch * 2]);
                         } else {
                             newParam.channels[ch].note = -1;
                         }
 
-                        newParam.channels[ch].volumeL = Math.clamp((int) ((psgVol[ch][0]) / (15.0 / 19.0)), 0, 19);
-                        newParam.channels[ch].volumeR = Math.clamp((int) ((psgVol[ch][1]) / (15.0 / 19.0)), 0, 19);
-                        newParam.channels[ch].pan = (psgRegisterPan >> ch) & 0x11;
+                        newParam.channels[ch].volumeL = Math.clamp((int) ((vol[ch][0]) / (15.0 / 19.0)), 0, 19);
+                        newParam.channels[ch].volumeR = Math.clamp((int) ((vol[ch][1]) / (15.0 / 19.0)), 0, 19);
+                        newParam.channels[ch].pan = (registerPan >> ch) & 0x11;
                         newParam.channels[ch].pan = ((newParam.channels[ch].pan) & 0x1) | (newParam.channels[ch].pan >> 3);
                     }
 
                     // Noise Ch
-                    newParam.channels[3].note = psgRegister[6];
-                    newParam.channels[3].freq = psgRegister[4];//ch3Freq
-                    newParam.channels[3].volumeL = Math.clamp((int) ((psgVol[3][0]) / (15.0 / 19.0)), 0, 19);
-                    newParam.channels[3].volumeR = Math.clamp((int) ((psgVol[3][1]) / (15.0 / 19.0)), 0, 19);
-                    newParam.channels[3].pan = (psgRegisterPan >> 3) & 0x11;
+                    newParam.channels[3].note = register[6];
+                    newParam.channels[3].freq = register[4];//ch3Freq
+                    newParam.channels[3].volumeL = Math.clamp((int) ((vol[3][0]) / (15.0 / 19.0)), 0, 19);
+                    newParam.channels[3].volumeR = Math.clamp((int) ((vol[3][1]) / (15.0 / 19.0)), 0, 19);
+                    newParam.channels[3].pan = (registerPan >> 3) & 0x11;
                     newParam.channels[3].pan = ((newParam.channels[3].pan) & 0x1) | (newParam.channels[3].pan >> 3);
                 }
             }
         }
 
-    
         // the chip itself is the source of truth for channel muting
         for (int mch = 0; mch < newParam.channels.length; mch++)
             newParam.channels[mch].mask = audio.plugin.chipRegister.chip(Sn76489Chip.class).getMask(chipId, mch);
     }
 
+    @Override
     public void drawScreenParams() {
-        boolean SN76489Type = (chipId == 0) ? parent.setting.getSN76489Type()[0].getUseReal()[0] : parent.setting.getSN76489Type()[1].getUseReal()[0];
-        int tp = SN76489Type ? 1 : 0;
+        boolean sn76489Type = (chipId == 0) ? parent.setting.getSN76489Type()[0].getUseReal()[0] : parent.setting.getSN76489Type()[1].getUseReal()[0];
+        int tp = sn76489Type ? 1 : 0;
         ChannelParams osc;
         ChannelParams nsc;
-        boolean NGPFlag = (boolean) audio.plugin.chipRegister.chip(Sn76489Chip.class).getInfo(chipId).get("flag");
+        boolean ngpFlag = (boolean) audio.plugin.chipRegister.chip(Sn76489Chip.class).getInfo(chipId).get("flag");
 
         for (int c = 0; c < 3; c++) {
             osc = oldParam.channels[c];
@@ -180,7 +183,7 @@ public class FormSN76489 extends FormChipBase<FormSN76489.Params> {
             osc.volumeR = frameBuffer.drawVolumeM(256, 8 + c * 8, 2, osc.volumeR, nsc.volumeR, tp);
             osc.note = frameBuffer.drawKeyBoard(c, osc.note, nsc.note, tp);
             osc.mask = drawChSN76489(frameBuffer, c, osc.mask, nsc.mask, tp);
-            if (NGPFlag) {
+            if (ngpFlag) {
                 osc.pan = frameBuffer.PanType2(c, osc.pan, nsc.pan, tp);
             } else {
                 int[] r = frameBuffer.Pan(24, 8 + c * 8, osc.pan, nsc.pan, osc.pantp, tp);
@@ -194,7 +197,7 @@ public class FormSN76489 extends FormChipBase<FormSN76489.Params> {
         osc.volumeR = frameBuffer.drawVolumeM(256, 8 + 3 * 8, 2, osc.volumeR, nsc.volumeR, tp);
         osc.mask = drawChSN76489(frameBuffer, 3, osc.mask, nsc.mask, tp);
         drawChSN76489Noise(frameBuffer, osc, nsc, tp);
-        if (NGPFlag) {
+        if (ngpFlag) {
             osc.pan = frameBuffer.PanType2(3, osc.pan, nsc.pan, tp);
         } else {
             int[] r =  frameBuffer.Pan(24, 8 + 3 * 8, osc.pan, nsc.pan, osc.pantp, tp);
@@ -206,6 +209,7 @@ public class FormSN76489 extends FormChipBase<FormSN76489.Params> {
         }
     }
 
+    @Override
     public void initScreen() {
         for (int ch = 0; ch < 3; ch++) {
             newParam.channels[ch].note = -1;
@@ -247,19 +251,19 @@ public class FormSN76489 extends FormChipBase<FormSN76489.Params> {
                 int ch = (py / 8) - 1;
                 if (ch < 0) return;
 
-                boolean NGPFlag = (boolean) audio.plugin.chipRegister.chip(Sn76489Chip.class).getInfo(chipId).get("flag");
+                boolean ngpFlag = (boolean) audio.plugin.chipRegister.chip(Sn76489Chip.class).getInfo(chipId).get("flag");
 
                 if (ev.getButton() == MouseEvent.BUTTON1) {
                     // Mask.
                     parent.setChannelMask(Sn76489Chip.class, chipId, ch);
-                    if (NGPFlag && chipId == 0) parent.setChannelMask(Sn76489Chip.class, 1, ch);
+                    if (ngpFlag && chipId == 0) parent.setChannelMask(Sn76489Chip.class, 1, ch);
                     return;
                 }
 
                 // Unmask.
                 for (ch = 0; ch < 4; ch++) {
                     parent.resetChannelMask(Sn76489Chip.class, chipId, ch);
-                    if (NGPFlag && chipId == 0) parent.resetChannelMask(Sn76489Chip.class, 1, ch);
+                    if (ngpFlag && chipId == 0) parent.resetChannelMask(Sn76489Chip.class, 1, ch);
                 }
             }
         }

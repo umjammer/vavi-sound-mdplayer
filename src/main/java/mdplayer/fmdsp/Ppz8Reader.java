@@ -7,6 +7,7 @@
 package mdplayer.fmdsp;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
@@ -49,7 +50,7 @@ public class Ppz8Reader implements FmDspChipReader {
 
     @Override
     public void reset() {
-        info = null;
+        info = Collections.emptyMap();
         Arrays.fill(prevKeyOns, false);
         Arrays.fill(prevNotes, -1);
         active = false;
@@ -76,14 +77,14 @@ public class Ppz8Reader implements FmDspChipReader {
             info = chip().getInfo(0);
         } catch (RuntimeException ignore) {
             // the chip exists but was never initialized for this song
-            info = null;
+            info = Collections.emptyMap();
         }
-        if (info != null && !info.containsKey("channels.0.playing")) info = null;
+        if (!info.containsKey("channels.0.playing")) info = Collections.emptyMap();
     }
 
     @Override
     public boolean active(Group group) {
-        if (!active && info != null) {
+        if (!active && !info.isEmpty()) {
             for (int ch = 0; ch < 8 && !active; ch++) {
                 active = (boolean) info.get("channels." + ch + ".playing")
                         || (boolean) info.get("channels." + ch + ".keyOn");
@@ -99,7 +100,7 @@ public class Ppz8Reader implements FmDspChipReader {
 
     @Override
     public void read(Group group, int ch, FmDspChannel out) {
-        if (info == null) return;
+        if (info.isEmpty()) return;
 
         boolean playing = (boolean) info.get("channels." + ch + ".playing");
         boolean keyOn = (boolean) info.get("channels." + ch + ".keyOn");

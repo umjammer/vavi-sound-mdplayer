@@ -7,6 +7,7 @@
 package mdplayer.fmdsp;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
@@ -85,7 +86,7 @@ public abstract class PcmSlotReader implements FmDspChipReader {
         Arrays.fill(slotChannels, -1);
         mappedChannels = 0;
         active = false;
-        info = null;
+        info = Collections.emptyMap();
         peak = 0;
         loudest = 0;
     }
@@ -106,7 +107,7 @@ public abstract class PcmSlotReader implements FmDspChipReader {
             info = chip().getInfo(0);
         } catch (RuntimeException ignore) {
             // the chip exists but the song never loaded it
-            info = null;
+            info = Collections.emptyMap();
         }
         for (int ch = 0; ch < channelCount() && mappedChannels < slotChannels.length; ch++) {
             if (sounding(ch) && slotOf(ch) < 0) {
@@ -140,7 +141,7 @@ public abstract class PcmSlotReader implements FmDspChipReader {
         out.name = "PCM";
         out.sampled = true; // every channel here plays a sample at a rate, it does not play notes
         int ch = slotChannels[slot];
-        if (ch < 0 || info == null) return;
+        if (ch < 0 || info.isEmpty()) return;
 
         boolean sounding = sounding(ch);
         int rate = rateOf(ch);
@@ -188,7 +189,7 @@ public abstract class PcmSlotReader implements FmDspChipReader {
      * a time. That is still worth more than a bar that never moves.
      */
     protected double outputLevel() {
-        Object value = info == null ? null : info.get("output");
+        Object value = info.get("output");
         if (!(value instanceof Integer sample)) return -1;
         int level = Math.abs(sample);
         // Against the full scale of a sample this would barely leave the floor: a chip mixing eight

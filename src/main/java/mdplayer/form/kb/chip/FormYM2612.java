@@ -13,25 +13,26 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.util.List;
+import java.util.Map;
 import java.util.prefs.Preferences;
 
-import mdplayer.form.kb.ChannelParams;
-import mdplayer.form.kb.ViewProvider;
-import mdplayer.form.sys.setting.SettingNukedPanel;
-import mdplayer.format.FileFormat;
 import mdplayer.Common;
-import mdplayer.form.FrameBuffer;
-import mdplayer.form.ScreenPanel;
 import mdplayer.Tables;
 import mdplayer.chips.Ym2608Chip;
 import mdplayer.chips.Ym2612Chip;
 import mdplayer.driver.XgmDriver;
+import mdplayer.form.FrameBuffer;
+import mdplayer.form.ScreenPanel;
+import mdplayer.form.View;
+import mdplayer.form.kb.ChannelParams;
+import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
+import mdplayer.form.sys.setting.SettingNukedPanel;
+import mdplayer.format.FileFormat;
 import mdplayer.format.XGMFileFormat;
 import mdsound.instrument.Ym2610Inst;
 
 import static mdplayer.form.FrameBuffer.rType;
-import mdplayer.form.View;
 
 
 public class FormYM2612 extends FormChipBase<FormYM2612.Params> {
@@ -43,10 +44,11 @@ public class FormYM2612 extends FormChipBase<FormYM2612.Params> {
         initializeComponent();
 
         // initScreen (via bind) draws the XGM variant of the skin from the song format
-        newParam.fileFormat = audio.plugin.chipRegister.chip(Ym2612Chip.class).fileFormat;
+        newParam.fileFormat = audio.plugin.getFileFormat();
         bind(Common.getImage("planeYM2612"));
     }
 
+    @Override
     public void initScreen() {
         boolean YM2612Type = (chipId == 0) ? parent.setting.getYM2612Type()[0].getUseReal()[0] : parent.setting.getYM2612Type()[1].getUseReal()[0];
         int tp = YM2612Type ? 1 : 0;
@@ -109,13 +111,17 @@ public class FormYM2612 extends FormChipBase<FormYM2612.Params> {
             (byte) (0x0f << 4)
     };
 
+    @Override
     public void changeScreenParams() {
-        newParam.fileFormat = audio.plugin.chipRegister.chip(Ym2612Chip.class).fileFormat;
+        Map<String, Object> info = audio.plugin.chipRegister.chip(Ym2612Chip.class).getInfo(chipId);
+        if (info.isEmpty()) return;
 
-        int[][] fmRegister = (int[][]) audio.plugin.chipRegister.chip(Ym2612Chip.class).getInfo(chipId).get("register");
-        int[] fmVol = (int[]) audio.plugin.chipRegister.chip(Ym2612Chip.class).getInfo(chipId).get("volume");
-        int[] fmCh3SlotVol = (int[]) audio.plugin.chipRegister.chip(Ym2612Chip.class).getInfo(chipId).get("ch3SlotVolume");
-        int[] fmKey = (int[]) audio.plugin.chipRegister.chip(Ym2612Chip.class).getInfo(chipId).get("keyOn");
+        newParam.fileFormat = audio.plugin.getFileFormat();
+
+        int[][] fmRegister = (int[][]) info.get("register");
+        int[] fmVol = (int[]) info.get("volume");
+        int[] fmCh3SlotVol = (int[]) info.get("ch3SlotVolume");
+        int[] fmKey = (int[]) info.get("keyOn");
 
         boolean isFmEx = (fmRegister[0][0x27] & 0x40) != 0;
         newParam.channels[2].ex = isFmEx;
@@ -288,6 +294,7 @@ public class FormYM2612 extends FormChipBase<FormYM2612.Params> {
             newParam.channels[mch].mask = audio.plugin.chipRegister.chip(Ym2612Chip.class).getMask(chipId, mch);
     }
 
+    @Override
     public void drawScreenParams() {
         for (int c = 0; c < 9; c++) {
 

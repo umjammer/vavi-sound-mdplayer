@@ -59,6 +59,8 @@ public class YmF278BReader extends OplReader {
     /** the carrier operator's offset from 0x40, per channel */
     private static final int[] carrier = {3, 4, 5, 11, 12, 13, 19, 20, 21};
 
+    private static final int[][] empty = new int[][] {new int[0x100], new int[0x100], new int[0x100]};
+
     private int[][] banks;
 
     /**
@@ -67,13 +69,14 @@ public class YmF278BReader extends OplReader {
      */
     @Override
     public void poll() {
-        banks = null;
+        banks = empty;
         info = null;
         try {
             Object value = chip().getInfo(0).get("register");
             if (value instanceof int[][] r && r.length > WAVE_PORT) banks = r;
         } catch (RuntimeException ignore) {
             // the chip exists but the song never loaded it
+            banks = empty;
         }
         if (banks == null) return;
         int[] fm = banks[0];

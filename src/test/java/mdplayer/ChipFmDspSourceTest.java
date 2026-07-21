@@ -21,7 +21,6 @@ import vavi.sound.visualizer.fmdsp.TrackStatus;
 import vavi.util.properties.annotation.PropsEntity;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -59,13 +58,16 @@ class ChipFmDspSourceTest {
         // to a real emulator and read back, so the chips need a context whose writes land somewhere
         plugin = EmulatedPlugin.of(new mdsound.instrument.C352Inst(), new mdsound.instrument.Saa1099Inst(),
                 new mdsound.instrument.SegaPcmInst(), new mdsound.instrument.C140Inst(), new mdsound.instrument.Sn76489Inst(), new mdsound.instrument.NukedYmF262Inst(),
-                new mdsound.instrument.Ym2608Inst(), new mdsound.instrument.Ym2203Inst(), new mdsound.instrument.Ym2151Inst());
+                new mdsound.instrument.Ym2608Inst(), new mdsound.instrument.Ym2203Inst(), new mdsound.instrument.Ym2151Inst(),
+                new mdsound.instrument.YmF278BInst());
         chipRegister = plugin.chipRegister;
         // a chip only forwards writes to its emulator when the settings say to use one, which a
         // played song arranges and a test has to say for itself
         useEmulator(mdplayer.Setting.getInstance().getYM2608Type());
         useEmulator(mdplayer.Setting.getInstance().getYM2203Type());
         useEmulator(mdplayer.Setting.getInstance().getYM2151Type());
+        // the OPL3 has five implementations and the plugin below registers only the nuked one
+        useEmulator(mdplayer.Setting.getInstance().getYMF262Type(), 2);
         opna = chipRegister.chip(Ym2608Chip.class);
         opm = chipRegister.chip(Ym2151Chip.class);
         opn = chipRegister.chip(Ym2203Chip.class);
@@ -357,7 +359,6 @@ class ChipFmDspSourceTest {
 
     @Test
     @DisplayName("a 9 channel opl3 gets 9 rows and 9 meters, not the opna's 6")
-    @Disabled("error to be fixed")
     void testOpl3Meters() {
         var opl3 = chipRegister.chip(mdplayer.chips.YmF262Chip.class);
         for (int ch = 0; ch < 9; ch++) {
@@ -567,8 +568,21 @@ class ChipFmDspSourceTest {
     }
 
     static void useEmulator(mdplayer.Setting.ChipType2[] types) {
+        useEmulator(types, 0);
+    }
+
+    /**
+     * Pins the emulator variant as well, for a chip with more than one implementation: the
+     * variant a user's {@code local.properties} happens to select is not necessarily one this
+     * test registered, and an unregistered one swallows every write.
+     *
+     * @param variant index into the chip's {@code implementations()}
+     */
+    static void useEmulator(mdplayer.Setting.ChipType2[] types, int variant) {
         for (mdplayer.Setting.ChipType2 type : types) {
-            type.setUseEmu(new boolean[] {true, false});
+            boolean[] useEmu = new boolean[variant + 2];
+            useEmu[variant] = true;
+            type.setUseEmu(useEmu);
             type.setUseReal(new boolean[] {false, false});
         }
     }

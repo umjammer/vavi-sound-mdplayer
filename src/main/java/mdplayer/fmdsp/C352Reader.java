@@ -104,7 +104,7 @@ public class C352Reader implements FmDspChipReader {
         regs = null;
         try {
             Map<String, Object> info = chip().getInfo(0);
-            if (info != null) {
+            if (info.containsKey("register")) {
                 regs = (int[]) info.get("register");
             }
         } catch (RuntimeException ignore) {

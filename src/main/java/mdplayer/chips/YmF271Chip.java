@@ -6,13 +6,12 @@
 
 package mdplayer.chips;
 
+import java.util.Collections;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
-import mdplayer.driver.BaseDriver;
-import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.instrument.YmF271Inst;
 
@@ -29,25 +28,14 @@ public class YmF271Chip extends BaseChip {
 
     private final RSoundChip[] realChips = {null, null};
 
-
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Instrument>[] implementations() {
         return new Class[] {YmF271Inst.class};
     }
 
-    @Override
-    public void init(BasePlugin<? extends BaseDriver> context) {
-        super.init(context);
-
-        for (int chipId = 0; chipId < 2; chipId++) {
-        }
-    }
-
     public void write(int chipId, int port, int addr, int data, EnmModel model) {
         fireEventHappened("led.on", chipId);
-
-        if (model == EnmModel.VirtualModel)
 
         if (model == EnmModel.VirtualModel) {
             if (!chipTypes[chipId].getUseReal()[0]) {
@@ -72,6 +60,6 @@ public class YmF271Chip extends BaseChip {
     @Override
     public Map<String, Object> getInfo(int chipId) {
         YmF271Inst inst = context.mds.inst(YmF271Inst.class);
-        return inst == null ? null : inst.getView(chipId, "info", null);
+        return inst == null ? Collections.emptyMap() : inst.getView(chipId, "info");
     }
 }

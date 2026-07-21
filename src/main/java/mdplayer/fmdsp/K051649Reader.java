@@ -7,6 +7,7 @@
 package mdplayer.fmdsp;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
@@ -67,7 +68,7 @@ public class K051649Reader implements FmDspChipReader {
         Arrays.fill(prevSoundings, false);
         Arrays.fill(prevFreqs, 0);
         active = false;
-        info = null;
+        info = Collections.emptyMap();
     }
 
     @Override
@@ -91,7 +92,7 @@ public class K051649Reader implements FmDspChipReader {
             info = chip().getInfo(0);
         } catch (RuntimeException ignore) {
             // the chip exists but the song never loaded it
-            info = null;
+            info = Collections.emptyMap();
         }
     }
 
@@ -102,7 +103,7 @@ public class K051649Reader implements FmDspChipReader {
 
     private boolean sounding(int ch) {
         // a frequency of eight or less is the chip's own idea of silence
-        return info != null && intOf(ch, "key") != 0 && intOf(ch, "volumeL") > 0
+        return intOf(ch, "key") != 0 && intOf(ch, "volumeL") > 0
                 && intOf(ch, "frequency") > 8;
     }
 
@@ -125,7 +126,7 @@ public class K051649Reader implements FmDspChipReader {
         out.num = ch + 1;
         out.info = TrackInfo.SSG;
         out.pan = Pan.CENTER; // the chip is mono
-        if (info == null) return;
+        if (info.isEmpty()) return;
 
         boolean sounding = sounding(ch);
         int freq = intOf(ch, "frequency");

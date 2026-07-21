@@ -31,17 +31,17 @@ public class SettingModulePanel extends SettingTab {
 
     private static final Logger logger = getLogger(SettingModulePanel.class.getName());
 
-    private JPanel groupBox3;
-    private JLabel label13;
-    private JLabel label12;
-    private JLabel label11;
-    private JTextArea tbLatencyEmu;
-    private JTextArea tbLatencySCCI;
-    private JLabel label10;
-    private JCheckBox cbHiyorimiMode;
-    private SettingInstrumentsPanel ucSI;
-    private JPanel groupBox1;
-    private JCheckBox cbUnuseRealChip;
+    private final JPanel groupBox3;
+    private final JLabel label13;
+    private final JLabel label12;
+    private final JLabel label11;
+    private final JTextArea tbLatencyEmu;
+    private final JTextArea tbLatencySCCI;
+    private final JLabel label10;
+    private final JCheckBox cbHiyorimiMode;
+    private final SettingInstrumentsPanel ucSI;
+    private final JPanel groupBox1;
+    private final JCheckBox cbUnuseRealChip;
 
     public SettingModulePanel() {
         this.groupBox1 = new JPanel();

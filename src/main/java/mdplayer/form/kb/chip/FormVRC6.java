@@ -13,20 +13,21 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.util.List;
+import java.util.Map;
 import java.util.prefs.Preferences;
 
 import mdplayer.Common;
-import mdplayer.form.FrameBuffer;
-import mdplayer.form.ScreenPanel;
 import mdplayer.Tables;
 import mdplayer.chips.NpNesChip;
 import mdplayer.chips.NpNesChip.Vrc6Chip;
+import mdplayer.form.FrameBuffer;
+import mdplayer.form.ScreenPanel;
+import mdplayer.form.View;
 import mdplayer.form.kb.ChannelParams;
 import mdplayer.form.kb.Meters;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
 import mdsound.np.chip.DeviceInfo.BasicTrackInfo;
-import mdplayer.form.View;
 
 
 public class FormVRC6 extends FormChipBase<FormVRC6.Params> {
@@ -121,6 +122,7 @@ public class FormVRC6 extends FormChipBase<FormVRC6.Params> {
         }
     };
 
+    @Override
     public void initScreen() {
         boolean VRC6Type = false;
         int tp = VRC6Type ? 1 : 0;
@@ -133,32 +135,34 @@ public class FormVRC6 extends FormChipBase<FormVRC6.Params> {
         }
     }
 
+    @Override
     public void changeScreenParams() {
-        BasicTrackInfo[] info = (BasicTrackInfo[]) audio.plugin.chipRegister.chip(NpNesChip.Vrc6Chip.class).getInfo(0).get("tracksInfo");
-        if (info == null) return;
+        Map<String, Object> info = audio.plugin.chipRegister.chip(NpNesChip.Vrc6Chip.class).getInfo(chipId);
+        if (info.isEmpty()) return;
 
-        Channel nyc;
+        BasicTrackInfo[] trackInfo = (BasicTrackInfo[]) info.get("tracksInfo");
 
         for (int ch = 0; ch < 3; ch++) {
-            nyc = newParam.channels[ch];
-            nyc.kf = info[ch].getTone();
-            nyc.volumeR = info[ch].getTone() / 4;
-            nyc.volumeL = info[ch].getVolume();
-            int v = info[ch].getVolume();
+            Channel nyc = newParam.channels[ch];
+            nyc.kf = trackInfo[ch].getTone();
+            nyc.volumeR = trackInfo[ch].getTone() / 4;
+            nyc.volumeL = trackInfo[ch].getVolume();
+            int v = trackInfo[ch].getVolume();
             v = ch < 2 ? v * 2 : v / 3;
             nyc.volume = Math.min(v, 19);
-            nyc.bit[0] = info[ch].getKeyStatus();
-            nyc.freq = info[ch].getFreqP();
-            nyc.bit[1] = info[ch].getHalt();
-            v = info[ch].getNote(info[ch].getFreqHz()) - 4 * 12;
+            nyc.bit[0] = trackInfo[ch].getKeyStatus();
+            nyc.freq = trackInfo[ch].getFreqP();
+            nyc.bit[1] = trackInfo[ch].getHalt();
+            v = trackInfo[ch].getNote(trackInfo[ch].getFreqHz()) - 4 * 12;
             nyc.note = nyc.volumeL == 0 ? -1 : v;
-            nyc.sadr = info[ch].getFreqShift();
+            nyc.sadr = trackInfo[ch].getFreqShift();
         }
     
         for (int mch = 0; mch < newParam.channels.length; mch++)
             newParam.channels[mch].mask = audio.plugin.chipRegister.chip(NpNesChip.Vrc6Chip.class).getMask(chipId, mch);
     }
 
+    @Override
     public void drawScreenParams() {
         Channel oyc;
         Channel nyc;

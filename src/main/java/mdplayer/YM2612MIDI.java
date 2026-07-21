@@ -254,7 +254,7 @@ public class YM2612MIDI {
 
     private Tone voiceCopyChToTone(int des, String name) {
         Tone tone = new Tone();
-        int[][] reg = (int[][]) mdsMIDI.inst(Ym2612Inst.class).getView(0, "register", null).get("Ym2612");
+        int[][] reg = (int[][]) mdsMIDI.inst(Ym2612Inst.class).getView(0, "register").get("Ym2612");
 
         for (int i = 0; i < 4; i++) {
             int opn = (i == 0) ? 0 : ((i == 1) ? 8 : ((i == 2) ? 4 : 12));

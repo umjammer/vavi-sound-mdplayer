@@ -13,18 +13,19 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.util.List;
+import java.util.Map;
 import java.util.prefs.Preferences;
 
 import mdplayer.Common;
-import mdplayer.form.FrameBuffer;
-import mdplayer.form.ScreenPanel;
 import mdplayer.Tables;
 import mdplayer.chips.QSoundChip;
 import mdplayer.chips.SegaPcmChip;
+import mdplayer.form.FrameBuffer;
+import mdplayer.form.ScreenPanel;
+import mdplayer.form.View;
 import mdplayer.form.kb.PcmChannelParams;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
-import mdplayer.form.View;
 
 
 public class FormQSound extends FormChipBase<FormQSound.Params> {
@@ -114,6 +115,7 @@ public class FormQSound extends FormChipBase<FormQSound.Params> {
         }
     };
 
+    @Override
     public void initScreen() {
         for (int ch = 0; ch < 16; ch++) {
             for (int ot = 0; ot < 12 * 8; ot++) {
@@ -124,20 +126,24 @@ public class FormQSound extends FormChipBase<FormQSound.Params> {
         }
     }
 
+    @Override
     public void changeScreenParams() {
-        int[] qSoundRegister = (int[]) audio.plugin.chipRegister.chip(QSoundChip.class).getInfo(chipId).get("register");
+        Map<String, Object> info = audio.plugin.chipRegister.chip(QSoundChip.class).getInfo(chipId);
+        if (info.isEmpty()) return;
+
+        int[] register = (int[]) info.get("register");
 
         // PCM 16ch
         for (int ch = 0; ch < 16; ch++) {
-            newParam.channels[ch].echo = qSoundRegister[ch + 0xba];
-            newParam.channels[ch].freq = qSoundRegister[(ch << 3) + 2];
-            newParam.channels[ch].bank = qSoundRegister[(((ch + 15) % 16) << 3) + 0];
-            newParam.channels[ch].sadr = qSoundRegister[(ch << 3) + 1];
-            newParam.channels[ch].eadr = qSoundRegister[(ch << 3) + 5];
-            newParam.channels[ch].ladr = qSoundRegister[(ch << 3) + 4];
-            //newParam.channels[ch].ladr = qSoundRegister[(ch << 3) + 3];
-            int vol = qSoundRegister[(ch << 3) + 6];
-            int pan = qSoundRegister[ch + 0x80] - 0x110;
+            newParam.channels[ch].echo = register[ch + 0xba];
+            newParam.channels[ch].freq = register[(ch << 3) + 2];
+            newParam.channels[ch].bank = register[(((ch + 15) % 16) << 3) + 0];
+            newParam.channels[ch].sadr = register[(ch << 3) + 1];
+            newParam.channels[ch].eadr = register[(ch << 3) + 5];
+            newParam.channels[ch].ladr = register[(ch << 3) + 4];
+            //newParam.channels[ch].ladr = register[(ch << 3) + 3];
+            int vol = register[(ch << 3) + 6];
+            int pan = register[ch + 0x80] - 0x110;
             if (pan >= 97) pan = 16; // center?
             int panL = (int) (15.0 / 16.0 * (pan > 16 ? (16 - (33 - pan)) : 16));
             int panR = (int) (15.0 / 16.0 * (pan < 16 ? (16 - pan) : 16));
@@ -150,11 +156,11 @@ public class FormQSound extends FormChipBase<FormQSound.Params> {
         }
         // ADPCM 3ch
         for (int ch = 0; ch < 3; ch++) {
-            newParam.channels[ch + 16].bank = qSoundRegister[(ch << 2) + 0xcc];
-            newParam.channels[ch + 16].sadr = qSoundRegister[(ch << 2) + 0xca];
-            newParam.channels[ch + 16].eadr = qSoundRegister[(ch << 2) + 0xcb];
-            int vol = (qSoundRegister[(ch << 2) + 0xcd] >> 16);
-            int pan = qSoundRegister[ch + 16 + 0x80] - 0x110;
+            newParam.channels[ch + 16].bank = register[(ch << 2) + 0xcc];
+            newParam.channels[ch + 16].sadr = register[(ch << 2) + 0xca];
+            newParam.channels[ch + 16].eadr = register[(ch << 2) + 0xcb];
+            int vol = (register[(ch << 2) + 0xcd] >> 16);
+            int pan = register[ch + 16 + 0x80] - 0x110;
             if (pan >= 97) pan = 16; // center?
             int panL = (int) (15.0 / 16.0 * (pan > 16 ? (16 - (33 - pan)) : 16));
             int panR = (int) (15.0 / 16.0 * (pan < 16 ? (16 - pan) : 16));
@@ -164,26 +170,27 @@ public class FormQSound extends FormChipBase<FormQSound.Params> {
         }
 
         // echo
-        newParam.channels[0].inst[0] = qSoundRegister[0x93]; // feedback
-        newParam.channels[0].inst[1] = qSoundRegister[0xd9]; // end_pos
-        newParam.channels[0].inst[2] = qSoundRegister[0xe2]; // delay_update
-        newParam.channels[0].inst[3] = qSoundRegister[0xe3]; // next_state
+        newParam.channels[0].inst[0] = register[0x93]; // feedback
+        newParam.channels[0].inst[1] = register[0xd9]; // end_pos
+        newParam.channels[0].inst[2] = register[0xe2]; // delay_update
+        newParam.channels[0].inst[3] = register[0xe3]; // next_state
         // Wet
-        newParam.channels[0].inst[4] = qSoundRegister[0xde]; // delay left
-        newParam.channels[0].inst[5] = qSoundRegister[0xe0]; // delay right
-        newParam.channels[0].inst[6] = qSoundRegister[0xe4]; // volume_left
-        newParam.channels[0].inst[7] = qSoundRegister[0xe6]; // volume right
+        newParam.channels[0].inst[4] = register[0xde]; // delay left
+        newParam.channels[0].inst[5] = register[0xe0]; // delay right
+        newParam.channels[0].inst[6] = register[0xe4]; // volume_left
+        newParam.channels[0].inst[7] = register[0xe6]; // volume right
         // Dry
-        newParam.channels[0].inst[8] = qSoundRegister[0xdf];  // delay left
-        newParam.channels[0].inst[9] = qSoundRegister[0xe1];  // delay right
-        newParam.channels[0].inst[10] = qSoundRegister[0xe5]; // volume_left
-        newParam.channels[0].inst[11] = qSoundRegister[0xe7]; // volume right
+        newParam.channels[0].inst[8] = register[0xdf];  // delay left
+        newParam.channels[0].inst[9] = register[0xe1];  // delay right
+        newParam.channels[0].inst[10] = register[0xe5]; // volume_left
+        newParam.channels[0].inst[11] = register[0xe7]; // volume right
     
         // the chip itself is the source of truth for channel muting
         for (int mch = 0; mch < newParam.channels.length; mch++)
             newParam.channels[mch].mask = audio.plugin.chipRegister.chip(QSoundChip.class).getMask(chipId, mch);
     }
 
+    @Override
     public void drawScreenParams() {
         Channel oyc;
         Channel nyc;

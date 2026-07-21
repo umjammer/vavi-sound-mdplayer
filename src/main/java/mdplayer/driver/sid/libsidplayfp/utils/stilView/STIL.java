@@ -193,7 +193,7 @@ public class STIL {
     private final String[] resultBug = {null};
 
     // final ios_base::openmode STILopenFlags = ios::in | ios::binary;
-    public final String STILopenFlags = "r"; // | ios::binary;
+    public static final String STILopenFlags = "r"; // | ios::binary;
 
     public static final float VERSION_NO = 3.0f;
 
@@ -1022,7 +1022,7 @@ public class STIL {
 
         // Find it : the table.
         String entry = new String(entryStr.array()).formatted(pathLen);
-        // dirList::iterator elem = dirs.find(entry);
+        //dirList::iterator elem = dirs.find(entry);
         Tuple<String, Integer> elem = null;
         for (Tuple<String, Integer> t : dirs) {
             if (t.getItem1().equals(entry)) {

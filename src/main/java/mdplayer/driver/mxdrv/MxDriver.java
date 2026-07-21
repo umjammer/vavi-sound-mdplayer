@@ -24,7 +24,6 @@ import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 import vavi.util.ByteUtil;
 import vavi.util.compat.Tuple;
-import vavi.util.event.GenericEvent;
 
 import static java.lang.System.getLogger;
 
@@ -168,7 +167,7 @@ public class MxDriver extends BaseDriver {
      * @param mdxSize OUT
      * @param pdxFileName OUT
      */
-    private void makeMdxBuf(byte[] buf, byte[][] mdx, int[] mdxSize, String[] pdxFileName) {
+    private static void makeMdxBuf(byte[] buf, byte[][] mdx, int[] mdxSize, String[] pdxFileName) {
         // Skip title
         int p = 8;
         int c;

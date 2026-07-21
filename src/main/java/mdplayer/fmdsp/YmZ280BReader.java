@@ -54,7 +54,7 @@ public class YmZ280BReader extends PcmSlotReader {
 
     @Override
     protected boolean sounding(int ch) {
-        return info != null && boolOf(ch, "playing");
+        return boolOf(ch, "playing");
     }
 
     @Override

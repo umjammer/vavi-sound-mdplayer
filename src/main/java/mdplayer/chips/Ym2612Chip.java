@@ -13,7 +13,6 @@ import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
-import mdplayer.format.FileFormat;
 import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.instrument.MameYm2612Inst;
@@ -53,15 +52,11 @@ public class Ym2612Chip extends BaseChip {
     };
     @Deprecated
     public final int[][] ch3SlotVolume = {new int[4], new int[4]};
-    // TODO check cache or not
     private final int[] fadeout = {0, 0};
     private final boolean[][] mask = {
             {false, false, false, false, false, false},
             {false, false, false, false, false, false}
     };
-
-    /** the format of the song being played; the panel draws a few things per format */
-    public FileFormat fileFormat = FileFormat.unknown;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -276,7 +271,8 @@ public class Ym2612Chip extends BaseChip {
         }
     }
 
-    private void setMask(int chipId, int ch, boolean mask) {
+    @Override
+    protected void setMask(int chipId, int ch, boolean mask, Object... args) {
         // channels 6-8 are FM3's extended slots; they share ch2's mask slot (the array is 6 wide)
         this.mask[chipId][ch < 6 ? ch : 2] = mask;
 
@@ -308,6 +304,7 @@ public class Ym2612Chip extends BaseChip {
         }
     }
 
+    @Override
     public void setFadeout(int chipId, int v) {
         fadeout[chipId] = v;
         for (int p = 0; p < 2; p++) {
@@ -329,8 +326,9 @@ public class Ym2612Chip extends BaseChip {
      */
     @Override
     public Map<String, Object> getInfo(int chipId) {
+        // TODO
         Instrument inst = context.mds.inst(inst(chipId));
-        Map<String, Object> info = inst == null ? null : inst.getView(chipId, "info", null);
+        Map<String, Object> info = inst == null ? null : inst.getView(chipId, "info");
         if (info == null || info.isEmpty()) {
             // this variant cannot be read back; give the view what the writes said
             return Map.of(
@@ -359,21 +357,13 @@ public class Ym2612Chip extends BaseChip {
         return info.get(key) instanceof Integer i ? Math.abs(i) : 0;
     }
 
-    public void setMask(int chipId, int ch) {
-        setMask(chipId, ch, true);
-    }
-
-    public void resetMask(int chipId, int ch) {
-        setMask(chipId, ch, false);
-    }
-
     @Override
     public void clearFadeout() {
         setFadeout(0, 0);
         setFadeout(1, 0);
     }
 
-    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    @Override
     public boolean getMask(int chipId, int ch) {
         // channels 6-8 are FM3's extended slots; they mask together with ch2
         return mask[chipId][ch < 6 ? ch : 2];

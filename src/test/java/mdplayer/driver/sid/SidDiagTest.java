@@ -35,7 +35,7 @@ public class SidDiagTest {
 
     private static final int SamplingRate = 44100;
 
-    public static void main(String[] args) throws Exception {
+    static void main(String[] args) throws Exception {
         String filename = args.length > 0
                 ? args[0]
                 : "/Users/nsano/Public/np2/sid/Wizball.sid";
@@ -77,7 +77,7 @@ public class SidDiagTest {
         sidobjsF.setAccessible(true);
         @SuppressWarnings("unchecked")
         List<SidEmu> sidobjs = (List<SidEmu>) sidobjsF.get(rs);
-        ReSid reSid = (ReSid) sidobjs.get(0);
+        ReSid reSid = (ReSid) sidobjs.getFirst();
         Sid sid = reSid.getSID();
         Voice[] voices = getVoices(sid);
 

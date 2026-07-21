@@ -110,10 +110,10 @@ public class FormHuC6280 extends FormChipBase<FormHuC6280.Params> {
         }
     };
 
+    @Override
     public void changeScreenParams() {
-
         Map<String, Object> chip = audio.plugin.chipRegister.chip(HuC6280Chip.class).getInfo(chipId);
-        if (chip == null) return;
+        if (chip.isEmpty()) return;
 
         //logger.log(Level.TRACE, "%d  %d".formatted(chips.MainVolumeL,chips.MainVolumeR));
         for (int ch = 0; ch < 6; ch++) {
@@ -151,6 +151,7 @@ public class FormHuC6280 extends FormChipBase<FormHuC6280.Params> {
             newParam.channels[mch].mask = audio.plugin.chipRegister.chip(HuC6280Chip.class).getMask(chipId, mch);
     }
 
+    @Override
     public void drawScreenParams() {
         int tp = parent.setting.getHuC6280Type()[0].getUseReal()[0] ? 1 : 0;
 
@@ -234,6 +235,7 @@ public class FormHuC6280 extends FormChipBase<FormHuC6280.Params> {
         }
     };
 
+    @Override
     public void initScreen() {
         for (int c = 0; c < newParam.channels.length; c++) {
             newParam.channels[c].note = -1;

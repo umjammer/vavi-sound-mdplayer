@@ -22,9 +22,6 @@ public class Ym2203Reader extends OpnFmReader {
         return chipRegister.chip(Ym2203Chip.class);
     }
 
-
-
-
     @Override protected int fmCount() { return 3; }
 
     @Override protected boolean hasSsg() { return true; }

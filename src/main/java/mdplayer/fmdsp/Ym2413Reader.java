@@ -8,6 +8,7 @@ package mdplayer.fmdsp;
 
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.Map;
 import java.util.Set;
 
 import mdplayer.ChipRegister;
@@ -85,8 +86,8 @@ public class Ym2413Reader implements FmDspChipReader {
     public void poll() {
         regs = null;
         try {
-            java.util.Map<String, Object> info = chip().getInfo(0);
-            if (info != null && info.get("register") instanceof int[] r) regs = r;
+            Map<String, Object> info = chip().getInfo(0);
+            if (!info.isEmpty() && info.get("register") instanceof int[] r) regs = r;
         } catch (RuntimeException ignore) {
             // the chip exists but the song never loaded it
         }

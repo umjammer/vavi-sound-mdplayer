@@ -86,7 +86,7 @@ public class FftAnalyzer implements FftDataSource {
                 peak = Math.max(peak, magnitude[b]);
             }
             double db = 20 * Math.log10(Math.max(peak, 1e-9));
-            out[i] = (int) Math.clamp(
+            out[i] = Math.clamp(
                     Math.round((db - fftFloor) / -fftFloor * (FftDataSource.MAX + 1)), 0, FftDataSource.MAX);
         }
     }

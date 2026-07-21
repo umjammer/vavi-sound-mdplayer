@@ -82,46 +82,48 @@ public class FormRf5c68 extends FormChipBase<FormRf5c68.Params> {
         }
     };
 
+    @Override
     public void changeScreenParams() {
-        Map<String, Object> rf5c68Register = audio.plugin.chipRegister.chip(Rf5C68Chip.class).getInfo(chipId);
-        if (rf5c68Register != null) {
-            //int[][] rf5c164Vol = audio.GetRf5c164Volume(chipId);
-            for (int ch = 0; ch < 8; ch++) {
-                if (newParam.channels[ch].volume > 0) newParam.channels[ch].volume--;
+        Map<String, Object> info = audio.plugin.chipRegister.chip(Rf5C68Chip.class).getInfo(chipId);
+        if (info.isEmpty()) return;
 
-                if ((boolean) rf5c68Register.get("Channel" + ch + ".enable")) {
-                    newParam.channels[ch].note = searchRf5c68Note((int) rf5c68Register.get("Channel" + ch + ".step"));
-                    if ((boolean) rf5c68Register.get("Channel" + ch + ".keyOn")) {
-                        newParam.channels[ch].volume = (int) rf5c68Register.get("Channel" + ch + ".env");
-                        rf5c68Register.put("Channel" + ch + ".keyOn", false);
-                    }
-                    int MUL_L = (newParam.channels[ch].volume * ((int) rf5c68Register.get("Channel" + ch + ".pan") & 0x0F)) >> 5;
-                    int MUL_R = (newParam.channels[ch].volume * ((int) rf5c68Register.get("Channel" + ch + ".pan") >> 4)) >> 5;
-                    newParam.channels[ch].volumeL = Math.clamp(MUL_L / 3, 0, 19);
-                    newParam.channels[ch].volumeR = Math.clamp(MUL_R / 3, 0, 19);
-                } else {
-                    newParam.channels[ch].volume = 0;
-                    newParam.channels[ch].volumeL = 0;
-                    newParam.channels[ch].volumeR = 0;
-                }
-                if (newParam.channels[ch].volumeL == 0 && newParam.channels[ch].volumeR == 0)
-                    newParam.channels[ch].note = -1;
-                else if (!(boolean) rf5c68Register.get("Channel" + ch + ".key")) {
-                    newParam.channels[ch].note = -1;
-                    newParam.channels[ch].volume = 0;
-                    newParam.channels[ch].volumeL = 0;
-                    newParam.channels[ch].volumeR = 0;
-                }
+        //int[][] volumes = (int[][]) info.get("volume");
+        for (int ch = 0; ch < 8; ch++) {
+            if (newParam.channels[ch].volume > 0) newParam.channels[ch].volume--;
 
-                newParam.channels[ch].pan = (int) rf5c68Register.get("Channel" + ch + ".pan");
+            if ((boolean) info.get("channel." + ch + ".enable")) {
+                newParam.channels[ch].note = searchRf5c68Note((int) info.get("channel." + ch + ".step"));
+                if ((boolean) info.get("channel." + ch + ".keyOn")) {
+                    newParam.channels[ch].volume = (int) info.get("channel." + ch + ".env");
+                    info.put("channel." + ch + ".keyOn", false);
+                }
+                int mulL = (newParam.channels[ch].volume * ((int) info.get("channel." + ch + ".pan") & 0x0F)) >> 5;
+                int mulR = (newParam.channels[ch].volume * ((int) info.get("channel." + ch + ".pan") >> 4)) >> 5;
+                newParam.channels[ch].volumeL = Math.clamp(mulL / 3, 0, 19);
+                newParam.channels[ch].volumeR = Math.clamp(mulR / 3, 0, 19);
+            } else {
+                newParam.channels[ch].volume = 0;
+                newParam.channels[ch].volumeL = 0;
+                newParam.channels[ch].volumeR = 0;
             }
+            if (newParam.channels[ch].volumeL == 0 && newParam.channels[ch].volumeR == 0)
+                newParam.channels[ch].note = -1;
+            else if (!(boolean) info.get("channel." + ch + ".key")) {
+                newParam.channels[ch].note = -1;
+                newParam.channels[ch].volume = 0;
+                newParam.channels[ch].volumeL = 0;
+                newParam.channels[ch].volumeR = 0;
+            }
+
+            newParam.channels[ch].pan = (int) info.get("channel." + ch + ".pan");
         }
-    
+
         // the chip itself is the source of truth for channel muting
         for (int mch = 0; mch < newParam.channels.length; mch++)
             newParam.channels[mch].mask = audio.plugin.chipRegister.chip(Rf5C68Chip.class).getMask(chipId, mch);
     }
 
+    @Override
     public void drawScreenParams() {
         for (int c = 0; c < 8; c++) {
 
@@ -181,6 +183,7 @@ public class FormRf5c68 extends FormChipBase<FormRf5c68.Params> {
         return n;
     }
 
+    @Override
     public void initScreen() {
         for (int c = 0; c < newParam.channels.length; c++) {
             newParam.channels[c].note = -1;

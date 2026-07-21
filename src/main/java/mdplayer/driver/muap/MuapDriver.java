@@ -114,7 +114,7 @@ public class MuapDriver extends BaseDriver {
             }
 
             int lp = muapDriver.getNowLoopCounter();
-            lp = lp < 0 ? 0 : lp;
+            lp = Math.max(lp, 0);
             curLoop = lp;
 
             if (muapDriver.getStatus() < 1) {

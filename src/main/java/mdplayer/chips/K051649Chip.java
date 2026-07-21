@@ -6,6 +6,7 @@
 
 package mdplayer.chips;
 
+import java.util.Collections;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
@@ -67,14 +68,15 @@ public class K051649Chip extends BaseChip {
         chip.start(1, 100, 200);
     }
 
-    public void setMask(int chipId, int ch) {
-        mask[chipId][ch] = true;
-        write(chipId, (3 << 1) | 1, keyOnOff[chipId], EnmModel.VirtualModel);
-    }
-
-    public void resetMask(int chipId, int ch) {
-        mask[chipId][ch] = false;
-        write(chipId, (3 << 1) | 1, keyOnOff[chipId], EnmModel.VirtualModel);
+    @Override
+    protected void setMask(int chipId, int ch, boolean mask, Object... args) {
+        if (mask) {
+            this.mask[chipId][ch] = true;
+            write(chipId, (3 << 1) | 1, keyOnOff[chipId], EnmModel.VirtualModel);
+        } else {
+            this.mask[chipId][ch] = false;
+            write(chipId, (3 << 1) | 1, keyOnOff[chipId], EnmModel.VirtualModel);
+        }
     }
 
     public void write(int chipId, int adr, int data, EnmModel model) {
@@ -144,7 +146,7 @@ public class K051649Chip extends BaseChip {
     @Override
     public Map<String, Object> getInfo(int chipId) {
         K051649Inst inst = context.mds.inst(K051649Inst.class);
-        return inst == null ? null : inst.getView(chipId, "info", null);
+        return inst == null ? Collections.emptyMap() : inst.getView(chipId, "info");
     }
 
     @Override
@@ -153,7 +155,7 @@ public class K051649Chip extends BaseChip {
         softReset(1, model);
     }
 
-    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    @Override
     public boolean getMask(int chipId, int ch) {
         return ch < mask[chipId].length && mask[chipId][ch];
     }

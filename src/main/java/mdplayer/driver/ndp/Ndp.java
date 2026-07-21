@@ -238,7 +238,7 @@ logger.log(Level.ERROR, ex.getMessage(), ex);
                 z80.getRegisters().getIX() & 0xffff, z80.getRegisters().getIY() & 0xffff));
     }
 
-    private void callExtBio(BeforeInstructionFetchEvent args, Z80Processor z80) {
+    private static void callExtBio(BeforeInstructionFetchEvent args, Z80Processor z80) {
         byte funcType = z80.getRegisters().getD();
         byte function = z80.getRegisters().getE();
 
@@ -268,7 +268,7 @@ logger.log(Level.ERROR, ex.getMessage(), ex);
         z80.executeRet();
     }
 
-    private void extBio_MemoryMapper(BeforeInstructionFetchEvent args, Z80Processor z80, byte function) {
+    private static void extBio_MemoryMapper(BeforeInstructionFetchEvent args, Z80Processor z80, byte function) {
         switch (function) {
             case 0x02:
                 z80.getRegisters().setA((byte) 0);

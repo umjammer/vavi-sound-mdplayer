@@ -18,16 +18,16 @@ import java.util.prefs.Preferences;
 
 import mdplayer.Chip;
 import mdplayer.Common;
-import mdplayer.form.FrameBuffer;
-import mdplayer.form.ScreenPanel;
 import mdplayer.Tables;
 import mdplayer.chips.NesChip.FdsChip;
 import mdplayer.chips.NpNesChip;
+import mdplayer.form.FrameBuffer;
+import mdplayer.form.ScreenPanel;
+import mdplayer.form.View;
 import mdplayer.form.kb.ChannelParams;
 import mdplayer.form.kb.Meters;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
-import mdplayer.form.View;
 
 
 public class FormFDS extends FormChipBase<FormFDS.Params> {
@@ -85,56 +85,52 @@ public class FormFDS extends FormChipBase<FormFDS.Params> {
         }
     };
 
+    @Override
     public void changeScreenParams() {
-        final double LOG2_440 = 8.7813597135246596040696824762152;
-        final double LOG_2 = 0.69314718055994530941723212145818;
-        final int NOTE_440HZ = 12 * 4 + 9;
+        Map<String, Object> info = audio.plugin.chipRegister.chip(NpNesChip.FdsChip.class).getInfo(chipId);
+        if (info.isEmpty()) return;
 
-        Map<String, Object> reg = audio.plugin.chipRegister.chip(NpNesChip.FdsChip.class).getInfo(chipId);
-        int freq;
-        int vol;
-        int note;
-        if (!reg.isEmpty()) {
-            freq = (int) reg.get("freq");
-            vol = (int) reg.get("vol");
-            note = -15 + (int) ((12 * (Math.log(freq) / LOG_2 - LOG2_440) + NOTE_440HZ + 0.5));
-            note = note < 0 ? -1 : (note > 120 ? -1 : note);
-            note = vol == 0 ? -1 : note;
-            vol = note == -1 ? 0 : vol;
-            newParam.channel.note = note;
-            newParam.channel.volume = Math.min((int) ((vol) * 0.5), 19);
+        int freq = (int) info.get("freq");
+        int vol = (int) info.get("vol");
 
-            int[][] wave = (int[][]) reg.get("wave");
-            for (int i = 0; i < 32; i++) {
-                newParam.wave[i] = (wave[1][i * 2 + 0] + wave[1][i * 2 + 1]) >> 2;
-                newParam.mod[i] = (wave[0][i * 2 + 0] + wave[0][i * 2 + 1]) << 1;
-            }
+        int note = -15 + (int) ((12 * (Math.log(freq) / LOG_2 - LOG2_440) + NOTE_440HZ + 0.5));
+        note = note < 0 ? -1 : (note > 120 ? -1 : note);
+        note = vol == 0 ? -1 : note;
+        vol = note == -1 ? 0 : vol;
+        newParam.channel.note = note;
+        newParam.channel.volume = Math.min((int) ((vol) * 0.5), 19);
 
-            newParam.VolDir = (boolean) reg.get("VolDir");
-            newParam.VolSpd = (int) reg.get("VolSpd");
-            newParam.VolGain = (int) reg.get("VolGain");
-            newParam.VolDi = (boolean) reg.get("VolDi");
-            newParam.VolFrq = (int) reg.get("VolFrq");
-            newParam.VolHlR = (boolean) reg.get("VolHlR");
-
-            newParam.ModDir = (boolean) reg.get("ModDir");
-            newParam.ModSpd = (int) reg.get("ModSpd");
-            newParam.ModGain = (int) reg.get("ModGain");
-            newParam.ModDi = (boolean) reg.get("ModDi");
-            newParam.ModFrq = (int) reg.get("ModFrq");
-            newParam.ModCnt = (int) reg.get("ModCnt");
-
-            newParam.EnvSpd = (int) reg.get("EnvSpd");
-            newParam.EnvVolSw = (boolean) reg.get("EnvVolSw");
-            newParam.EnvModSw = (boolean) reg.get("EnvModSw");
-
-            newParam.MasterVol = (int) reg.get("MasterVol");
-            newParam.WE = (boolean) reg.get("WE");
+        int[][] wave = (int[][]) info.get("wave");
+        for (int i = 0; i < 32; i++) {
+            newParam.wave[i] = (wave[1][i * 2 + 0] + wave[1][i * 2 + 1]) >> 2;
+            newParam.mod[i] = (wave[0][i * 2 + 0] + wave[0][i * 2 + 1]) << 1;
         }
-    
+
+        newParam.VolDir = (boolean) info.get("VolDir");
+        newParam.VolSpd = (int) info.get("VolSpd");
+        newParam.VolGain = (int) info.get("VolGain");
+        newParam.VolDi = (boolean) info.get("VolDi");
+        newParam.VolFrq = (int) info.get("VolFrq");
+        newParam.VolHlR = (boolean) info.get("VolHlR");
+
+        newParam.ModDir = (boolean) info.get("ModDir");
+        newParam.ModSpd = (int) info.get("ModSpd");
+        newParam.ModGain = (int) info.get("ModGain");
+        newParam.ModDi = (boolean) info.get("ModDi");
+        newParam.ModFrq = (int) info.get("ModFrq");
+        newParam.ModCnt = (int) info.get("ModCnt");
+
+        newParam.EnvSpd = (int) info.get("EnvSpd");
+        newParam.EnvVolSw = (boolean) info.get("EnvVolSw");
+        newParam.EnvModSw = (boolean) info.get("EnvModSw");
+
+        newParam.MasterVol = (int) info.get("MasterVol");
+        newParam.WE = (boolean) info.get("WE");
+
         newParam.channel.mask = audio.plugin.chipRegister.chip(NpNesChip.FdsChip.class).getMask(chipId, -1);
     }
 
+    @Override
     public void drawScreenParams() {
         oldParam.channel.note = frameBuffer.drawKeyBoard(0, oldParam.channel.note, newParam.channel.note, 0);
         oldParam.channel.volume = frameBuffer.drawVolumeM(256, 8 + 0 * 8, 0, oldParam.channel.volume, newParam.channel.volume, 0);
@@ -200,6 +196,7 @@ public class FormFDS extends FormChipBase<FormFDS.Params> {
         }
     };
 
+    @Override
     public void initScreen() {
         newParam.channel.note = -1;
         newParam.channel.volume = -1;
@@ -361,7 +358,7 @@ public class FormFDS extends FormChipBase<FormFDS.Params> {
 
         @Override public void resetChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
             // the reset always went to the vgm-side FDS, kept as the original had it
-            audio.plugin.chipRegister.chip(mdplayer.chips.NesChip.FdsChip.class).resetFdsMask(chipId);
+            audio.plugin.chipRegister.chip(mdplayer.chips.NesChip.FdsChip.class).setMask(chipId, -1);
         }
 
         @Override public void reapplyChannelMasks(mdplayer.Audio audio, int chipId) {

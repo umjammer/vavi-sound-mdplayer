@@ -23,7 +23,6 @@ import javax.swing.JScrollPane;
 
 import mdplayer.Chip;
 import mdplayer.Common;
-import mdplayer.form.ScreenPanel;
 import mdplayer.chips.Ay8910Chip;
 import mdplayer.chips.C140Chip;
 import mdplayer.chips.C352Chip;
@@ -45,9 +44,10 @@ import mdplayer.chips.YmF278BChip;
 import mdplayer.chips.YmZ280BChip;
 import mdplayer.driver.sid.SidDriver;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTuneInfo.Model;
+import mdplayer.form.ScreenPanel;
+import mdplayer.form.View;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
-import mdplayer.form.View;
 
 
 public class FormRegTest extends FormChipBase<Void> {
@@ -78,11 +78,13 @@ public class FormRegTest extends FormChipBase<Void> {
 
         public RegisterManager() {
             addChip(YmF278BChip.class, 3, 0x100, select -> { // 0
-                return ((int[][]) audio.plugin.chipRegister.chip(YmF278BChip.class).getInfo(0).get("register"))[select];
+                Map<String, Object> info = audio.plugin.chipRegister.chip(YmF278BChip.class).getInfo(0);
+                return !info.isEmpty() && info.containsKey("register") ? ((int[][]) info.get("register"))[select] : null;
             });
 
             addChip(YmF262Chip.class, 2, 0x100, select -> { // 3
-                return ((int[][]) audio.plugin.chipRegister.chip(YmF262Chip.class).getInfo(0).get("register"))[select];
+                Map<String, Object> info = audio.plugin.chipRegister.chip(YmF262Chip.class).getInfo(0);
+                return !info.isEmpty() && info.containsKey("register") ? ((int[][]) info.get("register"))[select] : null;
             });
 
             addChip(Ym2151Chip.class, 1, 0x100, select -> { // 5
@@ -105,7 +107,7 @@ public class FormRegTest extends FormChipBase<Void> {
 
             addChip(SegaPcmChip.class, 1, 0x200, select -> {
                 Map<String, Object> info = audio.plugin.chipRegister.chip(SegaPcmChip.class).getInfo(0);
-                return info != null ? info.getOrDefault("register", null) : null;
+                return !info.isEmpty() ? info.getOrDefault("register", null) : null;
             });
 
             addChip(YmZ280BChip.class, 1, 0x100, select -> audio.plugin.chipRegister.chip(YmZ280BChip.class).getInfo(0).get("register"));
@@ -127,10 +129,10 @@ public class FormRegTest extends FormChipBase<Void> {
             addChip(SidChip.class, 3, 0x19, chipId1 -> audio.plugin.chipRegister.chip(SidChip.class).getInfo(chipId1));
         }
 
-        private void addChip(Class<? extends Chip> ChipName, int Max, int regSize, Function<Integer, Object> p) {
+        private void addChip(Class<? extends Chip> chipName, int max, int regSize, Function<Integer, Object> p) {
             int BaseIndex = chipData.size();
-            for (int i = 0; i < Max; i++) {
-                chipData.add(new ChipData(ChipName, BaseIndex, regSize, Max, p));
+            for (int i = 0; i < max; i++) {
+                chipData.add(new ChipData(chipName, BaseIndex, regSize, max, p));
             }
         }
 
@@ -336,8 +338,7 @@ public class FormRegTest extends FormChipBase<Void> {
             @SuppressWarnings("unchecked")
             Map<String, Object> sidInfo = (Map<String, Object>) a;
             Object regObj = sidInfo.get("register");
-            if (!(regObj instanceof Integer[])) return;
-            Integer[] r = (Integer[]) regObj;
+            if (!(regObj instanceof Integer[] r)) return;
 
             // Voice Registers
 

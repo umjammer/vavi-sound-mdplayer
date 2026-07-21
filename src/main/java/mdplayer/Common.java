@@ -79,7 +79,6 @@ public class Common {
 
     public static final int VGMProcSampleRate = 44100;
     public static Path settingFilePath;
-    public static Path playingFilePath;
 
     /**
      * find an asciiz string from a byte array

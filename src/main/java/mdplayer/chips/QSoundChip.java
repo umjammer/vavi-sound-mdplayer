@@ -6,6 +6,7 @@
 
 package mdplayer.chips;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
@@ -67,28 +68,23 @@ public class QSoundChip extends BaseChip {
         }
     }
 
-    @Deprecated
     private final int[][] register = {
             new int[256], new int[256]
     };
 
     @Override
-    /**
-     * The register shadow the panel reads, and beside it the channel state as the chip itself has
-     * it - only the emulator knows whether a voice is still sounding.
-     */
     public Map<String, Object> getInfo(int chipId) {
-        java.util.Map<String, Object> info = new java.util.HashMap<>();
+        Map<String, Object> info = new HashMap<>();
         info.put("register", register[chipId]);
-        // two emulators answer for this chip and a song picks one, so ask whichever is loaded
-        mdsound.instrument.QSoundInst inst = context.mds.inst(mdsound.instrument.QSoundInst.class);
-        if (inst != null) info.putAll(inst.getView(chipId, "info", null));
-        mdsound.instrument.CtrQSoundInst ctr = context.mds.inst(mdsound.instrument.CtrQSoundInst.class);
-        if (ctr != null) info.putAll(ctr.getView(chipId, "info", null));
+        QSoundInst inst = context.mds.inst(QSoundInst.class);
+        if (inst != null) info.putAll(inst.getView(chipId, "info"));
+        CtrQSoundInst ctr = context.mds.inst(CtrQSoundInst.class);
+        if (ctr != null) info.putAll(ctr.getView(chipId, "info"));
         return info;
     }
 
-    public void setMask(int chipId, int ch, boolean mask) {
+    @Override
+    protected void setMask(int chipId, int ch, boolean mask, Object... args) {
         this.mask[chipId][ch] = mask;
 
         PcmEnabledInstrument instrument = context.mds.inst(_inst(chipId));
@@ -117,15 +113,7 @@ public class QSoundChip extends BaseChip {
         dumpData(model, "PCMData", srcStartAdr, romData, dataLength);
     }
 
-    public void setMask(int chipId, int ch) {
-        setMask(chipId, ch, true);
-    }
-
-    public void resetMask(int chipId, int ch) {
-        setMask(chipId, ch, false);
-    }
-
-    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    @Override
     public boolean getMask(int chipId, int ch) {
         return ch < mask[chipId].length && mask[chipId][ch];
     }

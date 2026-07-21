@@ -27,7 +27,6 @@ import mdplayer.driver.sid.libsidplayfp.EventCallback;
 import mdplayer.driver.sid.libsidplayfp.EventScheduler;
 import mdplayer.driver.sid.libsidplayfp.EventScheduler.EventPhase;
 import mdplayer.driver.sid.libsidplayfp.SidEndian;
-import net.sf.saxon.functions.Current;
 
 
 /**

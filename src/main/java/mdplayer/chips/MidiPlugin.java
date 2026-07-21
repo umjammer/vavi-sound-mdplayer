@@ -603,7 +603,7 @@ public class MidiPlugin implements Plugin {
     public int[][] readYM2612() {
         Instrument inst = mds.inst(Ym2612Inst.class, 0);
         if (inst == null) return null;
-        return (int[][]) inst.getView(0, "registers", null).get("Ym2612");
+        return (int[][]) inst.getView(0, "registers").get("Ym2612");
     }
 
     public MIDIParam get(int chipId) {

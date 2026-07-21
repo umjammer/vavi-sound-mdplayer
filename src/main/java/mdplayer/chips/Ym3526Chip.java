@@ -6,6 +6,7 @@
 
 package mdplayer.chips;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,8 +31,6 @@ public class Ym3526Chip extends BaseChip {
 
     private final RSoundChip[] realChips = {null, null};
 
-
-    // TOCO check cache or not
     private final int[] fadeout = {0, 0};
 
     @Deprecated
@@ -43,6 +42,7 @@ public class Ym3526Chip extends BaseChip {
      * The registers as they were written. The visualizer does not read this - it asks the chip -
      * but the register dump and the instrument export need a raw file the OPL core cannot give.
      */
+    @Deprecated
     private final int[][] register = {new int[0x100], new int[0x100]};
 
     private final boolean[][] mask = {
@@ -141,7 +141,7 @@ public class Ym3526Chip extends BaseChip {
         _write(chipId, addr, data, model);
     }
 
-    public ChipKeyInfo getKeyInfo(int chipId) {
+    private ChipKeyInfo getKeyInfo(int chipId) {
         ChipKeyInfo[] keyInfoRet = {new ChipKeyInfo(14), new ChipKeyInfo(14)}; // TODO out for memory usage?
         for (int ch = 0; ch < keyInfo[chipId].off.length; ch++) {
             keyInfoRet[chipId].off[ch] = keyInfo[chipId].off[ch];
@@ -181,12 +181,14 @@ public class Ym3526Chip extends BaseChip {
         }
     }
 
-    public void setMask(int chipId, int ch, boolean mask) {
+    @Override
+    protected void setMask(int chipId, int ch, boolean mask, Object... args) {
         this.mask[chipId][ch] = mask;
     }
 
+    @Override
     public void setFadeout(int chipId, int v) {
-        fadeout[chipId] = v >> 1;// 0-63 (v range: 0-127)
+        fadeout[chipId] = v >> 1; // 0-63 (v range: 0-127)
         for (int c = 0; c < 22; c++) {
         }
     }
@@ -212,19 +214,12 @@ public class Ym3526Chip extends BaseChip {
     @Override
     public Map<String, Object> getInfo(int chipId) {
         Instrument inst = context.mds.inst(inst(chipId));
-        // a panel polls whether or not the song loaded this chip, so never hand back null
-        if (inst == null) return Map.of("register", register[chipId]);
-        Map<String, Object> info = new HashMap<>(inst.getView(chipId, "info", null));
+        if (inst == null) return Collections.emptyMap();
+        Map<String, Object> info = new HashMap<>();
         info.put("register", register[chipId]);
+        info.put("keyInfo", getKeyInfo(chipId));
+        info.putAll(inst.getView(chipId, "info") != null ? inst.getView(chipId, "info") : Collections.emptyMap());
         return info;
-    }
-
-    public void setMask(int chipId, int ch) {
-        setMask(chipId, ch, true);
-    }
-
-    public void resetMask(int chipId, int ch) {
-        setMask(chipId, ch, false);
     }
 
     @Override
@@ -239,7 +234,7 @@ public class Ym3526Chip extends BaseChip {
         setFadeout(1, 0);
     }
 
-    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    @Override
     public boolean getMask(int chipId, int ch) {
         return ch < mask[chipId].length && mask[chipId][ch];
     }

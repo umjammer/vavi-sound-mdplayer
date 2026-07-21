@@ -30,7 +30,7 @@ public class SidCompareTest {
 
     private static final int SamplingRate = 44100;
 
-    public static void main(String[] args) throws Exception {
+    static void main(String[] args) throws Exception {
         String filename = args.length > 0
                 ? args[0]
                 : "/Users/nsano/src/java/JSIDPlay2/tmp/Formula_1_Simulator.sid";

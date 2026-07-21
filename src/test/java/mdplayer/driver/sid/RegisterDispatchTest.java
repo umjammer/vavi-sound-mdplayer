@@ -14,7 +14,7 @@ import mdplayer.driver.sid.libsidplayfp.builders.resid_builder.resid.Voice;
  */
 public class RegisterDispatchTest {
 
-    public static void main(String[] args) throws Exception {
+    static void main(String[] args) throws Exception {
         Sid sid = new Sid(44100);
         Voice[] voices = getVoices(sid);
 

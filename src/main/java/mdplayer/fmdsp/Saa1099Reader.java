@@ -7,6 +7,7 @@
 package mdplayer.fmdsp;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
@@ -92,7 +93,7 @@ public class Saa1099Reader implements FmDspChipReader {
             info = chip().getInfo(0);
         } catch (RuntimeException ignore) {
             // the chip exists but the song never loaded it
-            info = null;
+            info = Collections.emptyMap();
         }
     }
 
@@ -110,7 +111,7 @@ public class Saa1099Reader implements FmDspChipReader {
     }
 
     private boolean sounding(int ch) {
-        if (info == null || !(boolean) info.get("enabled")) return false;
+        if (info.isEmpty() || !(boolean) info.get("enabled")) return false;
         boolean tone = (boolean) info.get("channels." + ch + ".tone");
         boolean noise = (boolean) info.get("channels." + ch + ".noise");
         return (tone || noise) && volume(ch) != 0;
@@ -126,7 +127,7 @@ public class Saa1099Reader implements FmDspChipReader {
         out.name = "SSG";
         out.num = ch + 1;
         out.info = TrackInfo.SSG;
-        if (info == null) return;
+        if (info.isEmpty()) return;
 
         int left = (int) info.get("channels." + ch + ".volumeL");
         int right = (int) info.get("channels." + ch + ".volumeR");

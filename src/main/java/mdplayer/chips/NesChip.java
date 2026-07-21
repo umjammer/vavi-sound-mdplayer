@@ -6,7 +6,8 @@
 
 package mdplayer.chips;
 
-import java.lang.System.Logger;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
@@ -14,8 +15,6 @@ import mdsound.Instrument;
 import mdsound.instrument.NesInst;
 import mdsound.instrument.NesInst.DmcInst;
 import mdsound.instrument.NesInst.FdsInst;
-
-import static java.lang.System.getLogger;
 
 
 /**
@@ -25,8 +24,6 @@ import static java.lang.System.getLogger;
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
 public class NesChip extends BaseChip {
-
-    private static final Logger logger = getLogger(NesChip.class.getName());
 
     // vgm
     public static class DmcChip extends NesChip {
@@ -38,31 +35,26 @@ public class NesChip extends BaseChip {
             return new Class[] {DmcInst.class};
         }
 
-        // TODO getInfo
-        public int[] getInfo(int chipId, EnmModel model) {
+        @Override
+        public Map<String, Object> getInfo(int chipId) {
             fireEventHappened("led.on", chipId);
 
-            if (model == EnmModel.VirtualModel) {
 //            if (!ctNES[chipId].UseScci) {
-                return context.mds.inst(NesInst.class).readDmc(chipId);
+            return Map.of("register", context.mds.inst(NesInst.class).readDmc(chipId));
 //            }
+        }
+
+        @Override
+        protected void setMask(int chipId, int ch, boolean mask, Object... args) {
+            if (mask) {
+                super.setMask(chipId, ch + 2, true);
             } else {
-                return null;
-//            if (scNES[chipId] == null) return;
-//
-//            scNES[chipId].setRegister(dAddr, dData);
+                super.setMask(chipId, ch + 2, false);
             }
         }
 
-        public void setMask(int chipId, int ch) {
-            super.setMask(chipId, ch + 2);
-        }
-
-        public void resetDmcMask(int chipId, int ch) {
-            resetMask(chipId, ch + 2);
-        }
-
-        public boolean getDmcMask(int chipId, int ch) {
+        @Override
+        public boolean getMask(int chipId, int ch) {
             return (dmcMask & (1 << ch)) != 0;
         }
     }
@@ -77,32 +69,26 @@ public class NesChip extends BaseChip {
             return new Class[] {FdsInst.class};
         }
 
-        // TODO getInfo
-        public Map<String, Object> readFds(int chipId, EnmModel model) {
+        @Override
+        public Map<String, Object> getInfo(int chipId) {
             fireEventHappened("led.on", chipId);
 
-            if (model == EnmModel.VirtualModel) {
 //            if (!ctNES[chipId].UseScci) {
-                return context.mds.inst(FdsInst.class).getView(chipId, "info", null);
+            return context.mds.inst(FdsInst.class).getView(chipId, "info");
 //            }
-            } else {
-                return null;
-//            if (scFDS[chipId] == null) return;
-//
-//            scFDS[chipId].setRegister(dAddr, dData);
+        }
+
+        @Override
+        protected void setMask(int chipId, int ch, boolean mask, Object... args) {
+            if (mask) {
+                FdsInst instrument = context.mds.inst(FdsInst.class);
+                if (instrument == null) return; // the song being played does not use this chip
+                instrument.setFDSMask(chipId);
+            } else  {
+                FdsInst instrument = context.mds.inst(FdsInst.class);
+                if (instrument == null) return; // the song being played does not use this chip
+                instrument.resetFDSMask(chipId);
             }
-        }
-
-        public void setFdsMask(int chipId) {
-            FdsInst instrument = context.mds.inst(FdsInst.class);
-            if (instrument == null) return; // the song being played does not use this chip
-            instrument.setFDSMask(chipId);
-        }
-
-        public void resetFdsMask(int chipId) {
-            FdsInst instrument = context.mds.inst(FdsInst.class);
-            if (instrument == null) return; // the song being played does not use this chip
-            instrument.resetFDSMask(chipId);
         }
     }
 
@@ -130,86 +116,63 @@ public class NesChip extends BaseChip {
     }
 
     // vgm
-    // TODO getInfo
-    public int[] readApu(int chipId, EnmModel model) {
+    @Override
+    public Map<String, Object> getInfo(int chipId) {
         fireEventHappened("led.on", chipId);
 
-        if (model == EnmModel.VirtualModel) {
-//            if (!ctNES[chipId].UseScci) {
-                return context.mds.inst(NesInst.class).readApu(chipId);
-//            }
+//        if (!ctNES[chipId].UseScci) {
+        NesInst inst = context.mds.inst(NesInst.class);
+        if (inst == null) return Collections.emptyMap();
+        Map<String, Object> info = new HashMap<>();
+        info.put("register", inst.readApu(chipId));
+        info.put("dmcRegister", inst.readDmc(chipId));
+        return info;
+//        }
+    }
+
+    // vgm
+    @Override
+    protected void setMask(int chipId, int ch, boolean mask, Object... args) {
+        if (mask) {
+            if (chipId == 0) {
+                switch (ch) {
+                    case 0:
+                    case 1:
+                        apuMask |= 1 << ch;
+                        break;
+                    case 2:
+                    case 3:
+                    case 4:
+                        context.chipRegister.chip(NesChip.DmcChip.class).dmcMask |= 1 << (ch - 2);
+                        break;
+                }
+            }
+            Instrument instrument = context.mds.inst(NesInst.class);
+            if (instrument == null) return; // the song being played does not use this chip
+            instrument.setMask(chipId, ch);
         } else {
-            return null;
-//            if (scNES[chipId] == null) return;
-//
-//            scNES[chipId].setRegister(dAddr, dData);
-        }
-    }
-
-    // vgm
-    public void setMask(int chipId, int ch) {
-        if (chipId == 0) {
-            switch (ch) {
-                case 0:
-                case 1:
-                    apuMask |= 1 << ch;
-                    break;
-                case 2:
-                case 3:
-                case 4:
-                    context.chipRegister.chip(NesChip.DmcChip.class).dmcMask |= 1 << (ch - 2);
-                    break;
+            if (chipId == 0) {
+                switch (ch) {
+                    case 0:
+                    case 1:
+                        apuMask &= ~(1 << ch);
+                        break;
+                    case 2:
+                    case 3:
+                    case 4:
+                        context.chipRegister.chip(NesChip.DmcChip.class).dmcMask &= ~(1 << (ch - 2));
+                        break;
+                }
             }
+            Instrument instrument = context.mds.inst(NesInst.class);
+            if (instrument == null) return; // the song being played does not use this chip
+            instrument.resetMask(chipId, ch);
         }
-        Instrument instrument = context.mds.inst(NesInst.class);
-        if (instrument == null) return; // the song being played does not use this chip
-        instrument.setMask(chipId, ch);
     }
 
-    // vgm
-    public void resetMask(int chipId, int ch) {
-        if (chipId == 0) {
-            switch (ch) {
-                case 0:
-                case 1:
-                    apuMask &= ~(1 << ch);
-                    break;
-                case 2:
-                case 3:
-                case 4:
-                    context.chipRegister.chip(NesChip.DmcChip.class).dmcMask &= ~(1 << (ch - 2));
-                    break;
-            }
-        }
-        Instrument instrument = context.mds.inst(NesInst.class);
-        if (instrument == null) return; // the song being played does not use this chip
-        instrument.resetMask(chipId, ch);
-    }
-
+    @Override
     public boolean getMask(int chipId, int ch) {
         return (apuMask & (1 << ch)) != 0;
-    }
-
-    /**
-     * The emulator's live APU registers, {@code 0x4000} relative, or null when the song has no
-     * NES. Unlike {@link #readApu} this fires no led event: a view polling the state at frame
-     * rate would otherwise hold the led on for the whole song.
-     */
-    public int[] apuRegisters(int chipId) {
-        if (context == null) return null;
-        NesInst instrument = context.mds.inst(NesInst.class);
-        return instrument == null ? null : instrument.readApu(chipId);
-    }
-
-    /**
-     * The emulator's live triangle, noise and delta PCM registers, {@code 0x4008} relative - the
-     * APU proper only carries the two pulses. {@code 0x4015}, which both halves see, lands at
-     * {@code 0x0d} here. Null when the song has no NES; fires no led event.
-     */
-    public int[] dmcRegisters(int chipId) {
-        if (context == null) return null;
-        NesInst instrument = context.mds.inst(NesInst.class);
-        return instrument == null ? null : instrument.readDmc(chipId);
     }
 
     // vgm

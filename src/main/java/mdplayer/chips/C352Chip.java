@@ -6,11 +6,10 @@
 
 package mdplayer.chips;
 
+import java.util.Collections;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
-import mdplayer.driver.BaseDriver;
-import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.instrument.C352Inst;
 
@@ -36,7 +35,8 @@ public class C352Chip extends BaseChip {
         return new Class[] {C352Inst.class};
     }
 
-    public void setMask(int chipId, int ch, boolean mask) {
+    @Override
+    protected void setMask(int chipId, int ch, boolean mask, Object... args) {
         this.mask[chipId][ch] = mask;
     }
 
@@ -62,24 +62,10 @@ public class C352Chip extends BaseChip {
     @Override
     public Map<String, Object> getInfo(int chipId) {
         C352Inst inst = context.mds.inst(C352Inst.class);
-        if (inst == null) return null; // the song being played does not use this chip
-        // read back from the chip rather than shadowing the writes: the emulator moves the flags
-        // on by itself, so a copy taken on write would never show a sample running out
-        return Map.of(
-                "register", inst.getView(chipId, "register", null).get("register"),
-                "flags", inst.getView(chipId, "flags", null).get("flags")
-        );
+        return inst == null ? Collections.emptyMap() : inst.getView(chipId, "info");
     }
 
-    public void setMask(int chipId, int ch) {
-        setMask(chipId, ch, true);
-    }
-
-    public void resetMask(int chipId, int ch) {
-        setMask(chipId, ch, false);
-    }
-
-    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    @Override
     public boolean getMask(int chipId, int ch) {
         return ch < mask[chipId].length && mask[chipId][ch];
     }

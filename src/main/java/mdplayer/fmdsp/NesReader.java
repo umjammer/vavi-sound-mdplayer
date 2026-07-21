@@ -34,18 +34,18 @@ public class NesReader extends NesApuReader {
 
     @Override
     protected int[] apuRegisters() {
-        return chip().apuRegisters(0);
+        return (int[]) chip().getInfo(0).getOrDefault("register", new int[0x20]);
     }
 
     @Override
     protected int[] dmcRegisters() {
-        return chip().dmcRegisters(0);
+        return (int[]) chip().getInfo(0).getOrDefault("dmcRegister", new int[0x20]);
     }
 
     @Override
     protected boolean muted(int ch) {
         // the pulses are the APU's own; the rest are counted from zero by the delta PCM chip
         return ch < 2 ? chip().getMask(0, ch)
-                : chipRegister.chip(NesChip.DmcChip.class).getDmcMask(0, ch - 2);
+                : chipRegister.chip(NesChip.DmcChip.class).getMask(0, ch - 2);
     }
 }

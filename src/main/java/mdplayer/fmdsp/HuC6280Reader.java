@@ -7,6 +7,7 @@
 package mdplayer.fmdsp;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
@@ -63,7 +64,7 @@ public class HuC6280Reader implements FmDspChipReader {
     public void reset() {
         Arrays.fill(prevSoundings, false);
         Arrays.fill(prevNotes, -1);
-        info = null;
+        info = Collections.emptyMap();
         active = false;
     }
 
@@ -88,7 +89,7 @@ public class HuC6280Reader implements FmDspChipReader {
             info = chip().getInfo(0);
         } catch (RuntimeException ignore) {
             // the chip exists but the song never loaded it
-            info = null;
+            info = Collections.emptyMap();
         }
     }
 

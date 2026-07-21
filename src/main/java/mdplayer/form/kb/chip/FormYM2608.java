@@ -13,6 +13,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.util.List;
+import java.util.Map;
 import java.util.prefs.Preferences;
 
 import mdplayer.Common;
@@ -90,6 +91,7 @@ public class FormYM2608 extends FormChipBase<FormYM2608.Params> {
         }
     };
 
+    @Override
     public void initScreen() {
         for (int c = 0; c < newParam.channels.length; c++) {
             newParam.channels[c].note = -1;
@@ -118,21 +120,24 @@ public class FormYM2608 extends FormChipBase<FormYM2608.Params> {
     private static final float[] fmDivTbl = {6, 3, 2};
     private static final float[] ssgDivTbl = {4, 2, 1};
 
+    @Override
     public void changeScreenParams() {
-        boolean isFmEx;
-        int[][] ym2608Register = (int[][]) audio.plugin.chipRegister.chip(Ym2608Chip.class).getInfo(chipId).get("register");
-        int[] fmKeyYM2608 = (int[]) audio.plugin.chipRegister.chip(Ym2608Chip.class).getInfo(chipId).get("keyOn");
-        int[] ym2608Vol = (int[]) audio.plugin.chipRegister.chip(Ym2608Chip.class).getInfo(chipId).get("volume");
-        int[] ym2608Ch3SlotVol = (int[]) audio.plugin.chipRegister.chip(Ym2608Chip.class).getInfo(chipId).get("ch3SlotVolume");
-        int[][] ym2608Rhythm = (int[][]) audio.plugin.chipRegister.chip(Ym2608Chip.class).getInfo(chipId).get("rhythmVolume");
-        int[] ym2608AdpcmVol = (int[]) audio.plugin.chipRegister.chip(Ym2608Chip.class).getInfo(chipId).get("adpcmVolume");
+        Map<String, Object> info = audio.plugin.chipRegister.chip(Ym2608Chip.class).getInfo(chipId);
+        if (info.isEmpty()) return;
+
+        int[][] ym2608Register = (int[][]) info.get("register");
+        int[] fmKeyYM2608 = (int[]) info.get("keyOn");
+        int[] ym2608Vol = (int[]) info.get("volume");
+        int[] ym2608Ch3SlotVol = (int[]) info.get("ch3SlotVolume");
+        int[][] ym2608Rhythm = (int[][]) info.get("rhythmVolume");
+        int[] ym2608AdpcmVol = (int[]) info.get("adpcmVolume");
 
         newParam.timerA = ym2608Register[0][0x24] | ((ym2608Register[0][0x25] & 0x3) << 8);
         newParam.timerB = ym2608Register[0][0x26];
         newParam.rhythmTotalLevel = ym2608Register[0][0x11];
         newParam.adpcmLevel = ym2608Register[1][0x0b];
 
-        isFmEx = (ym2608Register[0][0x27] & 0x40) > 0;
+        boolean isFmEx = (ym2608Register[0][0x27] & 0x40) > 0;
         newParam.channels[2].ex = isFmEx;
 
         int defaultMasterClock = 7987200;
@@ -312,6 +317,7 @@ public class FormYM2608 extends FormChipBase<FormYM2608.Params> {
             newParam.channels[mch].mask = audio.plugin.chipRegister.chip(Ym2608Chip.class).getMask(chipId, mch);
     }
 
+    @Override
     public void drawScreenParams() {
         boolean ChipType2 = (chipId == 0)
                 ? parent.setting.getYM2608Type()[0].getUseReal()[0]
@@ -631,7 +637,7 @@ public class FormYM2608 extends FormChipBase<FormYM2608.Params> {
         return new int[] {ot, otp};
     }
 
-    private Boolean drawChYM2608(FrameBuffer screen, int ch, Boolean om, Boolean nm, int tp) {
+    private static Boolean drawChYM2608(FrameBuffer screen, int ch, Boolean om, Boolean nm, int tp) {
         if (om == nm) {
             return om;
         }
@@ -752,7 +758,7 @@ public class FormYM2608 extends FormChipBase<FormYM2608.Params> {
 
         @Override public void resetChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
             if (ch >= 0 && ch < 14) {
-                audio.plugin.chipRegister.chip(mdplayer.chips.Ym2608Chip.class).resetMask(chipId, ch, audio.plugin.stopped);
+                audio.plugin.chipRegister.chip(mdplayer.chips.Ym2608Chip.class).setMask(chipId, ch, false, audio.plugin.stopped);
             }
         }
 

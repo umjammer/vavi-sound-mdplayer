@@ -82,20 +82,22 @@ public class FormMegaCD extends FormChipBase<FormMegaCD.Params> {
         }
     };
 
+    @Override
     public void changeScreenParams() {
-        Map<String, Object> rf5c164Register = audio.plugin.chipRegister.chip(Rf5C164Chip.class).getInfo(chipId);
-        if (rf5c164Register == null) return; // the song being played does not use this chip
+        Map<String, Object> info = audio.plugin.chipRegister.chip(Rf5C164Chip.class).getInfo(chipId);
+        if (info.isEmpty()) return; // the song being played does not use this chip
+
         for (int ch = 0; ch < 8; ch++) {
-            if ((boolean) rf5c164Register.get("channels." + ch + ".enable")) {
-                newParam.channels[ch].note = searchRf5c164Note((int) rf5c164Register.get("channels." + ch + ".stepB"));
-                newParam.channels[ch].volumeL = Math.clamp((int) rf5c164Register.get("channels." + ch + ".mulL") / 3, 0, 19);
-                newParam.channels[ch].volumeR = Math.clamp((int) rf5c164Register.get("channels." + ch + ".mulR") / 3, 0, 19);
+            if ((boolean) info.get("channels." + ch + ".enable")) {
+                newParam.channels[ch].note = searchRf5c164Note((int) info.get("channels." + ch + ".stepB"));
+                newParam.channels[ch].volumeL = Math.clamp((int) info.get("channels." + ch + ".mulL") / 3, 0, 19);
+                newParam.channels[ch].volumeR = Math.clamp((int) info.get("channels." + ch + ".mulR") / 3, 0, 19);
             } else {
                 newParam.channels[ch].note = -1;
                 newParam.channels[ch].volumeL = 0;
                 newParam.channels[ch].volumeR = 0;
             }
-            newParam.channels[ch].pan = (int) rf5c164Register.get("channels." + ch + ".pan");
+            newParam.channels[ch].pan = (int) info.get("channels." + ch + ".pan");
         }
     
         // the chip itself is the source of truth for channel muting
@@ -103,6 +105,7 @@ public class FormMegaCD extends FormChipBase<FormMegaCD.Params> {
             newParam.channels[mch].mask = audio.plugin.chipRegister.chip(Rf5C164Chip.class).getMask(chipId, mch);
     }
 
+    @Override
     public void drawScreenParams() {
         for (int c = 0; c < 8; c++) {
 
@@ -162,6 +165,7 @@ public class FormMegaCD extends FormChipBase<FormMegaCD.Params> {
         return n;
     }
 
+    @Override
     public void initScreen() {
         for (int c = 0; c < newParam.channels.length; c++) {
             newParam.channels[c].note = -1;

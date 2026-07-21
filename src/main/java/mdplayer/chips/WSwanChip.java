@@ -6,6 +6,9 @@
 
 package mdplayer.chips;
 
+import java.util.Collections;
+import java.util.Map;
+
 import mdplayer.Common.EnmModel;
 import mdsound.Instrument;
 import mdsound.instrument.WSwanInst;
@@ -41,10 +44,9 @@ public class WSwanChip extends BaseChip {
         }
     }
 
-    /** the channel state as the chip has it now */
     @Override
-    public java.util.Map<String, Object> getInfo(int chipId) {
+    public Map<String, Object> getInfo(int chipId) {
         WSwanInst inst = context.mds.inst(WSwanInst.class);
-        return inst == null ? null : inst.getView(chipId, "info", null);
+        return inst == null ? Collections.emptyMap() : inst.getView(chipId, "info");
     }
 }

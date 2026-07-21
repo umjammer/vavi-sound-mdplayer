@@ -16,13 +16,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
+import mdplayer.Audio;
+import mdplayer.Chip;
 import mdplayer.Common;
+import mdplayer.chips.OkiM6258Chip;
 import mdplayer.form.FrameBuffer;
 import mdplayer.form.ScreenPanel;
-import mdplayer.chips.OkiM6258Chip;
+import mdplayer.form.View;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
-import mdplayer.form.View;
 
 
 public class FormOKIM6258 extends FormChipBase<FormOKIM6258.Params> {
@@ -80,29 +82,24 @@ public class FormOKIM6258 extends FormChipBase<FormOKIM6258.Params> {
         }
     };
 
+    @Override
     public void changeScreenParams() {
-        Map<String, Object> okim6258State = audio.plugin.chipRegister.chip(OkiM6258Chip.class).getInfo(chipId);
-        if (okim6258State == null) return;
+        Map<String, Object> info = audio.plugin.chipRegister.chip(OkiM6258Chip.class).getInfo(chipId);
+        if (info.isEmpty()) return;
 
-        switch (((int) okim6258State.get("pan")) & 0x3) {
-            case 0:
-            case 3:
-                newParam.pan = 3;
-                break;
-            case 1:
-                newParam.pan = 2;
-                break;
-            case 2:
-                newParam.pan = 1;
-                break;
-        }
+        newParam.pan = switch (((int) info.get("pan")) & 0x3) {
+            case 0, 3 -> 3;
+            case 1 -> 2;
+            case 2 -> 1;
+            default -> 3; // TODO
+        };
 
-        newParam.masterFreq = (int) okim6258State.get("masterFreq");
-        newParam.divider = (int) okim6258State.get("divider");
-        newParam.pbFreq = (int) okim6258State.get("pbFreq");
+        newParam.masterFreq = (int) info.get("masterFreq");
+        newParam.divider = (int) info.get("divider");
+        newParam.pbFreq = (int) info.get("pbFreq");
 
-        int v = (int) (((Math.abs(((int) okim6258State.get("dataIn")) - 128) * 2) >> 3) * 1.2);
-        if ((((int) okim6258State.get("status")) & 0x2) == 0) v = 0;
+        int v = (int) (((Math.abs(((int) info.get("dataIn")) - 128) * 2) >> 3) * 1.2);
+        if ((((int) info.get("status")) & 0x2) == 0) v = 0;
         v = Math.min(v, 38);
         if (newParam.volumeL < v && ((newParam.pan & 0x2) != 0)) {
             newParam.volumeL = v;
@@ -115,9 +112,10 @@ public class FormOKIM6258 extends FormChipBase<FormOKIM6258.Params> {
             newParam.volumeR--;
         }
     
-        newParam.mask = audio.plugin.chipRegister.chip(OkiM6258Chip.class).getMask(chipId);
+        newParam.mask = audio.plugin.chipRegister.chip(OkiM6258Chip.class).getMask(chipId, 0);
     }
 
+    @Override
     public void drawScreenParams() {
         Params ost = oldParam;
         Params nst = newParam;
@@ -146,6 +144,7 @@ public class FormOKIM6258 extends FormChipBase<FormOKIM6258.Params> {
         ost.mask = drawChOKIM6258(frameBuffer, ost.mask, nst.mask, 0);
     }
 
+    @Override
     public void initScreen() {
         newParam.pan = 3;
         newParam.masterFreq = 0;
@@ -287,20 +286,20 @@ public class FormOKIM6258 extends FormChipBase<FormOKIM6258.Params> {
 
         @Override public String id() { return "OKIM6258"; }
         @Override public String category() { return "pcm"; }
-        @Override public Class<? extends mdplayer.Chip> chip() { return mdplayer.chips.OkiM6258Chip.class; }
+        @Override public Class<? extends Chip> chip() { return OkiM6258Chip.class; }
         @Override public View create(FormMain frm, int chipId, int zoom) { return new FormOKIM6258(frm, chipId, zoom); }
 
-        @Override public void setChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
-            mdplayer.chips.OkiM6258Chip c = audio.plugin.chipRegister.chip(mdplayer.chips.OkiM6258Chip.class);
-            if (!c.getMask(chipId)) c.setMask(chipId); else c.resetMask(chipId);
+        @Override public void setChannelMask(Audio audio, Class<? extends Chip> chip, int chipId, int ch) {
+            OkiM6258Chip c = audio.plugin.chipRegister.chip(OkiM6258Chip.class);
+            if (!c.getMask(chipId, 0)) c.setMask(chipId, ch); else c.resetMask(chipId, ch);
         }
 
-        @Override public void resetChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
-            audio.plugin.chipRegister.chip(mdplayer.chips.OkiM6258Chip.class).resetMask(chipId);
+        @Override public void resetChannelMask(Audio audio, Class<? extends Chip> chip, int chipId, int ch) {
+            audio.plugin.chipRegister.chip(OkiM6258Chip.class).resetMask(chipId, ch);
         }
 
         @Override public List<MixerSlot> mixerSlots() {
-            return List.of(new MixerSlot(37, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.OkiM6258Chip.class, "okim6258", 200));
+            return List.of(new MixerSlot(37, mdsound.MDSound.Chip.MAIN_TAG, OkiM6258Chip.class, "okim6258", 200));
         }
     }
 }

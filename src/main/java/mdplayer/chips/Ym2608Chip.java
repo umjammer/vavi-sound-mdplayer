@@ -12,6 +12,7 @@ import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -78,14 +79,12 @@ public class Ym2608Chip extends BaseChip {
     @Deprecated
     public final int[] adpcmPan = {0, 0};
 
-    // TODO check cache or not
     private final int[] fadeout = {0, 0};
 
     private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false}
     };
-
 
     @Override
     @SuppressWarnings("unchecked")
@@ -449,7 +448,7 @@ public class Ym2608Chip extends BaseChip {
         _write(chipId, 1, 0x10, 0x9C, model); // FLAG reset
     }
 
-    public void setMask(int chipId, int ch, boolean mask, boolean noSend/*=false*/) {
+    private void setMask(int chipId, int ch, boolean mask, boolean noSend /* = false */) {
         this.mask[chipId][ch] = mask;
         // FM ch3 and its extended slots mask as one
         if (ch == 2 || (ch >= 9 && ch < 12)) {
@@ -514,6 +513,7 @@ public class Ym2608Chip extends BaseChip {
         dumpData(model, "ADPCM", ofs, buf, len);
     }
 
+    @Override
     public void setFadeout(int chipId, int v) {
 
         fadeout[chipId] = v;
@@ -564,26 +564,27 @@ public class Ym2608Chip extends BaseChip {
      */
     @Override
     public Map<String, Object> getInfo(int chipId) {
-        Map<String, Object> info = new HashMap<>();
-        info.putAll(Map.of(
-                "volume", volume[chipId],
-                "rhythmVolume", rhythmVolume[chipId],
-                "ch3SlotVolume", /* ctYM2612.UseScci ? */ ch3SlotVolume[chipId] /* : context.mds.inst(inst[chipId]).readFMCh3SlotVolume(); */,
-                "adpcmVolume", adpcmVolume[chipId],
-                "register", register[chipId],
-                "keyOn", keyOn[chipId]
-        ));
         Instrument inst = context.mds.inst(inst(chipId));
-        if (inst != null) info.putAll(inst.getView(chipId, "info", null));
+        if (inst == null) return Collections.emptyMap();
+        Map<String, Object> info = new HashMap<>();
+        info.put("volume", volume[chipId]);
+        info.put("rhythmVolume", rhythmVolume[chipId]);
+        info.put("ch3SlotVolume", /* ctYM2612.UseScci ? */ ch3SlotVolume[chipId] /* : context.mds.inst(inst[chipId]).readFMCh3SlotVolume(); */);
+        info.put("adpcmVolume", adpcmVolume[chipId]);
+        info.put("register", register[chipId]);
+        info.put("keyOn", keyOn[chipId]);
+        info.putAll(inst.getView(chipId, "info") != null ? inst.getView(chipId, "info") : Collections.emptyMap());
         return info;
     }
 
-    public void setMask(int chipId, int ch) {
-        setMask(chipId, ch, true, false);
-    }
-
-    public void resetMask(int chipId, int ch, boolean stopped) {
-        setMask(chipId, ch, false, stopped);
+    @Override
+    public void setMask(int chipId, int ch, boolean mask, Object... args) {
+        if (mask)
+            setMask(chipId, ch, true, false);
+        else {
+            boolean stopped = (boolean) args[0];
+            setMask(chipId, ch, false, stopped);
+        }
     }
 
     @Override
@@ -726,13 +727,13 @@ public class Ym2608Chip extends BaseChip {
         opnaRamType = searchOpnaRamType(vgmBuf, vgmDataOffset) ? 0x2 : 0x0;
     }
 
-    public static InputStream getOPNARyhthmStream(String fn) {
+    public InputStream getOPNARyhthmStream(String fn) {
         try {
             Path ffn = Path.of(fn);
 
             Path chk;
 
-            chk = Common.playingFilePath.resolve(fn); // TODO gross
+            chk = context.playingFilePath.resolve(fn);
             if (Files.exists(chk))
                 ffn = chk;
             else {
@@ -787,7 +788,7 @@ public class Ym2608Chip extends BaseChip {
         return n;
     }
 
-    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    @Override
     public boolean getMask(int chipId, int ch) {
         return ch < mask[chipId].length && mask[chipId][ch];
     }

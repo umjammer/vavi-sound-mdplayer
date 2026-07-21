@@ -118,6 +118,7 @@ public class FormGA20 extends FormChipBase<FormGA20.Params> {
         }
     };
 
+    @Override
     public void initScreen() {
         int tp = 0;
         for (int ch = 0; ch < 32; ch++) {
@@ -131,7 +132,7 @@ public class FormGA20 extends FormChipBase<FormGA20.Params> {
         }
     }
 
-    private int searchGA20Note(int freq, int clock) {
+    private static int searchGA20Note(int freq, int clock) {
         int hz = clock / (256 - freq);
 
         int n = 0;
@@ -147,9 +148,10 @@ public class FormGA20 extends FormChipBase<FormGA20.Params> {
         return n;
     }
 
+    @Override
     public void changeScreenParams() {
         Map<String, Object> info = audio.plugin.chipRegister.chip(Ga20Chip.class).getInfo(chipId);
-        if (info == null) return;
+        if (info.isEmpty()) return;
 
         int clock = clock(Ga20Inst.class) / 4;
         for (int ch = 0; ch < 4; ch++) {
@@ -170,6 +172,7 @@ public class FormGA20 extends FormChipBase<FormGA20.Params> {
         }
     }
 
+    @Override
     public void drawScreenParams() {
         PcmChannelParams oyc;
         PcmChannelParams nyc;

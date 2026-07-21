@@ -6,6 +6,8 @@
 
 package mdplayer.chips;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
@@ -36,15 +38,14 @@ public class Ym2413Chip extends BaseChip {
 
     private final RSoundChip[] realChips = {null, null};
 
-    // TODO eliminate cache like params, retrieve directly
-    //    private final int[] registerRhythmB = {0, 0};
-//    private final int[] registerRhythm = {0, 0};
     @Deprecated
     private final ChipKeyInfo[] keyInfo = {new ChipKeyInfo(14), new ChipKeyInfo(14)};
-    // TODO check cache nor not
+
     private final int[] fadeout = {0, 0};
+
     @Deprecated
     private final boolean[] rm = {false, false};
+
     private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false}
@@ -81,9 +82,9 @@ public class Ym2413Chip extends BaseChip {
 
         if (model == EnmModel.VirtualModel)
 
-        if (addr == 0x0e) {
-            rm[chipId] = (data & 0x20) != 0;
-        }
+            if (addr == 0x0e) {
+                rm[chipId] = (data & 0x20) != 0;
+            }
 
         if (addr >= 0x20 && addr <= 0x28) {
             int ch = addr - 0x20;
@@ -143,7 +144,7 @@ public class Ym2413Chip extends BaseChip {
         }
     }
 
-    public ChipKeyInfo getKeyInfo(int chipId) {
+    private ChipKeyInfo getKeyInfo(int chipId) {
         ChipKeyInfo[] keyInfoRet = {new ChipKeyInfo(14), new ChipKeyInfo(14)}; // TODO out for memory usage?
         for (int ch = 0; ch < keyInfo[chipId].off.length; ch++) {
             keyInfoRet[chipId].off[ch] = keyInfo[chipId].off[ch];
@@ -169,11 +170,13 @@ public class Ym2413Chip extends BaseChip {
         write(chipId, 0x38, 0xff, model);
     }
 
-    public void setMask(int chipId, int ch, boolean mask) {
+    @Override
+    protected void setMask(int chipId, int ch, boolean mask, Object... args) {
         this.mask[chipId][ch] = mask;
 
         // re-send what the chip already has, so the mute takes effect on the running note
-        int[] regs = registers(chipId);
+        Map<String, Object> info = getInfo(chipId);
+        int[] regs = info.get("register") instanceof int[] r ? r : null;
         if (regs == null) return;
         if (ch < 9) {
             write(chipId, 0x20 + ch, regs[0x20 + ch], EnmModel.VirtualModel);
@@ -182,26 +185,20 @@ public class Ym2413Chip extends BaseChip {
         }
     }
 
+    @Override
     public void setFadeout(int chipId, int v) {
         fadeout[chipId] = v / (128 / 16);
         // the levels were re-sent here for the real chip only, which no longer has a path
     }
 
-    /** the registers as the chip has them; every emulator behind this one keeps the file */
     @Override
     public Map<String, Object> getInfo(int chipId) {
         Instrument inst = context.mds.inst(inst(chipId));
-        // a panel polls whether or not the song loaded this chip, so never hand back null
-        return inst == null ? Map.of("register", new int[0x40])
-                : inst.getView(chipId, "register", null);
-    }
-
-    public void setMask(int chipId, int ch) {
-        setMask(chipId, ch, true);
-    }
-
-    public void resetMask(int chipId, int ch) {
-        setMask(chipId, ch, false);
+        if (inst == null) return Collections.emptyMap();
+        Map<String, Object> info = new HashMap<>();
+        info.put("keyInfo", getKeyInfo(chipId));
+        info.putAll(inst.getView(chipId, "register") != null ? inst.getView(chipId, "register") : Collections.emptyMap());
+        return info;
     }
 
     @Override
@@ -216,14 +213,8 @@ public class Ym2413Chip extends BaseChip {
         setFadeout(1, 0);
     }
 
-    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    @Override
     public boolean getMask(int chipId, int ch) {
         return ch < mask[chipId].length && mask[chipId][ch];
-    }
-
-    /** the chip's register file, or null when the song has not loaded it */
-    private int[] registers(int chipId) {
-        Map<String, Object> info = getInfo(chipId);
-        return info != null && info.get("register") instanceof int[] r ? r : null;
     }
 }

@@ -56,7 +56,7 @@ public class Ga20Reader extends PcmSlotReader {
 
     @Override
     protected boolean sounding(int ch) {
-        return info != null && boolOf(ch, "play");
+        return boolOf(ch, "play");
     }
 
     @Override

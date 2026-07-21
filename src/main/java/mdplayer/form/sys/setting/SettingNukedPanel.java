@@ -13,15 +13,15 @@ public class SettingNukedPanel extends SettingTab {
         return 30;
     }
 
-    private JPanel groupBox26;
-    private JCheckBox rbNukedOPN2OptionYM2612u;
-    private JCheckBox rbNukedOPN2OptionYM2612;
-    private JCheckBox rbNukedOPN2OptionDiscrete;
-    private JCheckBox rbNukedOPN2OptionASIC;
-    private JCheckBox rbNukedOPN2OptionASIClp;
-    private JPanel groupBox29;
-    private JCheckBox cbGensSSGEG;
-    private JCheckBox cbGensDACHPF;
+    private final JPanel groupBox26;
+    private final JCheckBox rbNukedOPN2OptionYM2612u;
+    private final JCheckBox rbNukedOPN2OptionYM2612;
+    private final JCheckBox rbNukedOPN2OptionDiscrete;
+    private final JCheckBox rbNukedOPN2OptionASIC;
+    private final JCheckBox rbNukedOPN2OptionASIClp;
+    private final JPanel groupBox29;
+    private final JCheckBox cbGensSSGEG;
+    private final JCheckBox cbGensDACHPF;
 
     public SettingNukedPanel() {
         this.groupBox29 = new JPanel();

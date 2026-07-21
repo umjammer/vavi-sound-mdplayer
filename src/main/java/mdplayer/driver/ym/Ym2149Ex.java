@@ -100,7 +100,7 @@ public class Ym2149Ex {
     //
     private final DcAdjuster m_dcAdjust = new DcAdjuster();
 
-    private int replayFrequency;
+    private final int replayFrequency;
     private long internalClock;          // unsigned 32-bit in C++, use long for range
 
     private final int[] registers = new int[14];

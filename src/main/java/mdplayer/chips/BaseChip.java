@@ -53,6 +53,7 @@ public abstract class BaseChip implements Chip {
     public void updateVol() {
     }
 
+    /** @return not null */
     public Map<String, Object> getInfo(int chipId) {
         return Collections.emptyMap();
     }
@@ -75,4 +76,17 @@ public abstract class BaseChip implements Chip {
             // Ignore the error
         }
     }
+
+    protected void setMask(int chipId, int ch, boolean mask, Object... args) {}
+
+    public final void setMask(int chipId, int ch) {
+        setMask(chipId, ch, true);
+    }
+
+    public final void resetMask(int chipId, int ch) {
+        setMask(chipId, ch, false);
+    }
+
+    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    protected boolean getMask(int chipId, int ch) { return false; }
 }

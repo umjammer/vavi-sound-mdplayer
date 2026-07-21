@@ -154,7 +154,6 @@ public class FormMixer2 extends JFrame {
         frameBuffer.refresh(null);
     }
 
-//    @Override
     protected boolean getShowWithoutActivation() {
         return true;
     }

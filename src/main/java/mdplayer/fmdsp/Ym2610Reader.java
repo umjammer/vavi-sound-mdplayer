@@ -6,6 +6,8 @@
 
 package mdplayer.fmdsp;
 
+import java.util.Collections;
+
 import vavi.sound.visualizer.fmdsp.LevelDataSource.Pan;
 import mdplayer.chips.Ym2610Chip;
 
@@ -48,25 +50,25 @@ public class Ym2610Reader extends OpnFmReader {
     private java.util.Map<String, Object> info;
 
     private int intOf(String key) {
-        Object value = info == null ? null : info.get(key);
+        Object value = info.isEmpty() ? null : info.get(key);
         return value instanceof Integer i ? i : 0;
     }
 
     private boolean boolOf(String key) {
-        Object value = info == null ? null : info.get(key);
+        Object value = info.isEmpty() ? null : info.get(key);
         return value instanceof Boolean b && b;
     }
 
     @Override
     public void poll() {
-        info = null;
+        info = Collections.emptyMap();
         keys = new int[6];
         try {
             info = chip().getInfo(0);
         } catch (RuntimeException ignore) {
             return; // the chip exists but the song never loaded it
         }
-        if (info == null) return;
+        if (info.isEmpty()) return;
         // the rows want a channel that sounds to have bit 0, and channel 3's extended mode reads
         // the slot bits, so build the shape they expect out of what the chip reports
         for (int ch = 0; ch < keys.length; ch++) {
@@ -98,7 +100,7 @@ public class Ym2610Reader extends OpnFmReader {
     @Override protected int exBlock(int x) { return intOf("channels.2.slots." + x + ".block"); }
 
     @Override protected int[] ssgRegs() {
-        return info != null && info.get("ssg.register") instanceof int[] r ? r : null;
+        return info.get("ssg.register") instanceof int[] r ? r : null;
     }
 
     @Override protected int timerBRegister() { return intOf("timerB"); }

@@ -53,7 +53,7 @@ public class GbsWavTestProgram {
                 1);
     }
 
-    public static void main(String[] args) throws Exception {
+    static void main(String[] args) throws Exception {
         if (args.length < 1) {
             System.out.println("Usage: GbsWavTestProgram <gbs_file> [reference_wav]");
             return;

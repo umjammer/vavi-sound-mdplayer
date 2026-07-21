@@ -6,6 +6,7 @@
 
 package mdplayer.chips;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,7 +46,7 @@ public class Y8950Chip extends BaseChip {
         return new Class[] {Y8950Inst.class};
     }
 
-    public ChipKeyInfo getKeyInfo(int chipId) {
+    private ChipKeyInfo getKeyInfo(int chipId) {
         ChipKeyInfo[] keyInfoRet = {new ChipKeyInfo(15), new ChipKeyInfo(15)}; // TODO out for memory usage?
         for (int ch = 0; ch < keyInfo[chipId].off.length; ch++) {
             keyInfoRet[chipId].off[ch] = keyInfo[chipId].off[ch];
@@ -122,7 +123,8 @@ public class Y8950Chip extends BaseChip {
         }
     }
 
-    public void setMask(int chipId, int ch, boolean mask) {
+    @Override
+    protected void setMask(int chipId, int ch, boolean mask, Object... args) {
         this.mask[chipId][ch] = mask;
     }
 
@@ -135,32 +137,17 @@ public class Y8950Chip extends BaseChip {
         dumpData(model, "PCMData", srcOffset, buf, length);
     }
 
-    /**
-     * The channel state the visualizer reads, and beside it the registers as they were written.
-     * <p>
-     * The shared OPL core behind this chip decodes its registers into operators and keeps no file,
-     * so the raw registers the dump panel and the instrument export want cannot be read back and
-     * are still shadowed here. The channel state comes from the chip.
-     */
     @Override
     public Map<String, Object> getInfo(int chipId) {
         Instrument inst = context.mds.inst(inst(chipId));
-        // a panel polls whether or not the song loaded this chip, so never hand back null
-        if (inst == null) return Map.of("register", register[chipId]);
-        Map<String, Object> info = new HashMap<>(inst.getView(chipId, "info", null));
+        if (inst == null) return Collections.emptyMap();
+        Map<String, Object> info = new HashMap<>(inst.getView(chipId, "info"));
         info.put("register", register[chipId]);
+        info.put("keyInfo", getKeyInfo(chipId));
         return info;
     }
 
-    public void setMask(int chipId, int ch) {
-        setMask(chipId, ch, true);
-    }
-
-    public void resetMask(int chipId, int ch) {
-        setMask(chipId, ch, false);
-    }
-
-    /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
+    @Override
     public boolean getMask(int chipId, int ch) {
         return ch < mask[chipId].length && mask[chipId][ch];
     }

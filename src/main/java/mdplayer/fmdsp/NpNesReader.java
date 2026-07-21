@@ -36,12 +36,12 @@ public class NpNesReader extends NesApuReader {
 
     @Override
     protected int[] apuRegisters() {
-        return chip().apuRegisters(0);
+        return (int[]) chip().getInfo(0).getOrDefault("registers", new int[0x20]);
     }
 
     @Override
     protected int[] dmcRegisters() {
-        return chip().dmcRegisters(0);
+        return (int[]) chip().getInfo(0).getOrDefault("dmcRegister", new int[0x20]);
     }
 
     @Override

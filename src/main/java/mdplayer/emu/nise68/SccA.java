@@ -23,8 +23,8 @@ public class SccA {
     private static final byte intMask = (byte) 0xff;
 
     private final byte[] reg = new byte[0x100];
-    private Consumer<Byte>[] cmdw = null;
-    private Supplier<Byte>[] cmdr = null;
+    private final Consumer<Byte>[] cmdw = null;
+    private final Supplier<Byte>[] cmdr = null;
     private short generalTimerValue = 0;
     private int renderingFreq;
     // private double clkM = 4_915_200.0 / 8.0;// 1_000_000.0;

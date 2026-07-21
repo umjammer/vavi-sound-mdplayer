@@ -292,7 +292,7 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
                 chip.samplingRate = 55467; // (int) setting.getoutputDevice().getSampleRate();
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2608Chip.class);
                 chip.clock = driverVirtual.vgm.ym2608ClockValue;
-                Function<String, InputStream> fn = Ym2608Chip::getOPNARyhthmStream;
+                Function<String, InputStream> fn = chipRegister.chip(Ym2608Chip.class)::getOPNARyhthmStream;
                 chip.option = new Object[] {fn};
                 hiyorimiDeviceFlag |= 0x2;
 
