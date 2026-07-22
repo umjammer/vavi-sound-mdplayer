@@ -54,6 +54,10 @@ public class FmpDriver extends BaseDriver {
         fmp.ft = ft;
     }
 
+    public static int getBaseClock() {
+        return FMP.baseClock;
+    }
+
     /** before using ths method, you must do {@link BaseDriver#init} */
     public void compile() {
         fmp.playingFileName = plugin.playingFileName;

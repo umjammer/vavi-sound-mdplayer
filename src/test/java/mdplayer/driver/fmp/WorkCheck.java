@@ -12,6 +12,7 @@ import mdplayer.emu.nise98.FileTemp;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 
 public class WorkCheck {
@@ -42,7 +43,7 @@ public class WorkCheck {
     }
 
     @Test
-    @Disabled("for ai iteration")
+    @EnabledIfSystemProperty(named = "vavi.test", matches = "ai")
     void check() throws Exception {
         String file = System.getProperty("probe.file", "/Users/nsano/Public/np2/FMP/FMPDDISK/FF5_GILG.OVI");
         String dir = "/Users/nsano/Public/np2/FMP/FMPDDISK";

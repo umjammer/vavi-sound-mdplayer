@@ -14,7 +14,6 @@ import mdplayer.Common.EnmModel;
 import mdplayer.chips.Ppz8Chip;
 import mdplayer.chips.RealChipPlugin;
 import mdplayer.chips.Ym2608Chip;
-import mdplayer.driver.fmp.FMP;
 import mdplayer.driver.fmp.FmpDriver;
 import mdplayer.driver.pmd.PmdDriver;
 import mdplayer.emu.nise98.FileTemp;
@@ -38,7 +37,7 @@ public class FMPPlugin extends BasePlugin<FmpDriver> implements Compilable {
 
     @Override
     public void compile() {
-        FileTemp ft = new FileTemp();
+        FileTemp ft = new FileTemp(); // TODO make more loosely coupled
         if (this.fileFormat.isMml()) {
             // compile
             FmpDriver fmp = new FmpDriver(this);
@@ -87,7 +86,7 @@ public class FMPPlugin extends BasePlugin<FmpDriver> implements Compilable {
             chip.setVolumes.put("RHYTHM", ym2608::setVolume);
             chip.setVolumes.put("ADPCM", ym2608::setVolume);
         }
-        chip.clock = FMP.baseClock;
+        chip.clock = FmpDriver.getBaseClock();
         Function<String, InputStream> fn = chipRegister.chip(Ym2608Chip.class)::getOPNARyhthmStream;
         chip.option = new Object[] {fn};
         put(Ym2608Chip.class, chip);
@@ -97,7 +96,7 @@ public class FMPPlugin extends BasePlugin<FmpDriver> implements Compilable {
         chip.instrument = chipRegister.chip(Ppz8Chip.class).instrument(0);
         chip.samplingRate = setting.getOutputDevice().getSampleRate();
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ppz8Chip.class);
-        chip.clock = FMP.baseClock;
+        chip.clock = FmpDriver.getBaseClock();
         chip.option = null;
         put(Ppz8Chip.class, chip);
 

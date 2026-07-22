@@ -339,6 +339,8 @@ logger.log(Level.DEBUG, "delete attributes: " + dir);
 
     /**
      * Looks up localized resources of type BufferedImage.
+     *
+     * TODO "/mdplayer/resources/" should move to .properties inside
      */
     public static BufferedImage getImage(String name) {
         try {

@@ -14,6 +14,7 @@ import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTune;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.playSidFp;
 
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.mockito.Mockito;
 
 import static org.mockito.Mockito.mock;
@@ -25,7 +26,7 @@ import static org.mockito.Mockito.when;
  * (used by {@link SidMdDriver}) against the same setup used by
  * {@link SidTestProgram}. Both should produce identical audio.
  */
-@Disabled("ai iteration")
+@EnabledIfSystemProperty(named = "vavi.test", matches = "ai")
 public class SidCompareTest {
 
     private static final int SamplingRate = 44100;

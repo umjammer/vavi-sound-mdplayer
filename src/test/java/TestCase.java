@@ -315,15 +315,23 @@ Debug.println(music);
         for (Path path : files) {
             this.file = path.toString();
 Debug.print("play: " + file + " ---------------------------------------------------------------------");
+            FileFormat format = FileFormat.getFileFormat(file);
+            format.load(Archives.getInputStream(new BufferedInputStream(Files.newInputStream(path))), null);
+            var plugin = (BasePlugin<? extends BaseDriver>) format.getPlugin();
+            plugin.setParams(format, Map.of("fileName", file));
+
+            audio.init(plugin);
+            CountDownLatch cdl = new CountDownLatch(1);
             ExecutorService es = Executors.newSingleThreadExecutor();
-            es.submit(() -> { try { play(); } catch (Exception e) { Debug.printStackTrace(e); }});
+            es.submit(() -> { try { audio.play(); cdl.countDown(); } catch (Exception e) { Debug.printStackTrace(e); }});
 Debug.print("await");
-            Thread.sleep(time);
+            cdl.await();
 Debug.println("await: broke");
             es.shutdownNow();
 Debug.println("stop");
             audio.stop();
             audio.close();
+Debug.println("close");
         }
     }
 

@@ -40,7 +40,7 @@ public class FMP {
     String dir;
     int sampleRate;
 
-    public static final int baseClock = 7987200;
+    static final int baseClock = 7987200;
     private int step = 0;
     final Nise98 nise98 = new Nise98();
     private Register286 regs;

@@ -15,6 +15,7 @@ import mdplayer.emu.nise98.Memory98;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 
 /**
@@ -118,7 +119,7 @@ public class WorkProbe {
     }
 
     @Test
-    @Disabled("for ai iteration")
+    @EnabledIfSystemProperty(named = "vavi.test", matches = "ai")
     void probe() throws Exception {
         String file = System.getProperty("probe.file", "/Users/nsano/Public/np2/fmp_ume3/ALPHA.OVI");
         String dir = System.getProperty("mdplayer.fmp.dir", "/Users/nsano/Public/np2/FMP/FMPDDISK");
