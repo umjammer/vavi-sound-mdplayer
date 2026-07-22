@@ -228,6 +228,11 @@ public class Ym2151Chip extends BaseChip {
     private void write(int chipId, int port, int addr, int data, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
             if (!chipTypes[chipId].getUseReal()[0]) {
+                // the song may not have registered this chip index - MDX starts one OPM under
+                // Ym2151Chip and the PCM8's second one under Pcm8Chip - so its emulator was never
+                // started (its operators are null). Skip, mirroring the realChips guard below;
+                // otherwise softReset's key-off writes to chip 1 hit an uninitialised Ym2151.
+                if (context.mds.inst(inst(chipId), chipId) == null) return;
                 context.mds.write(inst(chipId), chipId, 0, addr, data);
             }
         } else {
