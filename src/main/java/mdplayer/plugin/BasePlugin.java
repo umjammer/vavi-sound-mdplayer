@@ -93,6 +93,11 @@ public abstract class BasePlugin<T extends BaseDriver> implements Plugin {
         return chips.keySet();
     }
 
+    /** used chips with their mixer instances; for measurement / calibration tooling (mixer tags live in {@code Chip.setVolumes}) */
+    public final Map<Class<? extends mdplayer.Chip>, List<Chip>> getChipInstances() {
+        return chips;
+    }
+
     /** put used chips */
     protected void put(Class<? extends mdplayer.Chip> chip, Chip info) {
         if (chips.containsKey(chip)) {

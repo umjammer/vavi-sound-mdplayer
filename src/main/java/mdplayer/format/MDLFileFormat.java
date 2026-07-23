@@ -51,6 +51,11 @@ public class MDLFileFormat extends BaseFileFormat {
     }
 
     @Override
+    public String[] getPresetMixerBalance() {
+        return new String[] {"DriverBalance_MDL.mbc", "/resources/DefaultVolumeBalance_MDL.xml"};
+    }
+
+    @Override
     public List<PlayList.Music> addFileLoop(PlayList.Music mc, Archive archive, Entry entry) {
         return null;
     }

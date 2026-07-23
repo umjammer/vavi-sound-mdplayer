@@ -85,6 +85,11 @@ public class MGSFileFormat extends BaseFileFormat {
     }
 
     @Override
+    public String[] getPresetMixerBalance() {
+        return new String[] {"DriverBalance_MGS.mbc", "/resources/DefaultVolumeBalance_MGS.xml"};
+    }
+
+    @Override
     public Encoding getEncoding() {
         return new MdEncoding("MGSDRV", "mgs");
     }

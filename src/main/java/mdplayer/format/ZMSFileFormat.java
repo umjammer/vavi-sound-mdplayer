@@ -87,6 +87,11 @@ public class ZMSFileFormat extends BaseFileFormat {
     }
 
     @Override
+    public String[] getPresetMixerBalance() {
+        return new String[] {"DriverBalance_ZMD.mbc", "/resources/DefaultVolumeBalance_ZMD.xml"};
+    }
+
+    @Override
     public Encoding getEncoding() {
         return new MdEncoding("ZMUSIC", "zmd,zms");
     }

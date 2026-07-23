@@ -21,11 +21,15 @@ import mdplayer.vst.VstInfo;
 import vavi.util.serdes.JacksonXMLBeanBinder;
 import vavi.util.serdes.Serdes;
 import tools.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.annotation.JsonSerialize;
 import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
 import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.ValueSerializer;
 
 import static java.lang.System.getLogger;
 
@@ -2234,6 +2238,9 @@ public class Setting implements Serializable, Cloneable {
         }
     }
 
+    @Serdes(beanBinder = JacksonXMLBeanBinder.class)
+    @JsonSerialize(using = Balance.BalanceSerializer.class)
+    @JsonDeserialize(using = Balance.BalanceDeserializer.class)
     public static class Balance implements Serializable, Cloneable {
 
         private int masterVolume = 0;
@@ -2266,6 +2273,144 @@ public class Setting implements Serializable, Cloneable {
 
         public void setVolume(String tag, Class<? extends Chip> c, int v) {
             volumes.put(getKey(tag, c), outRange(v) ? 0 : v );
+        }
+
+        /**
+         * Maps an XML element name (as used in {@code DefaultVolumeBalance_*.xml} / {@code *.mbc})
+         * to the runtime {@code (chipClass, tag)} pair that keys the {@link #volumes} map.
+         * This is the bridge that was missing (the per-chip getters/setters below were commented
+         * out), so before this, {@code <YM2612Volume>} and friends deserialized into nothing.
+         *
+         * @param element XML element name
+         * @param chip chip class (its simple name feeds {@link #getKey})
+         * @param tag mixer tag, e.g. {@code MAIN}/{@code FM}/{@code SSG}
+         */
+        record VolEntry(String element, Class<? extends Chip> chip, String tag) {}
+
+        /** same value as {@code mdsound.MDSound.Chip.MAIN_TAG}; plugins key single-part chips with it */
+        private static final String MAIN = mdsound.MDSound.Chip.MAIN_TAG;
+
+        /** authoritative, ordered element &harr; (chip, tag) table; enumerated from every
+         *  {@code getBalance().getVolume(tag, X.class)} call site across the plugins. */
+        static final java.util.List<VolEntry> VOL_TABLE = java.util.List.of(
+            new VolEntry("YM2612Volume", mdplayer.chips.Ym2612Chip.class, MAIN),
+            new VolEntry("SN76489Volume", mdplayer.chips.Sn76489Chip.class, MAIN),
+            new VolEntry("RF5C68Volume", mdplayer.chips.Rf5C68Chip.class, MAIN),
+            new VolEntry("RF5C164Volume", mdplayer.chips.Rf5C164Chip.class, MAIN),
+            new VolEntry("PWMVolume", mdplayer.chips.PwmChip.class, MAIN),
+            new VolEntry("C140Volume", mdplayer.chips.C140Chip.class, MAIN),
+            new VolEntry("OKIM6258Volume", mdplayer.chips.OkiM6258Chip.class, MAIN),
+            new VolEntry("OKIM6295Volume", mdplayer.chips.OkiM6295Chip.class, MAIN),
+            new VolEntry("SEGAPCMVolume", mdplayer.chips.SegaPcmChip.class, MAIN),
+            new VolEntry("AY8910Volume", mdplayer.chips.Ay8910Chip.class, MAIN),
+            new VolEntry("YM2413Volume", mdplayer.chips.Ym2413Chip.class, MAIN),
+            new VolEntry("HuC6280Volume", mdplayer.chips.HuC6280Chip.class, MAIN),
+            new VolEntry("YM2151Volume", mdplayer.chips.Ym2151Chip.class, MAIN),
+            new VolEntry("YM2608Volume", mdplayer.chips.Ym2608Chip.class, MAIN),
+            new VolEntry("YM2608FMVolume", mdplayer.chips.Ym2608Chip.class, "FM"),
+            new VolEntry("YM2608PSGVolume", mdplayer.chips.Ym2608Chip.class, "SSG"),
+            new VolEntry("YM2608RhythmVolume", mdplayer.chips.Ym2608Chip.class, "RHYTHM"),
+            new VolEntry("YM2608AdpcmVolume", mdplayer.chips.Ym2608Chip.class, "ADPCM"),
+            new VolEntry("YM2203Volume", mdplayer.chips.Ym2203Chip.class, MAIN),
+            new VolEntry("YM2203FMVolume", mdplayer.chips.Ym2203Chip.class, "FM"),
+            new VolEntry("YM2203PSGVolume", mdplayer.chips.Ym2203Chip.class, "PSG"),
+            new VolEntry("YM2610Volume", mdplayer.chips.Ym2610Chip.class, MAIN),
+            new VolEntry("YM2610FMVolume", mdplayer.chips.Ym2610Chip.class, "FM"),
+            new VolEntry("YM2610PSGVolume", mdplayer.chips.Ym2610Chip.class, "SSG"),
+            new VolEntry("YM2610AdpcmAVolume", mdplayer.chips.Ym2610Chip.class, "ADPCMA"),
+            new VolEntry("YM2610AdpcmBVolume", mdplayer.chips.Ym2610Chip.class, "ADPCMB"),
+            new VolEntry("C352Volume", mdplayer.chips.C352Chip.class, MAIN),
+            new VolEntry("K054539Volume", mdplayer.chips.K054539Chip.class, MAIN),
+            new VolEntry("K053260Volume", mdplayer.chips.K053260Chip.class, MAIN),
+            new VolEntry("K051649Volume", mdplayer.chips.K051649Chip.class, MAIN),
+            new VolEntry("APUVolume", mdplayer.chips.NesChip.class, MAIN),
+            new VolEntry("DMCVolume", mdplayer.chips.NpNesChip.DmcChip.class, MAIN),
+            new VolEntry("FDSVolume", mdplayer.chips.NpNesChip.FdsChip.class, MAIN),
+            new VolEntry("MMC5Volume", mdplayer.chips.NpNesChip.Mmc5Chip.class, MAIN),
+            new VolEntry("N160Volume", mdplayer.chips.NpNesChip.N163Chip.class, MAIN),
+            new VolEntry("VRC6Volume", mdplayer.chips.NpNesChip.Vrc6Chip.class, MAIN),
+            new VolEntry("VRC7Volume", mdplayer.chips.NpNesChip.Vrc7Chip.class, MAIN),
+            new VolEntry("FME7Volume", mdplayer.chips.NpNesChip.Fme7Chip.class, MAIN),
+            new VolEntry("NpNesVolume", mdplayer.chips.NpNesChip.class, MAIN),
+            new VolEntry("DMGVolume", mdplayer.chips.DmgChip.class, MAIN),
+            new VolEntry("GA20Volume", mdplayer.chips.Ga20Chip.class, MAIN),
+            new VolEntry("YMZ280BVolume", mdplayer.chips.YmZ280BChip.class, MAIN),
+            new VolEntry("YMF271Volume", mdplayer.chips.YmF271Chip.class, MAIN),
+            new VolEntry("YMF262Volume", mdplayer.chips.YmF262Chip.class, MAIN),
+            new VolEntry("YMF278BVolume", mdplayer.chips.YmF278BChip.class, MAIN),
+            new VolEntry("MultiPCMVolume", mdplayer.chips.MultiPcmChip.class, MAIN),
+            new VolEntry("QSoundVolume", mdplayer.chips.QSoundChip.class, MAIN),
+            new VolEntry("Y8950Volume", mdplayer.chips.Y8950Chip.class, MAIN),
+            new VolEntry("YM3526Volume", mdplayer.chips.Ym3526Chip.class, MAIN),
+            new VolEntry("YM3812Volume", mdplayer.chips.Ym3812Chip.class, MAIN),
+            new VolEntry("PPZ8Volume", mdplayer.chips.Ppz8Chip.class, MAIN),
+            new VolEntry("SAA1099Volume", mdplayer.chips.Saa1099Chip.class, MAIN),
+            new VolEntry("Cs4231Volume", mdplayer.chips.Cs4231Chip.class, MAIN),
+            new VolEntry("Es5503Volume", mdplayer.chips.Es5503Chip.class, MAIN),
+            new VolEntry("PokeyVolume", mdplayer.chips.PokeyChip.class, MAIN),
+            new VolEntry("Upd7759Volume", mdplayer.chips.Upd7759Chip.class, MAIN),
+            new VolEntry("WSwanVolume", mdplayer.chips.WSwanChip.class, MAIN),
+            new VolEntry("X1_010Volume", mdplayer.chips.X1_010Chip.class, MAIN),
+            new VolEntry("PCM8Volume", mdplayer.chips.Pcm8Chip.class, MAIN),
+            new VolEntry("MPCMVolume", mdplayer.chips.MPcmChip.class, MAIN),
+            new VolEntry("P86Volume", mdplayer.chips.P86Chip.class, MAIN),
+            new VolEntry("PPSVolume", mdplayer.chips.PpsChip.class, MAIN),
+            new VolEntry("SidVolume", mdplayer.chips.SidChip.class, MAIN),
+            new VolEntry("ZxBeepVolume", mdplayer.chips.ZxBeepChip.class, MAIN)
+        );
+
+        private static final Map<String, VolEntry> VOL_BY_ELEMENT = new HashMap<>();
+        static {
+            for (VolEntry e : VOL_TABLE) VOL_BY_ELEMENT.put(e.element(), e);
+        }
+
+        /** every chip class that has a persistable balance slot (for calibration coverage checks) */
+        public static java.util.List<Class<? extends Chip>> knownChipClasses() {
+            return VOL_TABLE.stream().map(VolEntry::chip).distinct().toList();
+        }
+
+        /** writes the flat {@code <Balance>} document (MasterVolume, every chip, Gimic) into the runtime map. */
+        public static class BalanceSerializer extends ValueSerializer<Balance> {
+            @Override
+            public void serialize(Balance b, JsonGenerator gen, SerializationContext ctxt) throws JacksonException {
+                gen.writeStartObject();
+                gen.writeNumberProperty("MasterVolume", b.getMasterVolume());
+                for (VolEntry e : VOL_TABLE) {
+                    gen.writeNumberProperty(e.element(), b.volumes.getOrDefault(getKey(e.tag(), e.chip()), 0));
+                }
+                gen.writeNumberProperty("GimicOPNVolume", b.getGimicOPNVolume());
+                gen.writeNumberProperty("GimicOPNAVolume", b.getGimicOPNAVolume());
+                gen.writeEndObject();
+            }
+        }
+
+        /** routes each {@code <XxxVolume>} element back through the table into the runtime map. */
+        public static class BalanceDeserializer extends ValueDeserializer<Balance> {
+            @Override
+            public Balance deserialize(JsonParser p, DeserializationContext ctxt) throws JacksonException {
+                Balance b = new Balance();
+                if (p.currentToken() == JsonToken.START_OBJECT) {
+                    while (p.nextToken() != JsonToken.END_OBJECT) {
+                        String name = p.currentName();
+                        p.nextToken();
+                        switch (name) {
+                        case "MasterVolume", "masterVolume" -> b.setMasterVolume(p.getValueAsInt());
+                        case "GimicOPNVolume" -> b.setGimicOPNVolume(p.getValueAsInt());
+                        case "GimicOPNAVolume" -> b.setGimicOPNAVolume(p.getValueAsInt());
+                        default -> {
+                            VolEntry e = VOL_BY_ELEMENT.get(name);
+                            if (e != null) {
+                                int v = p.getValueAsInt();
+                                b.volumes.put(getKey(e.tag(), e.chip()), outRange(v) ? 0 : v);
+                            } else {
+                                p.skipChildren();
+                            }
+                        }
+                        }
+                    }
+                }
+                return b;
+            }
         }
 
 //#range Volume
@@ -3060,6 +3205,7 @@ public class Setting implements Serializable, Cloneable {
         public Balance clone() {
             Balance balance = new Balance();
             balance.masterVolume = this.masterVolume;
+            balance.volumes.putAll(this.volumes);
 
 //            balance.ym2151Volume = this.ym2151Volume;
 //            balance.ym2203Volume = this.ym2203Volume;

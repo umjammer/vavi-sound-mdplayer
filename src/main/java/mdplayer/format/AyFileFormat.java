@@ -55,6 +55,11 @@ public class AyFileFormat extends BaseFileFormat implements FileFormat.SampledFi
     }
 
     @Override
+    public String[] getPresetMixerBalance() {
+        return new String[] {"DriverBalance_AY.mbc", "/resources/DefaultVolumeBalance_AY.xml"};
+    }
+
+    @Override
     public Encoding getEncoding() {
         return new MdEncoding("AY", "ay");
     }

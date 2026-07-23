@@ -88,6 +88,11 @@ public class NDPFileFormat extends BaseFileFormat {
     }
 
     @Override
+    public String[] getPresetMixerBalance() {
+        return new String[] {"DriverBalance_NDP.mbc", "/resources/DefaultVolumeBalance_NDP.xml"};
+    }
+
+    @Override
     public Encoding getEncoding() {
         return new MdEncoding("NDP", "ndp");
     }

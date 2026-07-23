@@ -100,6 +100,7 @@ public class MidiPlugin implements Plugin {
         if (fallbackSynth != null && fallbackSynth.isOpen()) {
             fallbackSynth.close();
         }
+        fallbackSynth = null;
     }
 
     // ???

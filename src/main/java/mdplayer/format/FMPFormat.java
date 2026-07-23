@@ -99,6 +99,11 @@ public class FMPFormat extends BaseFileFormat implements FileFormat.SampledFileF
     }
 
     @Override
+    public String[] getPresetMixerBalance() {
+        return new String[] {"DriverBalance_FMP.mbc", "/resources/DefaultVolumeBalance_FMP.xml"};
+    }
+
+    @Override
     public Encoding getEncoding() {
         return new MdEncoding("FMP", "mpi,opi,mvi,ovi,mzi,ozi");
     }
