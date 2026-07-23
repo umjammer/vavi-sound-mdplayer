@@ -111,6 +111,10 @@ public class FormYM2612 extends FormChipBase<FormYM2612.Params> {
             (byte) (0x0f << 4)
     };
 
+    private static int intOf(Map<String, Object> info, String key) {
+        return info.get(key) instanceof Integer i ? Math.abs(i) : 0;
+    }
+
     @Override
     public void changeScreenParams() {
         Map<String, Object> info = audio.plugin.chipRegister.chip(Ym2612Chip.class).getInfo(chipId);
@@ -118,9 +122,18 @@ public class FormYM2612 extends FormChipBase<FormYM2612.Params> {
 
         newParam.fileFormat = audio.plugin.getFileFormat();
 
+        int[] fmVol = new int[9];
+        for (int ch = 0; ch < 6; ch++) {
+            fmVol[ch] = Math.max(intOf(info, "channels." + ch + ".volumeL"),
+                    intOf(info, "channels." + ch + ".volumeR"));
+        }
+
+        int[] fmCh3SlotVol = new int[4];
+        for (int slot = 0; slot < 4; slot++) {
+            fmCh3SlotVol[slot] = intOf(info, "channels.2.slots." + slot + ".volume");
+        }
+
         int[][] fmRegister = (int[][]) info.get("register");
-        int[] fmVol = (int[]) info.get("volume");
-        int[] fmCh3SlotVol = (int[]) info.get("ch3SlotVolume");
         int[] fmKey = (int[]) info.get("keyOn");
 
         boolean isFmEx = (fmRegister[0][0x27] & 0x40) != 0;

@@ -372,7 +372,7 @@ public class Ym2151Chip extends BaseChip {
         info.put("pmd", pmd[chipId]);
         info.put("amd", amd[chipId]);
         info.putAll(shadowInfo(chipId));
-        info.putAll(inst.getView(chipId, "info") != null ? inst.getView(chipId, "info") : Collections.emptyMap());
+        info.putAll(inst.getView(chipId, "info") != null ? inst.getView(chipId, "info") : Collections.emptyMap()); // some variants not implemented
         return info;
     }
 

@@ -145,7 +145,7 @@ public class Ym2413Chip extends BaseChip {
     }
 
     private ChipKeyInfo getKeyInfo(int chipId) {
-        ChipKeyInfo[] keyInfoRet = {new ChipKeyInfo(14), new ChipKeyInfo(14)}; // TODO out for memory usage?
+        ChipKeyInfo[] keyInfoRet = {new ChipKeyInfo(14), new ChipKeyInfo(14)}; // TODO move to outer for memory usage? why copy?
         for (int ch = 0; ch < keyInfo[chipId].off.length; ch++) {
             keyInfoRet[chipId].off[ch] = keyInfo[chipId].off[ch];
             keyInfoRet[chipId].on[ch] = keyInfo[chipId].on[ch];
@@ -197,7 +197,7 @@ public class Ym2413Chip extends BaseChip {
         if (inst == null) return Collections.emptyMap();
         Map<String, Object> info = new HashMap<>();
         info.put("keyInfo", getKeyInfo(chipId));
-        info.putAll(inst.getView(chipId, "register") != null ? inst.getView(chipId, "register") : Collections.emptyMap());
+        info.putAll(inst.getView(chipId, "register") != null ? inst.getView(chipId, "register") : Collections.emptyMap()); // some variants not implemented
         return info;
     }
 

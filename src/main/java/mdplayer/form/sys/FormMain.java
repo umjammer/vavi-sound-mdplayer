@@ -2310,8 +2310,14 @@ public class FormMain extends JFrame {
 
             if (fn == null || fn.isEmpty()) return;
 
-            // Check for existence. If not, create it.
-            if (!Files.exists(fullPath) && !defMbc.isEmpty()) Files.write(fullPath, defMbc.getBytes());
+            // Check for existence. If not, seed it from the bundled preset. defMbc is a classpath
+            // path (e.g. "/resources/DefaultVolumeBalance_VGM.xml") under the mdplayer package, so
+            // copy the XML *content* — writing the path string itself would not parse as a Balance.
+            if (!Files.exists(fullPath) && !defMbc.isEmpty()) {
+                try (java.io.InputStream rin = getClass().getResourceAsStream("/mdplayer" + defMbc)) {
+                    if (rin != null) Files.write(fullPath, rin.readAllBytes());
+                }
+            }
             // Read files in the data folder
             balance = Setting.Balance.load(fullPath);
 

@@ -6,6 +6,7 @@
 
 package mdplayer.chips;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -317,44 +318,10 @@ public class Ym2612Chip extends BaseChip {
         }
     }
 
-    /**
-     * The registers, the key states and the levels as the chip itself has them.
-     * <p>
-     * The chip mixes each channel and knows what came out, so the levels here are the real thing
-     * rather than the decay a view would otherwise have to invent from the key ons. The arrays
-     * this class keeps for its own write logic are not what any view sees.
-     */
     @Override
     public Map<String, Object> getInfo(int chipId) {
-        // TODO
         Instrument inst = context.mds.inst(inst(chipId));
-        Map<String, Object> info = inst == null ? null : inst.getView(chipId, "info");
-        if (info == null || info.isEmpty()) {
-            // this variant cannot be read back; give the view what the writes said
-            return Map.of(
-                    "volume", volume[chipId],
-                    "ch3SlotVolume", ch3SlotVolume[chipId],
-                    "register", register[chipId],
-                    "keyOn", keyOn[chipId]
-            );
-        }
-        Map<String, Object> result = new HashMap<>(info);
-        int[] levels = new int[9];
-        for (int ch = 0; ch < 6; ch++) {
-            levels[ch] = Math.max(intOf(info, "channels." + ch + ".volumeL"),
-                    intOf(info, "channels." + ch + ".volumeR"));
-        }
-        int[] slots = new int[4];
-        for (int slot = 0; slot < 4; slot++) {
-            slots[slot] = intOf(info, "channels.2.slots." + slot + ".volume");
-        }
-        result.put("volume", levels);
-        result.put("ch3SlotVolume", slots);
-        return result;
-    }
-
-    private static int intOf(Map<String, Object> info, String key) {
-        return info.get(key) instanceof Integer i ? Math.abs(i) : 0;
+        return inst == null || inst.getView(chipId, "info") == null ? Collections.emptyMap() : inst.getView(chipId, "info"); // some variants not implemented
     }
 
     @Override

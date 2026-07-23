@@ -573,7 +573,7 @@ public class Ym2608Chip extends BaseChip {
         info.put("adpcmVolume", adpcmVolume[chipId]);
         info.put("register", register[chipId]);
         info.put("keyOn", keyOn[chipId]);
-        info.putAll(inst.getView(chipId, "info") != null ? inst.getView(chipId, "info") : Collections.emptyMap());
+        info.putAll(inst.getView(chipId, "info") != null ? inst.getView(chipId, "info") : Collections.emptyMap()); // some variants not implemented
         return info;
     }
 
