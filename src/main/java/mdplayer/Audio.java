@@ -92,7 +92,18 @@ logger.log(Level.DEBUG, "line: " + e.getType());
 
     /** start blocking rendering */
     public boolean play() {
-        plugin.prepare();
+        try {
+            plugin.prepare();
+        } catch (Exception e) {
+            // A song that cannot be set up - an unsupported chip, a missing PCM file, a header
+            // this driver rejects - must not take the caller down with it. Thrown from here the
+            // exception leaves the caller waiting on a song that never sounds (the play list
+            // never advances, the test's latch is never counted down): silence with no end. A
+            // false return is what "this one did not play" already means to every caller.
+            logger.log(Level.ERROR, "prepare: " + plugin.playingFileName, e);
+            plugin.stopped = true;
+            return false;
+        }
 //logger.log(Level.TRACE, "play: " + audio.stopped + ", " + audio.hashCode());
         listeners.forEach(l -> plugin.getDriver().addViewListener(l)); // TODO consider more
 

@@ -542,6 +542,11 @@ Debug.println("filename: " + file);
         List<Path> files = listFilesInLocalProperties();
         Collections.shuffle(files);
 
+        // once for the whole play list: Audio keeps its listeners forever, so subscribing per
+        // song has the source updated once per song played, each update pushing the same samples
+        // into the fft and snapshotting the chips again
+        audio.addGenericListener(source::update);
+
         for (Path path : files) {
             this.file = path.toString();
 Debug.print("play: " + file + " ---------------------------------------------------------------------");
@@ -555,7 +560,6 @@ Debug.print("play: " + file + " ------------------------------------------------
             frame.setTitle(Path.of(file).getFileName() + " - generic");
 
             audio.init(plugin);
-            audio.addGenericListener(source::update);
             // the chips are shared singletons, so last song's state has to go before this one
             source.reset();
             source.bind(plugin);
@@ -563,7 +567,10 @@ Debug.print("play: " + file + " ------------------------------------------------
             visualizer.start();
             ExecutorService es = Executors.newSingleThreadExecutor();
             cdl.set(new CountDownLatch(1));
-            es.submit(() -> { try { audio.play(); cdl.get().countDown(); } catch (Exception e) { Debug.printStackTrace(e); }});
+            // count down in a finally: a song that fails to start would otherwise leave the
+            // await below waiting forever - silence until ^N, looking like a song that plays
+            // nothing rather than one that could not be played
+            es.submit(() -> { try { audio.play(); } catch (Exception e) { Debug.printStackTrace(e); } finally { cdl.get().countDown(); }});
 Debug.print("await");
             cdl.get().await();
 Debug.println("await: broke");

@@ -128,7 +128,10 @@ public class Zgm extends BaseDriver {
             int chipNum = ByteUtil.readLeInt(dataBuf, pos + 0x4);
             ZgmChip chip = (new ChipFactory()).create(chipNum, plugin.chipRegister, setting, dataBuf);
             if (chip == null) {
-                throw new IllegalArgumentException("not supported chip: " + chipNum);
+                // ChipFactory has a sender for the conductor and the YM2609 only - every other
+                // chip is still a placeholder, here as in the C# original this was ported from,
+                // so a zgm that uses one cannot be played at all (not merely played silently)
+                throw new IllegalArgumentException("not supported chip: 0x%08x".formatted(chipNum));
             }
 
             if (!chipCount.containsKey(chip.name)) chipCount.put(chip.name, -1);
