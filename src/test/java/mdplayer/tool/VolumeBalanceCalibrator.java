@@ -40,12 +40,11 @@ import mdsound.MDSound;
  * of the quietest chip (equal-loudness, attenuation-only so nothing clips or hits the
  * {@code +20} boost cap).
  * <p>
- * Cross-driver leveling is done <em>downward</em> in a second global phase: every driver's full
- * mix is measured, the quietest driver's RMS becomes the common target, and each driver's
- * {@code MasterVolume} attenuates it down to that target. This matters because the master gain
- * offers only about {@code +10 dB} of headroom ({@code 0..+20}) but a huge attenuation range
- * (down to {@code -192}); leveling <em>up</em> to an absolute target clamps every quiet driver at
- * {@code +20} (leaving the differences audible), whereas leveling down never clamps. A full run
+ * Cross-driver leveling happens in a second global phase: every driver's full mix is measured and
+ * each driver's {@code MasterVolume} moves it to one common target. The target is the loudest level
+ * that neither clamps nor clips -- see {@link #levelingTarget} for why it is <em>not</em> simply an
+ * absolute target (every quiet driver would clamp at the {@code +20} ceiling and stay audibly
+ * quieter) nor the quietest driver's level (the whole set ends up needlessly quiet). A full run
  * (no {@code --only}) is required for a globally consistent result.
  * <p>
  * The chip/master volume unit is 2&times;dB: the mixer applies {@code 10^(v/40)}
@@ -79,6 +78,13 @@ public final class VolumeBalanceCalibrator {
 
     /** fallback leveling target if no driver produced a usable full-mix measurement */
     static final double TARGET_MIX_RMS = 4000.0;
+
+    /** what {@code Audio.render} multiplies the mix by at {@code MasterVolume} 0: it computes
+     *  {@code (sample * (int) (16384 * 10^(v/40))) >> 13}, so a "neutral" master is really x2 */
+    static final double MASTER_BASE_GAIN = 2.0;
+
+    /** leave this much peak headroom (~1 dB) so leveling never pushes a driver into the clamp */
+    static final double PEAK_CEILING = 32767 * 0.9;
 
     /** a driver full-mix RMS below this is treated as a broken/near-silent measurement and
      *  excluded when picking the global leveling target (so one dud can't crush every driver) */
@@ -116,6 +122,9 @@ public final class VolumeBalanceCalibrator {
         Setting setting = Setting.getInstance();
         setting.getOutputDevice().setDeviceType(Common.DEV_Null);
         setting.getOther().setWavSwitch(true);
+        // this tool *computes* the presets, so it must not have setParams loading the previous one
+        // over the balance each measurement sets up
+        setting.getAutoBalance().setUseThis(false);
 
         List<Path> samples = listSampleFiles();
         for (String f : extraFiles) {
@@ -145,35 +154,74 @@ public final class VolumeBalanceCalibrator {
             }
         }
 
-        // phase 2: global downward leveling. target = quietest driver's full mix, so every
-        // MasterVolume attenuates (<= 0) and nothing clamps at the +20 boost ceiling.
-        double target = results.stream().mapToDouble(DriverResult::mixRms)
-                .filter(v -> v >= MIN_MEAS_FLOOR).min().orElse(TARGET_MIX_RMS);
+        // phase 2: global leveling. See levelingTarget() for how the common target is picked.
+        List<DriverResult> usable = results.stream().filter(r -> r.mixRms() >= MIN_MEAS_FLOOR).toList();
+        double target = levelingTarget(usable);
         if (!only.isEmpty())
             System.out.println("\n!! --only in effect: leveling within this subset only (not globally consistent)");
-        System.out.printf("%n==== global leveling target (quietest driver full-mix rms) = %.1f ====%n", target);
+        System.out.printf("%n==== global leveling target = %.1f rms (%.1f dBFS out) ====%n",
+                target, dbfs(target * MASTER_BASE_GAIN));
         for (DriverResult r : results) {
-            int master = r.mixRms() > 0
-                    ? clampVol((int) Math.round(40.0 * Math.log10(target / r.mixRms())))
-                    : 0;
+            int wanted = r.mixRms() > 0 ? (int) Math.round(40.0 * Math.log10(target / r.mixRms())) : 0;
+            int master = clampVol(Math.min(wanted, peakLimit(r)));
             r.balance().setMasterVolume(master);
-            System.out.printf("  %-8s mixRms=%9.1f  MasterVolume=%d%s%n",
-                    r.driver(), r.mixRms(), master, master >= 20 ? "   <-- CLAMPED (below floor?)" : "");
+            double peak = r.mixPeak() * MASTER_BASE_GAIN * Math.pow(10.0, master / 40.0);
+            System.out.printf("  %-8s mixRms=%9.1f  MasterVolume=%4d  out=%.1f dBFS peak=%.0f%s%s%n",
+                    r.driver(), r.mixRms(), master,
+                    dbfs(r.mixRms() * MASTER_BASE_GAIN * Math.pow(10.0, master / 40.0)), peak,
+                    master >= 20 ? "   <-- CLAMPED (quieter than the boost ceiling reaches)" : "",
+                    master < wanted ? "   <-- peak-limited (%.1f dB below target)".formatted((wanted - master) / 2.0) : "");
             writeXml(r.driver(), r.balance(), r.xml());
         }
 
         reportChipCoverage();
     }
 
-    /** one driver's measured per-chip balance plus its full-mix RMS, before master leveling */
-    record DriverResult(String driver, Setting.Balance balance, double mixRms, Path xml) {}
+    /** one driver's measured per-chip balance plus its full-mix RMS/peak, before master leveling */
+    record DriverResult(String driver, Setting.Balance balance, double mixRms, double mixPeak, Path xml) {}
 
-    /** print which of the persistable chips were / were not exercised by any sample */
+    /**
+     * The common full-mix RMS every driver's {@code MasterVolume} aims at: the loudest level the
+     * <em>quietest</em> driver can still reach with the {@code +20} boost ceiling, so no driver has
+     * to clamp and the whole set really does come out equally loud.
+     * <p>
+     * The alternatives are both worse. Leveling <em>down</em> to the quietest driver (what this did
+     * first) is clamp-free too, but drags the whole set to that driver's level -- with the sample
+     * set as of this writing, {@code -32 dBFS}, so every song needed the system volume cranked.
+     * An absolute target loud enough to be comfortable ({@code -12 dBFS}) clamps the bottom
+     * quarter of the drivers at {@code +20} and leaves them audibly quieter than the rest.
+     * <p>
+     * Clipping is handled per driver instead of by lowering this target for everyone
+     * (see {@link #peakLimit}): peaky content can't be both loud and unclipped, and one such
+     * driver used to cost the other 23 about 8 dB.
+     */
+    static double levelingTarget(List<DriverResult> usable) {
+        return usable.stream()
+                .mapToDouble(r -> r.mixRms() * Math.pow(10.0, 20 / 40.0)).min().orElse(TARGET_MIX_RMS);
+    }
+
+    /** the highest {@code MasterVolume} that keeps this driver's loudest sample's peak under
+     *  {@link #PEAK_CEILING}; a driver too peaky to reach the target lands here instead */
+    static int peakLimit(DriverResult r) {
+        if (r.mixPeak() <= 0) return 20;
+        return (int) Math.floor(40.0 * Math.log10(PEAK_CEILING / (MASTER_BASE_GAIN * r.mixPeak())));
+    }
+
+    static double dbfs(double amplitude) {
+        return amplitude <= 0 ? Double.NEGATIVE_INFINITY : 20.0 * Math.log10(amplitude / 32767.0);
+    }
+
+    /** print which of the persistable chips were / were not exercised by any sample.
+     *  Matched by simple name, not by class: {@code Balance}'s keys are simple names too, so
+     *  e.g. {@code NesChip.FdsChip} (what VGM plays) and {@code NpNesChip.FdsChip} (what
+     *  {@code VOL_TABLE} lists) are one and the same balance slot. */
     static void reportChipCoverage() {
         var known = Setting.Balance.knownChipClasses();
+        Set<String> coveredNames = covered.stream().map(Class::getSimpleName)
+                .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
         List<String> hit = new ArrayList<>();
         List<String> miss = new ArrayList<>();
-        for (var c : known) (covered.contains(c) ? hit : miss).add(c.getSimpleName());
+        for (var c : known) (coveredNames.contains(c.getSimpleName()) ? hit : miss).add(c.getSimpleName());
         System.out.printf("%n==== chip coverage: %d/%d measured ====%n", hit.size(), known.size());
         System.out.println("  measured : " + String.join(", ", hit));
         System.out.println("  NOT measured (no sample exercised them): " + String.join(", ", miss));
@@ -253,17 +301,19 @@ public final class VolumeBalanceCalibrator {
         }
 
         // measure the real full mix (all chips at computed gains); master leveling is global (phase 2)
-        List<Double> mixes = new ArrayList<>();
+        List<Meas> mixes = new ArrayList<>();
         for (Path sample : playable) {
             try {
-                mixes.add(measureMix(sample, balance).full());
+                mixes.add(measureMix(sample, balance));
             } catch (Exception ignore) {}
         }
-        double mixRms = mixes.stream().mapToDouble(Double::doubleValue).average().orElse(0);
-        System.out.printf("      full-mix rms=%.1f (master assigned in global phase)%n", mixRms);
+        double mixRms = mixes.stream().mapToDouble(Meas::full).average().orElse(0);
+        // the loudest sample decides the peak: the preset has to be safe for all of them
+        double mixPeak = mixes.stream().mapToDouble(Meas::peak).max().orElse(0);
+        System.out.printf("      full-mix rms=%.1f peak=%.0f (master assigned in global phase)%n", mixRms, mixPeak);
 
         Path xml = RESOURCES.resolve("DefaultVolumeBalance_" + driver + ".xml");
-        return new DriverResult(driver, balance, mixRms, xml);
+        return new DriverResult(driver, balance, mixRms, mixPeak, xml);
     }
 
     /** honor --dry-run / missing-file and otherwise save + pretty-print the preset */
@@ -320,8 +370,9 @@ public final class VolumeBalanceCalibrator {
         }
     }
 
-    /** {@code full} = RMS over the whole window; {@code active} = RMS over only non-silent samples */
-    record Meas(double full, double active) {}
+    /** {@code full} = RMS over the whole window; {@code active} = RMS over only non-silent samples;
+     *  {@code peak} = largest {@code |sample|} seen (feeds the clipping side of the leveling target) */
+    record Meas(double full, double active, double peak) {}
 
     /** render the sample with only {@code target} audible (all other chips muted) and measure it */
     static Meas measureIsolated(Path sample,
@@ -364,7 +415,7 @@ public final class VolumeBalanceCalibrator {
         int rate = Setting.getInstance().getOutputDevice().getSampleRate();
         long wanted = (long) rate * seconds * 2; // stereo shorts
         short[] buffer = new short[8192];
-        double sumSq = 0, activeSumSq = 0;
+        double sumSq = 0, activeSumSq = 0, peak = 0;
         long n = 0, activeN = 0;
         while (n < wanted) {
             int ret = plugin.getDriver().render(buffer, 0, buffer.length);
@@ -373,6 +424,7 @@ public final class VolumeBalanceCalibrator {
                 double sq = (double) s * s;
                 sumSq += sq;
                 n++;
+                peak = Math.max(peak, Math.abs(s));
                 if (Math.abs(s) >= NOISE_FLOOR) {
                     activeSumSq += sq;
                     activeN++;
@@ -382,7 +434,7 @@ public final class VolumeBalanceCalibrator {
         }
         double full = n == 0 ? 0 : Math.sqrt(sumSq / n);
         double active = activeN == 0 ? 0 : Math.sqrt(activeSumSq / activeN);
-        return new Meas(full, active);
+        return new Meas(full, active, peak);
     }
 
     static void close(BasePlugin<? extends BaseDriver> plugin) {

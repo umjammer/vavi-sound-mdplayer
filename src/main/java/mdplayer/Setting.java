@@ -320,9 +320,12 @@ public class Setting implements Serializable, Cloneable {
     }
 
     public static class AutoBalance implements Serializable, Cloneable {
-        private boolean useThis = false;
+        /** on by default: the bundled DefaultVolumeBalance_*.xml presets are calibrated, so a fresh
+         *  install should play at the leveled volume without anyone having to switch this on */
+        private boolean useThis = true;
         private boolean loadSongBalance = false;
-        private boolean loadDriverBalance = false;
+        /** on by default, see {@link #useThis} */
+        private boolean loadDriverBalance = true;
         private boolean saveSongBalance = false;
         private boolean samePositionAsSongData = false;
 
@@ -2365,7 +2368,7 @@ public class Setting implements Serializable, Cloneable {
         }
 
         /** every chip class that has a persistable balance slot (for calibration coverage checks) */
-        public static java.util.List<Class<? extends Chip>> knownChipClasses() {
+        public static List<Class<? extends Chip>> knownChipClasses() {
             return VOL_TABLE.stream().map(VolEntry::chip).distinct().toList();
         }
 
@@ -3281,11 +3284,16 @@ public class Setting implements Serializable, Cloneable {
             if (!Files.exists(fullPath))
                 return null;
             try (InputStream in = Files.newInputStream(fullPath)) {
-                return Serdes.Util.deserialize(in, new Balance());
+                return load(in);
             } catch (IOException ex) {
                 logger.log(Level.ERROR, ex.getMessage(), ex);
                 return null;
             }
+        }
+
+        /** reads a balance out of an already-open stream, e.g. a bundled preset on the classpath */
+        public static Balance load(InputStream in) throws IOException {
+            return Serdes.Util.deserialize(in, new Balance());
         }
     }
 

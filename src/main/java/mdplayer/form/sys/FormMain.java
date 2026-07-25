@@ -1989,16 +1989,15 @@ public class FormMain extends JFrame {
             // .vgz and friends are compressed: reading the file raw fails the format's header check
             format.load(Archives.getInputStream(new BufferedInputStream(Files.newInputStream(Path.of(fn)))), null);
 
-            // Set the volume balance before playback
-            loadPresetMixerBalance(playingFileName, playingArcFileName, format);
-
             BasePlugin<? extends BaseDriver> plugin = (BasePlugin<? extends BaseDriver>) format.getPlugin();
+            // setParams applies the song's preset volume balance, before prepare() reaches the chips
             plugin.setParams(format, Map.of(
                     "fileName", playingFileName,
                     "arcFileName", playingArcFileName,
                     "midiMode", m,
                     "songNo", songNo)
             );
+            updateMixerView();
             plugin.init();
             audio.init(plugin);
 
@@ -2031,19 +2030,18 @@ public class FormMain extends JFrame {
             FileFormat format = FileFormat.getFileFormat(fullPath);
             format.load(new ByteArrayInputStream(buf), null);
 
-            // Set the volume balance before playback
-            loadPresetMixerBalance(playingFileName, playingArcFileName, format);
-
             // TODO buf reaches the format, but setParams only names a file, so a plugin that reads
             //  the file itself still needs fullPath to exist. The SPLAY remote (mml2vgm preview)
             //  can pass a buffer with no file behind it.
             BasePlugin<? extends BaseDriver> plugin = (BasePlugin<? extends BaseDriver>) format.getPlugin();
+            // setParams applies the song's preset volume balance, before prepare() reaches the chips
             plugin.setParams(format, Map.of(
                     "fileName", playingFileName,
                     "arcFileName", playingArcFileName,
                     "midiMode", 0,
                     "songNo", 0)
             );
+            updateMixerView();
             audio.init(plugin);
 
             SwingUtilities.invokeLater(this::playData);
@@ -2264,75 +2262,11 @@ public class FormMain extends JFrame {
 
 //#endregion
 
-    private void loadPresetMixerBalance(String playingFileName, String playingArcFileName, FileFormat format) {
-        if (!setting.getAutoBalance().getUseThis()) return;
-
-        try {
-            Setting.Balance balance;
-            Path fullPath = mdplayer.Common.settingFilePath;
-            fullPath = fullPath.resolve("MixerBalance");
-            if (!Files.exists(fullPath)) Files.createDirectory(fullPath);
-            String fn = "";
-            String defMbc = "";
-
-            // Song-specific preset loading mode
-            if (setting.getAutoBalance().getLoadSongBalance()) {
-                if (setting.getAutoBalance().getSamePositionAsSongData()) {
-                    fullPath = Path.of(playingFileName).getParent();
-                    if (playingArcFileName != null && playingArcFileName.isEmpty()) {
-                        fullPath = Path.of(playingArcFileName).getParent();
-                    }
-                }
-                fn = Path.of(playingFileName).getFileName().toString();
-                if (playingArcFileName != null && playingArcFileName.isEmpty()) {
-                    fn = Path.of(playingArcFileName).getFileName().toString();
-                }
-                fn += ".mbc";
-                if (!Files.exists(fullPath.resolve(fn))) {
-                    fn = "";
-                    fullPath = mdplayer.Common.settingFilePath;
-                    fullPath = fullPath.resolve("MixerBalance");
-                } else {
-                    fullPath = fullPath.resolve(fn);
-                }
-            }
-
-            // Driver-specific preset loading mode
-            if (setting.getAutoBalance().getLoadDriverBalance() && fn.isEmpty()) {
-                String[] fns = format.getPresetMixerBalance();
-                if (fns != null) {
-                    fn = fns[0];
-                    defMbc = fns[1];
-
-                    fullPath = fullPath.resolve(fn);
-                }
-            }
-
-            if (fn == null || fn.isEmpty()) return;
-
-            // Check for existence. If not, seed it from the bundled preset. defMbc is a classpath
-            // path (e.g. "/resources/DefaultVolumeBalance_VGM.xml") under the mdplayer package, so
-            // copy the XML *content* — writing the path string itself would not parse as a Balance.
-            if (!Files.exists(fullPath) && !defMbc.isEmpty()) {
-                try (java.io.InputStream rin = getClass().getResourceAsStream("/mdplayer" + defMbc)) {
-                    if (rin != null) Files.write(fullPath, rin.readAllBytes());
-                }
-            }
-            // Read files in the data folder
-            balance = Setting.Balance.load(fullPath);
-
-            if (balance == null) return;
-
-            // Mixer - Balance change processing
-            Setting.Balance finalBalance = balance;
-            SwingUtilities.invokeLater(() -> {
-                setting.setBalance(finalBalance);
-                if (frmMixer2 != null) frmMixer2.update();
-            });
-
-        } catch (Exception ex) {
-            logger.log(Level.ERROR, ex.getMessage(), ex);
-        }
+    /** the preset balance is loaded by {@link BasePlugin#setParams} now, so the view just catches up */
+    private void updateMixerView() {
+        SwingUtilities.invokeLater(() -> {
+            if (frmMixer2 != null) frmMixer2.update();
+        });
     }
 
     private void manualSavePresetMixerBalance(boolean isDriverBalance, String playingFileName, String playingArcFileName, FileFormat format, Setting.Balance balance) {

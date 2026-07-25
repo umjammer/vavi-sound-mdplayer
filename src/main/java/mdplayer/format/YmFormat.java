@@ -81,6 +81,11 @@ public class YmFormat extends BaseFileFormat {
     }
 
     @Override
+    public String[] getPresetMixerBalance() {
+        return new String[] {"DriverBalance_YM.mbc", "/resources/DefaultVolumeBalance_YM.xml"};
+    }
+
+    @Override
     public Plugin getPlugin() {
         return Plugin.getPlugin(YmPlugin.class);
     }

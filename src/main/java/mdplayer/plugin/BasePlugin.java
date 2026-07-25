@@ -2,6 +2,7 @@ package mdplayer.plugin;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -219,6 +220,69 @@ logger.log(Level.INFO, "stop: " + this.stopped);
         chipRegister.plugin(MidiPlugin.class).setFileName(playingFileName); // for ExportMIDI
         extendFiles = format.getExtendFiles(); // Additional files
         this.playingFilePath = Path.of(playingFileName).getParent();
+
+        loadPresetMixerBalance();
+    }
+
+    /**
+     * Puts the song's preset mixer balance into the settings, so the calibrated per-chip volumes
+     * and {@code MasterVolume} are in place before {@link #prepare()} pushes them into the chips.
+     * <p>
+     * This lives here rather than in the main form because every playback path goes through
+     * {@link #setParams}: the form, but also headless callers (tests, tools) that never build one.
+     * A caller that drives the balance itself -- the volume calibrator, say -- turns it off with
+     * {@code setting.getAutoBalance().setUseThis(false)}.
+     * <p>
+     * A hand-made {@code .mbc} under {@code <settings>/MixerBalance} wins; otherwise the preset
+     * bundled in the jar is read straight from the classpath. Nothing is written here: seeding the
+     * {@code .mbc} on first play (which is what this used to do) meant a recalibrated preset was
+     * then shadowed forever by that first copy.
+     */
+    protected void loadPresetMixerBalance() {
+        if (!setting.getAutoBalance().getUseThis()) return;
+
+        try {
+            Path settingPath = Common.settingFilePath != null
+                    ? Common.settingFilePath : Common.getApplicationDataFolder(true);
+            if (settingPath == null) return;
+            Path dir = settingPath.resolve("MixerBalance");
+            Path mbc = null;        // the user's own balance file, when there is one
+            String bundled = null;  // classpath path of the driver's calibrated preset
+
+            // Song-specific preset: "<song>.mbc", either beside the song data or in the settings folder
+            if (setting.getAutoBalance().getLoadSongBalance()) {
+                boolean archived = playingArcFileName != null && !playingArcFileName.isEmpty();
+                String name = Path.of(archived ? playingArcFileName : playingFileName)
+                        .getFileName() + ".mbc";
+                Path songDir = setting.getAutoBalance().getSamePositionAsSongData()
+                        ? Path.of(archived ? playingArcFileName : playingFileName).getParent() : dir;
+                if (songDir != null && Files.exists(songDir.resolve(name))) mbc = songDir.resolve(name);
+            }
+
+            // Driver-specific preset: "DriverBalance_<driver>.mbc" / the bundled DefaultVolumeBalance_*.xml
+            if (mbc == null && setting.getAutoBalance().getLoadDriverBalance()) {
+                String[] fns = fileFormat.getPresetMixerBalance();
+                if (fns != null) {
+                    if (Files.exists(dir.resolve(fns[0]))) mbc = dir.resolve(fns[0]);
+                    else bundled = "/mdplayer" + fns[1];
+                }
+            }
+
+            Setting.Balance balance = null;
+            if (mbc != null) {
+                balance = Setting.Balance.load(mbc);
+            } else if (bundled != null) {
+                try (java.io.InputStream in = getClass().getResourceAsStream(bundled)) {
+                    if (in != null) balance = Setting.Balance.load(in);
+                }
+            }
+            if (balance == null) return;
+
+            setting.setBalance(balance);
+logger.log(Level.DEBUG, "balance: " + (mbc != null ? mbc : bundled) + ", master: " + balance.getMasterVolume());
+        } catch (Exception e) {
+            logger.log(Level.WARNING, e.getMessage(), e);
+        }
     }
 
     @Override

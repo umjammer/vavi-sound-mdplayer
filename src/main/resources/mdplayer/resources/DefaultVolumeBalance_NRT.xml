@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Balance>
-   <MasterVolume>-27</MasterVolume>
+   <MasterVolume>-9</MasterVolume>
    <YM2612Volume>0</YM2612Volume>
    <SN76489Volume>0</SN76489Volume>
    <RF5C68Volume>0</RF5C68Volume>
@@ -10,7 +10,7 @@
    <OKIM6258Volume>0</OKIM6258Volume>
    <OKIM6295Volume>0</OKIM6295Volume>
    <SEGAPCMVolume>0</SEGAPCMVolume>
-   <AY8910Volume>11</AY8910Volume>
+   <AY8910Volume>12</AY8910Volume>
    <YM2413Volume>0</YM2413Volume>
    <HuC6280Volume>0</HuC6280Volume>
    <YM2151Volume>-7</YM2151Volume>

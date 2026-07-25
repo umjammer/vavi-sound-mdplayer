@@ -87,6 +87,23 @@ public class Vgm {
     public int uPD7759ClockValue;
     public int pokeyClockValue;
 
+    /**
+     * Header "Volume Modifier" (0x7c), raw. The file asks the player to play it at
+     * {@code 2^(volumeModifier / 0x20)}; 0 (the default) means 100%. See {@link #getVolumeGain()}.
+     */
+    public int volumeModifier;
+
+    /**
+     * The gain the header's volume modifier asks for. 0x01..0xc0 are +1..+192 (up to x64),
+     * 0xc1..0xff are -63..-1, where -63 counts as -64 so the smallest factor is exactly 0.25.
+     */
+    public double getVolumeGain() {
+        if (volumeModifier == 0) return 1.0;
+        int v = volumeModifier > 0xc0 ? volumeModifier - 0x100 : volumeModifier;
+        if (v == -63) v = -64;
+        return Math.pow(2.0, v / 32.0);
+    }
+
     public boolean ym2612DualChipFlag;
     public boolean ym2151DualChipFlag;
     public boolean ym2203DualChipFlag;
@@ -1465,6 +1482,7 @@ logger.log(Level.TRACE, "Bad PCM Table Length!");
         x1_010ClockValue = 0;
         wSwanClockValue = 0;
         es5503ClockValue = 0;
+        volumeModifier = 0;
 
         // Check if the header is large enough to read
         if (vgmBuf.length < 0x40) return false;
@@ -1725,6 +1743,10 @@ logger.log(Level.TRACE, "Bad PCM Table Length!");
                         if (ay8910DualChipFlag) chips.add("AY8910x2");
                         else chips.add("AY8910");
                     }
+                }
+
+                if (vgmDataOffset > 0x7c) {
+                    volumeModifier = vgmBuf[0x7c] & 0xff;
                 }
             }
 
