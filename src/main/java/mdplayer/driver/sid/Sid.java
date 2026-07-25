@@ -42,6 +42,11 @@ public class Sid {
         rs.create(engine.info().maxsids());
 
         tune = new SidTune(dataBuf, dataBuf.length);
+        // SidTune swallows a load failure into its status; the tune is an empty shell then and
+        // selecting a song out of it dies with an index out of bounds instead of telling why
+        if (!tune.getStatus()) {
+            throw new IllegalStateException("SIDTUNE ERROR: " + tune.statusString());
+        }
         tune.selectSong(song);
 
         if (!engine.load(tune)) {

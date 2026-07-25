@@ -41,18 +41,29 @@ public class SIDPlugin extends BasePlugin<SidMdDriver> implements HasSongNo {
         driverVirtual.init(Common.EnmModel.VirtualModel,
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000,
-                songNo + 1);
+                song());
         if (driverReal != null) {
             driverReal.init(Common.EnmModel.RealModel,
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000,
-                    songNo + 1);
+                    song());
         }
+    }
+
+    /**
+     * The sub-song to hand libsidplayfp, which numbers them from 1 and takes 0 as "the song this
+     * tune starts at". Nothing selected (song no 0) has to mean that default: playing sub-song 1
+     * of a tune that starts at another one lands on an unused, silent slot - Last_Ninja starts at
+     * song 3, Wizball at 4, and both are dead quiet as song 1.
+     */
+    private int song() {
+        return songNo <= 0 ? 0 : songNo + 1;
     }
 
     @Override
     public void setSongNo(int songNo) {
 logger.log(Level.INFO, "songNo: " + songNo);
-        this.songNo = songNo + 1;
+        // 0 origin, as every other HasSongNo plugin - initChips is what makes it 1 origin
+        this.songNo = songNo;
     }
 }

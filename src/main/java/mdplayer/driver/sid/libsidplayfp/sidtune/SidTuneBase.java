@@ -507,16 +507,18 @@ public class SidTuneBase {
             return true;
         }
 
-        // Calculate start/end page
-        byte startp = info.relocatedStartPage;
-        byte endp = (byte) ((startp + info.relocatedPages - 1) & 0xff);
+        // Calculate start/end page. Pages are unsigned 8 bit in the original, so they have to
+        // be compared as ints here - as bytes, every page from 0x80 up turns negative and even
+        // a good tune fails the range checks below (0x04 < (byte) 0xd0 is false).
+        int startp = info.relocatedStartPage & 0xff;
+        int endp = (startp + (info.relocatedPages & 0xff) - 1) & 0xff;
         if (endp < startp) {
             return false;
         }
 
         {    // Check against load range
-            byte startlp = (byte) (info.loadAddress >> 8);
-            byte endlp = (byte) (startlp + (byte) ((info.c64DataLen - 1) >> 8));
+            int startlp = (info.loadAddress >> 8) & 0xff;
+            int endlp = (startlp + ((info.c64DataLen - 1) >> 8)) & 0xff;
 
             if (((startp <= startlp) && (endp >= startlp))
                     || ((startp <= endlp) && (endp >= endlp))) {
@@ -527,10 +529,10 @@ public class SidTuneBase {
         // Check that the relocation information does not use the following
         // memory areas: 0x0000-0x03FF, 0xA000-0xBFFF and 0xD000-0xffFF
         return (startp >= 0x04)
-                && (((byte) 0xa0 > startp) || (startp > (byte) 0xbf))
-                && (startp < (byte) 0xd0)
-                && (((byte) 0xa0 > endp) || (endp > (byte) 0xbf))
-                && (endp < (byte) 0xd0);
+                && ((0xa0 > startp) || (startp > 0xbf))
+                && (startp < 0xd0)
+                && ((0xa0 > endp) || (endp > 0xbf))
+                && (endp < 0xd0);
     }
 
     /**
