@@ -518,6 +518,10 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
                     status.key = 0xff;
                     status.actualKey = 0xff;
                     status.gate = 0;
+                    // say why the key and the length are blank, or a row carrying the whole song
+                    // reads as a silent one. Not over a label the reader chose, which is more
+                    // specific than this one.
+                    if (status.info == TrackInfo.NORMAL) status.info = TrackInfo.STREAM;
                 } else {
                     status.gate = Math.min(barFullScale, gates[row] / barScale);
                 }

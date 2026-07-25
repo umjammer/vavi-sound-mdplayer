@@ -17,4 +17,10 @@ public enum TrackInfo {
     PPZ8,
     PDZF,
     SSGEFF,
+    /**
+     * Not in the C enum: a row playing one continuous sample rather than notes, as an arcade
+     * board's streamed part does. Its key and note-length meters are blank because there is no
+     * note to show, and this says so rather than leaving the row looking silent.
+     */
+    STREAM,
 }

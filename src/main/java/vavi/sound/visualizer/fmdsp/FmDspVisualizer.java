@@ -1170,6 +1170,8 @@ public class FmDspVisualizer extends JComponent {
             switch (track.info) {
             case PPZ8: info2 = "PPZ8"; break;
             case PDZF: info2 = "PDZF"; break;
+            // sits on the KN: line, whose key it stands in for
+            case STREAM: info2 = "STRM"; break;
             case SSGEFF:
                 info1 = "EFF ";
                 // FALLTHRU

@@ -59,7 +59,8 @@ class ChipFmDspSourceTest {
         plugin = EmulatedPlugin.of(new mdsound.instrument.C352Inst(), new mdsound.instrument.Saa1099Inst(),
                 new mdsound.instrument.SegaPcmInst(), new mdsound.instrument.C140Inst(), new mdsound.instrument.Sn76489Inst(), new mdsound.instrument.NukedYmF262Inst(),
                 new mdsound.instrument.Ym2608Inst(), new mdsound.instrument.Ym2203Inst(), new mdsound.instrument.Ym2151Inst(),
-                new mdsound.instrument.YmF278BInst(), new mdsound.instrument.Ym3812Inst());
+                new mdsound.instrument.YmF278BInst(), new mdsound.instrument.Ym3812Inst(),
+                new mdsound.instrument.YmZ280BInst());
         chipRegister = plugin.chipRegister;
         // a chip only forwards writes to its emulator when the settings say to use one, which a
         // played song arranges and a test has to say for itself
@@ -284,14 +285,19 @@ class ChipFmDspSourceTest {
         assertEquals(0x49, status.key); // o4 a
     }
 
-    @Test
-    @DisplayName("segapcm rows go to the channels that sound, wherever they sit")
-    void testSegaPcm() {
-        int ch = 9; // beyond the nine visible rows, the slot map has to bring it forward
+    /** SegaPCM channel {@code ch} keyed on at ratio 0.25, i.e. o2 c */
+    void segaPcmKeyOn(int ch) {
         segaPcm.write(0, ch * 8 + 2, 100, EnmModel.VirtualModel); // left volume
         segaPcm.write(0, ch * 8 + 3, 100, EnmModel.VirtualModel); // right volume
         segaPcm.write(0, ch * 8 + 7, 0x40, EnmModel.VirtualModel); // ratio 0.25, two octaves down
         segaPcm.write(0, ch * 8 + 0x86, 0x00, EnmModel.VirtualModel); // bit 0 clear: keyed on
+    }
+
+    @Test
+    @DisplayName("segapcm rows go to the channels that sound, wherever they sit")
+    void testSegaPcm() {
+        int ch = 9; // beyond the nine visible rows, the slot map has to bring it forward
+        segaPcmKeyOn(ch);
         source.snapshot();
 
         source.readStatus(TrackId.ADPCM, status); // the first PCM row
@@ -300,6 +306,42 @@ class ChipFmDspSourceTest {
         assertEquals(ch + 1, status.ppz8Ch);
         assertTrue(source.level(10) > 0);
         assertEquals(Pan.CENTER, source.pan(10));
+    }
+
+    @Test
+    @DisplayName("a sampled row held far too long to be a note is badged as a stream")
+    void testStreamBadge() {
+        BaseDriver driver = new BaseDriver(null) {
+            @Override public void init(Common.EnmModel model, int latency, int waitTime, Object... args) {}
+            @Override public void processOneFrame() {}
+            @Override public MetaData getMetaData(byte[] buf, Object... args) { return null; }
+        };
+        source.bind(chipRegister, () -> driver); // the note clock only runs off a driver's counter
+
+        // a YMZ280B voice keyed on and left alone, which is how the Guwange rips play: the whole
+        // song is one streamed sample rather than a sequence of notes
+        var ymz = chipRegister.chip(mdplayer.chips.YmZ280BChip.class);
+        int ch = 0;
+        ymz.write(0, 0xff, 0x80, EnmModel.VirtualModel); // key on enable
+        ymz.write(0, ch * 4 + 0x00, 0x00, EnmModel.VirtualModel); // pitch low
+        ymz.write(0, ch * 4 + 0x02, 0xff, EnmModel.VirtualModel); // total level
+        ymz.write(0, ch * 4 + 0x03, 0x08, EnmModel.VirtualModel); // pan centre
+        ymz.write(0, ch * 4 + 0x01, 0xf1, EnmModel.VirtualModel); // key on, looping, 16-bit PCM
+        source.snapshot();
+
+        source.readStatus(TrackId.ADPCM, status); // the first PCM row
+        assertTrue(status.playing);
+        assertEquals(TrackInfo.NORMAL, status.info); // could still be a note being held
+        assertNotEquals(0xff, status.key);
+
+        // ten seconds later, never re-struck: this is one endless sample, not a note
+        driver.counter = Common.VGMProcSampleRate * 10L;
+        source.snapshot();
+        source.readStatus(TrackId.ADPCM, status);
+        assertEquals(TrackInfo.STREAM, status.info);
+        assertEquals(0xff, status.key); // the key the rate happens to land on means nothing
+        assertEquals(0, status.ticks);
+        assertEquals(0, status.gate);
     }
 
     @Test
