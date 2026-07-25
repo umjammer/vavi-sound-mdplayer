@@ -408,8 +408,18 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
      * plus its three extension rows get six. Each group keeps at least its
      * {@linkplain #meterMinimums classic span}, so the layout only moves for a chip that really
      * is wider. A song with more voices than the strip has columns loses the tail.
+     * <p>
+     * The classic spacing is only kept while everything that can be shown still fits with it. An
+     * MDX is eight FM parts and eight PCM ones, which fills the strip exactly - but not with three
+     * columns held open for an SSG the song does not have, and a blank column is worth less than a
+     * part that sounds.
      */
     private void allocateMeters() {
+        int wanted = 0;
+        for (Group g : meterOrder) wanted += Math.max(visibleSpan(g), meterMinimums.get(g));
+        boolean keepSpacing = wanted <= LevelDataSource.COUNT;
+
+        Arrays.fill(owned, false);
         int cursor = 0;
         for (Group g : meterOrder) {
             List<FmDspChipReader> claimed = claims.get(g);
@@ -421,9 +431,37 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
                 bases.add(Math.min(cursor + span, LevelDataSource.COUNT));
                 span += reader.meters(g);
             }
-            cursor = Math.min(cursor + Math.max(span, meterMinimums.get(g)), LevelDataSource.COUNT);
+            for (int c = cursor; c < Math.min(cursor + span, LevelDataSource.COUNT); c++) owned[c] = true;
+            cursor += keepSpacing ? Math.max(span, meterMinimums.get(g)) : span;
+            cursor = Math.min(cursor, LevelDataSource.COUNT);
+        }
+        // A reader claiming a group before the ones in front of it move the layout along - an MDX
+        // whose PCM part sounds before its first FM note does - would leave what it wrote at its
+        // old columns standing there for the rest of the song, a label over a bar that never moves
+        // again. A column nothing owns any more shows nothing.
+        for (int c = 0; c < LevelDataSource.COUNT; c++) {
+            if (owned[c]) continue;
+            levelLabels[c] = null;
+            levelTracks[c] = null;
+            envelopes[c] = 0;
         }
     }
+
+    /**
+     * The columns a group's claimed readers want between them, as far as they can be seen: a chip
+     * with more channels than the group has rows - SegaPCM's sixteen against the PCM rows' nine -
+     * is asking for columns that are never drawn, and those do not count towards the strip filling
+     * up.
+     */
+    private int visibleSpan(Group g) {
+        int span = 0;
+        for (FmDspChipReader reader : claims.get(g)) span += reader.meters(g);
+        int[] groupRows = rows.get(g);
+        return Math.min(span, groupRows != null ? groupRows.length : 1); // the drum meter is one
+    }
+
+    /** meter columns a claimed reader fills, the rest are cleared out */
+    private final boolean[] owned = new boolean[LevelDataSource.COUNT];
 
     /**
      * Names a row for its chip where the section alone would be ambiguous.
@@ -484,10 +522,12 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
                 if (channel.keyOn) used[row] = true;
                 rowNames[row] = channel.name;
                 rowNums[row] = channel.num > 0 ? channel.num : ch + 1;
-                // the strip labels the start of a span, and every third column of a wide FM one
-                if (level >= 0 && (meter == 0 || (g == Group.FM && meter % 3 == 0))) {
-                    String label = labelOf(g, reader, channel.name, meter);
-                    if (label != null) levelLabels[level] = label;
+                // the strip labels the start of a span, and every third column of a wide FM one.
+                // Written every snapshot, including the blanks: a column that changed hands when
+                // the layout moved would otherwise keep the label its old owner left on it
+                if (level >= 0) {
+                    levelLabels[level] = meter == 0 || (g == Group.FM && meter % 3 == 0)
+                            ? labelOf(g, reader, channel.name, meter) : null;
                 }
                 TrackStatus status = tracks[row];
                 status.playing = used[row];
@@ -631,7 +671,7 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
                 noteLengths[row] = (int) Math.min(measured, maxNoteLength);
                 // a note the key never came up on was played legato, so its gate is its length
                 long held = keyOffTicks[row] < 0 ? measured : keyOffTicks[row] - keyOnTicks[row];
-                gates[row] = (int) Math.min(Math.max(held, 0), maxNoteLength);
+                gates[row] = (int) Math.clamp(held, 0, maxNoteLength);
             }
             keyOnTicks[row] = noteTicks;
             keyOffTicks[row] = -1;
