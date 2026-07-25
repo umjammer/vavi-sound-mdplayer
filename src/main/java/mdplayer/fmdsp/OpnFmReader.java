@@ -12,6 +12,7 @@ import java.util.Set;
 
 import mdplayer.ChipRegister;
 import vavi.sound.visualizer.fmdsp.LevelDataSource.Pan;
+import vavi.sound.visualizer.fmdsp.TrackDetail;
 import vavi.sound.visualizer.fmdsp.TrackInfo;
 
 
@@ -158,6 +159,104 @@ public abstract class OpnFmReader implements FmDspChipReader {
     @Override
     public boolean masked(Group group, int ch) {
         return group == Group.FM ? fmMasked(ch) : ssgMasked(ch);
+    }
+
+    // ----- the TRACK_INFO panel -----
+
+    @Override
+    public boolean readDetail(Group group, int ch, TrackDetail out) {
+        if (group == Group.SSG) return ssgDetail(ch, out);
+        return group == Group.FM && fmDetail(ch, out);
+    }
+
+    /**
+     * The channel's four operators and its F-number.
+     * <p>
+     * In the ch3 extended mode each of the four carries a pitch of its own, so every line gets an
+     * F-number instead of only the first - and the three extension rows are that same channel 3,
+     * which is why they show the whole panel over again, as the original's do.
+     */
+    private boolean fmDetail(int ch, TrackDetail out) {
+        boolean extension = ch >= 6;
+        if (extension && !ch3Extended()) return false;
+        if (!extension && ch >= fmCount()) return false;
+        int c = extension ? 2 : ch;
+        boolean perSlot = c == 2 && ch3Extended();
+
+        out.lines = 4;
+        for (int op = 0; op < 4; op++) {
+            slot(c, op, out, op);
+            if (perSlot) {
+                out.extra[op] = "%04X".formatted(op < 3 ? exBlock(op) << 11 | exFnum(op)
+                        : fmBlock(c) << 11 | fmFnum(c));
+            }
+        }
+        if (!perSlot) out.extra[0] = "%04X".formatted(fmBlock(c) << 11 | fmFnum(c));
+        return true;
+    }
+
+    /**
+     * One operator's line, out of the core's envelope generator where it has one to read and out
+     * of the total level register where it has not.
+     */
+    private void slot(int ch, int op, TrackDetail out, int line) {
+        int envelope = slotEnvelope(ch, op);
+        if (envelope < 0) {
+            out.modelled = true;
+            FmDetail.operator(out, line, slotTotalLevel(ch, op), slotCarrier(ch, op));
+        } else {
+            FmDetail.operator(out, line, slotTotalLevel(ch, op), envelope, slotPhase(ch, op));
+        }
+    }
+
+    /**
+     * An operator's total level, {@code slot} in the register order M1, M2, C1, C2. Read out of
+     * {@link #toneRegs the registers as written}, which every member of the family has whether or
+     * not its core keeps a register file of its own.
+     */
+    protected int slotTotalLevel(int ch, int slot) {
+        int[][] regs = toneRegs();
+        return regs == null ? 127 : regs[ch / 3][0x40 + ch % 3 + slot * 4] & 0x7f;
+    }
+
+    /**
+     * The attenuation an operator's envelope adds, 0 (wide open) to 1023 (silent), or {@code -1}
+     * from a core that keeps its envelope generators to itself - then the bar is drawn from the
+     * total level alone and animated by the source, see {@link TrackDetail#modelled}.
+     */
+    protected int slotEnvelope(int ch, int slot) {
+        return -1;
+    }
+
+    /** which part of its envelope an operator is in, as {@code Fmgen} names it, or null */
+    protected String slotPhase(int ch, int slot) {
+        return null;
+    }
+
+    /** whether an operator is heard directly rather than only modulating another */
+    protected boolean slotCarrier(int ch, int slot) {
+        int[][] regs = toneRegs();
+        return regs != null && FmDetail.carrier(regs[ch / 3][0xb0 + ch % 3] & 0x07, slot);
+    }
+
+    /**
+     * The channel's level and its tone period, laid out as the original's is: the left half of the
+     * bar always lit and the level growing out of the middle of it.
+     */
+    private boolean ssgDetail(int s, TrackDetail out) {
+        int[] regs = ssgRegs();
+        if (regs == null) return false;
+        int level = regs[0x08 + s] & 0x1f;
+        if ((level & 0x10) != 0) level = 15; // on the hardware envelope, and so at full scale
+        int period = (regs[s * 2] & 0xff) | ((regs[s * 2 + 1] & 0x0f) << 8);
+
+        out.lines = 1;
+        // the SSG's sixteen levels over the far half of the bar, as the original has them
+        out.bar[0] = TrackDetail.COLUMNS / 2 + Math.min(level, 15) * 2;
+        out.mark[0] = 0;
+        out.markWidth[0] = TrackDetail.COLUMNS / 2;
+        out.extra[0] = " %03X".formatted(period);
+        return true;
     }
 
     @Override

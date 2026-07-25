@@ -16,6 +16,7 @@ import mdplayer.driver.BaseDriver;
 import mdplayer.driver.mxdrv.MXDRV;
 import mdplayer.driver.mxdrv.MxDriver;
 import vavi.sound.visualizer.fmdsp.LevelDataSource.Pan;
+import vavi.sound.visualizer.fmdsp.TrackDetail;
 
 
 /**
@@ -141,6 +142,29 @@ public class MdxPcmReader implements FmDspChipReader {
         out.pan = panOf(part.pan);
         out.amplitude = amplitude(pcm8, part);
     }
+
+    /**
+     * The part's own work area, which is where a PCM part exists at all - there is no chip to read
+     * it off. Laid out as the original lays the ADPCM and PPZ8 rows out: the register names over
+     * their values.
+     */
+    @Override
+    public boolean readDetail(Group group, int ch, TrackDetail out) {
+        MXDRV mxdrv = mxdrv();
+        // its own part: this is called from the drawing thread while the playing one polls
+        if (mxdrv == null || !mxdrv.getPcmPart(ch, shown)) return false;
+
+        out.header = "BANK  SMPL   VOL   LVL   PAN   LEN";
+        out.text = "%4d  %4d  %4d  %4d  %4s  %4d".formatted(
+                shown.bank, shown.sample, shown.volume, shown.level, pans[shown.pan & 3], shown.length);
+        return true;
+    }
+
+    /** {@link #readDetail}'s own part, see there */
+    private final MXDRV.PcmPart shown = new MXDRV.PcmPart();
+
+    /** what {@link #panOf} shows as, for the panel */
+    private static final String[] pans = {"--", "L", "R", "LR"};
 
     /** the notes the keyboard has, which is also how many samples a PDX bank holds */
     private static final int keys = 96;

@@ -110,6 +110,21 @@ public interface FmDspChipReader {
         return false;
     }
 
+    /**
+     * Fills {@code out} with what the channel is doing inside the chip, which the visualizer's
+     * {@link vavi.sound.visualizer.fmdsp.RightMode#TRACK_INFO} draws down its right half - an FM
+     * channel's four operators, an SSG one's level and tone period, a sampled one's registers.
+     * <p>
+     * Unlike {@link #read}, this is called from the drawing thread and only while that half is on
+     * screen, so a reader that has nothing to show there costs nothing. It reads the same caches
+     * {@link #poll} does and keeps no state of its own.
+     *
+     * @return whether the channel has any detail; false leaves its row blank
+     */
+    default boolean readDetail(Group group, int ch, vavi.sound.visualizer.fmdsp.TrackDetail out) {
+        return false;
+    }
+
     /** the chip's TimerB period register if the song programs one, 0 otherwise */
     default int timerB() {
         return 0;

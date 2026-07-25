@@ -42,9 +42,10 @@ import static vavi.sound.visualizer.fmdsp.FmDspSprites.*;
  *
  * <h2>Data</h2>
  * The renderer pulls everything through {@link FmDspDataSource} each frame and
- * never touches the chip emulator. The chip-internal "track info" side panels
- * of the non-original display styles require register-level OPNA state that the
- * data-source interface does not expose, so only the original style is drawn.
+ * never touches the chip emulator. The original reads the OPNA itself for the
+ * "track info" panels of {@link RightMode#TRACK_INFO}; here those come through
+ * {@link TrackDetailSource} instead, so that they are neither OPNA specific nor
+ * the renderer's business to fetch.
  *
  * <h2>Threading</h2>
  * VRAM is rebuilt on the EDT each repaint; guard cross-thread data-source
@@ -975,7 +976,16 @@ public class FmDspVisualizer extends JComponent {
             }
         }
 
-        // ORIGINAL-style header chrome
+        if (rightMode == RightMode.DEFAULT) initDefault();
+    }
+
+    /**
+     * The static chrome of the right half: the logo, the counter frames, the spectrum scale and
+     * the level meter scale. Only {@link RightMode#DEFAULT} has them - the other right modes put
+     * their own content over the whole half, so nothing is drawn there for them at all
+     * ({@code init_default}).
+     */
+    private void initDefault() {
         if (title == null) {
             vramblit(LOGO_FM_X, LOGO_Y, s_logo_fm, 0, LOGO_FM_W, LOGO_H);
             vramblit(LOGO_DS_X, LOGO_Y, s_logo_ds, 0, LOGO_DS_W, LOGO_H);
@@ -1261,6 +1271,11 @@ public class FmDspVisualizer extends JComponent {
             }
         }
 
+        if (rightMode == RightMode.TRACK_INFO) {
+            trackInfo10(disp);
+            return;
+        }
+
         OperatingSystemMXBean operatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean();
         cpuusage = (int) (operatingSystemMXBean.getSystemLoadAverage() * 100);
 
@@ -1268,6 +1283,72 @@ public class FmDspVisualizer extends JComponent {
         renderCircle();
         renderFft();
         renderLevel();
+    }
+
+    // ==================================================================
+    // right half: update_track_info_10 (RightMode.TRACK_INFO)
+    // ==================================================================
+
+    /** x the right half starts at, which is the whole of it for a mode that is not the default */
+    private static final int RIGHT_X = 320;
+
+    /** the mnemonic of a bar line, at the end of the bar */
+    private static final int TINFO_STATE_X = 130;
+
+    /** the value behind the mnemonic */
+    private static final int TINFO_VALUE_X = 150;
+
+    /** the F-number and its like, right of both */
+    private static final int TINFO_EXTRA_X = 170;
+
+    /** one bar line, {@code TRACK_H} taking four of them */
+    private static final int TINFO_LINE_H = 6;
+
+    private final TrackDetail detail = new TrackDetail();
+
+    /**
+     * Draws what each displayed row is doing inside its chip down the right half, against the same
+     * rows the left half shows ({@code update_track_info_10}). A row whose source has no detail for
+     * it is left blank, the way the original leaves a track type it has no panel for.
+     */
+    private void trackInfo10(TrackId[] disp) {
+        TrackDetailSource td = source != null ? source.trackDetail() : null;
+        if (td == null) return;
+        for (int it = 0; it < disp.length; it++) {
+            detail.clear();
+            if (td.readDetail(disp[it], detail)) {
+                trackDetail(detail, RIGHT_X, TRACK_H * it);
+            }
+        }
+    }
+
+    /**
+     * One row's panel: its bar lines, or - with none - the titled register dump
+     * ({@code update_track_info_fm} and the three beside it).
+     */
+    private void trackDetail(TrackDetail d, int x, int y) {
+        for (int li = 0; li < d.lines && li < TrackDetail.LINES; li++) {
+            int ly = y + TINFO_LINE_H * li;
+            if (d.bar[li] >= 0) {
+                int mark = d.mark[li];
+                int markEnd = mark + Math.max(1, d.markWidth[li]);
+                for (int px = 0; px < TrackDetail.COLUMNS; px++) {
+                    // the bar is drawn every other pixel, as the original's dotted one is
+                    int color = px < d.bar[li] ? 2 : 3;
+                    if (mark >= 0 && px >= mark && px < markEnd) color = 7;
+                    for (int py = 0; py < 4; py++) {
+                        vram[(ly + 2 + py) * PC98_W + x + px * 2] = (byte) color;
+                    }
+                }
+            }
+            putSmall(d.state[li], x + TINFO_STATE_X, ly, 1, false);
+            putSmall(d.value[li], x + TINFO_VALUE_X, ly, 1, false);
+            putSmall(d.extra[li], x + TINFO_EXTRA_X, ly, 1, false);
+        }
+        if (d.lines == 0) {
+            putSmall(d.header, x, y, 1, false);
+            putSmall(d.text, x, y + TINFO_LINE_H, 1, false);
+        }
     }
 
     private static void resetStatus(TrackStatus s) {

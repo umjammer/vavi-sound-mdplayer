@@ -21,4 +21,12 @@ public interface FmDspDataSource {
     TrackStatusSource trackStatus();
 
     WorkStateSource work();
+
+    /**
+     * The chip-level detail of each row, which {@link RightMode#TRACK_INFO} shows. Null - the
+     * default - leaves that right half blank, the display's other halves being unaffected.
+     */
+    default TrackDetailSource trackDetail() {
+        return null;
+    }
 }

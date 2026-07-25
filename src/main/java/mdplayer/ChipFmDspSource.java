@@ -26,6 +26,8 @@ import vavi.sound.visualizer.fmdsp.FftDataSource;
 import vavi.sound.visualizer.fmdsp.FmDspDataSource;
 import vavi.sound.visualizer.fmdsp.FmDspVisualizer;
 import vavi.sound.visualizer.fmdsp.LevelDataSource;
+import vavi.sound.visualizer.fmdsp.TrackDetail;
+import vavi.sound.visualizer.fmdsp.TrackDetailSource;
 import vavi.sound.visualizer.fmdsp.TrackId;
 import vavi.sound.visualizer.fmdsp.TrackInfo;
 import vavi.sound.visualizer.fmdsp.TrackStatus;
@@ -70,7 +72,8 @@ import vavi.util.event.GenericEvent;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-07-19 nsano initial version <br>
  */
-public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackStatusSource, WorkStateSource {
+public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackStatusSource,
+        TrackDetailSource, WorkStateSource {
 
     /** how fast a held note's meter sags, per snapshot */
     private static final double levelSustainDecay = 0.995;
@@ -235,6 +238,12 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
     private final Group[] rowGroups = new Group[TrackId.COUNT];
     private final int[] rowChannels = new int[TrackId.COUNT];
 
+    /** the meter column of each row, {@code -1} for a row that has none; see {@link #readDetail} */
+    private final int[] rowLevels = new int[TrackId.COUNT];
+
+    /** the level each row's registers ask for, which its envelope is read against; see there */
+    private final double[] rowAmplitudes = new double[TrackId.COUNT];
+
     private final FmDspChannel channel = new FmDspChannel();
 
     private ChipRegister chipRegister;
@@ -302,6 +311,8 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
         claims.values().forEach(List::clear);
         meterBases.values().forEach(List::clear);
         Arrays.fill(rowReaders, null);
+        Arrays.fill(rowLevels, -1);
+        Arrays.fill(rowAmplitudes, 0);
         Arrays.stream(tracks).forEach(ChipFmDspSource::clear);
         Arrays.fill(used, false);
         Arrays.fill(rowNames, null);
@@ -574,6 +585,8 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
                 rowReaders[row] = reader;
                 rowGroups[row] = g;
                 rowChannels[row] = ch;
+                rowLevels[row] = level;
+                rowAmplitudes[row] = channel.amplitude;
             }
             if (slot >= groupRows.length) break;
         }
@@ -896,6 +909,58 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
     @Override public TrackStatusSource trackStatus() { return this; }
 
     @Override public WorkStateSource work() { return this; }
+
+    @Override public TrackDetailSource trackDetail() { return this; }
+
+    // ----- TrackDetailSource -----
+
+    /**
+     * Hands the row's panel over to the reader that fills the row, and animates it.
+     * <p>
+     * A reader reads register caches, where the original reads the emulator's envelope generators,
+     * so what it reports is the level the chip has been told to play at rather than the one it is
+     * at. That is what {@link TrackDetail#modelled} says, and those bars are dropped here by how
+     * far the row's envelope has fallen below its registers - the one thing this source knows that
+     * the reader does not - so they attack and release with the note instead of standing still
+     * under a held key, while the marker stays at the register level the way the original's does.
+     * <p>
+     * Called from the drawing thread, and only while the panel is on screen: the readers answer
+     * out of the same caches they poll, and nothing here is computed for a display half that is
+     * not being shown.
+     */
+    @Override
+    public boolean readDetail(TrackId track, TrackDetail out) {
+        int row = track.ordinal();
+        FmDspChipReader reader = rowReaders[row];
+        if (reader == null || !reader.readDetail(rowGroups[row], rowChannels[row], out)) {
+            return false;
+        }
+        if (out.modelled) {
+            int drop = envelopeDrop(row);
+            for (int i = 0; i < out.lines; i++) {
+                if (out.bar[i] > 0) out.bar[i] = Math.max(0, out.bar[i] - drop);
+            }
+        }
+        return true;
+    }
+
+    /**
+     * How far the row has fallen below the level its registers ask for, in bar columns.
+     * <p>
+     * A column is 1.5 dB - two steps of an FM total level, and the same scale the level meters are
+     * drawn on - so the drop is the ratio between the envelope and the register level in decibels,
+     * and a bar falls away at the rate the meter beside it does. A row whose reader measures its
+     * own output never reads as dropped: the number it reports is the sound itself, not a ceiling
+     * the sound sits under.
+     */
+    private int envelopeDrop(int row) {
+        int level = rowLevels[row];
+        double asked = rowAmplitudes[row];
+        if (level < 0 || asked <= 0) return 0;
+        double at = envelopes[level];
+        if (at <= 0) return TrackDetail.COLUMNS;
+        return Math.max(0, (int) Math.round(-20 * Math.log10(Math.min(at / asked, 1)) / 1.5));
+    }
 
     // ----- TrackStatusSource -----
 

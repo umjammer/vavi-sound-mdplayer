@@ -13,6 +13,7 @@ import java.util.Set;
 import mdplayer.ChipRegister;
 import mdplayer.chips.Ym2151Chip;
 import vavi.sound.visualizer.fmdsp.LevelDataSource.Pan;
+import vavi.sound.visualizer.fmdsp.TrackDetail;
 
 
 /**
@@ -22,9 +23,6 @@ import vavi.sound.visualizer.fmdsp.LevelDataSource.Pan;
  * @version 0.00 2026-07-19 nsano initial version <br>
  */
 public class Ym2151Reader implements FmDspChipReader {
-
-    /** carrier mask per algorithm, {@link mdplayer.chips.BaseChip#algM} */
-    private static final byte[] algM = {0x08, 0x08, 0x08, 0x08, 0x0c, 0x0e, 0x0e, 0x0f};
 
     private ChipRegister chipRegister;
 
@@ -162,6 +160,37 @@ public class Ym2151Reader implements FmDspChipReader {
         return chip().getMask(0, ch);
     }
 
+    /**
+     * The channel's four operators, straight out of the core's envelope generators, with the key
+     * code and the key fraction behind the first of them - the OPM's pitch, where the OPN
+     * family's is an F-number and a block.
+     */
+    @Override
+    public boolean readDetail(Group group, int ch, TrackDetail out) {
+        if (info == null) return false;
+
+        out.lines = 4;
+        for (int op = 0; op < 4; op++) {
+            String slot = "channels." + ch + ".slots." + op;
+            if (info.get(slot + ".envelope") instanceof Integer envelope) {
+                FmDetail.operator(out, op, intOf(slot + ".totalLevel"), envelope,
+                        stringOf(slot + ".phase"));
+            } else if (info.get("register") instanceof int[] regs) {
+                // an MDX is played by the X68000's own core, which keeps no envelope anyone can
+                // read; all there is to draw is what the driver wrote, which the wrapper shadows.
+                // The OPM keeps its four operators eight registers apart
+                out.modelled = true;
+                FmDetail.operator(out, op, regs[0x60 + ch + op * 8],
+                        FmDetail.carrier(regs[0x20 + ch] & 0x07, op));
+            } else {
+                return false;
+            }
+        }
+        out.extra[0] = "%04X".formatted(intOf("channels." + ch + ".keyCode") << 6
+                | intOf("channels." + ch + ".keyFraction"));
+        return true;
+    }
+
     @Override
     public int timerB() {
         return intOf("timerB");
@@ -187,5 +216,10 @@ public class Ym2151Reader implements FmDspChipReader {
     private boolean boolOf(String key) {
         Object value = info == null ? null : info.get(key);
         return value instanceof Boolean b && b;
+    }
+
+    private String stringOf(String key) {
+        Object value = info == null ? null : info.get(key);
+        return value instanceof String s ? s : null;
     }
 }
