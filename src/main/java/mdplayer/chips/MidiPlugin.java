@@ -568,12 +568,11 @@ logger.log(Level.DEBUG, "midi volume: gain=%.3f (master=%d, midi=%d)".formatted(
         }
 
         for (int i = 0; i < setting.getMidiOut().getMidiOutInfos().get(midiMode).length; i++) {
-            int n = -1;
             int t = 0;
             Receiver mo = null;
+            MidiDevice found = null;
 
             MidiDevice.Info[] midiDeviceInfos = MidiSystem.getMidiDeviceInfo();
-            int j = 0;
             for (var info : midiDeviceInfos) {
                 MidiDevice device;
                 try {
@@ -587,14 +586,18 @@ logger.log(Level.DEBUG, "midi volume: gain=%.3f (master=%d, midi=%d)".formatted(
                 if (!setting.getMidiOut().getMidiOutInfos().get(midiMode)[i].name.equals(info.getName()))
                     continue;
 
-                n = j++;
+                found = device;
                 t = setting.getMidiOut().getMidiOutInfos().get(midiMode)[i].type;
                 break;
             }
 
-            if (n != -1) {
+            if (found != null) {
                 try {
-                    mo = MidiSystem.getReceiver();
+                    // the receiver of the device that was just matched by name - not
+                    // MidiSystem.getReceiver(), which hands out the platform default out
+                    // (often a port with nothing behind it, so the song plays into silence)
+                    if (!found.isOpen()) found.open();
+                    mo = found.getReceiver();
                 } catch (Exception e) {
                     logger.log(Level.ERROR, e.getMessage(), e);
                     mo = null;
