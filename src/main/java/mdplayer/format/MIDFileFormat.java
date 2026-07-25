@@ -98,6 +98,11 @@ public class MIDFileFormat extends BaseFileFormat {
     }
 
     @Override
+    public String[] getPresetMixerBalance() {
+        return new String[] {"DriverBalance_MID.mbc", "/resources/DefaultVolumeBalance_MID.xml"};
+    }
+
+    @Override
     public int getMarkSize() {
         return 0;
     }

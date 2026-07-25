@@ -129,6 +129,11 @@ public class RCPFileFormat extends BaseFileFormat {
     }
 
     @Override
+    public String[] getPresetMixerBalance() {
+        return new String[] {"DriverBalance_RCP.mbc", "/resources/DefaultVolumeBalance_RCP.xml"};
+    }
+
+    @Override
     public Encoding getEncoding() {
         return new MdEncoding("RCP", "rcp");
     }

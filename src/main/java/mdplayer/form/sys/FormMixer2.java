@@ -35,6 +35,7 @@ import javax.swing.filechooser.FileFilter;
 
 import mdplayer.Audio;
 import mdplayer.Chip;
+import mdplayer.chips.MidiPlugin;
 import mdplayer.chips.RealChipPlugin;
 import mdplayer.Common;
 import mdplayer.form.FrameBuffer;
@@ -93,8 +94,19 @@ public class FormMixer2 extends JFrame {
     private static final int GIMIC_OPN = 62;
     private static final int GIMIC_OPNA = 63;
 
+    /**
+     * The MIDI path's fader, in the slot the skin left blank between OPX and AY10 (its
+     * {@code MIDI} label was added to {@code planeMixer.png} out of the skin's own glyphs).
+     * <p>
+     * It belongs to no chip -- a song played through {@link MidiPlugin} renders nothing into the
+     * mixer at all -- so it is not a {@link ViewProvider.MixerSlot}; its fader moves
+     * {@link Setting.Balance#getMidiVolume()} and its meter follows the MIDI notes themselves.
+     */
+    private static final int MIDI = 24;
+
     private void initVolumeSlots() {
         visSources[0] = new VisSource("master", 250);
+        visSources[MIDI] = new VisSource("midi", 200);
         for (ViewProvider p : ViewProvider.providers()) {
             for (ViewProvider.MixerSlot s : p.mixerSlots()) {
                 visSources[s.slot()] = new VisSource(s.visKey(), s.visDiv());
@@ -102,7 +114,8 @@ public class FormMixer2 extends JFrame {
         }
 
         for (int i = 0; i < newVolumes.length; i++) {
-            boolean used = i == 0 || i >= GIMIC_OPN || (i < setVolume.length && setVolume[i] != null);
+            boolean used = i == 0 || i == MIDI || i >= GIMIC_OPN
+                    || (i < setVolume.length && setVolume[i] != null);
             if (used) {
                 newVolumes[i] = new VolumeInfo();
                 oldVolumes[i] = new VolumeInfo();
@@ -138,6 +151,8 @@ public class FormMixer2 extends JFrame {
     private void setVolume(int i, boolean isAbs, int delta) {
         if (i == 0) {
             audio.plugin.setMasterVolume(isAbs, delta);
+        } else if (i == MIDI) {
+            audio.plugin.setMidiVolume(isAbs, delta);
         } else if (i == setVolume.length) {
             audio.plugin.chipRegister.plugin(RealChipPlugin.class).setGimicOPNVolume(false, delta);
         } else if (i == setVolume.length + 1) {
@@ -217,12 +232,19 @@ public class FormMixer2 extends JFrame {
         for (ViewProvider p : ViewProvider.providers()) {
             p.updateMeters(audio, visVolume);
         }
+
+        // no chip to ask, so the MIDI meter follows the loudest note the channels are holding
+        int velocity = 0;
+        MidiPlugin midi = audio.plugin.chipRegister.plugin(MidiPlugin.class);
+        for (int ch = 0; ch < 16; ch++) velocity = Math.max(velocity, midi.velocity(ch));
+        visVolume.put("midi", velocity * 70);
     }
 
     public void screenChangeParams() {
         updateVisualVolumes();
 
         newVolumes[0].volume = parent.setting.getBalance().getMasterVolume();
+        newVolumes[MIDI].volume = parent.setting.getBalance().getMidiVolume();
         for (int i = 1; i < setVolume.length; i++) {
             if (setVolume[i] != null) {
                 newVolumes[i].volume = parent.setting.getBalance().getVolume(setVolume[i].getItem1(), setVolume[i].getItem2());
@@ -308,6 +330,7 @@ public class FormMixer2 extends JFrame {
 
     public void screenInit() {
         visVolume.put("master", -1);
+        visVolume.put("midi", -1);
         for (ViewProvider p : ViewProvider.providers()) {
             for (ViewProvider.MixerSlot s : p.mixerSlots()) {
                 visVolume.put(s.visKey(), -1);

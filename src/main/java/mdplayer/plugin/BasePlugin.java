@@ -450,9 +450,22 @@ logger.log(Level.INFO, "close enter");
 
     public int masterVolume = 0;
 
+    /**
+     * Moves the MIDI path's fader.
+     *
+     * @see Setting.Balance#getMidiVolume()
+     */
+    public void setMidiVolume(boolean isAbs, int volume) {
+        int v = Common.range((isAbs ? 0 : setting.getBalance().getMidiVolume()) + volume, -192, 20);
+        setting.getBalance().setMidiVolume(v);
+        chipRegister.plugin(MidiPlugin.class).applyVolume();
+    }
+
     public void setMasterVolume(boolean isAbs, int volume) {
         masterVolume = Common.range((isAbs ? 0 : setting.getBalance().getMasterVolume()) + volume, -192, 20);
         setting.getBalance().setMasterVolume(masterVolume);
+        // a MIDI song is not in the mix this volume multiplies, it has to be told
+        chipRegister.plugin(MidiPlugin.class).applyVolume();
     }
 
     public FileFormat getFileFormat() {

@@ -304,7 +304,20 @@ public final class VolumeBalanceCalibrator {
         List<Meas> mixes = new ArrayList<>();
         for (Path sample : playable) {
             try {
-                mixes.add(measureMix(sample, balance));
+                Meas mix = measureMix(sample, balance);
+                // A song played entirely through MidiPlugin renders no samples at all: what is heard
+                // comes out of the synthesizer at the other end, past this mixer. Averaging it in as
+                // a zero would understate the driver -- ZMD measured 1126 instead of the ~2680 its
+                // chip-audio songs make -- inflating its MasterVolume and, since the global target is
+                // a minimum over the drivers, dragging every other driver down with it. It is the
+                // MidiVolume balance slot that levels those songs, not anything measurable here.
+                if (mix.full() < SILENCE_RMS) {
+                    System.out.printf("  %-24s %s, excluded from the driver's mix average%n",
+                            sample.getFileName(),
+                            mix.midi() > 0 ? "renders no chip audio (MIDI-only song)" : "silent");
+                    continue;
+                }
+                mixes.add(mix);
             } catch (Exception ignore) {}
         }
         double mixRms = mixes.stream().mapToDouble(Meas::full).average().orElse(0);
@@ -323,6 +336,14 @@ public final class VolumeBalanceCalibrator {
         } else if (!Files.exists(xml)) {
             System.out.printf("  !! no preset file to update: %s (skipped write)%n", xml);
         } else {
+            // MidiVolume levels the synthesizer at the other end of the MIDI path, which renders
+            // nothing here and so cannot be measured: carry the preset's hand-set value over
+            // instead of resetting it to 0 on every calibration run
+            Setting.Balance previous = Setting.Balance.load(xml);
+            if (previous != null && previous.getMidiVolume() != 0) {
+                balance.setMidiVolume(previous.getMidiVolume());
+                System.out.printf("      kept MidiVolume=%d (not measurable)%n", previous.getMidiVolume());
+            }
             balance.save(xml);
             prettyPrintInPlace(xml);
             System.out.printf("  wrote %s%n", xml);
@@ -371,8 +392,10 @@ public final class VolumeBalanceCalibrator {
     }
 
     /** {@code full} = RMS over the whole window; {@code active} = RMS over only non-silent samples;
-     *  {@code peak} = largest {@code |sample|} seen (feeds the clipping side of the leveling target) */
-    record Meas(double full, double active, double peak) {}
+     *  {@code peak} = largest {@code |sample|} seen (feeds the clipping side of the leveling target);
+     *  {@code midi} = MIDI messages the song sent while rendering, which is how a song that plays
+     *  entirely through {@link mdplayer.chips.MidiPlugin} is told from a broken measurement */
+    record Meas(double full, double active, double peak, long midi) {}
 
     /** render the sample with only {@code target} audible (all other chips muted) and measure it */
     static Meas measureIsolated(Path sample,
@@ -414,6 +437,8 @@ public final class VolumeBalanceCalibrator {
     static Meas renderMeas(BasePlugin<? extends BaseDriver> plugin) {
         int rate = Setting.getInstance().getOutputDevice().getSampleRate();
         long wanted = (long) rate * seconds * 2; // stereo shorts
+        mdplayer.chips.MidiPlugin midi = plugin.chipRegister.plugin(mdplayer.chips.MidiPlugin.class);
+        long midiBefore = midi.sentMessages();
         short[] buffer = new short[8192];
         double sumSq = 0, activeSumSq = 0, peak = 0;
         long n = 0, activeN = 0;
@@ -434,7 +459,7 @@ public final class VolumeBalanceCalibrator {
         }
         double full = n == 0 ? 0 : Math.sqrt(sumSq / n);
         double active = activeN == 0 ? 0 : Math.sqrt(activeSumSq / activeN);
-        return new Meas(full, active, peak);
+        return new Meas(full, active, peak, midi.sentMessages() - midiBefore);
     }
 
     static void close(BasePlugin<? extends BaseDriver> plugin) {

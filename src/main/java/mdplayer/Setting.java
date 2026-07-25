@@ -2260,6 +2260,28 @@ public class Setting implements Serializable, Cloneable {
                 masterVolume = 0;
         }
 
+        private int midiVolume = 0;
+
+        /**
+         * Attenuation of the MIDI path, in the same 2&times;dB unit as the chip volumes.
+         * <p>
+         * A song played through {@link mdplayer.chips.MidiPlugin} (a MIDI-only ZMS, RCP, MID)
+         * renders no samples into the mixer, so neither the per-chip volumes nor
+         * {@link #getMasterVolume} -- which {@code Audio.render} applies to the mixer output --
+         * reach it: it plays at whatever level the synthesizer at the other end runs at. This is
+         * the one slot that does reach it, applied to the channel volume controller the plugin
+         * sends. It is per driver preset like every other volume here, because how loud the MIDI
+         * side is relative to the chip side is a property of the driver's songs.
+         */
+        public int getMidiVolume() {
+            if (outRange(midiVolume)) midiVolume = 0;
+            return midiVolume;
+        }
+
+        public void setMidiVolume(int value) {
+            midiVolume = outRange(value) ? 0 : value;
+        }
+
         private final Map<String, Integer> volumes = new HashMap<>();
 
         private static boolean outRange(int v) {
@@ -2378,6 +2400,7 @@ public class Setting implements Serializable, Cloneable {
             public void serialize(Balance b, JsonGenerator gen, SerializationContext ctxt) throws JacksonException {
                 gen.writeStartObject();
                 gen.writeNumberProperty("MasterVolume", b.getMasterVolume());
+                gen.writeNumberProperty("MidiVolume", b.getMidiVolume());
                 for (VolEntry e : VOL_TABLE) {
                     gen.writeNumberProperty(e.element(), b.volumes.getOrDefault(getKey(e.tag(), e.chip()), 0));
                 }
@@ -2398,6 +2421,7 @@ public class Setting implements Serializable, Cloneable {
                         p.nextToken();
                         switch (name) {
                         case "MasterVolume", "masterVolume" -> b.setMasterVolume(p.getValueAsInt());
+                        case "MidiVolume", "midiVolume" -> b.setMidiVolume(p.getValueAsInt());
                         case "GimicOPNVolume" -> b.setGimicOPNVolume(p.getValueAsInt());
                         case "GimicOPNAVolume" -> b.setGimicOPNAVolume(p.getValueAsInt());
                         default -> {
@@ -3208,6 +3232,7 @@ public class Setting implements Serializable, Cloneable {
         public Balance clone() {
             Balance balance = new Balance();
             balance.masterVolume = this.masterVolume;
+            balance.midiVolume = this.midiVolume;
             balance.volumes.putAll(this.volumes);
 
 //            balance.ym2151Volume = this.ym2151Volume;
