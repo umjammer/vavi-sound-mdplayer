@@ -82,7 +82,7 @@ public class WorkCheck {
                         : "";
                 System.err.printf("  %-6s %-4s %-5s %-5s %3d %4d %3d %4d %4d %6d  %04x  %s%n",
                         names[n], work.playing(p) ? "yes" : "no", work.keyOn(p) ? "on" : "", key,
-                        note, work.toneNum(p), work.volume(p), work.gate(p), work.ticksLeft(p),
+                        note, work.toneNum(p), work.volume(p), work.gate(p, work.ticksLeft(p)), work.ticksLeft(p),
                         work.detune(p), work.fnum(p), chip);
             }
         }

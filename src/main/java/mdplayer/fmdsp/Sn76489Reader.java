@@ -119,7 +119,7 @@ public class Sn76489Reader implements FmDspChipReader {
         prevSoundings[ch] = sounding;
         prevPeriods[ch] = period;
 
-        out.note = period > 0 ? Notes.noteOf(clock / (32.0 * period)) : -1;
+        out.pitch(period > 0 ? clock / (32.0 * period) : 0);
         out.volume = 15 - vol;
         out.ssgTone = sounding;
         // the noise channel has no row of its own, it badges the third one

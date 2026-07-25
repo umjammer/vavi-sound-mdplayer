@@ -211,7 +211,8 @@ public class Ym3812Chip extends BaseChip {
         if (inst == null) return Collections.emptyMap();
         Map<String, Object> info = new HashMap<>();
         info.put("keyInfo", getKeyInfo(chipId));
-        info.putAll(inst.getView(chipId, "register") != null ? inst.getView(chipId, "register") : Collections.emptyMap()); // some variants not implemented
+        info.putAll(inst.getView(chipId, "info") != null ? inst.getView(chipId, "info") : Collections.emptyMap()); // some variants not implemented
+        info.putAll(inst.getView(chipId, "register") != null ? inst.getView(chipId, "register") : Collections.emptyMap());
         return info;
     }
 

@@ -49,6 +49,7 @@ public class Ym2151Reader implements FmDspChipReader {
     public void reset() {
         Arrays.fill(prevKeyOns, 0);
         active = false;
+        tones.reset();
     }
 
     @Override
@@ -95,14 +96,56 @@ public class Ym2151Reader implements FmDspChipReader {
 
         int keyCode = intOf("channels." + ch + ".keyCode");
         int code = keyCode & 0x0f;
-        // the OPM key code skips every fourth value: 0 is C#, 14 the next octave's C
-        out.note = ((keyCode >> 4) & 0x07) * 12 + code - (code >> 2) + 1;
+        // the OPM key code skips every fourth value: 0 is C#, 14 the next octave's C. The key
+        // fraction then carries the pitch on up towards the next note, in sixty-fourths of one -
+        // which is where a driver's detune, and every step of its portamento, end up, so the two
+        // are read as one number and split again at the nearest note
+        double semitones = ((keyCode >> 4) & 0x07) * 12 + code - (code >> 2) + 1
+                + intOf("channels." + ch + ".keyFraction") / 64.0;
+        out.note = (int) Math.round(semitones);
+        out.detune = (int) Math.round((semitones - out.note) * 100);
+        lfo(ch, out);
+        out.toneNum = tone(ch);
         int tl = intOf("channels." + ch + ".totalLevel");
         out.volume = 127 - tl;
         out.amplitude = Math.pow(10, -tl * 0.75 / 20);
         out.pan = panOf(intOf("channels." + ch + ".pan") << 6);
     }
 
+
+    /**
+     * The voice the channel is playing, numbered by {@link ToneNumbers} out of the registers that
+     * make one up. The OPM keeps its four operators eight apart, and the total level at 0x60 is
+     * left out - it is the channel's volume as much as its voice, see {@code OpnFmReader#fmTone}.
+     */
+    private int tone(int ch) {
+        if (!(info.get("register") instanceof int[] regs)) return 0;
+        long fingerprint = ToneNumbers.fold(ToneNumbers.seed(), regs[0x20 + ch] & 0x3f); // feedback, connection
+        int written = regs[0x20 + ch] & 0x3f;
+        for (int slot = 0; slot < 4; slot++) {
+            int r = ch + slot * 8;
+            for (int reg : new int[] {0x40, 0x80, 0xa0, 0xc0, 0xe0}) {
+                fingerprint = ToneNumbers.fold(fingerprint, regs[reg + r]);
+                written |= regs[reg + r];
+            }
+        }
+        return written == 0 ? 0 : tones.numberOf(fingerprint);
+    }
+
+    private final ToneNumbers tones = new ToneNumbers();
+
+    /**
+     * Whether the chip's LFO is audible on this channel. It always runs, so it takes a depth to
+     * swing by - register 0x19, one for the pitch and one for the level - and a channel sensitive
+     * to that half of it: PMS in bits 0-2 of register 0x38 and AMS in bits 4-5, plus an operator
+     * switched to follow the amplitude side.
+     */
+    private void lfo(int ch, FmDspChannel out) {
+        int sens = intOf("channels." + ch + ".sensitivity");
+        out.lfoPitch = intOf("pmd") != 0 && (sens & 0x07) != 0;
+        out.lfoVolume = intOf("amd") != 0 && ((sens >> 4) & 0x03) != 0
+                && boolOf("channels." + ch + ".amOn");
+    }
 
     /** the OPM register 0x20 pan bits, left in bit 6 and right in bit 7 */
     private static Pan panOf(int reg) {

@@ -107,6 +107,13 @@ public class Ym2203Reader extends OpnFmReader {
 
     @Override protected int[][] ports() { return noPorts; }
 
+    // the fmgen core decodes the operator registers away, so the voice is read from the shadow
+    // the chip wrapper keeps of what the driver wrote; the OPN is single ported
+    @Override protected int[][] toneRegs() {
+        int[] regs = chip() != null ? chip().fmRegister[0] : null;
+        return regs != null ? new int[][] {regs} : null;
+    }
+
     private static final int[][] noPorts = {new int[0x100], new int[0x100]};
 
     @Override

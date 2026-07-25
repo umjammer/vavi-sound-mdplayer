@@ -137,7 +137,7 @@ public class Ym2413Reader implements FmDspChipReader {
         prevOns[ch] = on;
         prevFnums[ch] = fnum;
 
-        out.note = fnum > 0 ? Notes.noteOf(fnum * Math.pow(2, block - 1) * tick / (1 << 18)) : -1;
+        out.pitch(fnum > 0 ? fnum * Math.pow(2, block - 1) * tick / (1 << 18) : 0);
         // 3 dB per step of the 16 level attenuator
         int vol = regs[0x30 + ch] & 0x0f;
         out.volume = 15 - vol;

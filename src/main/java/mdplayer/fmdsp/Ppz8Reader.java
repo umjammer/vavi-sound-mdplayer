@@ -106,9 +106,9 @@ public class Ppz8Reader implements FmDspChipReader {
         boolean keyOn = (boolean) info.get("channels." + ch + ".keyOn");
         int volume = (int) info.get("channels." + ch + ".volume");
         int pan = (int) info.get("channels." + ch + ".pan");
-        int note = playing
-                ? Notes.noteOfRatio((int) info.get("channels." + ch + ".frequency") / (double) 0x8000)
-                : -1;
+        out.pitchOfRatio(playing
+                ? (int) info.get("channels." + ch + ".frequency") / (double) 0x8000 : 0);
+        int note = out.note;
 
         out.sounding = playing;
         out.keyOn = keyOn && (!prevKeyOns[ch] || note != prevNotes[ch]);
@@ -119,7 +119,6 @@ public class Ppz8Reader implements FmDspChipReader {
         out.num = ch + 1;
         out.info = TrackInfo.PPZ8;
         out.pcmCh = ch + 1;
-        out.note = note;
         out.volume = volume;
         out.toneNum = (int) info.get("channels." + ch + ".flg16");
         // one step of PPZ8's 16 level table is 1.5 dB

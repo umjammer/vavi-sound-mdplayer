@@ -198,6 +198,12 @@ public class Ym2608Reader extends OpnFmReader {
 
     @Override protected Pan fmPan(int ch) { return opnPan(intOf("channels." + ch + ".pan") << 6); }
 
+    @Override protected int lfoRegister() { return intOf("lfo"); }
+
+    @Override protected int fmSensitivity(int ch) { return intOf("channels." + ch + ".sensitivity"); }
+
+    @Override protected boolean fmAmOn(int ch) { return boolOf("channels." + ch + ".amOn"); }
+
     @Override protected int exFnum(int x) { return intOf("channels.2.slots." + x + ".fnum"); }
 
     @Override protected int exBlock(int x) { return intOf("channels.2.slots." + x + ".block"); }
@@ -209,6 +215,10 @@ public class Ym2608Reader extends OpnFmReader {
     @Override protected int timerBRegister() { return intOf("timerB"); }
 
     @Override protected int[][] ports() { return noPorts; }
+
+    // the fmgen core decodes the operator registers away, so the voice is read from the
+    // shadow the chip wrapper keeps of what the driver wrote
+    @Override protected int[][] toneRegs() { return chip() != null ? chip().register[0] : null; }
 
     private static final int[][] noPorts = {new int[0x100], new int[0x100]};
 

@@ -42,6 +42,8 @@ public abstract class OpnFmReader implements FmDspChipReader {
     private boolean fmActive;
     private boolean ssgActive;
 
+    private final ToneNumbers tones = new ToneNumbers();
+
     /** the chip's register banks; a single-port chip returns one bank */
     protected abstract int[][] ports();
 
@@ -93,6 +95,7 @@ public abstract class OpnFmReader implements FmDspChipReader {
         Arrays.fill(prevSsgPeriods, 0);
         fmActive = false;
         ssgActive = false;
+        tones.reset();
     }
 
     @Override
@@ -177,6 +180,9 @@ public abstract class OpnFmReader implements FmDspChipReader {
             prevKeyOns[ch] = kc;
             out.sounding = on;
             out.note = fmNote(fmFnum(ch), fmBlock(ch));
+            out.detune = fmDetune(fmFnum(ch), fmBlock(ch));
+            fmLfo(ch, out);
+            out.toneNum = fmTone(ch);
             int tl = fmTotalLevel(ch);
             out.volume = 127 - tl;
             out.amplitude = Math.pow(10, -tl * 0.75 / 20);
@@ -194,6 +200,9 @@ public abstract class OpnFmReader implements FmDspChipReader {
             out.keyOn = on && !prevExOns[x];
             prevExOns[x] = on;
             out.note = fmNote(exFnum(x), exBlock(x));
+            out.detune = fmDetune(exFnum(x), exBlock(x));
+            fmLfo(2, out);
+            out.toneNum = fmTone(2);
             out.volume = 127 - fmTotalLevel(2);
         }
     }
@@ -240,7 +249,84 @@ public abstract class OpnFmReader implements FmDspChipReader {
     /** semitones above C0 of an OPN F-number and block, -1 when no note was set */
     protected final int fmNote(int fnum, int block) {
         if (fnum == 0) return -1;
-        return Notes.noteOf(fnum * Math.pow(2, block - 1) * fnumK() / (1 << 20));
+        return Notes.noteOf(fmFreq(fnum, block));
+    }
+
+    /** cents an OPN F-number and block sit off the note {@link #fmNote} rounds them to */
+    protected final int fmDetune(int fnum, int block) {
+        return fnum == 0 ? 0 : Notes.centsOf(fmFreq(fnum, block));
+    }
+
+    private double fmFreq(int fnum, int block) {
+        return fnum * Math.pow(2, block - 1) * fnumK() / (1 << 20);
+    }
+
+    /**
+     * Whether the chip's own LFO reaches channel {@code ch}, which fmdsp shows behind "M:" - the
+     * register file's only LFO, a driver's software ones living outside the chip entirely.
+     * <p>
+     * It takes both halves to be audible: the LFO has to be running at all (register 0x22 bit 3,
+     * which the plain OPN has no register for and reads back as off) and the channel has to be
+     * sensitive to it, through the PMS and AMS fields of its register 0xb4. AMS also needs an
+     * operator switched to follow it, which the four 0x60 registers say.
+     */
+    protected final void fmLfo(int ch, FmDspChannel out) {
+        if ((lfoRegister() & 0x08) == 0) return;
+        int sens = fmSensitivity(ch);
+        out.lfoPitch = (sens & 0x07) != 0;
+        out.lfoVolume = ((sens >> 4) & 0x03) != 0 && fmAmOn(ch);
+    }
+
+    /**
+     * The voice a channel is playing, numbered by {@link ToneNumbers}: the operator registers that
+     * make it up, folded together and looked up. The total level is deliberately left out - it is
+     * the channel's volume as much as its voice, and a driver moves it note by note, so a number
+     * that followed it would say the voice had changed at every note.
+     */
+    private int fmTone(int ch) {
+        int[][] banks = toneRegs();
+        if (banks == null) return 0;
+        int[] regs = banks[ch / 3];
+        int c = ch % 3;
+        long fingerprint = ToneNumbers.fold(ToneNumbers.seed(), regs[0xb0 + c]); // feedback, algorithm
+        int written = regs[0xb0 + c];
+        for (int slot = 0; slot < 4; slot++) {
+            int r = c + slot * 4;
+            for (int reg : new int[] {0x30, 0x50, 0x60, 0x70, 0x80, 0x90}) {
+                fingerprint = ToneNumbers.fold(fingerprint, regs[reg + r]);
+                written |= regs[reg + r];
+            }
+        }
+        // nothing written yet is not a voice, it is a chip that has not been given one
+        return written == 0 ? 0 : tones.numberOf(fingerprint);
+    }
+
+    /**
+     * The register banks a voice can be read out of, or {@code null} for a chip whose core decodes
+     * them away. Defaults to {@link #ports()}, which the register backed members of the family
+     * already answer from.
+     */
+    protected int[][] toneRegs() {
+        return ports();
+    }
+
+    /** register 0x22; the plain OPN has no LFO and so no register to answer with */
+    protected int lfoRegister() {
+        return ports()[0][0x22];
+    }
+
+    /** register 0xb4 of a channel: PMS in bits 0-2, AMS in bits 4-5 */
+    protected int fmSensitivity(int ch) {
+        return ports()[ch / 3][0xb4 + ch % 3];
+    }
+
+    /** whether any of the channel's operators follows the amplitude modulation, register 0x60 */
+    protected boolean fmAmOn(int ch) {
+        int[] regs = ports()[ch / 3];
+        for (int slot = 0; slot < 4; slot++) {
+            if ((regs[0x60 + ch % 3 + slot * 4] & 0x80) != 0) return true;
+        }
+        return false;
     }
 
     /**
@@ -304,7 +390,9 @@ public abstract class OpnFmReader implements FmDspChipReader {
         prevSsgSoundings[s] = sounding;
         prevSsgPeriods[s] = period;
         // the SSG section runs at half the FM clock input, one tone step is clock/2 / 16
-        out.note = period > 0 ? Notes.noteOf(fnumK() * 144 / 4 / (16.0 * period)) : -1;
+        double freq = period > 0 ? fnumK() * 144 / 4 / (16.0 * period) : 0;
+        out.note = period > 0 ? Notes.noteOf(freq) : -1;
+        out.detune = Notes.centsOf(freq);
         out.volume = level;
         out.ssgTone = tone;
         out.ssgNoise = noise;

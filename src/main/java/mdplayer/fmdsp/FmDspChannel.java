@@ -28,6 +28,21 @@ public class FmDspChannel {
     /** semitones above C0, -1 while silent */
     public int note = -1;
 
+    /**
+     * Cents the sounding pitch sits off {@link #note}, -50 to 50, which is what the fmdsp row shows
+     * behind "DT:". A sequenced driver has a detune of its own to show there; a register file has
+     * not, so what is measured instead is how far off the note the chip is actually playing - which
+     * is the same thing seen from the other end, the detune having gone into the pitch register
+     * along with everything else. 0 from a reader that cannot tell, which reads as "in tune".
+     */
+    public int detune;
+
+    /** the chip's own LFO is bending this channel's pitch */
+    public boolean lfoPitch;
+
+    /** the chip's own LFO is moving this channel's level */
+    public boolean lfoVolume;
+
     /** display volume, whatever unit the chip counts in */
     public int volume;
 
@@ -69,10 +84,30 @@ public class FmDspChannel {
     /** display number of the row, 1-based; 0 lets the source number by slot */
     public int num;
 
+    /**
+     * Sets {@link #note} and {@link #detune} together from the frequency the channel is playing,
+     * 0 being silent. Prefer it over setting {@link #note} on its own: the detune is the same
+     * measurement carried to a finer resolution, and computing the frequency twice to get at both
+     * is how the two drift apart.
+     */
+    public void pitch(double freq) {
+        note = Notes.noteOf(freq);
+        detune = Notes.centsOf(freq);
+    }
+
+    /** the same, from a playback rate ratio - ratio 1.0 being o4 c, see {@link Notes#noteOfRatio} */
+    public void pitchOfRatio(double ratio) {
+        note = Notes.noteOfRatio(ratio);
+        detune = Notes.centsOfRatio(ratio);
+    }
+
     public void clear() {
         sounding = false;
         keyOn = false;
         note = -1;
+        detune = 0;
+        lfoPitch = false;
+        lfoVolume = false;
         volume = 0;
         amplitude = 0;
         measured = false;

@@ -52,8 +52,12 @@ import vavi.util.event.GenericEvent;
  * ({@link mdplayer.driver.pmd.PmdFmDspSource}, {@link mdplayer.driver.fmp.FmpFmDspSource}) three
  * things are approximations:
  * <ul>
- * <li>the MML columns. Ticks, gate and detune live in the driver work area only, so they stay 0;
- * the key is decoded from the chip's frequency registers instead of the driver's note.</li>
+ * <li>the MML columns, which belong to a driver's work area and are measured off the chip here
+ * instead: the key and the detune are decoded from the frequency registers rather than read as the
+ * driver's note and detune, the note length and the gate are timed between key ons and key offs
+ * rather than read as the note's own, and of the "M:" flags only the two the registers can answer
+ * are filled - see {@link #statusOf}. The tone number is whatever the chip calls one, and a chip
+ * with no instruments has none.</li>
  * <li>the level meters, which are synthesized from the level registers and a decay envelope
  * retriggered on every key-on edge, exactly like the driver-specific sources do.</li>
  * <li>key-on edges. The caches are polled, so a channel retriggered with the very same register
@@ -179,6 +183,32 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
     /** the note each row played at the last snapshot, {@code -1} while it rests */
     private final int[] lastNotes = new int[TrackId.COUNT];
 
+    /** tick count of each row's last key off, {@code -1} while the key is still down */
+    private final long[] keyOffTicks = new long[TrackId.COUNT];
+
+    /**
+     * The measured gate of each row's previous note, in {@link #noteTickHz} counts: how much of it
+     * the key was actually held for, against the {@link #noteLengths length} of the same note. A
+     * sequenced driver has this as a number - PMD's q/Q - while a register file only shows the key
+     * going down and coming up again, so it is timed the same way the note length is, and shown
+     * against the same {@link #barScale} so that the two can be read together.
+     */
+    private final int[] gates = new int[TrackId.COUNT];
+
+    /** the pitch each row played at the last snapshot, in cents; 0 while it rests */
+    private final int[] lastPitches = new int[TrackId.COUNT];
+
+    /**
+     * How far a row's pitch has moved one way without being re-struck, in cents, negative while it
+     * moves down; reset whenever it turns around. Moving on and on the same way is a slide rather
+     * than a melody, which is the only thing a register file can be read for a portamento by -
+     * see {@link #statusOf}.
+     */
+    private final int[] slides = new int[TrackId.COUNT];
+
+    /** snapshots left before a row's "M:" portamento flag goes out again */
+    private final int[] slideHolds = new int[TrackId.COUNT];
+
     /** the bar is 64 columns of 4 counts each, see {@code BAR_CNT} */
     private static final int barFullScale = 255;
 
@@ -283,6 +313,11 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
         Arrays.fill(keyOnTicks, -1);
         Arrays.fill(noteLengths, 0);
         Arrays.fill(lastNotes, -1);
+        Arrays.fill(keyOffTicks, -1);
+        Arrays.fill(gates, 0);
+        Arrays.fill(lastPitches, 0);
+        Arrays.fill(slides, 0);
+        Arrays.fill(slideHolds, 0);
         barScale = 1;
         Arrays.fill(pans, Pan.CENTER);
         Arrays.fill(comments, null);
@@ -474,11 +509,17 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
                         || (!channel.sampled && channel.sounding && channel.note >= 0
                             && channel.note != lastNotes[row]);
 
+                status.detune = channel.detune;
+                status.status = statusOf(row, channel);
+
                 if (noteLength(row, status, channel.keyOn, channel.sounding, channel.note, channel.sampled)) {
                     // streaming: the pitch is a playback rate, so the note it lands nearest is an
                     // artefact of the arithmetic and not something the song ever played
                     status.key = 0xff;
                     status.actualKey = 0xff;
+                    status.gate = 0;
+                } else {
+                    status.gate = Math.min(barFullScale, gates[row] / barScale);
                 }
 
                 if (level >= 0) {
@@ -576,12 +617,20 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
         // note at all; a pitch change on a held row is the same event as far as the bar cares.
         boolean started = keyOn || (sounding && note >= 0 && note != lastNotes[row]);
         lastNotes[row] = sounding ? note : -1;
+        // the key coming up is what ends the gate; the note itself runs on until the next one
+        if (!sounding && !started && keyOffTicks[row] < 0 && keyOnTicks[row] >= 0) {
+            keyOffTicks[row] = noteTicks;
+        }
         if (started) {
             if (keyOnTicks[row] >= 0) {
                 long measured = noteTicks - keyOnTicks[row];
                 noteLengths[row] = (int) Math.min(measured, maxNoteLength);
+                // a note the key never came up on was played legato, so its gate is its length
+                long held = keyOffTicks[row] < 0 ? measured : keyOffTicks[row] - keyOnTicks[row];
+                gates[row] = (int) Math.min(Math.max(held, 0), maxNoteLength);
             }
             keyOnTicks[row] = noteTicks;
+            keyOffTicks[row] = -1;
         }
         if (!sounding && !started) {
             // resting: nothing is counting down
@@ -655,6 +704,69 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
         return note < 0 ? 0xff : (note / 12) << 4 | note % 12;
     }
 
+    /**
+     * The eight character mnemonic fmdsp shows behind "M:", as much of it as a register file can
+     * answer. The six software LFO slots stay blank - a software LFO is a driver's, and this source
+     * has no driver to ask - and the two that are about the chip and the sound itself are filled:
+     * <ul>
+     * <li>"H", the chip's own LFO reaching this channel, from its sensitivity registers</li>
+     * <li>"P", a pitch bend, measured rather than read: the pitch of a note that is still being
+     * held has travelled {@link #slideCents} one way without turning back. A single jump is a
+     * melody stepping to its next note on a driver that re-keys silently ({@code MXDRV} does), and
+     * a vibrato turns around long before it gets that far, but a portamento or a pitch envelope
+     * keeps going.</li>
+     * </ul>
+     * The flag is held on for {@link #slideHold} snapshots after the pitch settles so that it does
+     * not flicker between the steps of a slow bend. What it cannot do is tell a driver's software
+     * vibrato from its portamento: both are the driver bending a held note, and only the driver
+     * knows which it called it.
+     */
+    private String statusOf(int row, FmDspChannel channel) {
+        // in cents, so that a slide is caught while it is still inside one semitone - which is
+        // most of a short one, and all of a slow one until it has been running for a while
+        int pitch = channel.note * 100 + channel.detune;
+        int moved = channel.sounding && !channel.keyOn && channel.note >= 0 && lastPitches[row] > 0
+                ? pitch - lastPitches[row] : 0;
+        lastPitches[row] = channel.sounding && channel.note >= 0 ? pitch : 0;
+
+        if (moved == 0 || Integer.signum(slides[row]) != Integer.signum(moved)) {
+            slides[row] = moved;
+        } else {
+            slides[row] += moved;
+        }
+        if (Math.abs(slides[row]) >= slideCents) slideHolds[row] = slideHold;
+        else if (slideHolds[row] > 0) slideHolds[row]--;
+        if (!channel.sounding) slideHolds[row] = 0;
+
+        int i = (channel.lfoPitch ? 1 : 0) | (channel.lfoVolume ? 2 : 0) | (slideHolds[row] > 0 ? 4 : 0);
+        return CHIP_STATUS[i];
+    }
+
+    /**
+     * How far a held note's pitch has to travel one way before it counts as a slide, in cents.
+     * A quarter tone: below that is a vibrato turning around or a driver's detune being nudged,
+     * and a portamento worth drawing crosses it within a few snapshots.
+     */
+    private static final int slideCents = 50;
+
+    /** how long the "M:" portamento flag stays on after the pitch stops moving, in snapshots */
+    private static final int slideHold = 16;
+
+    private static final String[] CHIP_STATUS = new String[8];
+
+    static {
+        for (int i = 0; i < CHIP_STATUS.length; i++) {
+            boolean pitch = (i & 1) != 0, volume = (i & 2) != 0;
+            CHIP_STATUS[i] = new String(new char[] {
+                    pitch ? 'P' : '-',           // the chip's LFO is bending the pitch
+                    volume ? 'A' : '-',          // and/or moving the level
+                    '-', '-', '-', '-',          // a second LFO and the sync flags: driver state
+                    pitch || volume ? 'H' : '-', // it is the chip's own LFO doing it, not a driver's
+                    (i & 4) != 0 ? 'P' : '-',    // a measured portamento
+            });
+        }
+    }
+
     private static void clear(TrackStatus status) {
         status.playing = false;
         status.info = TrackInfo.NORMAL;
@@ -666,6 +778,7 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
         status.volume = 0;
         status.gate = 0;
         status.detune = 0;
+        status.status = CHIP_STATUS[0];
         status.ppz8Ch = 0;
         status.ssgTone = false;
         status.ssgNoise = false;

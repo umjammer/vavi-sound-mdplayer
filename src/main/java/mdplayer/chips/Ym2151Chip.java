@@ -386,6 +386,18 @@ public class Ym2151Chip extends BaseChip {
             info.put("channels." + ch + ".keyCode", register[chipId][0x28 + ch]);
             info.put("channels." + ch + ".totalLevel", carrierTotalLevel(chipId, ch, panFlCon & 0x07));
             info.put("channels." + ch + ".pan", (panFlCon >> 6) & 0x03);
+            // the key fraction of register 0x30, the pitch between the key code's note and the
+            // next in sixty-fourths of a semitone - where a detune and a portamento end up
+            info.put("channels." + ch + ".keyFraction", (register[chipId][0x30 + ch] >> 2) & 0x3f);
+            // register 0x38 carries PMS in bits 4-6 and AMS in bits 0-1; hand it over the way the
+            // OPN's 0xb4 has them, so that one reader can read either chip
+            int ms = register[chipId][0x38 + ch];
+            info.put("channels." + ch + ".sensitivity", ((ms >> 4) & 0x07) | ((ms & 0x03) << 4));
+            boolean amOn = false;
+            for (int slot = 0; slot < 4; slot++) {
+                amOn |= (register[chipId][0xa0 + ch + slot * 8] & 0x80) != 0;
+            }
+            info.put("channels." + ch + ".amOn", amOn);
         }
         return info;
     }

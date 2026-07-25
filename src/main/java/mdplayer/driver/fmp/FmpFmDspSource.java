@@ -12,6 +12,7 @@ import java.util.Map;
 import mdplayer.Common;
 import mdplayer.chips.SegaPcmChip;
 import mdplayer.driver.BaseDriver;
+import mdplayer.fmdsp.Notes;
 import musicDriverInterface.MetaData.Tag;
 import vavi.sound.visualizer.fmdsp.FftAnalyzer;
 import vavi.sound.visualizer.fmdsp.FftDataSource;
@@ -192,11 +193,11 @@ public class FmpFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
             status.info = infoOf(t);
             int note = fw.note(p);
             status.key = keyOf(note);
-            status.actualKey = status.key;
+            status.actualKey = actualKeyOf(t, fw, p, status.key);
             status.toneNum = fw.toneNum(p);
             status.volume = fw.volume(p);
-            status.gate = fw.gate(p);
             status.detune = fw.detune(p);
+            status.status = statusOf(fw, p);
             status.ticksLeft = fw.ticksLeft(p);
             if (status.info == TrackInfo.SSG) {
                 // the mixer bits FMP lets through for this SSG channel: tone in 0-2, noise in 3-5
@@ -213,6 +214,7 @@ public class FmpFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
             notes[i] = note;
             if (keyOn) ticks[i] = status.ticksLeft;
             status.ticks = ticks[i];
+            status.gate = fw.gate(p, status.ticks);
 
             level(t, fw, p, keyOn, fw.keyOn(p));
         }
@@ -352,6 +354,58 @@ public class FmpFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
         return note < 0 ? 0xff : (note / 12) << 4 | note % 12;
     }
 
+    /**
+     * The key the chip is really playing, read back from the pitch register FMP last wrote, which
+     * has the LFO and the portamento in it. fmdsp draws it on the keyboard in its own color, so a
+     * note bent away from its MML key lights a second key - which is the whole point of the
+     * keyboard having two of them, and what makes a portamento visible as it slides.
+     * <p>
+     * The ADPCM part has none: its register is a playback rate, and FMP drives it from the sample's
+     * own pitch rather than from the note, so the note it lands nearest says nothing. The C fmdsp
+     * blanks it too.
+     */
+    private static int actualKeyOf(TrackId t, FmpWork fw, int part, int key) {
+        if (t == TrackId.ADPCM) return 0xff;
+        if (key == 0xff) return 0xff;
+        int freq = fw.outFnum(part);
+        // FMP blanks the register cache when an LFO is switched off and fills it again on the next
+        // frame; the note has not moved, so show it where it is rather than at the bottom key
+        if (freq == 0) return key;
+        return switch (t) {
+            case SSG_1, SSG_2, SSG_3 -> Notes.ssgKeyOf(freq);
+            default -> Notes.fmKeyOf(freq);
+        };
+    }
+
+    /**
+     * The eight character mnemonic fmdsp shows behind "M:": FMP's five software LFOs by their MML
+     * letters, a slot fmdsp leaves blank, the OPNA's own hardware LFO, and the portamento. Same
+     * letters and same order as the C fmdsp.
+     * <p>
+     * The first six come out of one byte, so they are tabulated - the snapshot runs at ~120 Hz over
+     * sixteen tracks and the string would otherwise be built from scratch every time.
+     */
+    private static String statusOf(FmpWork fw, int part) {
+        boolean hardware = (fw.type(part) & 0x01) != 0 && fw.hlfoApms(part) != 0;
+        boolean portamento = (fw.statusBits(part) & 0x20) != 0;
+        return LFO_STATUS[fw.lfoFlags(part)] + (hardware ? "H" : "-") + (portamento ? "P" : "-");
+    }
+
+    private static final String[] LFO_STATUS = new String[256];
+
+    static {
+        for (int i = 0; i < LFO_STATUS.length; i++) {
+            LFO_STATUS[i] = new String(new char[] {
+                    (i & 0x80) != 0 ? 'P' : '-',  // pitch LFO
+                    (i & 0x40) != 0 ? 'Q' : '-',  // the second pitch LFO
+                    (i & 0x20) != 0 ? 'R' : '-',  // the third pitch LFO
+                    (i & 0x10) != 0 ? 'A' : '-',  // volume LFO
+                    '-',
+                    (i & 0x04) != 0 ? 'e' : '-',  // envelope, which replaces the volume LFO
+            });
+        }
+    }
+
     private static int levelChannelOf(TrackId t) {
         return switch (t) {
             case FM_1 -> 0;
@@ -399,6 +453,7 @@ public class FmpFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
         status.volume = 0;
         status.gate = 0;
         status.detune = 0;
+        status.status = "";
         status.ppz8Ch = 0;
         status.ssgTone = false;
         status.ssgNoise = false;

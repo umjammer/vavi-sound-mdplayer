@@ -10,6 +10,7 @@ import java.util.Arrays;
 
 import mdplayer.Common;
 import mdplayer.driver.BaseDriver;
+import mdplayer.fmdsp.Notes;
 import musicDriverInterface.MetaData.Tag;
 import pmd.driver.PW;
 import pmd.driver.PW.partWork;
@@ -196,11 +197,15 @@ public class PmdFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
             status.playing = part.address != 0;
             status.info = infoOf(t);
             status.key = part.onkai & 0xff;
-            status.actualKey = status.key;
+            status.actualKey = actualKeyOf(t, part, status.key);
             status.toneNum = part.voicenum & 0xff;
             status.volume = part.volume & 0xff;
             status.gate = part.qdat & 0xff;
-            status.detune = part.detune;
+            // fmdsp prints the detune as three digits and a sign, PMD counts it in f-number steps
+            // and does not bound it - clamp the way the C fmdsp does so a deep detune cannot run
+            // over the field
+            status.detune = Math.max(-128, Math.min(127, part.detune));
+            status.status = LFO_STATUS[part.lfoswi & 0xff];
             status.ticksLeft = part.leng & 0xff;
             status.ppz8Ch = status.info == TrackInfo.PPZ8 ? i - TrackId.PPZ8_1.ordinal() + 1 : 0;
             if (status.info == TrackInfo.SSG) {
@@ -319,6 +324,183 @@ public class PmdFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
     }
 
     /**
+     * The eight character mnemonic fmdsp shows behind "M:", for every value of PMD's
+     * {@link partWork#lfoswi}: the two software LFOs, each as pitch / volume / sync, then a slot
+     * fmdsp leaves blank, then portamento. Same letters and same order as the C fmdsp.
+     * <p>
+     * A table because the snapshot runs at ~120 Hz over sixteen tracks and the string would
+     * otherwise be built from scratch every time; there are only 256 of them.
+     */
+    private static final String[] LFO_STATUS = new String[256];
+
+    static {
+        for (int i = 0; i < LFO_STATUS.length; i++) {
+            LFO_STATUS[i] = new String(new char[] {
+                    (i & 0x01) != 0 ? 'P' : '-',  // LFO 1 pitch
+                    (i & 0x02) != 0 ? 'A' : '-',  // LFO 1 volume
+                    (i & 0x04) != 0 ? 'S' : '-',  // LFO 1 sync
+                    (i & 0x10) != 0 ? 'P' : '-',  // LFO 2 pitch
+                    (i & 0x20) != 0 ? 'A' : '-',  // LFO 2 volume
+                    (i & 0x40) != 0 ? 'S' : '-',  // LFO 2 sync
+                    '-',
+                    (i & 0x08) != 0 ? 'P' : '-',  // portamento
+            });
+        }
+    }
+
+    /**
+     * The key the chip is really playing, which is the MML key moved by everything that bends it
+     * after the note was set: portamento, detune and the two pitch LFOs. fmdsp draws it on the
+     * keyboard in its own color, so a note bent away from its MML key lights a second key - which
+     * is the whole point of the keyboard having two of them, and what makes a portamento visible
+     * as it slides.
+     * <p>
+     * The C fmdsp reads PMD's {@code output_freq}, the value the driver last wrote to the chip, and
+     * turns it back into a note. PMD's work area has no such field, so the write is recomputed here
+     * from the note and the four things PMD adds to it - see {@link #outputFreqOf}.
+     */
+    private static int actualKeyOf(TrackId t, partWork part, int key) {
+        if ((key & 0xf) == 0xf) return 0xff; // resting, or no note yet
+        int freq = outputFreqOf(t, part);
+        if (freq < 0) return key;
+        return switch (t) {
+            case SSG_1, SSG_2, SSG_3 -> Notes.ssgKeyOf(freq);
+            case ADPCM -> adpcmKeyOf(freq);
+            case PPZ8_1, PPZ8_2, PPZ8_3, PPZ8_4, PPZ8_5, PPZ8_6, PPZ8_7, PPZ8_8 -> Notes.ppz8KeyOf(freq);
+            default -> Notes.fmKeyOf(freq);
+        };
+    }
+
+    /**
+     * The value PMD is about to write to the part's pitch register, or -1 when it has none to
+     * write. Mirrors PMD's own {@code otodasi} (FM), {@code otodasip} (SSG), {@code otodasim}
+     * (ADPCM) and {@code otodasiz} (PPZ8), stopping short of the write itself.
+     * <p>
+     * Each of them starts from {@link partWork#fnum}, the bare note, and adds the portamento, the
+     * detune and whichever of the two software LFOs is set to bend the pitch - though no two agree
+     * on how, the FM one carrying its block along and the PPZ8 one scaling rather than shifting.
+     * FM3 in effect mode detunes each slot separately and is not followed here; the keyboard shows
+     * one key per row either way.
+     */
+    private static int outputFreqOf(TrackId t, partWork part) {
+        int lfo = 0;
+        if ((part.lfoswi & 0x01) != 0) lfo += part.lfodat;
+        if ((part.lfoswi & 0x10) != 0) lfo += part._lfodat;
+
+        if (t.ordinal() >= TrackId.PPZ8_1.ordinal()) {
+            long base = ((part.fnum2 & 0xffffL) << 16) | (part.fnum & 0xffffL);
+            if (base == 0) return -1;
+            // PPZ8 counts a playback rate, so PMD scales it by the bend instead of shifting it
+            long freq = base + ((long) part.porta_num << 4)
+                    + (long) (lfo + part.detune) * ((base >> 8) & 0xffff);
+            return (int) Math.max(0, Math.min(Integer.MAX_VALUE, freq));
+        }
+
+        int base = part.fnum & 0xffff;
+        if (base == 0) return -1;
+
+        switch (t) {
+        case SSG_1, SSG_2, SSG_3 -> {
+            int period = base + part.porta_num;
+            if ((part.extendmode & 1) == 0) {
+                // a period, so PMD subtracts here what it adds everywhere else
+                period -= part.detune + lfo;
+            } else {
+                // extended detune scales the period instead of shifting it, so that the same
+                // detune is the same interval whatever octave the part plays in
+                period = extendDetune(period, part.detune);
+                period = extendDetune(period, lfo);
+            }
+            period &= 0xffff;
+            if (period >= 0x1000) period = (period & 0x8000) != 0 ? 0 : 0xfff;
+            return period;
+        }
+        case ADPCM -> {
+            // the ADPCM row is the ADPCM row only under PMDB2 - PMD86 and the PPZ8 emulation play
+            // it from a rate pair this does not know how to read, and neither bends it
+            if (part.fnum2 != 0) return -1;
+            // it is hard to hear an LFO on a sample, so PMD applies it four times as deep
+            int rate = base + part.porta_num + lfo * 4 + part.detune;
+            return Math.max(0, Math.min(0xffff, rate));
+        }
+        default -> {
+            // the f-number leaves its block only to be renormalized back into register range
+            return blkFnum(base & 0x3800, (base & 0x7ff) + part.porta_num + part.detune + lfo);
+        }
+        }
+    }
+
+    /** PMD's extended detune: {@code value} shifted by {@code detune}/4096th of itself */
+    private static int extendDetune(int value, int detune) {
+        if (detune == 0) return value;
+        int product = ((short) value * (short) detune) << 4;
+        int shift = (short) (product >> 16) + (product >= 0 ? 1 : -1);
+        return (short) (value - shift);
+    }
+
+    /**
+     * PMD's {@code fm_block_calc}: an f-number bent out of the register's range is carried into the
+     * next block, which on OPN means halving or doubling - and PMD does that by the 0x26a that
+     * separates the two ends of the range, so this is what really decides the pitch once a bend
+     * crosses an octave and not the f-number alone.
+     */
+    private static int blkFnum(int blk, int fnum) {
+        fnum &= 0xffff;
+        for (;;) {
+            if ((fnum & 0x8000) != 0 || fnum < 0x26a) {
+                if (blk < 0x800) { // as low as the chip goes
+                    blk = 0;
+                    if ((fnum & 0x8000) != 0 || fnum < 8) fnum = 8;
+                    break;
+                }
+                blk -= 0x800;
+                fnum = (fnum + 0x26a) & 0xffff;
+                continue;
+            }
+            if (fnum < 0x4d4) break;
+            blk += 0x800;
+            if (blk != 0x4000) {
+                fnum = (fnum - 0x26a) & 0xffff;
+                continue;
+            }
+            blk = 0x3800; // as high as the chip goes
+            if (fnum > 0x7ff) fnum = 0x7ff;
+            break;
+        }
+        return blk | fnum;
+    }
+
+    /**
+     * MML key of an OPNA ADPCM delta-N, as PMD writes it: the table is the delta-N half a semitone
+     * above each note of one octave, at the rate PMD plays its samples back at.
+     */
+    private static int adpcmKeyOf(int freq) {
+        if (freq == 0) return 0x00;
+        int octave = 5;
+        freq &= 0xffff;
+        while ((freq & 0x8000) == 0) {
+            freq <<= 1;
+            octave--;
+        }
+        int key = 0;
+        while (key < 12 && freq >= ADPCM_FREQ[key]) key++;
+        key += 5;
+        if (key >= 12) {
+            key -= 12;
+            octave++;
+        }
+        if (octave < 0) return 0x00;
+        if (octave > 8) return 0x8b;
+        return octave << 4 | key;
+    }
+
+    /** delta-N half a semitone above e - d+, the octave a normalized ADPCM delta-N spans */
+    private static final int[] ADPCM_FREQ = {
+            0x8738, 0x8f42, 0x97c7, 0xa0cd, 0xaa5d, 0xb47e,
+            0xbf3a, 0xca99, 0xd6a5, 0xe369, 0xf0ee, 0xff42,
+    };
+
+    /**
      * FM 4-6 only exist with a sound board 2 and PPZ8 only with the PPZ8 driver;
      * PMD leaves the part index of the others at 0, which would alias FM 1.
      */
@@ -353,6 +535,7 @@ public class PmdFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
         status.volume = 0;
         status.gate = 0;
         status.detune = 0;
+        status.status = "";
         status.ppz8Ch = 0;
         status.ssgTone = false;
         status.ssgNoise = false;
