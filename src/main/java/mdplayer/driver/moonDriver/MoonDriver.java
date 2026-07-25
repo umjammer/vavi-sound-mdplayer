@@ -394,4 +394,9 @@ logger.log(Level.INFO, "useChip: " + plugin.getChips().stream().map(Class::getSi
             opl4Write.accept(cd);
         }
     }
+
+    @Override
+    public String getName() {
+        return "MOONDRIVER";
+    }
 }

@@ -241,4 +241,9 @@ public class NsfMdDriver extends BaseDriver implements NsfDriver {
             nsf.mmc5.setOption(1, setting.getNsf().getMMC5PhaseRefresh() ? 1 : 0);
         }
     }
+
+    @Override
+    public String getName() {
+        return "NSF";
+    }
 }

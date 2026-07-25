@@ -107,4 +107,9 @@ public class MgsDriver extends BaseDriver {
             logger.log(Level.ERROR, ex.getMessage(), ex);
         }
     }
+
+    @Override
+    public String getName() {
+        return "MSGDRV";
+    }
 }

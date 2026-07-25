@@ -386,4 +386,9 @@ logger.log(Level.TRACE, "MXDRV_Start: " + ret);
         fireEventHappened(this, "mxdrv",
                 plugin.chipRegister.chip(Ym2151Chip.class).register[0], fmMaps, pcmMaps);
     }
+
+    @Override
+    public String getName() {
+        return "MXDRV";
+    }
 }

@@ -194,4 +194,9 @@ if (CC++ % INTERVAL == 0) {
     public boolean isNotRenderingOnPause() {
         return true;
     }
+
+    @Override
+    public String getName() {
+        return "SID";
+    }
 }

@@ -169,4 +169,9 @@ public class MnDriver extends BaseDriver {
     public long getDriverCounter() {
         return counter;
     }
+
+    @Override
+    public String getName() {
+        return "MNDRV";
+    }
 }

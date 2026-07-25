@@ -983,7 +983,7 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
     @Override
     public String driverName() {
         BaseDriver d = work;
-        return d != null ? d.getClass().getSimpleName().replace("Driver", "").toUpperCase() : null;
+        return d != null ? d.getName() : null;
     }
 
     @Override public String filename() { return filename; }
