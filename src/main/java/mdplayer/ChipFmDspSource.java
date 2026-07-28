@@ -246,8 +246,6 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
 
     private final FmDspChannel channel = new FmDspChannel();
 
-    private ChipRegister chipRegister;
-
     private Supplier<BaseDriver> driver = () -> null;
 
     // work state
@@ -295,7 +293,6 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
     }
 
     void bind(ChipRegister chipRegister, Supplier<BaseDriver> driver) {
-        this.chipRegister = chipRegister;
         this.driver = driver != null ? driver : () -> null;
         readers.forEach(r -> r.bind(chipRegister));
         readers.forEach(r -> r.bind(this.driver));

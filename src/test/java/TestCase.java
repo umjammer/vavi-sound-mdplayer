@@ -123,6 +123,9 @@ public class TestCase {
     @Property(name = "fmdsp.fontRom")
     String fontRom;
 
+    @Property(name = "multi.source")
+    String multiSource;
+
     @Property(name = "multi.1")
     String multi1;
 
@@ -418,10 +421,6 @@ Debug.println("close");
         System.out.println("Deserialized successfully!");
     }
 
-    /**
-     * Plays the file of the {@code generic} property of local.properties with the chip-cache
-     * source - any format mdplayer knows, no driver-specific source involved.
-     */
     @Test
     @DisplayName("play anything w/ fmdsp visualizer via the generic chip source")
     @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
@@ -447,7 +446,7 @@ Debug.println("filename: " + file);
         }
 
         JFrame frame = new JFrame();
-        frame.setTitle(Path.of(file).getFileName() + " - generic");
+        frame.setTitle(Path.of(file).getFileName() + " - MDDSP");
         frame.setLayout(new BorderLayout());
         frame.add(visualizer, BorderLayout.CENTER);
         frame.addKeyListener(new KeyAdapter() {
@@ -485,10 +484,6 @@ Debug.println("filename: " + file);
         frame.dispose();
     }
 
-    /**
-     * Plays the file of the {@code generic} property of local.properties with the chip-cache
-     * source - any format mdplayer knows, no driver-specific source involved.
-     */
     @Test
     @DisplayName("play multiple w/ fmdsp visualizer via the generic chip source")
     @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
@@ -539,7 +534,10 @@ Debug.println("filename: " + file);
         frame.setVisible(true);
         frame.requestFocusInWindow();
 
-        List<Path> files = listFilesInLocalProperties();
+        List<Path> files = switch (multiSource) {
+            case "dirext" -> new ArrayList<>(listFilesUnderDirFilteredByExt(dir, ext));
+            default -> listFilesInLocalProperties();
+        };
         Collections.shuffle(files);
 
         // once for the whole play list: Audio keeps its listeners forever, so subscribing per
@@ -557,7 +555,7 @@ Debug.print("play: " + file + " ------------------------------------------------
             format.load(Archives.getInputStream(new BufferedInputStream(Files.newInputStream(path))), null);
             var plugin = (BasePlugin<? extends BaseDriver>) format.getPlugin();
             plugin.setParams(format, Map.of("fileName", file));
-            frame.setTitle(Path.of(file).getFileName() + " - generic");
+            frame.setTitle(Path.of(file).getFileName() + " - MDDSP");
 
             audio.init(plugin);
             // the chips are shared singletons, so last song's state has to go before this one
