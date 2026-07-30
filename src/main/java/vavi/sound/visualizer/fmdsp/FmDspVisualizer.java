@@ -739,20 +739,40 @@ public class FmDspVisualizer extends JComponent {
                          int x, int y, int color, boolean bg) {
         if (s == null) return;
         int xo = 0;
+        int yo = 0;
+        int lineH = fh + 3;
         for (int i = 0; i < s.length(); i++) {
             char c = s.charAt(i);
+            if (c == '\r') {
+                xo = 0;
+                if (i + 1 < s.length() && s.charAt(i + 1) == '\n') {
+                    i++;
+                }
+                yo += lineH;
+                continue;
+            }
+            if (c == '\n') {
+                xo = 0;
+                yo += lineH;
+                continue;
+            }
             if (c == '\t') {
                 xo += fw * 8;
                 xo -= xo % (fw * 8);
                 continue;
             }
+            if (c < 0x20) {
+                continue;
+            }
             int ank = ankOf(c);
             if (ank >= 0) {
-                if (x + xo + fw > PC98_W) return;
-                vramPutchar(font, ank * glyphBytes, x + xo, y, fw, fh, color, bg);
+                if (x + xo + fw > PC98_W) continue;
+                if (y + yo + fh <= PC98_H) {
+                    vramPutchar(font, ank * glyphBytes, x + xo, y + yo, fw, fh, color, bg);
+                }
                 xo += fw;
             } else {
-                if (x + xo + fw * 2 > PC98_W) return;
+                if (x + xo + fw * 2 > PC98_W) continue;
                 xo += fw + 8;
             }
         }
@@ -765,24 +785,44 @@ public class FmDspVisualizer extends JComponent {
     private void putRom(String s, int x, int y, int color, boolean bg) {
         if (s == null) return;
         int xo = 0;
+        int yo = 0;
+        int lineH = COMMENT_H;
         for (int i = 0; i < s.length(); i++) {
             char c = s.charAt(i);
+            if (c == '\r') {
+                xo = 0;
+                if (i + 1 < s.length() && s.charAt(i + 1) == '\n') {
+                    i++;
+                }
+                yo += lineH;
+                continue;
+            }
+            if (c == '\n') {
+                xo = 0;
+                yo += lineH;
+                continue;
+            }
             if (c == '\t') {
                 xo += ROM_W * 8;
                 xo -= xo % (ROM_W * 8);
                 continue;
             }
+            if (c < 0x20) {
+                continue;
+            }
             int ank = ankOf(c);
             if (ank >= 0) {
-                if (x + xo + ROM_W > PC98_W) return;
-                vramPutchar(fontRom, ROM_ANK + ank * ROM_H, x + xo, y, ROM_W, ROM_H, color, bg);
+                if (x + xo + ROM_W > PC98_W) continue;
+                if (y + yo + ROM_H <= PC98_H) {
+                    vramPutchar(fontRom, ROM_ANK + ank * ROM_H, x + xo, y + yo, ROM_W, ROM_H, color, bg);
+                }
                 xo += ROM_W;
             } else {
-                if (x + xo + ROM_W * 2 > PC98_W) return;
+                if (x + xo + ROM_W * 2 > PC98_W) continue;
                 int glyph = romKanji(jisOf(c));
-                if (glyph >= 0) {
-                    vramPutchar(fontRom, glyph, x + xo, y, ROM_W, ROM_H, color, bg);
-                    vramPutchar(fontRom, glyph + ROM_H, x + xo + ROM_W, y, ROM_W, ROM_H, color, bg);
+                if (glyph >= 0 && y + yo + ROM_H <= PC98_H) {
+                    vramPutchar(fontRom, glyph, x + xo, y + yo, ROM_W, ROM_H, color, bg);
+                    vramPutchar(fontRom, glyph + ROM_H, x + xo + ROM_W, y + yo, ROM_W, ROM_H, color, bg);
                 }
                 xo += ROM_W * 2;
             }
@@ -823,6 +863,7 @@ public class FmDspVisualizer extends JComponent {
 
     /** what {@link #putline} moves the cursor by for {@code c} */
     private static int advanceOf(char c, int fw) {
+        if (c < 0x20) return 0;
         return ankOf(c) >= 0 ? fw : fw + 8;
     }
 
