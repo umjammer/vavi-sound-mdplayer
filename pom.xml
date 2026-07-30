@@ -5,11 +5,6 @@
   <artifactId>vavi-apps-mdplayer</artifactId>
   <version>0.0.20</version>
 
-  <properties>
-    <!-- the music file `mvn exec:exec` starts playing, none by default -->
-    <mdplayer.file/>
-  </properties>
-
   <profiles>
     <profile>
       <id>local</id>
@@ -155,11 +150,90 @@
                     <path refid="maven.compile.classpath"/>
                     <path refid="maven.test.classpath"/>
                   </classpath>
+                  <argument>--add-opens=java.base/java.io=ALL-UNNAMED</argument>
+                  <argument>--add-opens=java.base/sun.nio.ch=ALL-UNNAMED</argument>
+                  <argument>--add-exports=java.desktop/com.sun.media.sound=ALL-UNNAMED</argument>
                   <jvmarg value="-Djava.util.logging.config.file=${project.build.testOutputDirectory}/logging.properties" />
                   <!-- jvmarg value="-Dswing.defaultlaf=com.formdev.flatlaf.FlatLightLaf" / -->
                   <jvmarg value="-Dapple.laf.useScreenMenuBar=true" />
                   <jvmarg value="-Dapple.awt.application.name=MDPlayer" />
                   <arg value="${file}" />
+                </java>
+              </target>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <!-- mvn -P calibrate antrun:run -Dseconds='2' -->
+      <id>calibrate</id>
+      <properties>
+        <args>--dry-run</args>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <version>3.1.0</version>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <java classname="mdplayer.tool.VolumeBalanceCalibrator" fork="true">
+                  <classpath>
+                    <path refid="maven.compile.classpath"/>
+                    <path refid="maven.test.classpath"/>
+                  </classpath>
+                  <jvmarg value="--add-opens=java.base/java.io=ALL-UNNAMED" />
+                  <jvmarg value="--add-opens=java.base/sun.nio.ch=ALL-UNNAMED" />
+                  <jvmarg line="--add-exports java.desktop/com.sun.media.sound=ALL-UNNAMED" />
+                  <jvmarg value="-Djava.util.logging.config.file=${project.build.testOutputDirectory}/logging.properties" />
+                  <jvmarg value="-Djava.awt.headless=true" />
+                  <arg value="--seconds" />
+                  <arg value="${seconds}" />
+                  <arg line="${args}" />
+                </java>
+              </target>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <!-- mvn -P loudness antrun:run -Dseconds='8' [-Dargs='tmp/zms/Clear.ZMS'] -->
+      <id>loudness</id>
+      <properties>
+        <args/>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <version>3.1.0</version>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <java classname="mdplayer.tool.LoudnessCheck" fork="true">
+                  <classpath>
+                    <path refid="maven.compile.classpath"/>
+                    <path refid="maven.test.classpath"/>
+                  </classpath>
+                  <jvmarg value="--add-opens=java.base/java.io=ALL-UNNAMED" />
+                  <jvmarg value="--add-opens=java.base/sun.nio.ch=ALL-UNNAMED" />
+                  <jvmarg line="--add-exports java.desktop/com.sun.media.sound=ALL-UNNAMED" />
+                  <jvmarg value="-Djava.util.logging.config.file=${project.build.testOutputDirectory}/logging.properties" />
+                  <jvmarg value="-Djava.awt.headless=true" />
+                  <arg value="--seconds" />
+                  <arg value="${seconds}" />
+                  <arg line="${args}" />
                 </java>
               </target>
             </configuration>
@@ -203,24 +277,7 @@
           <trimStackTrace>false</trimStackTrace>
         </configuration>
       </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
-        <version>3.2.0</version>
-        <configuration>
-          <!-- mvn exec:exec [-Dmdplayer.file=path/to/music] -->
-          <executable>${java.home}/bin/java</executable>
-          <arguments>
-            <argument>--add-opens=java.base/java.io=ALL-UNNAMED</argument>
-            <argument>--add-opens=java.base/sun.nio.ch=ALL-UNNAMED</argument>
-            <argument>--add-exports=java.desktop/com.sun.media.sound=ALL-UNNAMED</argument>
-            <argument>-classpath</argument>
-            <classpath/>
-            <argument>mdplayer.Program</argument>
-            <argument>${mdplayer.file}</argument>
-          </arguments>
-        </configuration>
-      </plugin>
+      <!-- use `mvn -P run antrun:run -Dfile='foo.vgz'` instead-->
     </plugins>
   </build>
 
@@ -247,7 +304,7 @@
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- com.github.umjammer / vavi -->
       <artifactId>vavi-commons</artifactId>
-      <version>1.1.18</version>
+      <version>1.1.19</version>
     </dependency>
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
@@ -273,7 +330,7 @@
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
       <artifactId>vavi-sound-mdsound</artifactId>
-      <version>0.0.22</version>
+      <version>0.0.23</version>
     </dependency>
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
@@ -288,7 +345,7 @@
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
       <artifactId>vavi-sound-pmd</artifactId>
-      <version>0.0.9</version>
+      <version>0.0.10</version>
     </dependency>
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
