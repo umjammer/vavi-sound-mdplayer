@@ -355,6 +355,12 @@ public class FmDspVisualizer extends JComponent {
     /** Strings are Unicode; this is only used to index the JIS addressed font ROM. */
     private static final Charset JIS0208 = Charset.forName("x-JIS0208");
 
+    /**
+     * The NEC extensions the ROM has glyphs for but JIS X 0208 has no code for - its row 13
+     * symbols, and its rows 89 to 92 of IBM characters - are reached through Shift_JIS instead.
+     */
+    private static final Charset MS932 = Charset.forName("MS932");
+
     /** Size of a PC-98 font ROM dump. */
     public static final int FONT_ROM_SIZE = 0x46800;
 
@@ -811,15 +817,23 @@ public class FmDspVisualizer extends JComponent {
                 continue;
             }
             int ank = ankOf(c);
-            if (ank >= 0) {
+            if (ank >= 0 || Pc98Gaiji.isHalfWidth(c)) {
                 if (x + xo + ROM_W > PC98_W) continue;
-                if (y + yo + ROM_H <= PC98_H) {
-                    vramPutchar(fontRom, ROM_ANK + ank * ROM_H, x + xo, y + yo, ROM_W, ROM_H, color, bg);
+                // a half width row's glyph is the left half of its cell, so both are one blit
+                int glyph = ank >= 0 ? ROM_ANK + ank * ROM_H : romKanji(jisOf(c));
+                if (glyph >= 0 && y + yo + ROM_H <= PC98_H) {
+                    vramPutchar(fontRom, glyph, x + xo, y + yo, ROM_W, ROM_H, color, bg);
                 }
                 xo += ROM_W;
             } else {
                 if (x + xo + ROM_W * 2 > PC98_W) continue;
                 int glyph = romKanji(jisOf(c));
+                // a gaiji is defined in the machine's RAM, so no ROM dump has one: rather than
+                // leave a hole where a character was, mark it the way a missing one is marked.
+                // Only a gaiji, mind - a full width space is a blank cell and means it
+                if (glyph < 0 || (Pc98Gaiji.jisOf(c) != 0 && isBlank(glyph))) {
+                    glyph = romKanji(jisOf(GETA));
+                }
                 if (glyph >= 0 && y + yo + ROM_H <= PC98_H) {
                     vramPutchar(fontRom, glyph, x + xo, y + yo, ROM_W, ROM_H, color, bg);
                     vramPutchar(fontRom, glyph + ROM_H, x + xo + ROM_W, y + yo, ROM_W, ROM_H, color, bg);
@@ -878,12 +892,37 @@ public class FmDspVisualizer extends JComponent {
     /** JIS X 0208 code of {@code c}, or 0 when it has none. */
     private int jisOf(char c) {
         return jisCache.computeIfAbsent(c, ch -> {
-            if (ch >= 0xE000 && ch <= 0xF8FF) {
-                return ch - 0xE000;
+            int gaiji = Pc98Gaiji.jisOf(ch);
+            if (gaiji != 0) {
+                return gaiji;
             }
-            byte[] b = String.valueOf(jisVariantOf(ch)).getBytes(JIS0208);
-            return b.length == 2 ? (b[0] & 0xff) << 8 | (b[1] & 0xff) : 0;
+            char v = jisVariantOf(ch);
+            // x-JIS0208 encodes what it has no code for as a character of its own, so asking it
+            // first would draw that one instead - every unmappable character sharing one glyph
+            if (JIS0208.newEncoder().canEncode(v)) {
+                byte[] b = String.valueOf(v).getBytes(JIS0208);
+                return b.length == 2 ? (b[0] & 0xff) << 8 | (b[1] & 0xff) : 0;
+            }
+            if (MS932.newEncoder().canEncode(v)) {
+                byte[] b = String.valueOf(v).getBytes(MS932);
+                return b.length == 2 ? jisOfShiftJis(b[0] & 0xff, b[1] & 0xff) : 0;
+            }
+            return 0;
         });
+    }
+
+    /** JIS X 0208 code of a Shift_JIS pair, or 0 when it addresses no row of one. */
+    private static int jisOfShiftJis(int b1, int b2) {
+        int row = (b1 < 0xe0 ? b1 - 0x81 : b1 - 0xc1) * 2 + 1;
+        int cell;
+        if (b2 >= 0x9f) {
+            row++;
+            cell = b2 - 0x9f + 1;
+        } else {
+            cell = b2 - 0x40 + (b2 < 0x7f ? 1 : 0);
+        }
+        // the IBM characters Shift_JIS also keeps past 0xfa are beyond the 94 rows a JIS code has
+        return row >= 1 && row <= 94 && cell >= 1 && cell <= 94 ? (row + 0x20) << 8 | (cell + 0x20) : 0;
     }
 
     /**
@@ -902,6 +941,17 @@ public class FmDspVisualizer extends JComponent {
             case '∥' -> '‖'; // double vertical line
             default -> c;
         };
+    }
+
+    /** what a character the ROM cannot draw is marked with */
+    private static final char GETA = '〓';
+
+    /** whether the ROM's cell at {@code glyph} is empty, which is how it holds an undefined one */
+    private boolean isBlank(int glyph) {
+        for (int i = 0; i < ROM_H * 2; i++) {
+            if (fontRom[glyph + i] != 0) return false;
+        }
+        return true;
     }
 
     /** Offset of the left half of a kanji in the font ROM, or -1 when there is none. */

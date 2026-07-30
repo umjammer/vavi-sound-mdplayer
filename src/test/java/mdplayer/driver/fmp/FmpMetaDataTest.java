@@ -8,8 +8,10 @@ import musicDriverInterface.MetaData.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 public class FmpMetaDataTest {
@@ -91,6 +93,36 @@ public class FmpMetaDataTest {
         assertEquals("Binary Note", md.getFirst(Tag.Note));
     }
 
+    /**
+     * An FMC memo is an 80 column screen image: a line is placed with spaces, so the comment lines
+     * have to keep the indent the tags are stripped of.
+     */
+    @Test
+    void testFmpBinaryMemoKeepsIndent() throws Exception {
+        byte[] buf = new byte[128];
+        buf[0] = 0x10;
+        buf[1] = 0x00;
+
+        int memoPtr = 0x10;
+        buf[memoPtr] = 'F';
+        buf[memoPtr + 1] = 'M';
+        buf[memoPtr + 2] = 'C';
+        buf[memoPtr + 3] = 0x10;
+
+        String memoStr = "  Title\r\n        Words by  Someone\r\n   Music by  Another\r\n\0";
+        byte[] memoBytes = memoStr.getBytes(Charset.forName("MS932"));
+        System.arraycopy(memoBytes, 0, buf, memoPtr + 4, memoBytes.length);
+
+        FmpDriver driver = new FmpDriver();
+        MetaData md = driver.getMetaData(buf);
+
+        assertEquals("Title", md.getFirst(Tag.Title));
+        assertEquals("Words by  Someone", md.getFirst(Tag.Composer));
+        assertEquals("Music by  Another", md.getFirst(Tag.Note));
+        assertArrayEquals(new String[] {"  Title", "        Words by  Someone", "   Music by  Another"},
+                driver.comments());
+    }
+
     @Test
     @EnabledIfSystemProperty(named = "vavi.test", matches = "ai")
     void testSpecificFile() throws Exception {
@@ -106,6 +138,57 @@ public class FmpMetaDataTest {
         assertNotNull(title);
     }
 
+    /**
+     * A memo may be coloured and laid out with ANSI escapes, and FMP's {@code ESC ! n} marks a
+     * lyric page - none of which the comment lines can honour, so none of it is text.
+     */
+    @Test
+    void testFmpBinaryMemoDropsEscapes() throws Exception {
+        byte[] buf = new byte[128];
+        buf[0] = 0x10;
+        buf[1] = 0x00;
+
+        int memoPtr = 0x10;
+        buf[memoPtr] = 'F';
+        buf[memoPtr + 1] = 'M';
+        buf[memoPtr + 2] = 'C';
+        buf[memoPtr + 3] = 0x10;
+
+        String memoStr = "\u001b[31m  Title\u001b[m\r\n"
+                + "\u001b!\u0001\u001b[11;28HWords by\u001b!!  Someone\r\n\0";
+        byte[] memoBytes = memoStr.getBytes(Charset.forName("MS932"));
+        System.arraycopy(memoBytes, 0, buf, memoPtr + 4, memoBytes.length);
+
+        FmpDriver driver = new FmpDriver();
+        MetaData md = driver.getMetaData(buf);
+
+        assertEquals("Title", md.getFirst(Tag.Title));
+        assertEquals("Words by  Someone", md.getFirst(Tag.Composer));
+        assertArrayEquals(new String[] {"  Title", "Words by  Someone"}, driver.comments());
+    }
+
+    /** FMP writes half width ASCII with the double byte lead 0x85, JIS X 0208 row 9. */
+    @Test
+    void testHalfWidthAsciiRow() throws Exception {
+        byte[] buf = new byte[] {
+                (byte) 0x85, 0x76, (byte) 0x85, (byte) 0x8f, (byte) 0x85, (byte) 0x92,
+                (byte) 0x85, (byte) 0x84, (byte) 0x85, (byte) 0x93, 0x20,
+                (byte) 0x85, (byte) 0x82, (byte) 0x85, (byte) 0x99
+        };
+        assertEquals("Words by", FmpDriver.decodePc98ShiftJis(buf, 0, buf.length));
+    }
+
+    /** Row 10 of the same escape: half width katakana, then the precomposed voiced ones. */
+    @Test
+    void testHalfWidthKatakanaRow() throws Exception {
+        byte[] buf = new byte[] {
+                (byte) 0x85, (byte) 0xbb, (byte) 0x85, (byte) 0xc1, (byte) 0x85, (byte) 0xae,
+                (byte) 0x85, (byte) 0xea, 0x20,
+                (byte) 0x85, (byte) 0xf4, (byte) 0x85, (byte) 0xda, (byte) 0x85, (byte) 0xae
+        };
+        assertEquals("\uFF7D\uFF83\uFF70\uFF7C\uFF9E \uFF8A\uFF9F\uFF9C\uFF70", FmpDriver.decodePc98ShiftJis(buf, 0, buf.length));
+    }
+
     @Test
     @EnabledIfSystemProperty(named = "vavi.test", matches = "ai")
     void testMakenaidFile() throws Exception {
@@ -114,65 +197,33 @@ public class FmpMetaDataTest {
 
         byte[] buf = java.nio.file.Files.readAllBytes(p);
         int memoPtr = (vavi.util.ByteUtil.readLeShort(buf, 0) & 0xffff);
-        int end = Math.min(memoPtr + 250, buf.length);
+        int end = Math.min(memoPtr + 400, buf.length);
 
-        String decoded = decodePc98ShiftJis(buf, memoPtr + 4, end);
+        String decoded = FmpDriver.decodePc98ShiftJis(buf, memoPtr + 4, end);
         System.out.println("Decoded PC-98 Shift_JIS memo:\n" + decoded);
+
+        assertTrue(decoded.contains("Words by"), decoded);
+        assertTrue(decoded.contains("Music by"), decoded);
+        assertTrue(decoded.contains("FMP Arranged by"), decoded);
+        assertTrue(decoded.contains("\u300E\u8CA0\u3051\u306A\u3044\u3067\u300F"), decoded);
     }
 
-    private static String decodePc98ShiftJis(byte[] buf, int start, int end) {
-        StringBuilder sb = new StringBuilder();
-        int i = start;
-        while (i < end) {
-            int b1 = buf[i] & 0xff;
-            if (b1 == 0) break;
+    /** half width katakana written as single bytes, which the 0x85 escape must not steal */
+    @Test
+    @EnabledIfSystemProperty(named = "vavi.test", matches = "ai")
+    void testNrthncrsFile() throws Exception {
+        java.nio.file.Path p = java.nio.file.Path.of("/Users/nsano/Public/np2/FMPData/MusicData/NRTHNCRS.OZI");
+        if (!java.nio.file.Files.exists(p)) return;
 
-            if (b1 == 0x85 && i + 1 < end) {
-                int b2 = buf[i + 1] & 0xff;
-                int k = b2 + 0x40;
-                if (k >= 0xa1 && k <= 0xdf) {
-                    sb.append((char)(0xff61 + (k - 0xa1)));
-                    i += 2;
-                    continue;
-                }
-            }
+        byte[] buf = java.nio.file.Files.readAllBytes(p);
+        int memoPtr = (vavi.util.ByteUtil.readLeShort(buf, 0) & 0xffff);
+        int end = Math.min(memoPtr + 300, buf.length);
 
-            if (b1 >= 0xa1 && b1 <= 0xdf) {
-                sb.append((char)(0xff61 + (b1 - 0xa1)));
-                i++;
-                continue;
-            }
+        String decoded = FmpDriver.decodePc98ShiftJis(buf, memoPtr + 4, end);
+        System.out.println("Decoded PC-98 Shift_JIS memo:\n" + decoded);
 
-            if (((b1 >= 0x81 && b1 <= 0x9f) || (b1 >= 0xe0 && b1 <= 0xfc)) && i + 1 < end) {
-                int b2 = buf[i + 1] & 0xff;
-                if ((b2 >= 0x40 && b2 <= 0x7e) || (b2 >= 0x80 && b2 <= 0xfc)) {
-                    byte[] sjis = new byte[] {(byte)b1, (byte)b2};
-                    String s = new String(sjis, Charset.forName("MS932"));
-                    if (!s.isEmpty() && s.charAt(0) != '\uFFFD') {
-                        sb.append(s);
-                    } else {
-                        int j1 = (b1 < 0xe0 ? b1 - 0x81 : b1 - 0xc1) * 2 + 0x21;
-                        int s2 = b2;
-                        if (s2 >= 0x9e) {
-                            j1++;
-                            s2 -= 0x9e;
-                        } else {
-                            s2 -= 0x40;
-                            if (s2 >= 0x3f) s2--;
-                        }
-                        int j2 = s2 + 0x21;
-                        int jis = (j1 << 8) | j2;
-                        sb.append((char)(0xE000 + jis));
-                    }
-                    i += 2;
-                    continue;
-                }
-            }
-
-            sb.append((char)b1);
-            i++;
-        }
-        return sb.toString();
+        assertTrue(decoded.contains("\uFF71\uFF86\uFF92\u300C\uFF8F\uFF78\uFF9B\uFF7DF\u300D\uFF74\uFF9D\uFF83\uFF9E\uFF68\uFF9D\uFF78\uFF9E\uFF83\uFF70\uFF8F"), decoded);
+        assertTrue(decoded.contains("starring May'n"), decoded);
     }
 
     @Test

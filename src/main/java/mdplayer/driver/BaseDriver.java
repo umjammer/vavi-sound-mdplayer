@@ -55,6 +55,16 @@ public abstract class BaseDriver {
     /** gets the metadata */
     public abstract MetaData getMetaData(byte[] buf, Object... args);
 
+    /**
+     * The lines the fmdsp comment area is to show, laid out the way the file has them - a memo
+     * that is a screen image places its text with spaces, which the metadata is stripped of.
+     *
+     * @return null when the file has no such memo, leaving the caller to use the metadata
+     */
+    public String[] comments() {
+        return null;
+    }
+
     /** renders the audio */
     public int render(short[] buffer, int offset, int sampleCount) {
         if (plugin.chipRegister.plugin(RealChipPlugin.class).isHiyorimiNecessary() && plugin.driverReal != null && plugin.driverReal.isDataBlock)

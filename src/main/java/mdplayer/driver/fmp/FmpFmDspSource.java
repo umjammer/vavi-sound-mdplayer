@@ -153,16 +153,24 @@ public class FmpFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
                     commented = true;
                     List<String> list = new ArrayList<>();
 
-                    addLines(list, driver.metaData.getFirst(Tag.Title));
+                    // an FMC memo is a screen image, so it is displayed as it was laid out -
+                    // the tags are the same text with the indent stripped, so they would lose it
+                    if (driver.comments() != null) {
+                        list.addAll(List.of(driver.comments()));
+                    }
 
-                    String comp = driver.metaData.getFirst(Tag.Composer);
-                    if (comp.isEmpty()) comp = driver.metaData.getFirst(Tag.ComposerJ);
-                    addLines(list, comp);
+                    if (list.isEmpty()) {
+                        addLines(list, driver.metaData.getFirst(Tag.Title));
 
-                    String arr = driver.metaData.getFirst(Tag.Arranger);
-                    if (arr.isEmpty()) arr = driver.metaData.getFirst(Tag.Note);
-                    if (arr.isEmpty()) arr = driver.metaData.getFirst(Tag.Maker);
-                    addLines(list, arr);
+                        String comp = driver.metaData.getFirst(Tag.Composer);
+                        if (comp.isEmpty()) comp = driver.metaData.getFirst(Tag.ComposerJ);
+                        addLines(list, comp);
+
+                        String arr = driver.metaData.getFirst(Tag.Arranger);
+                        if (arr.isEmpty()) arr = driver.metaData.getFirst(Tag.Note);
+                        if (arr.isEmpty()) arr = driver.metaData.getFirst(Tag.Maker);
+                        addLines(list, arr);
+                    }
 
                     for (int i = 0; i < 3; i++) {
                         comments[i] = i < list.size() ? list.get(i) : null;

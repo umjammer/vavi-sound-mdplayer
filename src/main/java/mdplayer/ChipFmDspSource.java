@@ -20,6 +20,7 @@ import mdplayer.fmdsp.FmDspChannel;
 import mdplayer.fmdsp.FmDspChipReader;
 import mdplayer.fmdsp.FmDspChipReader.Group;
 import mdplayer.plugin.BasePlugin;
+import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 import vavi.sound.visualizer.fmdsp.FftAnalyzer;
 import vavi.sound.visualizer.fmdsp.FftDataSource;
@@ -861,16 +862,38 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
      * steps. The period comes from the FM chip that owns the rows; a song that never programs
      * TimerB gets {@link #defaultTimerB}.
      */
+    /**
+     * The first of {@code tags} the metadata has anything for, keeping what the line already shows
+     * - a driver can fill its metadata in late, but never has a second thing to say on one line.
+     * Only the first line of a tag is taken: there is room for one, and a note can run long.
+     */
+    private static String commentOf(MetaData md, String current, Tag... tags) {
+        if (current != null && !current.isEmpty()) return current;
+        for (Tag tag : tags) {
+            String s = md.getFirst(tag);
+            if (!s.isEmpty()) return s.lines().findFirst().orElse(s);
+        }
+        return current;
+    }
+
     private void state() {
         BaseDriver d = driver.get();
         work = d;
         if (d == null) return;
 
-        // not every driver fills one in - the HES driver leaves it null until a song is loaded
-        if (d.metaData != null) {
-            if (comments[0] == null) comments[0] = d.metaData.getFirst(Tag.Title);
-            if (comments[1] == null) comments[1] = d.metaData.getFirst(Tag.Composer);
-            if (comments[2] == null) comments[2] = d.metaData.getFirst(Tag.Arranger);
+        // a memo that is a screen image is shown as it was laid out, the tags having lost the indent
+        String[] laidOut = d.comments();
+        if (laidOut != null) {
+            for (int i = 0; i < comments.length; i++) {
+                if (comments[i] == null && i < laidOut.length) comments[i] = laidOut[i];
+            }
+        } else if (d.metaData != null) { // not every driver fills one in - the HES driver leaves it
+            comments[0] = commentOf(d.metaData, comments[0], Tag.Title, Tag.TitleJ);
+            comments[1] = commentOf(d.metaData, comments[1], Tag.Composer, Tag.ComposerJ);
+            // only PMD ever fills the arranger in, so without a fallback the third line is always
+            // blank. A VGM's GD3 has the game instead, which beats leaving the line empty.
+            comments[2] = commentOf(d.metaData, comments[2],
+                    Tag.Arranger, Tag.ArrangerJ, Tag.GameTitle, Tag.GameTitleJ, Tag.Note, Tag.Maker);
         }
 
         int tb = 0;
