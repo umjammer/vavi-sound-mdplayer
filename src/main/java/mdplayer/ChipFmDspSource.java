@@ -186,6 +186,9 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
     /** the note each row played at the last snapshot, {@code -1} while it rests */
     private final int[] lastNotes = new int[TrackId.COUNT];
 
+    /** the base note of the currently sounding note before pitch bends */
+    private final int[] baseNotes = new int[TrackId.COUNT];
+
     /** tick count of each row's last key off, {@code -1} while the key is still down */
     private final long[] keyOffTicks = new long[TrackId.COUNT];
 
@@ -321,6 +324,7 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
         Arrays.fill(keyOnTicks, -1);
         Arrays.fill(noteLengths, 0);
         Arrays.fill(lastNotes, -1);
+        Arrays.fill(baseNotes, -1);
         Arrays.fill(keyOffTicks, -1);
         Arrays.fill(gates, 0);
         Arrays.fill(lastPitches, 0);
@@ -540,8 +544,17 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
                 TrackStatus status = tracks[row];
                 status.playing = used[row];
                 status.info = channel.info;
-                status.key = channel.sounding ? keyOf(channel.note) : 0xff;
-                status.actualKey = status.key;
+                if (!channel.sounding) {
+                    baseNotes[row] = -1;
+                    status.key = 0xff;
+                    status.actualKey = 0xff;
+                } else {
+                    if (channel.keyOn || baseNotes[row] < 0) {
+                        baseNotes[row] = channel.note;
+                    }
+                    status.key = keyOf(baseNotes[row]);
+                    status.actualKey = keyOf(channel.note);
+                }
                 status.volume = channel.volume;
                 status.toneNum = channel.toneNum;
                 status.ssgTone = channel.ssgTone;
