@@ -878,6 +878,9 @@ public class FmDspVisualizer extends JComponent {
     /** JIS X 0208 code of {@code c}, or 0 when it has none. */
     private int jisOf(char c) {
         return jisCache.computeIfAbsent(c, ch -> {
+            if (ch >= 0xE000 && ch <= 0xF8FF) {
+                return ch - 0xE000;
+            }
             byte[] b = String.valueOf(jisVariantOf(ch)).getBytes(JIS0208);
             return b.length == 2 ? (b[0] & 0xff) << 8 | (b[1] & 0xff) : 0;
         });

@@ -84,20 +84,25 @@ public class FmpDriver extends BaseDriver {
                     buf[memoPtr] == 'F' && buf[memoPtr + 1] == 'M' && buf[memoPtr + 2] == 'C');
 
             if (isBinaryFmc) {
-                int[] ptr = new int[] {memoPtr + 4};
-                while (ptr[0] < buf.length) {
-                    int oldPtr = ptr[0];
-                    String s = Common.getNRDString(buf, ptr);
-                    if (s != null && !s.isEmpty()) {
+                int ptr = memoPtr + 4;
+                while (ptr < buf.length) {
+                    if (buf[ptr] == 0) {
+                        ptr++;
+                        if (ptr >= buf.length || buf[ptr] == 0) break;
+                    }
+                    int start = ptr;
+                    while (ptr < buf.length && buf[ptr] != 0 && buf[ptr] != 0x0d && buf[ptr] != 0x0a) {
+                        ptr++;
+                    }
+                    String s = decodePc98ShiftJis(buf, start, ptr);
+                    if (!s.isEmpty()) {
                         rawLines.add(s.trim());
                     }
-                    if (ptr[0] <= oldPtr || (ptr[0] < buf.length && buf[ptr[0]] == 0)) {
-                        if (ptr[0] < buf.length && buf[ptr[0]] == 0) ptr[0]++;
-                        if (ptr[0] >= buf.length || buf[ptr[0]] == 0) break;
-                    }
+                    if (ptr < buf.length && buf[ptr] == 0x0d) ptr++;
+                    if (ptr < buf.length && buf[ptr] == 0x0a) ptr++;
                 }
             } else {
-                String text = new String(buf, Charset.forName("MS932"));
+                String text = decodePc98ShiftJis(buf, 0, buf.length);
                 String[] lines = text.split("\\r?\\n");
                 for (String line : lines) {
                     rawLines.add(line.trim());
@@ -111,19 +116,19 @@ public class FmpDriver extends BaseDriver {
 
                 String lower = line.toLowerCase();
                 if (lower.startsWith("#title")) {
-                    String val = extractTagValue(line, "#title");
+                    String val = normalizeKanji(extractTagValue(line, "#title"));
                     if (!val.isEmpty()) {
                         md.set(Tag.Title, val);
                         md.set(Tag.TitleJ, val);
                     }
                 } else if (lower.startsWith("#composer")) {
-                    String val = extractTagValue(line, "#composer");
+                    String val = normalizeKanji(extractTagValue(line, "#composer"));
                     if (!val.isEmpty()) {
                         md.set(Tag.Composer, val);
                         md.set(Tag.ComposerJ, val);
                     }
                 } else if (lower.startsWith("#author")) {
-                    String val = extractTagValue(line, "#author");
+                    String val = normalizeKanji(extractTagValue(line, "#author"));
                     if (!val.isEmpty()) {
                         if (md.getFirst(Tag.Composer).isEmpty()) {
                             md.set(Tag.Composer, val);
@@ -133,31 +138,31 @@ public class FmpDriver extends BaseDriver {
                         }
                     }
                 } else if (lower.startsWith("#arranger")) {
-                    String val = extractTagValue(line, "#arranger");
+                    String val = normalizeKanji(extractTagValue(line, "#arranger"));
                     if (!val.isEmpty()) {
                         md.set(Tag.Arranger, val);
                     }
                 } else if (lower.startsWith("#memo") || lower.startsWith("#comment")) {
-                    String val = extractTagValue(line, lower.startsWith("#memo") ? "#memo" : "#comment");
+                    String val = normalizeKanji(extractTagValue(line, lower.startsWith("#memo") ? "#memo" : "#comment"));
                     if (!val.isEmpty()) {
                         String existing = md.getFirst(Tag.Note);
                         md.set(Tag.Note, existing.isEmpty() ? val : existing + "\n" + val);
                     }
                 } else if (lower.startsWith("#game")) {
-                    String val = extractTagValue(line, "#game");
+                    String val = normalizeKanji(extractTagValue(line, "#game"));
                     if (!val.isEmpty()) {
                         md.set(Tag.GameTitle, val);
                         md.set(Tag.GameTitleJ, val);
                     }
                 } else if (lower.startsWith("#maker")) {
-                    String val = extractTagValue(line, "#maker");
+                    String val = normalizeKanji(extractTagValue(line, "#maker"));
                     if (!val.isEmpty()) {
                         md.set(Tag.Maker, val);
                     }
                 } else if (isBinaryFmc) {
-                    plainComments.add(line);
+                    plainComments.add(normalizeKanji(line));
                 } else if (line.startsWith(";")) {
-                    String comment = line.substring(1).trim();
+                    String comment = normalizeKanji(line.substring(1).trim());
                     if (!comment.isEmpty()) {
                         plainComments.add(comment);
                     }
@@ -181,6 +186,20 @@ public class FmpDriver extends BaseDriver {
         }
 
         return md;
+    }
+
+    private static String normalizeKanji(String s) {
+        if (s == null || s.isEmpty()) return s;
+        StringBuilder sb = new StringBuilder(s.length());
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            switch (c) {
+                case '－', '−', '‐', '‑', '‒', '–', '—' -> sb.append('ー');
+                case '～' -> sb.append('〜');
+                default -> sb.append(c);
+            }
+        }
+        return sb.toString();
     }
 
     private static String extractTagValue(String line, String tag) {
@@ -209,6 +228,7 @@ public class FmpDriver extends BaseDriver {
         try {
             fmp.run(dataBuf);
         } catch (Exception e) {
+e.printStackTrace();
             throw new IllegalStateException(e);
         }
     }
@@ -296,5 +316,60 @@ public class FmpDriver extends BaseDriver {
             }
             }
         }
+    }
+
+    public static String decodePc98ShiftJis(byte[] buf, int start, int end) {
+        StringBuilder sb = new StringBuilder();
+        int i = start;
+        while (i < end) {
+            int b1 = buf[i] & 0xff;
+            if (b1 == 0) break;
+
+            if (b1 == 0x85 && i + 1 < end) {
+                int b2 = buf[i + 1] & 0xff;
+                int k = b2 + 0x40;
+                if (k >= 0xa1 && k <= 0xdf) {
+                    sb.append((char)(0xff61 + (k - 0xa1)));
+                    i += 2;
+                    continue;
+                }
+            }
+
+            if (b1 >= 0xa1 && b1 <= 0xdf) {
+                sb.append((char)(0xff61 + (b1 - 0xa1)));
+                i++;
+                continue;
+            }
+
+            if (((b1 >= 0x81 && b1 <= 0x9f) || (b1 >= 0xe0 && b1 <= 0xfc)) && i + 1 < end) {
+                int b2 = buf[i + 1] & 0xff;
+                if ((b2 >= 0x40 && b2 <= 0x7e) || (b2 >= 0x80 && b2 <= 0xfc)) {
+                    byte[] sjis = new byte[] {(byte)b1, (byte)b2};
+                    String s = new String(sjis, Charset.forName("MS932"));
+                    if (!s.isEmpty() && s.charAt(0) != '\uFFFD') {
+                        sb.append(s);
+                    } else {
+                        int j1 = (b1 < 0xe0 ? b1 - 0x81 : b1 - 0xc1) * 2 + 0x21;
+                        int s2 = b2;
+                        if (s2 >= 0x9e) {
+                            j1++;
+                            s2 -= 0x9e;
+                        } else {
+                            s2 -= 0x40;
+                            if (s2 >= 0x3f) s2--;
+                        }
+                        int j2 = s2 + 0x21;
+                        int jis = (j1 << 8) | j2;
+                        sb.append((char)(0xE000 + jis));
+                    }
+                    i += 2;
+                    continue;
+                }
+            }
+
+            sb.append((char)b1);
+            i++;
+        }
+        return sb.toString();
     }
 }
