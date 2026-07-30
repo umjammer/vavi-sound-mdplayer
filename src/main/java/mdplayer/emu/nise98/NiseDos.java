@@ -516,7 +516,7 @@ logger.log(Level.TRACE, "error message from program");
                     break;
                 }
 
-                int d = (regs.getCX() << 4) + regs.getDX();
+                int d = ((regs.getCX() & 0xffff) << 4) + (regs.getDX() & 0xffff);
                 if (regs.getAL() == 0) fnd.ptr = d;
                 else if (regs.getAL() == 1) fnd.ptr += d;
                 else if (regs.getAL() == 2) fnd.ptr = fnd.size - 1 + d;
