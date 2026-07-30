@@ -129,7 +129,7 @@ public class Ay8910Reader implements FmDspChipReader {
         prevSoundings[s] = sounding;
         prevPeriods[s] = period;
 
-        out.note = period > 0 ? Notes.noteOf(clock / (16.0 * period)) : -1;
+        out.pitch(period > 0 ? clock / (16.0 * period) : 0);
         out.volume = level;
         out.ssgTone = tone;
         out.ssgNoise = noise;

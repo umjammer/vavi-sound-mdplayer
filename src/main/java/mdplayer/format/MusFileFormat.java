@@ -77,6 +77,11 @@ public class MusFileFormat extends BaseFileFormat {
     }
 
     @Override
+    public String[] getPresetMixerBalance() {
+        return new String[] {"DriverBalance_MUAP.mbc", "/resources/DefaultVolumeBalance_MUAP.xml"};
+    }
+
+    @Override
     public Encoding getEncoding() {
         return new MdEncoding("MUAP", "mus");
     }

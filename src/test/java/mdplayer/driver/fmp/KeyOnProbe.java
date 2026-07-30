@@ -12,6 +12,7 @@ import mdplayer.emu.nise98.FileTemp;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 
 public class KeyOnProbe {
@@ -35,7 +36,7 @@ public class KeyOnProbe {
     final int[][] total = new int[0x80][9];
 
     @Test
-    @Disabled("for ai iteration")
+    @EnabledIfSystemProperty(named = "vavi.test", matches = "ai")
     void probe() throws Exception {
         String file = System.getProperty("probe.file", "/Users/nsano/Public/np2/FMP/FMPDDISK/FF5_GILG.OVI");
         String dir = "/Users/nsano/Public/np2/FMP/FMPDDISK";

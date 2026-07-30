@@ -60,7 +60,7 @@ public class TestCase {
             PropsEntity.Util.bind(this);
         }
 
-volume /= 16; // adhoc fix for large volume
+if (!System.getProperty("vavi.test", "").equals("ide") && volume > 0.01) volume = 0.01; // adhoc fix for large volume
     }
 
     @Test

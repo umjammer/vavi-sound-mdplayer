@@ -14,13 +14,14 @@ import mdplayer.plugin.BasePlugin;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.mockito.Mockito;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 
-@Disabled("ai iteration")
+@EnabledIfSystemProperty(named = "vavi.test", matches = "ai")
 public class SidDiffTest {
 
     @Test

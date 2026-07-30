@@ -48,3 +48,4 @@ mdplayer.fmdsp.HvlReader
 mdplayer.fmdsp.AhxReader
 mdplayer.fmdsp.SidReader
 mdplayer.fmdsp.MidiReader
+mdplayer.fmdsp.MdxPcmReader

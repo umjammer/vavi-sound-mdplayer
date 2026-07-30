@@ -14,12 +14,13 @@ import mdplayer.emu.nise98.FileTemp;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 
 public class PickSong {
 
     @Test
-    @Disabled("for ai iteration")
+    @EnabledIfSystemProperty(named = "vavi.test", matches = "ai")
     void pick() throws Exception {
         String dir = "/Users/nsano/Public/np2/FMP/FMPDDISK"; // FMP.COM lives here
         String songs = System.getProperty("probe.dir", dir);

@@ -588,7 +588,89 @@ public class MXDRV {
         };
     }
 
-    // 
+    // ----- readback for a visualizer -----
+
+    /** how many PCM parts there are, see {@link #isPcm8Mode} */
+    public static final int PCM_PARTS = 8;
+
+    /**
+     * Whether the song has switched the driver into PCM8 mode.
+     * <p>
+     * An MDX plays its ninth part on the X68000's own ADPCM, one sample at a time. The PCM8 command
+     * ({@code L00165c}) hands that part and seven more over to the PCM8 driver instead, which mixes
+     * eight of them - so this also says whether there are eight PCM parts or only the one.
+     */
+    public boolean isPcm8Mode() {
+        return mm != null && mm.readByte(G + MXWORK_GLOBAL.L001df4) != 0;
+    }
+
+    /** one PCM part as the driver's work area has it, filled by {@link #getPcmPart} */
+    public static class PcmPart {
+        /**
+         * The PDX sample the part last keyed, which is the note the MML wrote: a PCM part's note
+         * chooses a sample rather than a pitch, {@code 0} to {@code 95} being o0c to o7b.
+         */
+        public int note;
+        /** the part's {@link #bank}, times the 96 samples of one, plus its {@link #note} */
+        public int sample;
+        /** what the part's last v or @v command wrote, as written */
+        public int volume;
+        /**
+         * The level that reaches PCM8, {@code 0} (quietest) to {@code 15}, or {@code -1} once the
+         * fade out has taken the part below the bottom of the table. Only PCM8 has a level of its
+         * own: in ADPCM mode the volume never reaches the chip, see {@code L000e7e}.
+         */
+        public int level;
+        /** PCM8 pan, bit 0 left and bit 1 right, so {@code 3} is both and {@code 0} is silence */
+        public int pan;
+        /** the PDX bank the part's @ command chose */
+        public int bank;
+        /** the part is holding a note */
+        public boolean keyOn;
+        /**
+         * Ticks left of the note the part is on. It counts down and is reloaded whenever the part
+         * reaches a new note, so a rise in it is a note being struck - which is the only way to see
+         * a drum part hitting the same sample twice in a row without catching the key coming up in
+         * between.
+         */
+        public int length;
+    }
+
+    /**
+     * Reads PCM part {@code ch} of {@code 0} to {@link #PCM_PARTS} - 1 into {@code out}, the ninth
+     * MDX part first and the seven PCM8 only ones after it. Touches no register of the emulated
+     * CPU, so the playing thread may go on using them.
+     *
+     * @return whether the part could be read, i.e. whether a song has been started at all
+     */
+    public boolean getPcmPart(int ch, PcmPart out) {
+        XMemory mm = this.mm; // MXDRV_Start replaces it
+        if (mm == null) return false;
+
+        int w = ch == 0 ? MXWORK_CHBUF_FM[8] : MXWORK_CHBUF_PCM[ch - 1];
+        out.note = (mm.readShort(w + MXWORK_CH.S0012) & 0xffff) >>> 6;
+        out.bank = mm.readByte(w + MXWORK_CH.S0004_b) & 0xff;
+        // the address of the sample, as L000e7e works it out: 96 samples to a bank
+        out.sample = out.bank * 96 + out.note;
+        out.keyOn = (mm.readByte(w + MXWORK_CH.S0016) & (1 << 3)) != 0;
+        out.length = mm.readByte(w + MXWORK_CH.S001a) & 0xff;
+
+        // the driver stores 0 and 3 the other way round so that a part which has never been panned
+        // comes out of both speakers, see L0012e6 - and swaps them back on the way to PCM8
+        int pan = mm.readByte(w + MXWORK_CH.S001c) & 0x03;
+        out.pan = pan == 0 || pan == 0x03 ? pan ^ 0x03 : pan;
+
+        int v = mm.readByte(w + MXWORK_CH.S0022) & 0xff;
+        // @v is an attenuation already, v is one of sixteen steps of the driver's own table
+        int attenuation = (v & 0x80) != 0 ? v & 0x7f : Volume[v & 0x0f];
+        out.volume = (v & 0x80) != 0 ? v & 0x7f : v & 0x0f;
+        attenuation += mm.readByte(G + MXWORK_GLOBAL.L001e14) & 0xff; // the fade out
+        out.level = (byte) attenuation < 0 || attenuation >= PCMVolume.length - 1
+                ? -1 : PCMVolume[attenuation];
+        return true;
+    }
+
+    //
 
     boolean terminatePlay;
     int loopCount;

@@ -123,6 +123,9 @@ public class TestCase {
     @Property(name = "fmdsp.fontRom")
     String fontRom;
 
+    @Property(name = "multi.source")
+    String multiSource;
+
     @Property(name = "multi.1")
     String multi1;
 
@@ -315,15 +318,23 @@ Debug.println(music);
         for (Path path : files) {
             this.file = path.toString();
 Debug.print("play: " + file + " ---------------------------------------------------------------------");
+            FileFormat format = FileFormat.getFileFormat(file);
+            format.load(Archives.getInputStream(new BufferedInputStream(Files.newInputStream(path))), null);
+            var plugin = (BasePlugin<? extends BaseDriver>) format.getPlugin();
+            plugin.setParams(format, Map.of("fileName", file));
+
+            audio.init(plugin);
+            CountDownLatch cdl = new CountDownLatch(1);
             ExecutorService es = Executors.newSingleThreadExecutor();
-            es.submit(() -> { try { play(); } catch (Exception e) { Debug.printStackTrace(e); }});
+            es.submit(() -> { try { audio.play(); cdl.countDown(); } catch (Exception e) { Debug.printStackTrace(e); }});
 Debug.print("await");
-            Thread.sleep(time);
+            cdl.await();
 Debug.println("await: broke");
             es.shutdownNow();
 Debug.println("stop");
             audio.stop();
             audio.close();
+Debug.println("close");
         }
     }
 
@@ -410,10 +421,6 @@ Debug.println("stop");
         System.out.println("Deserialized successfully!");
     }
 
-    /**
-     * Plays the file of the {@code generic} property of local.properties with the chip-cache
-     * source - any format mdplayer knows, no driver-specific source involved.
-     */
     @Test
     @DisplayName("play anything w/ fmdsp visualizer via the generic chip source")
     @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
@@ -439,7 +446,7 @@ Debug.println("filename: " + file);
         }
 
         JFrame frame = new JFrame();
-        frame.setTitle(Path.of(file).getFileName() + " - generic");
+        frame.setTitle(Path.of(file).getFileName() + " - MDDSP");
         frame.setLayout(new BorderLayout());
         frame.add(visualizer, BorderLayout.CENTER);
         frame.addKeyListener(new KeyAdapter() {
@@ -477,10 +484,6 @@ Debug.println("filename: " + file);
         frame.dispose();
     }
 
-    /**
-     * Plays the file of the {@code generic} property of local.properties with the chip-cache
-     * source - any format mdplayer knows, no driver-specific source involved.
-     */
     @Test
     @DisplayName("play multiple w/ fmdsp visualizer via the generic chip source")
     @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
@@ -531,8 +534,16 @@ Debug.println("filename: " + file);
         frame.setVisible(true);
         frame.requestFocusInWindow();
 
-        List<Path> files = listFilesInLocalProperties();
+        List<Path> files = switch (multiSource) {
+            case "dirext" -> new ArrayList<>(listFilesUnderDirFilteredByExt(dir, ext));
+            default -> listFilesInLocalProperties();
+        };
         Collections.shuffle(files);
+
+        // once for the whole play list: Audio keeps its listeners forever, so subscribing per
+        // song has the source updated once per song played, each update pushing the same samples
+        // into the fft and snapshotting the chips again
+        audio.addGenericListener(source::update);
 
         for (Path path : files) {
             this.file = path.toString();
@@ -544,10 +555,9 @@ Debug.print("play: " + file + " ------------------------------------------------
             format.load(Archives.getInputStream(new BufferedInputStream(Files.newInputStream(path))), null);
             var plugin = (BasePlugin<? extends BaseDriver>) format.getPlugin();
             plugin.setParams(format, Map.of("fileName", file));
-            frame.setTitle(Path.of(file).getFileName() + " - generic");
+            frame.setTitle(Path.of(file).getFileName() + " - MDDSP");
 
             audio.init(plugin);
-            audio.addGenericListener(source::update);
             // the chips are shared singletons, so last song's state has to go before this one
             source.reset();
             source.bind(plugin);
@@ -555,7 +565,10 @@ Debug.print("play: " + file + " ------------------------------------------------
             visualizer.start();
             ExecutorService es = Executors.newSingleThreadExecutor();
             cdl.set(new CountDownLatch(1));
-            es.submit(() -> { try { audio.play(); cdl.get().countDown(); } catch (Exception e) { Debug.printStackTrace(e); }});
+            // count down in a finally: a song that fails to start would otherwise leave the
+            // await below waiting forever - silence until ^N, looking like a song that plays
+            // nothing rather than one that could not be played
+            es.submit(() -> { try { audio.play(); } catch (Exception e) { Debug.printStackTrace(e); } finally { cdl.get().countDown(); }});
 Debug.print("await");
             cdl.get().await();
 Debug.println("await: broke");

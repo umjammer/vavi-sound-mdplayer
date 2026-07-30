@@ -150,7 +150,7 @@ public class SegaPcmReader implements FmDspChipReader {
         out.name = "PCM";
         out.num = ch + 1; // the chip channel, wherever the slot map put it
         out.pcmCh = ch + 1;
-        out.note = playing ? Notes.noteOfRatio(dt / 256.0) : -1;
+        out.pitchOfRatio(playing ? dt / 256.0 : 0);
         out.volume = Math.max(l, r);
         out.amplitude = playing ? Math.max(l, r) / 127.0 : 0;
         out.pan = panOf(l, r);

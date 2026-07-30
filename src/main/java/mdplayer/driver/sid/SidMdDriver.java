@@ -252,4 +252,9 @@ logger.log(Level.INFO, "songNo: " + sid.song + " / " + sid.songs);
     public int getSongs() {
         return sid.songs;
     }
+
+    @Override
+    public String getName() {
+        return "SID";
+    }
 }

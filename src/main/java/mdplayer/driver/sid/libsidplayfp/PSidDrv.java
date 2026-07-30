@@ -235,8 +235,11 @@ public class PSidDrv {
         int startLp = tuneInfo.loadAddr() >> 8;
         int endLp = (tuneInfo.loadAddr() + (tuneInfo.c64dataLen() - 1)) >> 8;
 
-        byte relocationStartPage = tuneInfo.relocStartPage();
-        byte relocationPages = tuneInfo.relocPages();
+        // pages are unsigned 8 bit in the original: as bytes, a tune offering its free memory
+        // from page 0x80 up (relocPages 0x98, say) reads as a negative page count and gets
+        // turned away below with "no space" although it has plenty
+        int relocationStartPage = tuneInfo.relocStartPage() & 0xff;
+        int relocationPages = tuneInfo.relocPages() & 0xff;
 
         if (tuneInfo.compatibility() == SidTuneInfo.Compatibility.BASIC) {
             // The PSidDrv instanceof only used for initialisation and to
@@ -247,7 +250,7 @@ public class PSidDrv {
         }
 
         // Check for free space : tune
-        if (relocationStartPage == (byte) 0xff)
+        if (relocationStartPage == 0xff)
             relocationPages = 0;
             // Check if we need to find the reloc addr
         else if (relocationStartPage == 0) {
@@ -262,7 +265,7 @@ public class PSidDrv {
                 if (i >= 0xa0 && i <= 0xbf)
                     continue;
 
-                relocationStartPage = (byte) i;
+                relocationStartPage = i;
                 relocationPages = 1;
                 break;
             }

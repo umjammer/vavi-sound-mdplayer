@@ -11,13 +11,14 @@ import vavi.util.archive.Archives;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 
 /** temporary probe */
 public class VgmProbe {
 
     @Test
-    @Disabled("for ai iteration")
+    @EnabledIfSystemProperty(named = "vavi.test", matches = "ai")
     void probe() throws Exception {
         String file = "../simplevgm/tmp/Out_Run_(Arcade)/01 Magical Sound Shower.vgz";
 

@@ -70,6 +70,11 @@ public class MMLFileFormat extends BaseFileFormat {
     }
 
     @Override
+    public String[] getPresetMixerBalance() {
+        return new String[] {"DriverBalance_M.mbc", "/resources/DefaultVolumeBalance_M.xml"};
+    }
+
+    @Override
     public Encoding getEncoding() {
         return new MdEncoding("PMD", "mml");
     }

@@ -605,7 +605,7 @@ public class Ym2610Chip extends BaseChip {
         info.put("ch3SlotVolume", /* ctYM2612.UseScci ? */ ch3SlotVolume[chipId] /* : context.mds.inst(_inst(chipId)).readFMCh3SlotVolume(); */);
         info.put("register", register[chipId]);
         info.put("keyOn", keyOn[chipId]);
-        info.putAll(inst.getView(chipId, "info") != null ? inst.getView(chipId, "info") : Collections.emptyMap());
+        info.putAll(inst.getView(chipId, "info") != null ? inst.getView(chipId, "info") : Collections.emptyMap()); // some variants not implemented
         return info;
     }
 

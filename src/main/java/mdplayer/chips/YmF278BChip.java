@@ -205,8 +205,40 @@ public class YmF278BChip extends BaseChip {
         info.put("rhythmKeyON", registerRhythm[chipId]);
         info.put("pcmKeyOn", registerPcm[chipId]);
         info.put("gmKeyOn", registerFm[chipId]);
+        info.putAll(fmInfo(chipId));
         return info;
     }
+
+    /**
+     * The state of the FM half's channels, which is OPL3 and read out of the register shadow: the
+     * emulator decodes them away and answers only the wave half, while the visualizer wants both.
+     */
+    private Map<String, Object> fmInfo(int chipId) {
+        Map<String, Object> info = new HashMap<>();
+        int[] regs = register[chipId][0];
+        for (int ch = 0; ch < 9; ch++) {
+            int b = regs[0xb0 + ch];
+            int c = regs[0xc0 + ch];
+            info.put("channels." + ch + ".keyOn", (b & 0x20) != 0);
+            info.put("channels." + ch + ".fnum", ((b & 0x03) << 8) | (regs[0xa0 + ch] & 0xff));
+            info.put("channels." + ch + ".block", (b >> 2) & 0x07);
+            // the carrier's level; with both operators sounding the modulator carries too
+            int carrier = 0x40 + fmSlot[ch] + 3;
+            info.put("channels." + ch + ".totalLevel",
+                    (c & 0x01) != 0 ? Math.min(regs[carrier] & 0x3f, regs[carrier - 3] & 0x3f) : regs[carrier] & 0x3f);
+            info.put("channels." + ch + ".panL", (c & 0x10) != 0);
+            info.put("channels." + ch + ".panR", (c & 0x20) != 0);
+            // the OPL's LFO runs at a fixed rate; an operator only chooses to hear it or not
+            int mod = 0x20 + fmSlot[ch], car = mod + 3;
+            info.put("channels." + ch + ".lfoPitch", ((regs[mod] | regs[car]) & 0x40) != 0);
+            info.put("channels." + ch + ".lfoVolume", ((regs[mod] | regs[car]) & 0x80) != 0);
+            info.put("channels." + ch + ".mute", false);
+        }
+        return info;
+    }
+
+    /** the modulator's register offset of each FM channel; its carrier sits three further on */
+    private static final int[] fmSlot = {0, 1, 2, 8, 9, 10, 16, 17, 18};
 
     @Override
     public boolean getMask(int chipId, int ch) {

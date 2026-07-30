@@ -73,6 +73,27 @@ public class VgmDriver extends BaseDriver {
         }
     }
 
+    /**
+     * Renders, then applies the gain the header's "Volume Modifier" (0x7c) asks for. Files that
+     * were mastered quiet request a boost there (e.g. the AdLib demo songs use 51 = x3) and play
+     * far too softly without it; a few request an attenuation instead. The field is only defined
+     * from VGM 1.60, but files declaring 1.51 do set it, so it's honored whenever the header
+     * actually reaches 0x7c -- the same rule the rest of {@link Vgm#getInformationHeader} uses.
+     */
+    @Override
+    public int render(short[] buffer, int offset, int sampleCount) {
+        int cnt = super.render(buffer, offset, sampleCount);
+
+        double gain = vgm.getVolumeGain();
+        if (gain != 1.0) {
+            for (int i = offset; i < offset + cnt; i++) {
+                buffer[i] = (short) Math.clamp((long) (buffer[i] * gain), Short.MIN_VALUE, Short.MAX_VALUE);
+            }
+        }
+
+        return cnt;
+    }
+
     @Override
     public void processOneFrame() {
         try {

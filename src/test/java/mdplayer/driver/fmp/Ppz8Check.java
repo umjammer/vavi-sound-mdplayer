@@ -21,12 +21,13 @@ import vavi.sound.visualizer.fmdsp.TrackStatus;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 
 public class Ppz8Check {
 
     @Test
-    @Disabled("for ai iteration")
+    @EnabledIfSystemProperty(named = "vavi.test", matches = "ai")
     void check() throws Exception {
         System.setProperty("mdplayer.fmp.dir", "/Users/nsano/Public/np2/FMP/FMPDDISK");
         System.setProperty("mdplayer.fmp.pvi", "/Users/nsano/Public/np2/PVI;/Users/nsano/Public/np2/fmp_ume3");

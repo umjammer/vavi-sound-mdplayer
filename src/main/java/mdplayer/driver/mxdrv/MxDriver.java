@@ -141,6 +141,16 @@ public class MxDriver extends BaseDriver {
         this.extendFile = extendFile;
     }
 
+    /**
+     * The driver itself, whose work area is the only place an MDX's PCM parts exist: they are
+     * played through PCM8, which reports nothing back.
+     *
+     * @see mdplayer.fmdsp.MdxPcmReader
+     */
+    public MXDRV getMxdrv() {
+        return mxdrv;
+    }
+
     @Override
     public MetaData getMetaData(byte[] buf, Object... args) {
         MetaData md = new MetaData();
@@ -385,5 +395,10 @@ logger.log(Level.TRACE, "MXDRV_Start: " + ret);
         }
         fireEventHappened(this, "mxdrv",
                 plugin.chipRegister.chip(Ym2151Chip.class).register[0], fmMaps, pcmMaps);
+    }
+
+    @Override
+    public String getName() {
+        return "MXDRV";
     }
 }

@@ -176,4 +176,9 @@ public class NrtDriver extends BaseDriver {
     public long whichCounter(long real, long virtual) {
         return Math.max(virtual, real);
     }
+
+    @Override
+    public String getName() {
+        return "NRTDRV";
+    }
 }

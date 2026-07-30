@@ -15,6 +15,7 @@ import vavi.util.archive.Archives;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 
 /** temporary probe */
@@ -30,7 +31,7 @@ public class MxProbe {
     }
 
     @Test
-    @Disabled("for ai iteration")
+    @EnabledIfSystemProperty(named = "vavi.test", matches = "ai")
     void probes() throws Exception {
         for (String file : new String[] {"tmp/mdx/MHAWK/MHAWKN1.MDX", "tmp/mdx/sorc/SE313S.mdx"}) probe(file);
     }

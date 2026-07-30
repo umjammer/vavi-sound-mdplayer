@@ -69,6 +69,12 @@ logger.log(Level.DEBUG, "type: " + mtype);
 
     @Override
     public void init(EnmModel model, int latency, int waitTime, Object... args) {
+        // The plugin compiles the MDL source into an MDR binary (into its own dataBuf)
+        // in initChips(), AFTER this driver was constructed. The constructor only took a
+        // snapshot of the still-raw MDL, so re-read the plugin's now-compiled data here;
+        // otherwise getMetaData() sees the MDL header and init routes to the dead initMDL().
+        if (plugin != null) dataBuf = plugin.getData();
+
         metaData = getMetaData(dataBuf, 0);
 
         this.model = model;
@@ -387,5 +393,10 @@ logger.log(Level.INFO, "useChip: " + plugin.getChips().stream().map(Class::getSi
         public void writeRegister(ChipDatum cd) {
             opl4Write.accept(cd);
         }
+    }
+
+    @Override
+    public String getName() {
+        return "MOONDRIVER";
     }
 }

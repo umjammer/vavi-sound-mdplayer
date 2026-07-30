@@ -17,12 +17,13 @@ import vavi.util.event.GenericEvent;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 
 public class RenderCheck {
 
     @Test
-    @Disabled("for ai iteration")
+    @EnabledIfSystemProperty(named = "vavi.test", matches = "ai")
     void render() throws Exception {
         String file = System.getProperty("probe.file", "/Users/nsano/Public/np2/FMP/FMPDDISK/FF5_GILG.OVI");
         String dir = "/Users/nsano/Public/np2/FMP/FMPDDISK";

@@ -95,6 +95,12 @@ public class Ym2610Reader extends OpnFmReader {
 
     @Override protected Pan fmPan(int ch) { return opnPan(intOf("channels." + ch + ".pan") << 6); }
 
+    @Override protected int lfoRegister() { return intOf("lfo"); }
+
+    @Override protected int fmSensitivity(int ch) { return intOf("channels." + ch + ".sensitivity"); }
+
+    @Override protected boolean fmAmOn(int ch) { return boolOf("channels." + ch + ".amOn"); }
+
     @Override protected int exFnum(int x) { return intOf("channels.2.slots." + x + ".fnum"); }
 
     @Override protected int exBlock(int x) { return intOf("channels.2.slots." + x + ".block"); }
@@ -106,6 +112,32 @@ public class Ym2610Reader extends OpnFmReader {
     @Override protected int timerBRegister() { return intOf("timerB"); }
 
     @Override protected int[][] ports() { return noPorts; }
+
+    // the operators of the TRACK_INFO panel, which the fmgen core answers for itself
+
+    /** what the core says about one operator, or null when it is not answering */
+    private Object slotOf(int ch, int slot, String field) {
+        return info == null ? null : info.get("channels." + ch + ".slots." + slot + "." + field);
+    }
+
+    @Override protected int slotTotalLevel(int ch, int slot) {
+        return slotOf(ch, slot, "totalLevel") instanceof Integer tl ? tl : super.slotTotalLevel(ch, slot);
+    }
+
+    @Override protected int slotEnvelope(int ch, int slot) {
+        return slotOf(ch, slot, "envelope") instanceof Integer envelope ? envelope : -1;
+    }
+
+    @Override protected String slotPhase(int ch, int slot) {
+        return slotOf(ch, slot, "phase") instanceof String phase ? phase : null;
+    }
+
+    @Override protected boolean slotCarrier(int ch, int slot) {
+        return slotOf(ch, slot, "carrier") instanceof Boolean carrier ? carrier : super.slotCarrier(ch, slot);
+    }
+
+
+    @Override protected int[][] toneRegs() { return chip() != null ? chip().register[0] : null; }
 
     private static final int[][] noPorts = {new int[0x100], new int[0x100]};
 

@@ -27,6 +27,7 @@ import mdplayer.Common.EnmModel;
 import mdplayer.MIDIExport;
 import mdplayer.MIDIParam;
 import mdplayer.MidiOutInfo;
+import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
 import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
@@ -100,6 +101,7 @@ public class MidiPlugin implements Plugin {
         if (fallbackSynth != null && fallbackSynth.isOpen()) {
             fallbackSynth.close();
         }
+        fallbackSynth = null;
     }
 
     // ???
@@ -182,6 +184,53 @@ public class MidiPlugin implements Plugin {
         if (num < params.length) params[num].sendBuffer(data);
 
 //        vstMng.sendMIDIout(model, num, data, deltaFrames);
+    }
+
+    /**
+     * The gain the balance asks the MIDI side to play at, as a linear factor.
+     * <p>
+     * Read fresh every time, so the mixer's master slider moves a MIDI song while it plays.
+     *
+     * @see Setting.Balance#getMidiVolume()
+     */
+    private double midiGain() {
+        Setting.Balance balance = setting.getBalance();
+        return Math.pow(10.0, (balance.getMasterVolume() + balance.getMidiVolume()) / 40.0);
+    }
+
+    /**
+     * The channel volume actually sent for a song's {@code value}.
+     * <p>
+     * Scaling the controller is the only volume control that works for both the software
+     * synthesizer and a real MIDI port; it is applied linearly to the controller value, which is
+     * an approximation - what a given synthesizer makes of controller 7 is up to the synthesizer.
+     * Never scaled to zero: a song that asked to be heard stays audible.
+     */
+    private int scaleVolume(int value) {
+        if (value <= 0) return 0; // the song is silencing the channel, leave it silenced
+        return (int) Math.clamp(Math.round(value * midiGain()), 1, 127);
+    }
+
+    /**
+     * Re-sends every channel's volume at the current {@link #midiGain}.
+     * <p>
+     * Sent when the outs are made, so a song that never touches controller 7 is still played at
+     * the calibrated level, and again whenever the volume changes under a playing song.
+     */
+    public void applyVolume() {
+        if (outs.isEmpty()) return;
+logger.log(Level.DEBUG, "midi volume: gain=%.3f (master=%d, midi=%d)".formatted(
+        midiGain(), setting.getBalance().getMasterVolume(), setting.getBalance().getMidiVolume()));
+        for (Receiver out : outs) {
+            if (out == null) continue;
+            for (int ch = 0; ch < MIDI_CHANNELS; ch++) {
+                try {
+                    send(out, ShortMessage.CONTROL_CHANGE, ch, 7, scaleVolume(volumes[ch]));
+                } catch (InvalidMidiDataException | IllegalStateException e) {
+                    logger.log(Level.DEBUG, "apply volume: " + e.getMessage());
+                }
+            }
+        }
     }
 
     /** the sixteen MIDI channels, as the last note on left them */
@@ -417,13 +466,15 @@ public class MidiPlugin implements Plugin {
         }
 
         private void emit(int status, int len, int d1, int d2) {
-            observe(status, len, d1, d2);
+            observe(status, len, d1, d2); // observed unscaled: the display shows what the song asked for
             sentMessages++;
             try {
                 ShortMessage sm = new ShortMessage();
                 switch (len) {
                     case 1 -> sm.setMessage(status, d1, 0);
-                    case 2 -> sm.setMessage(status, d1, d2);
+                    // the song setting a channel volume is where the balance gets applied
+                    case 2 -> sm.setMessage(status,
+                            d1, (status & 0xf0) == 0xb0 && d1 == 7 ? scaleVolume(d2) : d2);
                     default -> sm.setMessage(status);
                 }
                 receiver.send(sm, -1);
@@ -512,16 +563,16 @@ public class MidiPlugin implements Plugin {
             } catch (MidiUnavailableException e) {
                 logger.log(Level.ERROR, e.getMessage(), e);
             }
+            applyVolume();
             return;
         }
 
         for (int i = 0; i < setting.getMidiOut().getMidiOutInfos().get(midiMode).length; i++) {
-            int n = -1;
             int t = 0;
             Receiver mo = null;
+            MidiDevice found = null;
 
             MidiDevice.Info[] midiDeviceInfos = MidiSystem.getMidiDeviceInfo();
-            int j = 0;
             for (var info : midiDeviceInfos) {
                 MidiDevice device;
                 try {
@@ -535,14 +586,18 @@ public class MidiPlugin implements Plugin {
                 if (!setting.getMidiOut().getMidiOutInfos().get(midiMode)[i].name.equals(info.getName()))
                     continue;
 
-                n = j++;
+                found = device;
                 t = setting.getMidiOut().getMidiOutInfos().get(midiMode)[i].type;
                 break;
             }
 
-            if (n != -1) {
+            if (found != null) {
                 try {
-                    mo = MidiSystem.getReceiver();
+                    // the receiver of the device that was just matched by name - not
+                    // MidiSystem.getReceiver(), which hands out the platform default out
+                    // (often a port with nothing behind it, so the song plays into silence)
+                    if (!found.isOpen()) found.open();
+                    mo = found.getReceiver();
                 } catch (Exception e) {
                     logger.log(Level.ERROR, e.getMessage(), e);
                     mo = null;
@@ -558,6 +613,8 @@ public class MidiPlugin implements Plugin {
                 outsType.add(t);
             }
         }
+
+        applyVolume();
     }
 
 //    public static final VstMng vstMng = new VstMng();

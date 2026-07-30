@@ -75,6 +75,11 @@ public class BgmFormat extends BaseFileFormat implements FileFormat.SampledFileF
     }
 
     @Override
+    public String[] getPresetMixerBalance() {
+        return new String[] {"DriverBalance_MuSICA.mbc", "/resources/DefaultVolumeBalance_MuSICA.xml"};
+    }
+
+    @Override
     public Encoding getEncoding() {
         return new MdEncoding("MuSICA", "bgm");
     }

@@ -159,4 +159,9 @@ if (CC++ % INTERVAL == 0) { logger.log(Level.DEBUG, "NSF: %d, %d".formatted(b[i]
     public boolean isNotRenderingOnPause() {
         return true;
     }
+
+    @Override
+    public String getName() {
+        return "NSF";
+    }
 }

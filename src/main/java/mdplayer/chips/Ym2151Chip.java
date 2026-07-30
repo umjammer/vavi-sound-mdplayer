@@ -228,6 +228,11 @@ public class Ym2151Chip extends BaseChip {
     private void write(int chipId, int port, int addr, int data, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
             if (!chipTypes[chipId].getUseReal()[0]) {
+                // the song may not have registered this chip index - MDX starts one OPM under
+                // Ym2151Chip and the PCM8's second one under Pcm8Chip - so its emulator was never
+                // started (its operators are null). Skip, mirroring the realChips guard below;
+                // otherwise softReset's key-off writes to chip 1 hit an uninitialised Ym2151.
+                if (context.mds.inst(inst(chipId), chipId) == null) return;
                 context.mds.write(inst(chipId), chipId, 0, addr, data);
             }
         } else {
@@ -367,7 +372,7 @@ public class Ym2151Chip extends BaseChip {
         info.put("pmd", pmd[chipId]);
         info.put("amd", amd[chipId]);
         info.putAll(shadowInfo(chipId));
-        info.putAll(inst.getView(chipId, "info") != null ? inst.getView(chipId, "info") : Collections.emptyMap());
+        info.putAll(inst.getView(chipId, "info") != null ? inst.getView(chipId, "info") : Collections.emptyMap()); // some variants not implemented
         return info;
     }
 
@@ -381,6 +386,18 @@ public class Ym2151Chip extends BaseChip {
             info.put("channels." + ch + ".keyCode", register[chipId][0x28 + ch]);
             info.put("channels." + ch + ".totalLevel", carrierTotalLevel(chipId, ch, panFlCon & 0x07));
             info.put("channels." + ch + ".pan", (panFlCon >> 6) & 0x03);
+            // the key fraction of register 0x30, the pitch between the key code's note and the
+            // next in sixty-fourths of a semitone - where a detune and a portamento end up
+            info.put("channels." + ch + ".keyFraction", (register[chipId][0x30 + ch] >> 2) & 0x3f);
+            // register 0x38 carries PMS in bits 4-6 and AMS in bits 0-1; hand it over the way the
+            // OPN's 0xb4 has them, so that one reader can read either chip
+            int ms = register[chipId][0x38 + ch];
+            info.put("channels." + ch + ".sensitivity", ((ms >> 4) & 0x07) | ((ms & 0x03) << 4));
+            boolean amOn = false;
+            for (int slot = 0; slot < 4; slot++) {
+                amOn |= (register[chipId][0xa0 + ch + slot * 8] & 0x80) != 0;
+            }
+            info.put("channels." + ch + ".amOn", amOn);
         }
         return info;
     }

@@ -85,6 +85,11 @@ public class HvlFormat extends BaseFileFormat {
     }
 
     @Override
+    public String[] getPresetMixerBalance() {
+        return new String[] {"DriverBalance_HVL.mbc", "/resources/DefaultVolumeBalance_HVL.xml"};
+    }
+
+    @Override
     public Plugin getPlugin() {
         return Plugin.getPlugin(HvlPlugin.class);
     }

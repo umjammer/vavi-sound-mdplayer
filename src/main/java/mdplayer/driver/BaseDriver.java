@@ -108,4 +108,8 @@ public abstract class BaseDriver {
     public void fireEventHappened(Object src, String name, Object... args) {
         viewSupport.fireEventHappened(new GenericEvent(src, name, args));
     }
+
+    public String getName() {
+        return getClass().getSimpleName().replace("Driver", "").toUpperCase();
+    }
 }

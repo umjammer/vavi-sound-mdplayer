@@ -26,6 +26,8 @@ import vavi.sound.visualizer.fmdsp.FftDataSource;
 import vavi.sound.visualizer.fmdsp.FmDspDataSource;
 import vavi.sound.visualizer.fmdsp.FmDspVisualizer;
 import vavi.sound.visualizer.fmdsp.LevelDataSource;
+import vavi.sound.visualizer.fmdsp.TrackDetail;
+import vavi.sound.visualizer.fmdsp.TrackDetailSource;
 import vavi.sound.visualizer.fmdsp.TrackId;
 import vavi.sound.visualizer.fmdsp.TrackInfo;
 import vavi.sound.visualizer.fmdsp.TrackStatus;
@@ -52,8 +54,12 @@ import vavi.util.event.GenericEvent;
  * ({@link mdplayer.driver.pmd.PmdFmDspSource}, {@link mdplayer.driver.fmp.FmpFmDspSource}) three
  * things are approximations:
  * <ul>
- * <li>the MML columns. Ticks, gate and detune live in the driver work area only, so they stay 0;
- * the key is decoded from the chip's frequency registers instead of the driver's note.</li>
+ * <li>the MML columns, which belong to a driver's work area and are measured off the chip here
+ * instead: the key and the detune are decoded from the frequency registers rather than read as the
+ * driver's note and detune, the note length and the gate are timed between key ons and key offs
+ * rather than read as the note's own, and of the "M:" flags only the two the registers can answer
+ * are filled - see {@link #statusOf}. The tone number is whatever the chip calls one, and a chip
+ * with no instruments has none.</li>
  * <li>the level meters, which are synthesized from the level registers and a decay envelope
  * retriggered on every key-on edge, exactly like the driver-specific sources do.</li>
  * <li>key-on edges. The caches are polled, so a channel retriggered with the very same register
@@ -66,7 +72,8 @@ import vavi.util.event.GenericEvent;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-07-19 nsano initial version <br>
  */
-public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackStatusSource, WorkStateSource {
+public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackStatusSource,
+        TrackDetailSource, WorkStateSource {
 
     /** how fast a held note's meter sags, per snapshot */
     private static final double levelSustainDecay = 0.995;
@@ -179,6 +186,32 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
     /** the note each row played at the last snapshot, {@code -1} while it rests */
     private final int[] lastNotes = new int[TrackId.COUNT];
 
+    /** tick count of each row's last key off, {@code -1} while the key is still down */
+    private final long[] keyOffTicks = new long[TrackId.COUNT];
+
+    /**
+     * The measured gate of each row's previous note, in {@link #noteTickHz} counts: how much of it
+     * the key was actually held for, against the {@link #noteLengths length} of the same note. A
+     * sequenced driver has this as a number - PMD's q/Q - while a register file only shows the key
+     * going down and coming up again, so it is timed the same way the note length is, and shown
+     * against the same {@link #barScale} so that the two can be read together.
+     */
+    private final int[] gates = new int[TrackId.COUNT];
+
+    /** the pitch each row played at the last snapshot, in cents; 0 while it rests */
+    private final int[] lastPitches = new int[TrackId.COUNT];
+
+    /**
+     * How far a row's pitch has moved one way without being re-struck, in cents, negative while it
+     * moves down; reset whenever it turns around. Moving on and on the same way is a slide rather
+     * than a melody, which is the only thing a register file can be read for a portamento by -
+     * see {@link #statusOf}.
+     */
+    private final int[] slides = new int[TrackId.COUNT];
+
+    /** snapshots left before a row's "M:" portamento flag goes out again */
+    private final int[] slideHolds = new int[TrackId.COUNT];
+
     /** the bar is 64 columns of 4 counts each, see {@code BAR_CNT} */
     private static final int barFullScale = 255;
 
@@ -205,9 +238,13 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
     private final Group[] rowGroups = new Group[TrackId.COUNT];
     private final int[] rowChannels = new int[TrackId.COUNT];
 
-    private final FmDspChannel channel = new FmDspChannel();
+    /** the meter column of each row, {@code -1} for a row that has none; see {@link #readDetail} */
+    private final int[] rowLevels = new int[TrackId.COUNT];
 
-    private ChipRegister chipRegister;
+    /** the level each row's registers ask for, which its envelope is read against; see there */
+    private final double[] rowAmplitudes = new double[TrackId.COUNT];
+
+    private final FmDspChannel channel = new FmDspChannel();
 
     private Supplier<BaseDriver> driver = () -> null;
 
@@ -256,7 +293,6 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
     }
 
     void bind(ChipRegister chipRegister, Supplier<BaseDriver> driver) {
-        this.chipRegister = chipRegister;
         this.driver = driver != null ? driver : () -> null;
         readers.forEach(r -> r.bind(chipRegister));
         readers.forEach(r -> r.bind(this.driver));
@@ -272,6 +308,8 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
         claims.values().forEach(List::clear);
         meterBases.values().forEach(List::clear);
         Arrays.fill(rowReaders, null);
+        Arrays.fill(rowLevels, -1);
+        Arrays.fill(rowAmplitudes, 0);
         Arrays.stream(tracks).forEach(ChipFmDspSource::clear);
         Arrays.fill(used, false);
         Arrays.fill(rowNames, null);
@@ -283,6 +321,11 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
         Arrays.fill(keyOnTicks, -1);
         Arrays.fill(noteLengths, 0);
         Arrays.fill(lastNotes, -1);
+        Arrays.fill(keyOffTicks, -1);
+        Arrays.fill(gates, 0);
+        Arrays.fill(lastPitches, 0);
+        Arrays.fill(slides, 0);
+        Arrays.fill(slideHolds, 0);
         barScale = 1;
         Arrays.fill(pans, Pan.CENTER);
         Arrays.fill(comments, null);
@@ -373,8 +416,18 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
      * plus its three extension rows get six. Each group keeps at least its
      * {@linkplain #meterMinimums classic span}, so the layout only moves for a chip that really
      * is wider. A song with more voices than the strip has columns loses the tail.
+     * <p>
+     * The classic spacing is only kept while everything that can be shown still fits with it. An
+     * MDX is eight FM parts and eight PCM ones, which fills the strip exactly - but not with three
+     * columns held open for an SSG the song does not have, and a blank column is worth less than a
+     * part that sounds.
      */
     private void allocateMeters() {
+        int wanted = 0;
+        for (Group g : meterOrder) wanted += Math.max(visibleSpan(g), meterMinimums.get(g));
+        boolean keepSpacing = wanted <= LevelDataSource.COUNT;
+
+        Arrays.fill(owned, false);
         int cursor = 0;
         for (Group g : meterOrder) {
             List<FmDspChipReader> claimed = claims.get(g);
@@ -386,9 +439,37 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
                 bases.add(Math.min(cursor + span, LevelDataSource.COUNT));
                 span += reader.meters(g);
             }
-            cursor = Math.min(cursor + Math.max(span, meterMinimums.get(g)), LevelDataSource.COUNT);
+            for (int c = cursor; c < Math.min(cursor + span, LevelDataSource.COUNT); c++) owned[c] = true;
+            cursor += keepSpacing ? Math.max(span, meterMinimums.get(g)) : span;
+            cursor = Math.min(cursor, LevelDataSource.COUNT);
+        }
+        // A reader claiming a group before the ones in front of it move the layout along - an MDX
+        // whose PCM part sounds before its first FM note does - would leave what it wrote at its
+        // old columns standing there for the rest of the song, a label over a bar that never moves
+        // again. A column nothing owns any more shows nothing.
+        for (int c = 0; c < LevelDataSource.COUNT; c++) {
+            if (owned[c]) continue;
+            levelLabels[c] = null;
+            levelTracks[c] = null;
+            envelopes[c] = 0;
         }
     }
+
+    /**
+     * The columns a group's claimed readers want between them, as far as they can be seen: a chip
+     * with more channels than the group has rows - SegaPCM's sixteen against the PCM rows' nine -
+     * is asking for columns that are never drawn, and those do not count towards the strip filling
+     * up.
+     */
+    private int visibleSpan(Group g) {
+        int span = 0;
+        for (FmDspChipReader reader : claims.get(g)) span += reader.meters(g);
+        int[] groupRows = rows.get(g);
+        return Math.min(span, groupRows != null ? groupRows.length : 1); // the drum meter is one
+    }
+
+    /** meter columns a claimed reader fills, the rest are cleared out */
+    private final boolean[] owned = new boolean[LevelDataSource.COUNT];
 
     /**
      * Names a row for its chip where the section alone would be ambiguous.
@@ -449,10 +530,12 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
                 if (channel.keyOn) used[row] = true;
                 rowNames[row] = channel.name;
                 rowNums[row] = channel.num > 0 ? channel.num : ch + 1;
-                // the strip labels the start of a span, and every third column of a wide FM one
-                if (level >= 0 && (meter == 0 || (g == Group.FM && meter % 3 == 0))) {
-                    String label = labelOf(g, reader, channel.name, meter);
-                    if (label != null) levelLabels[level] = label;
+                // the strip labels the start of a span, and every third column of a wide FM one.
+                // Written every snapshot, including the blanks: a column that changed hands when
+                // the layout moved would otherwise keep the label its old owner left on it
+                if (level >= 0) {
+                    levelLabels[level] = meter == 0 || (g == Group.FM && meter % 3 == 0)
+                            ? labelOf(g, reader, channel.name, meter) : null;
                 }
                 TrackStatus status = tracks[row];
                 status.playing = used[row];
@@ -474,11 +557,21 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
                         || (!channel.sampled && channel.sounding && channel.note >= 0
                             && channel.note != lastNotes[row]);
 
+                status.detune = channel.detune;
+                status.status = statusOf(row, channel);
+
                 if (noteLength(row, status, channel.keyOn, channel.sounding, channel.note, channel.sampled)) {
                     // streaming: the pitch is a playback rate, so the note it lands nearest is an
                     // artefact of the arithmetic and not something the song ever played
                     status.key = 0xff;
                     status.actualKey = 0xff;
+                    status.gate = 0;
+                    // say why the key and the length are blank, or a row carrying the whole song
+                    // reads as a silent one. Not over a label the reader chose, which is more
+                    // specific than this one.
+                    if (status.info == TrackInfo.NORMAL) status.info = TrackInfo.STREAM;
+                } else {
+                    status.gate = Math.min(barFullScale, gates[row] / barScale);
                 }
 
                 if (level >= 0) {
@@ -489,6 +582,8 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
                 rowReaders[row] = reader;
                 rowGroups[row] = g;
                 rowChannels[row] = ch;
+                rowLevels[row] = level;
+                rowAmplitudes[row] = channel.amplitude;
             }
             if (slot >= groupRows.length) break;
         }
@@ -576,12 +671,20 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
         // note at all; a pitch change on a held row is the same event as far as the bar cares.
         boolean started = keyOn || (sounding && note >= 0 && note != lastNotes[row]);
         lastNotes[row] = sounding ? note : -1;
+        // the key coming up is what ends the gate; the note itself runs on until the next one
+        if (!sounding && !started && keyOffTicks[row] < 0 && keyOnTicks[row] >= 0) {
+            keyOffTicks[row] = noteTicks;
+        }
         if (started) {
             if (keyOnTicks[row] >= 0) {
                 long measured = noteTicks - keyOnTicks[row];
                 noteLengths[row] = (int) Math.min(measured, maxNoteLength);
+                // a note the key never came up on was played legato, so its gate is its length
+                long held = keyOffTicks[row] < 0 ? measured : keyOffTicks[row] - keyOnTicks[row];
+                gates[row] = (int) Math.clamp(held, 0, maxNoteLength);
             }
             keyOnTicks[row] = noteTicks;
+            keyOffTicks[row] = -1;
         }
         if (!sounding && !started) {
             // resting: nothing is counting down
@@ -655,6 +758,69 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
         return note < 0 ? 0xff : (note / 12) << 4 | note % 12;
     }
 
+    /**
+     * The eight character mnemonic fmdsp shows behind "M:", as much of it as a register file can
+     * answer. The six software LFO slots stay blank - a software LFO is a driver's, and this source
+     * has no driver to ask - and the two that are about the chip and the sound itself are filled:
+     * <ul>
+     * <li>"H", the chip's own LFO reaching this channel, from its sensitivity registers</li>
+     * <li>"P", a pitch bend, measured rather than read: the pitch of a note that is still being
+     * held has travelled {@link #slideCents} one way without turning back. A single jump is a
+     * melody stepping to its next note on a driver that re-keys silently ({@code MXDRV} does), and
+     * a vibrato turns around long before it gets that far, but a portamento or a pitch envelope
+     * keeps going.</li>
+     * </ul>
+     * The flag is held on for {@link #slideHold} snapshots after the pitch settles so that it does
+     * not flicker between the steps of a slow bend. What it cannot do is tell a driver's software
+     * vibrato from its portamento: both are the driver bending a held note, and only the driver
+     * knows which it called it.
+     */
+    private String statusOf(int row, FmDspChannel channel) {
+        // in cents, so that a slide is caught while it is still inside one semitone - which is
+        // most of a short one, and all of a slow one until it has been running for a while
+        int pitch = channel.note * 100 + channel.detune;
+        int moved = channel.sounding && !channel.keyOn && channel.note >= 0 && lastPitches[row] > 0
+                ? pitch - lastPitches[row] : 0;
+        lastPitches[row] = channel.sounding && channel.note >= 0 ? pitch : 0;
+
+        if (moved == 0 || Integer.signum(slides[row]) != Integer.signum(moved)) {
+            slides[row] = moved;
+        } else {
+            slides[row] += moved;
+        }
+        if (Math.abs(slides[row]) >= slideCents) slideHolds[row] = slideHold;
+        else if (slideHolds[row] > 0) slideHolds[row]--;
+        if (!channel.sounding) slideHolds[row] = 0;
+
+        int i = (channel.lfoPitch ? 1 : 0) | (channel.lfoVolume ? 2 : 0) | (slideHolds[row] > 0 ? 4 : 0);
+        return CHIP_STATUS[i];
+    }
+
+    /**
+     * How far a held note's pitch has to travel one way before it counts as a slide, in cents.
+     * A quarter tone: below that is a vibrato turning around or a driver's detune being nudged,
+     * and a portamento worth drawing crosses it within a few snapshots.
+     */
+    private static final int slideCents = 50;
+
+    /** how long the "M:" portamento flag stays on after the pitch stops moving, in snapshots */
+    private static final int slideHold = 16;
+
+    private static final String[] CHIP_STATUS = new String[8];
+
+    static {
+        for (int i = 0; i < CHIP_STATUS.length; i++) {
+            boolean pitch = (i & 1) != 0, volume = (i & 2) != 0;
+            CHIP_STATUS[i] = new String(new char[] {
+                    pitch ? 'P' : '-',           // the chip's LFO is bending the pitch
+                    volume ? 'A' : '-',          // and/or moving the level
+                    '-', '-', '-', '-',          // a second LFO and the sync flags: driver state
+                    pitch || volume ? 'H' : '-', // it is the chip's own LFO doing it, not a driver's
+                    (i & 4) != 0 ? 'P' : '-',    // a measured portamento
+            });
+        }
+    }
+
     private static void clear(TrackStatus status) {
         status.playing = false;
         status.info = TrackInfo.NORMAL;
@@ -666,6 +832,7 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
         status.volume = 0;
         status.gate = 0;
         status.detune = 0;
+        status.status = CHIP_STATUS[0];
         status.ppz8Ch = 0;
         status.ssgTone = false;
         status.ssgNoise = false;
@@ -739,6 +906,58 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
     @Override public TrackStatusSource trackStatus() { return this; }
 
     @Override public WorkStateSource work() { return this; }
+
+    @Override public TrackDetailSource trackDetail() { return this; }
+
+    // ----- TrackDetailSource -----
+
+    /**
+     * Hands the row's panel over to the reader that fills the row, and animates it.
+     * <p>
+     * A reader reads register caches, where the original reads the emulator's envelope generators,
+     * so what it reports is the level the chip has been told to play at rather than the one it is
+     * at. That is what {@link TrackDetail#modelled} says, and those bars are dropped here by how
+     * far the row's envelope has fallen below its registers - the one thing this source knows that
+     * the reader does not - so they attack and release with the note instead of standing still
+     * under a held key, while the marker stays at the register level the way the original's does.
+     * <p>
+     * Called from the drawing thread, and only while the panel is on screen: the readers answer
+     * out of the same caches they poll, and nothing here is computed for a display half that is
+     * not being shown.
+     */
+    @Override
+    public boolean readDetail(TrackId track, TrackDetail out) {
+        int row = track.ordinal();
+        FmDspChipReader reader = rowReaders[row];
+        if (reader == null || !reader.readDetail(rowGroups[row], rowChannels[row], out)) {
+            return false;
+        }
+        if (out.modelled) {
+            int drop = envelopeDrop(row);
+            for (int i = 0; i < out.lines; i++) {
+                if (out.bar[i] > 0) out.bar[i] = Math.max(0, out.bar[i] - drop);
+            }
+        }
+        return true;
+    }
+
+    /**
+     * How far the row has fallen below the level its registers ask for, in bar columns.
+     * <p>
+     * A column is 1.5 dB - two steps of an FM total level, and the same scale the level meters are
+     * drawn on - so the drop is the ratio between the envelope and the register level in decibels,
+     * and a bar falls away at the rate the meter beside it does. A row whose reader measures its
+     * own output never reads as dropped: the number it reports is the sound itself, not a ceiling
+     * the sound sits under.
+     */
+    private int envelopeDrop(int row) {
+        int level = rowLevels[row];
+        double asked = rowAmplitudes[row];
+        if (level < 0 || asked <= 0) return 0;
+        double at = envelopes[level];
+        if (at <= 0) return TrackDetail.COLUMNS;
+        return Math.max(0, (int) Math.round(-20 * Math.log10(Math.min(at / asked, 1)) / 1.5));
+    }
 
     // ----- TrackStatusSource -----
 
@@ -870,7 +1089,7 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
     @Override
     public String driverName() {
         BaseDriver d = work;
-        return d != null ? d.getClass().getSimpleName().replace("Driver", "").toUpperCase() : null;
+        return d != null ? d.getName() : null;
     }
 
     @Override public String filename() { return filename; }

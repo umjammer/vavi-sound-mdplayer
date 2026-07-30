@@ -59,13 +59,15 @@ class ChipFmDspSourceTest {
         plugin = EmulatedPlugin.of(new mdsound.instrument.C352Inst(), new mdsound.instrument.Saa1099Inst(),
                 new mdsound.instrument.SegaPcmInst(), new mdsound.instrument.C140Inst(), new mdsound.instrument.Sn76489Inst(), new mdsound.instrument.NukedYmF262Inst(),
                 new mdsound.instrument.Ym2608Inst(), new mdsound.instrument.Ym2203Inst(), new mdsound.instrument.Ym2151Inst(),
-                new mdsound.instrument.YmF278BInst());
+                new mdsound.instrument.YmF278BInst(), new mdsound.instrument.Ym3812Inst(),
+                new mdsound.instrument.YmZ280BInst());
         chipRegister = plugin.chipRegister;
         // a chip only forwards writes to its emulator when the settings say to use one, which a
         // played song arranges and a test has to say for itself
         useEmulator(mdplayer.Setting.getInstance().getYM2608Type());
         useEmulator(mdplayer.Setting.getInstance().getYM2203Type());
         useEmulator(mdplayer.Setting.getInstance().getYM2151Type());
+        useEmulator(mdplayer.Setting.getInstance().getYM3812Type());
         // the OPL3 has five implementations and the plugin below registers only the nuked one
         useEmulator(mdplayer.Setting.getInstance().getYMF262Type(), 2);
         opna = chipRegister.chip(Ym2608Chip.class);
@@ -283,14 +285,19 @@ class ChipFmDspSourceTest {
         assertEquals(0x49, status.key); // o4 a
     }
 
-    @Test
-    @DisplayName("segapcm rows go to the channels that sound, wherever they sit")
-    void testSegaPcm() {
-        int ch = 9; // beyond the nine visible rows, the slot map has to bring it forward
+    /** SegaPCM channel {@code ch} keyed on at ratio 0.25, i.e. o2 c */
+    void segaPcmKeyOn(int ch) {
         segaPcm.write(0, ch * 8 + 2, 100, EnmModel.VirtualModel); // left volume
         segaPcm.write(0, ch * 8 + 3, 100, EnmModel.VirtualModel); // right volume
         segaPcm.write(0, ch * 8 + 7, 0x40, EnmModel.VirtualModel); // ratio 0.25, two octaves down
         segaPcm.write(0, ch * 8 + 0x86, 0x00, EnmModel.VirtualModel); // bit 0 clear: keyed on
+    }
+
+    @Test
+    @DisplayName("segapcm rows go to the channels that sound, wherever they sit")
+    void testSegaPcm() {
+        int ch = 9; // beyond the nine visible rows, the slot map has to bring it forward
+        segaPcmKeyOn(ch);
         source.snapshot();
 
         source.readStatus(TrackId.ADPCM, status); // the first PCM row
@@ -299,6 +306,42 @@ class ChipFmDspSourceTest {
         assertEquals(ch + 1, status.ppz8Ch);
         assertTrue(source.level(10) > 0);
         assertEquals(Pan.CENTER, source.pan(10));
+    }
+
+    @Test
+    @DisplayName("a sampled row held far too long to be a note is badged as a stream")
+    void testStreamBadge() {
+        BaseDriver driver = new BaseDriver(null) {
+            @Override public void init(Common.EnmModel model, int latency, int waitTime, Object... args) {}
+            @Override public void processOneFrame() {}
+            @Override public MetaData getMetaData(byte[] buf, Object... args) { return null; }
+        };
+        source.bind(chipRegister, () -> driver); // the note clock only runs off a driver's counter
+
+        // a YMZ280B voice keyed on and left alone, which is how the Guwange rips play: the whole
+        // song is one streamed sample rather than a sequence of notes
+        var ymz = chipRegister.chip(mdplayer.chips.YmZ280BChip.class);
+        int ch = 0;
+        ymz.write(0, 0xff, 0x80, EnmModel.VirtualModel); // key on enable
+        ymz.write(0, ch * 4 + 0x00, 0x00, EnmModel.VirtualModel); // pitch low
+        ymz.write(0, ch * 4 + 0x02, 0xff, EnmModel.VirtualModel); // total level
+        ymz.write(0, ch * 4 + 0x03, 0x08, EnmModel.VirtualModel); // pan centre
+        ymz.write(0, ch * 4 + 0x01, 0xf1, EnmModel.VirtualModel); // key on, looping, 16-bit PCM
+        source.snapshot();
+
+        source.readStatus(TrackId.ADPCM, status); // the first PCM row
+        assertTrue(status.playing);
+        assertEquals(TrackInfo.NORMAL, status.info); // could still be a note being held
+        assertNotEquals(0xff, status.key);
+
+        // ten seconds later, never re-struck: this is one endless sample, not a note
+        driver.counter = Common.VGMProcSampleRate * 10L;
+        source.snapshot();
+        source.readStatus(TrackId.ADPCM, status);
+        assertEquals(TrackInfo.STREAM, status.info);
+        assertEquals(0xff, status.key); // the key the rate happens to land on means nothing
+        assertEquals(0, status.ticks);
+        assertEquals(0, status.gate);
     }
 
     @Test
@@ -393,6 +436,167 @@ class ChipFmDspSourceTest {
         for (int c = 0; c < 9; c++) {
             assertEquals(rows[c], source.track(c), "meter " + c + " readout");
         }
+    }
+
+    @Test
+    @DisplayName("detune: the cents the f-number sits off the note it shows")
+    void testFmDetune() {
+        opnaKeyOnFm1();
+        // the note's own f-number, which is a whole number and so a shade off the note itself
+        assertEquals(0, detuneOfFnum(0x26a), 2, "o4 c as near as the chip can hold it");
+
+        // a quarter tone up and down, which is as far as the reading can go before the key moves
+        assertEquals(25, detuneOfFnum((int) Math.round(0x26a * Math.pow(2, 0.25 / 12))), 2);
+        assertEquals(-25, detuneOfFnum((int) Math.round(0x26a * Math.pow(2, -0.25 / 12))), 2);
+
+        // and the SSG's period, which reads the other way round
+        opna.write(0, 0, 0x08, 15, EnmModel.VirtualModel);
+        opna.write(0, 0, 0x07, 0x3e, EnmModel.VirtualModel);
+        int period = 284; // about o4 c
+        opna.write(0, 0, 0x00, period & 0xff, EnmModel.VirtualModel);
+        opna.write(0, 0, 0x01, period >> 8, EnmModel.VirtualModel);
+        source.snapshot();
+        source.readStatus(TrackId.SSG_1, status);
+        int inTune = status.detune;
+        opna.write(0, 0, 0x00, (period - 4) & 0xff, EnmModel.VirtualModel); // a shorter period is sharp
+        source.snapshot();
+        source.readStatus(TrackId.SSG_1, status);
+        assertTrue(status.detune > inTune, "a shorter period reads sharper");
+    }
+
+    private int detuneOfFnum(int fnum) {
+        opna.write(0, 0, 0xa4, (4 << 3) | (fnum >> 8), EnmModel.VirtualModel);
+        opna.write(0, 0, 0xa0, fnum & 0xff, EnmModel.VirtualModel);
+        source.snapshot();
+        source.readStatus(TrackId.FM_1, status);
+        return status.detune;
+    }
+
+    @Test
+    @DisplayName("the opl2 fills a row, keyboard and meter from its own channel view")
+    void testOpl2() {
+        var opl2 = chipRegister.chip(mdplayer.chips.Ym3812Chip.class);
+        // channel 1: its two operators are register slots 0 and 3
+        for (int slot : new int[] {0, 3}) {
+            opl2.write(0, 0x20 + slot, 0x01, EnmModel.VirtualModel); // multiple 1
+            opl2.write(0, 0x40 + slot, 0x00, EnmModel.VirtualModel); // full level
+            opl2.write(0, 0x60 + slot, 0xf0, EnmModel.VirtualModel); // fastest attack
+            opl2.write(0, 0x80 + slot, 0x0f, EnmModel.VirtualModel);
+        }
+        opl2.write(0, 0xc0, 0x01, EnmModel.VirtualModel); // both operators reach the output
+        int fnum = 0x120; // an o3 note at block 4
+        opl2.write(0, 0xa0, fnum & 0xff, EnmModel.VirtualModel);
+        opl2.write(0, 0xb0, 0x20 | (4 << 2) | (fnum >> 8), EnmModel.VirtualModel); // key on
+        source.snapshot();
+
+        // the chip's own register file is not the point - the row is, and the meter beside it
+        source.readStatus(TrackId.FM_1, status);
+        assertTrue(status.playing, "the OPL2 has to claim a row for a channel it is playing");
+        assertNotEquals(0xff, status.key, "and put a key on the keyboard");
+        assertTrue(source.level(0) > 0, "and drive its volume slot");
+        assertEquals("FM1", source.label(0)); // the section, the chip being the only one in it
+    }
+
+    @Test
+    @DisplayName("the opl4's fm half fills rows too, not only its wave half")
+    void testOpl4Fm() {
+        int[][] banks = chipRegister.chip(mdplayer.chips.YmF278BChip.class).register[0];
+        int[] fm = banks[0];
+        for (int slot : new int[] {0, 3}) {
+            fm[0x20 + slot] = 0x01;
+            fm[0x40 + slot] = 0x00;
+            fm[0x60 + slot] = 0xf0;
+            fm[0x80 + slot] = 0x0f;
+        }
+        fm[0xc0] = 0x31; // both operators out, both sides
+        int fnum = 0x120;
+        fm[0xa0] = fnum & 0xff;
+        fm[0xb0] = 0x20 | (4 << 2) | (fnum >> 8); // key on
+        source.snapshot();
+
+        source.readStatus(TrackId.FM_1, status);
+        assertTrue(status.playing, "the OPL4's FM channels are OPL3 and have to show like any FM");
+        assertNotEquals(0xff, status.key);
+        assertEquals(Pan.CENTER, source.pan(0));
+    }
+
+    @Test
+    @DisplayName("TN: numbers the distinct voices the chip is played with")
+    void testToneNumber() {
+        opnaKeyOnFm1();
+        writeVoice(0, 0x71); // a voice on FM1, and the same one again on FM3
+        writeVoice(2, 0x71);
+        writeVoice(1, 0x42); // and a different one on FM2
+        for (int ch = 1; ch < 3; ch++) {
+            opna.write(0, 0, 0xa4 + ch, (4 << 3) | (0x26a >> 8), EnmModel.VirtualModel);
+            opna.write(0, 0, 0xa0 + ch, 0x26a & 0xff, EnmModel.VirtualModel);
+            opna.write(0, 0, 0xb4 + ch, 0xc0, EnmModel.VirtualModel);
+            opna.write(0, 0, 0x28, 0xf0 | ch, EnmModel.VirtualModel);
+        }
+        source.snapshot();
+
+        source.readStatus(TrackId.FM_1, status);
+        int first = status.toneNum;
+        source.readStatus(TrackId.FM_3, status);
+        assertEquals(first, status.toneNum, "the same registers are the same voice");
+        source.readStatus(TrackId.FM_2, status);
+        assertNotEquals(first, status.toneNum, "and different ones are not");
+
+        // the total level is the channel's volume as much as its voice: turning a part down must
+        // not read as it having changed instrument
+        for (int op = 0; op < 4; op++) {
+            opna.write(0, 0, 0x40 + op * 4, 40, EnmModel.VirtualModel);
+        }
+        source.snapshot();
+        source.readStatus(TrackId.FM_1, status);
+        assertEquals(first, status.toneNum, "a volume change is not a voice change");
+    }
+
+    /** writes one operator register block, so that the channel has a voice to be numbered by */
+    private void writeVoice(int ch, int value) {
+        for (int op = 0; op < 4; op++) {
+            for (int reg : new int[] {0x30, 0x50, 0x60, 0x70, 0x80, 0x90}) {
+                opna.write(0, 0, reg + ch + op * 4, value ^ op, EnmModel.VirtualModel);
+            }
+        }
+        opna.write(0, 0, 0xb0 + ch, value & 0x3f, EnmModel.VirtualModel);
+    }
+
+    @Test
+    @DisplayName("M: shows the chip's own LFO where it reaches a channel")
+    void testHardwareLfo() {
+        opnaKeyOnFm1();
+        source.snapshot();
+        source.readStatus(TrackId.FM_1, status);
+        assertEquals("--------", status.status, "no LFO written yet");
+
+        // the LFO running is not enough on its own - the channel has to be sensitive to it
+        opna.write(0, 0, 0x22, 0x08 | 3, EnmModel.VirtualModel);
+        source.snapshot();
+        source.readStatus(TrackId.FM_1, status);
+        assertEquals("--------", status.status, "running, but PMS and AMS are both zero");
+
+        // PMS in bits 0-2 of register 0xb4, over the pan bits the note already set
+        opna.write(0, 0, 0xb4, 0xc0 | 5, EnmModel.VirtualModel);
+        source.snapshot();
+        source.readStatus(TrackId.FM_1, status);
+        assertEquals("P-----H-", status.status, "the LFO is bending the pitch, and it is the chip's");
+
+        // AMS in bits 4-5, which also needs an operator switched to follow it
+        opna.write(0, 0, 0xb4, 0xc0 | 5 | (2 << 4), EnmModel.VirtualModel);
+        source.snapshot();
+        source.readStatus(TrackId.FM_1, status);
+        assertEquals("P-----H-", status.status, "AMS alone, no operator following");
+        opna.write(0, 0, 0x60, 0x80, EnmModel.VirtualModel);
+        source.snapshot();
+        source.readStatus(TrackId.FM_1, status);
+        assertEquals("PA----H-", status.status);
+
+        // and switching the LFO off takes both away again
+        opna.write(0, 0, 0x22, 0, EnmModel.VirtualModel);
+        source.snapshot();
+        source.readStatus(TrackId.FM_1, status);
+        assertEquals("--------", status.status);
     }
 
     @Test

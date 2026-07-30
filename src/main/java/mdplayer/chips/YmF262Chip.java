@@ -262,7 +262,7 @@ public class YmF262Chip extends BaseChip {
         info.put("register", register[chipId]);
         info.put("rhythmKeyON", getRhythmKeyON(chipId));
         info.put("fmKeyON", getFmKeyON(chipId));
-        info.putAll(inst.getView(chipId, "info") != null ? inst.getView(chipId, "info") : Collections.emptyMap());
+        info.putAll(inst.getView(chipId, "info") != null ? inst.getView(chipId, "info") : Collections.emptyMap()); // some variants not implemented
         return info;
     }
 

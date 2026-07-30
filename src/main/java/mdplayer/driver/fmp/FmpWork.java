@@ -23,7 +23,10 @@ import mdplayer.emu.nise98.Memory98;
  * <p>
  * The layout is not documented anywhere - the offsets below were recovered by running the driver
  * and matching what moves in memory against what it writes to the OPNA (a byte that follows the
- * f-number of one FM channel and no other is that channel's note, and so on).
+ * f-number of one FM channel and no other is that channel's note, and so on). They agree with the
+ * offsets 98fmplayer notes on its own {@code struct fmp_part}, which is laid out to match FMP's
+ * work area: this file's fields sit nine bytes below the ones it lists, {@link #NOTE} being its
+ * {@code prev_note} at 0x09.
  * <p>
  * A few things FMP never puts in memory - the timer B period, the rhythm keys, the SSG mixer - are
  * echoed here from the chip writes instead, see {@link FmpDriver#opnaWrite}.
@@ -49,14 +52,24 @@ public class FmpWork {
 
     // fields of a part work, relative to its note byte
 
-    private static final int GATE = -8;
+    /**
+     * which of the part's software LFOs are switched on: 0x80 p, 0x40 q, 0x20 r, 0x10 a, 0x08 w,
+     * 0x04 e. 0x02 and 0x01 are FMP's own, an LFO retrigger and the channel mask.
+     */
+    private static final int LFO_FLAGS = -9;
     private static final int VOLUME = -7;
+    /** the note's remaining tick count at which the part keys off, see {@link #gate} */
+    private static final int GATE_CMP = -6;
     private static final int TICKS_LEFT = -5;
     private static final int NOTE = 0;
+    /** 0x08 the part has stopped, 0x20 a pitchbend (portamento) is running */
+    private static final int STATUS = 1;
     /** signed */
     private static final int DETUNE = 3;
-    /** the f-number actually sent to the chip, i.e. after LFO and portamento */
+    /** the f-number of the note being played, before the detune and, on SSG, before the octave */
     private static final int FNUM = 49;
+    /** the value last written to the part's pitch register, i.e. what the chip really plays */
+    private static final int OUT_FNUM = 51;
     private static final int TONE = 54;
     /** nonzero while the key is down, which is until the gate time runs out */
     private static final int KEY_ON = 55;
@@ -66,6 +79,10 @@ public class FmpWork {
     private static final int DATA = 61;
     /** the part's bit in the mask word: FM 1-6, SSG 1-3, rhythm, ADPCM, FM3 extended 1-3 */
     private static final int BIT = 67;
+    /** 0x01 FM, 0x02 FM3 extended, 0x04 SSG, 0x08 rhythm, 0x10 ADPCM */
+    private static final int TYPE = 65;
+    /** FM only: the OPNA register 0xb4 AMS/PMS the hardware LFO drives, 0 while it is off */
+    private static final int HLFO_APMS = 96;
 
     // fields of the work area itself
 
@@ -144,12 +161,38 @@ public class FmpWork {
         return peek(part, VOLUME);
     }
 
-    public int gate(int part) {
-        return peek(part, GATE);
+    /**
+     * How many of a note's {@code ticks} the key is held for, which is what fmdsp shows behind
+     * "GT:". FMP does not keep it: it counts the note down and keys off once the count reaches
+     * {@link #GATE_CMP}, so the gate is the difference between the two - hence the note's total
+     * length as an argument, which only the caller has (see {@code FmpFmDspSource#ticks}).
+     */
+    public int gate(int part, int ticks) {
+        return Math.max(0, ticks - peek(part, GATE_CMP));
     }
 
     public int ticksLeft(int part) {
         return peek(part, TICKS_LEFT);
+    }
+
+    /** which software LFOs are on, and whether a portamento is running - see {@link #LFO_FLAGS} */
+    public int lfoFlags(int part) {
+        return peek(part, LFO_FLAGS);
+    }
+
+    /** see {@link #STATUS} */
+    public int statusBits(int part) {
+        return peek(part, STATUS);
+    }
+
+    /** see {@link #TYPE} */
+    public int type(int part) {
+        return peek(part, TYPE);
+    }
+
+    /** nonzero while the part's hardware LFO is on, FM parts only */
+    public int hlfoApms(int part) {
+        return peek(part, HLFO_APMS);
     }
 
     public int toneNum(int part) {
@@ -160,9 +203,14 @@ public class FmpWork {
         return (short) peekWord(part, DETUNE);
     }
 
-    /** the f-number the chip is playing, LFO and portamento included */
+    /** the f-number of the note being played, see {@link #FNUM} */
     public int fnum(int part) {
         return peekWord(part, FNUM);
+    }
+
+    /** the f-number the chip is playing, LFO, portamento and detune included */
+    public int outFnum(int part) {
+        return peekWord(part, OUT_FNUM);
     }
 
     /** the OPNA register 0xb4 bits of an FM part */

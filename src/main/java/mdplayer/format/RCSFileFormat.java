@@ -129,6 +129,11 @@ public class RCSFileFormat extends BaseFileFormat {
     }
 
     @Override
+    public String[] getPresetMixerBalance() {
+        return new String[] {"DriverBalance_RCS.mbc", "/resources/DefaultVolumeBalance_RCS.xml"};
+    }
+
+    @Override
     public Encoding getEncoding() {
         return new MdEncoding("RCS", "rcs");
     }

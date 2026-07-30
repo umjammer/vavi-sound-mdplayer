@@ -198,8 +198,8 @@ public abstract class NesApuReader implements FmDspChipReader {
         out.ssgTone = ch != 3;
         out.ssgNoise = ch == 3;
         // the noise runs off a period table rather than a pitch, so it has no key
-        out.note = ch == 3 || !sounding || timer == 0 ? -1
-                : Notes.noteOf(cpuClock / ((ch == 2 ? 32 : 16) * (timer + 1)));
+        out.pitch(ch == 3 || !sounding || timer == 0 ? 0
+                : cpuClock / ((ch == 2 ? 32 : 16) * (timer + 1)));
         // a pulse shows its duty as the tone number, the way an FM part shows its instrument
         out.toneNum = ch < 2 ? (regs[ch * 4] >> 6) & 0x03 : 0;
     }

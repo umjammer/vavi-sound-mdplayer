@@ -85,6 +85,11 @@ public class AhxFormat extends BaseFileFormat {
     }
 
     @Override
+    public String[] getPresetMixerBalance() {
+        return new String[] {"DriverBalance_AHX.mbc", "/resources/DefaultVolumeBalance_AHX.xml"};
+    }
+
+    @Override
     public Plugin getPlugin() {
         return Plugin.getPlugin(AhxPlugin.class);
     }

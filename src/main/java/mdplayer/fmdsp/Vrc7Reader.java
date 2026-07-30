@@ -126,8 +126,8 @@ public class Vrc7Reader implements FmDspChipReader {
         prevOns[ch] = on;
         prevFnums[ch] = fnum;
 
-        out.note = on && fnum > 0
-                ? Notes.noteOf(fnum * Math.pow(2, block - 1) * clock / (1 << 18)) : -1;
+        out.pitch(on && fnum > 0
+                ? fnum * Math.pow(2, block - 1) * clock / (1 << 18) : 0);
         // three dB a step of the sixteen level attenuator
         int vol = regs[0x30 + ch] & 0x0f;
         out.volume = 15 - vol;

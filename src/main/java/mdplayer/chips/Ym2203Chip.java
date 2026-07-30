@@ -353,7 +353,7 @@ public class Ym2203Chip extends BaseChip {
         info.put("ch3SlotVolume", /* ctYM2612.UseScci ? */ fmCh3SlotVolume[chipId] /*, context.mds.inst(inst[chipId]).readFMCh3SlotVolume(); */);
         info.put("register", fmRegister[chipId]);
         info.put("keyOn", fmKeyOn[chipId]);
-        info.putAll(inst.getView(chipId, "info") != null ? inst.getView(chipId, "info") : Collections.emptyMap());
+        info.putAll(inst.getView(chipId, "info") != null ? inst.getView(chipId, "info") : Collections.emptyMap()); // some variants not implemented
         return info;
     }
 

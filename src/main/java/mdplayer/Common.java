@@ -339,6 +339,8 @@ logger.log(Level.DEBUG, "delete attributes: " + dir);
 
     /**
      * Looks up localized resources of type BufferedImage.
+     *
+     * TODO "/mdplayer/resources/" should move to .properties inside
      */
     public static BufferedImage getImage(String name) {
         try {
@@ -405,16 +407,16 @@ logger.log(Level.DEBUG, "delete attributes: " + dir);
 
     static Robot robot;
 
-    static {
-        try {
-            robot = new Robot();
-        } catch (AWTException e) {
-            // github workflow headless mode causes exception
-            logger.log(Level.WARNING, e.getMessage(), e);
-        }
-    }
-
     public static void sendKey(int mod, int key) {
+        if (robot == null) {
+            try {
+                robot = new Robot();
+            } catch (AWTException e) {
+                // github workflow headless mode causes exception
+                logger.log(Level.WARNING, e.getMessage(), e);
+                return;
+            }
+        }
         robot.setAutoWaitForIdle(true);
         robot.keyPress(mod);
         robot.keyPress(key);
