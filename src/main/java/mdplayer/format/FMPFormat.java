@@ -45,11 +45,7 @@ public class FMPFormat extends BaseFileFormat implements FileFormat.SampledFileF
 
     @Override
     public MetaData getMetaData() {
-        if (!isMml()) {
-            return new FmpDriver().getMetaData(this.srcBuf, 0);
-        } else {
-            return null;
-        }
+        return new FmpDriver().getMetaData(this.srcBuf, 0);
     }
 
     @Override

@@ -2,6 +2,9 @@ package mdplayer.driver.fmp;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
@@ -70,14 +73,109 @@ public class FmpDriver extends BaseDriver {
     public MetaData getMetaData(byte[] buf, Object... args) {
         MetaData md = new MetaData();
 
-        try {
-            if (buf != null && buf.length > 2) {
-                int[] ptr = new int[] {(ByteUtil.readLeShort(buf, 0) & 0xffff) + 4}; // 4 'FMC'+version(1byte)
-                String comment = Common.getNRDString(buf, /* ref */ ptr);
-                md.set(Tag.Title, comment);
-                md.set(Tag.TitleJ, md.getFirst(Tag.Title));
+        if (buf == null || buf.length < 2) {
+            return md;
+        }
 
+        try {
+            List<String> rawLines = new ArrayList<>();
+            int memoPtr = (ByteUtil.readLeShort(buf, 0) & 0xffff);
+            boolean isBinaryFmc = (memoPtr > 0 && memoPtr + 4 <= buf.length &&
+                    buf[memoPtr] == 'F' && buf[memoPtr + 1] == 'M' && buf[memoPtr + 2] == 'C');
+
+            if (isBinaryFmc) {
+                int[] ptr = new int[] {memoPtr + 4};
+                while (ptr[0] < buf.length) {
+                    int oldPtr = ptr[0];
+                    String s = Common.getNRDString(buf, ptr);
+                    if (s != null && !s.isEmpty()) {
+                        rawLines.add(s.trim());
+                    }
+                    if (ptr[0] <= oldPtr || (ptr[0] < buf.length && buf[ptr[0]] == 0)) {
+                        if (ptr[0] < buf.length && buf[ptr[0]] == 0) ptr[0]++;
+                        if (ptr[0] >= buf.length || buf[ptr[0]] == 0) break;
+                    }
+                }
+            } else {
+                String text = new String(buf, Charset.forName("MS932"));
+                String[] lines = text.split("\\r?\\n");
+                for (String line : lines) {
+                    rawLines.add(line.trim());
+                }
             }
+
+            List<String> plainComments = new ArrayList<>();
+
+            for (String line : rawLines) {
+                if (line.isEmpty()) continue;
+
+                String lower = line.toLowerCase();
+                if (lower.startsWith("#title")) {
+                    String val = extractTagValue(line, "#title");
+                    if (!val.isEmpty()) {
+                        md.set(Tag.Title, val);
+                        md.set(Tag.TitleJ, val);
+                    }
+                } else if (lower.startsWith("#composer")) {
+                    String val = extractTagValue(line, "#composer");
+                    if (!val.isEmpty()) {
+                        md.set(Tag.Composer, val);
+                        md.set(Tag.ComposerJ, val);
+                    }
+                } else if (lower.startsWith("#author")) {
+                    String val = extractTagValue(line, "#author");
+                    if (!val.isEmpty()) {
+                        if (md.getFirst(Tag.Composer).isEmpty()) {
+                            md.set(Tag.Composer, val);
+                            md.set(Tag.ComposerJ, val);
+                        } else {
+                            md.set(Tag.Maker, val);
+                        }
+                    }
+                } else if (lower.startsWith("#arranger")) {
+                    String val = extractTagValue(line, "#arranger");
+                    if (!val.isEmpty()) {
+                        md.set(Tag.Arranger, val);
+                    }
+                } else if (lower.startsWith("#memo") || lower.startsWith("#comment")) {
+                    String val = extractTagValue(line, lower.startsWith("#memo") ? "#memo" : "#comment");
+                    if (!val.isEmpty()) {
+                        String existing = md.getFirst(Tag.Note);
+                        md.set(Tag.Note, existing.isEmpty() ? val : existing + "\n" + val);
+                    }
+                } else if (lower.startsWith("#game")) {
+                    String val = extractTagValue(line, "#game");
+                    if (!val.isEmpty()) {
+                        md.set(Tag.GameTitle, val);
+                        md.set(Tag.GameTitleJ, val);
+                    }
+                } else if (lower.startsWith("#maker")) {
+                    String val = extractTagValue(line, "#maker");
+                    if (!val.isEmpty()) {
+                        md.set(Tag.Maker, val);
+                    }
+                } else if (isBinaryFmc) {
+                    plainComments.add(line);
+                } else if (line.startsWith(";")) {
+                    String comment = line.substring(1).trim();
+                    if (!comment.isEmpty()) {
+                        plainComments.add(comment);
+                    }
+                }
+            }
+
+            if (md.getFirst(Tag.Title).isEmpty() && !plainComments.isEmpty()) {
+                md.set(Tag.Title, plainComments.get(0));
+                md.set(Tag.TitleJ, plainComments.get(0));
+            }
+            if (md.getFirst(Tag.Composer).isEmpty() && plainComments.size() > 1) {
+                md.set(Tag.Composer, plainComments.get(1));
+                md.set(Tag.ComposerJ, plainComments.get(1));
+            }
+            if (md.getFirst(Tag.Note).isEmpty() && md.getFirst(Tag.Arranger).isEmpty() && plainComments.size() > 2) {
+                md.set(Tag.Note, plainComments.get(2));
+            }
+
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
         }
@@ -85,10 +183,20 @@ public class FmpDriver extends BaseDriver {
         return md;
     }
 
+    private static String extractTagValue(String line, String tag) {
+        String val = line.substring(tag.length()).trim();
+        if (val.startsWith("\"") && val.endsWith("\"") && val.length() >= 2) {
+            val = val.substring(1, val.length() - 1).trim();
+        } else if (val.startsWith("'") && val.endsWith("'") && val.length() >= 2) {
+            val = val.substring(1, val.length() - 1).trim();
+        }
+        return val;
+    }
+
     @Override
     public void init(EnmModel model, int latency, int waitTime, Object... args) {
 
-        MetaData _ = getMetaData(dataBuf, 0);
+        metaData = getMetaData(dataBuf, 0);
 
         loopCounter = 0;
         curLoop = 0;

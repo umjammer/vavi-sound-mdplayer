@@ -6,7 +6,9 @@
 
 package mdplayer.driver.fmp;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import mdplayer.Common;
@@ -149,7 +151,22 @@ public class FmpFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
             if (event.getSource() instanceof BaseDriver driver) {
                 if (!commented) {
                     commented = true;
-                    comments[0] = driver.metaData.getFirst(Tag.Title);
+                    List<String> list = new ArrayList<>();
+
+                    addLines(list, driver.metaData.getFirst(Tag.Title));
+
+                    String comp = driver.metaData.getFirst(Tag.Composer);
+                    if (comp.isEmpty()) comp = driver.metaData.getFirst(Tag.ComposerJ);
+                    addLines(list, comp);
+
+                    String arr = driver.metaData.getFirst(Tag.Arranger);
+                    if (arr.isEmpty()) arr = driver.metaData.getFirst(Tag.Note);
+                    if (arr.isEmpty()) arr = driver.metaData.getFirst(Tag.Maker);
+                    addLines(list, arr);
+
+                    for (int i = 0; i < 3; i++) {
+                        comments[i] = i < list.size() ? list.get(i) : null;
+                    }
                 }
                 frames = driver.counter;
                 stopped = driver.stopped;
@@ -584,4 +601,15 @@ public class FmpFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
     @Override public String filename() { return filename; }
 
     @Override public String comment(int line) { return comments[line]; }
+
+    private static void addLines(List<String> list, String text) {
+        if (text != null && !text.isEmpty()) {
+            String[] split = text.split("\\r?\\n|\\r");
+            for (String s : split) {
+                if (!s.isEmpty()) {
+                    list.add(s);
+                }
+            }
+        }
+    }
 }
