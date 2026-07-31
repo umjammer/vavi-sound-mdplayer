@@ -419,8 +419,15 @@ public class FmDspVisualizer extends JComponent {
      * @param fps target frame rate, e.g. {@code 60}.
      */
     public FmDspVisualizer(int fps) {
+        this(fps, 1);
+    }
+
+    /**
+     * @param fps target frame rate, e.g. {@code 60}.
+     */
+    public FmDspVisualizer(int fps, int zoom) {
         if (fps <= 0) fps = 60;
-        setPreferredSize(new Dimension(CANVAS_W, CANVAS_H));
+        setPreferredSize(new Dimension(CANVAS_W * zoom, CANVAS_H * zoom));
         setBackground(Color.BLACK);
         setOpaque(true);
         timer = new Timer(1000 / fps, e -> repaint());

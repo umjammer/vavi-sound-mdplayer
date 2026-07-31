@@ -443,7 +443,7 @@ Debug.println("filename: " + file);
         source.bind(plugin);
         source.setFilename(Path.of(file).getFileName().toString());
 
-        FmDspVisualizer visualizer = new FmDspVisualizer(60);
+        FmDspVisualizer visualizer = new FmDspVisualizer(60, 2);
         visualizer.setTitle("MDDSP");
         visualizer.setVersion(Common.version.equals("undefined") ? null : Common.version);
         visualizer.setDataSource(source);
@@ -498,7 +498,7 @@ Debug.println("filename: " + file);
 
         ChipFmDspSource source = new ChipFmDspSource();
 
-        FmDspVisualizer visualizer = new FmDspVisualizer(60);
+        FmDspVisualizer visualizer = new FmDspVisualizer(60, 2);
         visualizer.setTitle("MDDSP");
         visualizer.setVersion(Common.version.equals("undefined") ? null : Common.version);
         visualizer.setDataSource(source);
