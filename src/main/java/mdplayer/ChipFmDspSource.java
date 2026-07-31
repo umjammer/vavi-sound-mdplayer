@@ -68,13 +68,15 @@ import vavi.util.event.GenericEvent;
  * </ul>
  * Pre-timed streams such as VGM never program TimerB; the tick counter - and with it the clock and
  * the circle animation - would freeze, so it falls back to a synthesized {@link #defaultTimerB}
- * tempo.
+ * tempo. A driver that renders nothing at all - a MIDI one, whose sound is the synthesizer's -
+ * leaves the analyzer nothing to measure, and its bars come from its notes instead: see
+ * {@link #readFft}.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-07-19 nsano initial version <br>
  */
-public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackStatusSource,
-        TrackDetailSource, WorkStateSource {
+public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDataSource,
+        TrackStatusSource, TrackDetailSource, WorkStateSource {
 
     /** how fast a held note's meter sags, per snapshot */
     private static final double levelSustainDecay = 0.995;
@@ -935,7 +937,39 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
 
     // ----- FmDspDataSource -----
 
-    @Override public FftDataSource fft() { return fft; }
+    @Override public FftDataSource fft() { return this; }
+
+    // ----- FftDataSource -----
+
+    /** one reader's spectrum, read into before it is folded into the frame */
+    private final int[] bars = new int[FftDataSource.LENGTH];
+
+    /**
+     * The analyzer bars: the rendered PCM, and over it whatever is being played that the rendered
+     * PCM does not carry.
+     * <p>
+     * Everything mdplayer emulates ends up in the mixer, so the {@link FftAnalyzer} alone is the
+     * spectrum for it - measured off the sound itself, which nothing worked out from registers can
+     * improve on. A MIDI driver is the exception: its notes go out to a synthesizer that mixes its
+     * own sound, mdplayer renders silence, and the bars stood empty for the whole song. Those
+     * readers {@linkplain FmDspChipReader#spectrum hand over} a spectrum drawn from their notes
+     * instead.
+     * <p>
+     * The two are taken per bar, the louder winning, so each stands where its own sound is: a song
+     * that is entirely MIDI shows its notes over a silent mixer, one that is entirely emulated
+     * never sees a note spectrum at all - a reader with nothing sounding contributes nothing, not
+     * even its floor - and a song that is both shows both.
+     */
+    @Override
+    public void readFft(int[] out) {
+        fft.readFft(out);
+        for (FmDspChipReader reader : readers) {
+            FftDataSource notes = reader.ready() ? reader.spectrum() : null;
+            if (notes == null) continue;
+            notes.readFft(bars);
+            for (int i = 0; i < FftDataSource.LENGTH; i++) out[i] = Math.max(out[i], bars[i]);
+        }
+    }
 
     @Override public LevelDataSource level() { return this; }
 

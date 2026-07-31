@@ -143,6 +143,30 @@ public class NoteSpectrum implements FftDataSource {
         }
     }
 
+    /**
+     * Adds one drum as the band of the axis it covers, since its note number picks a sample rather
+     * than a pitch: a kick sits under the low end, a snare spans the middle, a cymbal washes the
+     * top. The bands are the GM kit's, roughly - what they are for is that the drums move the
+     * spectrum the way drums move one, instead of standing on the bar their note number happens to
+     * land on.
+     *
+     * @param note MIDI note number on a drum channel, which is a kit piece and not a pitch
+     * @param amplitude how loud it is, {@code 0..1}
+     */
+    public void addDrum(int note, double amplitude) {
+        switch (note) {
+            case 35, 36 -> addBand(amplitude, 0, 5);                     // kick
+            case 41, 43, 45, 47, 48, 50 -> addBand(amplitude, 2, 24);    // toms
+            case 38, 40, 37, 39 -> addBand(amplitude, 10, 48);           // snare, rim, clap
+            case 42, 44, 46 -> addBand(amplitude, 42, LAST_BAR);         // hi-hats
+            case 49, 51, 52, 53, 55, 57, 59 -> addBand(amplitude, 36, LAST_BAR); // cymbals
+            default -> addBand(amplitude, 24, 58);                       // the rest of the kit
+        }
+    }
+
+    /** the top of the axis */
+    private static final int LAST_BAR = LENGTH - 1;
+
     /** bars a band fades over at each end */
     private static final double BAND_EDGE = 5;
 

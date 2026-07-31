@@ -240,10 +240,22 @@ logger.log(Level.DEBUG, "midi volume: gain=%.3f (master=%d, midi=%d)".formatted(
     private final int[] velocities = new int[MIDI_CHANNELS];
     private final int[] programs = new int[MIDI_CHANNELS];
     private final int[] volumes = new int[MIDI_CHANNELS];
+    private final int[] expressions = new int[MIDI_CHANNELS];
     private final int[] pans = new int[MIDI_CHANNELS];
+
+    /**
+     * Every key held down on each channel, where {@link #notes} is only the last one struck.
+     * <p>
+     * A channel plays chords, and a spectrum drawn from one note per part is a different piece of
+     * music from the one being played - see {@link mdplayer.fmdsp.MidiReader#readFft}. The row
+     * meters ask for the melody note and are happy with {@link #notes}; this is for whoever wants
+     * all of it.
+     */
+    private final boolean[][] keys = new boolean[MIDI_CHANNELS][128];
 
     {
         java.util.Arrays.fill(volumes, 100); // the General MIDI default
+        java.util.Arrays.fill(expressions, 127);
         java.util.Arrays.fill(pans, 64);
     }
 
@@ -251,8 +263,8 @@ logger.log(Level.DEBUG, "midi volume: gain=%.3f (master=%d, midi=%d)".formatted(
      * Remembers what the channel is playing.
      * <p>
      * A MIDI driver emulates no chip and the synth it plays into reports nothing back, so this is
-     * the only view of the music there is. It records the last note on of each channel, its
-     * program, and the two controllers a display cares about.
+     * the only view of the music there is. It records the keys each channel is holding and the
+     * last one of them struck, its program, and the three controllers a display cares about.
      * <p>
      * Fed from {@link MidiStreamParser#emit}, not from the bytes handed to {@link #send}: a driver
      * emulating a hardware MIDI port (ZMS, MID) writes one byte at a time and leans on running
@@ -265,20 +277,23 @@ logger.log(Level.DEBUG, "midi volume: gain=%.3f (master=%d, midi=%d)".formatted(
             case 0x90 -> { // note on, or note off when the velocity is zero
                 if (len < 2) return;
                 if (d2 == 0) {
-                    if (d1 == notes[ch]) velocities[ch] = 0;
+                    release(ch, d1);
                 } else {
+                    keys[ch][d1] = true;
                     notes[ch] = d1;
                     velocities[ch] = d2;
                 }
             }
             case 0x80 -> { // note off
                 if (len < 1) return;
-                if (d1 == notes[ch]) velocities[ch] = 0;
+                release(ch, d1);
             }
-            case 0xb0 -> { // controllers: 7 is the volume, 10 the pan
+            case 0xb0 -> { // controllers: 7 is the volume, 10 the pan, 11 the expression
                 if (len < 2) return;
                 if (d1 == 7) volumes[ch] = d2;
                 if (d1 == 10) pans[ch] = d2;
+                if (d1 == 11) expressions[ch] = d2;
+                if (d1 == 120 || d1 == 123) releaseAll(ch); // all sound off, all notes off
             }
             case 0xc0 -> {
                 if (len < 1) return;
@@ -287,6 +302,24 @@ logger.log(Level.DEBUG, "midi volume: gain=%.3f (master=%d, midi=%d)".formatted(
             default -> {
             }
         }
+    }
+
+    /**
+     * Lets go of one key. The channel goes quiet when it was the last one down - not when it was
+     * the note {@link #notes} happens to hold, which silenced a chord as soon as any one of its
+     * notes ended.
+     */
+    private void release(int ch, int note) {
+        keys[ch][note] = false;
+        for (boolean key : keys[ch]) {
+            if (key) return;
+        }
+        velocities[ch] = 0;
+    }
+
+    private void releaseAll(int ch) {
+        java.util.Arrays.fill(keys[ch], false);
+        velocities[ch] = 0;
     }
 
     /** what each channel is playing, for the visualizer */
@@ -298,12 +331,22 @@ logger.log(Level.DEBUG, "midi volume: gain=%.3f (master=%d, midi=%d)".formatted(
         return velocities[ch];
     }
 
+    /** whether the channel is holding this key down, the notes of a chord all being held at once */
+    public boolean key(int ch, int note) {
+        return keys[ch][note];
+    }
+
     public int program(int ch) {
         return programs[ch];
     }
 
     public int volume(int ch) {
         return volumes[ch];
+    }
+
+    /** controller 11, which a part is swelled and faded with where the volume sets where it sits */
+    public int expression(int ch) {
+        return expressions[ch];
     }
 
     public int pan(int ch) {
@@ -339,6 +382,7 @@ logger.log(Level.DEBUG, "midi volume: gain=%.3f (master=%d, midi=%d)".formatted(
             }
         }
         java.util.Arrays.fill(velocities, 0);
+        for (boolean[] channel : keys) java.util.Arrays.fill(channel, false);
     }
 
     private static void send(Receiver out, int command, int channel, int data1, int data2)
@@ -380,7 +424,9 @@ logger.log(Level.DEBUG, "midi volume: gain=%.3f (master=%d, midi=%d)".formatted(
         java.util.Arrays.fill(velocities, 0);
         java.util.Arrays.fill(programs, 0);
         java.util.Arrays.fill(volumes, 100);
+        java.util.Arrays.fill(expressions, 127);
         java.util.Arrays.fill(pans, 64);
+        for (boolean[] channel : keys) java.util.Arrays.fill(channel, false);
     }
 
     /** stream parser per receiver, keyed by receiver identity */

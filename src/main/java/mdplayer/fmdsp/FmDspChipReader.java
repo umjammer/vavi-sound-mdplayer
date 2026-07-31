@@ -129,4 +129,21 @@ public interface FmDspChipReader {
     default int timerB() {
         return 0;
     }
+
+    /**
+     * The spectrum of what this chip is sounding, for a chip whose sound never reaches the mixer;
+     * null - the default - for one whose does.
+     * <p>
+     * The analyzer bars are measured off the rendered PCM, which is the sound itself and beats
+     * anything that can be worked out from registers. But not everything mdplayer plays is
+     * rendered: a MIDI driver sends its notes to a synthesizer that mixes its own sound, and
+     * leaves mdplayer's mixer silent - the meters move, the keyboards play, and the bars stand at
+     * nothing. A reader in that position hands over a spectrum drawn from the notes instead, which
+     * the source shows alongside the rendered one.
+     * <p>
+     * Called from the drawing thread, once per frame, like {@link #readDetail}.
+     */
+    default vavi.sound.visualizer.fmdsp.FftDataSource spectrum() {
+        return null;
+    }
 }
