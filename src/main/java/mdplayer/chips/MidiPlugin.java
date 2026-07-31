@@ -115,6 +115,22 @@ public class MidiPlugin implements Plugin {
         return outInfos;
     }
 
+    /**
+     * Points the plugin at the MIDI outs the settings name for the current {@link #midiMode}.
+     * <p>
+     * There are none until the outs have been picked in the settings dialog, which a headless run
+     * never does: {@code getMidiOutInfos()} is null then, and the plugins that reached through it
+     * for the mode's array threw before the song had played a note - MID and RCS did, RCP and ZMS
+     * having had the same line commented out rather than guarded. Nothing configured is not an
+     * error, it is the case {@link #make} answers by falling back to the software synthesizer, so
+     * this does nothing and lets the song play.
+     */
+    public void setOutInfos() {
+        List<MidiOutInfo[]> midiOutInfos = setting.getMidiOut().getMidiOutInfos();
+        if (midiOutInfos == null || midiMode >= midiOutInfos.size()) return;
+        set(midiOutInfos.get(midiMode));
+    }
+
     public void set(MidiOutInfo[] midiOutInfos) {
         this.outInfos = null;
         if (midiOutInfos != null && midiOutInfos.length > 0) {

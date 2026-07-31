@@ -72,7 +72,7 @@ public class RCSPlugin extends BasePlugin<RcsDriver> {
 
         chipRegister.plugin(MidiPlugin.class).releaseAll();
         chipRegister.plugin(MidiPlugin.class).make();
-        chipRegister.plugin(MidiPlugin.class).set(setting.getMidiOut().getMidiOutInfos().get(chipRegister.plugin(MidiPlugin.class).midiMode));
+        chipRegister.plugin(MidiPlugin.class).setOutInfos();
 
         driverVirtual.setSupportFileName((supportFile == null || supportFile.length < 1) ? null : supportFile[0]);
         driverReal.setSupportFileName((supportFile == null || supportFile.length < 1) ? null : supportFile[0]);

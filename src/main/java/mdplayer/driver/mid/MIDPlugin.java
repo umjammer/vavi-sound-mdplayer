@@ -33,7 +33,7 @@ public class MIDPlugin extends BasePlugin<MidiDriver> {
 
         chipRegister.plugin(MidiPlugin.class).releaseAll();
         chipRegister.plugin(MidiPlugin.class).make();
-        chipRegister.plugin(MidiPlugin.class).set(setting.getMidiOut().getMidiOutInfos().get(chipRegister.plugin(MidiPlugin.class).midiMode));
+        chipRegister.plugin(MidiPlugin.class).setOutInfos();
 
         driverVirtual.init(Common.EnmModel.VirtualModel,
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
