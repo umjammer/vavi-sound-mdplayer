@@ -1281,7 +1281,7 @@ public class FmDspVisualizer extends JComponent {
                 // FALLTHRU
             case SSG:
                 if (track.ssgNoise) {
-                    info2 = String.format("%c%02X ", track.ssgTone ? 'M' : 'N', 0);
+                    info2 = String.format("%c%02X ", track.ssgTone ? 'M' : 'N', track.ssgNoiseFreq & 0x1f);
                 }
                 break;
             case FM3EX:
@@ -1461,6 +1461,7 @@ public class FmDspVisualizer extends JComponent {
         s.ppz8Ch = 0;
         s.ssgTone = false;
         s.ssgNoise = false;
+        s.ssgNoiseFreq = 0;
     }
 
     private void renderControlAndCounters() {

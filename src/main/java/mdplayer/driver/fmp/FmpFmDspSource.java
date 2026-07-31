@@ -230,9 +230,11 @@ public class FmpFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
                 int ssg = p - FmpWork.SSG_1;
                 status.ssgTone = (fw.ssgMixer & (1 << ssg)) == 0;
                 status.ssgNoise = (fw.ssgMixer & (8 << ssg)) == 0;
+                status.ssgNoiseFreq = fw.ssgNoiseFreq & 0x1f;
             } else {
                 status.ssgTone = false;
                 status.ssgNoise = false;
+                status.ssgNoiseFreq = 0;
             }
             Arrays.fill(status.fmSlotMask, false);
 
@@ -483,6 +485,8 @@ public class FmpFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
         status.ppz8Ch = 0;
         status.ssgTone = false;
         status.ssgNoise = false;
+        status.ssgNoiseFreq = 0;
+
         Arrays.fill(status.fmSlotMask, false);
     }
 
@@ -525,6 +529,8 @@ public class FmpFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
         out.ppz8Ch = status.ppz8Ch;
         out.ssgTone = status.ssgTone;
         out.ssgNoise = status.ssgNoise;
+        out.ssgNoiseFreq = status.ssgNoiseFreq;
+
         System.arraycopy(status.fmSlotMask, 0, out.fmSlotMask, 0, out.fmSlotMask.length);
     }
 

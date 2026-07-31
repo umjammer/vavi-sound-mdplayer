@@ -677,6 +677,8 @@ public class MidiFmDspSource implements Receiver, FmDspDataSource, FftDataSource
         out.ppz8Ch = 0;
         out.ssgTone = false;
         out.ssgNoise = false;
+        out.ssgNoiseFreq = 0;
+
         Arrays.fill(out.fmSlotMask, false);
     }
 

@@ -352,6 +352,7 @@ public class FmpDriver extends BaseDriver {
         FmpWork work = fmp.getWork();
         if (port == 0) {
             switch (a) {
+            case 0x06 -> work.ssgNoiseFreq = d & 0x1f;
             case 0x07 -> work.ssgMixer = d & 0xff;
             case 0x26 -> work.timerB = d & 0xff;
             default -> {

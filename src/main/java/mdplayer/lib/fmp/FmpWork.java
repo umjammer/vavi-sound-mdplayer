@@ -105,6 +105,9 @@ public class FmpWork {
     /** the OPNA register 0x07 bits, echoed from the chip writes */
     public volatile int ssgMixer = 0xff;
 
+    /** the OPNA register 0x06 bits, echoed from the chip writes */
+    public volatile int ssgNoiseFreq;
+
     /** the ADPCM pan, echoed from the chip writes */
     public volatile int adpcmPan;
 

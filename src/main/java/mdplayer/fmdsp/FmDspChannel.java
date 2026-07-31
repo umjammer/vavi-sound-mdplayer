@@ -72,6 +72,8 @@ public class FmDspChannel {
 
     public boolean ssgNoise;
 
+    public int ssgNoiseFreq;
+
     /** shown in the PPZ8 channel column, 0 = none */
     public int pcmCh;
 
@@ -116,6 +118,7 @@ public class FmDspChannel {
         info = TrackInfo.NORMAL;
         ssgTone = false;
         ssgNoise = false;
+        ssgNoiseFreq = 0;
         pcmCh = 0;
         toneNum = 0;
         name = null;

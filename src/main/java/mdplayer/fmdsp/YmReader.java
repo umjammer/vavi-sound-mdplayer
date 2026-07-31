@@ -120,9 +120,9 @@ public class YmReader implements FmDspChipReader {
     public void read(Group group, int s, FmDspChannel out) {
         out.name = "SSG";
         out.num = s + 1;
-        out.info = TrackInfo.SSG;
         out.pan = Pan.CENTER; // the ST mixes its three channels to one output
         if (regs == null) return;
+        out.info = (regs[0x08 + s] & 0x10) != 0 ? TrackInfo.SSGEFF : TrackInfo.SSG;
 
         int period = (regs[s * 2] & 0xff) | ((regs[s * 2 + 1] & 0x0f) << 8);
         int level = level(s);
@@ -138,6 +138,7 @@ public class YmReader implements FmDspChipReader {
         out.volume = level;
         out.ssgTone = tone(s);
         out.ssgNoise = noise(s);
+        out.ssgNoiseFreq = regs[0x06] & 0x1f;
         out.note = sounding && period > 0 ? Notes.noteOf(clock / (16.0 * period)) : -1;
         // one step of the PSG's sixteen level table is 3 dB
         out.amplitude = sounding ? Math.pow(10, (Math.min(level, 15) - 15) * 3.0 / 20) : 0;

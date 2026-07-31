@@ -483,7 +483,7 @@ public abstract class OpnFmReader implements FmDspChipReader {
 
         out.name = "SSG";
         out.num = s + 1;
-        out.info = TrackInfo.SSG;
+        out.info = (regs[0x08 + s] & 0x10) != 0 ? TrackInfo.SSGEFF : TrackInfo.SSG;
         out.sounding = sounding;
         out.keyOn = sounding && (!prevSsgSoundings[s] || period != prevSsgPeriods[s]);
         prevSsgSoundings[s] = sounding;
@@ -495,6 +495,7 @@ public abstract class OpnFmReader implements FmDspChipReader {
         out.volume = level;
         out.ssgTone = tone;
         out.ssgNoise = noise;
+        out.ssgNoiseFreq = regs[0x06] & 0x1f;
         // one step of the SSG's 16 level table is 3 dB
         out.amplitude = Math.pow(10, (Math.min(level, 15) - 15) * 3.0 / 20);
         out.pan = Pan.CENTER;

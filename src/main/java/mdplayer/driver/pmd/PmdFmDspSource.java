@@ -213,9 +213,17 @@ public class PmdFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
                 int ssg = p - pw.part7;
                 status.ssgTone = (part.psgpat & (1 << ssg)) != 0;
                 status.ssgNoise = (part.psgpat & (8 << ssg)) != 0;
+                status.ssgNoiseFreq = pw.psnoi & 0x1f;
+                if (t == TrackId.SSG_3 && pw.effon != 0) {
+                    status.info = TrackInfo.SSGEFF;
+                    status.toneNum = pw.psgefcnum & 0xff;
+                    if (pw.eswthz != 0) status.ssgTone = true;
+                    if (pw.eswnhz != 0) status.ssgNoise = true;
+                }
             } else {
                 status.ssgTone = false;
                 status.ssgNoise = false;
+                status.ssgNoiseFreq = 0;
             }
             for (int c = 0; c < 4; c++) {
                 status.fmSlotMask[c] = (part.slotmask & (0x10 << c)) == 0;
@@ -539,6 +547,8 @@ public class PmdFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
         status.ppz8Ch = 0;
         status.ssgTone = false;
         status.ssgNoise = false;
+        status.ssgNoiseFreq = 0;
+
         Arrays.fill(status.fmSlotMask, false);
     }
 
@@ -600,6 +610,8 @@ public class PmdFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
         out.ppz8Ch = status.ppz8Ch;
         out.ssgTone = status.ssgTone;
         out.ssgNoise = status.ssgNoise;
+        out.ssgNoiseFreq = status.ssgNoiseFreq;
+
         System.arraycopy(status.fmSlotMask, 0, out.fmSlotMask, 0, out.fmSlotMask.length);
     }
 

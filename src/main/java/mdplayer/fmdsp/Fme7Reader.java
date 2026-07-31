@@ -129,9 +129,9 @@ public class Fme7Reader implements FmDspChipReader {
     public void read(Group group, int ch, FmDspChannel out) {
         out.name = "SSG";
         out.num = ch + 1;
-        out.info = TrackInfo.SSG;
         out.pan = Pan.CENTER; // the chip is mono
         if (regs == null) return;
+        out.info = (regs[0x08 + ch] & 0x10) != 0 ? TrackInfo.SSGEFF : TrackInfo.SSG;
 
         boolean sounding = sounding(ch);
         int period = periodOf(ch);
@@ -146,6 +146,7 @@ public class Fme7Reader implements FmDspChipReader {
         out.amplitude = sounding ? volume / 15.0 : 0;
         out.ssgTone = tone(ch);
         out.ssgNoise = noise(ch);
+        out.ssgNoiseFreq = regs[0x06] & 0x1f;
         out.note = sounding && tone(ch) && period > 0
                 ? Notes.noteOf(clock / (16.0 * period)) : -1;
     }

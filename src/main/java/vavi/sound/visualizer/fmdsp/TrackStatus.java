@@ -39,4 +39,5 @@ public final class TrackStatus {
     public int ppz8Ch;
     public boolean ssgTone;
     public boolean ssgNoise;
+    public int ssgNoiseFreq;
 }

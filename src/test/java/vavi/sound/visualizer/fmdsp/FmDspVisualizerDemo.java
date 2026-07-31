@@ -157,6 +157,7 @@ public final class FmDspVisualizerDemo {
             out.status = playing ? "PLAY" : "STOP";
             out.ssgTone = false;
             out.ssgNoise = false;
+            out.ssgNoiseFreq = 0;
         }
 
         @Override

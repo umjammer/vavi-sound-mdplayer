@@ -562,7 +562,7 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
                 channel.clear();
                 reader.read(g, ch, channel);
 
-                if (channel.keyOn) used[row] = true;
+                if (channel.keyOn || channel.sounding) used[row] = true;
                 rowNames[row] = channel.name;
                 rowNums[row] = channel.num > 0 ? channel.num : ch + 1;
                 // the strip labels the start of a span, and every third column of a wide FM one.
@@ -590,6 +590,7 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
                 status.toneNum = channel.toneNum;
                 status.ssgTone = channel.ssgTone;
                 status.ssgNoise = channel.ssgNoise;
+                status.ssgNoiseFreq = channel.ssgNoiseFreq;
                 status.ppz8Ch = channel.pcmCh;
 
                 // a re-struck note re-attacks the meter. MXDRV keys off and back on inside one
@@ -880,6 +881,8 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
         status.ppz8Ch = 0;
         status.ssgTone = false;
         status.ssgNoise = false;
+        status.ssgNoiseFreq = 0;
+
         Arrays.fill(status.fmSlotMask, false);
     }
 
@@ -1076,6 +1079,8 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
         out.ppz8Ch = status.ppz8Ch;
         out.ssgTone = status.ssgTone;
         out.ssgNoise = status.ssgNoise;
+        out.ssgNoiseFreq = status.ssgNoiseFreq;
+
         System.arraycopy(status.fmSlotMask, 0, out.fmSlotMask, 0, out.fmSlotMask.length);
     }
 

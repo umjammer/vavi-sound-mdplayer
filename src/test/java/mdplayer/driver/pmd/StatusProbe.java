@@ -19,7 +19,9 @@ import mdplayer.driver.BasePlugin;
 import pmd.driver.PW;
 import vavi.sound.visualizer.fmdsp.FmDspVisualizer;
 import vavi.sound.visualizer.fmdsp.TrackId;
+import vavi.sound.visualizer.fmdsp.TrackInfo;
 import vavi.sound.visualizer.fmdsp.TrackStatus;
+
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
@@ -86,7 +88,8 @@ public class StatusProbe {
             boolean bent = false;
             for (TrackId t : TrackId.values()) {
                 source.readStatus(t, status);
-                if (!status.playing) continue;
+                if (!status.playing && status.info != TrackInfo.SSGEFF) continue;
+
                 if (status.status.length() > 7 && status.status.charAt(7) == 'P') portas++;
                 if (status.actualKey != status.key && status.key != 0xff && status.actualKey != 0xff) {
                     bent = true;
