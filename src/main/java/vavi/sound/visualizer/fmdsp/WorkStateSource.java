@@ -56,4 +56,23 @@ public interface WorkStateSource {
     default String comment(int line) {
         return null;
     }
+
+    /** Type label of the external PCM file for index (e.g. "PPC", "PPZ1", "PVI", etc.), may be null. */
+    default String pcmType(int index) {
+        return switch (index) {
+            case 0 -> "PCM1";
+            case 1 -> "PCM2";
+            default -> null;
+        };
+    }
+
+    /** Name of the external PCM file for index (0: PPC/PVI, 1: PPZ1/PPZ, 2: PPZ2, 3: PPS), may be null. */
+    default String pcmFilename(int index) {
+        return null;
+    }
+
+    /** True if there was an error loading the PCM file for index. */
+    default boolean pcmError(int index) {
+        return false;
+    }
 }

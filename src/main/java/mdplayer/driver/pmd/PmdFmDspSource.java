@@ -702,4 +702,40 @@ public class PmdFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
 
     @Override public String comment(int line) { return comments[line]; }
 
+    @Override
+    public String pcmType(int index) {
+        return switch (index) {
+            case 0 -> "PPC";
+            case 1 -> "PPZ1";
+            case 2 -> "PPZ2";
+            case 3 -> "PPS";
+            default -> null;
+        };
+    }
+
+    @Override
+    public String pcmFilename(int index) {
+        PW pw = work;
+        if (pw == null) return null;
+        return switch (index) {
+            case 0 -> pw.ppcFile;
+            case 1 -> pw.ppz1File;
+            case 2 -> pw.ppz2File;
+            case 3 -> pw.ppsFile;
+            default -> null;
+        };
+    }
+
+    @Override
+    public boolean pcmError(int index) {
+        PW pw = work;
+        if (pw == null) return false;
+        return switch (index) {
+            case 0 -> pw.ppcError;
+            case 1 -> pw.ppz1Error;
+            case 2 -> pw.ppz2Error;
+            case 3 -> pw.ppsError;
+            default -> false;
+        };
+    }
 }

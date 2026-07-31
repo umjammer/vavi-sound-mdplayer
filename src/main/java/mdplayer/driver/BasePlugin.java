@@ -68,6 +68,10 @@ public abstract class BasePlugin<T extends BaseDriver> implements Plugin {
     public String playingArcFileName;
     protected int songNo = 0;
     protected List<Tuple<String, byte[]>> extendFiles = null;
+
+    public List<Tuple<String, byte[]>> getExtendFiles() {
+        return extendFiles;
+    }
     public Path playingFilePath;
 
     public boolean flgReinit = false;

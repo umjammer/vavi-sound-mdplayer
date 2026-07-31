@@ -630,6 +630,37 @@ public class FmpFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
 
     @Override public String comment(int line) { return comments[line]; }
 
+    @Override
+    public String pcmType(int index) {
+        return switch (index) {
+            case 0 -> "PVI";
+            case 1 -> "PPZ";
+            default -> null;
+        };
+    }
+
+    @Override
+    public String pcmFilename(int index) {
+        FmpWork fw = work;
+        if (fw == null) return null;
+        return switch (index) {
+            case 0 -> fw.pviName;
+            case 1 -> fw.ppzName;
+            default -> null;
+        };
+    }
+
+    @Override
+    public boolean pcmError(int index) {
+        FmpWork fw = work;
+        if (fw == null) return false;
+        return switch (index) {
+            case 0 -> fw.pviError;
+            case 1 -> fw.ppzError;
+            default -> false;
+        };
+    }
+
     private static void addLines(List<String> list, String text) {
         if (text != null && !text.isEmpty()) {
             String[] split = text.split("\\r?\\n|\\r");

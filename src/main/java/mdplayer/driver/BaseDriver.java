@@ -64,6 +64,45 @@ public abstract class BaseDriver {
         return null;
     }
 
+    /**
+     * The PCM type label for slot {@code index} (e.g. "PPC", "PPZ1", "PDX", "PVI", etc.).
+     */
+    public String pcmType(int index) {
+        String fn = pcmFilename(index);
+        if (fn != null) {
+            int dot = fn.lastIndexOf('.');
+            if (dot >= 0 && dot < fn.length() - 1) {
+                return fn.substring(dot + 1).toUpperCase();
+            }
+        }
+        return switch (index) {
+            case 0 -> "PCM1";
+            case 1 -> "PCM2";
+            default -> null;
+        };
+    }
+
+    /**
+     * The PCM filename for slot {@code index}, or null when the driver has nothing for that slot.
+     */
+    public String pcmFilename(int index) {
+        if (plugin != null) {
+            var ex = plugin.getExtendFiles();
+            if (ex != null && index >= 0 && index < ex.size()) {
+                return ex.get(index).getItem1();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Whether the PCM file for slot {@code index} failed to load. Drivers that load
+     * PCM data override this.
+     */
+    public boolean pcmError(int index) {
+        return false;
+    }
+
     /** renders the audio */
     public int render(short[] buffer, int offset, int sampleCount) {
         if (plugin.chipRegister.plugin(RealChipPlugin.class).isHiyorimiNecessary() && plugin.driverReal != null && plugin.driverReal.isDataBlock)

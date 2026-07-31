@@ -3,6 +3,7 @@ package mdplayer.driver.fmp;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,6 +49,7 @@ public class FmpDriver extends BaseDriver {
         fmp.dir = System.getProperty("mdplayer.fmp.dir", System.getProperty("user.dir"));
         fmp.blockWrite = b -> this.isDataBlock = b;
         fmp.setPPZ8PCMData = this::setPPZ8PCMData;
+        fmp.setPPZ8PCMFilename = this::setPPZ8PCMFilename;
         fmp.setPPZ8Data = this::setPPZ8Data;
         fmp.opnaWrite = this::opnaWrite;
     }
@@ -283,6 +285,11 @@ public class FmpDriver extends BaseDriver {
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
+
+        // Extract PVI/PPZ names from the song data header, matching the C reference
+        // fmp_load(). These are the canonical PCM filenames shown on the file bar.
+        // The PPZ8 callback may override them later if FMP.COM loads PCM at runtime.
+        parsePcmNames(dataBuf, fmp.getWork());
     }
 
     /** how many {@link #processOneFrame()} calls between two "fmp" events */
@@ -322,8 +329,125 @@ public class FmpDriver extends BaseDriver {
         }
     }
 
+    private void setPPZ8PCMFilename(int mode, String fn) {
+        FmpWork work = fmp.getWork();
+        if (work != null) {
+            if (mode == 0) work.pviName = fn;
+            else work.ppzName = fn;
+        }
+    }
+
+    @Override
+    public String pcmType(int index) {
+        return switch (index) {
+            case 0 -> "PVI";
+            case 1 -> "PPZ";
+            default -> null;
+        };
+    }
+
+    @Override
+    public String pcmFilename(int index) {
+        FmpWork work = fmp.getWork();
+        if (work == null) return null;
+        return switch (index) {
+            case 0 -> work.pviName;
+            case 1 -> work.ppzName;
+            default -> null;
+        };
+    }
+
+    @Override
+    public boolean pcmError(int index) {
+        FmpWork work = fmp.getWork();
+        if (work == null) return false;
+        return switch (index) {
+            case 0 -> work.pviError;
+            case 1 -> work.ppzError;
+            default -> false;
+        };
+    }
+
+    /**
+     * Extracts PVI and PPZ filenames from the FMP song data header.
+     * <p>
+     * Mirrors the C reference {@code fmp_load()} in {@code fmdriver_fmp.c}:
+     * the SSG tone pointer at {@code read16le(data)} doubles as the end of the
+     * sequence data; 0x12 bytes before it sit the 8-byte PPZ and PVI names.
+     * Format versions ({@code dataver}) below 0x2a have no embedded names
+     * ({@code pviname_valid = false}). The PPZ name is only valid when the PPZ
+     * flag (bit 1 of the data flags byte) is set.
+     */
+    static void parsePcmNames(byte[] data, FmpWork work) {
+        if (work == null || data == null || data.length < 4) return;
+
+        int offset = (data[0] & 0xff) | ((data[1] & 0xff) << 8);
+        if (offset + 4 > data.length) return;
+
+        // Check for FMC header
+        if (data[offset] != 'F' || data[offset + 1] != 'M' || data[offset + 2] != 'C') return;
+
+        int dataver = data[offset + 3] & 0xff;
+        boolean pvinameValid;
+        int dataFlagsOffset;
+
+        if (dataver <= 0x29) {
+            // format 1: no embedded PCM names
+            pvinameValid = false;
+            dataFlagsOffset = 0x1b;
+        } else if (dataver <= 0x49) {
+            // format 2
+            pvinameValid = true;
+            dataFlagsOffset = 0x2f;
+        } else if (dataver <= 0x69) {
+            // format 3
+            pvinameValid = true;
+            dataFlagsOffset = 0x5f;
+        } else {
+            return; // unknown format
+        }
+
+        if (!pvinameValid) return;
+        if (dataFlagsOffset >= data.length) return;
+
+        boolean ppzFlag = (data[dataFlagsOffset] & 0x02) != 0;
+
+        // pcmptr = read16le(data) - 0x12
+        int pcmptr = offset - 0x12;
+        if (pcmptr < 0 || pcmptr + 16 > data.length) return;
+
+        // PVI name at pcmptr+8, PPZ name at pcmptr+0 (each 8 bytes, null-terminated)
+        String pviName = extractName(data, pcmptr + 8, 8);
+        if (pviName != null) {
+            work.pviName = pviName;
+        }
+
+        if (ppzFlag) {
+            String ppzName = extractName(data, pcmptr, 8);
+            if (ppzName != null) {
+                work.ppzName = ppzName;
+            }
+        }
+    }
+
+    /** Extracts a null-terminated ASCII name from data, returning null if empty. */
+    private static String extractName(byte[] data, int offset, int maxLen) {
+        int end = offset;
+        while (end < offset + maxLen && end < data.length && data[end] != 0) {
+            end++;
+        }
+        if (end == offset) return null;
+        return new String(data, offset, end - offset, StandardCharsets.US_ASCII);
+    }
+
     private void setPPZ8PCMData(int bank, int mode, byte[][] pcmData) {
         plugin.chipRegister.chip(Ppz8Chip.class).writePcm(0, bank, mode, pcmData, model);
+        FmpWork work = fmp.getWork();
+        if (work != null) {
+            boolean err = (pcmData == null || bank < 0 || bank >= pcmData.length || pcmData[bank] == null);
+            if (mode == 0) work.pviError = err;
+            else work.ppzError = err;
+        }
     }
 
     private void setPPZ8Data(int port, int adr, int data) {

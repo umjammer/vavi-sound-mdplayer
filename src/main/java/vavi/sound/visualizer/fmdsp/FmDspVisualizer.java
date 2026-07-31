@@ -122,9 +122,11 @@ public class FmDspVisualizer extends JComponent {
     private static final int PCM1FILETRI_X = PCM1FILETXT_X + 21;
     private static final int PCM1FILENAME_X = PCM1FILETRI_X + 8;
     private static final int PCM2FILEBAR_X = 551;
+    private static final int PCM1FILENAME_W = PCM2FILEBAR_X - 2 - PCM1FILENAME_X;
     private static final int PCM2FILETXT_X = PCM2FILEBAR_X + 5;
     private static final int PCM2FILETRI_X = PCM2FILETXT_X + 21;
     private static final int PCM2FILENAME_X = PCM2FILETRI_X + 8;
+    private static final int PCM2FILENAME_W = PC98_W - 2 - PCM2FILENAME_X;
     private static final int DT_SIGN_W = 3;
     private static final int DT_SIGN_H = 3;
     private static final int SPECTRUM_X = 352;
@@ -857,9 +859,26 @@ public class FmDspVisualizer extends JComponent {
      * <p>
      * Widths follow putline's own advance rules, so a full width character counts as the
      * {@code fw + 8} it advances even though the ANK fonts have no glyph for it.
-     *
-     * @param fw width of one character of the font it will be drawn with
      */
+    private static String stripPath(String path) {
+        if (path == null || path.isEmpty()) return path;
+        int lastSlash = Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\'));
+        if (lastSlash >= 0 && lastSlash < path.length() - 1) {
+            return path.substring(lastSlash + 1);
+        }
+        return path;
+    }
+
+    private static String stripPathAndExtension(String path) {
+        if (path == null || path.isEmpty()) return path;
+        String name = stripPath(path);
+        int dot = name.lastIndexOf('.');
+        if (dot > 0) {
+            return name.substring(0, dot);
+        }
+        return name;
+    }
+
     private static String ellipsize(String s, int fw, int maxW) {
         if (s == null) return null;
 
@@ -990,16 +1009,43 @@ public class FmDspVisualizer extends JComponent {
         for (int x = 74; x < PC98_W; x++) {
             vram[332 * PC98_W + x] = 7;
         }
-        putMedium(ellipsize(w != null ? w.filename() : null, MFW, FILEBAR_FILENAME_W),
+        int pcmcount = 0;
+        if (w != null) {
+            for (int i = 0; i < 4; i++) {
+                if (w.pcmType(i) != null || w.pcmFilename(i) != null) {
+                    pcmcount = i + 1;
+                }
+            }
+        }
+        if (pcmcount == 0) {
+            pcmcount = 2;
+        }
+
+        int firstPcmBarX = PCM2FILEBAR_X - (pcmcount - 1) * 88;
+        int filenameW = Math.max(20, firstPcmBarX - FILEBAR_FILENAME_X - 2);
+
+        putMedium(ellipsize(w != null ? stripPath(w.filename()) : null, MFW, filenameW),
                 FILEBAR_FILENAME_X, PLAYING_Y, 2, false);
 
-        vramblit(PCM1FILEBAR_X, PLAYING_Y, s_filebar, 0, FILEBAR_W, FILEBAR_H);
-        putSmall("PCM1", PCM1FILETXT_X, PLAYING_Y + 1, 2, false);
-        vramblit(PCM1FILETRI_X, FILEBAR_TRI_Y, s_filebar_tri, 0, FILEBAR_TRI_W, FILEBAR_TRI_H);
+        for (int i = 0; i < pcmcount; i++) {
+            int xoff = (pcmcount - i - 1) * 88;
+            int barX = PCM2FILEBAR_X - xoff;
+            int txtX = barX + 4;
+            String pcmType = w != null ? w.pcmType(i) : null;
+            if (pcmType == null || pcmType.isEmpty()) {
+                pcmType = "PCM" + (i + 1);
+            }
+            int triX = txtX + pcmType.length() * 5 + 1;
+            int nameX = triX + 7;
+            int nameW = (i == pcmcount - 1) ? (PC98_W - nameX) : (barX + 88 - nameX - 2);
+            if (nameW < 10) nameW = 50;
 
-        vramblit(PCM2FILEBAR_X, PLAYING_Y, s_filebar, 0, FILEBAR_W, FILEBAR_H);
-        putSmall("PCM2", PCM2FILETXT_X, PLAYING_Y + 1, 2, false);
-        vramblit(PCM2FILETRI_X, FILEBAR_TRI_Y, s_filebar_tri, 0, FILEBAR_TRI_W, FILEBAR_TRI_H);
+            vramblit(barX, PLAYING_Y, s_filebar, 0, FILEBAR_W, FILEBAR_H);
+            putSmall(pcmType, txtX, PLAYING_Y + 1, 2, false);
+            vramblit(triX, FILEBAR_TRI_Y, s_filebar_tri, 0, FILEBAR_TRI_W, FILEBAR_TRI_H);
+            putMedium(ellipsize(w != null ? stripPathAndExtension(w.pcmFilename(i)) : null, MFW, nameW),
+                    nameX, PLAYING_Y, 2 + (w != null && w.pcmError(i) ? 1 : 0), false);
+        }
 
         int height = (16 + 3) * 3 + 8;
         for (int y = PC98_H - height; y < PC98_H; y++) {

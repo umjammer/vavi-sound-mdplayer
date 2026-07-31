@@ -298,7 +298,7 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
         bind(plugin.chipRegister, plugin::getDriver);
     }
 
-    void bind(ChipRegister chipRegister, Supplier<BaseDriver> driver) {
+    public void bind(ChipRegister chipRegister, Supplier<BaseDriver> driver) {
         this.driver = driver != null ? driver : () -> null;
         readers.forEach(r -> r.bind(chipRegister));
         readers.forEach(r -> r.bind(this.driver));
@@ -1199,4 +1199,22 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
     @Override public String filename() { return filename; }
 
     @Override public String comment(int line) { return comments[line]; }
+
+    @Override
+    public String pcmType(int index) {
+        BaseDriver d = work != null ? work : driver.get();
+        return d != null ? d.pcmType(index) : (index == 0 ? "PCM1" : (index == 1 ? "PCM2" : null));
+    }
+
+    @Override
+    public String pcmFilename(int index) {
+        BaseDriver d = work != null ? work : driver.get();
+        return d != null ? d.pcmFilename(index) : null;
+    }
+
+    @Override
+    public boolean pcmError(int index) {
+        BaseDriver d = work != null ? work : driver.get();
+        return d != null ? d.pcmError(index) : false;
+    }
 }

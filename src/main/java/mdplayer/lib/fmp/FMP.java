@@ -33,6 +33,7 @@ public class FMP {
 
     public TriConsumer<Integer, Integer, byte[][]> setPPZ8PCMData;
     public TriConsumer<Integer, Integer, Integer> setPPZ8Data;
+    public java.util.function.BiConsumer<Integer, String> setPPZ8PCMFilename;
     public TriConsumer<Integer, Integer, Integer> opnaWrite;
     public Consumer<Boolean> blockWrite;
 
@@ -138,7 +139,7 @@ logger.log(Level.ERROR, e.getMessage());
         nise98.getPPZ8().fmpRegisterPPZ8(/* out */ tmp1, /* out */ tmp2);
         step = tmp1[0];
         regs = tmp2[0];
-        nise98.getPPZ8().setCallBack(setPPZ8PCMData, setPPZ8Data);
+        nise98.getPPZ8().setCallBack(setPPZ8PCMData, setPPZ8Data, setPPZ8PCMFilename);
 
         // Song data loading and playback start notification
         //

@@ -181,6 +181,49 @@ public class PmdDriver extends BaseDriver {
         }
     }
 
+    @Override
+    public String pcmType(int index) {
+        return switch (index) {
+            case 0 -> "PPC";
+            case 1 -> "PPZ1";
+            case 2 -> "PPZ2";
+            case 3 -> "PPS";
+            default -> null;
+        };
+    }
+
+    @Override
+    public String pcmFilename(int index) {
+        if (work == null) return null;
+        Object pwObj = work.get("work");
+        if (pwObj instanceof pmd.driver.PW pw) {
+            return switch (index) {
+                case 0 -> pw.ppcFile;
+                case 1 -> pw.ppz1File;
+                case 2 -> pw.ppz2File;
+                case 3 -> pw.ppsFile;
+                default -> null;
+            };
+        }
+        return null;
+    }
+
+    @Override
+    public boolean pcmError(int index) {
+        if (work == null) return false;
+        Object pwObj = work.get("work");
+        if (pwObj instanceof pmd.driver.PW pw) {
+            return switch (index) {
+                case 0 -> pw.ppcError;
+                case 1 -> pw.ppz1Error;
+                case 2 -> pw.ppz2Error;
+                case 3 -> pw.ppsError;
+                default -> false;
+            };
+        }
+        return false;
+    }
+
     public enum PMDFileType {
         unknown,
         MML,

@@ -41,6 +41,7 @@ public class NisePpz8 {
     private byte emuADPCM;
     private TriConsumer<Integer, Integer, byte[][]> setPPZ8PCMData;
     private TriConsumer<Integer, Integer, Integer> setPPZ8Data;
+    private java.util.function.BiConsumer<Integer, String> setPPZ8PCMFilename;
     private final byte[][] pcmData = new byte[2][];
 
     public NisePpz8(Nise98 nise98) {
@@ -124,6 +125,8 @@ public class NisePpz8 {
                 int pcmBufNum = regs.getCL() & 0xff;
                 boolean pcmIsPVI = regs.getCH() == 0;
                 pcmData[pcmBufNum] = dos.loadData(fn);
+                logger.log(Level.INFO, "PPZ8 cmd 0x03: load %s (isPVI=%s, buf=%d, fn=%s)".formatted(pcmIsPVI ? "PVI" : "PPZ", pcmIsPVI, pcmBufNum, fn));
+                if (setPPZ8PCMFilename != null) setPPZ8PCMFilename.accept(pcmIsPVI ? 0 : 1, fn);
                 if (setPPZ8PCMData != null) setPPZ8PCMData.accept(pcmBufNum, pcmIsPVI ? 0 : 1, pcmData);
                 regs.setCF(false);
                 break;
@@ -207,8 +210,16 @@ public class NisePpz8 {
         return false;
     }
 
-    public void setCallBack(TriConsumer<Integer, Integer, byte[][]> setPPZ8PCMData, TriConsumer<Integer, Integer, Integer> setPPZ8Data) {
+    public void setCallBack(TriConsumer<Integer, Integer, byte[][]> setPPZ8PCMData,
+                            TriConsumer<Integer, Integer, Integer> setPPZ8Data,
+                            java.util.function.BiConsumer<Integer, String> setPPZ8PCMFilename) {
         this.setPPZ8PCMData = setPPZ8PCMData;
         this.setPPZ8Data = setPPZ8Data;
+        this.setPPZ8PCMFilename = setPPZ8PCMFilename;
+    }
+
+    public void setCallBack(TriConsumer<Integer, Integer, byte[][]> setPPZ8PCMData,
+                            TriConsumer<Integer, Integer, Integer> setPPZ8Data) {
+        setCallBack(setPPZ8PCMData, setPPZ8Data, null);
     }
 }

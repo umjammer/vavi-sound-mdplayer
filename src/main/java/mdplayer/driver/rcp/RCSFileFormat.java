@@ -108,15 +108,15 @@ public class RCSFileFormat extends BaseFileFormat {
         RCP.getControlFileName(srcBuf, cm6, gsd, gsd2, Common.charset);
         if (cm6[0] != null && !cm6[0].isEmpty()) {
             buf = getExtendFileAllBytes(filename, cm6[0], archive, entry);
-            if (buf != null) ret.add(new Tuple<>(".cm6", buf));
+            if (buf != null) ret.add(new Tuple<>(cm6[0], buf));
         }
         if (gsd[0] != null && !gsd[0].isEmpty()) {
             buf = getExtendFileAllBytes(filename, gsd[0], archive, entry);
-            if (buf != null) ret.add(new Tuple<>(".gsd", buf));
+            if (buf != null) ret.add(new Tuple<>(gsd[0], buf));
         }
         if (gsd2[0] != null && !gsd2[0].isEmpty()) {
             buf = getExtendFileAllBytes(filename, gsd2[0], archive, entry);
-            if (buf != null) ret.add(new Tuple<>(".gsd", buf));
+            if (buf != null) ret.add(new Tuple<>(gsd2[0], buf));
         }
 
         return ret;

@@ -123,6 +123,11 @@ public class FmpWork {
      */
     public volatile Map<String, Object> ppz8;
 
+    public volatile String pviName;
+    public volatile String ppzName;
+    public volatile boolean pviError;
+    public volatile boolean ppzError;
+
     void setWork(Memory98 mem, int work) {
         this.mem = mem;
         this.work = work;
