@@ -8,6 +8,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import mdplayer.Setting;
 import mdplayer.emu.nise98.FileTemp;
 import mdplayer.lib.fmp.FMP;
 
@@ -43,6 +44,7 @@ public class KeyOnProbe {
 
         FMP fmp = new FMP();
         fmp.ft = new FileTemp();
+        fmp.ft.saveCompiledFile = Setting.getInstance().getOther().getSaveCompiledFile();
         fmp.setSearchPath(dir);
         fmp.sampleRate = 44100;
         fmp.charset = Charset.forName("Shift_JIS");

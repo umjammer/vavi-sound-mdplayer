@@ -431,7 +431,7 @@ public class NiseDos {
                         files.remove(fnd);
                         if (fnd.mode == 1) {
                             String wFn = fnd.path.resolve(fnd.name).toString();
-                            fileTemp.WriteTemp(wFn, ByteUtil.toByteArray(fnd.lstBuf));
+                            fileTemp.writeTemp(wFn, ByteUtil.toByteArray(fnd.lstBuf));
                             // File.WriteAllBytes(wFn, fnd.lstBuf.ToArray());
                         }
                         regs.setCF(false);

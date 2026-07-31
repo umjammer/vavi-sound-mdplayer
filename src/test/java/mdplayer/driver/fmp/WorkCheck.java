@@ -8,6 +8,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import mdplayer.Setting;
 import mdplayer.emu.nise98.FileTemp;
 import mdplayer.lib.fmp.FMP;
 import mdplayer.lib.fmp.FmpWork;
@@ -51,6 +52,7 @@ public class WorkCheck {
 
         FMP fmp = new FMP();
         fmp.ft = new FileTemp();
+        fmp.ft.saveCompiledFile = Setting.getInstance().getOther().getSaveCompiledFile();
         fmp.setSearchPath(dir + ";" + Path.of(file).getParent() + ";/Users/nsano/Public/np2/PVI");
         fmp.sampleRate = 44100;
         fmp.charset = Charset.forName("Shift_JIS");

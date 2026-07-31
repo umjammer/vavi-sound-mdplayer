@@ -38,6 +38,7 @@ public class FMPPlugin extends BasePlugin<FmpDriver> implements Compilable {
     @Override
     public void compile() {
         FileTemp ft = new FileTemp(); // TODO make more loosely coupled
+        ft.saveCompiledFile = setting.getOther().getSaveCompiledFile();
         if (this.fileFormat.isMml()) {
             // compile
             FmpDriver fmp = new FmpDriver(this);
@@ -51,6 +52,7 @@ public class FMPPlugin extends BasePlugin<FmpDriver> implements Compilable {
     @Override
     public void prepare() {
         FileTemp ft = new FileTemp();
+        ft.saveCompiledFile = setting.getOther().getSaveCompiledFile();
         if (this.fileFormat.isMml()) {
             // compile
             FmpDriver fmp = new FmpDriver(this);

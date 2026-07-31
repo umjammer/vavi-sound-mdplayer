@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import mdplayer.Setting;
 import mdplayer.emu.nise98.FileTemp;
 import mdplayer.emu.nise98.Memory98;
 import mdplayer.lib.fmp.FMP;
@@ -126,6 +127,7 @@ public class WorkProbe {
 
         FMP fmp = new FMP();
         fmp.ft = new FileTemp();
+        fmp.ft.saveCompiledFile = Setting.getInstance().getOther().getSaveCompiledFile();
         fmp.setSearchPath(dir + ";" + Path.of(file).getParent() + ";/Users/nsano/Public/np2/PVI");
         fmp.sampleRate = 44100;
         fmp.charset = Charset.forName("Shift_JIS");
