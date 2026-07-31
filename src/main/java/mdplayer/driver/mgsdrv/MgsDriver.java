@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.Ay8910Chip;
@@ -30,6 +33,7 @@ public class MgsDriver extends BaseDriver {
     private static final Logger logger = getLogger(MgsDriver.class.getName());
 
     private final MgsDrv mgs;
+    private String[] comments;
 
     public MgsDriver(BasePlugin<? extends BaseDriver> plugin) {
         super(plugin);
@@ -51,13 +55,46 @@ public class MgsDriver extends BaseDriver {
     @Override
     public MetaData getMetaData(byte[] buf, Object... args) {
         MetaData md = new MetaData();
+        comments = null;
         if (buf != null && buf.length > 8) {
-            int[] index = {(int) args[0]};
-            md.set(Tag.Title, Common.getNRDString(buf, index));
-            md.set(Tag.TitleJ, md.getFirst(Tag.Title));
+            int start = (args != null && args.length > 0 && args[0] instanceof Integer) ? (int) args[0] : 8;
+            for (int i = 0; i < Math.min(buf.length - 1, 16); i++) {
+                if (buf[i] == '\r' && buf[i + 1] == '\n') {
+                    start = i + 2;
+                    break;
+                }
+            }
+            int[] index = {start};
+            String text = Common.getNRDString(buf, index);
+            if (!text.isEmpty()) {
+                String[] lines = text.split("\\r?\\n");
+                List<String> validLines = new ArrayList<>();
+                for (String l : lines) {
+                    if (!l.isEmpty()) {
+                        validLines.add(l);
+                    }
+                }
+                if (!validLines.isEmpty()) {
+                    md.set(Tag.Title, validLines.get(0).strip());
+                    md.set(Tag.TitleJ, validLines.get(0).strip());
+                }
+                if (validLines.size() > 1) {
+                    md.set(Tag.Composer, validLines.get(1).strip());
+                    md.set(Tag.ComposerJ, validLines.get(1).strip());
+                }
+                if (validLines.size() > 2) {
+                    md.set(Tag.Note, validLines.get(2).strip());
+                }
+                comments = validLines.subList(0, Math.min(3, validLines.size())).toArray(String[]::new);
+            }
         }
 
         return md;
+    }
+
+    @Override
+    public String[] comments() {
+        return comments;
     }
 
     @Override
@@ -68,6 +105,8 @@ public class MgsDriver extends BaseDriver {
         frameCounter = -latency - waitTime;
 
         mgs.playingFileName = plugin.playingFileName;
+
+        metaData = getMetaData(dataBuf, 8);
 
         try {
             mgs.run(dataBuf);

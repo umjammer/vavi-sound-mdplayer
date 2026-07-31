@@ -46,36 +46,21 @@ public class MGSFileFormat extends BaseFileFormat {
         MetaData metaData = getMetaData();
         music.title = metaData.getFirst(Tag.Title);
         music.titleJ = metaData.getFirst(Tag.TitleJ);
-        music.game = "";
-        music.gameJ = "";
-        music.composer = "";
-        music.composerJ = "";
-        music.vgmby = "";
+        music.game = metaData.getFirst(Tag.GameTitle);
+        music.gameJ = metaData.getFirst(Tag.GameTitleJ);
+        music.composer = metaData.getFirst(Tag.Composer);
+        music.composerJ = metaData.getFirst(Tag.ComposerJ);
+        music.vgmby = metaData.getFirst(Tag.Maker);
 
-        music.converted = "";
-        music.notes = "";
+        music.converted = metaData.getFirst(Tag.Converter);
+        music.notes = metaData.getFirst(Tag.Note);
 
         return Collections.singletonList(music);
     }
 
     @Override
     public List<PlayList.Music> getMusic(PlayList.Music ms, byte[] buf, String zipFile /* = null */) {
-        PlayList.Music music = new PlayList.Music();
-
-        music.format = this;
-        MetaData metaData = getMetaData();
-        music.title = metaData.getFirst(Tag.Title);
-        music.titleJ = metaData.getFirst(Tag.TitleJ);
-        music.game = "";
-        music.gameJ = "";
-        music.composer = "";
-        music.composerJ = "";
-        music.vgmby = "";
-
-        music.converted = "";
-        music.notes = "";
-
-        return Collections.singletonList(music);
+        return getMusicCommon(ms, buf, zipFile);
     }
 
     @Override
