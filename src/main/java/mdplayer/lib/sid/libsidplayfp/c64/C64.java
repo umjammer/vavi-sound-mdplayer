@@ -407,6 +407,15 @@ public class C64 extends C64Env {
     }
 
     /**
+     * Listen in on the writes the tune makes to the base Sid.
+     *
+     * @param listener null to stop listening
+     */
+    public void setSidWriteListener(SidBank.WriteListener listener) {
+        sidBank.setWriteListener(listener);
+    }
+
+    /**
      * Add an extra Sid.
      *
      * @param s       the Sid emu to set

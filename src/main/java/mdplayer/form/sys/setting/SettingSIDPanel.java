@@ -287,7 +287,11 @@ public class SettingSIDPanel extends SettingTab {
 
     @Override
     public void apply(Setting setting) {
+        // the page starts from a fresh SID, so anything it has no control for - the give-up time
+        // the sid driver ends undetectable tunes by - has to be carried over by hand
+        int maxPlayTime = setting.getSid().maxPlayTime;
         setting.setSid(new Setting.SID());
+        setting.getSid().maxPlayTime = maxPlayTime;
         setting.getSid().romKernalPath = tbSIDKernal.getText();
         setting.getSid().romBasicPath = tbSIDBasic.getText();
         setting.getSid().romCharacterPath = tbSIDCharacter.getText();

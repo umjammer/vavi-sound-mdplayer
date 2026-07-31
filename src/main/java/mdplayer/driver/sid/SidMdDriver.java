@@ -17,6 +17,7 @@ import mdplayer.driver.BaseDriver;
 import mdplayer.lib.sid.Sid;
 import mdplayer.lib.sid.libsidplayfp.sidplayfp.SidTuneInfo.Model;
 import mdplayer.driver.BasePlugin;
+import mdsound.np.LoopDetector;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 import vavi.util.ByteUtil;
@@ -114,6 +115,15 @@ public class SidMdDriver extends BaseDriver implements SidDriver {
         speed = 1;
         speedCounter = 0;
 
+        ld.reset();
+        timeInMs = 0;
+        playtimeDetected = false;
+        silentLength = 0;
+        lastOut = 0;
+        writes = 0;
+        lastWrites = 0;
+        lastWriteMs = 0;
+
         metaData = getMetaData(dataBuf);
 
         setSong((int) args[0]);
@@ -154,6 +164,7 @@ public class SidMdDriver extends BaseDriver implements SidDriver {
                 setting.getSid().c64modelForce,
                 setting.getSid().sidmodelForce
                 );
+        sid.engine.setSidWriteListener((addr, data) -> ld.write(addr, data, 0));
         sid.initial = true;
     }
 
@@ -179,6 +190,47 @@ public class SidMdDriver extends BaseDriver implements SidDriver {
     private final short[] internalBuffer = new short[4096];
     private int internalProduced = 0;
     private int internalConsumed = 0;
+
+    /**
+     * What tells a song that came around again from one that goes on: a Sid tune has no end mark
+     * and its play routine is simply called forever, so the only thing left to watch is the
+     * register writes repeating, the way the NSF and HES drivers do it.
+     * <p>
+     * 2^20 writes is about 10 minutes of a tune writing its registers 30 times a frame - long
+     * enough that a signature of a loop still sits in the buffer when the loop comes back around.
+     */
+    private final LoopDetector.BasicDetector ld = new LoopDetector.BasicDetector(20) {
+        @Override
+        public boolean write(int adr, int val, int id) {
+            // 0x19-0x1c are the read-only ones (paddles, osc3/env3) and 0x1d-0x1f are unused:
+            // a tune has no reason to write them, and letting them in would only be noise
+            if (adr > 0x18) return false;
+            writes++;
+            return super.write(adr, val, id);
+        }
+    };
+
+    /**
+     * A loop this short is the play routine ticking over on itself - a tune whose music has run
+     * out but that keeps rewriting the same registers every frame - not a musical loop.
+     */
+    private static final int minLoopMs = 5_000;
+    /** how long the chip may go unwritten before the tune counts as over */
+    private static final int idleMs = 10_000;
+    /** how long the output may stay unchanged before the tune counts as over */
+    private static final int silenceMs = 10_000;
+
+    /** how far into the song the rendering has got, what {@link #ld} times its writes by */
+    private double timeInMs;
+    /** whether the end is known - either the loop was found or the song is already over */
+    private boolean playtimeDetected;
+    /** how many samples in a row came out the same, which is how a song that just stops is noticed */
+    private int silentLength;
+    private int lastOut;
+    /** how many writes the tune has made, and where it stood the last time that was looked at */
+    private int writes;
+    private int lastWrites;
+    private double lastWriteMs;
 
     @Override
     public int render(short[] b, int offset, int length) {
@@ -206,14 +258,88 @@ public class SidMdDriver extends BaseDriver implements SidDriver {
             
             for (int i = 0; i < toCopy / 2; i++) {
                 processOneFrame();
-                fireEventHappened(this, "wave.buffer", b[offset + written + i * 2], b[offset + written + i * 2 + 1]);
+                short l = b[offset + written + i * 2], r = b[offset + written + i * 2 + 1];
+                fireEventHappened(this, "wave.buffer", l, r);
+
+                int m = l + r;
+                if (m == lastOut) silentLength++;
+                else silentLength = 0;
+                lastOut = m;
             }
 
             written += toCopy;
             internalConsumed += toCopy;
         }
 
+        detectEnd(written / 2);
+
         return written;
+    }
+
+    /**
+     * Works out how far through the song the playback is, which nothing but the rendering itself
+     * can tell for a Sid: {@link #curLoop} is what the player watches to fade a song out, and it
+     * only means something once the loop has been detected and its length is known.
+     *
+     * @param samples stereo samples rendered by this call
+     */
+    private void detectEnd(int samples) {
+        int sampleRate = setting.getOutputDevice().getSampleRate();
+        timeInMs += 1000.0 * samples / sampleRate * speed;
+
+        if (playtimeDetected) {
+            if (totalCounter != 0) curLoop = (int) (counter / totalCounter);
+            return;
+        }
+        curLoop = 0;
+
+        // a tune whose music has run out stops writing the chip altogether - a dead tune, one the
+        // emulation never got going, looks the same and is just as over
+        if (writes != lastWrites) {
+            lastWrites = writes;
+            lastWriteMs = timeInMs;
+        } else if (timeInMs - lastWriteMs > idleMs) {
+logger.log(Level.DEBUG, "end: nothing written for %dms".formatted(idleMs));
+            over();
+            return;
+        }
+
+        // ... and one that keeps writing but has nothing left to say goes flat. this is deliberately
+        // long: tunes take rests, and Sid output sits at an exact value while they do
+        if (silentLength > (long) sampleRate * silenceMs / 1000) {
+logger.log(Level.DEBUG, "end: silent for %dms".formatted(silenceMs));
+            over();
+            return;
+        }
+
+        if (ld.isLooped((int) timeInMs, 30000, 5000)) {
+            int start = ld.getLoopStart(), end = ld.getLoopEnd();
+logger.log(Level.DEBUG, "loop: %d - %d ms".formatted(start, end));
+            if (end - start < minLoopMs) {
+                // the play routine repeating itself frame by frame: the song is over, not looping
+                over();
+                return;
+            }
+            playtimeDetected = true;
+            totalCounter = (long) end * sampleRate / 1000L;
+            if (totalCounter == 0) totalCounter = counter;
+            loopCounter = ((long) end - (long) start) * sampleRate / 1000L;
+            return;
+        }
+
+        // nothing above can tell when a tune that never repeats itself exactly is done
+        int maxPlayTime = setting.getSid().maxPlayTime;
+        if (maxPlayTime > 0 && timeInMs > maxPlayTime * 1000L) {
+logger.log(Level.DEBUG, "end: gave up after %ds".formatted(maxPlayTime));
+            over();
+        }
+    }
+
+    /** Ends the song: the player fades it out from here and moves on to the next one. */
+    private void over() {
+        playtimeDetected = true;
+        loopCounter = 0;
+        stopped = true;
     }
 
     @Override

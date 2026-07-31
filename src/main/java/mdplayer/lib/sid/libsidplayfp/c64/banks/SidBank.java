@@ -31,12 +31,29 @@ import mdplayer.lib.sid.libsidplayfp.c64.C64Sid;
  */
 public class SidBank implements IBank {
 
+    /** what a tune's writes to this bank are reported to, the way a chiptune player watches registers */
+    public interface WriteListener {
+        void write(int addr, int data);
+    }
+
     // Sid chips
     private C64Sid sid;
+
+    private WriteListener writeListener;
 
     public SidBank() {
         sid = NullSid.getInstance();
 
+    }
+
+    /**
+     * Listen in on what the tune writes here - a Sid never signals its end, so the only thing
+     * telling a player that the song came around again is the register writes repeating.
+     *
+     * @param listener null to stop listening
+     */
+    public void setWriteListener(WriteListener listener) {
+        writeListener = listener;
     }
 
     public void reset() {
@@ -51,6 +68,8 @@ public class SidBank implements IBank {
     @Override
     public void poke(int addr, byte data) {
         sid.poke(addr, data);
+        if (writeListener != null)
+            writeListener.write(addr & 0x1f, data & 0xff);
     }
 
     /**

@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import mdplayer.lib.sid.libsidplayfp.c64.C64;
+import mdplayer.lib.sid.libsidplayfp.c64.banks.SidBank;
 import mdplayer.lib.sid.libsidplayfp.sidplayfp.SidBuilder;
 import mdplayer.lib.sid.libsidplayfp.sidplayfp.SidConfig;
 import mdplayer.lib.sid.libsidplayfp.sidplayfp.SidInfo;
@@ -566,6 +567,15 @@ public class Player {
                 }
             }
         }
+    }
+
+    /**
+     * Listen in on the writes the tune makes to the base Sid.
+     *
+     * @param listener null to stop listening
+     */
+    public void setSidWriteListener(SidBank.WriteListener listener) {
+        c64.setSidWriteListener(listener);
     }
 
     private void sidParams(double cpuFreq, int frequency,

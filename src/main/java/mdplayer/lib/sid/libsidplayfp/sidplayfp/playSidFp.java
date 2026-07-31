@@ -25,6 +25,7 @@ package mdplayer.lib.sid.libsidplayfp.sidplayfp;
 import java.io.OutputStream;
 
 import mdplayer.lib.sid.libsidplayfp.Player;
+import mdplayer.lib.sid.libsidplayfp.c64.banks.SidBank;
 
 
 /**
@@ -39,6 +40,15 @@ public class playSidFp {
 
     public Integer[][] getSidRegister() {
         return this.sidPlayer.getSidRegister();
+    }
+
+    /**
+     * Listen in on the writes the tune makes to the base Sid.
+     *
+     * @param listener null to stop listening
+     */
+    public void setSidWriteListener(SidBank.WriteListener listener) {
+        this.sidPlayer.setSidWriteListener(listener);
     }
 
     public playSidFp(int sampleRate) {

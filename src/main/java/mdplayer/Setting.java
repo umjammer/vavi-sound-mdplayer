@@ -281,6 +281,13 @@ public class Setting implements Serializable, Cloneable {
         public boolean c64modelForce = false;
         public int sidModel = 0;
         public boolean sidmodelForce = false;
+        /**
+         * Seconds to give a tune before ending it anyway. A Sid never says when it is over, so the
+         * driver watches its register writes for the song coming around again - but a tune whose
+         * writes never repeat exactly (a counter or a random source in the play routine) is not
+         * detectable that way and would play forever. 0 to let such a tune do just that.
+         */
+        public int maxPlayTime = 300;
 
         @Override
         public SID clone() {
@@ -295,6 +302,7 @@ public class Setting implements Serializable, Cloneable {
             sid.c64modelForce = this.c64modelForce;
             sid.sidModel = this.sidModel;
             sid.sidmodelForce = this.sidmodelForce;
+            sid.maxPlayTime = this.maxPlayTime;
 
             return sid;
         }
