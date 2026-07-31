@@ -575,6 +575,7 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
                 TrackStatus status = tracks[row];
                 status.playing = used[row];
                 status.info = channel.info;
+                System.arraycopy(channel.fmSlotMask, 0, status.fmSlotMask, 0, 4);
                 if (!channel.sounding) {
                     baseNotes[row] = -1;
                     status.key = 0xff;

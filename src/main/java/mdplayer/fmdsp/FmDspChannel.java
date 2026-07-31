@@ -68,6 +68,8 @@ public class FmDspChannel {
 
     public TrackInfo info = TrackInfo.NORMAL;
 
+    public final boolean[] fmSlotMask = new boolean[4];
+
     public boolean ssgTone;
 
     public boolean ssgNoise;
@@ -116,6 +118,7 @@ public class FmDspChannel {
         sampled = false;
         pan = Pan.CENTER;
         info = TrackInfo.NORMAL;
+        java.util.Arrays.fill(fmSlotMask, false);
         ssgTone = false;
         ssgNoise = false;
         ssgNoiseFreq = 0;

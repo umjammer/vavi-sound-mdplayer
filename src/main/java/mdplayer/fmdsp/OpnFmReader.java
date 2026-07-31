@@ -282,6 +282,14 @@ public abstract class OpnFmReader implements FmDspChipReader {
             out.detune = fmDetune(fmFnum(ch), fmBlock(ch));
             fmLfo(ch, out);
             out.toneNum = fmTone(ch);
+            if (ch == 2 && ch3ex) {
+                out.info = TrackInfo.FM3EX;
+                java.util.Arrays.fill(out.fmSlotMask, true);
+                out.fmSlotMask[3] = false;
+            } else {
+                out.info = TrackInfo.NORMAL;
+                java.util.Arrays.fill(out.fmSlotMask, false);
+            }
             int tl = fmTotalLevel(ch);
             out.volume = 127 - tl;
             out.amplitude = Math.pow(10, -tl * 0.75 / 20);
@@ -291,10 +299,16 @@ public abstract class OpnFmReader implements FmDspChipReader {
             out.num = 3; // the ch3 slots number as FM3, like the C fmdsp
             if (!ch3ex) {
                 prevExOns[x] = false;
+                out.info = TrackInfo.NORMAL;
+                java.util.Arrays.fill(out.fmSlotMask, false);
                 return;
             }
             boolean on = (keyOns()[2] & exKeyBit[x]) != 0;
             out.info = TrackInfo.FM3EX;
+            java.util.Arrays.fill(out.fmSlotMask, true);
+            if (x >= 0 && x < 3) {
+                out.fmSlotMask[x] = false;
+            }
             out.sounding = on;
             out.keyOn = on && !prevExOns[x];
             prevExOns[x] = on;

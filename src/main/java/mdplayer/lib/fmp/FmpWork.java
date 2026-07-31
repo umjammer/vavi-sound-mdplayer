@@ -82,6 +82,8 @@ public class FmpWork {
     private static final int TYPE = 65;
     /** FM only: the OPNA register 0xb4 AMS/PMS the hardware LFO drives, 0 while it is off */
     private static final int HLFO_APMS = 96;
+    /** FM only: slot mask 0b1234???? (0x6a relative to work start, 47 relative to note) */
+    private static final int SLOT_MASK = 47;
 
     // fields of the work area itself
 
@@ -195,6 +197,10 @@ public class FmpWork {
     /** nonzero while the part's hardware LFO is on, FM parts only */
     public int hlfoApms(int part) {
         return peek(part, HLFO_APMS);
+    }
+
+    public int slotMask(int part) {
+        return peek(part, SLOT_MASK);
     }
 
     public int toneNum(int part) {

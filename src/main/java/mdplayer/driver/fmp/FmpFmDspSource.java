@@ -236,7 +236,21 @@ public class FmpFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
                 status.ssgNoise = false;
                 status.ssgNoiseFreq = 0;
             }
-            Arrays.fill(status.fmSlotMask, false);
+            boolean isFm3ExTrack = (t == TrackId.FM_3 || t == TrackId.FM_3_EX_1 || t == TrackId.FM_3_EX_2 || t == TrackId.FM_3_EX_3);
+            if (isFm3ExTrack) {
+                int mask = fw.slotMask(p);
+                if ((mask & 0xf0) != 0) {
+                    status.info = TrackInfo.FM3EX;
+                    for (int c = 0; c < 4; c++) {
+                        status.fmSlotMask[c] = (mask & (1 << (4 + c))) != 0;
+                    }
+                } else {
+                    status.info = TrackInfo.NORMAL;
+                    Arrays.fill(status.fmSlotMask, false);
+                }
+            } else {
+                Arrays.fill(status.fmSlotMask, false);
+            }
 
             boolean keyOn = note >= 0 && notes[i] != note;
             notes[i] = note;
@@ -452,7 +466,6 @@ public class FmpFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
 
     private static TrackInfo infoOf(TrackId t) {
         return switch (t) {
-            case FM_3_EX_1, FM_3_EX_2, FM_3_EX_3 -> TrackInfo.FM3EX;
             case SSG_1, SSG_2, SSG_3 -> TrackInfo.SSG;
             default -> TrackInfo.NORMAL;
         };

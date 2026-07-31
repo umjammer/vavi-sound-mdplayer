@@ -195,7 +195,12 @@ public class PmdFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
             masks[i] = part.partmask != 0;
 
             status.playing = part.address != 0;
-            status.info = infoOf(t);
+            boolean isFm3ExTrack = (t == TrackId.FM_3 || t == TrackId.FM_3_EX_1 || t == TrackId.FM_3_EX_2 || t == TrackId.FM_3_EX_3);
+            if (isFm3ExTrack && (part.slotmask & 0xff) != 0xf0) {
+                status.info = TrackInfo.FM3EX;
+            } else {
+                status.info = infoOf(t);
+            }
             status.key = part.onkai & 0xff;
             status.actualKey = actualKeyOf(t, part, status.key);
             status.toneNum = part.voicenum & 0xff;
@@ -324,7 +329,6 @@ public class PmdFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
 
     private static TrackInfo infoOf(TrackId t) {
         return switch (t) {
-            case FM_3_EX_1, FM_3_EX_2, FM_3_EX_3 -> TrackInfo.FM3EX;
             case SSG_1, SSG_2, SSG_3 -> TrackInfo.SSG;
             case PPZ8_1, PPZ8_2, PPZ8_3, PPZ8_4, PPZ8_5, PPZ8_6, PPZ8_7, PPZ8_8 -> TrackInfo.PPZ8;
             default -> TrackInfo.NORMAL;
