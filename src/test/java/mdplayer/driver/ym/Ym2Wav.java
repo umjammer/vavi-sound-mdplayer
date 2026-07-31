@@ -27,7 +27,8 @@ package mdplayer.driver.ym;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
-import mdplayer.driver.ym.YmMusic.YmMusicInfo;
+import mdplayer.lib.ym.YmMusic;
+import mdplayer.lib.ym.YmMusic.YmMusicInfo;
 
 
 /**

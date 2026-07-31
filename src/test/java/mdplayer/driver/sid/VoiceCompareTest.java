@@ -4,8 +4,8 @@
 
 package mdplayer.driver.sid;
 
-import mdplayer.driver.sid.libsidplayfp.builders.resid_builder.resid.Sid;
-import mdplayer.driver.sid.libsidplayfp.builders.resid_builder.resid.Voice;
+import mdplayer.lib.sid.libsidplayfp.builders.resid_builder.resid.Sid;
+import mdplayer.lib.sid.libsidplayfp.builders.resid_builder.resid.Voice;
 
 
 /**

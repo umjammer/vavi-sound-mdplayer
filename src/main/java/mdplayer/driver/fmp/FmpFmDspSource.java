@@ -15,6 +15,7 @@ import mdplayer.Common;
 import mdplayer.chips.SegaPcmChip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.fmdsp.Notes;
+import mdplayer.lib.fmp.FmpWork;
 import musicDriverInterface.MetaData.Tag;
 import vavi.sound.visualizer.fmdsp.FftAnalyzer;
 import vavi.sound.visualizer.fmdsp.FftDataSource;

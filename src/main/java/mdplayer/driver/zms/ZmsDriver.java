@@ -5,6 +5,7 @@ import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.util.List;
 
+import mdplayer.lib.zms.Zms;
 import vavi.util.compat.Tuple;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
@@ -13,9 +14,9 @@ import mdplayer.chips.MidiPlugin;
 import mdplayer.chips.Pcm8Chip;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.driver.BaseDriver;
-import mdplayer.driver.mxdrv.MXDRV.Pcm8Interface;
-import mdplayer.driver.zms.Zms.MPcmInterface;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.lib.mxdrv.MXDRV.Pcm8Interface;
+import mdplayer.lib.zms.Zms.MPcmInterface;
+import mdplayer.driver.BasePlugin;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 

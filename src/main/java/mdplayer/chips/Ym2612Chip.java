@@ -7,14 +7,13 @@
 package mdplayer.chips;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.driver.BasePlugin;
 import mdsound.Instrument;
 import mdsound.instrument.MameYm2612Inst;
 import mdsound.instrument.SimpleYm3438Inst;

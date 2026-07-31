@@ -9,8 +9,8 @@ package mdplayer.driver.sid;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTune;
-import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTuneInfo;
+import mdplayer.lib.sid.libsidplayfp.sidplayfp.SidTune;
+import mdplayer.lib.sid.libsidplayfp.sidplayfp.SidTuneInfo;
 import vavi.util.Debug;
 import vavi.util.properties.annotation.Property;
 import vavi.util.properties.annotation.PropsEntity;

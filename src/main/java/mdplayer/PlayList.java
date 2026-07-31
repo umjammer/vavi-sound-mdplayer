@@ -21,7 +21,7 @@ import java.util.function.Consumer;
 import javax.swing.JOptionPane;
 
 import mdplayer.Common.EnmArcType;
-import mdplayer.format.FileFormat;
+import mdplayer.driver.FileFormat;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 import vavi.util.serdes.Element;

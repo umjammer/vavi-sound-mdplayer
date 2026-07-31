@@ -17,6 +17,7 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.SourceDataLine;
 
+import mdplayer.lib.ahx.AHX;
 import vavi.sound.sampled.md.MdAudioFileReader;
 import vavi.sound.sampled.md.MdFormatConversionProvider;
 import vavi.util.Debug;

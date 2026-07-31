@@ -17,8 +17,8 @@ import mdplayer.chips.MidiPlugin;
 import mdplayer.chips.RealChipPlugin;
 import mdplayer.chips.VstPlugin;
 import mdplayer.driver.BaseDriver;
-import mdplayer.plugin.BasePlugin;
-import mdplayer.plugin.SampledPlugin;
+import mdplayer.driver.BasePlugin;
+import mdplayer.driver.sampled.SampledPlugin;
 import vavi.sound.SoundUtil;
 import vavi.util.event.GenericEvent;
 import vavi.util.event.GenericListener;
@@ -455,7 +455,7 @@ logger.log(Level.DEBUG, "stop: " + plugin.stopped);
     }
 
     public void seek(double n) {
-        if (plugin instanceof mdplayer.plugin.SampledPlugin sampledPlugin) {
+        if (plugin instanceof SampledPlugin sampledPlugin) {
             try {
                 if (sampledPlugin.naudioFileReader != null) {
                     long totalBytes = sampledPlugin.naudioFileReader.getFrameLength() * sampledPlugin.naudioFileReader.getFormat().getFrameSize();

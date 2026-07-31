@@ -23,8 +23,8 @@ import javax.xml.transform.stream.StreamResult;
 import mdplayer.Common;
 import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
-import mdplayer.format.FileFormat;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.driver.FileFormat;
+import mdplayer.driver.BasePlugin;
 import mdsound.MDSound;
 
 /**

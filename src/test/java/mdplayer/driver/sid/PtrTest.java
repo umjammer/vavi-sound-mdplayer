@@ -5,6 +5,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.nio.ByteBuffer;
 
+import mdplayer.lib.sid.Ptr;
+
+
 class PtrTest {
 
     // --- strchr ---

@@ -5,7 +5,6 @@ import mdplayer.Common.EnmModel;
 import mdplayer.Setting;
 import mdplayer.chips.RealChipPlugin;
 import mdplayer.chips.VstPlugin;
-import mdplayer.plugin.BasePlugin;
 import musicDriverInterface.MetaData;
 import vavi.util.event.GenericEvent;
 import vavi.util.event.GenericListener;

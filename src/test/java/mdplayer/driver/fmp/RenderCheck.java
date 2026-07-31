@@ -12,10 +12,11 @@ import java.nio.file.Path;
 import javax.imageio.ImageIO;
 
 import mdplayer.emu.nise98.FileTemp;
+import mdplayer.lib.fmp.FMP;
+import mdplayer.lib.fmp.FmpWork;
 import vavi.sound.visualizer.fmdsp.FmDspVisualizer;
 import vavi.util.event.GenericEvent;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 

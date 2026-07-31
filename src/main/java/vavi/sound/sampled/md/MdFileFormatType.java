@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.ServiceLoader;
 import javax.sound.sampled.AudioFileFormat;
 
-import mdplayer.format.BaseFileFormat;
+import mdplayer.driver.BaseFileFormat;
 
 
 /**

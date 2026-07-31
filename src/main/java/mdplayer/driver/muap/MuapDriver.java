@@ -22,7 +22,7 @@ import mdplayer.chips.Ym2608Chip;
 import mdplayer.chips.Ym2612Chip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.mucom.MucomDriver;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.driver.BasePlugin;
 import muap.driver.Ems.EMS_AllocMemory;
 import muap.driver.Ems.EMS_GetHandleName;
 import muap.driver.Ems.EMS_Map;

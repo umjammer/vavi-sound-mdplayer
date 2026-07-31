@@ -10,7 +10,8 @@ import mdplayer.chips.Ay8910Chip;
 import mdplayer.chips.K051649Chip;
 import mdplayer.chips.Ym2413Chip;
 import mdplayer.driver.BaseDriver;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.lib.mgsdrv.MgsDrv;
+import mdplayer.driver.BasePlugin;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 
@@ -110,6 +111,6 @@ public class MgsDriver extends BaseDriver {
 
     @Override
     public String getName() {
-        return "MSGDRV";
+        return "MGSDRV";
     }
 }

@@ -13,8 +13,8 @@ import mdplayer.Common;
 import mdplayer.Setting;
 import mdplayer.chips.MidiPlugin;
 import mdplayer.driver.BaseDriver;
-import mdplayer.format.FileFormat;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.driver.FileFormat;
+import mdplayer.driver.BasePlugin;
 
 /**
  * Verification counterpart of {@link VolumeBalanceCalibrator}: renders each sample the way playback

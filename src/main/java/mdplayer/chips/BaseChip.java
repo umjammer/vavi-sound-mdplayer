@@ -17,7 +17,7 @@ import java.util.Map;
 import mdplayer.Chip;
 import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.driver.BasePlugin;
 import musicDriverInterface.MetaData.Tag;
 
 

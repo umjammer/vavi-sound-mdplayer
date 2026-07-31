@@ -236,7 +236,7 @@ _Pvt_Extensions
 .fake/
 MDPlayer/MDPlayer/lib/MDSoundCopy.bat
 output
-lib
+/lib/
 tmp/
 *.resx
 local.properties

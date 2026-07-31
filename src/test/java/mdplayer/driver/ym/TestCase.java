@@ -18,7 +18,9 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.SourceDataLine;
 
-import mdplayer.driver.ym.YmMusic.YmMusicInfo;
+import mdplayer.lib.ym.Ym2149Ex;
+import mdplayer.lib.ym.YmMusic;
+import mdplayer.lib.ym.YmMusic.YmMusicInfo;
 import vavi.sound.sampled.md.MdAudioFileReader;
 import vavi.sound.sampled.md.MdFormatConversionProvider;
 import vavi.util.Debug;

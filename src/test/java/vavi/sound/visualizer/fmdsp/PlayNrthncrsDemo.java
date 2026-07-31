@@ -12,8 +12,8 @@ import javax.swing.SwingUtilities;
 import mdplayer.Common;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.fmp.FmpFmDspSource;
-import mdplayer.format.FileFormat;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.driver.FileFormat;
+import mdplayer.driver.BasePlugin;
 
 public class PlayNrthncrsDemo {
 

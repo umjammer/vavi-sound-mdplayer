@@ -43,7 +43,7 @@ import mdplayer.chips.YmF262Chip;
 import mdplayer.chips.YmF278BChip;
 import mdplayer.chips.YmZ280BChip;
 import mdplayer.driver.sid.SidDriver;
-import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTuneInfo.Model;
+import mdplayer.lib.sid.libsidplayfp.sidplayfp.SidTuneInfo.Model;
 import mdplayer.form.ScreenPanel;
 import mdplayer.form.View;
 import mdplayer.form.kb.ViewProvider;

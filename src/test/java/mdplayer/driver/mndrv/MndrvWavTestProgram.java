@@ -10,8 +10,8 @@ import javax.sound.sampled.AudioSystem;
 import mdplayer.Common;
 import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
-import mdplayer.format.FileFormat;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.driver.FileFormat;
+import mdplayer.driver.BasePlugin;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 

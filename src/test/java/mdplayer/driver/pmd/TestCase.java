@@ -24,8 +24,8 @@ import javax.swing.JFrame;
 
 import mdplayer.Audio;
 import mdplayer.driver.BaseDriver;
-import mdplayer.format.FileFormat;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.driver.FileFormat;
+import mdplayer.driver.BasePlugin;
 import vavi.sound.visualizer.fmdsp.FmDspVisualizer;
 import vavi.sound.visualizer.fmdsp.LeftMode;
 import vavi.sound.visualizer.fmdsp.RightMode;

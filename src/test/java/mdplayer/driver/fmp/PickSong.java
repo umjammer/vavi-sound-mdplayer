@@ -11,8 +11,8 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import mdplayer.emu.nise98.FileTemp;
+import mdplayer.lib.fmp.FMP;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 

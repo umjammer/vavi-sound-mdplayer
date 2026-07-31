@@ -10,8 +10,8 @@ import java.nio.file.Path;
 
 import mdplayer.Common.EnmModel;
 import mdplayer.driver.moonDriver.MoonDriver;
-import mdplayer.plugin.BasePlugin;
-import mdplayer.plugin.MDLPlugin;
+import mdplayer.driver.BasePlugin;
+import mdplayer.driver.moonDriver.MDLPlugin;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

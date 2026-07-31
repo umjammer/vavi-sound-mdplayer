@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import mdplayer.driver.BaseDriver;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.driver.BasePlugin;
 import mdsound.Instrument;
 import mdsound.MDSound;
 

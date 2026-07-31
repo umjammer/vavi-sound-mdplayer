@@ -12,12 +12,15 @@ import mdplayer.chips.MidiPlugin;
 import mdplayer.chips.VstPlugin;
 import mdplayer.chips.Ym2612Chip;
 import mdplayer.driver.BaseDriver;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.lib.rcp.RCP.CtlSysex;
+import mdplayer.lib.mid.MID;
+import mdplayer.driver.BasePlugin;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 import vavi.util.ByteUtil;
 
 import static mdplayer.Common.charset;
+import static mdplayer.lib.mid.MID.getDelta;
 
 
 /**
@@ -41,6 +44,7 @@ public class MidiDriver extends BaseDriver {
         midi.lyric = (n, l) -> plugin.chipRegister.plugin(MidiPlugin.class).params[n].lyric = l;
         midi.stop = () -> stopped = true;
         midi.counter = () -> frameCounter = -latency - waitTime;
+        midi.sampleRate = Common.VGMProcSampleRate;
     }
 
     public MidiDriver() {
@@ -70,15 +74,15 @@ public class MidiDriver extends BaseDriver {
                 int trkEndadr = adr + len;
 
                 while (adr < trkEndadr && adr < buf.length) {
-                    int delta = Common.getDelta(adr, buf);
+                    int delta = getDelta(adr, buf);
                     byte cmd = buf[adr++];
                     if ((cmd & 0xff) == 0xf0 || (cmd & 0xff) == 0xf7) {
                         int bAdr = adr - 1;
-                        int datalen = Common.getDelta(adr, buf);
+                        int datalen = getDelta(adr, buf);
                         adr = adr + datalen;
                     } else if ((cmd & 0xff) == 0xff) {
                         byte eventType = buf[adr++];
-                        int eventLen = Common.getDelta(adr, buf);
+                        int eventLen = getDelta(adr, buf);
                         List<Byte> eventData = new ArrayList<>();
                         for (int j = 0; j < eventLen; j++) {
                             if (buf[adr + j] == 0) break;
@@ -212,16 +216,16 @@ public class MidiDriver extends BaseDriver {
                     case 0: // None
                         break;
                     case 1: // GM Reset
-                        midi.getCtlSysexFromText(midi.beforeSend[i], setting.getMidiOut().getGMReset());
+                        midi.getCtlSysexFromText(midi.beforeSend[i], setting.getMidiOut().getGMReset(), CtlSysex::new);
                         break;
                     case 2: // XG Reset
-                        midi.getCtlSysexFromText(midi.beforeSend[i], setting.getMidiOut().getXGReset());
+                        midi.getCtlSysexFromText(midi.beforeSend[i], setting.getMidiOut().getXGReset(), CtlSysex::new);
                         break;
                     case 3: // GS Reset
-                        midi.getCtlSysexFromText(midi.beforeSend[i], setting.getMidiOut().getGSReset());
+                        midi.getCtlSysexFromText(midi.beforeSend[i], setting.getMidiOut().getGSReset(), CtlSysex::new);
                         break;
                     case 4: // Custom
-                        midi.getCtlSysexFromText(midi.beforeSend[i], setting.getMidiOut().getCustom());
+                        midi.getCtlSysexFromText(midi.beforeSend[i], setting.getMidiOut().getCustom(), CtlSysex::new);
                         break;
                 }
 

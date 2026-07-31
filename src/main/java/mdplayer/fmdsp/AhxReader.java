@@ -6,7 +6,7 @@
 
 package mdplayer.fmdsp;
 
-import mdplayer.driver.ahx.AHX;
+import mdplayer.lib.ahx.AHX;
 import mdplayer.driver.ahx.AhxDriver;
 
 

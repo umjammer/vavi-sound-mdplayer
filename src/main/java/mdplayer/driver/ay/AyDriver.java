@@ -8,7 +8,8 @@ import mdplayer.Common.EnmModel;
 import mdplayer.chips.Ay8910Chip;
 import mdplayer.chips.ZxBeepChip;
 import mdplayer.driver.BaseDriver;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.lib.ay.AY;
+import mdplayer.driver.BasePlugin;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 
@@ -30,6 +31,7 @@ public class AyDriver extends BaseDriver {
         super(plugin);
     }
 
+    /** @param args 0: songNo */
     @Override
     public void init(EnmModel model, int latency, int waitTime, Object... args) {
         loopCounter = 0;

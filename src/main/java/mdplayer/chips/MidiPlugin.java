@@ -29,14 +29,14 @@ import mdplayer.MIDIParam;
 import mdplayer.MidiOutInfo;
 import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.driver.BasePlugin;
 import mdsound.Instrument;
 import mdsound.MDSound;
 import mdsound.instrument.Sn76489Inst;
 import mdsound.instrument.Ym2612Inst;
 
 import static java.lang.System.getLogger;
-import static mdplayer.plugin.BasePlugin.BUFFER_SIZE;
+import static mdplayer.driver.BasePlugin.BUFFER_SIZE;
 import static mdsound.MDSound.Chip.MAIN_TAG;
 
 

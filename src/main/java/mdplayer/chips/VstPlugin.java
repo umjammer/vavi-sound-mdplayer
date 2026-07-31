@@ -8,7 +8,7 @@ import java.util.Map;
 
 import mdplayer.MidiOutInfo;
 import mdplayer.driver.BaseDriver;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.driver.BasePlugin;
 import mdplayer.vst.VstInfo;
 import mdplayer.vst.VstMng;
 import mdplayer.vst.VstMng.VstInfo2;

@@ -22,7 +22,7 @@ import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdplayer.Tables;
 import mdplayer.driver.BaseDriver;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.driver.BasePlugin;
 import mdsound.Instrument;
 import mdsound.instrument.Ym2608Inst;
 import mdsound.instrument.YmFmYm2608Inst;

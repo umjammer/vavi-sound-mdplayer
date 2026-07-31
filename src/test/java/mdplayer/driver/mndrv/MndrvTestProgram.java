@@ -10,8 +10,8 @@ import javax.sound.sampled.SourceDataLine;
 import mdplayer.Audio;
 import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
-import mdplayer.format.FileFormat;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.driver.FileFormat;
+import mdplayer.driver.BasePlugin;
 
 import static vavi.sound.SoundUtil.volume;
 

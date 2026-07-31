@@ -6,7 +6,7 @@
 
 package mdplayer.fmdsp;
 
-import mdplayer.driver.hvl.HVL;
+import mdplayer.lib.hvl.HVL;
 import mdplayer.driver.hvl.HvlDriver;
 import vavi.sound.visualizer.fmdsp.LevelDataSource.Pan;
 

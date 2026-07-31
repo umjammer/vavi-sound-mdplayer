@@ -19,7 +19,7 @@ import mdplayer.driver.BaseDriver;
 import mdplayer.fmdsp.FmDspChannel;
 import mdplayer.fmdsp.FmDspChipReader;
 import mdplayer.fmdsp.FmDspChipReader.Group;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.driver.BasePlugin;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 import vavi.sound.visualizer.fmdsp.FftAnalyzer;

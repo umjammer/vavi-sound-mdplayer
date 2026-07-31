@@ -13,7 +13,7 @@ import java.util.function.Supplier;
 
 import mdplayer.ChipRegister;
 import mdplayer.driver.BaseDriver;
-import mdplayer.driver.mxdrv.MXDRV;
+import mdplayer.lib.mxdrv.MXDRV;
 import mdplayer.driver.mxdrv.MxDriver;
 import vavi.sound.visualizer.fmdsp.LevelDataSource.Pan;
 import vavi.sound.visualizer.fmdsp.TrackDetail;
@@ -35,7 +35,7 @@ import vavi.sound.visualizer.fmdsp.TrackDetail;
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-07-25 nsano initial version <br>
- * @see mdplayer.driver.mxdrv.MXDRV#getPcmPart
+ * @see MXDRV#getPcmPart
  */
 public class MdxPcmReader implements FmDspChipReader {
 

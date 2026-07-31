@@ -2,7 +2,6 @@ package mdplayer.driver.fmp;
 
 import java.nio.charset.Charset;
 
-import mdplayer.format.FMPFormat;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 import org.junit.jupiter.api.Test;

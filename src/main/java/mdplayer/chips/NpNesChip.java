@@ -12,9 +12,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import mdplayer.driver.BaseDriver;
-import mdplayer.driver.nsf.Nsf;
+import mdplayer.lib.nsf.Nsf;
 import mdplayer.driver.nsf.NsfMdDriver;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.driver.BasePlugin;
 import mdsound.Instrument;
 import mdsound.instrument.NesInst;
 import mdsound.instrument.NpNesInst;

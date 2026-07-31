@@ -6,13 +6,12 @@ import java.nio.file.Paths;
 import mdplayer.Common.EnmModel;
 import mdplayer.Setting;
 import mdplayer.chips.SidChip;
-import mdplayer.driver.sid.libsidplayfp.builders.resid_builder.ReSidBuilder;
-import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidConfig;
-import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTune;
-import mdplayer.driver.sid.libsidplayfp.sidplayfp.playSidFp;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.lib.sid.libsidplayfp.builders.resid_builder.ReSidBuilder;
+import mdplayer.lib.sid.libsidplayfp.sidplayfp.SidConfig;
+import mdplayer.lib.sid.libsidplayfp.sidplayfp.SidTune;
+import mdplayer.lib.sid.libsidplayfp.sidplayfp.playSidFp;
+import mdplayer.driver.BasePlugin;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.mockito.Mockito;
