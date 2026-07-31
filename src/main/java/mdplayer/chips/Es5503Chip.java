@@ -11,6 +11,8 @@ import java.util.Collections;
 import java.util.Map;
 
 import mdplayer.Common.EnmModel;
+import mdplayer.driver.BaseDriver;
+import mdplayer.driver.BasePlugin;
 import mdsound.Instrument;
 import mdsound.instrument.Es5503Inst;
 
@@ -29,9 +31,33 @@ public class Es5503Chip extends BaseChip {
         return new Class[] {Es5503Inst.class};
     }
 
+    /**
+     * The oscillator registers as they were written, which is the one thing about this chip that
+     * has to be kept on the way in.
+     * <p>
+     * Everything else the display wants - whether an oscillator runs, its level, where it is
+     * routed - the emulator answers for itself, and is worth more from there because it keeps
+     * moving after the last write. But how big a step the frequency register is depends on the
+     * oscillator's resolution and wave table size, and those are only in register {@code 0xc0+osc}
+     * on their way past: without them a rate is out by octaves and the key column goes blank.
+     *
+     * @see mdplayer.fmdsp.Es5503Reader
+     */
+    public final int[][] register = new int[2][0x100];
+
+    @Override
+    public void init(BasePlugin<? extends BaseDriver> context) {
+        super.init(context);
+        // shared between songs, like the chip itself
+        for (int[] regs : register) Arrays.fill(regs, 0);
+    }
+
     public void write(int chipId, int port, int data, EnmModel model) {
         fireEventHappened("led.on", chipId);
 
+        if (port >= 0 && port < register[chipId].length) {
+            register[chipId][port] = data & 0xff;
+        }
         if (model == EnmModel.VirtualModel) {
             context.mds.write(inst(chipId), chipId, 0, port, data);
         }

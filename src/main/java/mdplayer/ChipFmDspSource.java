@@ -302,6 +302,34 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
         this.driver = driver != null ? driver : () -> null;
         readers.forEach(r -> r.bind(chipRegister));
         readers.forEach(r -> r.bind(this.driver));
+        prime();
+    }
+
+    /**
+     * Takes what the chips are holding right now as the state this song starts from, rather than
+     * as the first thing it played.
+     * <p>
+     * The chips are shared singletons and the song before this one left them keyed: an OPNA that
+     * a PMD tune finished on still has notes down in it, and the next song may not even use that
+     * chip. A reader spots a key on as a channel that was not keyed being keyed, and against a
+     * cleared edge cache every one of those leftovers is a key on - which lights rows, and fills
+     * meters, for a chip the song never writes to. So the readers are polled and read once here,
+     * before the song has rendered a sample, and what they find becomes what they compare against.
+     * <p>
+     * Called from {@link #bind}, which is once per song and before playback: not on the first
+     * snapshot, where it would swallow the song's own opening notes.
+     */
+    private void prime() {
+        for (FmDspChipReader reader : readers) {
+            if (!reader.ready()) continue;
+            reader.poll();
+            for (Group g : reader.groups()) {
+                for (int ch = 0; ch < reader.channels(g); ch++) {
+                    channel.clear();
+                    reader.read(g, ch, channel);
+                }
+            }
+        }
     }
 
     /**

@@ -10,6 +10,7 @@ mdplayer.fmdsp.Y8950Reader
 mdplayer.fmdsp.Ym2413Reader
 mdplayer.fmdsp.Sn76489Reader
 mdplayer.fmdsp.Ay8910Reader
+mdplayer.fmdsp.ZxBeepReader
 mdplayer.fmdsp.Saa1099Reader
 mdplayer.fmdsp.K051649Reader
 mdplayer.fmdsp.DmgReader
@@ -38,6 +39,7 @@ mdplayer.fmdsp.Rf5C68Reader
 mdplayer.fmdsp.Rf5C164Reader
 mdplayer.fmdsp.K054539Reader
 mdplayer.fmdsp.OkiM6258Reader
+mdplayer.fmdsp.Cs4231Reader
 mdplayer.fmdsp.YmZ280BReader
 mdplayer.fmdsp.QSoundReader
 mdplayer.fmdsp.X1_010Reader
