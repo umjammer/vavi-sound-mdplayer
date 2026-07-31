@@ -100,6 +100,10 @@ public class TestCase {
     @Property(name = "muap.dir.pcm")
     String muapDirPcm;
 
+    /** where the chip roms are kept - the OPL4's wave rom, the OPNA's rhythm samples */
+    @Property(name = "mdsound.pcm.path")
+    String pcmPath;
+
     @Property(name = "mdplayer.variant.pcm8")
     int variantPcm8;
     @Property(name = "mdplayer.variant.mpcm")
@@ -154,6 +158,8 @@ public class TestCase {
             // muap
             System.setProperty("muap.dir.dta", muapDirDta);
             System.setProperty("muap.dir.pcm", muapDirPcm);
+            // the chip roms, which are nobody's to ship
+            System.setProperty("mdsound.pcm.path", pcmPath);
 //            System.setProperty("muap.dir.udp", muapDirUdp);
 //            System.setProperty("muap.dir.sud", muapDirSud);
         }

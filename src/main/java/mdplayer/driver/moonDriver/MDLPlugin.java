@@ -67,7 +67,15 @@ if (dataBuf == null) { logger.log(Level.WARNING, "compiling failure"); }
         boolean OPL4_NOUSE = ((sndgen & 1) == 0);
 
         if (OPL4_NOUSE && !EX_OPL3) {
-            throw new IllegalArgumentException("The combination of OPL4_NOUSE and EX_OPL3 is invalid.");
+            // The song names no sound device at all, which is what an MDR written before the
+            // header carried device flags says: byte 7 is the flags from format version 3 on and
+            // simply zero in an older one (TIMESUP.MDR is a version 1). Refusing it - which is
+            // what this did, and what the original does - throws away a song that plays perfectly:
+            // MoonDriver was written for the MoonSound, so a file that names nothing is an OPL4
+            // file, and there is nothing else it could be.
+            logger.log(Level.INFO, "no device flags in this mdr (format version %d): playing it as OPL4"
+                    .formatted(dataBuf[4] & 0xff));
+            OPL4_NOUSE = false;
         }
 
 logger.log(Level.INFO, "EX_OPL3: " + EX_OPL3 + ", OPL4_NOUSE: " + OPL4_NOUSE);

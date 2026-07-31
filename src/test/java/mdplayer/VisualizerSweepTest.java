@@ -130,7 +130,11 @@ class VisualizerSweepTest {
         boolean volume = false;
         boolean bar = false;
         boolean pitched = false;
-        for (int block = 0; block < BLOCKS && !(key && volume && bar); block++) {
+        // "it played" is what the meters are judged against, so a song is given the whole run to
+        // produce a sample even once the meters are all lit: several MGS tunes open with half a
+        // second of silence under an already sounding row, and stopping at the meters called them
+        // silent - untested - when they were only quiet so far
+        for (int block = 0; block < BLOCKS && !(sounded && key && volume && bar); block++) {
             for (int i = 0; i < 44100 / buffer.length; i++) {
                 plugin.getDriver().render(buffer, 0, buffer.length);
                 for (short s : buffer) {

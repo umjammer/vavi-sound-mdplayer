@@ -226,8 +226,22 @@ public class MnDrv {
         _trap4_entry();
         if (reg.D0_L < 0) {
             stop.run();
-            throw new IllegalStateException("trap4: 0x03");
+            throw new IllegalStateException(playError(reg.D0_L, data));
         }
+    }
+
+    /**
+     * Why {@code __MN_PLAYMUSIC} would not play this data, in words. It answers {@code -1} for
+     * data that is not an MND at all and {@code -2} for an MND it cannot handle, and the second
+     * is nearly always the version: mndrv plays data versions 2 to {@value #MNDVER} - 1 and
+     * refuses version 1 outright ({@code cmpi.b #1,d2 / beq _play_music_ver_err} in mndrv.x), so
+     * the oldest MND files are its own to reject and not something gone wrong here.
+     */
+    private static String playError(int code, byte[] data) {
+        if (code != -2) return "mnd play: not mnd data (mncall $03 returned " + code + ")";
+        int version = data.length > 5 ? data[5] & 0xff : 0;
+        return "mnd play: mndrv does not handle mnd data version %d (it plays 2 to %d)"
+                .formatted(version, MNDVER - 1);
     }
 
     // Trap processing (effectively MPCM control)
