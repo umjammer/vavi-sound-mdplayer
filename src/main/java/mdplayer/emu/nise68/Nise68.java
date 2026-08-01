@@ -178,7 +178,7 @@ public class Nise68 {
                     dispRegs(reg);
                 }
 
-                if (dispStepCounter) logger.log(Level.TRACE, "STEP:%s totalCycle:%s", step, waitClock);
+                if (dispStepCounter) logger.log(Level.TRACE, "STEP:%s totalCycle:%s".formatted(step, waitClock));
 
                 if (run > 8 && step == 146) {
                     //logger.log(Level.TRACE, "");
@@ -244,7 +244,7 @@ public class Nise68 {
                     dispRegs(reg);
                 }
 
-                if (dispStepCounter) logger.log(Level.TRACE, "STEP:%s totalCycle:%s\r\n", step, waitClock);
+                if (dispStepCounter) logger.log(Level.TRACE, "STEP:%s totalCycle:%s\r\n".formatted(step, waitClock));
 
                 //if (run > 3082 && step == 1827) {
                 //    //logger.log(Level.TRACE, "");

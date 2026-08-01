@@ -5536,7 +5536,7 @@ public class NiseM68 {
                 throw new UnsupportedOperationException("LEA Invalid Addressing Mode %04x".formatted(n));
             case 2: // (An)
 //#if DEBUG
-                if (TRACE) logger.log(Level.TRACE, "LEA (A%d),A%s", r, a);
+                if (TRACE) logger.log(Level.TRACE, "LEA (A%d),A%s".formatted(r, a));
 //#endif
                 reg.getA().set(a, reg.getA().get(r));
                 cycle = 4;
@@ -5544,8 +5544,8 @@ public class NiseM68 {
             case 5: // d16(An)
                 vw = fetchW();
 //#if DEBUG
-                if (TRACE) logger.log(Level.TRACE, "LEA $%04x(A%d),A%s ; d16+A%s=$%08x",
-                        vw, r, a, reg.getA().get(r) + vw);
+                if (TRACE) logger.log(Level.TRACE, "LEA $%04x(A%d),A%s ; d16+A%d=$%08x"
+                        .formatted(vw, r, a, r, reg.getA().get(r) + vw));
 //#endif
                 reg.getA().set(a, reg.getA().get(r) + vw);
                 cycle = 8;
@@ -5559,8 +5559,8 @@ public class NiseM68 {
                 if (!isL) ptr = reg.getA().get(r) + (byte) vw + (short) (IX & 0xffff);
                 else ptr = reg.getA().get(r) + (byte) vw + IX;
 //#if DEBUG
-                if (TRACE) logger.log(Level.TRACE, "LEA $%02x(A%s,%s),A%s ; d8+A%s+IX=$%08x",
-                        vw, r, isA ? "A%s".formatted(ni) : "D%d".formatted(ni), a, ptr);
+                if (TRACE) logger.log(Level.TRACE, "LEA $%02x(A%d,%s),A%s ; d8+A%d+IX=$%08x"
+                        .formatted(vw, r, isA ? "A%d".formatted(ni) : "D%d".formatted(ni), a, r, ptr));
 //#endif
                 reg.getA().set(a, ptr);
                 cycle = 12;
@@ -5583,7 +5583,8 @@ public class NiseM68 {
                 } else if (r == 2) { // d16(PC)
                     ptr = fetchW();
 //#if DEBUG
-                    if (TRACE) logger.log(Level.TRACE, "LEA $%04x(PC),A%s ; d16+PC=$%08x", ptr, a, ptr + reg.pc);
+                    // d16 is relative to the extension word, which fetchW() has already stepped past
+                    if (TRACE) logger.log(Level.TRACE, "LEA $%04x(PC),A%s ; d16+PC=$%08x".formatted(ptr, a, ptr + reg.pc - 2));
 //#endif
                     reg.getA().set(a, ptr + reg.pc - 2);
                     cycle = 8;
@@ -5596,12 +5597,14 @@ public class NiseM68 {
                     if (!isL) ptr = reg.pc - 2 + (byte) vw + (short) (IX & 0xffff);
                     else ptr = reg.pc - 2 + (byte) vw + IX;
 //#if DEBUG
-                    if (TRACE) logger.log(Level.TRACE, "LEA $%02x(PC,%s.%s),A%s ; d8+PC+%s.%s=$%08x",
+                    if (TRACE) logger.log(Level.TRACE, "LEA $%02x(PC,%s.%s),A%s ; d8+PC+%s.%s=$%08x".formatted(
                             vw,
-                            isA ? "A%s".formatted(ni) : "D%d".formatted(ni),
+                            isA ? "A%d".formatted(ni) : "D%d".formatted(ni),
+                            isL ? "l" : "w",
                             a,
-                            ptr,
-                            isL ? "l" : "w");
+                            isA ? "A%d".formatted(ni) : "D%d".formatted(ni),
+                            isL ? "l" : "w",
+                            ptr));
 //#endif
                     reg.getA().set(a, ptr);
                     cycle = 12;

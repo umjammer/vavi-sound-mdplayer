@@ -197,6 +197,10 @@ public class MidiBoard {
     public boolean intTimer() {
         generalTimerValueWrk -= stepM; // / clickCounter;
         boolean ret = false;
+        // a zero period reloads nothing, so the loop below could never end (68snd.ZMS writes
+        // $8000 here: the control bit set, the 14 bit counter still empty). the c# original
+        // hangs on it; treat a stopped timer as "no interrupt" instead.
+        if ((generalTimerValue & 0x3fff) == 0) return false;
         while (generalTimerValueWrk <= 0.0) {
             generalTimerValueWrk += (generalTimerValue & 0x3fff) << 3;
             ret = true;
