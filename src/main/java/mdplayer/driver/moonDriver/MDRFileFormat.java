@@ -76,8 +76,11 @@ public class MDRFileFormat extends BaseFileFormat {
         List<Tuple<String, byte[]>> ret = new ArrayList<>();
         byte[] buf;
 
-        buf = getExtendFileAllBytes(filename, getFileNameWithoutExtension(filename) + ".PCM", archive, entry);
-        if (buf != null) ret.add(new Tuple<>(".PCM", buf));
+        // keyed by its name, not by ".PCM": it is what the fmdsp file bar shows, and what the
+        // driver looks the sample bank up by
+        String pcmFilename = getFileNameWithoutExtension(filename) + ".PCM";
+        buf = getExtendFileAllBytes(filename, pcmFilename, archive, entry);
+        if (buf != null) ret.add(new Tuple<>(pcmFilename, buf));
 
         return ret;
     }
