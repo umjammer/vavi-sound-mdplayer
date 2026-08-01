@@ -2,7 +2,6 @@ package mdplayer.emu.nise98;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
-import java.util.Objects;
 import java.util.function.Function;
 
 import mdplayer.emu.common.FMTimer;
@@ -14,6 +13,9 @@ import static java.lang.System.getLogger;
 public class Nise98 {
 
     private static final Logger logger = getLogger(Nise98.class.getName());
+
+    /** the port TRACE lines below are per emulated IN/OUT - see the note in {@link Nise286} */
+    private static final boolean tracing = logger.isLoggable(Level.TRACE);
 
     private Function<String, Object[]> msgWrite = null;
     private TriConsumer<Integer, Integer, Integer> opnaWrite;
@@ -176,7 +178,7 @@ public class Nise98 {
     }
 
     public byte inpB(short port) {
-        logger.log(Level.TRACE, "<Nise98>IN  Port:$%04x".formatted(port & 0xffff));
+        if (tracing) logger.log(Level.TRACE, "<Nise98>IN  Port:$%04x".formatted(port & 0xffff));
         switch (port & 0xffff) {
             case 0x0000: // Master interrupt Controller
                 return 0;
@@ -252,7 +254,7 @@ logger.log(Level.TRACE, "fmReg188.ongen: " + fmReg188.ongen);
     }
 
     public short inpW(short port) {
-        logger.log(Level.TRACE, "<Nise98>IN  Port:$%04x".formatted(port & 0xffff));
+        if (tracing) logger.log(Level.TRACE, "<Nise98>IN  Port:$%04x".formatted(port & 0xffff));
         switch (port & 0xffff) {
 //            case 0xa460:
 //                return IsOPNA ? 0x00 : 0xff; // 0xFF:not OPNA
@@ -272,31 +274,31 @@ logger.log(Level.TRACE, "fmReg188.ongen: " + fmReg188.ongen);
     public void outpB(short port, byte data) {
         switch (port & 0xffff) {
             case 0x00: // Initialize interrupt
-                logger.log(Level.TRACE, "<Nise98>OUT Port:$%02x".formatted(port & 0xff));
+                if (tracing) logger.log(Level.TRACE, "<Nise98>OUT Port:$%02x".formatted(port & 0xff));
                 break;
             case 0x02:
-                logger.log(Level.TRACE, "<Nise98>OUT Port:$%02x".formatted(port & 0xff));
+                if (tracing) logger.log(Level.TRACE, "<Nise98>OUT Port:$%02x".formatted(port & 0xff));
                 cpu.w_mmsk = data;
                 break;
             case 0x08: // Slave interrupt Controler
                 break;
             case 0x0a:
-                logger.log(Level.TRACE, "<Nise98>OUT Port:$%02x".formatted(port & 0xff));
+                if (tracing) logger.log(Level.TRACE, "<Nise98>OUT Port:$%02x".formatted(port & 0xff));
                 cpu.w_smsk = data;
                 break;
             case 0x5f: // WAIT Wait for 0.6 microseconds or more
                 break;
             case 0x68: // Mode F/F Register 1 http://www.webtech.co.jp/company/doc/undocumented_mem/io_disp.txt
-                logger.log(Level.TRACE, "<Nise98>OUT Port:$%02x".formatted(port & 0xff));
+                if (tracing) logger.log(Level.TRACE, "<Nise98>OUT Port:$%02x".formatted(port & 0xff));
                 // 0000101nb: KAC Mode Dot Access Mode
                 break;
             case 0x71: // TIMER: Counter#0 R/W
-                logger.log(Level.TRACE, "<Nise98>OUT Port:$%02x".formatted(port & 0xff));
+                if (tracing) logger.log(Level.TRACE, "<Nise98>OUT Port:$%02x".formatted(port & 0xff));
                 cpu.interruptTrigger[8] = true;
                 int08Timer.start();
                 break;
             case 0x77: // TIMER: Set Mode
-                logger.log(Level.TRACE, "<Nise98>OUT Port:$%02x".formatted(port & 0xff));
+                if (tracing) logger.log(Level.TRACE, "<Nise98>OUT Port:$%02x".formatted(port & 0xff));
                 break;
             case 0xa1: // Second byte of character code
                 mojiCode = (short) ((mojiCode & 0x00ff) | ((data & 0xff) << 8));
@@ -374,7 +376,7 @@ logger.log(Level.TRACE, "fmReg188.ongen: " + fmReg188.ongen);
     }
 
     private byte fmPortInPort(FmStatus fs, short port) {
-        logger.log(Level.TRACE, "<Nise98> --- IN  FM Port:$%03x".formatted(port & 0xfff));
+        if (tracing) logger.log(Level.TRACE, "<Nise98> --- IN  FM Port:$%03x".formatted(port & 0xfff));
         switch (port & 0xff) { // byte size
             case 0x88: // FM port
                 if (fs.ongen == OngenBoardType.None)
@@ -431,7 +433,7 @@ logger.log(Level.TRACE, "fmReg188.ongen: " + fmReg188.ongen);
     }
 
     private void fmPortOutPort(FmStatus fs, short port, byte data) {
-        logger.log(Level.TRACE, "<Nise98> --- OUT FM Port:%03x Dat:$%02x".formatted(port & 0xfff, data & 0xff));
+        if (tracing) logger.log(Level.TRACE, "<Nise98> --- OUT FM Port:%03x Dat:$%02x".formatted(port & 0xfff, data & 0xff));
         if (fs.ongen == OngenBoardType.None) return;
 
         switch (port & 0xff) { // byte size
@@ -503,13 +505,13 @@ logger.log(Level.TRACE, "fmReg188.ongen: " + fmReg188.ongen);
                 dispRegs(regs);
             }
 
-            if (dispStepCounter) logger.log(Level.TRACE, "STEP:%d".formatted(step));
+            if (dispStepCounter && tracing) logger.log(Level.TRACE, "STEP:%d".formatted(step));
 
             if ((regs.ip & 0xffff) == 0xb35d) {
             }
         }
 
-        logger.log(Level.TRACE, "Terminate program. return code=$%02x".formatted(dos.getReturnCode() & 0xff));
+        if (tracing) logger.log(Level.TRACE, "Terminate program. return code=$%02x".formatted(dos.getReturnCode() & 0xff));
 //        logger.log(Level.TRACE, "");
 
         return dos.getReturnCode();
@@ -566,6 +568,6 @@ logger.log(Level.TRACE, "fmReg188.ongen: " + fmReg188.ongen);
     }
 
     private static void dispRegs(Register286 regs) {
-        logger.log(Level.TRACE, Objects.requireNonNull(regs, regs.toString()));
+        if (tracing) logger.log(Level.TRACE, regs.toString());
     }
 }
