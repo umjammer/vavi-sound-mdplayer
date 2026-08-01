@@ -14,6 +14,14 @@ public class Nise68 {
 
     private static final Logger logger = getLogger(Nise68.class.getName());
 
+    /**
+     * The step loops below run once per emulated instruction and {@link #trap} once per frame,
+     * so the log levels are resolved once and folded away by the JIT while logging is off.
+     */
+    private static final boolean TRACE = logger.isLoggable(Level.TRACE);
+
+    private static final boolean DEBUG = logger.isLoggable(Level.DEBUG);
+
     public NiseHuman hmn = null;
     public Memory68 mem = null;
     public Register68 reg = null;
@@ -75,6 +83,7 @@ public class Nise68 {
         mem.hookList.add(new MemHook(0xea_fa00, 0xea_fa1f, this::hkCZ6BM1fr, this::hkCZ6BM1fw)); // 1st/2nd CZ-6BM1(MIDI)
         //mem.hookList.add(new memhook(0xe9a001, 0xe9a001, hkDummy, null)); // for midiwait
         mem.hookList.add(new MemHook(0xe9_8005, 0xe9_8007, this::hkSCC_Ar, this::hkSCC_Aw)); // SCC(Serial Communication Controller) ChA(RS-232C)
+        mem.refreshHookBounds();
 
         step = 0;
         run = 0;
@@ -103,26 +112,28 @@ public class Nise68 {
             }
 
 //#if DEBUG
-            if (dispReg) {
-                dispRegs(reg);
-            }
+            if (TRACE) {
+                if (dispReg) {
+                    dispRegs(reg);
+                }
 
-            //if (dispStepCounter) logger.log(Level.TRACE, "STEP:%s totalCycle:%s\r\n", step, waitClock);
+                //if (dispStepCounter) logger.log(Level.TRACE, "STEP:%s totalCycle:%s\r\n", step, waitClock);
 
-            if (run > 0 && step == 500) {
-                //logger.log(Level.TRACE, "");
-            }
+                if (run > 0 && step == 500) {
+                    //logger.log(Level.TRACE, "");
+                }
 
-            if (reg.pc == 0x0002_2968) {
-            }
-            if (reg.pc == 0x000_0002_2982) { // Comments loaded
-            }
-            //if (reg.pc == 0x000_0002_22e2) { // Processing commands beginning with '('
-            //}
+                if (reg.pc == 0x0002_2968) {
+                }
+                if (reg.pc == 0x000_0002_2982) { // Comments loaded
+                }
+                //if (reg.pc == 0x000_0002_22e2) { // Processing commands beginning with '('
+                //}
 
-            //if ((reg.pc & 0xffff_fff0) == reg.pc) {
-            //    dumpMemory(reg.pc - 0x80, reg.pc + 0x80);
-            //}
+                //if ((reg.pc & 0xffff_fff0) == reg.pc) {
+                //    dumpMemory(reg.pc - 0x80, reg.pc + 0x80);
+                //}
+            }
 //#endif
         }
 
@@ -156,42 +167,44 @@ public class Nise68 {
         while (((useStepCounter && step < MaxStepCounter) || !useStepCounter) && !hmn.programTerminate) {
             waitClock += stepExecute();
 
-//#if DEBUG
             if (useStepCounter) {
                 step++;
                 if (step < StartStepCounterForDispStep) continue;
             }
 
-            if (dispReg) {
-                dispRegs(reg);
+//#if DEBUG
+            if (TRACE) {
+                if (dispReg) {
+                    dispRegs(reg);
+                }
+
+                if (dispStepCounter) logger.log(Level.TRACE, "STEP:%s totalCycle:%s", step, waitClock);
+
+                if (run > 8 && step == 146) {
+                    //logger.log(Level.TRACE, "");
+                }
+
+                //if (run > 0 && step == 249) {
+                //    logger.log(Level.TRACE, "");
+                //}
+
+                if (run > 0 && (reg.pc == 0x0002_e9fe)) {
+                }
+
+                //// For command-by-command debugging
+                //if (run > 0 && reg.pc == 0x0003_07ba) { // D7 -> Command number
+                //    cmd++;
+                //}
+                //if (cmd >= 14 && cmd != ocmd) { // D7 -> Command number
+                //    ;
+                //    ocmd = cmd;
+                //}
             }
-
-            if (dispStepCounter) logger.log(Level.TRACE, "STEP:%s totalCycle:%s", step, waitClock);
-
-            if (run > 8 && step == 146) {
-                //logger.log(Level.TRACE, "");
-            }
-
-            //if (run > 0 && step == 249) {
-            //    logger.log(Level.TRACE, "");
-            //}
-
-            if (run > 0 && (reg.pc == 0x0002_e9fe)) {
-            }
-
-            //// For command-by-command debugging
-            //if (run > 0 && reg.pc == 0x0003_07ba) { // D7 -> Command number
-            //    cmd++;
-            //}
-            //if (cmd >= 14 && cmd != ocmd) { // D7 -> Command number
-            //    ;
-            //    ocmd = cmd;
-            //}
 //#endif
         }
 
 //#if DEBUG
-        logger.log(Level.DEBUG, "Terminate program. return code=$%02x runs=%s".formatted(hmn.returnCode, run));
+        if (DEBUG) logger.log(Level.DEBUG, "Terminate program. return code=$%02x runs=%s".formatted(hmn.returnCode, run));
         // logger.log(Level.DEBUG, "  alloc count ={0:d}", hmn.memMng.allocCount);
         // logger.log(Level.DEBUG, "");
 //#endif
@@ -220,43 +233,45 @@ public class Nise68 {
         while (((useStepCounter && step < MaxStepCounter) || !useStepCounter) && !hmn.programTerminate) {
             waitClock += stepExecute();
 
-//#if DEBUG
             if (useStepCounter) {
                 step++;
                 if (step < StartStepCounterForDispStep) continue;
             }
 
-            if (dispReg) {
-                dispRegs(reg);
+//#if DEBUG
+            if (TRACE) {
+                if (dispReg) {
+                    dispRegs(reg);
+                }
+
+                if (dispStepCounter) logger.log(Level.TRACE, "STEP:%s totalCycle:%s\r\n", step, waitClock);
+
+                //if (run > 3082 && step == 1827) {
+                //    //logger.log(Level.TRACE, "");
+                //}
+
+                //if (run > 0 && step == 249) {
+                //    //logger.log(Level.TRACE, "");
+                //}
+
+                //if (run > 0 && (reg.PC == 0x0002_f350)) {
+                //    ;
+                //}
+
+                //// For command-by-command debugging
+                // if (run > 0 && reg.PC == 0x0003_07ba) { D7 -> Command number
+                //    cmd++;
+                //}
+                //if (cmd >= 14 && cmd != ocmd) { D7 -> Command number
+                //    ;
+                //    ocmd = cmd;
+                //}
             }
-
-            if (dispStepCounter) logger.log(Level.TRACE, "STEP:%s totalCycle:%s\r\n", step, waitClock);
-
-            //if (run > 3082 && step == 1827) {
-            //    //logger.log(Level.TRACE, "");
-            //}
-
-            //if (run > 0 && step == 249) {
-            //    //logger.log(Level.TRACE, "");
-            //}
-
-            //if (run > 0 && (reg.PC == 0x0002_f350)) {
-            //    ;
-            //}
-
-            //// For command-by-command debugging
-            // if (run > 0 && reg.PC == 0x0003_07ba) { D7 -> Command number
-            //    cmd++;
-            //}
-            //if (cmd >= 14 && cmd != ocmd) { D7 -> Command number
-            //    ;
-            //    ocmd = cmd;
-            //}
 //#endif
         }
 
 //#if DEBUG
-        logger.log(Level.DEBUG, "Terminate program. return code=$%02x runs=%s".formatted(hmn.returnCode, run));
+        if (DEBUG) logger.log(Level.DEBUG, "Terminate program. return code=$%02x runs=%s".formatted(hmn.returnCode, run));
         //logger.log(Level.DEBUG, "  alloc count =%d".formatted(hmn.memMng.allocCount));
         //logger.log(Level.DEBUG, "");
 //#endif
