@@ -950,9 +950,11 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
             noteTickStep -= 1;
             noteTicks++;
         }
-        timerBStep += (counter - lastCounter) * (timerBStepHz / Common.VGMProcSampleRate);
+        timerBStep += counter > lastCounter
+                ? (counter - lastCounter) * (timerBStepHz / Common.VGMProcSampleRate)
+                : timerBStepHz / snapshotRate;
         lastCounter = counter;
-        int overflow = (256 - tb) << 4;
+        int overflow = (256 - (tb > 0 ? tb : 200)) << 4;
         while (timerBStep >= overflow) {
             timerBStep -= overflow;
             timerBCount++;
@@ -1188,7 +1190,20 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
 
     @Override public long timerBCountLoop() { return timerBCountLoop; }
 
-    @Override public long totalTimerBCount() { BaseDriver d = work; return d != null ? d.totalCounter : 0; }
+    @Override
+    public long totalTimerBCount() {
+        BaseDriver d = work;
+        if (d == null) return 0;
+        // Prefer the loop-period length (samples from loop point to end) when defined;
+        // it is what the bar should represent - one trip around the loop.
+        // Fall back to the total song length when there is no loop point.
+        long samples = d.loopCounter > 0 ? d.loopCounter : d.totalCounter;
+        if (samples <= 0) return 0;
+        // Convert samples → timerB ticks (the same unit as timerBCount())
+        int tb = this.timerB > 0 ? this.timerB : defaultTimerB;
+        double overflow = (256 - tb) * 16.0;
+        return Math.round(samples * (timerBStepHz / Common.VGMProcSampleRate) / overflow);
+    }
 
     @Override public boolean playing() { BaseDriver d = work; return d != null && !d.stopped; }
 

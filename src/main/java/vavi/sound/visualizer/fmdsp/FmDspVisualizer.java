@@ -597,6 +597,16 @@ public class FmDspVisualizer extends JComponent {
         }
     }
 
+    private void vramblitColorSub(int dstX, int dstY, byte[] data, int totalW, int subX, int subW, int h, int color) {
+        for (int yi = 0; yi < h; yi++) {
+            int row = (dstY + yi) * PC98_W + dstX + subX;
+            int drow = yi * totalW + subX;
+            for (int xi = 0; xi < subW; xi++) {
+                if (data[drow + xi] != 0) vram[row + xi] = (byte) color;
+            }
+        }
+    }
+
     private void vramblitKey(int x, int y, byte[] data, int off, int w, int h, int key, int color) {
         for (int yi = 0; yi < h; yi++) {
             int row = (y + yi) * PC98_W + x;
@@ -1528,7 +1538,31 @@ public class FmDspVisualizer extends JComponent {
         vramblit(FADE_X, FADE_Y, s_fade, 0, FADE_W, FADE_H);
         vramblit(FF_X, FF_Y, s_ff, 0, FF_W, FF_H);
         vramblit(REW_X, REW_Y, s_rew, 0, REW_W, REW_H);
-        vramblit(FLOPPY_X, FLOPPY_Y, s_floppy, 0, FLOPPY_W, FLOPPY_H);
+        vramblitColor(FLOPPY_X, FLOPPY_Y, s_floppy, 0, FLOPPY_W, FLOPPY_H, 3);
+        boolean hasPcm0 = w != null && w.pcmFilename(0) != null;
+        boolean hasPcm1 = w != null && w.pcmFilename(1) != null;
+        boolean hasPcm2 = w != null && w.pcmFilename(2) != null;
+        boolean hasPcm3 = w != null && w.pcmFilename(3) != null;
+        boolean hasAnyPcm = hasPcm0 || hasPcm1 || hasPcm2 || hasPcm3;
+        if (hasAnyPcm) {
+            vramblitColorSub(FLOPPY_X, FLOPPY_Y, s_floppy, FLOPPY_W, 0, 50, FLOPPY_H, 2);
+        }
+        if (hasPcm0) {
+            int c0 = w.pcmError(0) ? 8 : 2;
+            vramblitColorSub(FLOPPY_X, FLOPPY_Y, s_floppy, FLOPPY_W, 50, 5, FLOPPY_H, c0);
+        }
+        if (hasPcm1) {
+            int c1 = w.pcmError(1) ? 8 : 2;
+            vramblitColorSub(FLOPPY_X, FLOPPY_Y, s_floppy, FLOPPY_W, 55, 7, FLOPPY_H, c1);
+        }
+        if (hasPcm2) {
+            int c2 = w.pcmError(2) ? 8 : 2;
+            vramblitColorSub(FLOPPY_X, FLOPPY_Y, s_floppy, FLOPPY_W, 62, 6, FLOPPY_H, c2);
+        }
+        if (hasPcm3) {
+            int c3 = w.pcmError(3) ? 8 : 2;
+            vramblitColorSub(FLOPPY_X, FLOPPY_Y, s_floppy, FLOPPY_W, 68, 6, FLOPPY_H, c3);
+        }
 
         long frames = w != null ? w.generatedFrames() : 0L;
         int srate = w != null ? Math.max(1, w.sampleRate()) : 55467;
@@ -1568,7 +1602,13 @@ public class FmDspVisualizer extends JComponent {
         long loopLen = w != null ? w.loopTimerBCount() : 0L;
         long loopPos = w != null ? w.timerBCountLoop() : 0L;
         if (loopLen <= 0 && w != null) {
+            // no loop measurement yet: fall back to total song length (if known)
             loopLen = w.totalTimerBCount();
+            loopPos = w.timerBCount();
+        }
+        if (loopLen <= 0 && w != null) {
+            // still no length known: spin the slider with a fixed 1200-tick period (~10 s at TimerB=200)
+            loopLen = 1200;
             loopPos = w.timerBCount();
         }
         int pos = 0;

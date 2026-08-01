@@ -85,6 +85,7 @@ public class PmdFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
      * the "pmd" event.
      */
     private volatile PW work;
+    private volatile BaseDriver baseDriver;
 
     private volatile long timerBCount;
     private volatile long loopTimerBCount;
@@ -153,11 +154,14 @@ public class PmdFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
     public void update(GenericEvent event) {
         switch (event.getName()) {
         case "pmd" -> {
-            if (!commented && event.getSource() instanceof BaseDriver driver) {
-                commented = true;
-                comments[0] = driver.metaData.getFirst(Tag.Title);
-                comments[1] = driver.metaData.getFirst(Tag.Composer);
-                comments[2] = driver.metaData.getFirst(Tag.Arranger);
+            if (event.getSource() instanceof BaseDriver d) {
+                baseDriver = d;
+                if (!commented) {
+                    commented = true;
+                    comments[0] = d.metaData.getFirst(Tag.Title);
+                    comments[1] = d.metaData.getFirst(Tag.Composer);
+                    comments[2] = d.metaData.getFirst(Tag.Arranger);
+                }
             }
             snapshot((PW) event.getArguments()[0]);
         }
@@ -565,7 +569,7 @@ public class PmdFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
     private void state(PW pw) {
         int overflow = (256 - (pw.tempo_d & 0xff)) << 4;
 
-        long counter = pw.timeCounter;
+        long counter = baseDriver != null ? baseDriver.counter : 0;
         timerBStep += (counter - lastTimeCounter)
                 * (PmdDriver.baseClock / 72.0 / 2.0 / Common.VGMProcSampleRate);
         lastTimeCounter = counter;
