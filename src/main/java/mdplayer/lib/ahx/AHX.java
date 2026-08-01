@@ -558,6 +558,7 @@ public class AHX {
             boolean gotoNoNote = false;
             switch (fx) {
                 case 0x4: // Override filter
+                    voices[v].ignoreFilter = fxParam;
                     break;
                 case 0x9: // Set Squarewave-Offset
                     voices[v].squarePos = fxParam >> (5 - voices[v].waveLength);
@@ -824,7 +825,7 @@ public class AHX {
                 // NoFilterInit
                 int fMax = (voices[v].filterSpeed < 3) ? (5 - voices[v].filterSpeed) : 1;
                 for (int i = 0; i < fMax; i++) {
-                    if (d1 == d3 || d2 == d3) {
+                    if (d3 <= d1 || d3 >= d2) {
                         if (voices[v].filterSlidingIn != 0) {
                             voices[v].filterSlidingIn = 0;
                         } else {
@@ -833,6 +834,14 @@ public class AHX {
                     }
 
                     d3 += voices[v].filterSign;
+                }
+
+                if (d3 < 1) {
+                    d3 = 1;
+                    voices[v].filterSign = 1;
+                } else if (d3 > 63) {
+                    d3 = 63;
+                    voices[v].filterSign = -1;
                 }
 
                 voices[v].filterPos = d3;
@@ -942,12 +951,14 @@ public class AHX {
             switch (fx) {
                 case 0:
                     if (song.revision > 0 && fxParam != 0) {
+                        int pos = fxParam;
                         if (voices[v].ignoreFilter != 0) {
-                            voices[v].filterPos = voices[v].ignoreFilter;
+                            pos = voices[v].ignoreFilter;
                             voices[v].ignoreFilter = 0;
-                        } else {
-                            voices[v].filterPos = fxParam;
                         }
+                        if (pos < 1) pos = 1;
+                        if (pos > 63) pos = 63;
+                        voices[v].filterPos = pos;
                         voices[v].newWaveform = 1;
                     }
                     break;

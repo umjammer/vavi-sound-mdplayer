@@ -27,6 +27,7 @@ import vavi.util.properties.annotation.PropsEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static vavi.sound.SoundUtil.volume;
@@ -182,5 +183,25 @@ Debug.println("OUT: " + outAudioFormat);
 
         assertTrue(rms > 50.0, "RMS is too low: " + rms);
         assertTrue(peak > 2000, "Peak is too low: " + peak);
+    }
+
+    @Test
+    @EnabledIfSystemProperty(named = "vavi.test", matches = "ai")
+    void testExquisiet() throws Exception {
+        Path path = Path.of("/Users/nsano/Public/np2/AHX/Silok/exquisiet.ahx");
+        if (!Files.exists(path)) return;
+
+        AHX.AHXPlayer player = new AHX.AHXPlayer();
+        player.init();
+        player.loadSong(path.toString());
+        player.initSubsong(0);
+
+        AHX.AHXOutput output = new AHX.AHXOutput();
+        output.player = player;
+        output.init(44100, 16, 1, 256.0f, 50);
+
+        for (int frame = 0; frame < 20000; frame++) {
+            output.mixBuffer();
+        }
     }
 }
