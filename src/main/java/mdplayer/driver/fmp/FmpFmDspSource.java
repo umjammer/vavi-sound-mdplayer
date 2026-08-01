@@ -507,7 +507,9 @@ public class FmpFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
     private void loop(FmpWork fw) {
         int loop = fw.loopCount();
         if (loop != lastLoopCount) {
-            if (lastLoopCount > 0) loopTimerBCount = fw.ticks - loopStartTicks;
+            if (fw.ticks > loopStartTicks) {
+                loopTimerBCount = fw.ticks - loopStartTicks;
+            }
             loopStartTicks = fw.ticks;
             lastLoopCount = loop;
         }

@@ -1564,12 +1564,20 @@ public class FmDspVisualizer extends JComponent {
             lp /= 10;
         }
 
-        // loop progress bar
+        // loop / duration progress bar
         long loopLen = w != null ? w.loopTimerBCount() : 0L;
         long loopPos = w != null ? w.timerBCountLoop() : 0L;
+        if (loopLen <= 0 && w != null) {
+            loopLen = w.totalTimerBCount();
+            loopPos = w.timerBCount();
+        }
         int pos = 0;
-        if (loopLen != 0) pos = (int) (loopPos * (72 + 1 - 4) / loopLen);
-        boolean wplaying = w != null && w.playing();
+        if (loopLen > 0) {
+            pos = (int) ((loopPos % loopLen) * (72 + 1 - 4) / loopLen);
+        }
+        pos = Math.max(0, Math.min(69, pos));
+
+        boolean wplaying = w != null && w.playing() && !w.paused();
         for (int x = 0; x < 72; x++) {
             if (x == 0 || x == 36 || x == 71) {
                 vram[(70 - 2) * PC98_W + 352 + x * 2] = 7;

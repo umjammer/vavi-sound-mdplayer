@@ -576,7 +576,9 @@ public class PmdFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
 
         int loop = Math.max(pw.getnowLoopCounter(), 0);
         if (loop != lastLoopCount) {
-            if (lastLoopCount > 0) loopTimerBCount = timerBCount - loopStartTimerBCount;
+            if (timerBCount > loopStartTimerBCount) {
+                loopTimerBCount = timerBCount - loopStartTimerBCount;
+            }
             loopStartTimerBCount = timerBCount;
             lastLoopCount = loop;
         }

@@ -960,7 +960,9 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
 
         int loop = Math.max(d.curLoop, 0);
         if (loop != lastLoopCount) {
-            if (lastLoopCount > 0) loopTimerBCount = timerBCount - loopStartTimerBCount;
+            if (timerBCount > loopStartTimerBCount) {
+                loopTimerBCount = timerBCount - loopStartTimerBCount;
+            }
             loopStartTimerBCount = timerBCount;
             lastLoopCount = loop;
         }
@@ -1185,6 +1187,8 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
     @Override public long loopTimerBCount() { return loopTimerBCount; }
 
     @Override public long timerBCountLoop() { return timerBCountLoop; }
+
+    @Override public long totalTimerBCount() { BaseDriver d = work; return d != null ? d.totalCounter : 0; }
 
     @Override public boolean playing() { BaseDriver d = work; return d != null && !d.stopped; }
 

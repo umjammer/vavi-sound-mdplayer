@@ -36,6 +36,11 @@ public interface WorkStateSource {
     /** TimerB ticks since the most recent loop start. */
     long timerBCountLoop();
 
+    /** Total estimated TimerB ticks for the song, 0 if unknown. */
+    default long totalTimerBCount() {
+        return 0;
+    }
+
     /** True if a song is loaded and currently advancing. */
     boolean playing();
 
