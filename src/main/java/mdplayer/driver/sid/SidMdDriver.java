@@ -117,6 +117,7 @@ public class SidMdDriver extends BaseDriver implements SidDriver {
 
         ld.reset();
         timeInMs = 0;
+        songLengthMs = -1;
         playtimeDetected = false;
         silentLength = 0;
         lastOut = 0;
@@ -166,6 +167,15 @@ public class SidMdDriver extends BaseDriver implements SidDriver {
                 );
         sid.engine.setSidWriteListener((addr, data) -> ld.write(addr, data, 0));
         sid.initial = true;
+
+        // where the collection says how long this tune plays for, that settles it and none of the
+        // watching below has to happen
+        songLengthMs = SongLengthDb.lengthMs(setting.getSid().songLengthPath, sid.tune);
+        if (songLengthMs > 0) {
+logger.log(Level.INFO, "songlength: %.1fs".formatted(songLengthMs / 1000d));
+            playtimeDetected = true;
+            totalCounter = (long) songLengthMs * setting.getOutputDevice().getSampleRate() / 1000L;
+        }
     }
 
     @Override
@@ -222,6 +232,8 @@ public class SidMdDriver extends BaseDriver implements SidDriver {
 
     /** how far into the song the rendering has got, what {@link #ld} times its writes by */
     private double timeInMs;
+    /** how long the songlength database says this tune plays for, -1 if it does not say */
+    private int songLengthMs;
     /** whether the end is known - either the loop was found or the song is already over */
     private boolean playtimeDetected;
     /** how many samples in a row came out the same, which is how a song that just stops is noticed */
@@ -280,6 +292,9 @@ public class SidMdDriver extends BaseDriver implements SidDriver {
      * Works out how far through the song the playback is, which nothing but the rendering itself
      * can tell for a Sid: {@link #curLoop} is what the player watches to fade a song out, and it
      * only means something once the loop has been detected and its length is known.
+     * <p>
+     * Unless the songlength database knew the answer to begin with — then the song simply ends
+     * when it says so.
      *
      * @param samples stereo samples rendered by this call
      */
@@ -288,7 +303,13 @@ public class SidMdDriver extends BaseDriver implements SidDriver {
         timeInMs += 1000.0 * samples / sampleRate * speed;
 
         if (playtimeDetected) {
-            if (totalCounter != 0) curLoop = (int) (counter / totalCounter);
+            if (songLengthMs > 0) {
+                // the database's time is the whole of the song, not one time round it, so it is
+                // played once and not loopTimes times
+                if (timeInMs >= songLengthMs) over();
+            } else if (totalCounter != 0) {
+                curLoop = (int) (counter / totalCounter);
+            }
             return;
         }
         curLoop = 0;

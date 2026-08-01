@@ -33,7 +33,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import mdplayer.lib.sid.libsidplayfp.SidEndian;
+import mdplayer.lib.sid.libsidplayfp.SidMd5;
 import mdplayer.lib.sid.libsidplayfp.SidMemory;
+import mdplayer.lib.sid.libsidplayfp.sidplayfp.SidTune;
 import mdplayer.lib.sid.libsidplayfp.sidplayfp.SidTuneInfo;
 import vavi.util.ByteUtil;
 
@@ -60,6 +62,40 @@ public class SidTuneBase {
     public byte[] createMD5(byte[] n) {
         return null;
     }
+
+    /**
+     * Calculates the MD5 hash the songlength database is keyed by nowadays, which is simply the
+     * hash of the whole file - {@link #createMD5} is the older fingerprint, made out of the C64
+     * data and a few header fields, that the {@code Songlengths.txt} databases were keyed by.
+     *
+     * @param md5 buffer to fill, MD5_LENGTH + 1 long; null to use the tune's own.
+     * @return the buffer containing the md5 String.
+     */
+    public byte[] createMD5New(byte[] md5) {
+        if (md5 == null)
+            md5 = this.md5New;
+
+        md5[0] = (byte) '\0';
+
+        try {
+            SidMd5 myMD5 = new SidMd5();
+            byte[] file = ByteUtil.toByteArray(cache);
+            myMD5.append(file, file.length);
+            myMD5.finish();
+
+            byte[] digest = myMD5.getDigest().getBytes(StandardCharsets.US_ASCII);
+            System.arraycopy(digest, 0, md5, 0, SidTune.MD5_LENGTH);
+            md5[SidTune.MD5_LENGTH] = (byte) '\0';
+        } catch (Exception e) {
+            logger.log(Level.ERROR, e.getMessage(), e);
+            return null;
+        }
+
+        return md5;
+    }
+
+    /** the buffer {@link #createMD5New} fills when the caller brings none of its own */
+    private final byte[] md5New = new byte[SidTune.MD5_LENGTH + 1];
 
     /**
      * Get the pointer to the tune data.

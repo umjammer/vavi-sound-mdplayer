@@ -26,13 +26,15 @@ package mdplayer.lib.sid.libsidplayfp.utils;
 public class Md5Factory {
 
     public IMd5 get() {
+        // neither of the two the original picks between at build time survived the port - the
+        // libgcrypt one is a binding and hashes nothing at all, so the fingerprints came out empty
         return
 //#if GCRYPT_WITH_MD5
-          new GCryptMd5();
+//        new GCryptMd5();
 //#else
 //        new md5Internal();
 //#endif
-
+          new MessageDigestMd5();
     }
 }
 

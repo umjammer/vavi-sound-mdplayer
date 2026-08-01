@@ -275,6 +275,12 @@ public class Setting implements Serializable, Cloneable {
         public String romKernalPath = "";
         public String romBasicPath = "";
         public String romCharacterPath = "";
+        /**
+         * The collection's songlength database, {@code DOCUMENTS/Songlengths.md5}. Where a tune is
+         * listed in it, that is how long it plays for and none of the guessing below happens.
+         * Empty for none.
+         */
+        public String songLengthPath = "";
         public int quality = 1;
         public int outputBufferSize = 5000;
         public int c64model = 0;
@@ -296,6 +302,7 @@ public class Setting implements Serializable, Cloneable {
             sid.romKernalPath = this.romKernalPath;
             sid.romBasicPath = this.romBasicPath;
             sid.romCharacterPath = this.romCharacterPath;
+            sid.songLengthPath = this.songLengthPath;
             sid.quality = this.quality;
             sid.outputBufferSize = this.outputBufferSize;
             sid.c64model = this.c64model;

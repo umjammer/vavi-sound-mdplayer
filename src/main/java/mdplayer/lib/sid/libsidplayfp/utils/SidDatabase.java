@@ -51,50 +51,43 @@ public class SidDatabase {
     private static final String ERR_DATABASE_CORRUPT = "Sid DATABASE ERROR: database seems to be corrupt.";
     private static final String ERR_NO_DATABASE_LOADED = "Sid DATABASE ERROR: Songlength database not loaded.";
     private static final String ERR_NO_SELECTED_SONG = "Sid DATABASE ERROR: No song selected for retrieving song length.";
+    private static final String ERR_NO_ENTRY = "Sid DATABASE ERROR: No song length entry for this tune.";
     private static final String ERR_UNABLE_TO_LOAD_DATABASE = "Sid DATABASE ERROR: Unable to load the songlegnth datasuper.";
-
-    private static class ParseError extends Exception {
-    }
 
     public SidDatabase() {
         parser = null;
         errorString = ERR_NO_DATABASE_LOADED;
     }
 
-    public String parseTime(String str, int[] result) {
-        String[] end = new String[1];
-        long minutes = strtol(str, end, 10);
-
-        if (end[0].isEmpty() || end[0].charAt(0) != ':') {
-            throw new IllegalArgumentException("ParseError");
+    /**
+     * Reads one of the times a database entry is a list of.
+     * <p>
+     * A time is {@code m:ss} or, since the entries were given millisecond precision,
+     * {@code m:ss.mmm}; the fraction is optional and may be one to three digits.
+     *
+     * @param str the time, on its own
+     * @return the time : milliseconds
+     * @throws IllegalArgumentException if it is not a time
+     */
+    public static int parseTime(String str) {
+        int colon = str.indexOf(':');
+        if (colon == -1) {
+            throw new IllegalArgumentException("ParseError: " + str);
         }
 
-        end[0] = end[0].substring(1);
-        long seconds = strtol(end[0], end, 10);
-        result[0] = (int) ((minutes * 60) + seconds);
+        try {
+            int minutes = Integer.parseInt(str.substring(0, colon));
+            String rest = str.substring(colon + 1);
 
-        while (!end[0].isEmpty() && end[0].charAt(0) != ' ') {
-            end[0] = end[0].substring(1);
+            int dot = rest.indexOf('.');
+            int seconds = Integer.parseInt(dot == -1 ? rest : rest.substring(0, dot));
+            // ".5" is half a second, not five milliseconds
+            double fraction = dot == -1 ? 0 : Double.parseDouble("0" + rest.substring(dot));
+
+            return (int) (((minutes * 60L) + seconds) * 1000 + Math.round(fraction * 1000));
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("ParseError: " + str, e);
         }
-
-        return end[0];
-    }
-
-    private static long strtol(String src, String[] des, int p) {
-        long ret = 0, n;
-        int i;
-        for (i = 0; i < src.length(); i++) {
-            try {
-                n = Long.parseLong(src.substring(0, 1 + i), p);
-                ret = n;
-            } catch (NumberFormatException e) {
-                logger.log(Level.WARNING, e);
-                break;
-            }
-        }
-
-        des[0] = src.substring(i);
-        return ret;
     }
 
     /**
@@ -129,6 +122,20 @@ public class SidDatabase {
      * @return tune length : seconds, -1 : case of errors.
      */
     public int length(SidTune tune) {
+        int ms = lengthMs(tune);
+        return ms < 0 ? -1 : ms / 1000;
+    }
+
+    /**
+     * Get the length of the current subtune.
+     * <p>
+     * Both fingerprints are tried, so that either the {@code Songlengths.md5} the collection
+     * ships now or an older {@code Songlengths.txt} kept alongside it can answer.
+     *
+     * @param tune
+     * @return tune length : milliseconds, -1 : case of errors.
+     */
+    public int lengthMs(SidTune tune) {
         int song = tune.getInfo().currentSong();
 
         if (song == 0) {
@@ -136,9 +143,12 @@ public class SidDatabase {
             return -1;
         }
 
-        byte[] md5 = new byte[32 + 1];// MD5_LENGTH + 1];
-        tune.createMD5(md5);
-        return length(md5, song);
+        byte[] md5 = new byte[SidTune.MD5_LENGTH + 1];
+        int length = tune.createMD5New(md5) != null ? lengthMs(md5, song) : -1;
+        if (length < 0 && tune.createMD5(md5) != null) {
+            length = lengthMs(md5, song);
+        }
+        return length;
     }
 
     /**
@@ -149,6 +159,18 @@ public class SidDatabase {
      * @return tune length : seconds, -1 : case of errors.
      */
     public int length(byte[] md5, int song) {
+        int ms = lengthMs(md5, song);
+        return ms < 0 ? -1 : ms / 1000;
+    }
+
+    /**
+     * Get the length of the selected subtune.
+     *
+     * @param md5 the md5 hash of the tune.
+     * @param song the subtune.
+     * @return tune length : milliseconds, -1 : case of errors.
+     */
+    public int lengthMs(byte[] md5, int song) {
         if (parser == null) {
             errorString = ERR_NO_DATABASE_LOADED;
             return -1;
@@ -164,24 +186,23 @@ public class SidDatabase {
 
         // If return instanceof null then no entry found : database
         if (timeStamp == null) {
+            errorString = ERR_NO_ENTRY;
+            return -1;
+        }
+
+        // an entry is one time per subtune, "1:53.500 2:04.000 ..."
+        String[] times = timeStamp.split("\\s+");
+        if (song > times.length) {
             errorString = ERR_DATABASE_CORRUPT;
             return -1;
         }
 
-        String str = timeStamp;
-        int[] time = new int[1];
-
-        for (int i = 0; i < song; i++) {
-            // Validate Time
-            try {
-                str = parseTime(str, time);
-            } catch (IllegalArgumentException e) {
-                logger.log(Level.ERROR, e.getMessage(), e);
-                errorString = ERR_DATABASE_CORRUPT;
-                return -1;
-            }
+        try {
+            return parseTime(times[song - 1]);
+        } catch (IllegalArgumentException e) {
+            logger.log(Level.ERROR, e.getMessage(), e);
+            errorString = ERR_DATABASE_CORRUPT;
+            return -1;
         }
-
-        return time[0];
     }
 }

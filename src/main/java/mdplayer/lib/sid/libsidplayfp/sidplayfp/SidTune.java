@@ -216,6 +216,17 @@ public class SidTune {
         return tune != null ? tune.createMD5(md5) : null;
     }
 
+    /**
+     * Calculates the MD5 hash of the tune, the way the current songlength database is keyed.
+     * Not providing an md5 buffer will cause the private one to be used.
+     * If provided, buffer must be MD5_LENGTH + 1
+     * <p>
+     * @return a pointer to the buffer containing the md5 String, 0 if no tune instanceof loaded.
+     */
+    public byte[] createMD5New(byte[] md5 /* = null */) {
+        return tune != null ? tune.createMD5New(md5) : null;
+    }
+
     public byte c64Data() {
         return (byte) (tune != null ? tune.c64Data() : 0);
     }

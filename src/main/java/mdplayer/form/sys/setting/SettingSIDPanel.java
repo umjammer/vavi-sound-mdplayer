@@ -1,6 +1,7 @@
 package mdplayer.form.sys.setting;
 
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import javax.swing.JButton;
@@ -54,6 +55,9 @@ public class SettingSIDPanel extends SettingTab {
     private final JCheckBox rbSIDModel_6581;
     private final JCheckBox cbSIDC64Model_Force;
     private final JCheckBox cbSIDModel_Force;
+    private final JLabel lblSIDSongLength;
+    private final JTextArea tbSIDSongLength;
+    private final JButton btnSIDSongLength;
 
     public SettingSIDPanel() {
         this.groupBox28 = new JPanel();
@@ -87,12 +91,20 @@ public class SettingSIDPanel extends SettingTab {
         this.tbSIDOutputBufferSize = new JTextArea();
         this.label51 = new JLabel();
         this.label49 = new JLabel();
+        this.lblSIDSongLength = new JLabel();
+        this.tbSIDSongLength = new JTextArea();
+        this.btnSIDSongLength = new JButton();
 
         //
         // btnSIDBasic
         //
         this.btnSIDBasic.setName("btnSIDBasic");
         this.btnSIDBasic.addActionListener(this::btnSIDBasic_Click);
+        //
+        // btnSIDSongLength
+        //
+        this.btnSIDSongLength.setName("btnSIDSongLength");
+        this.btnSIDSongLength.addActionListener(this::btnSIDSongLength_Click);
         //
         // btnSIDCharacter
         //
@@ -239,6 +251,14 @@ public class SettingSIDPanel extends SettingTab {
         //
         this.tbSIDKernal.setName("tbSIDKernal");
         //
+        // lblSIDSongLength
+        //
+        this.lblSIDSongLength.setName("lblSIDSongLength");
+        //
+        // tbSIDSongLength
+        //
+        this.tbSIDSongLength.setName("tbSIDSongLength");
+        //
         // tbSIDOutputBufferSize
         //
         this.tbSIDOutputBufferSize.setName("tbSIDOutputBufferSize");
@@ -252,6 +272,9 @@ public class SettingSIDPanel extends SettingTab {
         this.add(this.tbSIDOutputBufferSize);
         this.add(this.label51);
         this.add(this.label49);
+        this.add(this.lblSIDSongLength);
+        this.add(this.tbSIDSongLength);
+        this.add(this.btnSIDSongLength);
         this.setName("tpSID");
     }
 
@@ -260,6 +283,7 @@ public class SettingSIDPanel extends SettingTab {
         tbSIDKernal.setText(setting.getSid().romKernalPath);
         tbSIDBasic.setText(setting.getSid().romBasicPath);
         tbSIDCharacter.setText(setting.getSid().romCharacterPath);
+        tbSIDSongLength.setText(setting.getSid().songLengthPath);
         switch (setting.getSid().quality) {
         case 0:
             rdSIDQ1.setSelected(true);
@@ -295,6 +319,7 @@ public class SettingSIDPanel extends SettingTab {
         setting.getSid().romKernalPath = tbSIDKernal.getText();
         setting.getSid().romBasicPath = tbSIDBasic.getText();
         setting.getSid().romCharacterPath = tbSIDCharacter.getText();
+        setting.getSid().songLengthPath = tbSIDSongLength.getText();
         if (rdSIDQ1.isSelected()) setting.getSid().quality = 0;
         if (rdSIDQ2.isSelected()) setting.getSid().quality = 1;
         if (rdSIDQ3.isSelected()) setting.getSid().quality = 2;
@@ -315,45 +340,40 @@ public class SettingSIDPanel extends SettingTab {
         setting.getSid().sidmodelForce = cbSIDModel_Force.isSelected();
     }
 
-    private void btnSIDBasic_Click(ActionEvent ev) {
-        JFileChooser ofd = new JFileChooser();
-        ofd.setFileFilter(ofd.getAcceptAllFileFilter());
-        ofd.setDialogTitle("Select a file");
-//        ofd.restoreDirectory = true;
-//        ofd.checkPathExists = true;
-        ofd.setMultiSelectionEnabled(false);
+    private void btnSIDSongLength_Click(ActionEvent ev) {
+        choose(tbSIDSongLength, "Select the songlength database (Songlengths.md5)");
+    }
 
-        if (ofd.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
-            return;
-        }
-        tbSIDBasic.setText(ofd.getSelectedFile().getName());
+    private void btnSIDBasic_Click(ActionEvent ev) {
+        choose(tbSIDBasic, "Select a file");
     }
 
     private void btnSIDCharacter_Click(ActionEvent ev) {
-        JFileChooser ofd = new JFileChooser();
-        ofd.setFileFilter(ofd.getAcceptAllFileFilter());
-        ofd.setDialogTitle("Select a file");
-//        ofd.restoreDirectory = true;
-//        ofd.checkPathExists = true;
-        ofd.setMultiSelectionEnabled(false);
-
-        if (ofd.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
-            return;
-        }
-        tbSIDCharacter.setText(ofd.getSelectedFile().getName());
+        choose(tbSIDCharacter, "Select a file");
     }
 
     private void btnSIDKernal_Click(ActionEvent ev) {
+        choose(tbSIDKernal, "Select a file");
+    }
+
+    /**
+     * Lets the user pick the file a path box holds.
+     * <p>
+     * The whole path goes in, not just the file name the browse buttons used to leave there: the
+     * driver opens what the box says, and a bare name only ever resolves by accident.
+     */
+    private void choose(JTextArea box, String title) {
         JFileChooser ofd = new JFileChooser();
         ofd.setFileFilter(ofd.getAcceptAllFileFilter());
-        ofd.setDialogTitle("Select a file");
-//        ofd.restoreDirectory = true;
-//        ofd.checkPathExists = true;
+        ofd.setDialogTitle(title);
         ofd.setMultiSelectionEnabled(false);
+        if (!box.getText().isEmpty()) {
+            ofd.setSelectedFile(new File(box.getText()));
+        }
 
         if (ofd.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
             return;
         }
-        tbSIDKernal.setText(ofd.getSelectedFile().getName());
+        box.setText(ofd.getSelectedFile().getAbsolutePath());
     }
 }

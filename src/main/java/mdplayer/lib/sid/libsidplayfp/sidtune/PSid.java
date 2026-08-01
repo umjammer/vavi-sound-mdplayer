@@ -428,8 +428,11 @@ logger.log(Level.DEBUG, "id: %d, ver: %d".formatted(pHeader.id, pHeader.version)
 
             myMD5.finish();
 
-            // Get fingerprint.
-            md5 = myMD5.getDigest().getBytes(StandardCharsets.US_ASCII);
+            // Get fingerprint. it goes into the caller's buffer: taking the array getDigest()
+            // hands back instead would leave no room for the terminator, and the tune would hash
+            // to nothing at all
+            byte[] digest = myMD5.getDigest().getBytes(StandardCharsets.US_ASCII);
+            System.arraycopy(digest, 0, md5, 0, SidTune.MD5_LENGTH);
             md5[SidTune.MD5_LENGTH] = (byte) '\0';
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
