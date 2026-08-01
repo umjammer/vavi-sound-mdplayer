@@ -14,6 +14,24 @@ public class ComAnalyze {
     public XMemory mm;
     public Ab ab;
 
+    /**
+     * MND data version 1 renumbered a few MML opcodes before version 2 settled the map, which is
+     * why mndrv.x 1.37 refuses v1 outright rather than carry a second dispatch table. Indexed by
+     * {@code opcode - 0x80}, this maps a v1 opcode onto the v2+ opcode that does the same thing;
+     * every other entry is the identity. Derived from the 62 files of MND_SXP1 -- see
+     * {@code MndV1AnalyzerTest} for how each entry was established.
+     */
+    static final byte[] V1_CMD_MAP = new byte[0x80];
+
+    static {
+        for (int i = 0; i < V1_CMD_MAP.length; i++) {
+            V1_CMD_MAP[i] = (byte) i;
+        }
+        // v1 spells the software envelope $ED + 6 operands; v2 moved it to $C0 and gave $ED to
+        // the wave envelope, whose first operand is a sub-selector. Every v1 track opens with it.
+        V1_CMD_MAP[0xed - 0x80] = (byte) (0xc0 - 0x80);
+    }
+
     public void _track_ana_quit() {
         // rts
     }
@@ -206,6 +224,9 @@ public class ComAnalyze {
                     _track_ana_rest_exit = true;
                     break;
                 } else {
+                    if ((mm.readByte(reg.a6 + Dw.MND_VER) & 0xff) == 1) {
+                        reg.setD0_B(V1_CMD_MAP[reg.getD0_B() & 0x7f] & 0xff);
+                    }
                     reg.a0 = mm.readInt(reg.a5 + W.subcmd_adrs);
                     ab.hlw_subcmd_adrs.get(reg.a5).run();
                 }

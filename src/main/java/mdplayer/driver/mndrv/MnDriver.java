@@ -154,7 +154,12 @@ public class MnDriver extends BaseDriver {
     public MetaData getMetaData(byte[] buf, Object... args) {
         MetaData md = new MetaData();
 
-        int i = (buf[6] & 0xff) * 0x100 + (buf[7] & 0xff);
+        // the title lives wherever the pointer at $0c says, which is only coincidentally the
+        // header size at $06 -- v2 data puts it after the tone data and read the wrong way round
+        // decodes voice bytes as a title
+        int headerSize = (buf[6] & 0xff) * 0x100 + (buf[7] & 0xff);
+        int i = headerSize > 0x0c ? ByteUtil.readBeInt(buf, 0x0c) : 0;
+        if (i <= 0 || i >= buf.length) i = headerSize;
         List<Byte> lst = new ArrayList<>();
         while (i < buf.length && buf[i] != 0x0 && i + 1 < buf.length && buf[i + 1] != 0x0) {
             lst.add(buf[i]);

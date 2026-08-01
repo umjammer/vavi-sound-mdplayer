@@ -233,15 +233,14 @@ public class MnDrv {
     /**
      * Why {@code __MN_PLAYMUSIC} would not play this data, in words. It answers {@code -1} for
      * data that is not an MND at all and {@code -2} for an MND it cannot handle, and the second
-     * is nearly always the version: mndrv plays data versions 2 to {@value #MNDVER} - 1 and
-     * refuses version 1 outright ({@code cmpi.b #1,d2 / beq _play_music_ver_err} in mndrv.x), so
-     * the oldest MND files are its own to reject and not something gone wrong here.
+     * is nearly always the version: we play data versions {@value #MNDVERMIN} to
+     * {@value #MNDVER} - 1.
      */
     private static String playError(int code, byte[] data) {
         if (code != -2) return "mnd play: not mnd data (mncall $03 returned " + code + ")";
         int version = data.length > 5 ? data[5] & 0xff : 0;
-        return "mnd play: mndrv does not handle mnd data version %d (it plays 2 to %d)"
-                .formatted(version, MNDVER - 1);
+        return "mnd play: mndrv does not handle mnd data version %d (it plays %d to %d)"
+                .formatted(version, MNDVERMIN, MNDVER - 1);
     }
 
     // Trap processing (effectively MPCM control)
@@ -300,6 +299,13 @@ public class MnDrv {
      */
 
     public static final int MNDVER = 17 + 1;
+    /**
+     * Oldest MND data version we play. mndrv.x 1.37 itself stops at 2 -- it turns version 1 away
+     * with {@code cmpi.b #1,d2 / beq _play_music_ver_err} -- but the v1 container and track table
+     * are identical to v2 and the MML grammar differs in only a few opcodes, which
+     * {@link ComAnalyze#V1_CMD_MAP} maps back. See {@code MndV1AnalyzerTest} for the evidence.
+     */
+    public static final int MNDVERMIN = 1;
     public static final String DRVVER = "1.37";
 
     /**
@@ -863,7 +869,9 @@ public class MnDrv {
             reg.D0_L = -2;
             return;
         }
-        if ((reg.getD2_B() & 0xff) - 1 == 0) { // break _play_music_ver_err;
+        // mndrv.x has `cmpi.b #1,d2 / beq _play_music_ver_err` here; we accept version 1 too and
+        // fix up the handful of opcodes it numbers differently in ComAnalyze#_track_ana_fetch.
+        if ((reg.getD2_B() & 0xff) < MNDVERMIN) { // break _play_music_ver_err;
             reg.D0_L = -2;
             return;
         }
@@ -903,12 +911,20 @@ public class MnDrv {
         //
         reg.D1_L = mm.readInt(reg.a0 + (int) (short) reg.getD0_W());
         reg.setD0_W(reg.getD0_W() + 4);
-        reg.a2 = reg.a0 + reg.D1_L;
-        mm.write(reg.a6 + Dw.TONE_PTR, reg.a2);
-        reg.a2 += 4;
-        reg.setD4_W(mm.readShort(reg.a2) & 0xffff);
-        reg.a2 += 2;
-        mm.write(reg.a6 + Dw.VOICENUM, (short) reg.getD4_W());
+        // version 1 data with no FM track at all leaves the tone pointer null; taking the normal
+        // path would point TONE_PTR at the file header and read VOICENUM out of the version word.
+        if (reg.D1_L == 0 && (mm.readByte(reg.a6 + Dw.MND_VER) & 0xff) == 1) {
+            mm.write(reg.a6 + Dw.TONE_PTR, 0);
+            mm.write(reg.a6 + Dw.VOICENUM, (short) 0);
+            reg.a2 = reg.a0;
+        } else {
+            reg.a2 = reg.a0 + reg.D1_L;
+            mm.write(reg.a6 + Dw.TONE_PTR, reg.a2);
+            reg.a2 += 4;
+            reg.setD4_W(mm.readShort(reg.a2) & 0xffff);
+            reg.a2 += 2;
+            mm.write(reg.a6 + Dw.VOICENUM, (short) reg.getD4_W());
+        }
         //
         // title
         //
