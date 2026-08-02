@@ -70,6 +70,17 @@ public class MXDRV {
             new Pcm8St(), new Pcm8St(), new Pcm8St(), new Pcm8St()
     };
 
+    public void initializeMemory(int mdxSize, int pdxSize, byte[] mdx, byte[] pdx, int[] mdxPtr, int[] pdxPtr) {
+        int memind = mm.mm.length;
+        mdxPtr[0] = memind;
+        memind += mdxSize;
+        pdxPtr[0] = memind;
+        memind += pdxSize;
+        mm.realloc(memind);
+        for (int i = 0; i < mdxSize; i++) mm.write(mdxPtr[0] + i, mdx[i]);
+        for (int i = 0; i < pdxSize; i++) mm.write(pdxPtr[0] + i, pdx[i]);
+    }
+
     public interface MXWORK_CH {
         int S0000 = 0; // Ptr
         int S0004_b = 4; // PCM bank
