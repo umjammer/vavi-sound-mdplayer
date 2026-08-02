@@ -91,6 +91,7 @@ public abstract class FormChipBase<P> extends FormBase implements View {
      * panel can be open for a chip the current song has nothing to say about.
      */
     protected int clock(Class<? extends Instrument> instrument) {
+        if (audio == null || audio.plugin == null) return 0;
         MDSound.Chip chip = audio.plugin.mds.getChipInfo(instrument);
         return chip == null ? 0 : chip.clock;
     }

@@ -1479,6 +1479,8 @@ public class FormMain extends JFrame {
     }
 
     private void screenChangeParamsForms() {
+        if (audio == null || audio.plugin == null) return;
+
         for (View[] slot : views.values()) {
             for (int i = 0; i < slot.length; i++) {
                 if (slot[i] != null && !slot[i].isClosed()) slot[i].changeScreenParams();
