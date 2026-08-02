@@ -628,6 +628,8 @@ public class FmpFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
 
     @Override public String driverName() { return "FMP"; }
 
+    @Override public String chips() { FmpWork fw = work; return (fw != null && fw.ppz8 != null && !fw.ppz8.isEmpty()) ? "YM2608, PPZ8" : "YM2608"; }
+
     @Override public String filename() { return filename; }
 
     @Override public String comment(int line) { return comments[line]; }

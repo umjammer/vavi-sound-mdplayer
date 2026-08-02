@@ -52,6 +52,11 @@ public interface WorkStateSource {
         return null;
     }
 
+    /** Using chips shown under {@code DRIVER}, e.g. {@code "YM2608"}, may be null. */
+    default String chips() {
+        return null;
+    }
+
     /** Current title / filename, may be null. */
     default String filename() {
         return null;

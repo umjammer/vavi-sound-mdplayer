@@ -193,6 +193,9 @@ public class FmDspVisualizer extends JComponent {
     private static final int DRIVER_TRI_Y = DRIVER_TEXT_Y + 3;
     private static final int DRIVER_NAME_X = DRIVER_TRI_X + 8;
     private static final int DRIVER_NAME_Y = DRIVER_TEXT_Y - 1;
+    private static final int CHIP_TEXT_Y = DRIVER_TEXT_Y + 19;
+    private static final int CHIP_TRI_Y = CHIP_TEXT_Y + 3;
+    private static final int CHIP_NAME_Y = CHIP_TEXT_Y - 1;
     private static final int CURL_W = 11;
     private static final int CURL_H = 11;
     private static final int CURL_LEFT_X = 347;
@@ -1182,6 +1185,11 @@ public class FmDspVisualizer extends JComponent {
         vramblitColor(DRIVER_TRI_X, DRIVER_TRI_Y, s_filebar_tri, 0, FILEBAR_TRI_W, FILEBAR_TRI_H, 7);
         WorkStateSource work = source != null ? source.work() : null;
         putMedium(work != null ? work.driverName() : null, DRIVER_NAME_X, DRIVER_NAME_Y, 2, false);
+
+        putSmall("CH", DRIVER_TEXT_X, CHIP_TEXT_Y, 7, true);
+        putSmall("IP", DRIVER_TEXT_2_X, CHIP_TEXT_Y, 7, true);
+        vramblitColor(DRIVER_TRI_X, CHIP_TRI_Y, s_filebar_tri, 0, FILEBAR_TRI_W, FILEBAR_TRI_H, 7);
+        putMedium(work != null ? work.chips() : null, DRIVER_NAME_X, CHIP_NAME_Y, 2, false);
         vramblit(CURL_LEFT_X, CURL_Y, s_curl_left, 0, CURL_W, CURL_H);
         vramblit(CURL_RIGHT_X, CURL_Y, s_curl_right, 0, CURL_W, CURL_H);
 

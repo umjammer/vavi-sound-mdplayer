@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import mdplayer.driver.BaseDriver;
 import mdplayer.fmdsp.FmDspChannel;
@@ -293,8 +294,11 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
         reset();
     }
 
+    private BasePlugin<? extends BaseDriver> plugin;
+
     /** points this source at the playing plugin's chips and driver; call once per plugin */
     public void bind(BasePlugin<? extends BaseDriver> plugin) {
+        this.plugin = plugin;
         bind(plugin.chipRegister, plugin::getDriver);
     }
 
@@ -1216,6 +1220,22 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
     public String driverName() {
         BaseDriver d = work;
         return d != null ? d.getName() : null;
+    }
+
+    @Override
+    public String chips() {
+        if (plugin != null && plugin.getChips() != null && !plugin.getChips().isEmpty()) {
+            return plugin.getChips().stream()
+                    .map(c -> c.getSimpleName().replace("Chip", "").toUpperCase())
+                    .distinct()
+                    .collect(Collectors.joining(", "));
+        }
+        BaseDriver d = work != null ? work : driver.get();
+        if (d != null && d.metaData != null) {
+            String chips = d.metaData.getFirst(Tag.Chip);
+            if (chips != null && !chips.isEmpty()) return chips;
+        }
+        return null;
     }
 
     @Override public String filename() { return filename; }

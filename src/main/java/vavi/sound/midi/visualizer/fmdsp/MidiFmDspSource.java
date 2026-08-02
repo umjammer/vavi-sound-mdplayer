@@ -791,6 +791,8 @@ public class MidiFmDspSource implements Receiver, FmDspDataSource, FftDataSource
 
     @Override public String driverName() { return "MIDI"; }
 
+    @Override public String chips() { return "MIDI"; }
+
     @Override public String filename() { return filename; }
 
     @Override public String comment(int line) { return comments[line]; }
