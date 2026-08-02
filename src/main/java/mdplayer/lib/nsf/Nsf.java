@@ -127,6 +127,12 @@ public class Nsf {
     private double cpu_clock_rest;
     private double apu_clock_rest;
     private int time_in_ms;
+    /**
+     * Fractional part of {@link #time_in_ms}. {@code Audio} renders in chunks of two samples, and
+     * two samples are 0.045 ms: truncating that to an int per call left the clock at 0 forever, so
+     * {@link #detectLoop} never got past its {@code match_interval} guard and the song never ended.
+     */
+    private double time_in_ms_rest;
     private long silent_length = 0;
     private int last_out = 0;
 
@@ -347,6 +353,9 @@ public class Nsf {
         apu_clock_rest = 0.0;
         cpu_clock_rest = 0.0;
         silent_length = 0;
+        time_in_ms = 0;
+        time_in_ms_rest = 0.0;
+        playtime_detected = false;
 
         Region region = getRegion(palNtsc);
         double speed;
@@ -577,7 +586,10 @@ int CC;
 //            b += nch;
         }
 
-        time_in_ms += (int) (1000. * length / sampleRate * speed.getAsDouble());
+        time_in_ms_rest += 1000. * length / sampleRate * speed.getAsDouble();
+        int elapsed = (int) time_in_ms_rest;
+        time_in_ms += elapsed;
+        time_in_ms_rest -= elapsed;
 
         //checkTerminal();
         detectLoop();
