@@ -16,6 +16,7 @@ import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.FileFormat;
 import mdplayer.driver.BasePlugin;
+import musicDriverInterface.MetaData;
 import vavi.util.Debug;
 import vavi.util.properties.annotation.Property;
 import vavi.util.properties.annotation.PropsEntity;
@@ -86,5 +87,18 @@ Debug.println("filename: " + zms);
             audio.init(plugin);
             audio.play();
         });
+    }
+
+    @Test
+    @DisplayName("metadata zmd v2")
+    void testMetaDataZmdV2() throws Exception {
+        Path p = Path.of("tmp/zms/v2_x68k/After_T.ZMD");
+        if (Files.exists(p)) {
+            byte[] buf = Files.readAllBytes(p);
+            ZmsDriver driver = new ZmsDriver();
+            MetaData md = driver.getMetaData(buf, 0, p.toString());
+            Debug.println("ZMD v2 title: " + md.getFirst(musicDriverInterface.MetaData.Tag.Title));
+            org.junit.jupiter.api.Assertions.assertFalse(md.getFirst(musicDriverInterface.MetaData.Tag.Title).isEmpty());
+        }
     }
 }
