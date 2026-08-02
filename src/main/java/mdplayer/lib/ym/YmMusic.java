@@ -611,7 +611,7 @@ public class YmMusic {
                 }
                 dataStreamOffset = ctx.offset;
                 streamInc = 16;
-                setAttrib(A_STREAMINTERLEAVED | A_TIMECONTROL);
+                setAttrib(attrib | A_STREAMINTERLEAVED | A_TIMECONTROL);
                 songPlayer = "YM-Chip driver.";
                 break;
 
@@ -833,6 +833,10 @@ public class YmMusic {
 
     public boolean isSeekable() {
         return (getAttrib() & A_TIMECONTROL) != 0;
+    }
+
+    public boolean isLoopable() {
+        return (getAttrib() & A_LOOPMODE) != 0;
     }
 
     public int readYmRegister(int reg) {

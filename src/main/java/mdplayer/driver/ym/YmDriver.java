@@ -165,7 +165,7 @@ public class YmDriver extends BaseDriver {
             throw new IllegalStateException(e);
         }
 
-        music.setLoopMode(true);
+        music.setLoopMode(music.isLoopable());
         music.stop();
         music.play();
         lastPos = 0;
@@ -209,7 +209,10 @@ public class YmDriver extends BaseDriver {
         int written = 0;
         while (written < length - 1) {
             if (internalConsumed >= internalProduced) {
-                music.update(internalBuffer, internalBuffer.length);
+                boolean active = music.update(internalBuffer, internalBuffer.length);
+                if (!active || music.bMusicOver) {
+                    stopped = true;
+                }
                 internalProduced = internalBuffer.length;
                 internalConsumed = 0;
                 int pos = music.getPos();
