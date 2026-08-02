@@ -363,6 +363,45 @@ class ChipFmDspSourceTest {
     }
 
     @Test
+    @DisplayName("the driver's metadata fills the three comment lines")
+    void testComments() {
+        BaseDriver driver = new BaseDriver(null) {
+            @Override public void init(Common.EnmModel model, int latency, int waitTime, Object... args) {}
+            @Override public void processOneFrame() {}
+            @Override public MetaData getMetaData(byte[] buf, Object... args) { return null; }
+        };
+        // what a .mds carrying a metadata chunk hands over
+        driver.metaData.set(MetaData.Tag.Title, "JAZZY NYC'91");
+        driver.metaData.set(MetaData.Tag.Composer, "ctr");
+        driver.metaData.set(MetaData.Tag.GameTitle, "Street Fighter III: 3rd Strike");
+        source.bind(chipRegister, () -> driver);
+
+        source.snapshot();
+
+        assertEquals("JAZZY NYC'91", source.comment(0));
+        assertEquals("ctr", source.comment(1));
+        // no arranger, so the third line falls back to the game
+        assertEquals("Street Fighter III: 3rd Strike", source.comment(2));
+    }
+
+    @Test
+    @DisplayName("the credit line falls back to the artist, which is all MDSDRV's MML has")
+    void testCommentArtistFallback() {
+        BaseDriver driver = new BaseDriver(null) {
+            @Override public void init(Common.EnmModel model, int latency, int waitTime, Object... args) {}
+            @Override public void processOneFrame() {}
+            @Override public MetaData getMetaData(byte[] buf, Object... args) { return null; }
+        };
+        driver.metaData.set(MetaData.Tag.Title, "JAZZY NYC'91");
+        driver.metaData.set(MetaData.Tag.Artist, "ctr"); // #author, with no #composer anywhere
+        source.bind(chipRegister, () -> driver);
+
+        source.snapshot();
+
+        assertEquals("ctr", source.comment(1));
+    }
+
+    @Test
     @DisplayName("row titles, numbers and meter labels follow the claimed chips")
     void testDynamicLabels() {
         opm.write(0, 0, 0x28, 0x4a, EnmModel.VirtualModel, 0, 0);

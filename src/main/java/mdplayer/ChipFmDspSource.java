@@ -923,7 +923,10 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
             }
         } else if (d.metaData != null) { // not every driver fills one in - the HES driver leaves it
             comments[0] = commentOf(d.metaData, comments[0], Tag.Title, Tag.TitleJ);
-            comments[1] = commentOf(d.metaData, comments[1], Tag.Composer, Tag.ComposerJ);
+            // MDSDRV's MML credits the song to its #author rather than a #composer, and a line
+            // that says who wrote it is what this one is for either way
+            comments[1] = commentOf(d.metaData, comments[1],
+                    Tag.Composer, Tag.ComposerJ, Tag.Artist, Tag.ArtistJ);
             // only PMD ever fills the arranger in, so without a fallback the third line is always
             // blank. A VGM's GD3 has the game instead, which beats leaving the line empty.
             comments[2] = commentOf(d.metaData, comments[2],
