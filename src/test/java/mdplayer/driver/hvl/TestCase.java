@@ -178,4 +178,32 @@ Debug.println("OUT: " + outAudioFormat);
         assertTrue(rms > 50.0, "RMS is too low: " + rms);
         assertTrue(peak > 2000, "Peak is too low: " + peak);
     }
+
+    @Test
+    void testAllHvlInTmp() throws Exception {
+        Path tmpDir = Path.of("tmp/hvl");
+        if (!Files.exists(tmpDir)) return;
+
+        try (var stream = Files.walk(tmpDir)) {
+            for (Path path : stream.filter(p -> p.toString().toLowerCase().endsWith(".hvl")).toList()) {
+                System.out.println("Testing HVL: " + path);
+                mdplayer.driver.FileFormat format = mdplayer.driver.FileFormat.getFileFormat(path.toString());
+                format.load(Files.newInputStream(path), null);
+                @SuppressWarnings("unchecked")
+                var plugin = (mdplayer.driver.BasePlugin<? extends mdplayer.driver.BaseDriver>) format.getPlugin();
+                plugin.setParams(format, Map.of("fileName", path.toString()));
+                plugin.prepare();
+                mdplayer.driver.BaseDriver driver = plugin.getDriver();
+
+                short[] buf = new short[1024];
+                int iterations = 0;
+                while (!driver.stopped && driver.curLoop == 0 && iterations < 50000) {
+                    driver.render(buf, 0, buf.length);
+                    iterations++;
+                }
+                System.out.printf("  -> Finished in %d iterations, curLoop=%d, stopped=%s%n",
+                        iterations, driver.curLoop, driver.stopped);
+            }
+        }
+    }
 }

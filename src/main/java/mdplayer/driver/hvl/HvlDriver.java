@@ -156,6 +156,9 @@ public class HvlDriver extends BaseDriver {
                 if (tune.ht_SongEndReached != 0) {
                     tune.ht_SongEndReached = 0;
                     curLoop++;
+                    if (tune.ht_Tempo == 0) {
+                        stopped = true;
+                    }
                 }
             }
 
