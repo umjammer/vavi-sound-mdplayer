@@ -1228,12 +1228,12 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
             return plugin.getChips().stream()
                     .map(c -> c.getSimpleName().replace("Chip", "").toUpperCase())
                     .distinct()
-                    .collect(Collectors.joining(", "));
+                    .collect(Collectors.joining(" "));
         }
         BaseDriver d = work != null ? work : driver.get();
         if (d != null && d.metaData != null) {
             String chips = d.metaData.getFirst(Tag.Chip);
-            if (chips != null && !chips.isEmpty()) return chips;
+            if (chips != null && !chips.isEmpty()) return chips.replace(",", " ");
         }
         return null;
     }

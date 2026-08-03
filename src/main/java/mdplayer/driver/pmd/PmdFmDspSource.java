@@ -704,7 +704,7 @@ public class PmdFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
 
     @Override public String driverName() { return "PMD"; }
 
-    @Override public String chips() { PW pw = work; return (pw != null && pw.ppz != 0) ? "YM2608, PPZ8" : "YM2608"; }
+    @Override public String chips() { PW pw = work; return (pw != null && pw.ppz != 0) ? "YM2608 PPZ8" : "YM2608"; }
 
     @Override public String filename() { return filename; }
 

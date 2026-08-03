@@ -1184,12 +1184,13 @@ public class FmDspVisualizer extends JComponent {
         putSmall("IVER", DRIVER_TEXT_2_X, DRIVER_TEXT_Y, 7, true);
         vramblitColor(DRIVER_TRI_X, DRIVER_TRI_Y, s_filebar_tri, 0, FILEBAR_TRI_W, FILEBAR_TRI_H, 7);
         WorkStateSource work = source != null ? source.work() : null;
-        putMedium(work != null ? work.driverName() : null, DRIVER_NAME_X, DRIVER_NAME_Y, 2, false);
+        int rightMaxW = TIME_BAR_X - 2 - DRIVER_NAME_X;
+        putMedium(ellipsize(work != null ? work.driverName() : null, MFW, rightMaxW), DRIVER_NAME_X, DRIVER_NAME_Y, 2, false);
 
         putSmall("CH", DRIVER_TEXT_X, CHIP_TEXT_Y, 7, true);
         putSmall("IP", DRIVER_TEXT_2_X, CHIP_TEXT_Y, 7, true);
         vramblitColor(DRIVER_TRI_X, CHIP_TRI_Y, s_filebar_tri, 0, FILEBAR_TRI_W, FILEBAR_TRI_H, 7);
-        putMedium(work != null ? work.chips() : null, DRIVER_NAME_X, CHIP_NAME_Y, 2, false);
+        putSmall(ellipsize(work != null ? work.chips() : null, SFW, rightMaxW), DRIVER_NAME_X, CHIP_TEXT_Y, 2, false);
         vramblit(CURL_LEFT_X, CURL_Y, s_curl_left, 0, CURL_W, CURL_H);
         vramblit(CURL_RIGHT_X, CURL_Y, s_curl_right, 0, CURL_W, CURL_H);
 
