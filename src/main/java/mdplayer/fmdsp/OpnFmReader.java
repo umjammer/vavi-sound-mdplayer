@@ -96,6 +96,7 @@ public abstract class OpnFmReader implements FmDspChipReader {
         Arrays.fill(prevSsgPeriods, 0);
         fmActive = false;
         ssgActive = false;
+        extendedSeen = false;
         tones.reset();
     }
 
@@ -126,10 +127,31 @@ public abstract class OpnFmReader implements FmDspChipReader {
         };
     }
 
+    /**
+     * The FM rows this chip wants: its six channels, and the three ch3 extension rows behind them
+     * once the song has used that mode.
+     * <p>
+     * The extension rows are the operator slots of channel 3, so a song that never switches ch3
+     * into its special mode leaves them blank - and a row held blank is a row the chip behind this
+     * one does not get. A Sega System 18 VGM is two YM3438s, and the second one, which carries most
+     * of the music, had nowhere to go. Once the mode is seen the rows are kept for the rest of the
+     * song rather than handed back, so the layout does not move under a song that only uses it now
+     * and then.
+     * <p>
+     * Only for a chip with all six channels: on the plain OPN the rows of the channels it does not
+     * have sit between its three and the extension rows, and those keep their places.
+     */
     @Override
     public int channels(Group group) {
-        return group == Group.FM ? 9 : 3;
+        if (group != Group.FM) return 3;
+        if (!extendedSeen && fmCount() == 6 && chipRegister != null && chipReady() && ch3Extended()) {
+            extendedSeen = true;
+        }
+        return fmCount() < 6 || extendedSeen ? 9 : 6;
     }
+
+    /** whether ch3's extended mode has been seen this song, see {@link #channels} */
+    private boolean extendedSeen;
 
     @Override
     public int meters(Group group) {

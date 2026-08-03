@@ -7,7 +7,9 @@
 package mdplayer;
 
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.BasePlugin;
@@ -35,15 +37,18 @@ public class EmulatedPlugin extends BasePlugin<BaseDriver> {
     private static final int samplingRate = 44100;
 
     /**
-     * @param instruments the instruments to register, each started at its own default clock
+     * @param instruments the instruments to register, each started at its own default clock. The
+     *                    same instrument passed twice is started twice, as the second chip of its
+     *                    kind - the way a VGM declaring two of one chip has it
      */
     public static EmulatedPlugin of(Instrument... instruments) {
         EmulatedPlugin plugin = new EmulatedPlugin();
         List<MDSound.Chip> chips = new ArrayList<>();
+        Map<Instrument, Integer> ids = new IdentityHashMap<>();
         for (Instrument instrument : instruments) {
             MDSound.Chip chip = new MDSound.Chip();
             chip.instrument = instrument;
-            chip.id = 0;
+            chip.id = ids.merge(instrument, 1, Integer::sum) - 1;
             chip.samplingRate = samplingRate;
             chip.clock = clockOf(instrument);
             chip.option = optionOf(instrument);

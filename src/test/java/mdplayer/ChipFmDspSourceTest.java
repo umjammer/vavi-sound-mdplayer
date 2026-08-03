@@ -7,10 +7,12 @@
 package mdplayer;
 
 import mdplayer.Common.EnmModel;
+import mdplayer.chips.Rf5C68Chip;
 import mdplayer.chips.SegaPcmChip;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.chips.Ym2203Chip;
 import mdplayer.chips.Ym2608Chip;
+import mdplayer.chips.Ym2612Chip;
 import mdplayer.driver.BaseDriver;
 import musicDriverInterface.MetaData;
 import vavi.sound.visualizer.fmdsp.LevelDataSource;
@@ -49,6 +51,8 @@ class ChipFmDspSourceTest {
     Ym2151Chip opm;
     Ym2203Chip opn;
     SegaPcmChip segaPcm;
+    Ym2612Chip opn2;
+    Rf5C68Chip rf5c68;
     ChipFmDspSource source;
     final TrackStatus status = new TrackStatus();
 
@@ -56,11 +60,15 @@ class ChipFmDspSourceTest {
     void setup() {
         // the C352 and the SAA1099 keep no registers of their own: their state has to be written
         // to a real emulator and read back, so the chips need a context whose writes land somewhere
+        // the OPN2 twice: a Sega System 18 VGM is two of them, and the second one has a reader of
+        // its own to be tested
+        mdsound.instrument.Ym2612Inst opn2Inst = new mdsound.instrument.Ym2612Inst();
         plugin = EmulatedPlugin.of(new mdsound.instrument.C352Inst(), new mdsound.instrument.Saa1099Inst(),
                 new mdsound.instrument.SegaPcmInst(), new mdsound.instrument.C140Inst(), new mdsound.instrument.Sn76489Inst(), new mdsound.instrument.NukedYmF262Inst(),
                 new mdsound.instrument.Ym2608Inst(), new mdsound.instrument.Ym2203Inst(), new mdsound.instrument.Ym2151Inst(),
                 new mdsound.instrument.YmF278BInst(), new mdsound.instrument.Ym3812Inst(),
-                new mdsound.instrument.YmZ280BInst());
+                new mdsound.instrument.YmZ280BInst(), new mdsound.instrument.Rf5C68Inst(),
+                opn2Inst, opn2Inst);
         chipRegister = plugin.chipRegister;
         // a chip only forwards writes to its emulator when the settings say to use one, which a
         // played song arranges and a test has to say for itself
@@ -68,19 +76,24 @@ class ChipFmDspSourceTest {
         useEmulator(mdplayer.Setting.getInstance().getYM2203Type());
         useEmulator(mdplayer.Setting.getInstance().getYM2151Type());
         useEmulator(mdplayer.Setting.getInstance().getYM3812Type());
+        useEmulator(mdplayer.Setting.getInstance().getYM2612Type());
         // the OPL3 has five implementations and the plugin below registers only the nuked one
         useEmulator(mdplayer.Setting.getInstance().getYMF262Type(), 2);
         opna = chipRegister.chip(Ym2608Chip.class);
         opm = chipRegister.chip(Ym2151Chip.class);
         opn = chipRegister.chip(Ym2203Chip.class);
         segaPcm = chipRegister.chip(SegaPcmChip.class);
+        opn2 = chipRegister.chip(Ym2612Chip.class);
+        rf5c68 = chipRegister.chip(Rf5C68Chip.class);
 
         // rebuild the caches the source polls, without going through Chip#init (it needs a
         // plugin). The chips are JVM-wide singletons, so every cache a reader looks at has to be
         // scrubbed or another test's leftovers would claim rows.
         // key-off everything a played song may have left in the other chips' caches
-        chipRegister.chip(mdplayer.chips.Ym2612Chip.class).register[0] = new int[][] {new int[0x100], new int[0x100]};
-        chipRegister.chip(mdplayer.chips.Ym2612Chip.class).keyOn[0] = new int[6];
+        for (int chipId = 0; chipId < 2; chipId++) { // both OPN2s: each has a reader of its own
+            chipRegister.chip(mdplayer.chips.Ym2612Chip.class).register[chipId] = new int[][] {new int[0x100], new int[0x100]};
+            chipRegister.chip(mdplayer.chips.Ym2612Chip.class).keyOn[chipId] = new int[6];
+        }
         chipRegister.chip(mdplayer.chips.Ym2610Chip.class).register[0] = new int[][] {new int[0x100], new int[0x100]};
         chipRegister.chip(mdplayer.chips.Ym2610Chip.class).keyOn[0] = new int[6];
         chipRegister.chip(mdplayer.chips.YmF278BChip.class).register[0] =
@@ -306,6 +319,79 @@ class ChipFmDspSourceTest {
         assertEquals(ch + 1, status.ppz8Ch);
         assertTrue(source.level(10) > 0);
         assertEquals(Pan.CENTER, source.pan(10));
+    }
+
+    /**
+     * RF5C68 channel {@code ch} playing its samples at the chip's own rate, i.e. o4 c.
+     * <p>
+     * The chip decodes the writes and keeps no register file, so this goes through the emulator and
+     * has to render a little before it reports the channel as sounding.
+     */
+    void rf5c68KeyOn(int ch) {
+        for (int adr = 0; adr < 0x100; adr++) {
+            rf5c68.writeMemory(0, adr, 0xc0, EnmModel.VirtualModel); // anything but 0xff, the end mark
+        }
+        rf5c68.write(0, 0x07, 0xc0 | ch, EnmModel.VirtualModel); // chip on, and this channel selected
+        rf5c68.write(0, 0x00, 0xff, EnmModel.VirtualModel); // envelope
+        rf5c68.write(0, 0x01, 0xff, EnmModel.VirtualModel); // pan, full both sides
+        rf5c68.write(0, 0x02, 0x00, EnmModel.VirtualModel); // step 0x800: one sample a sample
+        rf5c68.write(0, 0x03, 0x08, EnmModel.VirtualModel);
+        rf5c68.write(0, 0x06, 0x00, EnmModel.VirtualModel); // start of memory
+        rf5c68.write(0, 0x08, ~(1 << ch) & 0xff, EnmModel.VirtualModel); // key: the register is inverted
+        plugin.settle();
+    }
+
+    @Test
+    @DisplayName("rf5c68 channels reach the pcm rows")
+    void testRf5C68() {
+        rf5c68KeyOn(1);
+        source.snapshot();
+
+        source.readStatus(TrackId.ADPCM, status); // the first PCM row
+        assertTrue(status.playing);
+        assertEquals(0x40, status.key); // o4 c, the rate the sample was written at
+        assertEquals(2, status.ppz8Ch); // the chip channel, one based
+        assertEquals(255, status.volume);
+        assertTrue(source.level(10) > 0);
+    }
+
+    /** OPN2 {@code chipId}'s channel {@code ch} (0-5) keyed on at o4 c */
+    void opn2KeyOn(int chipId, int ch) {
+        int port = ch / 3;
+        int r = ch % 3;
+        // F-number 0x284 at block 4: o4 c on the OPN2's 7.67 MHz clock, which is a different
+        // number from the OPNA's for the same note
+        int fnum = 0x284;
+        for (int op = 0; op < 4; op++) {
+            opn2.write(chipId, port, 0x40 + r + op * 4, 0, EnmModel.VirtualModel, 0);
+        }
+        opn2.write(chipId, port, 0xa4 + r, (4 << 3) | (fnum >> 8), EnmModel.VirtualModel, 0);
+        opn2.write(chipId, port, 0xa0 + r, fnum & 0xff, EnmModel.VirtualModel, 0);
+        opn2.write(chipId, port, 0xb4 + r, 0xc0, EnmModel.VirtualModel, 0); // pan L+R
+        opn2.write(chipId, 0, 0x28, 0xf0 | (port << 2) | r, EnmModel.VirtualModel, 0);
+        plugin.settle();
+    }
+
+    @Test
+    @DisplayName("the second opn2 of a dual chip vgm gets the rows the first one leaves")
+    void testOpn2SecondChip() {
+        opn2KeyOn(0, 0);
+        opn2KeyOn(1, 3);
+        source.snapshot();
+
+        // the first chip keeps the six FM rows, numbered as ever
+        source.readStatus(TrackId.FM_1, status);
+        assertTrue(status.playing);
+        assertEquals(0x40, status.key); // o4 c
+        assertEquals(1, source.trackNumber(TrackId.FM_1));
+        assertEquals("FM", source.trackTypeName(TrackId.FM_1)); // not renamed: both chips are OPN2s
+
+        // the second chip's channel 4 takes the first row left over, numbered on from the first
+        source.readStatus(TrackId.FM_3_EX_1, status);
+        assertTrue(status.playing);
+        assertEquals(0x40, status.key);
+        assertEquals(10, source.trackNumber(TrackId.FM_3_EX_1)); // FM10, i.e. the second chip's ch4
+        assertEquals("FM", source.trackTypeName(TrackId.FM_3_EX_1));
     }
 
     @Test

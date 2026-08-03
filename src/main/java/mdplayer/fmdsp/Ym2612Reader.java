@@ -23,6 +23,14 @@ public class Ym2612Reader extends OpnFmReader {
         return chipRegister.chip(Ym2612Chip.class);
     }
 
+    /**
+     * Which of the two OPN2s a VGM may hold this reader shows; the second one has a
+     * {@link Ym2612SecondReader reader of its own}.
+     */
+    protected int chipId() {
+        return 0;
+    }
+
     /** the chip's own registers and key states, read back once a frame */
     private int[][] regs;
     private int[] keys;
@@ -39,7 +47,7 @@ public class Ym2612Reader extends OpnFmReader {
         regs = null;
         keys = null;
         try {
-            Map<String, Object> info = chip().getInfo(0);
+            Map<String, Object> info = chip().getInfo(chipId());
             if (!info.isEmpty()) {
                 if (info.get("register") instanceof int[][] r) regs = r;
                 if (info.get("keyOn") instanceof int[] k) keys = playerKeys(k);
@@ -78,6 +86,6 @@ public class Ym2612Reader extends OpnFmReader {
 
     @Override
     protected boolean fmMasked(int ch) {
-        return chip().getMask(0, ch < 6 ? ch : 9 + ch - 6);
+        return chip().getMask(chipId(), ch < 6 ? ch : 9 + ch - 6);
     }
 }

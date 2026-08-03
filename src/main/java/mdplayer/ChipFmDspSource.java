@@ -12,6 +12,7 @@ import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -518,6 +519,10 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
      * once: an MSX has the PSG on the SSG rows and the SCC on the wider block, and both of them
      * are square wave channels. Where that happens the section is no use as a name, so those rows
      * take their chip's instead.
+     * <p>
+     * Two of the same chip are not that case - a VGM with a second OPN2 has twelve FM channels, not
+     * two kinds of FM - so a name they share tells the rows apart no better than the section does,
+     * and they keep it.
      */
     private void nameCollisions() {
         // decide every row against the names as they stand, then rename: doing it in one pass
@@ -528,7 +533,8 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
             if (rowNames[row] == null || rowReaders[row] == null) continue;
             for (int other = 0; other < rowNames.length && !shared[row]; other++) {
                 shared[row] = rowNames[row].equals(rowNames[other]) && rowReaders[other] != null
-                        && rowReaders[other] != rowReaders[row];
+                        && rowReaders[other] != rowReaders[row]
+                        && !Objects.equals(rowReaders[other].chipName(), rowReaders[row].chipName());
             }
         }
         for (int row = 0; row < rowNames.length; row++) {
