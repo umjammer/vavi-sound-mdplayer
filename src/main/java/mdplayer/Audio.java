@@ -301,11 +301,6 @@ logger.log(Level.INFO, "stop: " + plugin.stopped + ", " + hashCode());
             } catch (Exception e) {
                 logger.log(Level.ERROR, e.toString()); // usually chip 1 is null
             }
-
-            //plugin.chipRegister.plugin(MidiPlugin.class).close();
-
-            // DEBUG
-            //plugin.chipRegister.plugin(VstPlugin.class).parse();
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
         }
@@ -342,8 +337,6 @@ logger.log(Level.INFO, "stop: " + plugin.stopped + ", " + hashCode());
                 logger.log(Level.ERROR, ex.getMessage(), ex);
             }
         }
-
-
     }
 
     /** */
@@ -399,11 +392,7 @@ logger.log(Level.INFO, "stop: " + plugin.stopped + ", " + hashCode());
                     plugin.chipRegister.softReset(EnmModel.VirtualModel);
                     plugin.chipRegister.softReset(EnmModel.RealModel);
 
-//                    plugin.mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, null);
-
                     plugin.chipRegister.close();
-
-                    //Thread.sleep(500); // Noise countermeasures
 
                     plugin.stopped = true;
 logger.log(Level.DEBUG, "stop: " + plugin.stopped);

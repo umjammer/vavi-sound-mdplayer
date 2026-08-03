@@ -165,7 +165,7 @@ logger.log(Level.DEBUG, "try: " + extFn);
         result.add(java.nio.file.Path.of(srcFn).getParent());
         String fileSearchPathList = Setting.getInstance().getFileSearchPathList() != null ? Setting.getInstance().getFileSearchPathList() : "";
         Arrays.stream(fileSearchPathList.split(";"))
-                .filter(path -> path != null && !path.isEmpty())
+                .filter(path -> !path.isEmpty())
                 .map(java.nio.file.Path::of)
                 .forEach(result::add);
 logger.log(Level.DEBUG, result);
