@@ -32,6 +32,10 @@ public class GbsDriver extends BaseDriver {
     private int breakSp;
     private boolean initFlg = false;
 
+    private final mdsound.np.LoopDetector.BasicDetector ld = new mdsound.np.LoopDetector.BasicDetector(20);
+    private boolean playtimeDetected = false;
+    private double timeInMs = 0;
+
     public GbsDriver(BasePlugin<? extends BaseDriver> plugin) {
         super(plugin);
     }
@@ -75,6 +79,15 @@ public class GbsDriver extends BaseDriver {
         song = (byte) (0 < s || s >= songs ? s : 0);
 logger.log(Level.DEBUG, "internal song no: " + song + " / " + songs);
 
+        counter = 0;
+        totalCounter = 0;
+        loopCounter = 0;
+        curLoop = 0;
+        stopped = false;
+        playtimeDetected = false;
+        timeInMs = 0;
+        ld.reset();
+
         //logger.log(Level.TRACE, "Load " + fn);
         //logger.log(Level.TRACE, "title     : " + info.title);
         //logger.log(Level.TRACE, "author    : " + info.author);
@@ -87,7 +100,10 @@ logger.log(Level.DEBUG, "internal song no: " + song + " / " + songs);
         if (!initFlg) {
             initFlg = true;
             io = new IO(
-                    (a, v) -> plugin.chipRegister.chip(DmgChip.class).write(0, a, v, model),
+                    (a, v) -> {
+                        plugin.chipRegister.chip(DmgChip.class).write(0, a, v, model);
+                        ld.write(a, v, 0);
+                    },
                     a -> plugin.chipRegister.chip(DmgChip.class).read(0, a));
             memory = new Memory(info.mem, io);
             cpu = new Cpu(GBClock, memory);
@@ -145,9 +161,27 @@ logger.log(Level.DEBUG, "internal song no: " + song + " / " + songs);
         } catch (Exception e) {
             logger.log(Level.WARNING, e.getMessage(), e);
         }
-        //logger.log(Level.TRACE, "Total cycle : " + cycles);
-        //logger.log(Level.TRACE, "Total step  : " + step);
 
-        //logger.log(Level.TRACE, "Play process count : " + i + 1);
+        counter++;
+        timeInMs += 1000.0 / setting.getOutputDevice().getSampleRate();
+
+        if (!playtimeDetected && ld.isLooped((int) timeInMs, 30000, 5000)) {
+            int start = ld.getLoopStart(), end = ld.getLoopEnd();
+            playtimeDetected = true;
+            totalCounter = (long) end * setting.getOutputDevice().getSampleRate() / 1000L;
+            if (totalCounter == 0) totalCounter = counter;
+            loopCounter = ((long) end - (long) start) * setting.getOutputDevice().getSampleRate() / 1000L;
+        }
+
+        if (!playtimeDetected) {
+            curLoop = 0;
+        } else {
+            if (totalCounter != 0) {
+                curLoop = (int) (counter / totalCounter);
+            } else {
+                stopped = true;
+            }
+        }
     }
 }
+
