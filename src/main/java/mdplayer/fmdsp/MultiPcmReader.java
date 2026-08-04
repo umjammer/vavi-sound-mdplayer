@@ -12,7 +12,6 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 
-import mdplayer.ChipRegister;
 import mdplayer.chips.MultiPcmChip;
 import vavi.sound.visualizer.fmdsp.LevelDataSource.Pan;
 
@@ -34,14 +33,12 @@ import vavi.sound.visualizer.fmdsp.LevelDataSource.Pan;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-07-20 nsano initial version <br>
  */
-public class MultiPcmReader implements FmDspChipReader {
+public class MultiPcmReader extends ChipReader {
 
     private static final int CHANNELS = 28;
 
     /** the total level runs 0 loudest to here */
     private static final int levelMax = 0x7f;
-
-    private ChipRegister chipRegister;
 
     private Map<String, Object> info;
 
@@ -54,18 +51,14 @@ public class MultiPcmReader implements FmDspChipReader {
 
     private int mappedChannels;
 
-    private MultiPcmChip chip() {
+    @Override
+    protected MultiPcmChip chip() {
         return chipRegister.chip(MultiPcmChip.class);
     }
 
     @Override
     public String chipName() {
         return "MPCM";
-    }
-
-    @Override
-    public void bind(ChipRegister chipRegister) {
-        this.chipRegister = chipRegister;
     }
 
     @Override
@@ -89,14 +82,9 @@ public class MultiPcmReader implements FmDspChipReader {
     }
 
     @Override
-    public boolean ready() {
-        return chipRegister != null && chip() != null;
-    }
-
-    @Override
     public void poll() {
         try {
-            info = chip().getInfo(0);
+            info = chip().getInfo(chipId);
         } catch (RuntimeException ignore) {
             // the chip exists but the song never loaded it
             info = Collections.emptyMap();
@@ -178,6 +166,6 @@ public class MultiPcmReader implements FmDspChipReader {
     @Override
     public boolean masked(Group group, int slot) {
         int ch = slotChannels[slot];
-        return ch >= 0 && chip().getMask(0, ch);
+        return ch >= 0 && chip().getMask(chipId, ch);
     }
 }

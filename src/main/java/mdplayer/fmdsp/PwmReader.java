@@ -11,7 +11,6 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 
-import mdplayer.ChipRegister;
 import mdplayer.chips.PwmChip;
 
 
@@ -25,30 +24,24 @@ import mdplayer.chips.PwmChip;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-07-20 nsano initial version <br>
  */
-public class PwmReader implements FmDspChipReader {
+public class PwmReader extends ChipReader {
 
     /** the DAC is twelve bits */
     private static final double levelMax = 0x800;
-
-    private ChipRegister chipRegister;
 
     private Map<String, Object> info;
 
     private boolean prevSounding;
     private boolean active;
 
-    private PwmChip chip() {
+    @Override
+    protected PwmChip chip() {
         return chipRegister.chip(PwmChip.class);
     }
 
     @Override
     public String chipName() {
         return "PWM";
-    }
-
-    @Override
-    public void bind(ChipRegister chipRegister) {
-        this.chipRegister = chipRegister;
     }
 
     @Override
@@ -69,14 +62,9 @@ public class PwmReader implements FmDspChipReader {
     }
 
     @Override
-    public boolean ready() {
-        return chipRegister != null && chip() != null;
-    }
-
-    @Override
     public void poll() {
         try {
-            info = chip().getInfo(0);
+            info = chip().getInfo(chipId);
         } catch (RuntimeException ignore) {
             // the chip exists but the song never loaded it
             info = Collections.emptyMap();

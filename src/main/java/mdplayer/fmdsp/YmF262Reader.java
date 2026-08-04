@@ -34,7 +34,7 @@ public class YmF262Reader extends OplReader {
         return Pan.NONE;
     }
 
-    @Override protected boolean chipMask(int ch) { return chip().getMask(0, ch); }
+    @Override protected boolean chipMask(int ch) { return chip().getMask(chipId, ch); }
 
     @Override public String chipName() { return "OPL3"; }
 

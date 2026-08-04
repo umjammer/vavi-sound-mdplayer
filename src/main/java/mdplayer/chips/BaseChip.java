@@ -58,6 +58,19 @@ public abstract class BaseChip implements Chip {
         return Collections.emptyMap();
     }
 
+    /**
+     * How many of this chip the song being played declared, {@code 0} when it uses none.
+     * <p>
+     * A VGM may hold two of most chips - a Sega System 18 board is two YM3438s - and the plugin
+     * registers one mixer instance per declaration. Everything that reads a chip by id (the
+     * visualizer's readers, the chip views) has to know which ids are really there: the caches are
+     * sized for two whatever the song does, so their contents alone never say.
+     */
+    public int instances() {
+        var infos = context == null ? null : context.getChipInstances().get(getClass());
+        return infos == null ? 0 : infos.size();
+    }
+
     protected void fireEventHappened(String name, Object... args) {
         if (context.getDriver() != null) context.getDriver().fireEventHappened(this, name, args);
     }

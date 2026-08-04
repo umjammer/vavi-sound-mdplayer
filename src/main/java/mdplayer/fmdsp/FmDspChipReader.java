@@ -29,7 +29,8 @@ import mdplayer.ChipRegister;
  * Per snapshot the source calls {@link #poll} once, then {@link #active}, then {@link #read} once
  * per channel - readers may keep edge state (previous key-on values) between snapshots and clear
  * it in {@link #reset}. Instances are {@link java.util.ServiceLoader} singletons shared across
- * songs, like the chips themselves.
+ * songs, like the chips themselves; the source adds one more of each reader that accepts
+ * {@link #chipId(int)}, for the VGMs that declare two of one chip.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-07-19 nsano initial version <br>
@@ -50,6 +51,25 @@ public interface FmDspChipReader {
 
     /** points this reader at the playing plugin's chips */
     void bind(ChipRegister chipRegister);
+
+    /** which of its chip's instances this reader shows; 0 unless the source made it a second one */
+    default int chipId() {
+        return 0;
+    }
+
+    /**
+     * Points this reader at instance {@code chipId} of its chip, for the VGMs that declare two of
+     * one - and answers whether it can. A reader whose state lives on a driver rather than on a
+     * chip cannot, and that chip is shown once.
+     * <p>
+     * The source calls this on a spare copy of every reader as it is built, so a reader that says
+     * yes must read its chip at {@link #chipId} throughout, and report itself
+     * {@linkplain #ready not ready} while the song holds no such instance. {@link ChipReader} does
+     * both for its subclasses.
+     */
+    default boolean chipId(int chipId) {
+        return false;
+    }
 
     /**
      * Hands over the driver of the song about to play, for the formats that emulate nothing.

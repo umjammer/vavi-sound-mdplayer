@@ -11,7 +11,6 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 
-import mdplayer.ChipRegister;
 import mdplayer.chips.BaseChip;
 import vavi.sound.visualizer.fmdsp.LevelDataSource.Pan;
 
@@ -27,12 +26,10 @@ import vavi.sound.visualizer.fmdsp.LevelDataSource.Pan;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-07-19 nsano initial version <br>
  */
-public abstract class OplReader implements FmDspChipReader {
+public abstract class OplReader extends ChipReader {
 
     /** the OPL tick [Hz], clock / 72 - every family member's standard clock lands here */
     private static final double tick = 3579545.0 / 72;
-
-    protected ChipRegister chipRegister;
 
     private final boolean[] prevOns = new boolean[9];
     private final int[] prevFnums = new int[9];
@@ -56,11 +53,6 @@ public abstract class OplReader implements FmDspChipReader {
     }
 
     @Override
-    public void bind(ChipRegister chipRegister) {
-        this.chipRegister = chipRegister;
-    }
-
-    @Override
     public void reset() {
         Arrays.fill(prevOns, false);
         Arrays.fill(prevFnums, 0);
@@ -74,14 +66,9 @@ public abstract class OplReader implements FmDspChipReader {
     }
 
     @Override
-    public boolean ready() {
-        return chipRegister != null && chip() != null;
-    }
-
-    @Override
     public void poll() {
         try {
-            info = chip().getInfo(0);
+            info = chip().getInfo(chipId);
         } catch (RuntimeException ignore) {
             // the chip exists but the song never loaded it
             info = null;

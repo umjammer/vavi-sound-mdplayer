@@ -11,7 +11,6 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 
-import mdplayer.ChipRegister;
 import mdplayer.chips.C352Chip;
 import vavi.sound.visualizer.fmdsp.LevelDataSource.Pan;
 
@@ -37,14 +36,12 @@ import vavi.sound.visualizer.fmdsp.LevelDataSource.Pan;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-07-19 nsano initial version <br>
  */
-public class C352Reader implements FmDspChipReader {
+public class C352Reader extends ChipReader {
 
     /** the C352's own flags, as the emulator reports them back */
     private static final int FLAG_BUSY = 0x8000;
 
     private static final int CHANNELS = 32;
-
-    private ChipRegister chipRegister;
 
     private int[] regs;
 
@@ -60,18 +57,14 @@ public class C352Reader implements FmDspChipReader {
 
     private int mappedChannels;
 
-    private C352Chip chip() {
+    @Override
+    protected C352Chip chip() {
         return chipRegister.chip(C352Chip.class);
     }
 
     @Override
     public String chipName() {
         return "C352";
-    }
-
-    @Override
-    public void bind(ChipRegister chipRegister) {
-        this.chipRegister = chipRegister;
     }
 
     @Override
@@ -95,15 +88,10 @@ public class C352Reader implements FmDspChipReader {
     }
 
     @Override
-    public boolean ready() {
-        return chipRegister != null && chip() != null;
-    }
-
-    @Override
     public void poll() {
         regs = null;
         try {
-            Map<String, Object> info = chip().getInfo(0);
+            Map<String, Object> info = chip().getInfo(chipId);
             if (info.containsKey("register")) {
                 regs = (int[]) info.get("register");
             }
@@ -188,6 +176,6 @@ public class C352Reader implements FmDspChipReader {
     @Override
     public boolean masked(Group group, int slot) {
         int ch = slotChannels[slot];
-        return ch >= 0 && chip().getMask(0, ch);
+        return ch >= 0 && chip().getMask(chipId, ch);
     }
 }

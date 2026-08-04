@@ -75,6 +75,6 @@ public class Rf5C164Reader extends PcmSlotReader {
 
     @Override
     protected boolean muted(int ch) {
-        return chipRegister.chip(Rf5C164Chip.class).getMask(0, ch);
+        return chipRegister.chip(Rf5C164Chip.class).getMask(chipId, ch);
     }
 }

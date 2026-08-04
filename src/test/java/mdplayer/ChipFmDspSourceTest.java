@@ -63,9 +63,10 @@ class ChipFmDspSourceTest {
         // the OPN2 twice: a Sega System 18 VGM is two of them, and the second one has a reader of
         // its own to be tested
         mdsound.instrument.Ym2612Inst opn2Inst = new mdsound.instrument.Ym2612Inst();
+        mdsound.instrument.Ym2151Inst opmInst = new mdsound.instrument.Ym2151Inst();
         plugin = EmulatedPlugin.of(new mdsound.instrument.C352Inst(), new mdsound.instrument.Saa1099Inst(),
                 new mdsound.instrument.SegaPcmInst(), new mdsound.instrument.C140Inst(), new mdsound.instrument.Sn76489Inst(), new mdsound.instrument.NukedYmF262Inst(),
-                new mdsound.instrument.Ym2608Inst(), new mdsound.instrument.Ym2203Inst(), new mdsound.instrument.Ym2151Inst(),
+                new mdsound.instrument.Ym2608Inst(), new mdsound.instrument.Ym2203Inst(), opmInst, opmInst,
                 new mdsound.instrument.YmF278BInst(), new mdsound.instrument.Ym3812Inst(),
                 new mdsound.instrument.YmZ280BInst(), new mdsound.instrument.Rf5C68Inst(),
                 opn2Inst, opn2Inst);
@@ -392,6 +393,36 @@ class ChipFmDspSourceTest {
         assertEquals(0x40, status.key);
         assertEquals(10, source.trackNumber(TrackId.FM_3_EX_1)); // FM10, i.e. the second chip's ch4
         assertEquals("FM", source.trackTypeName(TrackId.FM_3_EX_1));
+    }
+
+    /** OPM {@code chipId}'s channel {@code ch} (0-7) keyed on at o4 a */
+    void opmKeyOn(int chipId, int ch) {
+        for (int op = 0; op < 4; op++) {
+            opm.write(chipId, 0, 0x60 + ch + op * 8, 0, EnmModel.VirtualModel, 0, 0);
+        }
+        opm.write(chipId, 0, 0x20 + ch, 0xc0 | 7, EnmModel.VirtualModel, 0, 0); // pan L+R, algorithm 7
+        opm.write(chipId, 0, 0x28 + ch, 0x4a, EnmModel.VirtualModel, 0, 0); // o4 a
+        opm.write(chipId, 0, 0x08, 0x78 | ch, EnmModel.VirtualModel, 0, 0); // key on all four slots
+        plugin.settle();
+    }
+
+    @Test
+    @DisplayName("a second chip's rows go to the channels that sound, not to its first ones")
+    void testOpmSecondChip() {
+        opmKeyOn(0, 0);
+        // eight channels leave one FM row over, and the channel that sounds is the one to show
+        opmKeyOn(1, 4);
+        source.snapshot();
+
+        source.readStatus(TrackId.FM_1, status);
+        assertTrue(status.playing);
+        assertEquals(0x49, status.key); // o4 a
+        assertEquals(1, source.trackNumber(TrackId.FM_1));
+
+        source.readStatus(TrackId.FM_3_EX_3, status); // the last FM row, all the first chip leaves
+        assertTrue(status.playing);
+        assertEquals(0x49, status.key);
+        assertEquals(13, source.trackNumber(TrackId.FM_3_EX_3)); // FM13: the second chip's ch5
     }
 
     @Test

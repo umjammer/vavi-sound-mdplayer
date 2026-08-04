@@ -6,6 +6,8 @@
 
 package mdplayer;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -79,6 +81,8 @@ import vavi.util.event.GenericEvent;
  */
 public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDataSource,
         TrackStatusSource, TrackDetailSource, WorkStateSource {
+
+    private static final Logger logger = System.getLogger(ChipFmDspSource.class.getName());
 
     /** how fast a held note's meter sags, per snapshot */
     private static final double levelSustainDecay = 0.995;
@@ -284,6 +288,8 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
     public ChipFmDspSource() {
         for (FmDspChipReader reader : readerLoader) {
             readers.add(reader);
+            FmDspChipReader second = secondChipReader(reader);
+            if (second != null) readers.add(second);
         }
         readers.sort(Comparator.comparingInt(FmDspChipReader::priority));
         for (Group g : Group.values()) {
@@ -293,6 +299,25 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
         Arrays.setAll(tracks, i -> new TrackStatus());
         Arrays.fill(pans, Pan.CENTER);
         reset();
+    }
+
+    /**
+     * A reader for the second of a chip a VGM declared twice, or null for one that has no second
+     * chip to show.
+     * <p>
+     * The ServiceLoader hands out one reader per chip, and a chip declared twice needs two of them.
+     * They are made here, once, rather than per song: the copy is a fresh instance of the same
+     * class - readers keep edge state, so it cannot be the same object - and stays inert until a
+     * song turns up that really has the chip twice, which {@link FmDspChipReader#ready} decides.
+     */
+    private static FmDspChipReader secondChipReader(FmDspChipReader reader) {
+        try {
+            FmDspChipReader second = reader.getClass().getDeclaredConstructor().newInstance();
+            return second.chipId(1) ? second : null;
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            logger.log(Level.DEBUG, "no second reader for " + reader.getClass().getSimpleName(), e);
+            return null;
+        }
     }
 
     private BasePlugin<? extends BaseDriver> plugin;
@@ -574,7 +599,10 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
 
                 if (channel.keyOn || channel.sounding) used[row] = true;
                 rowNames[row] = channel.name;
-                rowNums[row] = channel.num > 0 ? channel.num : ch + 1;
+                // the second of a doubled chip carries on from where the first one's numbers end,
+                // so twelve OPN2 channels read FM1 to FM12 rather than FM1 to FM6 twice over
+                rowNums[row] = (channel.num > 0 ? channel.num : ch + 1)
+                        + reader.chipId() * reader.meters(g);
                 // the strip labels the start of a span, and every third column of a wide FM one.
                 // Written every snapshot, including the blanks: a column that changed hands when
                 // the layout moved would otherwise keep the label its old owner left on it

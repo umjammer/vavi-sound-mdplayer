@@ -29,9 +29,7 @@ import vavi.sound.visualizer.fmdsp.TrackInfo;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-07-20 nsano initial version <br>
  */
-public abstract class NsfTrackInfoReader implements FmDspChipReader {
-
-    protected ChipRegister chipRegister;
+public abstract class NsfTrackInfoReader extends ChipReader {
 
     private BasicTrackInfo[] tracks;
 
@@ -47,7 +45,7 @@ public abstract class NsfTrackInfoReader implements FmDspChipReader {
 
     @Override
     public void bind(ChipRegister chipRegister) {
-        this.chipRegister = chipRegister;
+        super.bind(chipRegister);
         reset();
     }
 
@@ -69,15 +67,10 @@ public abstract class NsfTrackInfoReader implements FmDspChipReader {
     }
 
     @Override
-    public boolean ready() {
-        return chipRegister != null && chip() != null;
-    }
-
-    @Override
     public void poll() {
         tracks = null;
         try {
-            Map<String, Object> info = chip().getInfo(0);
+            Map<String, Object> info = chip().getInfo(chipId);
             if (info != null && info.get("tracksInfo") instanceof Object[] raw) {
                 BasicTrackInfo[] got = new BasicTrackInfo[raw.length];
                 for (int i = 0; i < raw.length; i++) {

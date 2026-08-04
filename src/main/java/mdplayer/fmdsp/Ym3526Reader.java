@@ -22,7 +22,7 @@ public class Ym3526Reader extends OplReader {
         return chipRegister.chip(Ym3526Chip.class);
     }
 
-    @Override protected boolean chipMask(int ch) { return chip().getMask(0, ch); }
+    @Override protected boolean chipMask(int ch) { return chip().getMask(chipId, ch); }
 
     @Override public String chipName() { return "OPL"; }
 

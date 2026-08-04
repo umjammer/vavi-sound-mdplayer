@@ -10,7 +10,6 @@ import java.util.EnumSet;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.chips.ZxBeepChip;
 import mdplayer.driver.BaseDriver;
@@ -37,7 +36,7 @@ import vavi.sound.visualizer.fmdsp.TrackInfo;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-07-31 nsano initial version <br>
  */
-public class ZxBeepReader implements FmDspChipReader {
+public class ZxBeepReader extends ChipReader {
 
     /**
      * How long the flips are counted over before the row is judged again [s]. A poll is a
@@ -48,7 +47,6 @@ public class ZxBeepReader implements FmDspChipReader {
     /** how loud a bit is: it is on or it is off, so the meter says the same throughout */
     private static final double LEVEL = 0.75;
 
-    private ChipRegister chipRegister;
     private Supplier<BaseDriver> driver;
 
     /** where the open window started: the flip count and the driver's sample counter */
@@ -60,18 +58,14 @@ public class ZxBeepReader implements FmDspChipReader {
     private boolean wasSounding;
     private boolean active;
 
-    private ZxBeepChip chip() {
+    @Override
+    protected ZxBeepChip chip() {
         return chipRegister == null ? null : chipRegister.chip(ZxBeepChip.class);
     }
 
     @Override
     public String chipName() {
         return "BEEP";
-    }
-
-    @Override
-    public void bind(ChipRegister chipRegister) {
-        this.chipRegister = chipRegister;
     }
 
     @Override
@@ -97,11 +91,6 @@ public class ZxBeepReader implements FmDspChipReader {
     @Override
     public int priority() {
         return 86;
-    }
-
-    @Override
-    public boolean ready() {
-        return chip() != null;
     }
 
     /** closes the window when enough of the song has gone past it: was the speaker moving in it */

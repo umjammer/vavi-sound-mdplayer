@@ -19,16 +19,9 @@ import mdplayer.chips.Ym2612Chip;
  */
 public class Ym2612Reader extends OpnFmReader {
 
-    private Ym2612Chip chip() {
+    @Override
+    protected Ym2612Chip chip() {
         return chipRegister.chip(Ym2612Chip.class);
-    }
-
-    /**
-     * Which of the two OPN2s a VGM may hold this reader shows; the second one has a
-     * {@link Ym2612SecondReader reader of its own}.
-     */
-    protected int chipId() {
-        return 0;
     }
 
     /** the chip's own registers and key states, read back once a frame */
@@ -47,7 +40,7 @@ public class Ym2612Reader extends OpnFmReader {
         regs = null;
         keys = null;
         try {
-            Map<String, Object> info = chip().getInfo(chipId());
+            Map<String, Object> info = chip().getInfo(chipId);
             if (!info.isEmpty()) {
                 if (info.get("register") instanceof int[][] r) regs = r;
                 if (info.get("keyOn") instanceof int[] k) keys = playerKeys(k);
@@ -71,12 +64,6 @@ public class Ym2612Reader extends OpnFmReader {
         return keys;
     }
 
-    @Override
-    protected boolean chipReady() {
-        // not the polled state: ready() gates polling, so testing it here would never come true
-        return chip() != null;
-    }
-
     /** the OPN2's usual 7.67 MHz NTSC clock */
     @Override protected double fnumK() { return 7670454.0 / 144; }
 
@@ -86,6 +73,6 @@ public class Ym2612Reader extends OpnFmReader {
 
     @Override
     protected boolean fmMasked(int ch) {
-        return chip().getMask(chipId(), ch < 6 ? ch : 9 + ch - 6);
+        return chip().getMask(chipId, ch < 6 ? ch : 9 + ch - 6);
     }
 }

@@ -11,7 +11,6 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 
-import mdplayer.ChipRegister;
 import mdplayer.chips.Ym2413Chip;
 
 
@@ -22,12 +21,10 @@ import mdplayer.chips.Ym2413Chip;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-07-19 nsano initial version <br>
  */
-public class Ym2413Reader implements FmDspChipReader {
+public class Ym2413Reader extends ChipReader {
 
     /** the OPLL tick [Hz], clock / 72 */
     private static final double tick = 3579545.0 / 72;
-
-    private ChipRegister chipRegister;
 
     private final boolean[] prevOns = new boolean[9];
     private final int[] prevFnums = new int[9];
@@ -38,18 +35,14 @@ public class Ym2413Reader implements FmDspChipReader {
     private int[] regs;
     private boolean rhythmActive;
 
-    private Ym2413Chip chip() {
+    @Override
+    protected Ym2413Chip chip() {
         return chipRegister.chip(Ym2413Chip.class);
     }
 
     @Override
     public String chipName() {
         return "OPLL";
-    }
-
-    @Override
-    public void bind(ChipRegister chipRegister) {
-        this.chipRegister = chipRegister;
     }
 
     @Override
@@ -71,13 +64,6 @@ public class Ym2413Reader implements FmDspChipReader {
         return 80;
     }
 
-    @Override
-    public boolean ready() {
-        if (chipRegister == null) return false;
-        Ym2413Chip chip = chip();
-        return chip != null;
-    }
-
     private boolean rhythmMode() {
         return regs != null && (regs[0x0e] & 0x20) != 0;
     }
@@ -86,7 +72,7 @@ public class Ym2413Reader implements FmDspChipReader {
     public void poll() {
         regs = null;
         try {
-            Map<String, Object> info = chip().getInfo(0);
+            Map<String, Object> info = chip().getInfo(chipId);
             if (!info.isEmpty() && info.get("register") instanceof int[] r) regs = r;
         } catch (RuntimeException ignore) {
             // the chip exists but the song never loaded it
@@ -155,6 +141,6 @@ public class Ym2413Reader implements FmDspChipReader {
 
     @Override
     public boolean masked(Group group, int ch) {
-        return group == Group.FM && chip().getMask(0, ch);
+        return group == Group.FM && chip().getMask(chipId, ch);
     }
 }

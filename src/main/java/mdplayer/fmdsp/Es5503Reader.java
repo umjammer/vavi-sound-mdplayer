@@ -65,7 +65,7 @@ public class Es5503Reader extends PcmSlotReader {
      * and the next three, and neither is anywhere in what the emulator reports.
      */
     private double step(int osc) {
-        int reg = chipRegister.chip(Es5503Chip.class).register[0][0xc0 + osc];
+        int reg = chipRegister.chip(Es5503Chip.class).register[chipId][0xc0 + osc];
         return 1 << (9 + (reg & 7) - ((reg >> 3) & 7));
     }
 

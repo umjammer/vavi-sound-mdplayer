@@ -12,7 +12,6 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 
-import mdplayer.ChipRegister;
 import mdplayer.chips.WSwanChip;
 import vavi.sound.visualizer.fmdsp.TrackInfo;
 
@@ -26,14 +25,12 @@ import vavi.sound.visualizer.fmdsp.TrackInfo;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-07-20 nsano initial version <br>
  */
-public class WSwanReader implements FmDspChipReader {
+public class WSwanReader extends ChipReader {
 
     private static final int CHANNELS = 4;
 
     /** the level registers are four bits each */
     private static final double volumeMax = 15;
-
-    private ChipRegister chipRegister;
 
     private Map<String, Object> info;
 
@@ -41,18 +38,14 @@ public class WSwanReader implements FmDspChipReader {
     private final int[] prevDividers = new int[CHANNELS];
     private boolean active;
 
-    private WSwanChip chip() {
+    @Override
+    protected WSwanChip chip() {
         return chipRegister.chip(WSwanChip.class);
     }
 
     @Override
     public String chipName() {
         return "WSW";
-    }
-
-    @Override
-    public void bind(ChipRegister chipRegister) {
-        this.chipRegister = chipRegister;
     }
 
     @Override
@@ -74,14 +67,9 @@ public class WSwanReader implements FmDspChipReader {
     }
 
     @Override
-    public boolean ready() {
-        return chipRegister != null && chip() != null;
-    }
-
-    @Override
     public void poll() {
         try {
-            info = chip().getInfo(0);
+            info = chip().getInfo(chipId);
         } catch (RuntimeException ignore) {
             // the chip exists but the song never loaded it
             info = Collections.emptyMap();

@@ -11,6 +11,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
+import mdplayer.ChipRegister;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.BasePlugin;
 import mdsound.Instrument;
@@ -53,9 +54,27 @@ public class EmulatedPlugin extends BasePlugin<BaseDriver> {
             chip.clock = clockOf(instrument);
             chip.option = optionOf(instrument);
             chips.add(chip);
+            // the played chips, as a song's plugin records them: how many of a chip there are is
+            // read back from here (BaseChip#instances), and a second reader of a chip waits on it.
+            // Straight into the map rather than through put(), which also tells a driver's view -
+            // and there is no driver here
+            Class<? extends mdplayer.Chip> owner = ownerOf(plugin.chipRegister, instrument);
+            if (owner != null) {
+                plugin.getChipInstances().computeIfAbsent(owner, c -> new ArrayList<>()).add(chip);
+            }
         }
         plugin.mds.init(samplingRate, 1024, chips);
         return plugin;
+    }
+
+    /** the chip wrapper an emulator instrument belongs to, null when no wrapper claims it */
+    private static Class<? extends mdplayer.Chip> ownerOf(ChipRegister chipRegister, Instrument instrument) {
+        for (Class<? extends mdplayer.Chip> clazz : chipRegister.chips()) {
+            for (Class<? extends Instrument> implementation : chipRegister.chip(clazz).implementations()) {
+                if (implementation == instrument.getClass()) return clazz;
+            }
+        }
+        return null;
     }
 
     /** what each of these wants of {@code Instrument#start} beyond a clock */

@@ -12,7 +12,6 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 
-import mdplayer.ChipRegister;
 import mdplayer.chips.HuC6280Chip;
 import vavi.sound.visualizer.fmdsp.LevelDataSource.Pan;
 import vavi.sound.visualizer.fmdsp.TrackInfo;
@@ -31,14 +30,12 @@ import vavi.sound.visualizer.fmdsp.TrackInfo;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-07-19 nsano initial version <br>
  */
-public class HuC6280Reader implements FmDspChipReader {
+public class HuC6280Reader extends ChipReader {
 
     private static final int CHANNELS = 6;
 
     /** the level the emulator's view tops out at, the value its own panel clamps to */
     private static final double levelMax = 19;
-
-    private ChipRegister chipRegister;
 
     private Map<String, Object> info;
 
@@ -46,18 +43,14 @@ public class HuC6280Reader implements FmDspChipReader {
     private final int[] prevNotes = new int[CHANNELS];
     private boolean active;
 
-    private HuC6280Chip chip() {
+    @Override
+    protected HuC6280Chip chip() {
         return chipRegister.chip(HuC6280Chip.class);
     }
 
     @Override
     public String chipName() {
         return "HuC6";
-    }
-
-    @Override
-    public void bind(ChipRegister chipRegister) {
-        this.chipRegister = chipRegister;
     }
 
     @Override
@@ -79,14 +72,9 @@ public class HuC6280Reader implements FmDspChipReader {
     }
 
     @Override
-    public boolean ready() {
-        return chipRegister != null && chip() != null;
-    }
-
-    @Override
     public void poll() {
         try {
-            info = chip().getInfo(0);
+            info = chip().getInfo(chipId);
         } catch (RuntimeException ignore) {
             // the chip exists but the song never loaded it
             info = Collections.emptyMap();
@@ -163,6 +151,6 @@ public class HuC6280Reader implements FmDspChipReader {
 
     @Override
     public boolean masked(Group group, int ch) {
-        return chip().getMask(0, ch);
+        return chip().getMask(chipId, ch);
     }
 }

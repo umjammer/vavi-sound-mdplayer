@@ -18,7 +18,8 @@ import mdplayer.chips.Ym2203Chip;
  */
 public class Ym2203Reader extends OpnFmReader {
 
-    private Ym2203Chip chip() {
+    @Override
+    protected Ym2203Chip chip() {
         return chipRegister.chip(Ym2203Chip.class);
     }
 
@@ -38,12 +39,12 @@ public class Ym2203Reader extends OpnFmReader {
     @Override
     protected boolean fmMasked(int ch) {
         // the chip counts FM 1-3 as 0-2; the ch3 slots mute with ch3
-        return chip().getMask(0, ch < 3 ? ch : 2);
+        return chip().getMask(chipId, ch < 3 ? ch : 2);
     }
 
     @Override
     protected boolean ssgMasked(int s) {
-        return chip().getMask(0, 3 + s);
+        return chip().getMask(chipId, 3 + s);
     }
 
     /** the chip's channel state, read back once a frame */
@@ -64,7 +65,7 @@ public class Ym2203Reader extends OpnFmReader {
         info = null;
         keys = new int[3];
         try {
-            info = chip().getInfo(0);
+            info = chip().getInfo(chipId);
         } catch (RuntimeException ignore) {
             return; // the chip exists but the song never loaded it
         }
@@ -130,18 +131,13 @@ public class Ym2203Reader extends OpnFmReader {
         return slotOf(ch, slot, "carrier") instanceof Boolean carrier ? carrier : super.slotCarrier(ch, slot);
     }
 
-
     // the fmgen core decodes the operator registers away, so the voice is read from the shadow
     // the chip wrapper keeps of what the driver wrote; the OPN is single ported
     @Override protected int[][] toneRegs() {
-        int[] regs = chip() != null ? chip().fmRegister[0] : null;
+        int[] regs = chip() != null ? chip().fmRegister[chipId] : null;
         return regs != null ? new int[][] {regs} : null;
     }
 
     private static final int[][] noPorts = {new int[0x100], new int[0x100]};
 
-    @Override
-    protected boolean chipReady() {
-        return chip() != null;
-    }
 }

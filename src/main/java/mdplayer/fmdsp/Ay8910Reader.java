@@ -11,7 +11,6 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 
-import mdplayer.ChipRegister;
 import mdplayer.chips.Ay8910Chip;
 import vavi.sound.visualizer.fmdsp.LevelDataSource.Pan;
 import vavi.sound.visualizer.fmdsp.TrackInfo;
@@ -24,12 +23,10 @@ import vavi.sound.visualizer.fmdsp.TrackInfo;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-07-19 nsano initial version <br>
  */
-public class Ay8910Reader implements FmDspChipReader {
+public class Ay8910Reader extends ChipReader {
 
     /** the PSG's usual MSX clock [Hz] */
     private static final double clock = 1789772.5;
-
-    private ChipRegister chipRegister;
 
     private final boolean[] prevSoundings = new boolean[3];
     private final int[] prevPeriods = new int[3];
@@ -38,18 +35,14 @@ public class Ay8910Reader implements FmDspChipReader {
     /** the chip's register file, read back once a frame */
     private int[] regs;
 
-    private Ay8910Chip chip() {
+    @Override
+    protected Ay8910Chip chip() {
         return chipRegister.chip(Ay8910Chip.class);
     }
 
     @Override
     public String chipName() {
         return "PSG";
-    }
-
-    @Override
-    public void bind(ChipRegister chipRegister) {
-        this.chipRegister = chipRegister;
     }
 
     @Override
@@ -70,17 +63,10 @@ public class Ay8910Reader implements FmDspChipReader {
     }
 
     @Override
-    public boolean ready() {
-        if (chipRegister == null) return false;
-        Ay8910Chip chip = chip();
-        return chip != null;
-    }
-
-    @Override
     public void poll() {
         regs = null;
         try {
-            Map<String, Object> info = chip().getInfo(0);
+            Map<String, Object> info = chip().getInfo(chipId);
             if (info.get("register") instanceof int[] r) regs = r;
         } catch (RuntimeException ignore) {
             // the chip exists but the song never loaded it
@@ -141,6 +127,6 @@ public class Ay8910Reader implements FmDspChipReader {
 
     @Override
     public boolean masked(Group group, int ch) {
-        return chip().getMask(0, ch);
+        return chip().getMask(chipId, ch);
     }
 }

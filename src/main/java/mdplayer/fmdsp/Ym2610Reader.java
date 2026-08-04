@@ -67,7 +67,8 @@ public class Ym2610Reader extends OpnFmReader {
 
     private boolean pcmActive;
 
-    private Ym2610Chip chip() {
+    @Override
+    protected Ym2610Chip chip() {
         return chipRegister.chip(Ym2610Chip.class);
     }
 
@@ -99,7 +100,7 @@ public class Ym2610Reader extends OpnFmReader {
     public boolean active(Group group) {
         if (group != Group.PCM) return super.active(group);
         if (!pcmActive) {
-            for (int ch = 0; ch < ADPCM_A && !pcmActive; ch++) pcmActive = chip().adpcmAKeys[0][ch];
+            for (int ch = 0; ch < ADPCM_A && !pcmActive; ch++) pcmActive = chip().adpcmAKeys[chipId][ch];
             pcmActive |= adpcmBPlaying();
         }
         return pcmActive;
@@ -119,18 +120,18 @@ public class Ym2610Reader extends OpnFmReader {
     @Override
     public boolean masked(Group group, int ch) {
         // the section masks as one: its key register is one write for all six voices
-        return group == Group.PCM ? chip().getMask(0, ch == ADPCM_B ? 13 : 12) : super.masked(group, ch);
+        return group == Group.PCM ? chip().getMask(chipId, ch == ADPCM_B ? 13 : 12) : super.masked(group, ch);
     }
 
     /** port 1 of the register file, where the ADPCM-A section is */
     private int regA(int addr) {
-        int[][] regs = chip().register[0];
+        int[][] regs = chip().register[chipId];
         return regs == null ? 0 : regs[1][addr] & 0xff;
     }
 
     /** port 0, where the SSG, the FM and the ADPCM-B section are */
     private int regB(int addr) {
-        int[][] regs = chip().register[0];
+        int[][] regs = chip().register[chipId];
         return regs == null ? 0 : regs[0][addr] & 0xff;
     }
 
@@ -151,13 +152,13 @@ public class Ym2610Reader extends OpnFmReader {
         out.sampled = true;
         out.info = TrackInfo.STREAM;
 
-        int hits = chip().adpcmAHits[0][ch];
+        int hits = chip().adpcmAHits[chipId][ch];
         boolean struck = hits != prevHits[ch];
         prevHits[ch] = hits;
         if (struck) hitCounters[ch] = counter();
 
         out.keyOn = struck;
-        out.sounding = chip().adpcmAKeys[0][ch] && !finished(ch);
+        out.sounding = chip().adpcmAKeys[chipId][ch] && !finished(ch);
         // the sample it points at, which is as near as this section comes to an instrument number
         out.toneNum = regA(0x10 + ch) | regA(0x18 + ch) << 8;
 
@@ -238,7 +239,7 @@ public class Ym2610Reader extends OpnFmReader {
                         default -> "-";
                     },
                     regA(0x10 + ch) | regA(0x18 + ch) << 8, regA(0x20 + ch) | regA(0x28 + ch) << 8,
-                    chip().adpcmAKeys[0][ch] ? " ON" : "OFF");
+                    chip().adpcmAKeys[chipId][ch] ? " ON" : "OFF");
         }
         return true;
     }
@@ -254,12 +255,12 @@ public class Ym2610Reader extends OpnFmReader {
 
     @Override
     protected boolean fmMasked(int ch) {
-        return chip().getMask(0, ch < 6 ? ch : 9 + ch - 6);
+        return chip().getMask(chipId, ch < 6 ? ch : 9 + ch - 6);
     }
 
     @Override
     protected boolean ssgMasked(int s) {
-        return chip().getMask(0, 6 + s);
+        return chip().getMask(chipId, 6 + s);
     }
     /** the chip's channel state, read back once a frame */
     private java.util.Map<String, Object> info;
@@ -279,7 +280,7 @@ public class Ym2610Reader extends OpnFmReader {
         info = Collections.emptyMap();
         keys = new int[6];
         try {
-            info = chip().getInfo(0);
+            info = chip().getInfo(chipId);
         } catch (RuntimeException ignore) {
             return; // the chip exists but the song never loaded it
         }
@@ -351,13 +352,8 @@ public class Ym2610Reader extends OpnFmReader {
         return slotOf(ch, slot, "carrier") instanceof Boolean carrier ? carrier : super.slotCarrier(ch, slot);
     }
 
-
-    @Override protected int[][] toneRegs() { return chip() != null ? chip().register[0] : null; }
+    @Override protected int[][] toneRegs() { return chip() != null ? chip().register[chipId] : null; }
 
     private static final int[][] noPorts = {new int[0x100], new int[0x100]};
 
-    @Override
-    protected boolean chipReady() {
-        return chip() != null;
-    }
 }

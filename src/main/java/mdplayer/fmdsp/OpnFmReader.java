@@ -10,7 +10,6 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Set;
 
-import mdplayer.ChipRegister;
 import vavi.sound.visualizer.fmdsp.LevelDataSource.Pan;
 import vavi.sound.visualizer.fmdsp.TrackDetail;
 import vavi.sound.visualizer.fmdsp.TrackInfo;
@@ -24,7 +23,7 @@ import vavi.sound.visualizer.fmdsp.TrackInfo;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-07-19 nsano initial version <br>
  */
-public abstract class OpnFmReader implements FmDspChipReader {
+public abstract class OpnFmReader extends ChipReader {
 
     /** carrier mask per algorithm, {@link mdplayer.chips.BaseChip#algM} */
     private static final byte[] algM = {0x08, 0x08, 0x08, 0x08, 0x0c, 0x0e, 0x0e, 0x0f};
@@ -33,8 +32,6 @@ public abstract class OpnFmReader implements FmDspChipReader {
     private static final int[] exFnumLo = {0xa9, 0xaa, 0xa8};
     private static final int[] exFnumHi = {0xad, 0xae, 0xac};
     private static final int[] exKeyBit = {0x10, 0x20, 0x40};
-
-    protected ChipRegister chipRegister;
 
     private final int[] prevKeyOns = new int[6];
     private final boolean[] prevExOns = new boolean[3];
@@ -51,9 +48,6 @@ public abstract class OpnFmReader implements FmDspChipReader {
     /** the chip's 6-entry key-on cache */
     protected abstract int[] keyOns();
 
-    /** the chip exists and its caches are initialized */
-    protected abstract boolean chipReady();
-
     /** FM channels the chip actually has, 3 or 6 */
     protected int fmCount() {
         return 6;
@@ -67,7 +61,6 @@ public abstract class OpnFmReader implements FmDspChipReader {
     protected boolean hasPan() {
         return true;
     }
-
 
     /** F-number coefficient [Hz]: {@code freq = fnum * 2^(block-1) * fnumK / 2^20} */
     protected double fnumK() {
@@ -84,11 +77,6 @@ public abstract class OpnFmReader implements FmDspChipReader {
     }
 
     @Override
-    public void bind(ChipRegister chipRegister) {
-        this.chipRegister = chipRegister;
-    }
-
-    @Override
     public void reset() {
         Arrays.fill(prevKeyOns, 0);
         Arrays.fill(prevExOns, false);
@@ -97,17 +85,13 @@ public abstract class OpnFmReader implements FmDspChipReader {
         fmActive = false;
         ssgActive = false;
         extendedSeen = false;
+        slots.reset();
         tones.reset();
     }
 
     @Override
     public Set<Group> groups() {
         return hasSsg() ? EnumSet.of(Group.FM, Group.SSG) : EnumSet.of(Group.FM);
-    }
-
-    @Override
-    public boolean ready() {
-        return chipRegister != null && chipReady();
     }
 
     @Override
@@ -144,7 +128,9 @@ public abstract class OpnFmReader implements FmDspChipReader {
     @Override
     public int channels(Group group) {
         if (group != Group.FM) return 3;
-        if (!extendedSeen && fmCount() == 6 && chipRegister != null && chipReady() && ch3Extended()) {
+        // a second chip takes what the first leaves, and lays its channels out over that itself
+        if (chipId > 0) return fmCount();
+        if (!extendedSeen && fmCount() == 6 && ready() && ch3Extended()) {
             extendedSeen = true;
         }
         return fmCount() < 6 || extendedSeen ? 9 : 6;
@@ -152,6 +138,16 @@ public abstract class OpnFmReader implements FmDspChipReader {
 
     /** whether ch3's extended mode has been seen this song, see {@link #channels} */
     private boolean extendedSeen;
+
+    /** which channels a second chip's rows show, see {@link RowSlots} */
+    private final RowSlots slots = new RowSlots(6);
+
+    /** the channel a row shows: itself for the first chip, whatever claimed it for a second */
+    private int fmChannel(int slot) {
+        if (chipId == 0) return slot;
+        slots.claim(fmCount(), ch -> (keyOns()[ch] & 1) != 0);
+        return slots.channelOf(slot);
+    }
 
     @Override
     public int meters(Group group) {
@@ -173,14 +169,18 @@ public abstract class OpnFmReader implements FmDspChipReader {
     public void read(Group group, int ch, FmDspChannel out) {
         if (group == Group.SSG) {
             readSsg(ch, out);
-        } else {
-            readFm(ch, out);
+            return;
         }
+        int channel = fmChannel(ch);
+        out.name = "FM";
+        if (channel >= 0) readFm(channel, out);
     }
 
     @Override
     public boolean masked(Group group, int ch) {
-        return group == Group.FM ? fmMasked(ch) : ssgMasked(ch);
+        if (group != Group.FM) return ssgMasked(ch);
+        int channel = fmChannel(ch);
+        return channel >= 0 && fmMasked(channel);
     }
 
     // ----- the TRACK_INFO panel -----
@@ -188,7 +188,8 @@ public abstract class OpnFmReader implements FmDspChipReader {
     @Override
     public boolean readDetail(Group group, int ch, TrackDetail out) {
         if (group == Group.SSG) return ssgDetail(ch, out);
-        return group == Group.FM && fmDetail(ch, out);
+        int channel = fmChannel(ch);
+        return group == Group.FM && channel >= 0 && fmDetail(channel, out);
     }
 
     /**
