@@ -109,7 +109,7 @@ public class NrtDriver extends BaseDriver {
             int adr = index[0];
             while (buf[adr] != (byte) 0xff || buf[adr + 1] != (byte) 0xff) {
                 int cnt = (buf[adr] & 0xff) + (buf[adr + 1] & 0xff) * 0x100;
-                int[] sAdr = new int[] {(buf[adr + 2] & 0xff) + (buf[adr + 3] & 0xff) * 0x100};
+                int[] sAdr = {(buf[adr + 2] & 0xff) + (buf[adr + 3] & 0xff) * 0x100};
                 String msg = Common.getNRDString(buf, sAdr);
                 md.set(Tag.Lyric, cnt + "," + sAdr[0] + "," + msg);
                 adr += 4;

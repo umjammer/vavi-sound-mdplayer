@@ -763,11 +763,15 @@ public class FormYM2612 extends FormChipBase<FormYM2612.Params> {
         public int lfoFrq = -1;
         public int timerA = -1;
         public int timerB = -1;
-        public final int[] xpcmVolL = new int[] {-1, -1, -1, -1};
-        public final int[] xpcmVolR = new int[] {-1, -1, -1, -1};
-        public final int[] xpcmInst = new int[] {-1, -1, -1, -1};
+        public final int[] xpcmVolL = {-1, -1, -1, -1};
+        public final int[] xpcmVolR = {-1, -1, -1, -1};
+        public final int[] xpcmInst = {-1, -1, -1, -1};
 
-        public final Channel[] channels = new Channel[] {new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel()};
+        public final Channel[] channels = {
+                new Channel(), new Channel(), new Channel(), new Channel(),
+                new Channel(), new Channel(), new Channel(), new Channel(),
+                new Channel()
+        };
     }
 
     /** what this panel contributes to the GUI; see {@link ViewProvider} */

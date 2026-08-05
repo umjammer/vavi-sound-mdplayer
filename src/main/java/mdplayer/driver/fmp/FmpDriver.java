@@ -186,8 +186,8 @@ public class FmpDriver extends BaseDriver {
             }
 
             if (md.getFirst(Tag.Title).isEmpty() && !plainComments.isEmpty()) {
-                md.set(Tag.Title, plainComments.get(0).strip());
-                md.set(Tag.TitleJ, plainComments.get(0).strip());
+                md.set(Tag.Title, plainComments.getFirst().strip());
+                md.set(Tag.TitleJ, plainComments.getFirst().strip());
             }
             if (md.getFirst(Tag.Composer).isEmpty() && plainComments.size() > 1) {
                 md.set(Tag.Composer, plainComments.get(1).strip());
@@ -312,7 +312,7 @@ public class FmpDriver extends BaseDriver {
                 fireEventHappened(this, "fmp", work);
             }
 
-            //curLoop = mm.ReadUInt16(reg.a6 + dw.LOOP_COUNTER);
+            //curLoop = mm.readShort(reg.a6 + dw.LOOP_COUNTER);
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
         }
@@ -468,8 +468,7 @@ public class FmpDriver extends BaseDriver {
             case 0x06 -> work.ssgNoiseFreq = d & 0x1f;
             case 0x07 -> work.ssgMixer = d & 0xff;
             case 0x26 -> work.timerB = d & 0xff;
-            default -> {
-            }
+            default -> {}
             }
         } else if (port == 1) {
             switch (a) {
@@ -478,8 +477,7 @@ public class FmpDriver extends BaseDriver {
                 if ((d & 0x80) == 0) work.rhythmKeyOn |= d & 0x3f;
             }
             case 0x01 -> work.adpcmPan = d & 0xff;
-            default -> {
-            }
+            default -> {}
             }
         }
     }

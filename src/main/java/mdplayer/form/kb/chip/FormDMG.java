@@ -443,7 +443,7 @@ public class FormDMG extends FormChipBase<FormDMG.Params> {
     public static class Params {
 
         public final byte[] wf = new byte[32];
-        public final Channel[] channels = new Channel[] {new Channel(), new Channel(), new Channel(), new Channel()};
+        public final Channel[] channels = {new Channel(), new Channel(), new Channel(), new Channel()};
     }
 
     /** what this panel contributes to the GUI; see {@link ViewProvider} */

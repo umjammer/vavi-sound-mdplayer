@@ -27,7 +27,7 @@ import static vavi.util.compat.Util.getFileNameWithoutExtension;
 
 
 /**
- * MoonDriver (MDI, MDL(for play)) FileFormat.
+ * MoonDriver (MDI) (MDL(for play)) FileFormat.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-07 nsano initial version <br>

@@ -135,7 +135,7 @@ logger.log(Level.ERROR, e.getMessage());
         // nisePPZ8 resident
         step = 0;
         Memory98 mem = nise98.getMem();
-        int[] tmp1 = new int[] {step};
+        int[] tmp1 = {step};
         Register286[] tmp2 = new Register286[1];
         nise98.getPPZ8().fmpRegisterPPZ8(/* out */ tmp1, /* out */ tmp2);
         step = tmp1[0];

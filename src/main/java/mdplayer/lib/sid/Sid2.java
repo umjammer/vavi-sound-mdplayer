@@ -55,7 +55,7 @@ public class Sid2 {
     private final OutputStream os = new OutputStream() {
         @Override
         public void write(int b) throws IOException {
-            byte[] buf = new byte[] {(byte) b};
+            byte[] buf = {(byte) b};
             write(buf, 0, 1);
         }
 

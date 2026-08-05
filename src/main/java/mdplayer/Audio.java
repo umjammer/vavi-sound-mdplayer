@@ -27,7 +27,12 @@ import static java.lang.System.getLogger;
 import static vavi.sound.SoundUtil.volume;
 
 
-/** virtual device player */
+/**
+ * virtual device player
+ * <p>
+ * system property
+ * <li>{@code mdplayer.volume} ... player volume, default {@code 0.2}</li>
+ */
 public final class Audio {
 
     private static final Logger logger = getLogger(Audio.class.getName());

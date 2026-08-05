@@ -211,7 +211,7 @@ public class S98 {
 
                 // wait nSync
                 if (cmd == 0xfe) {
-                    int[] tmp = new int[] {musicPtr};
+                    int[] tmp = {musicPtr};
                     s98WaitCounter = getVv(data, tmp);
                     musicPtr = tmp[0];
                     ym2608WaitCounter = 0;

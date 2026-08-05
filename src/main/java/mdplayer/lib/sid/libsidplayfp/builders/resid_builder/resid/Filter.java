@@ -415,7 +415,7 @@ public class Filter {
 
     // Common parameters.
 
-    protected static final ModelFilter[] modelFilters = new ModelFilter[] {new ModelFilter(), new ModelFilter()};
+    protected static final ModelFilter[] modelFilters = {new ModelFilter(), new ModelFilter()};
 
     //
     // Inline functions.
@@ -2111,7 +2111,7 @@ public class Filter {
         // 1024*1/Q = 1024*2^((4 - res)/8)
         // The coefficient 1024 instanceof dispensed of later by right-shifting 10 times
         // (2 ^ 10 = 1024).
-        int[] _1024_div_Q_table = new int[] {
+        int[] _1024_div_Q_table = {
                 1448,
                 1328,
                 1218,

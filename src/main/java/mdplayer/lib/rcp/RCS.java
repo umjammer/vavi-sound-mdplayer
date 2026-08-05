@@ -132,13 +132,13 @@ public class RCS {
     private int rcsControlNoteNumber = 0;
     private int rcsControlMode = 0;
     private int rcsPolyphonicMode = 3;
-    public final Pcm8St[] pcm8St = new Pcm8St[] {
+    public final Pcm8St[] pcm8St = {
             new Pcm8St(), new Pcm8St(), new Pcm8St(), new Pcm8St(),
             new Pcm8St(), new Pcm8St(), new Pcm8St(), new Pcm8St(),
             new Pcm8St(), new Pcm8St(), new Pcm8St(), new Pcm8St(),
             new Pcm8St(), new Pcm8St(), new Pcm8St(), new Pcm8St()
     };
-    public MPCMSt[] mpcmSt = new MPCMSt[] {
+    public MPCMSt[] mpcmSt = {
             new MPCMSt(), new MPCMSt(), new MPCMSt(), new MPCMSt(),
             new MPCMSt(), new MPCMSt(), new MPCMSt(), new MPCMSt(),
             new MPCMSt(), new MPCMSt(), new MPCMSt(), new MPCMSt(),

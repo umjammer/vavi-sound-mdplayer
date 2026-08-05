@@ -50,7 +50,7 @@ public class NdpDriver extends BaseDriver {
         MetaData md = new MetaData();
         if (buf != null && buf.length > 8) {
             if (buf.length > 7 + 0x0b && (buf[7 + 0x0b] & 2) != 0) {
-                int[] index = new int[] {7 + 0xe};
+                int[] index = {7 + 0xe};
                 String TITLE = Common.getNRDString(buf, /* ref */ index, (byte) 0xff);
                 md.set(Tag.Title, TITLE); md.set(Tag.TitleJ, TITLE);
                 String COMPOSER = Common.getNRDString(buf, /* ref */ index, (byte) 0xff);

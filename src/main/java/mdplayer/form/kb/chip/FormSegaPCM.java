@@ -243,7 +243,7 @@ public class FormSegaPCM extends FormChipBase<FormSegaPCM.Params> {
     /** this panel's per-frame draw state, diffed new against old (see {@link FormChipBase}) */
     public static class Params {
 
-        public final ChannelParams[] channels = new ChannelParams[] {
+        public final ChannelParams[] channels = {
                 new ChannelParams(), new ChannelParams(), new ChannelParams(), new ChannelParams(),
                 new ChannelParams(), new ChannelParams(), new ChannelParams(), new ChannelParams(),
                 new ChannelParams(), new ChannelParams(), new ChannelParams(), new ChannelParams(),

@@ -112,7 +112,7 @@ public class Common {
 
 String x = null;
         try {
-            int[] adr_ = new int[] {adr};
+            int[] adr_ = {adr};
             String s = getAsciiz(buf, adr_); if (s != null) metaData.set(Tag.Title, s);
             s = getAsciiz(buf, adr_); if (s != null) metaData.set(Tag.TitleJ, s);
             s = getAsciiz(buf, adr_); if (s != null) metaData.set(Tag.GameTitle, s);

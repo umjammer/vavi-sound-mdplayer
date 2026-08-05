@@ -1268,7 +1268,7 @@ public class DevPsg {
         mm.write(reg.a5 + W.e_lm, mm.readByte(reg.a0 + (int) (short) reg.getD0_W() + 2));
     }
 
-    public static final byte[] _psg_env_default = new byte[] {
+    public static final byte[] _psg_env_default = {
             0x00, 0x01, (byte) 0xff, (byte) 0xff, 0x00, (byte) 0x81, 0x00, 0x00, 0x00, (byte) 0x81, 0x00, 0x00, (byte) 0xff, (byte) 0x81, 0x00, 0x00
     };
 

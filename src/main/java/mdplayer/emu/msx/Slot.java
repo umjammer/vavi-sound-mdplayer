@@ -6,8 +6,8 @@ public class Slot {
     public Cartridge[][] slots;
 
     public final Cartridge[] pages = new Cartridge[4];
-    public final SlotPos[] pagesSlotPos = new SlotPos[] {new SlotPos(), new SlotPos(), new SlotPos(), new SlotPos()};
-    public final int[] currentExtSlotPos = new int[] {0, 0, 0, 0};
+    public final SlotPos[] pagesSlotPos = {new SlotPos(), new SlotPos(), new SlotPos(), new SlotPos()};
+    public final int[] currentExtSlotPos = {0, 0, 0, 0};
 
     public void setPageFromSlot(int page, int basic) {
         pages[page] = slots[basic][currentExtSlotPos[basic]];

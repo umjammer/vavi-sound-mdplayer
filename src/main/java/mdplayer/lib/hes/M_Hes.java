@@ -60,7 +60,7 @@ public class M_Hes {
         }
 
         public int HESSoundRenderMono() {
-            int[] d = new int[] {0, 0};
+            int[] d = {0, 0};
             this.heshes.synth(d);
 //#if (((-1) >> 1) == -1)
 //	          return (d[0] + d[1]) >> 1;
@@ -659,7 +659,7 @@ public class M_Hes {
                     a = getDwordLE(pData, p + 8);
                     if (this.allocPhysicalAddress(a, l) == 0) return Error.SHORTOFMEMORY.ordinal();
                     if (l > uSize - p - 0x10) l = uSize - p - 0x10;
-                    int[] q = new int[] {p + 0x10};
+                    int[] q = {p + 0x10};
                     this.copy_physical_address(a, l, pData, /* ref */ q);
                     p = q[0];
                 }

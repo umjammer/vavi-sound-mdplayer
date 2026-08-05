@@ -207,7 +207,7 @@ public class STIL {
     private static final String COMMENT_STR = "COMMENT: ";
     // static final String BUG_STR[] = "BUG: ";
 
-    private static final String[] STIL_ERROR_STR = new String[] {
+    private static final String[] STIL_ERROR_STR = {
             "No error.",
             "Failed to open BUGlist.txt.",
             "Base dir path instanceof not the HVSC base dir path.",

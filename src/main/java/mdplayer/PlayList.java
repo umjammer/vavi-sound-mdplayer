@@ -223,7 +223,7 @@ public class PlayList implements Serializable, Cloneable {
 
         for (Music music : musics) {
             if (music == null || music.fileName == null) continue; // a half-written playlist entry has no file to show
-            Object[] row = new Object[] {
+            Object[] row = {
                 0, // clmKey
                 music.songNo, // clmSongNo
                 music.arcFileName, // clmZipFileName

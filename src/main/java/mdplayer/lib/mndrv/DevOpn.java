@@ -2001,7 +2001,7 @@ public class DevOpn {
         } while (reg.getAndDecD5_W() != 0);
     }
 
-    public static final byte[] _fm_vol_con_pat = new byte[] {
+    public static final byte[] _fm_vol_con_pat = {
             0x08, 0x08, 0x08, 0x08, 0x0C, 0x0E, 0x0E, 0x0F
     };
 

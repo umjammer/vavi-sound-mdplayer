@@ -75,7 +75,7 @@ public class MNDFileFormat extends BaseFileFormat {
         byte[] buf;
 
         int hs = ((srcBuf[0x06] & 0xff) << 8) + (srcBuf[0x07] & 0xff);
-        int[] pcmptr = new int[] {((srcBuf[0x14] & 0xff) << 24) + ((srcBuf[0x15] & 0xff) << 16) + ((srcBuf[0x16] & 0xff) << 8) + (srcBuf[0x17] & 0xff)};
+        int[] pcmptr = {((srcBuf[0x14] & 0xff) << 24) + ((srcBuf[0x15] & 0xff) << 16) + ((srcBuf[0x16] & 0xff) << 8) + (srcBuf[0x17] & 0xff)};
         if (hs < 0x18) pcmptr[0] = 0;
         if (pcmptr[0] != 0) {
             int pcmnum = ((srcBuf[pcmptr[0]] & 0xff) << 8) + (srcBuf[pcmptr[0] + 1] & 0xff);

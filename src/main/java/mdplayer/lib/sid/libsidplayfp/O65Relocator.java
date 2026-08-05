@@ -63,7 +63,7 @@ public class O65Relocator {
     /**
      * Magic number
      */
-    private static final byte[] magic = new byte[] {1, 0, (byte) 'o', (byte) '6', (byte) '5'};
+    private static final byte[] magic = {1, 0, (byte) 'o', (byte) '6', (byte) '5'};
 
     /**
      * Read a 16 bit word from a buffer at specific location.

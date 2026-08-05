@@ -40,7 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 class TestMd5 {
 
-    static final String[] strTest = new String[] {
+    static final String[] strTest = {
             "",
             "a",
             "abc",
@@ -50,7 +50,7 @@ class TestMd5 {
             "12345678901234567890123456789012345678901234567890123456789012345678901234567890"
     };
 
-    static final String[] expected = new String[] {
+    static final String[] expected = {
             "d41d8cd98f00b204e9800998ecf8427e",
             "0cc175b9c0f1b6a831c399e269772661",
             "900150983cd24fb0d6963f7d28e17f72",

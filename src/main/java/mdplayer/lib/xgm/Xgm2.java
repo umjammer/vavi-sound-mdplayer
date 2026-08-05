@@ -68,7 +68,7 @@ public class Xgm2 {
             {new byte[4], new byte[4], new byte[4]},
             {new byte[4], new byte[4], new byte[4]}
     };
-    private final byte[][] fmALG = new byte[][] {
+    private final byte[][] fmALG = {
             new byte[3],
             new byte[3]
     };

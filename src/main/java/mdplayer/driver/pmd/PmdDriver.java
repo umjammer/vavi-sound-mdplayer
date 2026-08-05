@@ -1,6 +1,7 @@
 package mdplayer.driver.pmd;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.System.Logger;
@@ -90,8 +91,8 @@ public class PmdDriver extends BaseDriver {
         MetaData metaData;
 
         if (mType == PMDFileType.MML) {
-            envPmd = System.getProperty("mdplayer.pmd.pmd", "").split(java.io.File.pathSeparator);
-            envPmdOpt = System.getProperty("mdplayer.pmd.opt", "").split(java.io.File.pathSeparator);
+            envPmd = System.getProperty("mdplayer.pmd.pmd", "").split(File.pathSeparator);
+            envPmdOpt = System.getProperty("mdplayer.pmd.opt", "").split(File.pathSeparator);
 
             pmdCompiler = ICompiler.factory("pmd.compiler.Compiler");
             pmdCompiler.setCompileSwitch((Function<String, InputStream>) this::appendFileReaderCallback);
@@ -282,8 +283,8 @@ public class PmdDriver extends BaseDriver {
         usePPS = setting.getPmd().usePPSDRV;
         usePPZ = setting.getPmd().usePPZ8;
 
-        envPmd = System.getProperty("mdplayer.pmd.pmd", "").split(java.io.File.pathSeparator);
-        envPmdOpt = System.getProperty("mdplayer.pmd.opt", "").split(java.io.File.pathSeparator);
+        envPmd = System.getProperty("mdplayer.pmd.pmd", "").split(File.pathSeparator);
+        envPmdOpt = System.getProperty("mdplayer.pmd.opt", "").split(File.pathSeparator);
 
         Object[] driverOption = {
                 isLoadADPCM, // boolean
@@ -338,10 +339,10 @@ public class PmdDriver extends BaseDriver {
         usePPS = setting.getPmd().usePPSDRV;
         usePPZ = setting.getPmd().usePPZ8;
 
-        envPmd = System.getProperty("mdplayer.pmd.dir", "").split(java.io.File.pathSeparator);
-        envPmdOpt = System.getProperty("mdplayer.pmd.opt", "").split(java.io.File.pathSeparator);
+        envPmd = System.getProperty("mdplayer.pmd.dir", "").split(File.pathSeparator);
+        envPmdOpt = System.getProperty("mdplayer.pmd.opt", "").split(File.pathSeparator);
 
-        Object[] driverOption = new Object[] {
+        Object[] driverOption = {
                 isLoadADPCM, // boolean
                 loadADPCMOnly, // boolean
                 setting.getPmd().isAuto, // boolean isAUTO;

@@ -189,7 +189,7 @@ public class EnvelopeGenerator {
      * Lookup table to convert from attack, decay, or release value to rate
      * counter period.
      */
-    protected static final int[] rateCounterPeriod = new int[] { // reg16
+    protected static final int[] rateCounterPeriod = { // reg16
             9,  //   2ms*1.0MHz/256 =     7.81
             32,  //   8ms*1.0MHz/256 =    31.25
             63,  //  16ms*1.0MHz/256 =    62.50
@@ -211,7 +211,7 @@ public class EnvelopeGenerator {
     /**
      * The 16 selectable sustain levels.
      */
-    protected static final int[] sustainLevel = new int[] { // reg8
+    protected static final int[] sustainLevel = { // reg8
             0x00,
             0x11,
             0x22,

@@ -520,7 +520,7 @@ public class NRTDRV {
         work.ctc0 = 3;
     }
 
-    private final byte[] psrtbl = new byte[] {(byte) 0xe0, 1, (byte) 0xe0, 1, (byte) 0xe0, 1, 0, 0x38, 0, 0, 0, 0, 0x10, 0};
+    private final byte[] psrtbl = {(byte) 0xe0, 1, (byte) 0xe0, 1, (byte) 0xe0, 1, 0, 0x38, 0, 0, 0, 0, 0x10, 0};
 
     private void pinit(int hl) {
         Ch[] wChs = work.psgChs;
@@ -542,7 +542,7 @@ public class NRTDRV {
         }
 
         work.pFlg = 0x38;
-        //byte[] psrtbl = new byte[] { 0xe0, 1, 0xe0, 1, 0xe0, 1, 0, 0x38, 0, 0, 0, 0, 0x10, 0 };
+        //byte[] psrtbl = { 0xe0, 1, 0xe0, 1, 0xe0, 1, 0, 0x38, 0, 0, 0, 0, 0x10, 0 };
         for (byte d = 0; d < psrtbl.length; d++) {
             wpsg(d, psrtbl[d]);
         }
@@ -672,9 +672,9 @@ public class NRTDRV {
         public byte fSpeed = 5;
         public byte ver = 2;
 
-        public final Ch[] opm1Chs = new Ch[] {new Ch(), new Ch(), new Ch(), new Ch(), new Ch(), new Ch(), new Ch(), new Ch()};
-        public final Ch[] opm2Chs = new Ch[] {new Ch(), new Ch(), new Ch(), new Ch(), new Ch(), new Ch(), new Ch(), new Ch()};
-        public final Ch[] psgChs = new Ch[] {new Ch(), new Ch(), new Ch()};
+        public final Ch[] opm1Chs = {new Ch(), new Ch(), new Ch(), new Ch(), new Ch(), new Ch(), new Ch(), new Ch()};
+        public final Ch[] opm2Chs = {new Ch(), new Ch(), new Ch(), new Ch(), new Ch(), new Ch(), new Ch(), new Ch()};
+        public final Ch[] psgChs = {new Ch(), new Ch(), new Ch()};
 
         public final byte[] opm1VReg = new byte[256];
         public final byte[] opm2VReg = new byte[256];
@@ -843,7 +843,7 @@ public class NRTDRV {
         public byte psgRrCounter = 0; // IX+54
         public byte psgRrVolOffset = 0; // IX+55
 
-        public final RepBuf[] repBuf = new RepBuf[] {
+        public final RepBuf[] repBuf = {
                 new RepBuf(), new RepBuf(), new RepBuf(), new RepBuf(), new RepBuf(), new RepBuf()
         };
 

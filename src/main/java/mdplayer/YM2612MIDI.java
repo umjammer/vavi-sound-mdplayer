@@ -184,7 +184,7 @@ public class YM2612MIDI {
         mdsMIDI.write(Ym2612Inst.class, 0, des / 3, (0xb4 + (des % 3)) | 0xc0, reg[src / 3][0xb4 + (src % 3)]);
 
         int alg = reg[src / 3][0xb0 + (src % 3)] & 0x7;
-        byte[] algTl = new byte[] {0x08, 0x08, 0x08, 0x08, 0x0c, 0x0e, 0x0e, 0x0f};
+        byte[] algTl = {0x08, 0x08, 0x08, 0x08, 0x0c, 0x0e, 0x0e, 0x0f};
         int[] tls = new int[4];
         int max = 127;
 
@@ -216,7 +216,7 @@ public class YM2612MIDI {
         mdsMIDI.write(Ym2612Inst.class, 0, des / 3, 0xb0 + (des % 3), reg[0x20 + src] & 0x3f); // AL + FB
 
         int alg = reg[0x20 + src] & 0x7;
-        byte[] algTl = new byte[] {0x08, 0x08, 0x08, 0x08, 0x0c, 0x0e, 0x0e, 0x0f};
+        byte[] algTl = {0x08, 0x08, 0x08, 0x08, 0x0c, 0x0e, 0x0e, 0x0f};
         int[] tls = new int[4];
         int max = 127;
 

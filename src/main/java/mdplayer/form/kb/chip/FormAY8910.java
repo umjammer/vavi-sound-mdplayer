@@ -297,7 +297,7 @@ public class FormAY8910 extends FormChipBase<FormAY8910.Params> {
         public int nfrq = -1;
         public int efrq = -1;
         public int etype = -1;
-        public final Channel[] channels = new Channel[] {new Channel(), new Channel(), new Channel()};
+        public final Channel[] channels = {new Channel(), new Channel(), new Channel()};
     }
 
 

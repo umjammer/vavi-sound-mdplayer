@@ -228,7 +228,7 @@ public class FmpMetaDataTest {
 
     @Test
     void testProlongedSoundMark() throws Exception {
-        char[] chars = new char[] {
+        char[] chars = {
             '\u30FC', // ー KATAKANA-HIRAGANA PROLONGED SOUND MARK
             '\uFF70', // ｰ HALFWIDTH KATAKANA HIRAGANA PROLONGED SOUND MARK
             '\u2015', // ― EM DASH (JIS 0x213C)

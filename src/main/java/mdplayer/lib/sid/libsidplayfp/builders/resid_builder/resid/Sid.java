@@ -139,7 +139,7 @@ public class Sid {
     }
 
     protected SidDefs.ChipModel sidModel;
-    protected final Voice[] voice = new Voice[] {new Voice(), new Voice(), new Voice()};
+    protected final Voice[] voice = {new Voice(), new Voice(), new Voice()};
     protected final Filter filter = new Filter();
     protected final ExternalFilter extfilt = new ExternalFilter();
     protected final Potentiometer potx = new Potentiometer();

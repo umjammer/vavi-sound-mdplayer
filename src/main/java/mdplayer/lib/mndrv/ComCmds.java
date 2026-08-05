@@ -2071,7 +2071,7 @@ public class ComCmds {
         return reg.D0_L;
     }
 
-    private static final byte[] _com_ed_sync_table = new byte[] {
+    private static final byte[] _com_ed_sync_table = {
             (byte) 0x80, 0x00, 0x01, 0x02
     };
 

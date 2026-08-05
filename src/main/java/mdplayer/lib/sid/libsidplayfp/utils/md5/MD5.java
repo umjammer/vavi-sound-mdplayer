@@ -338,7 +338,7 @@ public class MD5 {
 
     /** Finish the message. */
     public void finish() {
-        byte[] pad = new byte[] {
+        byte[] pad = {
                 (byte) 0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,

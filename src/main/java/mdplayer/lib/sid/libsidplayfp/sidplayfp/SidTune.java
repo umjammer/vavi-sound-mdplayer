@@ -49,7 +49,7 @@ public class SidTune {
 
     // Default sidtune file name extensions. This selection can be overridden
     // by specifying a custom list : the constructor.
-    private static final String[] defaultFileNameExt = new String[] {
+    private static final String[] defaultFileNameExt = {
             // Preferred default file extension for single-file sidtunes
             // or sidtune description files : SIDPLAY INFOFILE format.
             ".Sid", ".Sid",
