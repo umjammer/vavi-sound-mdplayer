@@ -66,6 +66,7 @@ public abstract class BaseDriver {
 
     /**
      * The PCM type label for slot {@code index} (e.g. "PPC", "PPZ1", "PDX", "PVI", etc.).
+     * TODO view -> view.plugin
      */
     public String pcmType(int index) {
         String fn = pcmFilename(index);
@@ -84,6 +85,7 @@ public abstract class BaseDriver {
 
     /**
      * The PCM filename for slot {@code index}, or null when the driver has nothing for that slot.
+     * TODO view -> view.plugin
      */
     public String pcmFilename(int index) {
         if (plugin != null) {
@@ -98,6 +100,7 @@ public abstract class BaseDriver {
     /**
      * Whether the PCM file for slot {@code index} failed to load. Drivers that load
      * PCM data override this.
+     * TODO view -> view.plugin
      */
     public boolean pcmError(int index) {
         return false;

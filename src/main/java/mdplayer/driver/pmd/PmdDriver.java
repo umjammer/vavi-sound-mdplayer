@@ -196,7 +196,7 @@ public class PmdDriver extends BaseDriver {
     public String pcmFilename(int index) {
         if (work == null) return null;
         Object pwObj = work.get("work");
-        if (pwObj instanceof pmd.driver.PW pw) {
+        if (pwObj instanceof pmd.driver.PW pw) { // TODO expose pmd package
             return switch (index) {
                 case 0 -> pw.ppcFile;
                 case 1 -> pw.ppz1File;
@@ -212,7 +212,7 @@ public class PmdDriver extends BaseDriver {
     public boolean pcmError(int index) {
         if (work == null) return false;
         Object pwObj = work.get("work");
-        if (pwObj instanceof pmd.driver.PW pw) {
+        if (pwObj instanceof pmd.driver.PW pw) { // TODO expose pmd package
             return switch (index) {
                 case 0 -> pw.ppcError;
                 case 1 -> pw.ppz1Error;

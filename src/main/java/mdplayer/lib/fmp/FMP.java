@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
+import mdplayer.emu.common.EncodingUtils;
 import mdplayer.emu.nise98.FileTemp;
 import mdplayer.emu.nise98.Memory98;
 import mdplayer.emu.nise98.Nise98;
@@ -192,5 +193,13 @@ logger.log(Level.ERROR, e.getMessage());
         rc = nise98.loadRun(fileNameFMC.toString(), Path.of(playingFileName).toString(), 0x3000); //, true, true, true, 3_000_000, 0
         if (rc != 0)
             throw new IllegalArgumentException("fmc return %d".formatted(rc));
+    }
+
+    public static String decodePc98ShiftJis(byte[] buf, int start, int end) {
+        return EncodingUtils.decodePc98ShiftJis(buf, start,end);
+    }
+
+    public static String normalizeKanji(String s) {
+        return EncodingUtils.normalizeKanji(s);
     }
 }

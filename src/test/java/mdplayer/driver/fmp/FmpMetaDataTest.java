@@ -7,6 +7,7 @@ import musicDriverInterface.MetaData.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
+import static mdplayer.lib.fmp.FMP.decodePc98ShiftJis;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -169,23 +170,23 @@ public class FmpMetaDataTest {
     /** FMP writes half width ASCII with the double byte lead 0x85, JIS X 0208 row 9. */
     @Test
     void testHalfWidthAsciiRow() throws Exception {
-        byte[] buf = new byte[] {
+        byte[] buf = {
                 (byte) 0x85, 0x76, (byte) 0x85, (byte) 0x8f, (byte) 0x85, (byte) 0x92,
                 (byte) 0x85, (byte) 0x84, (byte) 0x85, (byte) 0x93, 0x20,
                 (byte) 0x85, (byte) 0x82, (byte) 0x85, (byte) 0x99
         };
-        assertEquals("Words by", FmpDriver.decodePc98ShiftJis(buf, 0, buf.length));
+        assertEquals("Words by", decodePc98ShiftJis(buf, 0, buf.length));
     }
 
     /** Row 10 of the same escape: half width katakana, then the precomposed voiced ones. */
     @Test
     void testHalfWidthKatakanaRow() throws Exception {
-        byte[] buf = new byte[] {
+        byte[] buf = {
                 (byte) 0x85, (byte) 0xbb, (byte) 0x85, (byte) 0xc1, (byte) 0x85, (byte) 0xae,
                 (byte) 0x85, (byte) 0xea, 0x20,
                 (byte) 0x85, (byte) 0xf4, (byte) 0x85, (byte) 0xda, (byte) 0x85, (byte) 0xae
         };
-        assertEquals("\uFF7D\uFF83\uFF70\uFF7C\uFF9E \uFF8A\uFF9F\uFF9C\uFF70", FmpDriver.decodePc98ShiftJis(buf, 0, buf.length));
+        assertEquals("\uFF7D\uFF83\uFF70\uFF7C\uFF9E \uFF8A\uFF9F\uFF9C\uFF70", decodePc98ShiftJis(buf, 0, buf.length));
     }
 
     @Test
@@ -198,7 +199,7 @@ public class FmpMetaDataTest {
         int memoPtr = (vavi.util.ByteUtil.readLeShort(buf, 0) & 0xffff);
         int end = Math.min(memoPtr + 400, buf.length);
 
-        String decoded = FmpDriver.decodePc98ShiftJis(buf, memoPtr + 4, end);
+        String decoded = decodePc98ShiftJis(buf, memoPtr + 4, end);
         System.out.println("Decoded PC-98 Shift_JIS memo:\n" + decoded);
 
         assertTrue(decoded.contains("Words by"), decoded);
@@ -218,7 +219,7 @@ public class FmpMetaDataTest {
         int memoPtr = (vavi.util.ByteUtil.readLeShort(buf, 0) & 0xffff);
         int end = Math.min(memoPtr + 300, buf.length);
 
-        String decoded = FmpDriver.decodePc98ShiftJis(buf, memoPtr + 4, end);
+        String decoded = decodePc98ShiftJis(buf, memoPtr + 4, end);
         System.out.println("Decoded PC-98 Shift_JIS memo:\n" + decoded);
 
         assertTrue(decoded.contains("\uFF71\uFF86\uFF92\u300C\uFF8F\uFF78\uFF9B\uFF7DF\u300D\uFF74\uFF9D\uFF83\uFF9E\uFF68\uFF9D\uFF78\uFF9E\uFF83\uFF70\uFF8F"), decoded);
