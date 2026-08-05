@@ -479,4 +479,9 @@ public class NpNesChip extends BaseChip {
             return -1;
         }
     }
+
+    @Override
+    public String getName() {
+        return getClass() == NpNesChip.class ? "Apu" : super.getName(); // considered sub-classes
+    }
 }

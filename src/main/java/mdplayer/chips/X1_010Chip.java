@@ -51,4 +51,9 @@ public class X1_010Chip extends BaseChip {
         X1_010Inst inst = context.mds.inst(X1_010Inst.class);
         return inst == null ? Collections.emptyMap() : inst.getView(chipId, "info");
     }
+
+    @Override
+    public String getName() {
+        return "X1-010"; // visualizer doesn't have underline glyph
+    }
 }

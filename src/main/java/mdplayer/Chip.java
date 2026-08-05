@@ -70,4 +70,6 @@ public interface Chip {
 
     default void setFadeout(int chipId, int v) {
     }
+
+    String getName();
 }

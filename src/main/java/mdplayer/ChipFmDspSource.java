@@ -1258,9 +1258,9 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
 
     @Override
     public String chips() {
-        if (plugin != null && plugin.getChips() != null && !plugin.getChips().isEmpty()) {
+        if (plugin != null && !plugin.getChips().isEmpty()) {
             return plugin.getChips().stream()
-                    .map(c -> c.getSimpleName().replace("Chip", "").toUpperCase())
+                    .map(c -> plugin.chipRegister.chip(c).getName().toUpperCase())
                     .distinct()
                     .collect(Collectors.joining(" "));
         }

@@ -102,4 +102,9 @@ public abstract class BaseChip implements Chip {
 
     /** the panel/main-window view of whether a channel is muted; this array is the source of truth */
     protected boolean getMask(int chipId, int ch) { return false; }
+
+    @Override
+    public String getName() {
+        return getClass().getSimpleName().replace("Chip", "");
+    }
 }
