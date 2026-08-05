@@ -10,6 +10,8 @@ import mdplayer.Setting;
 import mdplayer.driver.FileFormat;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
+
 import vavi.util.event.GenericEvent;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -23,6 +25,7 @@ public class GbsDriverTest {
     }
 
     @Test
+    @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
     public void testGbsTimeAndLoop() throws Exception {
         String filename = "../vavi-sound-emu/tmp/gbs/CGB-B2XE-USA.gbs";
         assertTrue(Files.exists(Path.of(filename)), "File must exist: " + filename);
