@@ -17,7 +17,8 @@ import mdplayer.Common.EnmModel;
 import mdplayer.chips.YmF262Chip;
 import mdplayer.chips.YmF278BChip;
 import mdplayer.driver.BaseDriver;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.driver.BasePlugin;
+import mdplayer.emu.common.Utils;
 import musicDriverInterface.ChipAction;
 import musicDriverInterface.ChipDatum;
 import musicDriverInterface.CompilerInfo;
@@ -29,6 +30,7 @@ import vavi.util.ByteUtil;
 import vavi.util.compat.Tuple;
 
 import static java.lang.System.getLogger;
+import static vavi.util.compat.Util.getExtension;
 
 
 /**
@@ -279,11 +281,36 @@ logger.log(Level.INFO, "useChip: " + plugin.getChips().stream().map(Class::getSi
         moonDriverDriver.startMusic(0);
     }
 
+    /**
+     * Serves the companion file the driver asks for, the user PCM bank of an unpacked song.
+     * <p>
+     * The driver names it by changing the song's extension to a lower case ".pcm", but it is
+     * "TIMESUP.PCM" on disk, so a plain lookup misses it on a case sensitive file system - and
+     * misses it entirely when the song was played out of an archive. The file format has already
+     * found and read it (case insensitively, archive included) into the plugin's extend files,
+     * so hand that over, and fall back to a case insensitive lookup next to the song.
+     */
     private InputStream appendFileReaderCallback(String arg) {
+        // an extend file is keyed by its name in some formats and by its extension in others
+        String name = Path.of(arg).getFileName().toString();
+        String ext = getExtension(arg);
+
+        if (plugin != null && plugin.getExtendFiles() != null) {
+            for (Tuple<String, byte[]> extendFile : plugin.getExtendFiles()) {
+                String key = extendFile.getItem1();
+                if ((key.equalsIgnoreCase(name) || key.equalsIgnoreCase(ext)) && extendFile.getItem2() != null) {
+                    return new ByteArrayInputStream(extendFile.getItem2());
+                }
+            }
+        }
 
         Path fn = Path.of(plugin.playingFileName).getParent().resolve(arg);
+        fn = Utils.fileExistsIgnoreCase(fn);
 
-        if (!Files.exists(fn)) return null;
+        if (fn == null) {
+logger.log(Level.INFO, "no such extend file: " + arg);
+            return null;
+        }
 
         InputStream strm;
         try {

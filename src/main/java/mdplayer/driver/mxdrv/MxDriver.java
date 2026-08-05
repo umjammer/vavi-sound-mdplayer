@@ -14,12 +14,13 @@ import mdplayer.Common.EnmModel;
 import mdplayer.chips.Pcm8Chip;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.driver.BaseDriver;
-import mdplayer.driver.mxdrv.MXDRV.MXDRV_WORK;
-import mdplayer.driver.mxdrv.MXDRV.MXWORK_CH;
-import mdplayer.driver.mxdrv.MXDRV.MdxPcmInterface;
-import mdplayer.driver.mxdrv.MXDRV.Pcm8Interface;
-import mdplayer.emu.nise68.XMemory;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.driver.BasePlugin;
+import mdplayer.lib.mxdrv.Depend;
+import mdplayer.lib.mxdrv.MXDRV;
+import mdplayer.lib.mxdrv.MXDRV.MXDRV_WORK;
+import mdplayer.lib.mxdrv.MXDRV.MXWORK_CH;
+import mdplayer.lib.mxdrv.MXDRV.MdxPcmInterface;
+import mdplayer.lib.mxdrv.MXDRV.Pcm8Interface;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 import vavi.util.ByteUtil;
@@ -314,26 +315,19 @@ public class MxDriver extends BaseDriver {
             ret = mxdrv.MXDRV_Start(setting.getOutputDevice().getSampleRate(), 0, 0, 0, mdxSize[0], pdxSize[0], 0, -1, -1);
         }
 
-        XMemory mm = mxdrv.getMemory();
-        int memind = mm.mm.length;
-        int mdxPtr = memind;
-        memind += mdxSize[0];
-        int pdxPtr = memind;
-        memind += pdxSize[0];
-        mm.realloc(memind);
-        for (int i = 0; i < mdxSize[0]; i++) mm.write(mdxPtr + i, mdx[0][i]);
-        for (int i = 0; i < pdxSize[0]; i++) mm.write(pdxPtr + i, pdx[0][i]);
+        int[] mdxPtr = new int[1], pdxPtr = new int[1];
+        mxdrv.initializeMemory(mdxSize[0], pdxSize[0], mdx[0], pdx[0], mdxPtr, pdxPtr);
 
-        plugin.chipRegister.chip(Pcm8Chip.class).writePcm(0, 0, 0, mm.mm, model);
+        plugin.chipRegister.chip(Pcm8Chip.class).writePcm(0, 0, 0, mxdrv.getMemory().mm, model);
         if (setting.getMxDrv().pcm8Type == 1)
-            plugin.chipRegister.chip(Pcm8Chip.class).writePcm(0, 0, 0, mm.mm, model);
+            plugin.chipRegister.chip(Pcm8Chip.class).writePcm(0, 0, 0, mxdrv.getMemory().mm, model);
 
-        int playtime = mxdrv.MXDRV_MeasurePlayTime(mdx[0], mdxSize[0], mdxPtr, pdx[0], pdxSize[0], pdxPtr, 1, Depend.TRUE);
+        int playtime = mxdrv.MXDRV_MeasurePlayTime(mdx[0], mdxSize[0], mdxPtr[0], pdx[0], pdxSize[0], pdxPtr[0], 1, Depend.TRUE);
 //logger.log(Level.TRACE, "(%d:%02d) %d".formatted(playtime / 1000 / 60, playtime / 1000 % 60, ""));
         totalCounter = (long) playtime * setting.getOutputDevice().getSampleRate() / 1000;
         // the player decides how many loops to play (Setting.Other#loopTimes), the driver only reports them
         mxdrv.MXDRV_PlaySetup(Integer.MAX_VALUE, false);
-        mxdrv.MXDRV_Play(mdx[0], mdxSize[0], mdxPtr, pdx[0], pdxSize[0], pdxPtr);
+        mxdrv.MXDRV_Play(mdx[0], mdxSize[0], mdxPtr[0], pdx[0], pdxSize[0], pdxPtr[0]);
 logger.log(Level.TRACE, "MXDRV_Start: " + ret);
     }
 
@@ -375,23 +369,23 @@ logger.log(Level.TRACE, "MXDRV_Start: " + ret);
             stopped = true;
         }
 
-        XMemory mm = mxdrv.getMemory();
+        byte[] mm = mxdrv.getMemory().mm;
         int[] fms = (int[]) mxdrv.MXDRV_GetWork(MXDRV_WORK.FM);
         Map<String, Integer>[] fmMaps = new Map[fms.length];
         for (int i = 0; i < fms.length; i++) {
             fmMaps[i] = new HashMap<>();
-            fmMaps[i].put("note", mm.readShort(fms[i] + MXWORK_CH.S0012) & 0xffff);
-            fmMaps[i].put("volume", mm.readByte(fms[i] + MXWORK_CH.S0022) & 0xff);
-            fmMaps[i].put("keyOn", mm.readByte(fms[i] + MXWORK_CH.S0016) & 0xff);
-            fmMaps[i].put("note2", mm.readShort(fms[i] + MXWORK_CH.S0014) & 0xffff);
+            fmMaps[i].put("note", ByteUtil.readBeShort(mm, fms[i] + MXWORK_CH.S0012) & 0xffff);
+            fmMaps[i].put("volume", mm[fms[i] + MXWORK_CH.S0022] & 0xff);
+            fmMaps[i].put("keyOn", mm[fms[i] + MXWORK_CH.S0016] & 0xff);
+            fmMaps[i].put("note2", ByteUtil.readBeShort(mm, fms[i] + MXWORK_CH.S0014) & 0xffff);
         }
         int[] pcms = (int[]) mxdrv.MXDRV_GetWork(MXDRV_WORK.PCM);
         Map<String, Object>[] pcmMaps = new Map[pcms.length];
         for (int i = 0; i < pcms.length; i++) {
             pcmMaps[i] = new HashMap<>();
-            pcmMaps[i].put("note", mm.readShort(pcms[i] + MXWORK_CH.S0012) & 0xffff);
-            pcmMaps[i].put("volume", mm.readByte(pcms[i] + MXWORK_CH.S0022) & 0xff);
-            pcmMaps[i].put("keyOn", mm.readByte(pcms[i] + MXWORK_CH.S0016) & 0xff);
+            pcmMaps[i].put("note", ByteUtil.readBeShort(mm, pcms[i] + MXWORK_CH.S0012) & 0xffff);
+            pcmMaps[i].put("volume", mm[pcms[i] + MXWORK_CH.S0022] & 0xff);
+            pcmMaps[i].put("keyOn", mm[pcms[i] + MXWORK_CH.S0016] & 0xff);
         }
         fireEventHappened(this, "mxdrv",
                 plugin.chipRegister.chip(Ym2151Chip.class).register[0], fmMaps, pcmMaps);

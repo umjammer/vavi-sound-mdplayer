@@ -8,7 +8,7 @@ package mdplayer;
 
 import mdplayer.Common.EnmModel;
 import mdplayer.driver.BaseDriver;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.driver.BasePlugin;
 import mdsound.Instrument;
 
 
@@ -70,4 +70,6 @@ public interface Chip {
 
     default void setFadeout(int chipId, int v) {
     }
+
+    String getName();
 }

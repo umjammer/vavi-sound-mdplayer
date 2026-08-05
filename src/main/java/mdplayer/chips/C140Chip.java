@@ -59,7 +59,7 @@ public class C140Chip extends BaseChip {
     }
 
     @Override
-    public void setMask(int chipId, int ch, boolean mask, Object... args) {
+    protected void setMask(int chipId, int ch, boolean mask, Object... args) {
         this.mask[chipId][ch] = mask;
     }
 

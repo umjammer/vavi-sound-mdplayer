@@ -12,9 +12,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import mdplayer.driver.BaseDriver;
-import mdplayer.driver.nsf.Nsf;
+import mdplayer.lib.nsf.Nsf;
 import mdplayer.driver.nsf.NsfMdDriver;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.driver.BasePlugin;
 import mdsound.Instrument;
 import mdsound.instrument.NesInst;
 import mdsound.instrument.NpNesInst;
@@ -123,7 +123,7 @@ public class NpNesChip extends BaseChip {
 
             byte[] mmc5Regs = new byte[10];
 
-            int[] dat = new int[] {0};
+            int[] dat = {0};
             for (int adr = 0x5000; adr < 0x5008; adr++) {
                 nsf.mmc5.read(adr, dat);
                 mmc5Regs[adr & 0x7] = (byte) dat[0];
@@ -351,7 +351,7 @@ public class NpNesChip extends BaseChip {
             if (nsf == null || nsf.fme7 == null || chipId == 1) return Collections.emptyMap();
 
             byte[] s5bRegs = new byte[0x20];
-            int[] dat = new int[] {0};
+            int[] dat = {0};
             for (int adr = 0x00; adr < 0x20; adr++) {
                 nsf.fme7.read(adr, dat);
                 s5bRegs[adr] = (byte) dat[0];
@@ -478,5 +478,10 @@ public class NpNesChip extends BaseChip {
         } catch (RuntimeException e) {
             return -1;
         }
+    }
+
+    @Override
+    public String getName() {
+        return getClass() == NpNesChip.class ? "Apu" : super.getName(); // considered sub-classes
     }
 }

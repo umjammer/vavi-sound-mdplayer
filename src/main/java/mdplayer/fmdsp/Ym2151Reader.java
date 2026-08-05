@@ -10,7 +10,6 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Set;
 
-import mdplayer.ChipRegister;
 import mdplayer.chips.Ym2151Chip;
 import vavi.sound.visualizer.fmdsp.LevelDataSource.Pan;
 import vavi.sound.visualizer.fmdsp.TrackDetail;
@@ -22,14 +21,13 @@ import vavi.sound.visualizer.fmdsp.TrackDetail;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-07-19 nsano initial version <br>
  */
-public class Ym2151Reader implements FmDspChipReader {
-
-    private ChipRegister chipRegister;
+public class Ym2151Reader extends ChipReader {
 
     private final int[] prevKeyOns = new int[8];
     private boolean active;
 
-    private Ym2151Chip chip() {
+    @Override
+    protected Ym2151Chip chip() {
         return chipRegister.chip(Ym2151Chip.class);
     }
 
@@ -39,15 +37,21 @@ public class Ym2151Reader implements FmDspChipReader {
     }
 
     @Override
-    public void bind(ChipRegister chipRegister) {
-        this.chipRegister = chipRegister;
-    }
-
-    @Override
     public void reset() {
         Arrays.fill(prevKeyOns, 0);
         active = false;
+        slots.reset();
         tones.reset();
+    }
+
+    /** which channels a second chip's rows show - it gets one row, so it has to be a used one */
+    private final RowSlots slots = new RowSlots(8);
+
+    /** the channel a row shows: itself for the first chip, whatever claimed it for a second */
+    private int channelOf(int slot) {
+        if (chipId == 0) return slot;
+        slots.claim(8, ch -> boolOf("channels." + ch + ".keyOn"));
+        return slots.channelOf(slot);
     }
 
     @Override
@@ -58,13 +62,6 @@ public class Ym2151Reader implements FmDspChipReader {
     @Override
     public int priority() {
         return 50;
-    }
-
-    @Override
-    public boolean ready() {
-        if (chipRegister == null) return false;
-        Ym2151Chip chip = chip();
-        return chip != null;
     }
 
     @Override
@@ -81,8 +78,10 @@ public class Ym2151Reader implements FmDspChipReader {
     }
 
     @Override
-    public void read(Group group, int ch, FmDspChannel out) {
-        if (info == null) return;
+    public void read(Group group, int slot, FmDspChannel out) {
+        out.name = "FM";
+        int ch = channelOf(slot);
+        if (info == null || ch < 0) return;
         boolean on = boolOf("channels." + ch + ".keyOn");
         int kc = on ? 1 : 0;
 
@@ -109,7 +108,6 @@ public class Ym2151Reader implements FmDspChipReader {
         out.amplitude = Math.pow(10, -tl * 0.75 / 20);
         out.pan = panOf(intOf("channels." + ch + ".pan") << 6);
     }
-
 
     /**
      * The voice the channel is playing, numbered by {@link ToneNumbers} out of the registers that
@@ -156,8 +154,9 @@ public class Ym2151Reader implements FmDspChipReader {
     }
 
     @Override
-    public boolean masked(Group group, int ch) {
-        return chip().getMask(0, ch);
+    public boolean masked(Group group, int slot) {
+        int ch = channelOf(slot);
+        return ch >= 0 && chip().getMask(chipId, ch);
     }
 
     /**
@@ -166,8 +165,9 @@ public class Ym2151Reader implements FmDspChipReader {
      * family's is an F-number and a block.
      */
     @Override
-    public boolean readDetail(Group group, int ch, TrackDetail out) {
-        if (info == null) return false;
+    public boolean readDetail(Group group, int row, TrackDetail out) {
+        int ch = channelOf(row);
+        if (info == null || ch < 0) return false;
 
         out.lines = 4;
         for (int op = 0; op < 4; op++) {
@@ -202,7 +202,7 @@ public class Ym2151Reader implements FmDspChipReader {
     @Override
     public void poll() {
         try {
-            info = chip().getInfo(0);
+            info = chip().getInfo(chipId);
         } catch (RuntimeException ignore) {
             info = null; // the chip exists but the song never loaded it
         }

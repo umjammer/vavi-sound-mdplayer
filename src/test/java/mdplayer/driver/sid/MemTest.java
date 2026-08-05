@@ -6,6 +6,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
+import mdplayer.lib.sid.Mem;
+
+
 class MemTest {
 
     // --- memset(byte[] des, byte val, int length) ---

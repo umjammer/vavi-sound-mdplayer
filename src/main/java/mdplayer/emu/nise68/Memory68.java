@@ -11,9 +11,32 @@ public class Memory68 {
     public final byte[] mem;
     public final List<MemHook> hookList;
 
+    /**
+     * Bounds of {@link #hookList}, so the common case (plain ram, i.e. almost every access)
+     * skips the scan instead of walking every hook only to find none of them match.
+     * {@link #refreshHookBounds()} must be called after {@link #hookList} is touched directly.
+     */
+    private int minHookAdr = Integer.MAX_VALUE;
+    private int maxHookAdr = Integer.MIN_VALUE;
+
     public Memory68(int size /* = 16 * 1024 * 1024 */) {
         mem = new byte[size];
         hookList = new ArrayList<>();
+    }
+
+    /** Recomputes the address window covered by {@link #hookList}. */
+    public void refreshHookBounds() {
+        minHookAdr = Integer.MAX_VALUE;
+        maxHookAdr = Integer.MIN_VALUE;
+        for (MemHook hook : hookList) {
+            if (hook.startAdr < minHookAdr) minHookAdr = hook.startAdr;
+            if (hook.endAdr > maxHookAdr) maxHookAdr = hook.endAdr;
+        }
+    }
+
+    /** @return true when no hook can possibly cover {@code adr} */
+    private boolean noHook(int adr) {
+        return adr < minHookAdr || adr > maxHookAdr;
     }
 
     public void pokeB(int ptr, byte dat) {
@@ -87,9 +110,14 @@ public class Memory68 {
 
     public void setHookAddress(int startAdr, int endAdr, BiFunction<Integer, Byte, Boolean> write, Function<Integer, Integer> read) {
         hookList.add(new MemHook(startAdr, endAdr, read, write));
+        refreshHookBounds();
     }
 
     private boolean checkAndReadHookAddressByte(int adr, /* out */ byte[] retVal) {
+        if (noHook(adr)) {
+            retVal[0] = 0;
+            return false;
+        }
         for (var hook : hookList) {
             if (hook.startAdr <= adr && hook.endAdr >= adr) {
                 if (hook.read == null) continue;
@@ -103,6 +131,10 @@ public class Memory68 {
     }
 
     private boolean checkAndReadHookAddressWord(int adr, /* out */ short[] retVal) {
+        if (noHook(adr)) {
+            retVal[0] = 0;
+            return false;
+        }
         for (var hook : hookList) {
             if (hook.startAdr <= adr && hook.endAdr >= adr) {
                 if (hook.read == null) continue;
@@ -116,6 +148,10 @@ public class Memory68 {
     }
 
     private boolean checkAndReadHookAddressLong(int adr, /* out */ int[] retVal) {
+        if (noHook(adr)) {
+            retVal[0] = 0;
+            return false;
+        }
         for (var hook : hookList) {
             if (hook.startAdr <= adr && hook.endAdr >= adr) {
                 if (hook.read == null) continue;
@@ -129,6 +165,7 @@ public class Memory68 {
     }
 
     private boolean checkAndWriteHookAddressByte(int adr, byte val) {
+        if (noHook(adr)) return false;
         for (var hook : hookList) {
             if (hook.startAdr <= adr && hook.endAdr >= adr) {
                 if (hook.write == null) continue;

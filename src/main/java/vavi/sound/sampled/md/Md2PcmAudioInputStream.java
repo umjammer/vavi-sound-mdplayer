@@ -19,8 +19,8 @@ import javax.sound.sampled.AudioInputStream;
 
 import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
-import mdplayer.plugin.BasePlugin.HasSongNo;
-import mdplayer.plugin.Plugin;
+import mdplayer.driver.BasePlugin.HasSongNo;
+import mdplayer.driver.Plugin;
 import vavi.io.OutputEngine;
 import vavi.io.OutputEngineInputStream;
 

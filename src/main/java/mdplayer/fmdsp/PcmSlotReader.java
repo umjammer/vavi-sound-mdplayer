@@ -29,9 +29,7 @@ import vavi.sound.visualizer.fmdsp.LevelDataSource.Pan;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-07-20 nsano initial version <br>
  */
-public abstract class PcmSlotReader implements FmDspChipReader {
-
-    protected ChipRegister chipRegister;
+public abstract class PcmSlotReader extends ChipReader {
 
     /** the chip's own state, read back once a frame */
     protected Map<String, Object> info;
@@ -66,7 +64,7 @@ public abstract class PcmSlotReader implements FmDspChipReader {
 
     @Override
     public void bind(ChipRegister chipRegister) {
-        this.chipRegister = chipRegister;
+        super.bind(chipRegister);
         reset();
     }
 
@@ -97,14 +95,9 @@ public abstract class PcmSlotReader implements FmDspChipReader {
     }
 
     @Override
-    public boolean ready() {
-        return chipRegister != null && chip() != null;
-    }
-
-    @Override
     public void poll() {
         try {
-            info = chip().getInfo(0);
+            info = chip().getInfo(chipId);
         } catch (RuntimeException ignore) {
             // the chip exists but the song never loaded it
             info = Collections.emptyMap();

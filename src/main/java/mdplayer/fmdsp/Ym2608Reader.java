@@ -33,7 +33,8 @@ public class Ym2608Reader extends OpnFmReader {
     private int prevRhythmReg;
     private boolean rhythmActive;
 
-    private Ym2608Chip chip() {
+    @Override
+    protected Ym2608Chip chip() {
         return chipRegister.chip(Ym2608Chip.class);
     }
 
@@ -137,8 +138,8 @@ public class Ym2608Reader extends OpnFmReader {
         prevRhythmReg = reg;
         for (int v = 0; v < 6; v++) {
             for (int lr = 0; lr < 2; lr++) {
-                if (chip.rhythmVolume[0][v][lr] > prevRhythmVolumes[v][lr]) hit = true;
-                prevRhythmVolumes[v][lr] = chip.rhythmVolume[0][v][lr];
+                if (chip.rhythmVolume[chipId][v][lr] > prevRhythmVolumes[v][lr]) hit = true;
+                prevRhythmVolumes[v][lr] = chip.rhythmVolume[chipId][v][lr];
             }
         }
         out.keyOn = hit;
@@ -149,19 +150,19 @@ public class Ym2608Reader extends OpnFmReader {
     @Override
     protected boolean fmMasked(int ch) {
         // the chip counts FM 1-6 as 0-5 and the ch3 slots as 9-11
-        return chip().getMask(0, ch < 6 ? ch : 9 + ch - 6);
+        return chip().getMask(chipId, ch < 6 ? ch : 9 + ch - 6);
     }
 
     @Override
     protected boolean ssgMasked(int s) {
-        return chip().getMask(0, 6 + s);
+        return chip().getMask(chipId, 6 + s);
     }
 
     @Override
     public boolean masked(Group group, int ch) {
         return switch (group) {
-            case PCM -> chip().getMask(0, 12);
-            case RHYTHM -> chip().getMask(0, 13);
+            case PCM -> chip().getMask(chipId, 12);
+            case RHYTHM -> chip().getMask(chipId, 13);
             default -> super.masked(group, ch);
         };
     }
@@ -184,7 +185,7 @@ public class Ym2608Reader extends OpnFmReader {
         info = null;
         keys = new int[6];
         try {
-            info = chip().getInfo(0);
+            info = chip().getInfo(chipId);
         } catch (RuntimeException ignore) {
             return; // the chip exists but the song never loaded it
         }
@@ -256,17 +257,11 @@ public class Ym2608Reader extends OpnFmReader {
         return slotOf(ch, slot, "carrier") instanceof Boolean carrier ? carrier : super.slotCarrier(ch, slot);
     }
 
-
     // the fmgen core decodes the operator registers away, so the voice is read from the
     // shadow the chip wrapper keeps of what the driver wrote
-    @Override protected int[][] toneRegs() { return chip() != null ? chip().register[0] : null; }
+    @Override protected int[][] toneRegs() { return chip() != null ? chip().register[chipId] : null; }
 
     private static final int[][] noPorts = {new int[0x100], new int[0x100]};
-
-    @Override
-    protected boolean chipReady() {
-        return chip() != null;
-    }
 
     /** the ADPCM control register, as the chip has it */
     private int adpcmControl() {

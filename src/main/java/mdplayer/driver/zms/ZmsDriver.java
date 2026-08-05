@@ -5,6 +5,7 @@ import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.util.List;
 
+import mdplayer.lib.zms.Zms;
 import vavi.util.compat.Tuple;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
@@ -13,9 +14,9 @@ import mdplayer.chips.MidiPlugin;
 import mdplayer.chips.Pcm8Chip;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.driver.BaseDriver;
-import mdplayer.driver.mxdrv.MXDRV.Pcm8Interface;
-import mdplayer.driver.zms.Zms.MPcmInterface;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.lib.mxdrv.MXDRV.Pcm8Interface;
+import mdplayer.lib.zms.Zms.MPcmInterface;
+import mdplayer.driver.BasePlugin;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 
@@ -167,14 +168,18 @@ public class ZmsDriver extends BaseDriver {
      */
     @Override
     public MetaData getMetaData(byte[] buf, Object... args) {
-        String filename = args.length > 1 ? (String) args[1] : plugin.playingFileName;
-        if (filename.toUpperCase().endsWith(".ZMS")) {
+        String filename = args.length > 1 ? (String) args[1] : (plugin != null ? plugin.playingFileName : null);
+        if (filename != null && filename.toUpperCase().endsWith(".ZMS")) {
             return getMetaDataZMS(buf);
-        } else if (filename.toUpperCase().endsWith(".ZMD")) {
+        } else if (filename != null && filename.toUpperCase().endsWith(".ZMD")) {
             return getMetaDataZMD(buf);
-        } else {
-            return new MetaData();
+        } else if (buf != null && buf.length >= 8) {
+            int chkID1 = (buf[0] & 0xFF) * 0x100_0000 + (buf[1] & 0xFF) * 0x1_0000 + (buf[2] & 0xFF) * 0x100 + (buf[3] & 0xFF);
+            if (chkID1 == 0x1a5a_6d75 || chkID1 == 0x105a_6d75) {
+                return getMetaDataZMD(buf);
+            }
         }
+        return new MetaData();
     }
 
     private static MetaData getMetaDataZMS(byte[] buf) {
@@ -225,6 +230,16 @@ public class ZmsDriver extends BaseDriver {
                 }
 
                 cmt = new String(buf, ptr, ePtr - ptr, Common.charset);
+            } else if (zms.version == 2) {
+                int ptr = 8;
+                int ePtr = ptr;
+                while (ePtr < buf.length && buf[ePtr] != 0x00) {
+                    ePtr++;
+                }
+                if (ePtr > ptr) {
+                    cmt = new String(buf, ptr, ePtr - ptr, Common.charset);
+                    cmt = cmt.replaceAll("^[\\x00-\\x1f\\x7f]+", "").trim();
+                }
             }
         } catch (Exception e) {
             // Do nothing

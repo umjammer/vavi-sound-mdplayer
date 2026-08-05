@@ -10,8 +10,9 @@ import java.nio.file.Path;
 import java.util.Map;
 
 import mdplayer.driver.BaseDriver;
-import mdplayer.format.FileFormat;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.driver.FileFormat;
+import mdplayer.lib.mxdrv.MXDRV;
+import mdplayer.driver.BasePlugin;
 import vavi.sound.visualizer.fmdsp.TrackId;
 import vavi.sound.visualizer.fmdsp.TrackStatus;
 import vavi.util.archive.Archives;
@@ -57,7 +58,7 @@ public class MdxPcmProbe {
                                 status.toneNum, status.ticks, levelOf(source, t), status.info));
             }
             var mxdrv = ((mdplayer.driver.mxdrv.MxDriver) plugin.getDriver()).getMxdrv();
-            var part = new mdplayer.driver.mxdrv.MXDRV.PcmPart();
+            var part = new MXDRV.PcmPart();
             sb.append("  pcm8=").append(mxdrv.isPcm8Mode()).append('\n');
             for (int ch = 0; ch < 8; ch++) {
                 mxdrv.getPcmPart(ch, part);

@@ -10,7 +10,7 @@ import mdplayer.RealChip;
 import mdplayer.RealChip.EnmRealChipType;
 import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.driver.BasePlugin;
 
 
 /**

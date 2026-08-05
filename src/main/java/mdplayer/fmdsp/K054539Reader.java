@@ -14,12 +14,12 @@ import vavi.sound.visualizer.fmdsp.LevelDataSource.Pan;
 /**
  * Konami K054539: eight sampled channels on the PCM rows.
  * <p>
- * The chip hands over its whole register file, twenty bytes a channel:
+ * The chip hands over its whole register file, {@code 0x20} bytes a channel:
  * <ul>
  * <li>{@code +0} to {@code +2} the pitch, a 16.16 increment, so {@code 0x10000} is the chip's own
  * rate</li>
  * <li>{@code +3} the volume, which counts the wrong way about - 0 is loudest and 0x40 is -36 dB</li>
- * <li>{@code +5} the pan: 1 to 0xf across the right, 0x10 middle, 0x11 to 0x1f across the left</li>
+ * <li>{@code +5} the pan: 0x11 hard right through 0x18 middle to 0x1f hard left</li>
  * </ul>
  * and {@code 0x22c} says which channels are active, a bit each.
  *
@@ -38,6 +38,9 @@ public class K054539Reader extends PcmSlotReader {
 
     /** the volume register reaches -36 dB here, which is as good as silent on the display */
     private static final double volumeFloor = 0x40;
+
+    /** how far the pan register runs, 0x11 to 0x1f taken as a position from 0 */
+    private static final int panMax = 0xe;
 
     private int[] regs;
 
@@ -64,7 +67,7 @@ public class K054539Reader extends PcmSlotReader {
     @Override
     public void poll() {
         super.poll();
-        regs = info.get("regs") instanceof int[] r ? r : null;
+        regs = info.get("register") instanceof int[] r ? r : null;
     }
 
     @Override
@@ -89,17 +92,26 @@ public class K054539Reader extends PcmSlotReader {
         // the register attenuates, so turn it back into something that grows with loudness
         out.volume = (int) Math.max(0, volumeFloor - volume);
         out.amplitude = Math.max(0, 1 - volume / volumeFloor);
-        out.pan = panOf(regs[base + 5] & 0x1f);
+        out.pan = panOf(regs[base + 5] & 0xff);
         out.note = delta > 0 ? Notes.noteOfRatio(delta / 65536.0) : -1;
     }
 
     /**
-     * 1 to 0xf runs across the right, 0x10 is the middle and 0x11 to 0x1f across the left, so the
-     * register is a distance from centre in one direction or the other.
+     * The register is a position across the field rather than a distance from its middle: 0x11 is
+     * hard right, 0x18 the middle and 0x1f hard left, with 0x81 to 0x8f a second spelling of the
+     * same run (DJ Main writes those). Anything else the chip takes as the middle.
      */
     private static Pan panOf(int pan) {
-        if (pan == 0 || pan == 0x10) return Pan.CENTER;
-        return pan < 0x10 ? PcmSlotReader.panOf(pan, 0x10) : PcmSlotReader.panOf(0x10, 0x20 - pan);
+        int position = 0x18 - 0x11;
+        if (pan >= 0x11 && pan <= 0x1f) position = pan - 0x11;
+        else if (pan >= 0x81 && pan <= 0x8f) position = pan - 0x81;
+        // the chip mixes the channel at these weights, which hold the power constant across the run
+        return PcmSlotReader.panOf(weight(position), weight(panMax - position));
+    }
+
+    /** a pan weight as a whole number, {@link PcmSlotReader#panOf} only taking the two in ratio */
+    private static int weight(int position) {
+        return (int) (Math.sqrt(position) * 1000);
     }
 
     @Override

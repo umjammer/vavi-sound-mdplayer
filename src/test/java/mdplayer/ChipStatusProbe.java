@@ -10,10 +10,12 @@ import java.util.List;
 import java.util.Map;
 
 import mdplayer.driver.BaseDriver;
-import mdplayer.format.FileFormat;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.driver.FileFormat;
+import mdplayer.driver.BasePlugin;
 import vavi.sound.visualizer.fmdsp.TrackId;
+import vavi.sound.visualizer.fmdsp.TrackInfo;
 import vavi.sound.visualizer.fmdsp.TrackStatus;
+
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
@@ -85,7 +87,12 @@ public class ChipStatusProbe {
                 file.getFileName(), rows, tones, gates, detunes, slides, lfos);
 
         String out = System.getProperty("probe.out");
-        if (out == null) return;
+        if (out == null || Files.exists(Path.of(out))) return;
+        shot(source, out);
+    }
+
+    static void shot(ChipFmDspSource source, String out) throws Exception {
+
         var visualizer = new vavi.sound.visualizer.fmdsp.FmDspVisualizer(60);
         visualizer.setDataSource(source);
         visualizer.setSize(visualizer.getPreferredSize());

@@ -27,9 +27,9 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.sound.sampled.spi.AudioFileReader;
 
 import mdplayer.driver.BaseDriver;
-import mdplayer.format.FileFormat;
-import mdplayer.format.UnknownFileFormat;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.driver.FileFormat;
+import mdplayer.driver.UnknownFileFormat;
+import mdplayer.driver.BasePlugin;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 import vavi.sound.SoundUtil;

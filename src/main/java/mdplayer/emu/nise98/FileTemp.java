@@ -7,8 +7,6 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
-import mdplayer.Setting;
-
 import static java.lang.System.getLogger;
 
 
@@ -17,18 +15,18 @@ public class FileTemp {
     private static final Logger logger = getLogger(FileTemp.class.getName());
 
     private final Map<String, byte[]> temp = new HashMap<>();
-    private final Setting setting = Setting.getInstance();
+    public boolean saveCompiledFile;
 
     public FileTemp() {
     }
 
-    public void WriteTemp(String filename, byte[] data) {
+    public void writeTemp(String filename, byte[] data) {
         if (temp.containsKey(filename.toUpperCase())) {
             temp.remove(filename.toUpperCase());
         }
         temp.put(filename.toUpperCase(), data);
 
-        if (!setting.getOther().getSaveCompiledFile()) return;
+        if (!saveCompiledFile) return;
 
         try {
             Files.write(Path.of(filename), data);

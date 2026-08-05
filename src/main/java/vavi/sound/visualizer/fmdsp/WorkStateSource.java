@@ -36,6 +36,11 @@ public interface WorkStateSource {
     /** TimerB ticks since the most recent loop start. */
     long timerBCountLoop();
 
+    /** Total estimated TimerB ticks for the song, 0 if unknown. */
+    default long totalTimerBCount() {
+        return 0;
+    }
+
     /** True if a song is loaded and currently advancing. */
     boolean playing();
 
@@ -47,6 +52,11 @@ public interface WorkStateSource {
         return null;
     }
 
+    /** Using chips shown under {@code DRIVER}, e.g. {@code "YM2608"}, may be null. */
+    default String chips() {
+        return null;
+    }
+
     /** Current title / filename, may be null. */
     default String filename() {
         return null;
@@ -55,5 +65,24 @@ public interface WorkStateSource {
     /** Comment line for {@code line in 0..2}, may be null. */
     default String comment(int line) {
         return null;
+    }
+
+    /** Type label of the external PCM file for index (e.g. "PPC", "PPZ1", "PVI", etc.), may be null. */
+    default String pcmType(int index) {
+        return switch (index) {
+            case 0 -> "PCM1";
+            case 1 -> "PCM2";
+            default -> null;
+        };
+    }
+
+    /** Name of the external PCM file for index (0: PPC/PVI, 1: PPZ1/PPZ, 2: PPZ2, 3: PPS), may be null. */
+    default String pcmFilename(int index) {
+        return null;
+    }
+
+    /** True if there was an error loading the PCM file for index. */
+    default boolean pcmError(int index) {
+        return false;
     }
 }

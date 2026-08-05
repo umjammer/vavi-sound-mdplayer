@@ -85,6 +85,7 @@ public class PmdFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
      * the "pmd" event.
      */
     private volatile PW work;
+    private volatile BaseDriver baseDriver;
 
     private volatile long timerBCount;
     private volatile long loopTimerBCount;
@@ -153,11 +154,14 @@ public class PmdFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
     public void update(GenericEvent event) {
         switch (event.getName()) {
         case "pmd" -> {
-            if (!commented && event.getSource() instanceof BaseDriver driver) {
-                commented = true;
-                comments[0] = driver.metaData.getFirst(Tag.Title);
-                comments[1] = driver.metaData.getFirst(Tag.Composer);
-                comments[2] = driver.metaData.getFirst(Tag.Arranger);
+            if (event.getSource() instanceof BaseDriver d) {
+                baseDriver = d;
+                if (!commented) {
+                    commented = true;
+                    comments[0] = d.metaData.getFirst(Tag.Title);
+                    comments[1] = d.metaData.getFirst(Tag.Composer);
+                    comments[2] = d.metaData.getFirst(Tag.Arranger);
+                }
             }
             snapshot((PW) event.getArguments()[0]);
         }
@@ -195,7 +199,12 @@ public class PmdFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
             masks[i] = part.partmask != 0;
 
             status.playing = part.address != 0;
-            status.info = infoOf(t);
+            boolean isFm3ExTrack = (t == TrackId.FM_3 || t == TrackId.FM_3_EX_1 || t == TrackId.FM_3_EX_2 || t == TrackId.FM_3_EX_3);
+            if (isFm3ExTrack && (part.slotmask & 0xff) != 0xf0) {
+                status.info = TrackInfo.FM3EX;
+            } else {
+                status.info = infoOf(t);
+            }
             status.key = part.onkai & 0xff;
             status.actualKey = actualKeyOf(t, part, status.key);
             status.toneNum = part.voicenum & 0xff;
@@ -213,9 +222,17 @@ public class PmdFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
                 int ssg = p - pw.part7;
                 status.ssgTone = (part.psgpat & (1 << ssg)) != 0;
                 status.ssgNoise = (part.psgpat & (8 << ssg)) != 0;
+                status.ssgNoiseFreq = pw.psnoi & 0x1f;
+                if (t == TrackId.SSG_3 && pw.effon != 0) {
+                    status.info = TrackInfo.SSGEFF;
+                    status.toneNum = pw.psgefcnum & 0xff;
+                    if (pw.eswthz != 0) status.ssgTone = true;
+                    if (pw.eswnhz != 0) status.ssgNoise = true;
+                }
             } else {
                 status.ssgTone = false;
                 status.ssgNoise = false;
+                status.ssgNoiseFreq = 0;
             }
             for (int c = 0; c < 4; c++) {
                 status.fmSlotMask[c] = (part.slotmask & (0x10 << c)) == 0;
@@ -316,7 +333,6 @@ public class PmdFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
 
     private static TrackInfo infoOf(TrackId t) {
         return switch (t) {
-            case FM_3_EX_1, FM_3_EX_2, FM_3_EX_3 -> TrackInfo.FM3EX;
             case SSG_1, SSG_2, SSG_3 -> TrackInfo.SSG;
             case PPZ8_1, PPZ8_2, PPZ8_3, PPZ8_4, PPZ8_5, PPZ8_6, PPZ8_7, PPZ8_8 -> TrackInfo.PPZ8;
             default -> TrackInfo.NORMAL;
@@ -539,6 +555,8 @@ public class PmdFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
         status.ppz8Ch = 0;
         status.ssgTone = false;
         status.ssgNoise = false;
+        status.ssgNoiseFreq = 0;
+
         Arrays.fill(status.fmSlotMask, false);
     }
 
@@ -551,7 +569,7 @@ public class PmdFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
     private void state(PW pw) {
         int overflow = (256 - (pw.tempo_d & 0xff)) << 4;
 
-        long counter = pw.timeCounter;
+        long counter = baseDriver != null ? baseDriver.counter : 0;
         timerBStep += (counter - lastTimeCounter)
                 * (PmdDriver.baseClock / 72.0 / 2.0 / Common.VGMProcSampleRate);
         lastTimeCounter = counter;
@@ -562,7 +580,9 @@ public class PmdFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
 
         int loop = Math.max(pw.getnowLoopCounter(), 0);
         if (loop != lastLoopCount) {
-            if (lastLoopCount > 0) loopTimerBCount = timerBCount - loopStartTimerBCount;
+            if (timerBCount > loopStartTimerBCount) {
+                loopTimerBCount = timerBCount - loopStartTimerBCount;
+            }
             loopStartTimerBCount = timerBCount;
             lastLoopCount = loop;
         }
@@ -600,6 +620,8 @@ public class PmdFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
         out.ppz8Ch = status.ppz8Ch;
         out.ssgTone = status.ssgTone;
         out.ssgNoise = status.ssgNoise;
+        out.ssgNoiseFreq = status.ssgNoiseFreq;
+
         System.arraycopy(status.fmSlotMask, 0, out.fmSlotMask, 0, out.fmSlotMask.length);
     }
 
@@ -682,8 +704,46 @@ public class PmdFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
 
     @Override public String driverName() { return "PMD"; }
 
+    @Override public String chips() { PW pw = work; return (pw != null && pw.ppz != 0) ? "YM2608 PPZ8" : "YM2608"; }
+
     @Override public String filename() { return filename; }
 
     @Override public String comment(int line) { return comments[line]; }
 
+    @Override
+    public String pcmType(int index) {
+        return switch (index) {
+            case 0 -> "PPC";
+            case 1 -> "PPZ1";
+            case 2 -> "PPZ2";
+            case 3 -> "PPS";
+            default -> null;
+        };
+    }
+
+    @Override
+    public String pcmFilename(int index) {
+        PW pw = work;
+        if (pw == null) return null;
+        return switch (index) {
+            case 0 -> pw.ppcFile;
+            case 1 -> pw.ppz1File;
+            case 2 -> pw.ppz2File;
+            case 3 -> pw.ppsFile;
+            default -> null;
+        };
+    }
+
+    @Override
+    public boolean pcmError(int index) {
+        PW pw = work;
+        if (pw == null) return false;
+        return switch (index) {
+            case 0 -> pw.ppcError;
+            case 1 -> pw.ppz1Error;
+            case 2 -> pw.ppz2Error;
+            case 3 -> pw.ppsError;
+            default -> false;
+        };
+    }
 }

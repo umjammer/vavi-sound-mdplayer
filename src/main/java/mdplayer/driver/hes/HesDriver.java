@@ -7,7 +7,8 @@ import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.HuC6280Chip;
 import mdplayer.driver.BaseDriver;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.lib.hes.Hes;
+import mdplayer.driver.BasePlugin;
 import musicDriverInterface.MetaData;
 import vavi.util.ByteUtil;
 

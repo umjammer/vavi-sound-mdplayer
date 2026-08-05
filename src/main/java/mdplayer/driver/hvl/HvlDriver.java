@@ -11,8 +11,9 @@ import java.lang.System.Logger.Level;
 
 import mdplayer.Common.EnmModel;
 import mdplayer.driver.BaseDriver;
-import mdplayer.driver.hvl.HVL.Tune;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.lib.hvl.HVL;
+import mdplayer.lib.hvl.HVL.Tune;
+import mdplayer.driver.BasePlugin;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 
@@ -155,6 +156,9 @@ public class HvlDriver extends BaseDriver {
                 if (tune.ht_SongEndReached != 0) {
                     tune.ht_SongEndReached = 0;
                     curLoop++;
+                    if (tune.ht_Tempo == 0) {
+                        stopped = true;
+                    }
                 }
             }
 

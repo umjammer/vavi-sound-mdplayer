@@ -17,8 +17,8 @@ import mdplayer.chips.MidiPlugin;
 import mdplayer.chips.RealChipPlugin;
 import mdplayer.chips.VstPlugin;
 import mdplayer.driver.BaseDriver;
-import mdplayer.plugin.BasePlugin;
-import mdplayer.plugin.SampledPlugin;
+import mdplayer.driver.BasePlugin;
+import mdplayer.driver.sampled.SampledPlugin;
 import vavi.sound.SoundUtil;
 import vavi.util.event.GenericEvent;
 import vavi.util.event.GenericListener;
@@ -27,7 +27,12 @@ import static java.lang.System.getLogger;
 import static vavi.sound.SoundUtil.volume;
 
 
-/** virtual device player */
+/**
+ * virtual device player
+ * <p>
+ * system property
+ * <li>{@code mdplayer.volume} ... player volume, default {@code 0.2}</li>
+ */
 public final class Audio {
 
     private static final Logger logger = getLogger(Audio.class.getName());
@@ -301,11 +306,6 @@ logger.log(Level.INFO, "stop: " + plugin.stopped + ", " + hashCode());
             } catch (Exception e) {
                 logger.log(Level.ERROR, e.toString()); // usually chip 1 is null
             }
-
-            //plugin.chipRegister.plugin(MidiPlugin.class).close();
-
-            // DEBUG
-            //plugin.chipRegister.plugin(VstPlugin.class).parse();
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
         }
@@ -342,8 +342,6 @@ logger.log(Level.INFO, "stop: " + plugin.stopped + ", " + hashCode());
                 logger.log(Level.ERROR, ex.getMessage(), ex);
             }
         }
-
-
     }
 
     /** */
@@ -399,11 +397,7 @@ logger.log(Level.INFO, "stop: " + plugin.stopped + ", " + hashCode());
                     plugin.chipRegister.softReset(EnmModel.VirtualModel);
                     plugin.chipRegister.softReset(EnmModel.RealModel);
 
-//                    plugin.mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, null);
-
                     plugin.chipRegister.close();
-
-                    //Thread.sleep(500); // Noise countermeasures
 
                     plugin.stopped = true;
 logger.log(Level.DEBUG, "stop: " + plugin.stopped);
@@ -455,7 +449,7 @@ logger.log(Level.DEBUG, "stop: " + plugin.stopped);
     }
 
     public void seek(double n) {
-        if (plugin instanceof mdplayer.plugin.SampledPlugin sampledPlugin) {
+        if (plugin instanceof SampledPlugin sampledPlugin) {
             try {
                 if (sampledPlugin.naudioFileReader != null) {
                     long totalBytes = sampledPlugin.naudioFileReader.getFrameLength() * sampledPlugin.naudioFileReader.getFormat().getFrameSize();

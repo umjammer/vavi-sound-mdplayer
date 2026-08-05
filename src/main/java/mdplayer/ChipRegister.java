@@ -13,7 +13,7 @@ import mdplayer.chips.MidiPlugin;
 import mdplayer.chips.Plugin;
 import mdplayer.chips.RealChipPlugin;
 import mdplayer.driver.BaseDriver;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.driver.BasePlugin;
 
 import static java.lang.System.getLogger;
 

@@ -3,8 +3,9 @@ package mdplayer.form.sys;
 import javax.swing.JFrame;
 
 import mdplayer.Audio;
-import mdplayer.driver.VgmDriver;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.driver.vgm.VGMPlugin;
+import mdplayer.driver.vgm.VgmDriver;
+import mdplayer.driver.BasePlugin;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 
@@ -20,7 +21,7 @@ public class FormInfoTest {
     @Test
     public void testFormInfo() throws Exception {
         Audio audio = Audio.getInstance();
-        BasePlugin<VgmDriver> plugin = new mdplayer.plugin.VGMPlugin();
+        BasePlugin<VgmDriver> plugin = new VGMPlugin();
         plugin.driverVirtual = new VgmDriver();
         plugin.driverVirtual.metaData = new musicDriverInterface.MetaData();
         audio.plugin = plugin;

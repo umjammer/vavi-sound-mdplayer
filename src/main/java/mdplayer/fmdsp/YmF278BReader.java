@@ -72,7 +72,7 @@ public class YmF278BReader extends OplReader {
         banks = empty;
         info = null;
         try {
-            Object value = chip().getInfo(0).get("register");
+            Object value = chip().getInfo(chipId).get("register");
             if (value instanceof int[][] r && r.length > WAVE_PORT) banks = r;
         } catch (RuntimeException ignore) {
             // the chip exists but the song never loaded it
@@ -114,7 +114,7 @@ public class YmF278BReader extends OplReader {
         return Pan.NONE;
     }
 
-    @Override protected boolean chipMask(int ch) { return chip().getMask(0, ch); }
+    @Override protected boolean chipMask(int ch) { return chip().getMask(chipId, ch); }
 
     @Override public String chipName() { return "OPL4"; }
 
@@ -213,6 +213,6 @@ public class YmF278BReader extends OplReader {
         if (group != Group.PCM) return super.masked(group, slot);
         int ch = slotChannels[slot];
         // the chip counts its wave channels after the 18 FM ones
-        return ch >= 0 && chip().getMask(0, 18 + ch);
+        return ch >= 0 && chip().getMask(chipId, 18 + ch);
     }
 }

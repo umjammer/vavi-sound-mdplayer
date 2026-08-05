@@ -11,9 +11,9 @@ import java.lang.System.Logger.Level;
 
 import mdplayer.Common.EnmModel;
 import mdplayer.driver.BaseDriver;
-import mdplayer.driver.ahx.AHX.AHXOutput;
-import mdplayer.driver.ahx.AHX.AHXPlayer;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.lib.ahx.AHX.AHXOutput;
+import mdplayer.lib.ahx.AHX.AHXPlayer;
+import mdplayer.driver.BasePlugin;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 

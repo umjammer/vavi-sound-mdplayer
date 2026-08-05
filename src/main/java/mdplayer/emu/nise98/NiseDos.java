@@ -27,6 +27,9 @@ public class NiseDos {
 
     private static final Logger logger = getLogger(NiseDos.class.getName());
 
+    /** the TRACE lines below are per emulated software interrupt - see the note in {@link Nise286} */
+    private static final boolean tracing = logger.isLoggable(Level.TRACE);
+
     public Charset charset;
 
     private final Register286 regs;
@@ -170,15 +173,15 @@ public class NiseDos {
     public void int_(byte imm8) {
         switch (imm8) {
             case 0x18:
-                logger.log(Level.TRACE, "<NiseDos>INT18h AH:$%02x".formatted(regs.getAH() & 0xff));
+                if (tracing) logger.log(Level.TRACE, "<NiseDos>INT18h AH:$%02x".formatted(regs.getAH() & 0xff));
                 int18();
                 break;
             case 0x21:
-                logger.log(Level.TRACE, "<NiseDos>INT21h AH:$%02x".formatted(regs.getAH() & 0xff));
+                if (tracing) logger.log(Level.TRACE, "<NiseDos>INT21h AH:$%02x".formatted(regs.getAH() & 0xff));
                 int21();
                 break;
             case 0x2f:
-                logger.log(Level.TRACE, "<NiseDos>INT2fh AX:$%04x".formatted(regs.getAX() & 0xffff));
+                if (tracing) logger.log(Level.TRACE, "<NiseDos>INT2fh AX:$%04x".formatted(regs.getAX() & 0xffff));
                 int2F();
                 break;
             default:
@@ -187,7 +190,7 @@ public class NiseDos {
                     return;
                 }
 
-                logger.log(Level.TRACE, "<NiseDos>INT%02xh AH:$%02x".formatted(imm8 & 0xff, regs.getAH() & 0xff));
+                if (tracing) logger.log(Level.TRACE, "<NiseDos>INT%02xh AH:$%02x".formatted(imm8 & 0xff, regs.getAH() & 0xff));
                 int ptr = (imm8 & 0xff) * 4;
                 short ip = mem.peekW(ptr);
                 short cs = mem.peekW(ptr + 2);
@@ -423,7 +426,7 @@ public class NiseDos {
                 }
                 break;
             case 0x3e:
-                logger.log(Level.TRACE, "<NiseDos>  FILE CLOSE handle=%02x".formatted(regs.getBX() & 0xff));
+                if (tracing) logger.log(Level.TRACE, "<NiseDos>  FILE CLOSE handle=%02x".formatted(regs.getBX() & 0xff));
                 fnd = searchFileStatus(regs.getBX());
                 regs.setCF(true);
                 try {
@@ -431,7 +434,7 @@ public class NiseDos {
                         files.remove(fnd);
                         if (fnd.mode == 1) {
                             String wFn = fnd.path.resolve(fnd.name).toString();
-                            fileTemp.WriteTemp(wFn, ByteUtil.toByteArray(fnd.lstBuf));
+                            fileTemp.writeTemp(wFn, ByteUtil.toByteArray(fnd.lstBuf));
                             // File.WriteAllBytes(wFn, fnd.lstBuf.ToArray());
                         }
                         regs.setCF(false);
@@ -441,7 +444,7 @@ public class NiseDos {
                 }
                 break;
             case 0x3f:
-                logger.log(Level.TRACE, "<NiseDos>  FILE READ handle=%02x".formatted(regs.getBX() & 0xff));
+                if (tracing) logger.log(Level.TRACE, "<NiseDos>  FILE READ handle=%02x".formatted(regs.getBX() & 0xff));
 
                 fnd = searchFileStatus(regs.getBX());
                 if (fnd == null) {
@@ -509,14 +512,14 @@ logger.log(Level.TRACE, "error message from program");
                 regs.setCF(true);
                 break;
             case 0x42:
-                logger.log(Level.TRACE, "<NiseDos>  SEEK FILE POINTER handle=%02x".formatted(regs.getBX() & 0xff));
+                if (tracing) logger.log(Level.TRACE, "<NiseDos>  SEEK FILE POINTER handle=%02x".formatted(regs.getBX() & 0xff));
                 fnd = searchFileStatus(regs.getBX());
                 if (fnd == null) {
                     regs.setCF(true);
                     break;
                 }
 
-                int d = (regs.getCX() << 4) + regs.getDX();
+                int d = ((regs.getCX() & 0xffff) << 4) + (regs.getDX() & 0xffff);
                 if (regs.getAL() == 0) fnd.ptr = d;
                 else if (regs.getAL() == 1) fnd.ptr += d;
                 else if (regs.getAL() == 2) fnd.ptr = fnd.size - 1 + d;
@@ -528,7 +531,7 @@ logger.log(Level.TRACE, "error message from program");
                 logger.log(Level.TRACE, "<NiseDos>  Get/Set File Attributes");
                 break;
             case 0x47:
-                logger.log(Level.TRACE, "<NiseDos>  Get Current Directory DL=%02x DS:SI[%04x:%04x]".formatted(regs.getDL() & 0xff, regs.getDS() & 0xffff, regs.getSI() & 0xffff));
+                if (tracing) logger.log(Level.TRACE, "<NiseDos>  Get Current Directory DL=%02x DS:SI[%04x:%04x]".formatted(regs.getDL() & 0xff, regs.getDS() & 0xffff, regs.getSI() & 0xffff));
                 regs.setCF(false);
                 mem.pokeB(regs.getDS_SI(), (byte) '.');
                 mem.pokeB(regs.getDS_SI() + 1, (byte) 0x00);
@@ -539,7 +542,7 @@ logger.log(Level.TRACE, "error message from program");
                 regs.setBX(regs.getBX());
                 allocateMemSize = regs.getBX() * 16;
                 allocateMemStartAddress += allocateMemSize;
-                logger.log(Level.TRACE, "<NiseDos>  Allocate Memory AX(allocatedStartSeg)=%04x BX(paragraphs size)=%04x".formatted(regs.getBX() & 0xffff, regs.getAX() & 0xffff));
+                if (tracing) logger.log(Level.TRACE, "<NiseDos>  Allocate Memory AX(allocatedStartSeg)=%04x BX(paragraphs size)=%04x".formatted(regs.getBX() & 0xffff, regs.getAX() & 0xffff));
                 break;
             case 0x49:
                 logger.log(Level.TRACE, "<NiseDos>  FREE MEMORY"); // https://fd.lod.bz/rbil/interrup/dos_kernel/2149.html#sect-2975

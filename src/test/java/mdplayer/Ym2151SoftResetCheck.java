@@ -11,8 +11,8 @@ import java.util.Map;
 
 import mdplayer.Common.EnmModel;
 import mdplayer.driver.BaseDriver;
-import mdplayer.format.FileFormat;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.driver.FileFormat;
+import mdplayer.driver.BasePlugin;
 import vavi.util.archive.Archives;
 
 import org.junit.jupiter.api.Test;

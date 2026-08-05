@@ -15,9 +15,10 @@ import java.util.Map;
 
 import mdplayer.chips.MidiPlugin;
 import mdplayer.driver.BaseDriver;
-import mdplayer.format.FileFormat;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.driver.FileFormat;
+import mdplayer.driver.BasePlugin;
 import vavi.sound.visualizer.fmdsp.TrackId;
+import vavi.sound.visualizer.fmdsp.TrackInfo;
 import vavi.sound.visualizer.fmdsp.TrackStatus;
 import vavi.util.archive.Archives;
 
@@ -83,14 +84,21 @@ class VisualizerSweepTest {
      * What the meters of a song showed. Each of the three is a separate way for a row to look
      * broken, and they fail one at a time: MDX showed keys with no volume, a Konami VGM showed
      * keys and volume with no note length bar.
+     *
+     * @param pitched whether any row that played could have shown a note at all. Some music has
+     *                none anywhere: a Neo Geo drum track is ADPCM-A, which plays its samples at
+     *                one fixed rate, a Mercury unit is a codec fed a stream, and a ZX beeper is a
+     *                bit being flipped. Those rows say {@link TrackInfo#STREAM} for exactly this
+     *                reason, and a blank keyboard over them is the truth rather than a fault.
      */
-    private record Result(String driver, boolean silent, boolean key, boolean volume, boolean bar) {
+    private record Result(String driver, boolean silent, boolean key, boolean volume, boolean bar,
+                          boolean pitched) {
 
         /** the parts of a meter that never showed anything, empty when all of them did */
         List<String> missing() {
             if (silent) return List.of();
             List<String> missing = new ArrayList<>();
-            if (!key) missing.add("key");
+            if (!key && pitched) missing.add("key");
             if (!volume) missing.add("vol");
             if (!bar) missing.add("bar");
             return missing;
@@ -121,7 +129,12 @@ class VisualizerSweepTest {
         boolean key = false;
         boolean volume = false;
         boolean bar = false;
-        for (int block = 0; block < BLOCKS && !(key && volume && bar); block++) {
+        boolean pitched = false;
+        // "it played" is what the meters are judged against, so a song is given the whole run to
+        // produce a sample even once the meters are all lit: several MGS tunes open with half a
+        // second of silence under an already sounding row, and stopping at the meters called them
+        // silent - untested - when they were only quiet so far
+        for (int block = 0; block < BLOCKS && !(sounded && key && volume && bar); block++) {
             for (int i = 0; i < 44100 / buffer.length; i++) {
                 plugin.getDriver().render(buffer, 0, buffer.length);
                 for (short s : buffer) {
@@ -137,6 +150,7 @@ class VisualizerSweepTest {
                     if ((status.key & 0xf) < 12) key = true;
                     if (status.volume > 0) volume = true;
                     if (status.ticks > 3) bar = true; // under 4 ticks the bar has no column to fill
+                    if (status.info != TrackInfo.STREAM) pitched = true;
                 }
             }
         }
@@ -151,6 +165,6 @@ class VisualizerSweepTest {
         } catch (Exception ignore) {
             // a driver that will not shut down cleanly is not this test's business
         }
-        return new Result(String.valueOf(source.driverName()), !sounded, key, volume, bar);
+        return new Result(String.valueOf(source.driverName()), !sounded, key, volume, bar, pitched);
     }
 }

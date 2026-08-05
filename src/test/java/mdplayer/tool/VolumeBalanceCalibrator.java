@@ -23,8 +23,8 @@ import javax.xml.transform.stream.StreamResult;
 import mdplayer.Common;
 import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
-import mdplayer.format.FileFormat;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.driver.FileFormat;
+import mdplayer.driver.BasePlugin;
 import mdsound.MDSound;
 
 /**
@@ -530,6 +530,7 @@ public final class VolumeBalanceCalibrator {
         for (String key : new String[] {
                 "mdplayer.fmp.dir", "mdplayer.fmp.pvi", "mdplayer.zms.dir", "mdplayer.mgs.dir",
                 "mdplayer.ndp.dir", "mdplayer.musica.dir", "muap.dir.dta", "muap.dir.pcm",
+                "mdsound.pcm.path",
                 "mdplayer.variant.pcm8", "mdplayer.variant.mpcm", "mdplayer.variant.ym2151",
                 "mdplayer.variant.ym2413", "mdplayer.variant.ymf262", "mdplayer.variant.ay8910",
                 "fmdsp.fontRom" }) {

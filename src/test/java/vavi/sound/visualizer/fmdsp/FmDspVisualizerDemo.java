@@ -157,6 +157,7 @@ public final class FmDspVisualizerDemo {
             out.status = playing ? "PLAY" : "STOP";
             out.ssgTone = false;
             out.ssgNoise = false;
+            out.ssgNoiseFreq = 0;
         }
 
         @Override
@@ -177,6 +178,8 @@ public final class FmDspVisualizerDemo {
         @Override public long timerBCountLoop() { return ((long) (t() * 200)) % 6000; }
         @Override public boolean playing() { return !paused; }
         @Override public boolean paused() { return paused; }
+        @Override public String driverName() { return "DEMO"; }
+        @Override public String chips() { return "YM2608"; }
         @Override public String filename() { return "DEMO.M2"; }
 
         @Override

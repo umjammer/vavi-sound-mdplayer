@@ -88,6 +88,6 @@ public class QSoundReader extends PcmSlotReader {
 
     @Override
     protected boolean muted(int ch) {
-        return chipRegister.chip(QSoundChip.class).getMask(0, ch);
+        return chipRegister.chip(QSoundChip.class).getMask(chipId, ch);
     }
 }

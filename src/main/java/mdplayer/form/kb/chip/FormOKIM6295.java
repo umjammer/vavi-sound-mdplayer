@@ -308,7 +308,7 @@ public class FormOKIM6295 extends FormChipBase<FormOKIM6295.Params> {
     /** this panel's per-frame draw state, diffed new against old (see {@link FormChipBase}) */
     public static class Params {
 
-        public final PcmChannelParams[] channels = new PcmChannelParams[] {new PcmChannelParams(), new PcmChannelParams(), new PcmChannelParams(), new PcmChannelParams()};
+        public final PcmChannelParams[] channels = {new PcmChannelParams(), new PcmChannelParams(), new PcmChannelParams(), new PcmChannelParams()};
 
         public int masterClock = 0;
         public int pin7State = 0;

@@ -122,9 +122,11 @@ public class FmDspVisualizer extends JComponent {
     private static final int PCM1FILETRI_X = PCM1FILETXT_X + 21;
     private static final int PCM1FILENAME_X = PCM1FILETRI_X + 8;
     private static final int PCM2FILEBAR_X = 551;
+    private static final int PCM1FILENAME_W = PCM2FILEBAR_X - 2 - PCM1FILENAME_X;
     private static final int PCM2FILETXT_X = PCM2FILEBAR_X + 5;
     private static final int PCM2FILETRI_X = PCM2FILETXT_X + 21;
     private static final int PCM2FILENAME_X = PCM2FILETRI_X + 8;
+    private static final int PCM2FILENAME_W = PC98_W - 2 - PCM2FILENAME_X;
     private static final int DT_SIGN_W = 3;
     private static final int DT_SIGN_H = 3;
     private static final int SPECTRUM_X = 352;
@@ -191,6 +193,9 @@ public class FmDspVisualizer extends JComponent {
     private static final int DRIVER_TRI_Y = DRIVER_TEXT_Y + 3;
     private static final int DRIVER_NAME_X = DRIVER_TRI_X + 8;
     private static final int DRIVER_NAME_Y = DRIVER_TEXT_Y - 1;
+    private static final int CHIP_TEXT_Y = DRIVER_TEXT_Y + 19;
+    private static final int CHIP_TRI_Y = CHIP_TEXT_Y + 3;
+    private static final int CHIP_NAME_Y = CHIP_TEXT_Y - 1;
     private static final int CURL_W = 11;
     private static final int CURL_H = 11;
     private static final int CURL_LEFT_X = 347;
@@ -355,6 +360,12 @@ public class FmDspVisualizer extends JComponent {
     /** Strings are Unicode; this is only used to index the JIS addressed font ROM. */
     private static final Charset JIS0208 = Charset.forName("x-JIS0208");
 
+    /**
+     * The NEC extensions the ROM has glyphs for but JIS X 0208 has no code for - its row 13
+     * symbols, and its rows 89 to 92 of IBM characters - are reached through Shift_JIS instead.
+     */
+    private static final Charset MS932 = Charset.forName("MS932");
+
     /** Size of a PC-98 font ROM dump. */
     public static final int FONT_ROM_SIZE = 0x46800;
 
@@ -413,8 +424,15 @@ public class FmDspVisualizer extends JComponent {
      * @param fps target frame rate, e.g. {@code 60}.
      */
     public FmDspVisualizer(int fps) {
+        this(fps, 1);
+    }
+
+    /**
+     * @param fps target frame rate, e.g. {@code 60}.
+     */
+    public FmDspVisualizer(int fps, int zoom) {
         if (fps <= 0) fps = 60;
-        setPreferredSize(new Dimension(CANVAS_W, CANVAS_H));
+        setPreferredSize(new Dimension(CANVAS_W * zoom, CANVAS_H * zoom));
         setBackground(Color.BLACK);
         setOpaque(true);
         timer = new Timer(1000 / fps, e -> repaint());
@@ -582,6 +600,16 @@ public class FmDspVisualizer extends JComponent {
         }
     }
 
+    private void vramblitColorSub(int dstX, int dstY, byte[] data, int totalW, int subX, int subW, int h, int color) {
+        for (int yi = 0; yi < h; yi++) {
+            int row = (dstY + yi) * PC98_W + dstX + subX;
+            int drow = yi * totalW + subX;
+            for (int xi = 0; xi < subW; xi++) {
+                if (data[drow + xi] != 0) vram[row + xi] = (byte) color;
+            }
+        }
+    }
+
     private void vramblitKey(int x, int y, byte[] data, int off, int w, int h, int key, int color) {
         for (int yi = 0; yi < h; yi++) {
             int row = (y + yi) * PC98_W + x;
@@ -739,20 +767,40 @@ public class FmDspVisualizer extends JComponent {
                          int x, int y, int color, boolean bg) {
         if (s == null) return;
         int xo = 0;
+        int yo = 0;
+        int lineH = fh + 3;
         for (int i = 0; i < s.length(); i++) {
             char c = s.charAt(i);
+            if (c == '\r') {
+                xo = 0;
+                if (i + 1 < s.length() && s.charAt(i + 1) == '\n') {
+                    i++;
+                }
+                yo += lineH;
+                continue;
+            }
+            if (c == '\n') {
+                xo = 0;
+                yo += lineH;
+                continue;
+            }
             if (c == '\t') {
                 xo += fw * 8;
                 xo -= xo % (fw * 8);
                 continue;
             }
+            if (c < 0x20) {
+                continue;
+            }
             int ank = ankOf(c);
             if (ank >= 0) {
-                if (x + xo + fw > PC98_W) return;
-                vramPutchar(font, ank * glyphBytes, x + xo, y, fw, fh, color, bg);
+                if (x + xo + fw > PC98_W) continue;
+                if (y + yo + fh <= PC98_H) {
+                    vramPutchar(font, ank * glyphBytes, x + xo, y + yo, fw, fh, color, bg);
+                }
                 xo += fw;
             } else {
-                if (x + xo + fw * 2 > PC98_W) return;
+                if (x + xo + fw * 2 > PC98_W) continue;
                 xo += fw + 8;
             }
         }
@@ -765,24 +813,52 @@ public class FmDspVisualizer extends JComponent {
     private void putRom(String s, int x, int y, int color, boolean bg) {
         if (s == null) return;
         int xo = 0;
+        int yo = 0;
+        int lineH = COMMENT_H;
         for (int i = 0; i < s.length(); i++) {
             char c = s.charAt(i);
+            if (c == '\r') {
+                xo = 0;
+                if (i + 1 < s.length() && s.charAt(i + 1) == '\n') {
+                    i++;
+                }
+                yo += lineH;
+                continue;
+            }
+            if (c == '\n') {
+                xo = 0;
+                yo += lineH;
+                continue;
+            }
             if (c == '\t') {
                 xo += ROM_W * 8;
                 xo -= xo % (ROM_W * 8);
                 continue;
             }
+            if (c < 0x20) {
+                continue;
+            }
             int ank = ankOf(c);
-            if (ank >= 0) {
-                if (x + xo + ROM_W > PC98_W) return;
-                vramPutchar(fontRom, ROM_ANK + ank * ROM_H, x + xo, y, ROM_W, ROM_H, color, bg);
+            if (ank >= 0 || Pc98Gaiji.isHalfWidth(c)) {
+                if (x + xo + ROM_W > PC98_W) continue;
+                // a half width row's glyph is the left half of its cell, so both are one blit
+                int glyph = ank >= 0 ? ROM_ANK + ank * ROM_H : romKanji(jisOf(c));
+                if (glyph >= 0 && y + yo + ROM_H <= PC98_H) {
+                    vramPutchar(fontRom, glyph, x + xo, y + yo, ROM_W, ROM_H, color, bg);
+                }
                 xo += ROM_W;
             } else {
-                if (x + xo + ROM_W * 2 > PC98_W) return;
+                if (x + xo + ROM_W * 2 > PC98_W) continue;
                 int glyph = romKanji(jisOf(c));
-                if (glyph >= 0) {
-                    vramPutchar(fontRom, glyph, x + xo, y, ROM_W, ROM_H, color, bg);
-                    vramPutchar(fontRom, glyph + ROM_H, x + xo + ROM_W, y, ROM_W, ROM_H, color, bg);
+                // a gaiji is defined in the machine's RAM, so no ROM dump has one: rather than
+                // leave a hole where a character was, mark it the way a missing one is marked.
+                // Only a gaiji, mind - a full width space is a blank cell and means it
+                if (glyph < 0 || (Pc98Gaiji.jisOf(c) != 0 && isBlank(glyph))) {
+                    glyph = romKanji(jisOf(GETA));
+                }
+                if (glyph >= 0 && y + yo + ROM_H <= PC98_H) {
+                    vramPutchar(fontRom, glyph, x + xo, y + yo, ROM_W, ROM_H, color, bg);
+                    vramPutchar(fontRom, glyph + ROM_H, x + xo + ROM_W, y + yo, ROM_W, ROM_H, color, bg);
                 }
                 xo += ROM_W * 2;
             }
@@ -796,9 +872,26 @@ public class FmDspVisualizer extends JComponent {
      * <p>
      * Widths follow putline's own advance rules, so a full width character counts as the
      * {@code fw + 8} it advances even though the ANK fonts have no glyph for it.
-     *
-     * @param fw width of one character of the font it will be drawn with
      */
+    private static String stripPath(String path) {
+        if (path == null || path.isEmpty()) return path;
+        int lastSlash = Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\'));
+        if (lastSlash >= 0 && lastSlash < path.length() - 1) {
+            return path.substring(lastSlash + 1);
+        }
+        return path;
+    }
+
+    private static String stripPathAndExtension(String path) {
+        if (path == null || path.isEmpty()) return path;
+        String name = stripPath(path);
+        int dot = name.lastIndexOf('.');
+        if (dot > 0) {
+            return name.substring(0, dot);
+        }
+        return name;
+    }
+
     private static String ellipsize(String s, int fw, int maxW) {
         if (s == null) return null;
 
@@ -823,6 +916,7 @@ public class FmDspVisualizer extends JComponent {
 
     /** what {@link #putline} moves the cursor by for {@code c} */
     private static int advanceOf(char c, int fw) {
+        if (c < 0x20) return 0;
         return ankOf(c) >= 0 ? fw : fw + 8;
     }
 
@@ -837,9 +931,37 @@ public class FmDspVisualizer extends JComponent {
     /** JIS X 0208 code of {@code c}, or 0 when it has none. */
     private int jisOf(char c) {
         return jisCache.computeIfAbsent(c, ch -> {
-            byte[] b = String.valueOf(jisVariantOf(ch)).getBytes(JIS0208);
-            return b.length == 2 ? (b[0] & 0xff) << 8 | (b[1] & 0xff) : 0;
+            int gaiji = Pc98Gaiji.jisOf(ch);
+            if (gaiji != 0) {
+                return gaiji;
+            }
+            char v = jisVariantOf(ch);
+            // x-JIS0208 encodes what it has no code for as a character of its own, so asking it
+            // first would draw that one instead - every unmappable character sharing one glyph
+            if (JIS0208.newEncoder().canEncode(v)) {
+                byte[] b = String.valueOf(v).getBytes(JIS0208);
+                return b.length == 2 ? (b[0] & 0xff) << 8 | (b[1] & 0xff) : 0;
+            }
+            if (MS932.newEncoder().canEncode(v)) {
+                byte[] b = String.valueOf(v).getBytes(MS932);
+                return b.length == 2 ? jisOfShiftJis(b[0] & 0xff, b[1] & 0xff) : 0;
+            }
+            return 0;
         });
+    }
+
+    /** JIS X 0208 code of a Shift_JIS pair, or 0 when it addresses no row of one. */
+    private static int jisOfShiftJis(int b1, int b2) {
+        int row = (b1 < 0xe0 ? b1 - 0x81 : b1 - 0xc1) * 2 + 1;
+        int cell;
+        if (b2 >= 0x9f) {
+            row++;
+            cell = b2 - 0x9f + 1;
+        } else {
+            cell = b2 - 0x40 + (b2 < 0x7f ? 1 : 0);
+        }
+        // the IBM characters Shift_JIS also keeps past 0xfa are beyond the 94 rows a JIS code has
+        return row >= 1 && row <= 94 && cell >= 1 && cell <= 94 ? (row + 0x20) << 8 | (cell + 0x20) : 0;
     }
 
     /**
@@ -858,6 +980,17 @@ public class FmDspVisualizer extends JComponent {
             case '∥' -> '‖'; // double vertical line
             default -> c;
         };
+    }
+
+    /** what a character the ROM cannot draw is marked with */
+    private static final char GETA = '〓';
+
+    /** whether the ROM's cell at {@code glyph} is empty, which is how it holds an undefined one */
+    private boolean isBlank(int glyph) {
+        for (int i = 0; i < ROM_H * 2; i++) {
+            if (fontRom[glyph + i] != 0) return false;
+        }
+        return true;
     }
 
     /** Offset of the left half of a kanji in the font ROM, or -1 when there is none. */
@@ -889,16 +1022,43 @@ public class FmDspVisualizer extends JComponent {
         for (int x = 74; x < PC98_W; x++) {
             vram[332 * PC98_W + x] = 7;
         }
-        putMedium(ellipsize(w != null ? w.filename() : null, MFW, FILEBAR_FILENAME_W),
+        int pcmcount = 0;
+        if (w != null) {
+            for (int i = 0; i < 4; i++) {
+                if (w.pcmType(i) != null || w.pcmFilename(i) != null) {
+                    pcmcount = i + 1;
+                }
+            }
+        }
+        if (pcmcount == 0) {
+            pcmcount = 2;
+        }
+
+        int firstPcmBarX = PCM2FILEBAR_X - (pcmcount - 1) * 88;
+        int filenameW = Math.max(20, firstPcmBarX - FILEBAR_FILENAME_X - 2);
+
+        putMedium(ellipsize(w != null ? stripPath(w.filename()) : null, MFW, filenameW),
                 FILEBAR_FILENAME_X, PLAYING_Y, 2, false);
 
-        vramblit(PCM1FILEBAR_X, PLAYING_Y, s_filebar, 0, FILEBAR_W, FILEBAR_H);
-        putSmall("PCM1", PCM1FILETXT_X, PLAYING_Y + 1, 2, false);
-        vramblit(PCM1FILETRI_X, FILEBAR_TRI_Y, s_filebar_tri, 0, FILEBAR_TRI_W, FILEBAR_TRI_H);
+        for (int i = 0; i < pcmcount; i++) {
+            int xoff = (pcmcount - i - 1) * 88;
+            int barX = PCM2FILEBAR_X - xoff;
+            int txtX = barX + 4;
+            String pcmType = w != null ? w.pcmType(i) : null;
+            if (pcmType == null || pcmType.isEmpty()) {
+                pcmType = "PCM" + (i + 1);
+            }
+            int triX = txtX + pcmType.length() * 5 + 1;
+            int nameX = triX + 7;
+            int nameW = (i == pcmcount - 1) ? (PC98_W - nameX) : (barX + 88 - nameX - 2);
+            if (nameW < 10) nameW = 50;
 
-        vramblit(PCM2FILEBAR_X, PLAYING_Y, s_filebar, 0, FILEBAR_W, FILEBAR_H);
-        putSmall("PCM2", PCM2FILETXT_X, PLAYING_Y + 1, 2, false);
-        vramblit(PCM2FILETRI_X, FILEBAR_TRI_Y, s_filebar_tri, 0, FILEBAR_TRI_W, FILEBAR_TRI_H);
+            vramblit(barX, PLAYING_Y, s_filebar, 0, FILEBAR_W, FILEBAR_H);
+            putSmall(pcmType, txtX, PLAYING_Y + 1, 2, false);
+            vramblit(triX, FILEBAR_TRI_Y, s_filebar_tri, 0, FILEBAR_TRI_W, FILEBAR_TRI_H);
+            putMedium(ellipsize(w != null ? stripPathAndExtension(w.pcmFilename(i)) : null, MFW, nameW),
+                    nameX, PLAYING_Y, 2 + (w != null && w.pcmError(i) ? 1 : 0), false);
+        }
 
         int height = (16 + 3) * 3 + 8;
         for (int y = PC98_H - height; y < PC98_H; y++) {
@@ -1024,7 +1184,13 @@ public class FmDspVisualizer extends JComponent {
         putSmall("IVER", DRIVER_TEXT_2_X, DRIVER_TEXT_Y, 7, true);
         vramblitColor(DRIVER_TRI_X, DRIVER_TRI_Y, s_filebar_tri, 0, FILEBAR_TRI_W, FILEBAR_TRI_H, 7);
         WorkStateSource work = source != null ? source.work() : null;
-        putMedium(work != null ? work.driverName() : null, DRIVER_NAME_X, DRIVER_NAME_Y, 2, false);
+        int rightMaxW = TIME_BAR_X - 2 - DRIVER_NAME_X;
+        putMedium(ellipsize(work != null ? work.driverName() : null, MFW, rightMaxW), DRIVER_NAME_X, DRIVER_NAME_Y, 2, false);
+
+        putSmall("CH", DRIVER_TEXT_X, CHIP_TEXT_Y, 7, true);
+        putSmall("IP", DRIVER_TEXT_2_X, CHIP_TEXT_Y, 7, true);
+        vramblitColor(DRIVER_TRI_X, CHIP_TRI_Y, s_filebar_tri, 0, FILEBAR_TRI_W, FILEBAR_TRI_H, 7);
+        putSmall(ellipsize(work != null ? work.chips() : null, SFW, rightMaxW), DRIVER_NAME_X, CHIP_TEXT_Y, 2, false);
         vramblit(CURL_LEFT_X, CURL_Y, s_curl_left, 0, CURL_W, CURL_H);
         vramblit(CURL_RIGHT_X, CURL_Y, s_curl_right, 0, CURL_W, CURL_H);
 
@@ -1187,7 +1353,7 @@ public class FmDspVisualizer extends JComponent {
                 // FALLTHRU
             case SSG:
                 if (track.ssgNoise) {
-                    info2 = String.format("%c%02X ", track.ssgTone ? 'M' : 'N', 0);
+                    info2 = String.format("%c%02X ", track.ssgTone ? 'M' : 'N', track.ssgNoiseFreq & 0x1f);
                 }
                 break;
             case FM3EX:
@@ -1367,6 +1533,7 @@ public class FmDspVisualizer extends JComponent {
         s.ppz8Ch = 0;
         s.ssgTone = false;
         s.ssgNoise = false;
+        s.ssgNoiseFreq = 0;
     }
 
     private void renderControlAndCounters() {
@@ -1380,7 +1547,31 @@ public class FmDspVisualizer extends JComponent {
         vramblit(FADE_X, FADE_Y, s_fade, 0, FADE_W, FADE_H);
         vramblit(FF_X, FF_Y, s_ff, 0, FF_W, FF_H);
         vramblit(REW_X, REW_Y, s_rew, 0, REW_W, REW_H);
-        vramblit(FLOPPY_X, FLOPPY_Y, s_floppy, 0, FLOPPY_W, FLOPPY_H);
+        vramblitColor(FLOPPY_X, FLOPPY_Y, s_floppy, 0, FLOPPY_W, FLOPPY_H, 3);
+        boolean hasPcm0 = w != null && w.pcmFilename(0) != null;
+        boolean hasPcm1 = w != null && w.pcmFilename(1) != null;
+        boolean hasPcm2 = w != null && w.pcmFilename(2) != null;
+        boolean hasPcm3 = w != null && w.pcmFilename(3) != null;
+        boolean hasAnyPcm = hasPcm0 || hasPcm1 || hasPcm2 || hasPcm3;
+        if (hasAnyPcm) {
+            vramblitColorSub(FLOPPY_X, FLOPPY_Y, s_floppy, FLOPPY_W, 0, 50, FLOPPY_H, 2);
+        }
+        if (hasPcm0) {
+            int c0 = w.pcmError(0) ? 8 : 2;
+            vramblitColorSub(FLOPPY_X, FLOPPY_Y, s_floppy, FLOPPY_W, 50, 5, FLOPPY_H, c0);
+        }
+        if (hasPcm1) {
+            int c1 = w.pcmError(1) ? 8 : 2;
+            vramblitColorSub(FLOPPY_X, FLOPPY_Y, s_floppy, FLOPPY_W, 55, 7, FLOPPY_H, c1);
+        }
+        if (hasPcm2) {
+            int c2 = w.pcmError(2) ? 8 : 2;
+            vramblitColorSub(FLOPPY_X, FLOPPY_Y, s_floppy, FLOPPY_W, 62, 6, FLOPPY_H, c2);
+        }
+        if (hasPcm3) {
+            int c3 = w.pcmError(3) ? 8 : 2;
+            vramblitColorSub(FLOPPY_X, FLOPPY_Y, s_floppy, FLOPPY_W, 68, 6, FLOPPY_H, c3);
+        }
 
         long frames = w != null ? w.generatedFrames() : 0L;
         int srate = w != null ? Math.max(1, w.sampleRate()) : 55467;
@@ -1416,12 +1607,26 @@ public class FmDspVisualizer extends JComponent {
             lp /= 10;
         }
 
-        // loop progress bar
+        // loop / duration progress bar
         long loopLen = w != null ? w.loopTimerBCount() : 0L;
         long loopPos = w != null ? w.timerBCountLoop() : 0L;
+        if (loopLen <= 0 && w != null) {
+            // no loop measurement yet: fall back to total song length (if known)
+            loopLen = w.totalTimerBCount();
+            loopPos = w.timerBCount();
+        }
+        if (loopLen <= 0 && w != null) {
+            // still no length known: spin the slider with a fixed 1200-tick period (~10 s at TimerB=200)
+            loopLen = 1200;
+            loopPos = w.timerBCount();
+        }
         int pos = 0;
-        if (loopLen != 0) pos = (int) (loopPos * (72 + 1 - 4) / loopLen);
-        boolean wplaying = w != null && w.playing();
+        if (loopLen > 0) {
+            pos = (int) ((loopPos % loopLen) * (72 + 1 - 4) / loopLen);
+        }
+        pos = Math.max(0, Math.min(69, pos));
+
+        boolean wplaying = w != null && w.playing() && !w.paused();
         for (int x = 0; x < 72; x++) {
             if (x == 0 || x == 36 || x == 71) {
                 vram[(70 - 2) * PC98_W + 352 + x * 2] = 7;

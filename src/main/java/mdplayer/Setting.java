@@ -275,12 +275,25 @@ public class Setting implements Serializable, Cloneable {
         public String romKernalPath = "";
         public String romBasicPath = "";
         public String romCharacterPath = "";
+        /**
+         * The collection's songlength database, {@code DOCUMENTS/Songlengths.md5}. Where a tune is
+         * listed in it, that is how long it plays for and none of the guessing below happens.
+         * Empty for none.
+         */
+        public String songLengthPath = "";
         public int quality = 1;
         public int outputBufferSize = 5000;
         public int c64model = 0;
         public boolean c64modelForce = false;
         public int sidModel = 0;
         public boolean sidmodelForce = false;
+        /**
+         * Seconds to give a tune before ending it anyway. A Sid never says when it is over, so the
+         * driver watches its register writes for the song coming around again - but a tune whose
+         * writes never repeat exactly (a counter or a random source in the play routine) is not
+         * detectable that way and would play forever. 0 to let such a tune do just that.
+         */
+        public int maxPlayTime = 300;
 
         @Override
         public SID clone() {
@@ -289,12 +302,14 @@ public class Setting implements Serializable, Cloneable {
             sid.romKernalPath = this.romKernalPath;
             sid.romBasicPath = this.romBasicPath;
             sid.romCharacterPath = this.romCharacterPath;
+            sid.songLengthPath = this.songLengthPath;
             sid.quality = this.quality;
             sid.outputBufferSize = this.outputBufferSize;
             sid.c64model = this.c64model;
             sid.c64modelForce = this.c64modelForce;
             sid.sidModel = this.sidModel;
             sid.sidmodelForce = this.sidmodelForce;
+            sid.maxPlayTime = this.maxPlayTime;
 
             return sid;
         }

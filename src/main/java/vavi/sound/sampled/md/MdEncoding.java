@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.ServiceLoader;
 import javax.sound.sampled.AudioFormat;
 
-import mdplayer.format.BaseFileFormat;
+import mdplayer.driver.BaseFileFormat;
 
 import static java.lang.System.getLogger;
 

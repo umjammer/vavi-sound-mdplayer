@@ -112,7 +112,7 @@ public class Common {
 
 String x = null;
         try {
-            int[] adr_ = new int[] {adr};
+            int[] adr_ = {adr};
             String s = getAsciiz(buf, adr_); if (s != null) metaData.set(Tag.Title, s);
             s = getAsciiz(buf, adr_); if (s != null) metaData.set(Tag.TitleJ, s);
             s = getAsciiz(buf, adr_); if (s != null) metaData.set(Tag.GameTitle, s);
@@ -195,17 +195,6 @@ logger.log(Level.INFO, "metaData: " + metaData);
         return (n > max) ? max : Math.max(n, min);
     }
 
-    public static int getVv(byte[] buf, /* ref */ int[] musicPtr) {
-        int s = 0, n = 0;
-
-        do {
-            n |= (buf[musicPtr[0]] & 0x7f) << s;
-            s += 7;
-        } while ((buf[musicPtr[0]++] & 0x80) > 0);
-
-        return n + 2;
-    }
-
     public static int getV(byte[] buf, /* ref */ int[] musicPtr) {
         int s = 0, n = 0;
 
@@ -215,20 +204,6 @@ logger.log(Level.INFO, "metaData: " + metaData);
         } while ((buf[musicPtr[0]++] & 0x80) > 0);
 
         return n;
-    }
-
-    public static int getDelta(int trkPtr, byte[] bs) {
-        int delta = 0;
-        while (true) {
-            delta = (delta << 7) + (bs[trkPtr] & 0x7f);
-            if ((bs[trkPtr] & 0x80) == 0) {
-                trkPtr++;
-                break;
-            }
-            trkPtr++;
-        }
-
-        return delta;
     }
 
     public static int searchFMNote(int freq) {

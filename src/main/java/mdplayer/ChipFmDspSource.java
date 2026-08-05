@@ -6,20 +6,25 @@
 
 package mdplayer;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import mdplayer.driver.BaseDriver;
 import mdplayer.fmdsp.FmDspChannel;
 import mdplayer.fmdsp.FmDspChipReader;
 import mdplayer.fmdsp.FmDspChipReader.Group;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.driver.BasePlugin;
+import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 import vavi.sound.visualizer.fmdsp.FftAnalyzer;
 import vavi.sound.visualizer.fmdsp.FftDataSource;
@@ -67,13 +72,17 @@ import vavi.util.event.GenericEvent;
  * </ul>
  * Pre-timed streams such as VGM never program TimerB; the tick counter - and with it the clock and
  * the circle animation - would freeze, so it falls back to a synthesized {@link #defaultTimerB}
- * tempo.
+ * tempo. A driver that renders nothing at all - a MIDI one, whose sound is the synthesizer's -
+ * leaves the analyzer nothing to measure, and its bars come from its notes instead: see
+ * {@link #readFft}.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-07-19 nsano initial version <br>
  */
-public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackStatusSource,
-        TrackDetailSource, WorkStateSource {
+public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDataSource,
+        TrackStatusSource, TrackDetailSource, WorkStateSource {
+
+    private static final Logger logger = System.getLogger(ChipFmDspSource.class.getName());
 
     /** how fast a held note's meter sags, per snapshot */
     private static final double levelSustainDecay = 0.995;
@@ -186,6 +195,9 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
     /** the note each row played at the last snapshot, {@code -1} while it rests */
     private final int[] lastNotes = new int[TrackId.COUNT];
 
+    /** the base note of the currently sounding note before pitch bends */
+    private final int[] baseNotes = new int[TrackId.COUNT];
+
     /** tick count of each row's last key off, {@code -1} while the key is still down */
     private final long[] keyOffTicks = new long[TrackId.COUNT];
 
@@ -276,6 +288,8 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
     public ChipFmDspSource() {
         for (FmDspChipReader reader : readerLoader) {
             readers.add(reader);
+            FmDspChipReader second = secondChipReader(reader);
+            if (second != null) readers.add(second);
         }
         readers.sort(Comparator.comparingInt(FmDspChipReader::priority));
         for (Group g : Group.values()) {
@@ -287,15 +301,65 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
         reset();
     }
 
+    /**
+     * A reader for the second of a chip a VGM declared twice, or null for one that has no second
+     * chip to show.
+     * <p>
+     * The ServiceLoader hands out one reader per chip, and a chip declared twice needs two of them.
+     * They are made here, once, rather than per song: the copy is a fresh instance of the same
+     * class - readers keep edge state, so it cannot be the same object - and stays inert until a
+     * song turns up that really has the chip twice, which {@link FmDspChipReader#ready} decides.
+     */
+    private static FmDspChipReader secondChipReader(FmDspChipReader reader) {
+        try {
+            FmDspChipReader second = reader.getClass().getDeclaredConstructor().newInstance();
+            return second.chipId(1) ? second : null;
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            logger.log(Level.DEBUG, "no second reader for " + reader.getClass().getSimpleName(), e);
+            return null;
+        }
+    }
+
+    private BasePlugin<? extends BaseDriver> plugin;
+
     /** points this source at the playing plugin's chips and driver; call once per plugin */
     public void bind(BasePlugin<? extends BaseDriver> plugin) {
+        this.plugin = plugin;
         bind(plugin.chipRegister, plugin::getDriver);
     }
 
-    void bind(ChipRegister chipRegister, Supplier<BaseDriver> driver) {
+    public void bind(ChipRegister chipRegister, Supplier<BaseDriver> driver) {
         this.driver = driver != null ? driver : () -> null;
         readers.forEach(r -> r.bind(chipRegister));
         readers.forEach(r -> r.bind(this.driver));
+        prime();
+    }
+
+    /**
+     * Takes what the chips are holding right now as the state this song starts from, rather than
+     * as the first thing it played.
+     * <p>
+     * The chips are shared singletons and the song before this one left them keyed: an OPNA that
+     * a PMD tune finished on still has notes down in it, and the next song may not even use that
+     * chip. A reader spots a key on as a channel that was not keyed being keyed, and against a
+     * cleared edge cache every one of those leftovers is a key on - which lights rows, and fills
+     * meters, for a chip the song never writes to. So the readers are polled and read once here,
+     * before the song has rendered a sample, and what they find becomes what they compare against.
+     * <p>
+     * Called from {@link #bind}, which is once per song and before playback: not on the first
+     * snapshot, where it would swallow the song's own opening notes.
+     */
+    private void prime() {
+        for (FmDspChipReader reader : readers) {
+            if (!reader.ready()) continue;
+            reader.poll();
+            for (Group g : reader.groups()) {
+                for (int ch = 0; ch < reader.channels(g); ch++) {
+                    channel.clear();
+                    reader.read(g, ch, channel);
+                }
+            }
+        }
     }
 
     /**
@@ -321,6 +385,7 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
         Arrays.fill(keyOnTicks, -1);
         Arrays.fill(noteLengths, 0);
         Arrays.fill(lastNotes, -1);
+        Arrays.fill(baseNotes, -1);
         Arrays.fill(keyOffTicks, -1);
         Arrays.fill(gates, 0);
         Arrays.fill(lastPitches, 0);
@@ -479,6 +544,10 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
      * once: an MSX has the PSG on the SSG rows and the SCC on the wider block, and both of them
      * are square wave channels. Where that happens the section is no use as a name, so those rows
      * take their chip's instead.
+     * <p>
+     * Two of the same chip are not that case - a VGM with a second OPN2 has twelve FM channels, not
+     * two kinds of FM - so a name they share tells the rows apart no better than the section does,
+     * and they keep it.
      */
     private void nameCollisions() {
         // decide every row against the names as they stand, then rename: doing it in one pass
@@ -489,7 +558,8 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
             if (rowNames[row] == null || rowReaders[row] == null) continue;
             for (int other = 0; other < rowNames.length && !shared[row]; other++) {
                 shared[row] = rowNames[row].equals(rowNames[other]) && rowReaders[other] != null
-                        && rowReaders[other] != rowReaders[row];
+                        && rowReaders[other] != rowReaders[row]
+                        && !Objects.equals(rowReaders[other].chipName(), rowReaders[row].chipName());
             }
         }
         for (int row = 0; row < rowNames.length; row++) {
@@ -527,9 +597,12 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
                 channel.clear();
                 reader.read(g, ch, channel);
 
-                if (channel.keyOn) used[row] = true;
+                if (channel.keyOn || channel.sounding) used[row] = true;
                 rowNames[row] = channel.name;
-                rowNums[row] = channel.num > 0 ? channel.num : ch + 1;
+                // the second of a doubled chip carries on from where the first one's numbers end,
+                // so twelve OPN2 channels read FM1 to FM12 rather than FM1 to FM6 twice over
+                rowNums[row] = (channel.num > 0 ? channel.num : ch + 1)
+                        + reader.chipId() * reader.meters(g);
                 // the strip labels the start of a span, and every third column of a wide FM one.
                 // Written every snapshot, including the blanks: a column that changed hands when
                 // the layout moved would otherwise keep the label its old owner left on it
@@ -540,12 +613,23 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
                 TrackStatus status = tracks[row];
                 status.playing = used[row];
                 status.info = channel.info;
-                status.key = channel.sounding ? keyOf(channel.note) : 0xff;
-                status.actualKey = status.key;
+                System.arraycopy(channel.fmSlotMask, 0, status.fmSlotMask, 0, 4);
+                if (!channel.sounding) {
+                    baseNotes[row] = -1;
+                    status.key = 0xff;
+                    status.actualKey = 0xff;
+                } else {
+                    if (channel.keyOn || baseNotes[row] < 0) {
+                        baseNotes[row] = channel.note;
+                    }
+                    status.key = keyOf(baseNotes[row]);
+                    status.actualKey = keyOf(channel.note);
+                }
                 status.volume = channel.volume;
                 status.toneNum = channel.toneNum;
                 status.ssgTone = channel.ssgTone;
                 status.ssgNoise = channel.ssgNoise;
+                status.ssgNoiseFreq = channel.ssgNoiseFreq;
                 status.ppz8Ch = channel.pcmCh;
 
                 // a re-struck note re-attacks the meter. MXDRV keys off and back on inside one
@@ -836,6 +920,8 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
         status.ppz8Ch = 0;
         status.ssgTone = false;
         status.ssgNoise = false;
+        status.ssgNoiseFreq = 0;
+
         Arrays.fill(status.fmSlotMask, false);
     }
 
@@ -848,16 +934,41 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
      * steps. The period comes from the FM chip that owns the rows; a song that never programs
      * TimerB gets {@link #defaultTimerB}.
      */
+    /**
+     * The first of {@code tags} the metadata has anything for, keeping what the line already shows
+     * - a driver can fill its metadata in late, but never has a second thing to say on one line.
+     * Only the first line of a tag is taken: there is room for one, and a note can run long.
+     */
+    private static String commentOf(MetaData md, String current, Tag... tags) {
+        if (current != null && !current.isEmpty()) return current;
+        for (Tag tag : tags) {
+            String s = md.getFirst(tag);
+            if (!s.isEmpty()) return s.lines().findFirst().orElse(s);
+        }
+        return current;
+    }
+
     private void state() {
         BaseDriver d = driver.get();
         work = d;
         if (d == null) return;
 
-        // not every driver fills one in - the HES driver leaves it null until a song is loaded
-        if (d.metaData != null) {
-            if (comments[0] == null) comments[0] = d.metaData.getFirst(Tag.Title);
-            if (comments[1] == null) comments[1] = d.metaData.getFirst(Tag.Composer);
-            if (comments[2] == null) comments[2] = d.metaData.getFirst(Tag.Arranger);
+        // a memo that is a screen image is shown as it was laid out, the tags having lost the indent
+        String[] laidOut = d.comments();
+        if (laidOut != null) {
+            for (int i = 0; i < comments.length; i++) {
+                if (comments[i] == null && i < laidOut.length) comments[i] = laidOut[i];
+            }
+        } else if (d.metaData != null) { // not every driver fills one in - the HES driver leaves it
+            comments[0] = commentOf(d.metaData, comments[0], Tag.Title, Tag.TitleJ);
+            // MDSDRV's MML credits the song to its #author rather than a #composer, and a line
+            // that says who wrote it is what this one is for either way
+            comments[1] = commentOf(d.metaData, comments[1],
+                    Tag.Composer, Tag.ComposerJ, Tag.Artist, Tag.ArtistJ);
+            // only PMD ever fills the arranger in, so without a fallback the third line is always
+            // blank. A VGM's GD3 has the game instead, which beats leaving the line empty.
+            comments[2] = commentOf(d.metaData, comments[2],
+                    Tag.Arranger, Tag.ArrangerJ, Tag.GameTitle, Tag.GameTitleJ, Tag.Note, Tag.Maker);
         }
 
         int tb = 0;
@@ -880,9 +991,11 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
             noteTickStep -= 1;
             noteTicks++;
         }
-        timerBStep += (counter - lastCounter) * (timerBStepHz / Common.VGMProcSampleRate);
+        timerBStep += counter > lastCounter
+                ? (counter - lastCounter) * (timerBStepHz / Common.VGMProcSampleRate)
+                : timerBStepHz / snapshotRate;
         lastCounter = counter;
-        int overflow = (256 - tb) << 4;
+        int overflow = (256 - (tb > 0 ? tb : 200)) << 4;
         while (timerBStep >= overflow) {
             timerBStep -= overflow;
             timerBCount++;
@@ -890,7 +1003,9 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
 
         int loop = Math.max(d.curLoop, 0);
         if (loop != lastLoopCount) {
-            if (lastLoopCount > 0) loopTimerBCount = timerBCount - loopStartTimerBCount;
+            if (timerBCount > loopStartTimerBCount) {
+                loopTimerBCount = timerBCount - loopStartTimerBCount;
+            }
             loopStartTimerBCount = timerBCount;
             lastLoopCount = loop;
         }
@@ -899,7 +1014,39 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
 
     // ----- FmDspDataSource -----
 
-    @Override public FftDataSource fft() { return fft; }
+    @Override public FftDataSource fft() { return this; }
+
+    // ----- FftDataSource -----
+
+    /** one reader's spectrum, read into before it is folded into the frame */
+    private final int[] bars = new int[FftDataSource.LENGTH];
+
+    /**
+     * The analyzer bars: the rendered PCM, and over it whatever is being played that the rendered
+     * PCM does not carry.
+     * <p>
+     * Everything mdplayer emulates ends up in the mixer, so the {@link FftAnalyzer} alone is the
+     * spectrum for it - measured off the sound itself, which nothing worked out from registers can
+     * improve on. A MIDI driver is the exception: its notes go out to a synthesizer that mixes its
+     * own sound, mdplayer renders silence, and the bars stood empty for the whole song. Those
+     * readers {@linkplain FmDspChipReader#spectrum hand over} a spectrum drawn from their notes
+     * instead.
+     * <p>
+     * The two are taken per bar, the louder winning, so each stands where its own sound is: a song
+     * that is entirely MIDI shows its notes over a silent mixer, one that is entirely emulated
+     * never sees a note spectrum at all - a reader with nothing sounding contributes nothing, not
+     * even its floor - and a song that is both shows both.
+     */
+    @Override
+    public void readFft(int[] out) {
+        fft.readFft(out);
+        for (FmDspChipReader reader : readers) {
+            FftDataSource notes = reader.ready() ? reader.spectrum() : null;
+            if (notes == null) continue;
+            notes.readFft(bars);
+            for (int i = 0; i < FftDataSource.LENGTH; i++) out[i] = Math.max(out[i], bars[i]);
+        }
+    }
 
     @Override public LevelDataSource level() { return this; }
 
@@ -978,6 +1125,8 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
         out.ppz8Ch = status.ppz8Ch;
         out.ssgTone = status.ssgTone;
         out.ssgNoise = status.ssgNoise;
+        out.ssgNoiseFreq = status.ssgNoiseFreq;
+
         System.arraycopy(status.fmSlotMask, 0, out.fmSlotMask, 0, out.fmSlotMask.length);
     }
 
@@ -1082,6 +1231,21 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
 
     @Override public long timerBCountLoop() { return timerBCountLoop; }
 
+    @Override
+    public long totalTimerBCount() {
+        BaseDriver d = work;
+        if (d == null) return 0;
+        // Prefer the loop-period length (samples from loop point to end) when defined;
+        // it is what the bar should represent - one trip around the loop.
+        // Fall back to the total song length when there is no loop point.
+        long samples = d.loopCounter > 0 ? d.loopCounter : d.totalCounter;
+        if (samples <= 0) return 0;
+        // Convert samples → timerB ticks (the same unit as timerBCount())
+        int tb = this.timerB > 0 ? this.timerB : defaultTimerB;
+        double overflow = (256 - tb) * 16.0;
+        return Math.round(samples * (timerBStepHz / Common.VGMProcSampleRate) / overflow);
+    }
+
     @Override public boolean playing() { BaseDriver d = work; return d != null && !d.stopped; }
 
     @Override public boolean paused() { return paused; }
@@ -1092,7 +1256,41 @@ public class ChipFmDspSource implements FmDspDataSource, LevelDataSource, TrackS
         return d != null ? d.getName() : null;
     }
 
+    @Override
+    public String chips() {
+        if (plugin != null && !plugin.getChips().isEmpty()) {
+            return plugin.getChips().stream()
+                    .map(c -> plugin.chipRegister.chip(c).getName().toUpperCase())
+                    .distinct()
+                    .collect(Collectors.joining(" "));
+        }
+        BaseDriver d = work != null ? work : driver.get();
+        if (d != null && d.metaData != null) {
+            String chips = d.metaData.getFirst(Tag.Chip);
+            if (chips != null && !chips.isEmpty()) return chips.replace(",", " ");
+        }
+        return null;
+    }
+
     @Override public String filename() { return filename; }
 
     @Override public String comment(int line) { return comments[line]; }
+
+    @Override
+    public String pcmType(int index) {
+        BaseDriver d = work != null ? work : driver.get();
+        return d != null ? d.pcmType(index) : (index == 0 ? "PCM1" : (index == 1 ? "PCM2" : null));
+    }
+
+    @Override
+    public String pcmFilename(int index) {
+        BaseDriver d = work != null ? work : driver.get();
+        return d != null ? d.pcmFilename(index) : null;
+    }
+
+    @Override
+    public boolean pcmError(int index) {
+        BaseDriver d = work != null ? work : driver.get();
+        return d != null ? d.pcmError(index) : false;
+    }
 }

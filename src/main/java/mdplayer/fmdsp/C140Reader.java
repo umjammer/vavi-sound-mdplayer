@@ -11,7 +11,6 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 
-import mdplayer.ChipRegister;
 import mdplayer.chips.C140Chip;
 import vavi.sound.visualizer.fmdsp.LevelDataSource.Pan;
 
@@ -35,7 +34,7 @@ import vavi.sound.visualizer.fmdsp.LevelDataSource.Pan;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-07-19 nsano initial version <br>
  */
-public class C140Reader implements FmDspChipReader {
+public class C140Reader extends ChipReader {
 
     private static final int CHANNELS = 24;
 
@@ -47,8 +46,6 @@ public class C140Reader implements FmDspChipReader {
 
     /** the sample rate the key is read against, a common one for a chip of this vintage */
     private static final double referenceRate = 8000;
-
-    private ChipRegister chipRegister;
 
     private final boolean[] prevKeyOns = new boolean[CHANNELS];
     private final int[] prevFreqs = new int[CHANNELS];
@@ -62,18 +59,14 @@ public class C140Reader implements FmDspChipReader {
 
     private int mappedChannels;
 
-    private C140Chip chip() {
+    @Override
+    protected C140Chip chip() {
         return chipRegister.chip(C140Chip.class);
     }
 
     @Override
     public String chipName() {
         return "C140";
-    }
-
-    @Override
-    public void bind(ChipRegister chipRegister) {
-        this.chipRegister = chipRegister;
     }
 
     @Override
@@ -97,15 +90,10 @@ public class C140Reader implements FmDspChipReader {
     }
 
     @Override
-    public boolean ready() {
-        return chipRegister != null && chip() != null;
-    }
-
-    @Override
     public void poll() {
         regs = null;
         try {
-            Map<String, Object> info = chip().getInfo(0);
+            Map<String, Object> info = chip().getInfo(chipId);
             if (info.get("register") instanceof byte[] r) regs = r;
         } catch (RuntimeException ignore) {
             // the chip exists but the song never loaded it
@@ -185,6 +173,6 @@ public class C140Reader implements FmDspChipReader {
     @Override
     public boolean masked(Group group, int slot) {
         int ch = slotChannels[slot];
-        return ch >= 0 && chip().getMask(0, ch);
+        return ch >= 0 && chip().getMask(chipId, ch);
     }
 }

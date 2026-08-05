@@ -68,9 +68,13 @@ public class FmDspChannel {
 
     public TrackInfo info = TrackInfo.NORMAL;
 
+    public final boolean[] fmSlotMask = new boolean[4];
+
     public boolean ssgTone;
 
     public boolean ssgNoise;
+
+    public int ssgNoiseFreq;
 
     /** shown in the PPZ8 channel column, 0 = none */
     public int pcmCh;
@@ -114,8 +118,10 @@ public class FmDspChannel {
         sampled = false;
         pan = Pan.CENTER;
         info = TrackInfo.NORMAL;
+        java.util.Arrays.fill(fmSlotMask, false);
         ssgTone = false;
         ssgNoise = false;
+        ssgNoiseFreq = 0;
         pcmCh = 0;
         toneNum = 0;
         name = null;

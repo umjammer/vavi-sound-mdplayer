@@ -18,7 +18,7 @@ import mdplayer.Common.EnmModel;
 import mdplayer.chips.Sn76489Chip;
 import mdplayer.chips.Ym2612Chip;
 import mdplayer.driver.BaseDriver;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.driver.BasePlugin;
 import musicDriverInterface.ChipAction;
 import musicDriverInterface.ChipDatum;
 import musicDriverInterface.IDriver;

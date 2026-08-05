@@ -486,31 +486,12 @@ public class MidiFmDspSource implements Receiver, FmDspDataSource, FftDataSource
             if (amplitude <= 0) continue;
             for (int note = 0; note < 128; note++) {
                 if (!keys[ch][note]) continue;
-                if (ch == DRUM_CHANNEL) drum(note, amplitude); else spectrum.add(note, amplitude);
+                if (ch == DRUM_CHANNEL) spectrum.addDrum(note, amplitude);
+                else spectrum.add(note, amplitude);
             }
         }
         spectrum.readFft(out);
     }
-
-    /**
-     * A drum as the band of the axis it covers, since its note number picks a sample rather than a
-     * pitch: a kick sits under the low end, a snare spans the middle, a cymbal washes the top. The
-     * bands are the GM kit's, roughly - what they are for is that the drums move the spectrum the
-     * way drums move one, instead of standing on the bar their note number happens to land on.
-     */
-    private void drum(int note, double amplitude) {
-        switch (note) {
-            case 35, 36 -> spectrum.addBand(amplitude, 0, 5);            // kick
-            case 41, 43, 45, 47, 48, 50 -> spectrum.addBand(amplitude, 2, 24); // toms
-            case 38, 40, 37, 39 -> spectrum.addBand(amplitude, 10, 48);  // snare, rim, clap
-            case 42, 44, 46 -> spectrum.addBand(amplitude, 42, LAST_BAR);// hi-hats
-            case 49, 51, 52, 53, 55, 57, 59 -> spectrum.addBand(amplitude, 36, LAST_BAR); // cymbals
-            default -> spectrum.addBand(amplitude, 24, 58);              // the rest of the kit
-        }
-    }
-
-    /** the top of the axis */
-    private static final int LAST_BAR = FftDataSource.LENGTH - 1;
 
     // ----- LevelDataSource -----
 
@@ -696,6 +677,8 @@ public class MidiFmDspSource implements Receiver, FmDspDataSource, FftDataSource
         out.ppz8Ch = 0;
         out.ssgTone = false;
         out.ssgNoise = false;
+        out.ssgNoiseFreq = 0;
+
         Arrays.fill(out.fmSlotMask, false);
     }
 
@@ -807,6 +790,8 @@ public class MidiFmDspSource implements Receiver, FmDspDataSource, FftDataSource
     @Override public boolean paused() { return paused; }
 
     @Override public String driverName() { return "MIDI"; }
+
+    @Override public String chips() { return "MIDI"; }
 
     @Override public String filename() { return filename; }
 

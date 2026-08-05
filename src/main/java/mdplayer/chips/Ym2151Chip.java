@@ -15,7 +15,7 @@ import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdplayer.Tables;
 import mdplayer.driver.BaseDriver;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.driver.BasePlugin;
 import mdsound.Instrument;
 import mdsound.instrument.MameYm2151Inst;
 import mdsound.instrument.X68kYm2151Inst;

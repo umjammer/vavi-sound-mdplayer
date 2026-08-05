@@ -18,7 +18,12 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.SourceDataLine;
 
-import mdplayer.driver.ym.YmMusic.YmMusicInfo;
+import mdplayer.driver.BaseDriver;
+import mdplayer.driver.BasePlugin;
+import mdplayer.driver.FileFormat;
+import mdplayer.lib.ym.Ym2149Ex;
+import mdplayer.lib.ym.YmMusic;
+import mdplayer.lib.ym.YmMusic.YmMusicInfo;
 import vavi.sound.sampled.md.MdAudioFileReader;
 import vavi.sound.sampled.md.MdFormatConversionProvider;
 import vavi.util.Debug;
@@ -321,5 +326,50 @@ Debug.println("OUT: " + outAudioFormat);
 
         assertTrue(rms > 50.0, "RMS is too low: " + rms);
         assertTrue(peak > 2000, "Peak is too low: " + peak);
+    }
+
+    @Test
+    void testUnionDemo() throws Exception {
+        Path path = Path.of("tmp/ym/Union_Demo-Alloy_Run.ym");
+        if (!Files.exists(path)) return;
+
+        YmMusic music = new YmMusic();
+        music.ymChip = new YmMusic.Ym2149Ex() {
+            final Ym2149Ex chip = new Ym2149Ex();
+            @Override public void setClock(int clock) { chip.setClock(clock); }
+            @Override public void reset() { chip.reset(); }
+            @Override public void writeRegister(int reg, int value) { chip.writeRegister(reg, value); }
+            @Override public int readRegister(int reg) { return chip.readRegister(reg); }
+            @Override public void update(short[] buffer, int length) { chip.update(buffer, length); }
+            @Override public void sidStart(int voice, int freq, int volume) { chip.sidStart(voice, freq, volume); }
+            @Override public void sidSinStart(int voice, int freq, int volume) { chip.sidSinStart(voice, freq, volume); }
+            @Override public void sidStop(int voice) { chip.sidStop(voice); }
+            @Override public void drumStart(int voice, byte[] data, int size, int freq) { chip.drumStart(voice, data, size, freq); }
+            @Override public void syncBuzzerStart(int freq, int volume) { chip.syncBuzzerStart(freq, volume); }
+            @Override public void syncBuzzerStop() { chip.syncBuzzerStop(); }
+        };
+
+        music.loadMemory(Files.readAllBytes(path), (int) Files.size(path));
+        YmMusicInfo info = new YmMusicInfo();
+        music.getMusicInfo(info);
+
+        System.out.printf("Title: %s, Author: %s, Type: %s, TimeSec: %d, Attrib: 0x%x%n",
+                info.pSongName, info.pSongAuthor, info.pSongType, info.musicTimeInSec, music.getAttrib());
+
+        FileFormat format = FileFormat.getFileFormat(path.toString());
+        format.load(Files.newInputStream(path), null);
+        var plugin = (BasePlugin<? extends BaseDriver>) format.getPlugin();
+        plugin.setParams(format, Map.of("fileName", path.toString()));
+        plugin.prepare();
+        BaseDriver driver = plugin.getDriver();
+
+        short[] buf = new short[1024];
+        int iterations = 0;
+        while (!driver.stopped && iterations < 40000) {
+            driver.render(buf, 0, buf.length);
+            iterations++;
+        }
+        System.out.println("Driver stopped at iteration " + iterations + ", curLoop: " + driver.curLoop + ", stopped: " + driver.stopped);
+        assertTrue(driver.stopped, "Driver should stop at song end for non-looping YM");
     }
 }

@@ -252,7 +252,7 @@ public class FormGA20 extends FormChipBase<FormGA20.Params> {
     /** this panel's per-frame draw state, diffed new against old (see {@link FormChipBase}) */
     public static class Params {
 
-        public final PcmChannelParams[] channels = new PcmChannelParams[] {
+        public final PcmChannelParams[] channels = {
                 new PcmChannelParams(), new PcmChannelParams(), new PcmChannelParams(), new PcmChannelParams()
         };
     }

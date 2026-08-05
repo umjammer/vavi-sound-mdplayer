@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-import mdplayer.format.FileFormat;
+import mdplayer.driver.FileFormat;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Archives;
 import vavi.util.archive.Entry;

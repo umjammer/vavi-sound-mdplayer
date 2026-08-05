@@ -40,6 +40,9 @@ public class LocalProperties {
     @Property(name = "muap.dir.dta") String muapDirDta;
     @Property(name = "muap.dir.pcm") String muapDirPcm;
 
+    /** where the chip roms are kept - the OPL4's wave rom, the OPNA's rhythm samples */
+    @Property(name = "mdsound.pcm.path") String pcmPath;
+
     @Property(name = "mdplayer.variant.pcm8") int variantPcm8;
     @Property(name = "mdplayer.variant.mpcm") int variantMpcm;
     @Property(name = "mdplayer.variant.ym2151") int variantYm2151;
@@ -65,6 +68,7 @@ public class LocalProperties {
         System.setProperty("mdplayer.musica.dir", p.musicaDir);
         System.setProperty("muap.dir.dta", p.muapDirDta);
         System.setProperty("muap.dir.pcm", p.muapDirPcm);
+        System.setProperty("mdsound.pcm.path", p.pcmPath);
         System.setProperty("mdplayer.variant.pcm8", String.valueOf(p.variantPcm8));
         System.setProperty("mdplayer.variant.mpcm", String.valueOf(p.variantMpcm));
         System.setProperty("mdplayer.variant.ym2151", String.valueOf(p.variantYm2151));

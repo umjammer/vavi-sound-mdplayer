@@ -12,7 +12,6 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 
-import mdplayer.ChipRegister;
 import mdplayer.chips.Ppz8Chip;
 import vavi.sound.visualizer.fmdsp.LevelDataSource.Pan;
 import vavi.sound.visualizer.fmdsp.TrackDetail;
@@ -26,27 +25,21 @@ import vavi.sound.visualizer.fmdsp.TrackInfo;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-07-19 nsano initial version <br>
  */
-public class Ppz8Reader implements FmDspChipReader {
-
-    private ChipRegister chipRegister;
+public class Ppz8Reader extends ChipReader {
 
     private Map<String, Object> info;
     private final boolean[] prevKeyOns = new boolean[8];
     private final int[] prevNotes = new int[8];
     private boolean active;
 
-    private Ppz8Chip chip() {
+    @Override
+    protected Ppz8Chip chip() {
         return chipRegister.chip(Ppz8Chip.class);
     }
 
     @Override
     public String chipName() {
         return "PPZ8";
-    }
-
-    @Override
-    public void bind(ChipRegister chipRegister) {
-        this.chipRegister = chipRegister;
     }
 
     @Override
@@ -68,14 +61,9 @@ public class Ppz8Reader implements FmDspChipReader {
     }
 
     @Override
-    public boolean ready() {
-        return chipRegister != null && chip() != null;
-    }
-
-    @Override
     public void poll() {
         try {
-            info = chip().getInfo(0);
+            info = chip().getInfo(chipId);
         } catch (RuntimeException ignore) {
             // the chip exists but was never initialized for this song
             info = Collections.emptyMap();
@@ -168,6 +156,6 @@ public class Ppz8Reader implements FmDspChipReader {
 
     @Override
     public boolean masked(Group group, int ch) {
-        return chip().getMask(0, ch);
+        return chip().getMask(chipId, ch);
     }
 }

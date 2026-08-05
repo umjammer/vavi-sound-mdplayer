@@ -9,7 +9,7 @@ public class Tone {
     public int ams = 0;
     public int pms = 0;
 
-    public Op[] ops = new Op[] {
+    public Op[] ops = {
         new Op(), new Op(), new Op(), new Op()
     };
 

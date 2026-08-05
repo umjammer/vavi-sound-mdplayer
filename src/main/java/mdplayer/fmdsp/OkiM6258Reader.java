@@ -11,7 +11,6 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 
-import mdplayer.ChipRegister;
 import mdplayer.chips.OkiM6258Chip;
 import vavi.sound.visualizer.fmdsp.LevelDataSource.Pan;
 
@@ -29,12 +28,10 @@ import vavi.sound.visualizer.fmdsp.LevelDataSource.Pan;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-07-20 nsano initial version <br>
  */
-public class OkiM6258Reader implements FmDspChipReader {
+public class OkiM6258Reader extends ChipReader {
 
     /** the rate ratio 1.0 stands for */
     private static final double referenceRate = 8000;
-
-    private ChipRegister chipRegister;
 
     private Map<String, Object> info;
 
@@ -42,18 +39,14 @@ public class OkiM6258Reader implements FmDspChipReader {
     private int prevRate;
     private boolean active;
 
-    private OkiM6258Chip chip() {
+    @Override
+    protected OkiM6258Chip chip() {
         return chipRegister.chip(OkiM6258Chip.class);
     }
 
     @Override
     public String chipName() {
         return "OKI";
-    }
-
-    @Override
-    public void bind(ChipRegister chipRegister) {
-        this.chipRegister = chipRegister;
     }
 
     @Override
@@ -75,14 +68,9 @@ public class OkiM6258Reader implements FmDspChipReader {
     }
 
     @Override
-    public boolean ready() {
-        return chipRegister != null && chip() != null;
-    }
-
-    @Override
     public void poll() {
         try {
-            info = chip().getInfo(0);
+            info = chip().getInfo(chipId);
         } catch (RuntimeException ignore) {
             // the chip exists but the song never loaded it
             info = Collections.emptyMap();
@@ -144,6 +132,6 @@ public class OkiM6258Reader implements FmDspChipReader {
 
     @Override
     public boolean masked(Group group, int ch) {
-        return chip().getMask(0, 0);
+        return chip().getMask(chipId, 0);
     }
 }

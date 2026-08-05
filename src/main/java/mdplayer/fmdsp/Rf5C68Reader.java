@@ -53,9 +53,9 @@ public class Rf5C68Reader extends PcmSlotReader {
         return chipRegister.chip(Rf5C68Chip.class);
     }
 
-    /** this chip names its keys {@code Channel<n>.<field>} rather than the usual way */
+    /** this chip names its keys {@code channel.<n>.<field>}, singular, rather than the usual way */
     private Object value(int ch, String field) {
-        return info.get("Channel" + ch + "." + field);
+        return info.get("channel." + ch + "." + field);
     }
 
     @Override
@@ -84,6 +84,6 @@ public class Rf5C68Reader extends PcmSlotReader {
 
     @Override
     protected boolean muted(int ch) {
-        return chipRegister.chip(Rf5C68Chip.class).getMask(0, ch);
+        return chipRegister.chip(Rf5C68Chip.class).getMask(chipId, ch);
     }
 }

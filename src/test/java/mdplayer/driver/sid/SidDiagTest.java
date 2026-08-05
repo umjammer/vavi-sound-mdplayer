@@ -10,15 +10,15 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import mdplayer.Setting;
-import mdplayer.driver.sid.libsidplayfp.SidEmu;
-import mdplayer.driver.sid.libsidplayfp.builders.resid_builder.ReSid;
-import mdplayer.driver.sid.libsidplayfp.builders.resid_builder.ReSidBuilder;
-import mdplayer.driver.sid.libsidplayfp.builders.resid_builder.resid.Sid;
-import mdplayer.driver.sid.libsidplayfp.builders.resid_builder.resid.Voice;
-import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidBuilder;
-import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidConfig;
-import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTune;
-import mdplayer.driver.sid.libsidplayfp.sidplayfp.playSidFp;
+import mdplayer.lib.sid.libsidplayfp.SidEmu;
+import mdplayer.lib.sid.libsidplayfp.builders.resid_builder.ReSid;
+import mdplayer.lib.sid.libsidplayfp.builders.resid_builder.ReSidBuilder;
+import mdplayer.lib.sid.libsidplayfp.builders.resid_builder.resid.Sid;
+import mdplayer.lib.sid.libsidplayfp.builders.resid_builder.resid.Voice;
+import mdplayer.lib.sid.libsidplayfp.sidplayfp.SidBuilder;
+import mdplayer.lib.sid.libsidplayfp.sidplayfp.SidConfig;
+import mdplayer.lib.sid.libsidplayfp.sidplayfp.SidTune;
+import mdplayer.lib.sid.libsidplayfp.sidplayfp.playSidFp;
 
 import org.mockito.Mockito;
 

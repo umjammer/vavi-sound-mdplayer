@@ -11,7 +11,6 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 
-import mdplayer.ChipRegister;
 import mdplayer.chips.NpNesChip;
 import vavi.sound.visualizer.fmdsp.LevelDataSource.Pan;
 
@@ -29,14 +28,12 @@ import vavi.sound.visualizer.fmdsp.LevelDataSource.Pan;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-07-20 nsano initial version <br>
  */
-public class Vrc7Reader implements FmDspChipReader {
+public class Vrc7Reader extends ChipReader {
 
     private static final int CHANNELS = 6;
 
     /** the NES CPU clock the chip is wired to, which its F-numbers are measured against */
     private static final double clock = 1789773;
-
-    private ChipRegister chipRegister;
 
     private int[] regs;
 
@@ -44,18 +41,14 @@ public class Vrc7Reader implements FmDspChipReader {
     private final int[] prevFnums = new int[CHANNELS];
     private boolean active;
 
-    private NpNesChip.Vrc7Chip chip() {
+    @Override
+    protected NpNesChip.Vrc7Chip chip() {
         return chipRegister.chip(NpNesChip.Vrc7Chip.class);
     }
 
     @Override
     public String chipName() {
         return "VRC7";
-    }
-
-    @Override
-    public void bind(ChipRegister chipRegister) {
-        this.chipRegister = chipRegister;
     }
 
     @Override
@@ -77,15 +70,10 @@ public class Vrc7Reader implements FmDspChipReader {
     }
 
     @Override
-    public boolean ready() {
-        return chipRegister != null && chip() != null;
-    }
-
-    @Override
     public void poll() {
         regs = null;
         try {
-            Map<String, Object> info = chip().getInfo(0);
+            Map<String, Object> info = chip().getInfo(chipId);
             if (info != null && info.get("register") instanceof int[] r) regs = r;
         } catch (RuntimeException ignore) {
             // the chip exists but the song never loaded it
@@ -137,6 +125,6 @@ public class Vrc7Reader implements FmDspChipReader {
 
     @Override
     public boolean masked(Group group, int ch) {
-        return chip().getMask(0, ch);
+        return chip().getMask(chipId, ch);
     }
 }

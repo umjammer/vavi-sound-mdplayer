@@ -20,7 +20,7 @@ import mdplayer.Common;
 import mdplayer.Tables;
 import mdplayer.chips.Ym2608Chip;
 import mdplayer.chips.Ym2612Chip;
-import mdplayer.driver.XgmDriver;
+import mdplayer.driver.xgm.XgmDriver;
 import mdplayer.form.FrameBuffer;
 import mdplayer.form.ScreenPanel;
 import mdplayer.form.View;
@@ -28,8 +28,8 @@ import mdplayer.form.kb.ChannelParams;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
 import mdplayer.form.sys.setting.SettingNukedPanel;
-import mdplayer.format.FileFormat;
-import mdplayer.format.XGMFileFormat;
+import mdplayer.driver.FileFormat;
+import mdplayer.driver.xgm.XGMFileFormat;
 import mdsound.instrument.Ym2610Inst;
 
 import static mdplayer.form.FrameBuffer.rType;
@@ -763,11 +763,15 @@ public class FormYM2612 extends FormChipBase<FormYM2612.Params> {
         public int lfoFrq = -1;
         public int timerA = -1;
         public int timerB = -1;
-        public final int[] xpcmVolL = new int[] {-1, -1, -1, -1};
-        public final int[] xpcmVolR = new int[] {-1, -1, -1, -1};
-        public final int[] xpcmInst = new int[] {-1, -1, -1, -1};
+        public final int[] xpcmVolL = {-1, -1, -1, -1};
+        public final int[] xpcmVolR = {-1, -1, -1, -1};
+        public final int[] xpcmInst = {-1, -1, -1, -1};
 
-        public final Channel[] channels = new Channel[] {new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel()};
+        public final Channel[] channels = {
+                new Channel(), new Channel(), new Channel(), new Channel(),
+                new Channel(), new Channel(), new Channel(), new Channel(),
+                new Channel()
+        };
     }
 
     /** what this panel contributes to the GUI; see {@link ViewProvider} */

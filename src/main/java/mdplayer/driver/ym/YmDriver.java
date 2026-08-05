@@ -11,8 +11,10 @@ import java.lang.System.Logger.Level;
 
 import mdplayer.Common.EnmModel;
 import mdplayer.driver.BaseDriver;
-import mdplayer.driver.ym.YmMusic.YmMusicInfo;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.lib.ym.Ym2149Ex;
+import mdplayer.lib.ym.YmMusic;
+import mdplayer.lib.ym.YmMusic.YmMusicInfo;
+import mdplayer.driver.BasePlugin;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 
@@ -163,7 +165,7 @@ public class YmDriver extends BaseDriver {
             throw new IllegalStateException(e);
         }
 
-        music.setLoopMode(true);
+        music.setLoopMode(music.isLoopable());
         music.stop();
         music.play();
         lastPos = 0;
@@ -207,7 +209,10 @@ public class YmDriver extends BaseDriver {
         int written = 0;
         while (written < length - 1) {
             if (internalConsumed >= internalProduced) {
-                music.update(internalBuffer, internalBuffer.length);
+                boolean active = music.update(internalBuffer, internalBuffer.length);
+                if (!active || music.bMusicOver) {
+                    stopped = true;
+                }
                 internalProduced = internalBuffer.length;
                 internalConsumed = 0;
                 int pos = music.getPos();

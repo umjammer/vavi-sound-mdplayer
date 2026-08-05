@@ -6,6 +6,7 @@
 
 package mdplayer.chips;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,7 +15,7 @@ import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.driver.BasePlugin;
 import mdsound.Instrument;
 import mdsound.Instrument.AdpcmEnabledInstrument;
 import mdsound.instrument.Ym2610Inst;
@@ -69,6 +70,22 @@ public class Ym2610Chip extends BaseChip {
     @Deprecated
     public final int[] adpcmPan = {0, 0};
 
+    /**
+     * Which ADPCM-A channels are keyed, and how many times each has been struck.
+     * <p>
+     * The key register {@code 0x100} is one write for all six channels - a set of bits keys them
+     * on, the same bits with {@code 0x80} keys them off - so the register file only ever holds the
+     * last of those writes and says nothing about what is sounding now. A display polling it sees
+     * a channel keyed on only if it happens to look between that write and the next; the state has
+     * to be kept as the writes go past. The counter is for the same reason: two hits between two
+     * polls are one register value, and a drum part is nothing but repeated hits.
+     *
+     * @see mdplayer.fmdsp.Ym2610Reader
+     */
+    public final boolean[][] adpcmAKeys = new boolean[2][6];
+
+    public final int[][] adpcmAHits = new int[2][6];
+
     private final int[] nowFadeoutVol = {0, 0};
 
     private final boolean[][] mask = {
@@ -109,6 +126,8 @@ public class Ym2610Chip extends BaseChip {
             register[chipId][1][0xb5] = 0xc0;
             register[chipId][1][0xb6] = 0xc0;
             keyOn[chipId] = new int[] {0, 0, 0, 0, 0, 0};
+            Arrays.fill(adpcmAKeys[chipId], false);
+            Arrays.fill(adpcmAHits[chipId], 0);
 
             nowFadeoutVol[chipId] = 0;
         }
@@ -242,6 +261,15 @@ public class Ym2610Chip extends BaseChip {
 
             // ADPCM a KEYON
             if (dPort == 1 && dAddr == 0x00) {
+                for (int i = 0; i < adpcmAKeys[chipId].length; i++) {
+                    if ((dData & (1 << i)) == 0) continue;
+                    if ((dData & 0x80) != 0) {
+                        adpcmAKeys[chipId][i] = false; // the dump bit is this section's key off
+                    } else {
+                        adpcmAKeys[chipId][i] = true;
+                        adpcmAHits[chipId][i]++;
+                    }
+                }
                 if ((dData & 0x80) == 0) {
                     int tl = register[chipId][1][0x01] & 0x3f;
                     for (int i = 0; i < 6; i++) {

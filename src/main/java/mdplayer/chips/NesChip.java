@@ -184,4 +184,9 @@ public class NesChip extends BaseChip {
 
         dumpData(model, "PCMData", vgmAdr, vgmBuf, dataSize);
     }
+
+    @Override
+    public String getName() {
+        return getClass() == NesChip.class ? "Apu" : super.getName(); // considered sub-classes
+    }
 }

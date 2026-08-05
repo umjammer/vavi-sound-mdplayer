@@ -5,7 +5,6 @@ import mdplayer.Common.EnmModel;
 import mdplayer.Setting;
 import mdplayer.chips.RealChipPlugin;
 import mdplayer.chips.VstPlugin;
-import mdplayer.plugin.BasePlugin;
 import musicDriverInterface.MetaData;
 import vavi.util.event.GenericEvent;
 import vavi.util.event.GenericListener;
@@ -54,6 +53,58 @@ public abstract class BaseDriver {
 
     /** gets the metadata */
     public abstract MetaData getMetaData(byte[] buf, Object... args);
+
+    /**
+     * The lines the fmdsp comment area is to show, laid out the way the file has them - a memo
+     * that is a screen image places its text with spaces, which the metadata is stripped of.
+     *
+     * @return null when the file has no such memo, leaving the caller to use the metadata
+     */
+    public String[] comments() {
+        return null;
+    }
+
+    /**
+     * The PCM type label for slot {@code index} (e.g. "PPC", "PPZ1", "PDX", "PVI", etc.).
+     * TODO view -> view.plugin
+     */
+    public String pcmType(int index) {
+        String fn = pcmFilename(index);
+        if (fn != null) {
+            int dot = fn.lastIndexOf('.');
+            if (dot >= 0 && dot < fn.length() - 1) {
+                return fn.substring(dot + 1).toUpperCase();
+            }
+        }
+        return switch (index) {
+            case 0 -> "PCM1";
+            case 1 -> "PCM2";
+            default -> null;
+        };
+    }
+
+    /**
+     * The PCM filename for slot {@code index}, or null when the driver has nothing for that slot.
+     * TODO view -> view.plugin
+     */
+    public String pcmFilename(int index) {
+        if (plugin != null) {
+            var ex = plugin.getExtendFiles();
+            if (ex != null && index >= 0 && index < ex.size()) {
+                return ex.get(index).getItem1();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Whether the PCM file for slot {@code index} failed to load. Drivers that load
+     * PCM data override this.
+     * TODO view -> view.plugin
+     */
+    public boolean pcmError(int index) {
+        return false;
+    }
 
     /** renders the audio */
     public int render(short[] buffer, int offset, int sampleCount) {

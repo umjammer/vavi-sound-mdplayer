@@ -322,7 +322,7 @@ public class FormK054539 extends FormChipBase<FormK054539.Params> {
     /** this panel's per-frame draw state, diffed new against old (see {@link FormChipBase}) */
     public static class Params {
 
-        public final Channel[] channels = new Channel[] {
+        public final Channel[] channels = {
                 new Channel(), new Channel(), new Channel(), new Channel(),
                 new Channel(), new Channel(), new Channel(), new Channel()
         };

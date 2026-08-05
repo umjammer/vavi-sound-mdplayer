@@ -15,7 +15,7 @@ import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
 import mdplayer.instruments.Vrc7Inst;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.driver.BasePlugin;
 import mdsound.Instrument;
 import mdsound.instrument.Emu2413Inst;
 import mdsound.instrument.NpYm2413Inst;

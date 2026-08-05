@@ -6,9 +6,8 @@ import java.nio.file.Paths;
 import mdplayer.Common.EnmModel;
 import mdplayer.Setting;
 import mdplayer.chips.SidChip;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.driver.BasePlugin;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.mockito.Mockito;

@@ -90,11 +90,11 @@ import mdplayer.YM2612MIDI;
 import mdplayer.chips.RealChipPlugin;
 import mdplayer.driver.BaseDriver;
 import mdplayer.form.Layouts;
-import mdplayer.format.FileFormat;
-import mdplayer.format.M3UFileFormat;
-import mdplayer.format.ZIPFileFormat;
-import mdplayer.plugin.BasePlugin;
-import mdplayer.plugin.VGMPlugin;
+import mdplayer.driver.FileFormat;
+import mdplayer.driver.sampled.M3UFileFormat;
+import mdplayer.driver.archive.ZIPFileFormat;
+import mdplayer.driver.BasePlugin;
+import mdplayer.driver.vgm.VGMPlugin;
 import mdsound.Instrument;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
@@ -1479,6 +1479,8 @@ public class FormMain extends JFrame {
     }
 
     private void screenChangeParamsForms() {
+        if (audio == null || audio.plugin == null) return;
+
         for (View[] slot : views.values()) {
             for (int i = 0; i < slot.length; i++) {
                 if (slot[i] != null && !slot[i].isClosed()) slot[i].changeScreenParams();

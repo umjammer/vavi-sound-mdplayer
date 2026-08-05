@@ -63,7 +63,7 @@ import mdplayer.Common;
 import mdplayer.Common.EnmArcType;
 import mdplayer.PlayList;
 import mdplayer.Setting;
-import mdplayer.format.FileFormat;
+import mdplayer.driver.FileFormat;
 import vavi.awt.dnd.BasicDTListener;
 import vavi.util.compat.Tuple;
 import vavi.util.compat.Tuple4;

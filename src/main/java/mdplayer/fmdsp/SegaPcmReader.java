@@ -11,7 +11,6 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 
-import mdplayer.ChipRegister;
 import mdplayer.chips.SegaPcmChip;
 import vavi.sound.visualizer.fmdsp.LevelDataSource.Pan;
 
@@ -28,9 +27,7 @@ import vavi.sound.visualizer.fmdsp.LevelDataSource.Pan;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-07-19 nsano initial version <br>
  */
-public class SegaPcmReader implements FmDspChipReader {
-
-    private ChipRegister chipRegister;
+public class SegaPcmReader extends ChipReader {
 
     private boolean active;
 
@@ -49,18 +46,14 @@ public class SegaPcmReader implements FmDspChipReader {
 
     private int mappedChannels;
 
-    private SegaPcmChip chip() {
+    @Override
+    protected SegaPcmChip chip() {
         return chipRegister.chip(SegaPcmChip.class);
     }
 
     @Override
     public String chipName() {
         return "PCM";
-    }
-
-    @Override
-    public void bind(ChipRegister chipRegister) {
-        this.chipRegister = chipRegister;
     }
 
     @Override
@@ -76,7 +69,7 @@ public class SegaPcmReader implements FmDspChipReader {
     public void poll() {
         regs = null;
         try {
-            Map<String, Object> info = chip().getInfo(0);
+            Map<String, Object> info = chip().getInfo(chipId);
             if (!info.isEmpty() && info.get("register") instanceof byte[] r) regs = r;
         } catch (RuntimeException ignore) {
             // the chip exists but the song never loaded it
@@ -103,11 +96,6 @@ public class SegaPcmReader implements FmDspChipReader {
     @Override
     public int priority() {
         return 60;
-    }
-
-    @Override
-    public boolean ready() {
-        return chipRegister != null && chip() != null;
     }
 
     @Override
@@ -171,6 +159,6 @@ public class SegaPcmReader implements FmDspChipReader {
     @Override
     public boolean masked(Group group, int slot) {
         int ch = slotChannels[slot];
-        return ch >= 0 && chip().getMask(0, ch);
+        return ch >= 0 && chip().getMask(chipId, ch);
     }
 }

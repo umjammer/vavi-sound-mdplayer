@@ -6,13 +6,16 @@
 
 package mdplayer.driver.fmp;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import mdplayer.Common;
 import mdplayer.chips.SegaPcmChip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.fmdsp.Notes;
+import mdplayer.lib.fmp.FmpWork;
 import musicDriverInterface.MetaData.Tag;
 import vavi.sound.visualizer.fmdsp.FftAnalyzer;
 import vavi.sound.visualizer.fmdsp.FftDataSource;
@@ -149,7 +152,30 @@ public class FmpFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
             if (event.getSource() instanceof BaseDriver driver) {
                 if (!commented) {
                     commented = true;
-                    comments[0] = driver.metaData.getFirst(Tag.Title);
+                    List<String> list = new ArrayList<>();
+
+                    // an FMC memo is a screen image, so it is displayed as it was laid out -
+                    // the tags are the same text with the indent stripped, so they would lose it
+                    if (driver.comments() != null) {
+                        list.addAll(List.of(driver.comments()));
+                    }
+
+                    if (list.isEmpty()) {
+                        addLines(list, driver.metaData.getFirst(Tag.Title));
+
+                        String comp = driver.metaData.getFirst(Tag.Composer);
+                        if (comp.isEmpty()) comp = driver.metaData.getFirst(Tag.ComposerJ);
+                        addLines(list, comp);
+
+                        String arr = driver.metaData.getFirst(Tag.Arranger);
+                        if (arr.isEmpty()) arr = driver.metaData.getFirst(Tag.Note);
+                        if (arr.isEmpty()) arr = driver.metaData.getFirst(Tag.Maker);
+                        addLines(list, arr);
+                    }
+
+                    for (int i = 0; i < 3; i++) {
+                        comments[i] = i < list.size() ? list.get(i) : null;
+                    }
                 }
                 frames = driver.counter;
                 stopped = driver.stopped;
@@ -204,11 +230,27 @@ public class FmpFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
                 int ssg = p - FmpWork.SSG_1;
                 status.ssgTone = (fw.ssgMixer & (1 << ssg)) == 0;
                 status.ssgNoise = (fw.ssgMixer & (8 << ssg)) == 0;
+                status.ssgNoiseFreq = fw.ssgNoiseFreq & 0x1f;
             } else {
                 status.ssgTone = false;
                 status.ssgNoise = false;
+                status.ssgNoiseFreq = 0;
             }
-            Arrays.fill(status.fmSlotMask, false);
+            boolean isFm3ExTrack = (t == TrackId.FM_3 || t == TrackId.FM_3_EX_1 || t == TrackId.FM_3_EX_2 || t == TrackId.FM_3_EX_3);
+            if (isFm3ExTrack) {
+                int mask = fw.slotMask(p);
+                if ((mask & 0xf0) != 0) {
+                    status.info = TrackInfo.FM3EX;
+                    for (int c = 0; c < 4; c++) {
+                        status.fmSlotMask[c] = (mask & (1 << (4 + c))) != 0;
+                    }
+                } else {
+                    status.info = TrackInfo.NORMAL;
+                    Arrays.fill(status.fmSlotMask, false);
+                }
+            } else {
+                Arrays.fill(status.fmSlotMask, false);
+            }
 
             boolean keyOn = note >= 0 && notes[i] != note;
             notes[i] = note;
@@ -424,7 +466,6 @@ public class FmpFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
 
     private static TrackInfo infoOf(TrackId t) {
         return switch (t) {
-            case FM_3_EX_1, FM_3_EX_2, FM_3_EX_3 -> TrackInfo.FM3EX;
             case SSG_1, SSG_2, SSG_3 -> TrackInfo.SSG;
             default -> TrackInfo.NORMAL;
         };
@@ -457,6 +498,8 @@ public class FmpFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
         status.ppz8Ch = 0;
         status.ssgTone = false;
         status.ssgNoise = false;
+        status.ssgNoiseFreq = 0;
+
         Arrays.fill(status.fmSlotMask, false);
     }
 
@@ -464,7 +507,9 @@ public class FmpFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
     private void loop(FmpWork fw) {
         int loop = fw.loopCount();
         if (loop != lastLoopCount) {
-            if (lastLoopCount > 0) loopTimerBCount = fw.ticks - loopStartTicks;
+            if (fw.ticks > loopStartTicks) {
+                loopTimerBCount = fw.ticks - loopStartTicks;
+            }
             loopStartTicks = fw.ticks;
             lastLoopCount = loop;
         }
@@ -499,6 +544,8 @@ public class FmpFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
         out.ppz8Ch = status.ppz8Ch;
         out.ssgTone = status.ssgTone;
         out.ssgNoise = status.ssgNoise;
+        out.ssgNoiseFreq = status.ssgNoiseFreq;
+
         System.arraycopy(status.fmSlotMask, 0, out.fmSlotMask, 0, out.fmSlotMask.length);
     }
 
@@ -581,7 +628,51 @@ public class FmpFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
 
     @Override public String driverName() { return "FMP"; }
 
+    @Override public String chips() { FmpWork fw = work; return (fw != null && fw.ppz8 != null && !fw.ppz8.isEmpty()) ? "YM2608 PPZ8" : "YM2608"; }
+
     @Override public String filename() { return filename; }
 
     @Override public String comment(int line) { return comments[line]; }
+
+    @Override
+    public String pcmType(int index) {
+        return switch (index) {
+            case 0 -> "PVI";
+            case 1 -> "PPZ";
+            default -> null;
+        };
+    }
+
+    @Override
+    public String pcmFilename(int index) {
+        FmpWork fw = work;
+        if (fw == null) return null;
+        return switch (index) {
+            case 0 -> fw.pviName;
+            case 1 -> fw.ppzName;
+            default -> null;
+        };
+    }
+
+    @Override
+    public boolean pcmError(int index) {
+        FmpWork fw = work;
+        if (fw == null) return false;
+        return switch (index) {
+            case 0 -> fw.pviError;
+            case 1 -> fw.ppzError;
+            default -> false;
+        };
+    }
+
+    private static void addLines(List<String> list, String text) {
+        if (text != null && !text.isEmpty()) {
+            String[] split = text.split("\\r?\\n|\\r");
+            for (String s : split) {
+                if (!s.isEmpty()) {
+                    list.add(s);
+                }
+            }
+        }
+    }
 }

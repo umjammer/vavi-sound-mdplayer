@@ -11,11 +11,13 @@ import java.nio.file.Path;
 
 import javax.imageio.ImageIO;
 
+import mdplayer.Setting;
 import mdplayer.emu.nise98.FileTemp;
+import mdplayer.lib.fmp.FMP;
+import mdplayer.lib.fmp.FmpWork;
 import vavi.sound.visualizer.fmdsp.FmDspVisualizer;
 import vavi.util.event.GenericEvent;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
@@ -32,6 +34,7 @@ public class RenderCheck {
 
         FMP fmp = new FMP();
         fmp.ft = new FileTemp();
+        fmp.ft.saveCompiledFile = Setting.getInstance().getOther().getSaveCompiledFile();
         fmp.setSearchPath(dir);
         fmp.sampleRate = 44100;
         fmp.charset = Charset.forName("Shift_JIS");

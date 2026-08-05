@@ -1,6 +1,7 @@
 package mdplayer.driver.pmd;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.System.Logger;
@@ -22,9 +23,8 @@ import mdplayer.chips.PpsChip;
 import mdplayer.chips.Ppz8Chip;
 import mdplayer.chips.Ym2608Chip;
 import mdplayer.driver.BaseDriver;
-import mdplayer.format.FileFormat;
-import mdplayer.format.MMLFileFormat;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.driver.FileFormat;
+import mdplayer.driver.BasePlugin;
 import musicDriverInterface.ChipDatum;
 import musicDriverInterface.CompilerInfo;
 import musicDriverInterface.ICompiler;
@@ -91,8 +91,8 @@ public class PmdDriver extends BaseDriver {
         MetaData metaData;
 
         if (mType == PMDFileType.MML) {
-            envPmd = System.getProperty("mdplayer.pmd.pmd", "").split(java.io.File.pathSeparator);
-            envPmdOpt = System.getProperty("mdplayer.pmd.opt", "").split(java.io.File.pathSeparator);
+            envPmd = System.getProperty("mdplayer.pmd.pmd", "").split(File.pathSeparator);
+            envPmdOpt = System.getProperty("mdplayer.pmd.opt", "").split(File.pathSeparator);
 
             pmdCompiler = ICompiler.factory("pmd.compiler.Compiler");
             pmdCompiler.setCompileSwitch((Function<String, InputStream>) this::appendFileReaderCallback);
@@ -182,6 +182,49 @@ public class PmdDriver extends BaseDriver {
         }
     }
 
+    @Override
+    public String pcmType(int index) {
+        return switch (index) {
+            case 0 -> "PPC";
+            case 1 -> "PPZ1";
+            case 2 -> "PPZ2";
+            case 3 -> "PPS";
+            default -> null;
+        };
+    }
+
+    @Override
+    public String pcmFilename(int index) {
+        if (work == null) return null;
+        Object pwObj = work.get("work");
+        if (pwObj instanceof pmd.driver.PW pw) { // TODO expose pmd package
+            return switch (index) {
+                case 0 -> pw.ppcFile;
+                case 1 -> pw.ppz1File;
+                case 2 -> pw.ppz2File;
+                case 3 -> pw.ppsFile;
+                default -> null;
+            };
+        }
+        return null;
+    }
+
+    @Override
+    public boolean pcmError(int index) {
+        if (work == null) return false;
+        Object pwObj = work.get("work");
+        if (pwObj instanceof pmd.driver.PW pw) { // TODO expose pmd package
+            return switch (index) {
+                case 0 -> pw.ppcError;
+                case 1 -> pw.ppz1Error;
+                case 2 -> pw.ppz2Error;
+                case 3 -> pw.ppsError;
+                default -> false;
+            };
+        }
+        return false;
+    }
+
     public enum PMDFileType {
         unknown,
         MML,
@@ -240,8 +283,8 @@ public class PmdDriver extends BaseDriver {
         usePPS = setting.getPmd().usePPSDRV;
         usePPZ = setting.getPmd().usePPZ8;
 
-        envPmd = System.getProperty("mdplayer.pmd.pmd", "").split(java.io.File.pathSeparator);
-        envPmdOpt = System.getProperty("mdplayer.pmd.opt", "").split(java.io.File.pathSeparator);
+        envPmd = System.getProperty("mdplayer.pmd.pmd", "").split(File.pathSeparator);
+        envPmdOpt = System.getProperty("mdplayer.pmd.opt", "").split(File.pathSeparator);
 
         Object[] driverOption = {
                 isLoadADPCM, // boolean
@@ -296,10 +339,10 @@ public class PmdDriver extends BaseDriver {
         usePPS = setting.getPmd().usePPSDRV;
         usePPZ = setting.getPmd().usePPZ8;
 
-        envPmd = System.getProperty("mdplayer.pmd.dir", "").split(java.io.File.pathSeparator);
-        envPmdOpt = System.getProperty("mdplayer.pmd.opt", "").split(java.io.File.pathSeparator);
+        envPmd = System.getProperty("mdplayer.pmd.dir", "").split(File.pathSeparator);
+        envPmdOpt = System.getProperty("mdplayer.pmd.opt", "").split(File.pathSeparator);
 
-        Object[] driverOption = new Object[] {
+        Object[] driverOption = {
                 isLoadADPCM, // boolean
                 loadADPCMOnly, // boolean
                 setting.getPmd().isAuto, // boolean isAUTO;

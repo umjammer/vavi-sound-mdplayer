@@ -10,9 +10,10 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.TreeMap;
 
+import mdplayer.Setting;
 import mdplayer.emu.nise98.FileTemp;
+import mdplayer.lib.fmp.FMP;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
@@ -30,6 +31,7 @@ public class PickSong {
                 int[] ppz8 = new int[1];
                 FMP fmp = new FMP();
                 fmp.ft = new FileTemp();
+                fmp.ft.saveCompiledFile = Setting.getInstance().getOther().getSaveCompiledFile();
                 fmp.setSearchPath(dir + ";" + songs + ";/Users/nsano/Public/np2/PVI");
                 fmp.sampleRate = 44100;
                 fmp.charset = Charset.forName("Shift_JIS");

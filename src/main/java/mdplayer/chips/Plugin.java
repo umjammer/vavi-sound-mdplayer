@@ -8,7 +8,7 @@ package mdplayer.chips;
 
 import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.driver.BasePlugin;
 
 
 /**

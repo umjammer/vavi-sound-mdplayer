@@ -6,6 +6,9 @@
 
 package mdplayer.chips;
 
+import java.util.Collections;
+import java.util.Map;
+
 import mdsound.Instrument;
 import mdsound.instrument.Cs4231Inst;
 
@@ -21,6 +24,25 @@ public class Cs4231Chip extends BaseChip {
     @Override
     public Class<? extends Instrument>[] implementations() {
         return new Class[] {Cs4231Inst.class};
+    }
+
+    /**
+     * What the codec is putting out, which is all there is to show of it.
+     * <p>
+     * It is a codec, not a synthesizer: a driver hands it a stream and it plays it, so there is no
+     * channel, no note and no level register anywhere - only the sound. The emulator keeps a
+     * sample of its own output, and that is reported here under the name the sampled readers ask
+     * for it by.
+     *
+     * @see mdplayer.fmdsp.Cs4231Reader
+     */
+    @Override
+    public Map<String, Object> getInfo(int chipId) {
+        Instrument inst = context.mds.inst(Cs4231Inst.class);
+        if (inst == null) return Collections.emptyMap();
+        // the instrument keys its one number by its own name; the display wants it by what it is
+        Object output = inst.getView(chipId, "volume").values().stream().findFirst().orElse(null);
+        return output instanceof Integer sample ? Map.of("output", sample) : Collections.emptyMap();
     }
 
     public void setFifoBuf(int chipId, byte[] buf) {

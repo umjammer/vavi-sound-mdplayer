@@ -13,8 +13,8 @@ import java.util.Map;
 import java.util.stream.IntStream;
 
 import mdplayer.driver.BaseDriver;
-import mdplayer.format.FileFormat;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.driver.FileFormat;
+import mdplayer.driver.BasePlugin;
 import vavi.sound.visualizer.fmdsp.TrackId;
 import vavi.sound.visualizer.fmdsp.TrackStatus;
 import vavi.util.archive.Archives;
@@ -31,7 +31,9 @@ import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
  * Headless diagnostic: renders a file without audio and dumps what {@link ChipFmDspSource}
  * sees in the chip caches. Not a regression test.
  * <p>
- * Run with {@code -Dvavi.test=diag -Ddiag.file=<path>}.
+ * Run with {@code -Dvavi.test=diag -Ddiag.file=<path>}, or several paths separated by commas to
+ * play them one after another in the one JVM - a song can behave differently for having had
+ * another played before it, and that is only visible from a sequence.
  */
 @PropsEntity(url = "file:local.properties")
 class ChipCacheCheck {
@@ -48,6 +50,7 @@ class ChipCacheCheck {
     @Property(name = "mdplayer.musica.dir") String musicaDir;
     @Property(name = "muap.dir.dta") String muapDirDta;
     @Property(name = "muap.dir.pcm") String muapDirPcm;
+    @Property(name = "mdsound.pcm.path") String pcmPath;
 
     @Property(name = "mdplayer.variant.pcm8") int variantPcm8;
     @Property(name = "mdplayer.variant.mpcm") int variantMpcm;
@@ -68,6 +71,7 @@ class ChipCacheCheck {
         System.setProperty("mdplayer.musica.dir", musicaDir);
         System.setProperty("muap.dir.dta", muapDirDta);
         System.setProperty("muap.dir.pcm", muapDirPcm);
+        System.setProperty("mdsound.pcm.path", pcmPath);
         System.setProperty("mdplayer.variant.pcm8", String.valueOf(variantPcm8));
         System.setProperty("mdplayer.variant.mpcm", String.valueOf(variantMpcm));
         System.setProperty("mdplayer.variant.ym2151", String.valueOf(variantYm2151));
@@ -79,7 +83,15 @@ class ChipCacheCheck {
     @Test
     @EnabledIfSystemProperty(named = "vavi.test", matches = "diag")
     void dump() throws Exception {
-        String file = System.getProperty("diag.file");
+        // more than one file plays them in turn in the one JVM, which is how a song that only
+        // misbehaves after another song has played is caught: the chips and their emulators are
+        // shared, and what the song before left in them is what the next one starts from
+        for (String file : System.getProperty("diag.file").split(",")) {
+            one(file);
+        }
+    }
+
+    private void one(String file) throws Exception {
         System.err.println("file: " + file);
 
         FileFormat format = FileFormat.getFileFormat(file);
@@ -149,5 +161,7 @@ class ChipCacheCheck {
             }
             System.err.println(mb);
         }
+        plugin.stop();
+        plugin.close();
     }
 }

@@ -1,4 +1,3 @@
-
 package mdplayer.driver.zgm.zgmChip;
 
 import java.util.Map;
@@ -7,7 +6,7 @@ import mdplayer.ChipRegister;
 import mdplayer.Common.EnmModel;
 import mdplayer.Setting;
 import mdplayer.driver.zgm.EnmZGMDevice;
-import mdplayer.driver.zgm.Zgm;
+import mdplayer.driver.zgm.ZgmDriver;
 
 
 public class YM2609 extends ZgmChip {
@@ -27,7 +26,7 @@ public class YM2609 extends ZgmChip {
     }
 
     @Override
-    public void setUp(int chipIndex, int dataPos, Map<Integer, Zgm.RefRunnable<Byte, Integer>> cmdTable) {
+    public void setUp(int chipIndex, int dataPos, Map<Integer, ZgmDriver.RefRunnable<Byte, Integer>> cmdTable) {
         super.setUp(chipIndex, dataPos, cmdTable);
 
         cmdTable.remove(defineInfo.commandNo);

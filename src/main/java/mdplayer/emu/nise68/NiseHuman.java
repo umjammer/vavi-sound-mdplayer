@@ -349,7 +349,7 @@ public class NiseHuman {
         try {
             tblFEFunc[n & 0xff].run();
         } catch (Exception e) {
-            logger.log(Level.TRACE, "<NiseHuman>FEFunc call $%04x", n & 0xffff);
+            logger.log(Level.TRACE, "<NiseHuman>FEFunc call $%04x".formatted(n & 0xffff));
             throw e;
         }
     }
@@ -358,7 +358,7 @@ public class NiseHuman {
         try {
             tblFunc[n & 0xff].run();
         } catch (Exception e) {
-            logger.log(Level.TRACE, "<NiseHuman>dos call $%04x", n & 0xffff);
+            logger.log(Level.TRACE, "<NiseHuman>dos call $%04x".formatted(n & 0xffff));
             throw e;
         }
     }
@@ -464,7 +464,7 @@ public class NiseHuman {
                 byte code = (byte) mem.peekW(reg.getA().get(7) + 2);
                 if ((code & 0xff) < 0x20) {
                     if (code != 0x07)
-                        logger.log(Level.INFO, "ascii code %02x", code);
+                        logger.log(Level.INFO, "ascii code %02x".formatted(code));
                     else
                         System.out.print((char) code);
                 } else {
@@ -518,7 +518,7 @@ public class NiseHuman {
             cnt++;
         } while (true);
         String fn = new String(ByteUtil.toByteArray(msg), charset);
-        logger.log(Level.TRACE, "Filename:[%s]", fn);
+        logger.log(Level.TRACE, "Filename:[%s]".formatted(fn));
         fn = fileMng.vGetFullFilename(fn);
         try {
             String path = Path.of(fn).getParent().toString();
@@ -579,7 +579,7 @@ public class NiseHuman {
             cnt++;
         } while (true);
         String fn = new String(ByteUtil.toByteArray(msg), charset);
-        logger.log(Level.DEBUG, "Filename:[%s] ATR:%d", fn, atr & 0xffff);
+        logger.log(Level.DEBUG, "Filename:[%s] ATR:%d".formatted(fn, atr & 0xffff));
 
         //String physicalFn = getPhysicalFn(fn);
 
@@ -642,7 +642,7 @@ logger.log(Level.WARNING, "fileHandle: "  + fileHandle + ", " + fn);
             cnt++;
         } while (true);
         String fn = new String(ByteUtil.toByteArray(msg), charset);
-        logger.log(Level.DEBUG, "Filename:[%s] Mode:%d", fn, mode & 0xffff);
+        logger.log(Level.DEBUG, "Filename:[%s] Mode:%d".formatted(fn, mode & 0xffff));
 
         //String physicalFn = getPhysicalFn(fn);
 
@@ -707,7 +707,7 @@ logger.log(Level.INFO, "file not found: %s".formatted(fn));
             }
         }
 
-        logger.log(Level.TRACE, "PhysicalFilename:[%s] ", physicalFn);
+        logger.log(Level.TRACE, "PhysicalFilename:[%s] ".formatted(physicalFn));
         return physicalFn.toString();
     }
 
@@ -809,7 +809,7 @@ logger.log(Level.INFO, "file not found: %s".formatted(fn));
             cnt++;
         } while (true);
         String fn = new String(ByteUtil.toByteArray(msg));
-        logger.log(Level.TRACE, "Filename:[%s]", fn);
+        logger.log(Level.TRACE, "Filename:[%s]".formatted(fn));
         String physicalFn = getPhysicalFn(fn);
 
         reg.getD()[0] = 0x0000_0000; // Unconditional success
@@ -908,7 +908,7 @@ logger.log(Level.INFO, "file not found: %s".formatted(fn));
 
         switch (md) {
             case 0:
-                logger.log(Level.TRACE, "<NiseHuman>in:  md:0 fil:%s op:%s p2:%08x ", fn, op, p2);
+                logger.log(Level.TRACE, "<NiseHuman>in:  md:0 fil:%s op:%s p2:%08x ".formatted(fn, op, p2));
                 if (!getFileNameWithoutExtension(fn).equalsIgnoreCase("ZMC")) {
                     throw new UnsupportedOperationException("Only ZMC is supported in exec, got: " + fn);
                 }
@@ -919,7 +919,7 @@ logger.log(Level.INFO, "file not found: %s".formatted(fn));
 
                 break;
             case 2:
-                logger.log(Level.TRACE, "<NiseHuman>in:  md:2 fil:%s p1:%08x p2:%08x ", fn, p1, p2);
+                logger.log(Level.TRACE, "<NiseHuman>in:  md:2 fil:%s p1:%08x p2:%08x ".formatted(fn, p1, p2));
                 cnt = 0;
                 int cnt2 = 0;
                 boolean o = false;
@@ -955,7 +955,7 @@ logger.log(Level.INFO, "file not found: %s".formatted(fn));
                     cnt++;
                 } while (true);
                 op = new String(ByteUtil.toByteArray(msg), charset);
-                logger.log(Level.TRACE, "<NiseHuman>out: md:2 fil:%s op:%s p2:%08x ", fn, op, p2);
+                logger.log(Level.TRACE, "<NiseHuman>out: md:2 fil:%s op:%s p2:%08x ".formatted(fn, op, p2));
 
                 reg.getD()[0] = 0x0000_0000;
                 break;

@@ -14,7 +14,7 @@ import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.driver.BasePlugin;
 import mdsound.Instrument;
 import mdsound.instrument.CozYmF262Inst;
 import mdsound.instrument.NukedYmF262Inst;

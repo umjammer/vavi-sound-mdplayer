@@ -26,9 +26,11 @@ public class Utils {
 
     /** */
     public static Path fileExistsIgnoreCase(Path path) {
-        int p = path.getFileName().toString().lastIndexOf('.');
-        String base = path.getFileName().toString().substring(0, p);
-        String ext0 = path.getFileName().toString().substring(p).toLowerCase();
+        String name = path.getFileName().toString();
+        int p = name.lastIndexOf('.');
+        if (p < 0) p = name.length(); // a name without an extension is still a name
+        String base = name.substring(0, p);
+        String ext0 = name.substring(p).toLowerCase();
         Path parent = path.getParent();
 
         List<String> trials = new ArrayList<>();

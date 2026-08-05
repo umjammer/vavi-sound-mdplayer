@@ -21,7 +21,7 @@ import java.util.function.Consumer;
 import javax.swing.JOptionPane;
 
 import mdplayer.Common.EnmArcType;
-import mdplayer.format.FileFormat;
+import mdplayer.driver.FileFormat;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 import vavi.util.serdes.Element;
@@ -223,7 +223,7 @@ public class PlayList implements Serializable, Cloneable {
 
         for (Music music : musics) {
             if (music == null || music.fileName == null) continue; // a half-written playlist entry has no file to show
-            Object[] row = new Object[] {
+            Object[] row = {
                 0, // clmKey
                 music.songNo, // clmSongNo
                 music.arcFileName, // clmZipFileName

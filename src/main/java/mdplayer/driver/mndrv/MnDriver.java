@@ -5,6 +5,8 @@ import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.List;
 
+import mdplayer.lib.mndrv.MnDrv;
+import mdplayer.lib.mndrv.MnWork.Dw;
 import vavi.util.compat.Tuple;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
@@ -12,8 +14,8 @@ import mdplayer.chips.MPcmChip;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.chips.Ym2608Chip;
 import mdplayer.driver.BaseDriver;
-import mdplayer.driver.zms.Zms.MPcmInterface;
-import mdplayer.plugin.BasePlugin;
+import mdplayer.lib.zms.Zms.MPcmInterface;
+import mdplayer.driver.BasePlugin;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 import vavi.util.ByteUtil;
@@ -152,7 +154,12 @@ public class MnDriver extends BaseDriver {
     public MetaData getMetaData(byte[] buf, Object... args) {
         MetaData md = new MetaData();
 
-        int i = (buf[6] & 0xff) * 0x100 + (buf[7] & 0xff);
+        // the title lives wherever the pointer at $0c says, which is only coincidentally the
+        // header size at $06 -- v2 data puts it after the tone data and read the wrong way round
+        // decodes voice bytes as a title
+        int headerSize = (buf[6] & 0xff) * 0x100 + (buf[7] & 0xff);
+        int i = headerSize > 0x0c ? ByteUtil.readBeInt(buf, 0x0c) : 0;
+        if (i <= 0 || i >= buf.length) i = headerSize;
         List<Byte> lst = new ArrayList<>();
         while (i < buf.length && buf[i] != 0x0 && i + 1 < buf.length && buf[i + 1] != 0x0) {
             lst.add(buf[i]);

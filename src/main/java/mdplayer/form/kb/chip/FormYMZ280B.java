@@ -208,7 +208,7 @@ public class FormYMZ280B extends FormChipBase<FormYMZ280B.Params> {
     /** this panel's per-frame draw state, diffed new against old (see {@link FormChipBase}) */
     public static class Params {
 
-        public final Channel[] channels = new Channel[] {
+        public final Channel[] channels = {
                 new Channel(), new Channel(), new Channel(), new Channel(),
                 new Channel(), new Channel(), new Channel(), new Channel()
         };
