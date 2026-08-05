@@ -64,7 +64,9 @@ class Port implements Memory {
         // ZX
 
         cpu.setZxClock();
-        address = registers.getB() * 0x100 | (byte) address;
+        // both halves are bytes and neither is a sign: signed, B=#BF and A=#FD came out as
+        // #FFFFFFFD, which matched the register latch, and no data write was ever seen
+        address = (registers.getB() & 0xff) * 0x100 | (address & 0xff);
 
         if ((address & 0xc002) == 0xc000) {
             ayReg = value;

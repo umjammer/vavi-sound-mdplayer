@@ -57,6 +57,8 @@ public class AY {
     public Information information;
     private Z80Processor z80;
     public int song = 0;
+    /** 50Hz interrupts run since {@link #setup}: the unit the header states a song's length in */
+    public long frames = 0;
     public static final int zxClock = 3_546_900; // 3.54690MHz
     private static final int cpcClock = 4_000_000; // 4.000000MHz
     private static final double PAL = 50.0;
@@ -160,6 +162,16 @@ public class AY {
         return new String(ByteUtil.toByteArray(dat));
     }
 
+    /** The song a number selects, which is the first one when the number names no song of this file. */
+    public int songIndex(int songNum) {
+        return songNum >= 0 && songNum < information.songsStructures.size() ? songNum : 0;
+    }
+
+    /** @param songNum out of range selects the first song, as {@link #setup} does */
+    public SongData songData(int songNum) {
+        return information.songsStructures.get(songIndex(songNum)).songData;
+    }
+
     public void setup(int songNum, BiConsumer<Integer, Integer> ayWrite, Runnable zxWrite) {
         Port port = new Port();
         z80 = new Z80ProcessorImpl();
@@ -187,17 +199,21 @@ public class AY {
         // e) if INIT equal to ZERO then place to first CALL instruction address of first AY file block instead of INIT (see next f) and g) steps)
         // f) if INTERRUPT equal to ZERO then place at ZERO address next player:
         // g) if INTERRUPT not equal to ZERO then place at ZERO address next player:
-        if (songNum >= information.songsStructures.size()) songNum = 0;
+        songNum = songIndex(songNum);
+        song = songNum;
+        frames = 0;
+        clkElp = 0;
+        palElp = 0;
         int init = information.songsStructures.get(songNum).songData.points.init;
         if (init == 0) {
             init = information.songsStructures.get(songNum).songData.addresses.getFirst().address;
         }
         int inter = information.songsStructures.get(songNum).songData.points.inter;
         if (inter == 0) {
-            byte[] player = new byte[] {(byte) 0xf3, (byte) 0xcd, 0x00, 0x00, (byte) 0xed, 0x5e, (byte) 0xfb, 0x76, 0x18, (byte) 0xfa};
+            byte[] player = {(byte) 0xf3, (byte) 0xcd, 0x00, 0x00, (byte) 0xed, 0x5e, (byte) 0xfb, 0x76, 0x18, (byte) 0xfa};
             for (int i = 0; i < player.length; i++) z80.getMemory().set(i, player[i]);
         } else {
-            byte[] player = new byte[] {(byte) 0xf3, (byte) 0xcd, 0x00, 0x00, (byte) 0xed, 0x56, (byte) 0xfb, 0x76, (byte) 0xcd, 0x00, 0x00, 0x18, (byte) 0xf7};
+            byte[] player = {(byte) 0xf3, (byte) 0xcd, 0x00, 0x00, (byte) 0xed, 0x56, (byte) 0xfb, 0x76, (byte) 0xcd, 0x00, 0x00, 0x18, (byte) 0xf7};
             for (int i = 0; i < player.length; i++) z80.getMemory().set(i, player[i]);
             z80.getMemory().set(9, (byte) inter);
             z80.getMemory().set(10, (byte) (inter >> 8));
@@ -208,7 +224,9 @@ public class AY {
         // h) Load all blocks for this song
         for (int i = 0; i < information.songsStructures.get(songNum).songData.addresses.size(); i++) {
             Block block = information.songsStructures.get(songNum).songData.addresses.get(i);
-            for (int j = 0; j < block.length; j++) {
+            // a block whose length runs past the end of the file is loaded as far as the file
+            // goes - one in ten of them does, and the memory is zero filled there anyway
+            for (int j = 0; j < block.length && block.offset + j < buf.length; j++) {
                 if (block.address + j >= 0x1_0000) continue;
                 z80.getMemory().set(block.address + j, buf[block.offset + j]);
             }
@@ -266,14 +284,15 @@ public class AY {
             old = z80.getTStatesElapsedSinceReset();
 
             clkElp += step;
-            if (clock / sampleRate <= clkElp) {
-                clkElp -= (clock / sampleRate);
+            if ((double) clock / sampleRate <= clkElp) {
+                clkElp -= (double) clock / sampleRate;
                 brk = true;
             }
 
             palElp += step;
             if (clock / PAL <= palElp) {
                 palElp -= (clock / PAL);
+                frames++;
 
                 if (z80.isHalted()) {
                     short pc = z80.getRegisters().getPC();

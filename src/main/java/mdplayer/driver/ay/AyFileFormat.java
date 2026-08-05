@@ -2,7 +2,10 @@ package mdplayer.driver.ay;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -14,11 +17,15 @@ import mdplayer.PlayList;
 import mdplayer.driver.BaseFileFormat;
 import mdplayer.driver.FileFormat.SampledFileFormat;
 import mdplayer.driver.Plugin;
+import musicDriverInterface.MetaData;
+import musicDriverInterface.MetaData.Tag;
 import vavi.sound.SoundUtil;
 import vavi.sound.sampled.md.MdEncoding;
 import vavi.sound.sampled.md.MdFileFormatType;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
+
+import static java.lang.System.getLogger;
 
 
 /**
@@ -29,20 +36,60 @@ import vavi.util.archive.Entry;
  */
 public class AyFileFormat extends BaseFileFormat implements SampledFileFormat {
 
+    private static final Logger logger = getLogger(AyFileFormat.class.getName());
+
     @Override
     public String[] getExtensions() {
         return new String[] {".ay"};
     }
 
     @Override
+    public MetaData getMetaData() {
+        return new AyDriver().getMetaData(this.srcBuf);
+    }
+
+    @Override
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
-        PlayList.Music music = new PlayList.Music();
+        List<PlayList.Music> musics = new ArrayList<>();
 
-        music.format = this;
-        music.arcFileName = zipFile;
-        music.arcType = EnmArcType.unknown;
+        AyDriver driver = new AyDriver();
+        int songs;
+        try {
+            songs = Integer.parseInt(driver.getMetaData(buf).getFirst(Tag.NumberOfSongs));
+        } catch (Exception e) {
+            // a file this header reader cannot make sense of still belongs in the play list, under
+            // its file name, the way it did before there was anything to read out of it
+            logger.log(Level.WARNING, "no song info: " + file + ": " + e);
+            PlayList.Music music = new PlayList.Music();
+            music.format = this;
+            music.fileName = file;
+            music.arcFileName = zipFile;
+            music.arcType = EnmArcType.unknown;
+            return List.of(music);
+        }
 
-        return List.of(music);
+        for (int s = 0; s < songs; s++) {
+            MetaData md = driver.getMetaData(buf, s);
+
+            PlayList.Music music = new PlayList.Music();
+            music.format = this;
+            music.fileName = file;
+            music.arcFileName = zipFile;
+            music.arcType = EnmArcType.unknown;
+            if (zipFile != null && !zipFile.isEmpty())
+                music.arcType = zipFile.toLowerCase().lastIndexOf(".zip") != -1 ? EnmArcType.ZIP : EnmArcType.LZH;
+            music.title = songs > 1 ? "%s - Trk %d".formatted(md.getFirst(Tag.Title), s + 1) : md.getFirst(Tag.Title);
+            music.titleJ = music.title;
+            music.composer = md.getFirst(Tag.Composer);
+            music.composerJ = music.composer;
+            music.notes = md.getFirst(Tag.Note);
+            music.duration = md.getFirst(Tag.Duration);
+            music.songNo = s;
+
+            musics.add(music);
+        }
+
+        return musics;
     }
 
     @Override
