@@ -154,11 +154,9 @@ when using this project with vgm, gbs spi, apply the settings below to avoid con
 - `muap.dir.udp` ... `.udp` file location
 - `muap.dir.sud` ... `.sud` file location
 
-#### YM2608 drums
+#### ROMs
 
-specify the directory for `ym2608_adpcm_rom.bin`.
-
-`-Dmdsound.pcm.path=/Users/foo/data/roms/`
+`mdsound.pcm.path` ... location for YM2608 drums `ym2608_adpcm_rom.bin` and YMF278B `yrw801.rom`
 
 #### Chip Selection
 
@@ -258,14 +256,14 @@ you can select a chip implementation variant by number.
     * mxdrv: ~~pcm8~~, when 68k opm is chosen as 1st opm, 2nd opm cannot sound pcm8. why???
     * ~~ndp: fmgen ym8910 is silence (meme's works)~~
     * ~~gbs: song no 9 -  wrong~~
-    * zms: upstream STBL561 new patch (but this library doesn't slow)
-    * fmp: startup is slow
-    * mxdrv: current-position counter reads 0
-    * mxdrv: pdx (see portable mdx)
+    * ~~zms: upstream STBL561 new patch (but this library doesn't slow)~~
+    * ~~fmp: startup is slow~~ ... logging issue
+    * ~~mxdrv: current-position counter reads 0~~
+    * ~~mxdrv: pdx (see portable mdx)~~ ... it's pcm
  * chip class should handle one chip
  * real chip is one of instrument?
  * ~~eliminate dotnet4j~~
- * ~~vgm spi selector~~
+ * ~~vgm spi kill switch~~
    * ~~vavi-sound-smu (wip)~~
    * ~~vavi-sound-ymfm (wip)~~
    * this spi
@@ -285,7 +283,13 @@ you can select a chip implementation variant by number.
    * ~~heavy json serdes~~
    * ~~FormRegTest open the same page, not reflected from which menu open~~
    * ~~add a test traversing all settings tab~~
- * volume leveling
+ * ~~volume leveling~~
+ * chip refactoring about masking
+ * fmdsp visualizer
+   * kanji conversion is still in it ... needed?
+     * \[fmp] ... move to emu/util ??? ... yes mdplayer should not care encoding, hide it native driver inside
+   * \[pmd] ... add special tag in datasource to display music_title/composer/arranger
+ * settings ...  demolish each driver and chips
 
 ---
 

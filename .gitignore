@@ -246,3 +246,6 @@ mxdrv.properties
 src/test/java/mdplayer/driver/fmp/fmp.properties
 src/test/java/mdplayer/driver/musica/musica.properties
 zms.properties
+pmd.properties
+moon.properties
+mndrv.properties
