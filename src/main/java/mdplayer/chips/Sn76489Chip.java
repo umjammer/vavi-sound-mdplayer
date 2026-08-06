@@ -139,7 +139,7 @@ public class Sn76489Chip extends BaseChip {
         }
     }
 
-    public void setPan(int chipId, int dData, EnmModel model) {
+    public void setPan(int chipId, int data, EnmModel model) {
         fireEventHappened("led.on", chipId);
 
         if (model == EnmModel.RealModel) {
@@ -149,8 +149,8 @@ public class Sn76489Chip extends BaseChip {
             }
         } else {
             if (!chipTypes[chipId].getUseReal()[0]) {
-                context.mds.inst(_inst(chipId)).setPan(chipId, dData);
-                pan[chipId] = dData;
+                context.mds.inst(_inst(chipId)).setPan(chipId, data);
+                pan[chipId] = data;
             }
         }
     }

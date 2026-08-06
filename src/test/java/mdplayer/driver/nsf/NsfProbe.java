@@ -4,7 +4,7 @@
  * Programmed by Naohide Sano
  */
 
-package mdplayer;
+package mdplayer.driver.nsf;
 
 import java.io.BufferedInputStream;
 import java.nio.file.Files;

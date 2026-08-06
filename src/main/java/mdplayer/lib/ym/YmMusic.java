@@ -410,7 +410,7 @@ public class YmMusic {
             throw new IllegalArgumentException("LHARC Header must be 0 !");
         }
 
-        // lzhHeader_t: size(0) sum(1) id[5](2) packed(7) original(11) reserved[5](15) level(20) name_lenght(21)
+        // lzhHeader_t: size(0) sum(1) id[5](2) packed(7) original(11) reserved[5](15) level(20) name_length(21)
         int packedSize = readLittleEndian32(bigMalloc, 7);
         int originalSize = readLittleEndian32(bigMalloc, 11);
 

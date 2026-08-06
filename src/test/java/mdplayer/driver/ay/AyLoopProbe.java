@@ -4,7 +4,7 @@
  * Programmed by Naohide Sano
  */
 
-package mdplayer;
+package mdplayer.driver.ay;
 
 import java.nio.file.Files;
 import java.nio.file.Path;

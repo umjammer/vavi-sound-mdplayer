@@ -58,6 +58,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 /**
  * TestCase.
@@ -381,13 +383,7 @@ Debug.println("close");
         audio.init(plugin);
 
         ExecutorService es = Executors.newSingleThreadExecutor();
-        es.submit(() -> {
-            try {
-                audio.play();
-            } catch (Exception e) {
-                Debug.printStackTrace(e);
-            }
-        });
+        es.submit(() -> { try { audio.play(); } catch (Exception e) { Debug.printStackTrace(e); }});
 
         // Wait 1.5 seconds for the audio thread to start playing/rendering
         Thread.sleep(1500);
@@ -396,10 +392,10 @@ Debug.println("close");
         audio.stop();
         long duration = System.currentTimeMillis() - start;
 
-        Debug.println("Stop took: " + duration + " ms");
+Debug.println("Stop took: " + duration + " ms");
         es.shutdownNow();
 
-        org.junit.jupiter.api.Assertions.assertTrue(duration < 1000, "Stop took too long: " + duration + " ms");
+        assertTrue(duration < 1000, "Stop took too long: " + duration + " ms");
     }
 
     @Test

@@ -4,7 +4,7 @@
  * Programmed by Naohide Sano
  */
 
-package mdplayer;
+package mdplayer.driver.ay;
 
 import java.io.BufferedInputStream;
 import java.nio.file.Files;
@@ -12,6 +12,9 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
+import mdplayer.Common;
+import mdplayer.PlayList.Music;
+import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.BasePlugin;
 import mdplayer.driver.FileFormat;
@@ -34,9 +37,9 @@ class AyProbe {
         FileFormat format = FileFormat.getFileFormat(file);
         format.load(Archives.getInputStream(new BufferedInputStream(Files.newInputStream(Path.of(file)))), null);
 
-        List<PlayList.Music> musics = format.getMusic(file, format.getData(), null, null, null);
+        List<Music> musics = format.getMusic(file, format.getData(), null, null, null);
         System.err.println("--- play list (" + musics.size() + ")");
-        for (PlayList.Music m : musics) {
+        for (Music m : musics) {
             System.err.printf("  songNo=%d title=[%s] game=[%s] composer=[%s] notes=[%s] duration=[%s]%n",
                     m.songNo, m.title, m.game, m.composer, m.notes, m.duration);
         }
