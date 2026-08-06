@@ -980,10 +980,9 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
         timerB = tb;
 
         long counter = d.counter;
-        // MXDRV never advances its sample counter - it is clocked by the PCM8 chip, which does not
-        // report back - so a note clock hung off the counter alone would stand still and every MDX
-        // row would show an empty bar. Fall back to counting snapshots, which arrive at a known
-        // rate in the player.
+        // a note clock hung off the sample counter alone stands still for a driver that does not
+        // advance one, and every row would show an empty bar. Fall back to counting snapshots,
+        // which arrive at a known rate in the player.
         noteTickStep += counter > lastCounter
                 ? (counter - lastCounter) * (noteTickHz / Common.VGMProcSampleRate)
                 : noteTickHz / snapshotRate;

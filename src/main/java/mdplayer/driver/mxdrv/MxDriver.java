@@ -331,20 +331,27 @@ public class MxDriver extends BaseDriver {
 logger.log(Level.TRACE, "MXDRV_Start: " + ret);
     }
 
+    /** ticks {@link #clock} runs the OPM timer on, scaled by {@link #speed} */
+    private double opmCounter;
+
+    /**
+     * Runs the OPM timer the sequencer is driven by, held off until the player has mixed the
+     * latency it starts out with.
+     * <p>
+     * X68Sound calls this back only while it renders at the output rate; the chip here runs at
+     * its own 62500 Hz and takes the path that ticks the timer itself, so this is dead for most
+     * songs. The sample counter must not be counted here for that reason - see
+     * {@link #processOneFrame()}.
+     *
+     * @param firstFlg true on the first OPM tick of an output sample (unused, kept for the callback)
+     */
     public void clock(Runnable timer, boolean firstFlg) {
         try {
-            speedCounter += speed;
-            while (speedCounter >= 1.0) {
-                speedCounter -= 1.0;
+            opmCounter += speed;
+            while (opmCounter >= 1.0) {
+                opmCounter -= 1.0;
                 if (frameCounter > -1) {
                     timer.run();
-                    if (firstFlg) {
-                        counter++;
-                        frameCounter++;
-                    }
-                } else {
-                    if (firstFlg)
-                        frameCounter++;
                 }
             }
         } catch (Exception ex) {
@@ -363,6 +370,17 @@ logger.log(Level.TRACE, "MXDRV_Start: " + ret);
         //logger.log(Level.TRACE, "5:%d".formatted(mm.readint(MXWORK_CHBUF_PCM[4] + MXWORK_CH.S0004)));
         //logger.log(Level.TRACE, "6:%d".formatted(mm.readint(MXWORK_CHBUF_PCM[5] + MXWORK_CH.S0004)));
         //logger.log(Level.TRACE, "7:%d".formatted(mm.readint(MXWORK_CHBUF_PCM[6] + MXWORK_CH.S0004)));
+
+        // the mixer calls this once per rendered sample, which is the only tick this driver is
+        // sure to get: the PCM8 chip clocks it back (#clock) only on the X68Sound path that
+        // renders at the output rate, and the chip runs at 62500 Hz, which takes the other one.
+        // Left uncounted, the elapsed time on the display stands still a fifth of a second in.
+        speedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * speed;
+        while (speedCounter >= 1.0) {
+            speedCounter -= 1.0;
+            counter++;
+            frameCounter++;
+        }
 
         curLoop = mxdrv.loopCount;
         if (mxdrv.terminatePlay) {
