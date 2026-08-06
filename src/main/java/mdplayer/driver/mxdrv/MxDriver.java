@@ -236,6 +236,43 @@ public class MxDriver extends BaseDriver {
         mdx[0][7] = 0x08;
     }
 
+    /** how many part offsets follow the voice data offset at the head of an MDX body */
+    private static final int MDX_PARTS = 9;
+
+    /**
+     * Rejects a file whose body is not MDX sequence data at all.
+     * <p>
+     * The body opens with the offset of the voice data and one offset per part, all counted from
+     * the body itself, and nothing in the driver ever questions one. A file carrying something
+     * else there sends it reading wherever those bytes happen to point, which is where the endless
+     * {@code index is out of bounds} such a file used to play as comes from.
+     * <p>
+     * Files like that are not rare: an MDX compressed by LZX keeps its title and its PDX name,
+     * both of which still read back fine, and has a 68000 stub where the sequence should be
+     * (Gradius III's {@code G3_ST7.MDX} is one of over a thousand). A song that cannot play should
+     * say so rather than sound like a broken driver.
+     * <p>
+     * Only what cannot be sequence data at all is refused. The offsets themselves are deliberately
+     * not checked against the length of the body: plenty of MDXs that play perfectly well point a
+     * part or their voice data just past their own data - an empty part is written that way, and
+     * an unused one as an offset with the top bit set - and the driver reads the zeroes that
+     * follow as rests. Refusing those would lose songs to a stricter reading than MXDRV's own.
+     *
+     * @param mdx the buffer {@link #makeMdxBuf} built, its body offset in bytes 4 and 5
+     * @param size how much of it {@code makeMdxBuf} filled
+     * @throws IllegalStateException if the body cannot be sequence data
+     */
+    private static void checkMdx(byte[] mdx, int size) {
+        int body = ByteUtil.readBeShort(mdx, 4) & 0xffff;
+        int length = size - body;
+        if (length < (1 + MDX_PARTS) * 2) {
+            throw new IllegalArgumentException("Not MDX data: the body is only %d bytes.".formatted(length));
+        }
+        if (mdx[body + 4] == 'L' && mdx[body + 5] == 'Z' && mdx[body + 6] == 'X' && mdx[body + 7] == ' ') {
+            throw new IllegalArgumentException("The MDX data is LZX compressed.");
+        }
+    }
+
     /**
      * @param pdx OUT
      * @param pdxSize OUT
@@ -302,6 +339,7 @@ public class MxDriver extends BaseDriver {
         int[] pdxSize = new int[1];
         String[] pdxFileName = new String[1];
         makeMdxBuf(dataBuf, mdx, mdxSize, pdxFileName);
+        checkMdx(mdx[0], mdxSize[0]);
         makePdxBuf(pdxFileName[0], pdx, pdxSize);
         if ((pdxFileName[0] != null && !pdxFileName[0].isEmpty()) && pdx[0] == null) {
             logger.log(Level.WARNING, "pdxFileName: %s, pdx: %s".formatted(pdxFileName[0], pdx[0]));
