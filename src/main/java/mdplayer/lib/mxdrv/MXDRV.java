@@ -690,6 +690,29 @@ public class MXDRV {
     private boolean reqFadeout;
 
     /**
+     * Whether a repeat that spans a whole part counts as a loop of the song (MXDRV call {@code $15}).
+     * <p>
+     * A part is expected to end in {@code $f1} with a jump back over itself, which is what
+     * {@link #L0013e6} counts loops on. Plenty of MDXs write the loop as a repeat instead - a
+     * {@code [} with a count of 255 around the whole part, followed by an {@code $f1 $00} that is
+     * never reached - and the driver then has nothing to count: {@link #loopCount} stays 0, the
+     * player never reaches its loop limit and the song plays on until its 255th repeat, while
+     * {@link #MXDRV_MeasurePlayTime} runs into its 20 minute limit instead of measuring a loop.
+     * MXDRV reads a repeat whose continuation is followed by an unreachable {@code $f1 $00} as
+     * exactly that loop, but only with this on - see {@link #L001376}.
+     *
+     * @param on true to count such a repeat as a loop
+     * @return what it was set to before
+     */
+    public boolean MXDRV_RepeatIsLoop(boolean on) {
+        X68Reg reg = new X68Reg();
+        reg.d0 = 0x15;
+        reg.d1 = on ? Depend.SET : Depend.CLR;
+        MXDRV_(reg);
+        return reg.d0 != 0;
+    }
+
+    /**
      * Arms the end of song / loop detection for playback.
      * <p>
      * {@link #MXDRV_MeasurePlayTime} leaves its own loop and fadeout state behind and detaches

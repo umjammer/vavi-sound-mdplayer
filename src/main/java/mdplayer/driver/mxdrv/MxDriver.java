@@ -322,6 +322,11 @@ public class MxDriver extends BaseDriver {
         if (setting.getMxDrv().pcm8Type == 1)
             plugin.chipRegister.chip(Pcm8Chip.class).writePcm(0, 0, 0, mxdrv.getMemory().mm, model);
 
+        // a song that loops with a repeat around the whole part instead of a jump at its end has
+        // no loop to count without this, and neither the measurement below nor the player's loop
+        // limit would ever come round
+        mxdrv.MXDRV_RepeatIsLoop(true);
+
         int playtime = mxdrv.MXDRV_MeasurePlayTime(mdx[0], mdxSize[0], mdxPtr[0], pdx[0], pdxSize[0], pdxPtr[0], 1, Depend.TRUE);
 //logger.log(Level.TRACE, "(%d:%02d) %d".formatted(playtime / 1000 / 60, playtime / 1000 % 60, ""));
         totalCounter = (long) playtime * setting.getOutputDevice().getSampleRate() / 1000;
