@@ -976,7 +976,10 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
             tb = reader.timerB();
             if (tb > 0) break;
         }
-        if (tb <= 0) tb = defaultTimerB;
+        // 256 is what fmgen works its register back out to when nothing has written one, and it
+        // would leave the tick below no period at all to count - an endless loop on the mixer's
+        // thread. Anything outside a register's range is no tempo, so it gets the fallback
+        if (tb <= 0 || tb >= 256) tb = defaultTimerB;
         timerB = tb;
 
         long counter = d.counter;
@@ -1239,8 +1242,17 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
         // Fall back to the total song length when there is no loop point.
         long samples = d.loopCounter > 0 ? d.loopCounter : d.totalCounter;
         if (samples <= 0) return 0;
-        // Convert samples → timerB ticks (the same unit as timerBCount())
-        int tb = this.timerB > 0 ? this.timerB : defaultTimerB;
+        // Convert samples → timerB ticks (the same unit as timerBCount()) at the rate the ticks
+        // have actually been counted at so far. Reading the tempo off the chip instead made the
+        // slider wander: a song whose tempo falls between two TimerB values writes both by turns
+        // - dq4_10.mdx flips between 239 and 240 ten times a second - and each flip moved the
+        // length this is divided by by 6%, so the slider jumped back and forth a few pixels the
+        // whole song. The average also stands up to a song that changes tempo for real.
+        if (lastCounter > 0 && timerBCount > 0) {
+            return Math.max(1, Math.round((double) samples * timerBCount / lastCounter));
+        }
+        // nothing counted yet (the first snapshots of a song): the tempo is all there is to go on
+        int tb = this.timerB > 0 && this.timerB < 256 ? this.timerB : defaultTimerB;
         double overflow = (256 - tb) * 16.0;
         return Math.round(samples * (timerBStepHz / Common.VGMProcSampleRate) / overflow);
     }

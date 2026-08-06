@@ -367,7 +367,10 @@ public class MxDriver extends BaseDriver {
 
         int playtime = mxdrv.MXDRV_MeasurePlayTime(mdx[0], mdxSize[0], mdxPtr[0], pdx[0], pdxSize[0], pdxPtr[0], 1, Depend.TRUE);
 //logger.log(Level.TRACE, "(%d:%02d) %d".formatted(playtime / 1000 / 60, playtime / 1000 % 60, ""));
-        totalCounter = (long) playtime * setting.getOutputDevice().getSampleRate() / 1000;
+        // the sample counter this is compared against ({@link #counter}) runs at the player's own
+        // rate, not the device's - counting it at the device rate made the total time and both
+        // progress bars run long by whatever the device is tuned away from 44100
+        totalCounter = (long) playtime * Common.VGMProcSampleRate / 1000;
         // the player decides how many loops to play (Setting.Other#loopTimes), the driver only reports them
         mxdrv.MXDRV_PlaySetup(Integer.MAX_VALUE, false);
         mxdrv.MXDRV_Play(mdx[0], mdxSize[0], mdxPtr[0], pdx[0], pdxSize[0], pdxPtr[0]);

@@ -25,6 +25,7 @@ import vavi.sound.visualizer.fmdsp.WorkStateSource;
 import vavi.util.archive.Archives;
 import vavi.util.event.GenericEvent;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
@@ -35,6 +36,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Run with: mvn test -Dtest=DurationBarProbeTest -Dvavi.test=ai
  */
 public class DurationBarProbeTest {
+
+    static {
+        // X68Sound's PCM8, as local.properties runs the player with: the other one leaves the OPM
+        // registers - the TimerB the MDX case below is about - unwritten, hence unreadable
+        System.setProperty("mdplayer.variant.pcm8", "0");
+    }
 
     /**
      * Load a file through the standard plugin pipeline, render 5 seconds of audio,
@@ -65,10 +72,14 @@ public class DurationBarProbeTest {
         int chunkSamples = sampleRate / 120;
         short[] pcmBuf = new short[chunkSamples * 2]; // stereo
 
-        System.err.println("  sec | timerBCount | timerBCountLoop | loopTimerBCount | totalTimerBCount | loopLen | pos");
+        System.err.println("  sec | timerBCount | timerBCountLoop | loopTimerBCount | totalTimerBCount | loopLen | pos | timerB");
 
         int totalSec = 5;
         int chunksPerSec = sampleRate / chunkSamples;
+
+        // the slider is only ever allowed to walk forwards within a loop; it used to jump about
+        // for a song whose tempo falls between two TimerB values, see ChipFmDspSource#totalTimerBCount
+        int lastPos = -1, lastLoop = -1, worstBack = 0;
 
         for (int sec = 0; sec < totalSec; sec++) {
             for (int c = 0; c < chunksPerSec; c++) {
@@ -76,6 +87,12 @@ public class DurationBarProbeTest {
                 plugin.getDriver().render(pcmBuf, 0, pcmBuf.length);
                 // feed it to source as a "master" event so snapshot() fires
                 source.update(new GenericEvent(plugin.getDriver(), "master", pcmBuf, 0));
+
+                int p = posOf(source);
+                int l = source.loopCount();
+                if (l == lastLoop && p < lastPos) worstBack = Math.max(worstBack, lastPos - p);
+                lastPos = p;
+                lastLoop = l;
             }
 
             WorkStateSource w = source;
@@ -84,14 +101,10 @@ public class DurationBarProbeTest {
             long ltbc = w.loopTimerBCount();
             long ttbc = w.totalTimerBCount();
 
-            // replicate FmDspVisualizer pos computation
-            long loopLen = ltbc, loopPos = tbcl;
-            if (loopLen <= 0) { loopLen = ttbc; loopPos = tbc; }
-            if (loopLen <= 0) { loopLen = 1200; loopPos = tbc; }
-            int pos = loopLen > 0 ? (int) ((loopPos % loopLen) * 69 / loopLen) : 0;
+            long loopLen = ltbc > 0 ? ltbc : ttbc > 0 ? ttbc : 1200;
 
-            System.err.printf("  %3d | %11d | %15d | %15d | %16d | %7d | %3d%n",
-                    sec + 1, tbc, tbcl, ltbc, ttbc, loopLen, pos);
+            System.err.printf("  %3d | %11d | %15d | %15d | %16d | %7d | %3d | %6d%n",
+                    sec + 1, tbc, tbcl, ltbc, ttbc, loopLen, posOf(source), w.timerB());
         }
 
         // Paint frame after 5 s of audio
@@ -107,6 +120,18 @@ public class DurationBarProbeTest {
         }
         System.err.println("  -> bar " + (moved ? "MOVED: OK" : "DID NOT MOVE: FAIL"));
         assertTrue(moved, "Duration bar should move after 5 seconds for: " + Path.of(file).getFileName());
+
+        System.err.println("  -> worst step backwards: " + worstBack);
+        assertEquals(0, worstBack, "Duration bar should not walk backwards within a loop for: "
+                + Path.of(file).getFileName());
+    }
+
+    /** what {@link FmDspVisualizer} puts the slider at, out of the bar's 72 columns */
+    private static int posOf(WorkStateSource w) {
+        long loopLen = w.loopTimerBCount(), loopPos = w.timerBCountLoop();
+        if (loopLen <= 0) { loopLen = w.totalTimerBCount(); loopPos = w.timerBCount(); }
+        if (loopLen <= 0) { loopLen = 1200; loopPos = w.timerBCount(); }
+        return (int) ((loopPos % loopLen) * 69 / loopLen);
     }
 
     private static BufferedImage paintFrame(FmDspVisualizer vis) {
@@ -145,5 +170,12 @@ public class DurationBarProbeTest {
     @EnabledIfSystemProperty(named = "vavi.test", matches = "ai")
     void probeMoonDriver() throws Exception {
         probe("../vavi-sound-moon/tmp/TIMESUP/TIMESUP.MDR");
+    }
+
+    /** its tempo lies between two TimerB values, which the driver writes by turns */
+    @Test
+    @EnabledIfSystemProperty(named = "vavi.test", matches = "ai")
+    void probeMdxFile() throws Exception {
+        probe("/Users/nsano/Public/np2/MXDRV/Game/Enix/DragonQuest/4/Unknown2/dq4_10.mdx");
     }
 }
