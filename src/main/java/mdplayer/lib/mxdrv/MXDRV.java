@@ -3314,13 +3314,36 @@ exit:   {
         mm.write(A6 + MXWORK_CH.S001f, mm.readByte(A4++));
     }
 
-    // 
+    /**
+     * {@code $ef}: raises the sync flag the part named by the operand waits on.
+     * <pre>
+     *  moveq.l #$00,d0
+     *  move.b  (a4)+,d0
+     *  lea.l   L001df6(pc),a0
+     *  st.b    $00(a0,d0.w)
+     *  cmp.w   #$0009,d0
+     *  bcc     L0014ae
+     *  st.b    $27(a5,d0.w)
+     * </pre>
+     * Both operands read the flag array by the number the command carries. MDPlayer's C#, which
+     * this was ported from, has {@code lea} as a byte load in this one place - it is an address in
+     * the three others, {@link #L001192}, {@link #L0014b0} and where they are all cleared at the
+     * start of a song - so the flag went into the head of the global work area and the part
+     * waiting on it waited for good: it never played a note, never reached the end of its data,
+     * and so never let a loop be counted. Youkai Douchuuki's {@code YD_ALP.MDX} played on for ever
+     * on the strength of three PCM parts stuck on their first command.
+     * <p>
+     * The status byte the same command sets for MXDRV's own display goes by that number too, not
+     * by the part sending it. Neither player reads it, but a part above the eighth signalling one
+     * below it wrote past the nine bytes it has and into {@link MXWORK_GLOBAL#L00223c}, which
+     * carries the key on masks - the count is guarded against the operand, which is the tell.
+     */
     private void L001498() {
         D0 = mm.readByte(A4++) & 0xff;
-        A0 = mm.readByte(G + MXWORK_GLOBAL.L001df6 + 0) & 0xff;
+        A0 = G + MXWORK_GLOBAL.L001df6 + 0;
         mm.write(A0 + D0, (byte) Depend.SET);
         if (D0 < 0x0009) {
-            mm.write(G + MXWORK_GLOBAL.L002233 + D7, (byte) Depend.SET);
+            mm.write(G + MXWORK_GLOBAL.L002233 + D0, (byte) Depend.SET);
         }
     }
 
