@@ -5,6 +5,9 @@ import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.util.List;
 
+import mdplayer.emu.nise68.IMemory;
+import mdplayer.emu.nise68.IRegister;
+import mdplayer.lib.mndrv.Reg;
 import mdplayer.lib.zms.Zms;
 import vavi.util.compat.Tuple;
 import mdplayer.Common;
@@ -87,8 +90,11 @@ public class ZmsDriver extends BaseDriver {
             }
 
             @Override
-            public void writePcm(int ch, Object pcm, Object mem, Object reg, int n) {
-                plugin.chipRegister.chip(MPcmChip.class).writePcm(0, ch, pcm, mem, n, n);
+            public void writePcm(int ch, Zms.MPCMSt[] pcm, IMemory mem, IRegister reg, int n) {
+                pcm[ch].fill(mem, reg);
+                pcm[ch].fill(plugin.chipRegister.chip(MPcmChip.class).getBaseRate(0));
+                plugin.chipRegister.chip(MPcmChip.class).writePcm(0, ch, mem.getMemory(), pcm[ch].type, pcm[ch].orig, pcm[ch].adrs_ptr, pcm[ch].size, pcm[ch].start, pcm[ch].end, pcm[ch].count, reg instanceof Reg, pcm[ch].frq, n);
+                //nise68.dumpMemory((int) ptr.adrs_ptr, (int) (ptr.adrs_ptr + ptr.size));
             }
 
             @Override

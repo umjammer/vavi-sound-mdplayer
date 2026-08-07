@@ -8,8 +8,11 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import mdplayer.emu.nise68.IMemory;
+import mdplayer.emu.nise68.IRegister;
 import mdplayer.lib.mndrv.MnWork.Dw;
 import mdplayer.lib.mndrv.MnWork.W;
+import mdplayer.lib.zms.Zms.MPCMSt;
 
 
 /**
@@ -204,7 +207,7 @@ public class MndV1Analyzer {
     private static class NullMPcm implements mdplayer.lib.zms.Zms.MPcmInterface {
         @Override public void keyOn(int ch) {}
         @Override public void keyOff(int ch) {}
-        @Override public void writePcm(int ch, Object pcm, Object mem, Object reg, int n) {}
+        @Override public void writePcm(int ch, MPCMSt[] pcm, IMemory mem, IRegister reg, int n) {}
         @Override public void setFreq(int ch, int value) {}
         @Override public void setPitch(int ch, int value) {}
         @Override public void setVol(int ch, int value) {}

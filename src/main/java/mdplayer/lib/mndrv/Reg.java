@@ -3,8 +3,11 @@ package mdplayer.lib.mndrv;
 import java.util.HashMap;
 import java.util.Map;
 
+import mdplayer.emu.nise68.IRegister;
 
-public class Reg {
+
+public class Reg implements IRegister {
+
     public int D0_L;
     public int D1_L;
     public int D2_L;
@@ -259,6 +262,22 @@ public class Reg {
 
     public boolean cryADD(int a, int b) {
         return (a & 0xffff_ffffL) + (b & 0xffff_ffffL) > 0xffff_ffffL;
+    }
+
+    // TODO check
+    @Override
+    public int getAl(int index) {
+        return switch (index) {
+            case 0 -> a0;
+            case 1 -> a1; // correct
+            case 2 -> a2;
+            case 3 -> a3;
+            case 4 -> a4;
+            case 5 -> a5;
+            case 6 -> a6;
+            case 7 -> a7;
+            default -> throw new IllegalArgumentException(String.valueOf(index));
+        };
     }
 }
 

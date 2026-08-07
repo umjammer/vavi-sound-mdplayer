@@ -1,7 +1,7 @@
 package mdplayer.emu.nise68;
 
 
-public class Register68 {
+public class Register68 implements IRegister {
 
     private int[] d = new int[8];
 
@@ -236,6 +236,7 @@ public class Register68 {
         return (short) a.get(n);
     }
 
+    @Override
     public int getAl(int n) {
         return a.get(n);
     }

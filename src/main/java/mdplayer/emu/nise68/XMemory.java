@@ -4,7 +4,7 @@ import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
 
-public class XMemory {
+public class XMemory implements IMemory {
 
     private static final Logger logger = System.getLogger(XMemory.class.getName());
 
@@ -76,6 +76,7 @@ if ((v1 & mask) >= mm.length) {
         write(v1 + 3, (byte) ((v2 & 0xff) >> 0));
     }
 
+    @Override
     public byte readByte(int v1) {
 if ((v1 & mask) >= mm.length) {
  outOfBounds(v1 & mask);
@@ -88,10 +89,16 @@ if ((v1 & mask) >= mm.length) {
         return (short) (((readByte(v1) & 0xff) << 8) + ((readByte(v1 + 1) & 0xff) << 0));
     }
 
+    @Override
     public int readInt(int v1) {
         return ((readByte(v1) & 0xff) << 24) +
                 ((readByte(v1 + 1) & 0xff) << 16) +
                 ((readByte(v1 + 2) & 0xff) << 8) +
                 ((readByte(v1 + 3) & 0xff) << 0);
+    }
+
+    @Override
+    public byte[] getMemory() {
+        return mm;
     }
 }

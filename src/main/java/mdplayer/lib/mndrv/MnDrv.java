@@ -259,7 +259,7 @@ public class MnDrv {
             mpcmSt[ch].keyOff = true;
             break;
         case 0x02:
-            mpcm.writePcm(ch, mpcmSt[ch], mm, reg, n);
+            mpcm.writePcm(ch, mpcmSt, mm, reg, n);
             break;
         case 0x04:
             mpcm.setPitch(ch, reg.D1_L);
