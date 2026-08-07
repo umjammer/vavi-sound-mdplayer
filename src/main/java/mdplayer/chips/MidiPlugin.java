@@ -488,8 +488,8 @@ logger.log(Level.DEBUG, "midi volume: gain=%.3f (master=%d, midi=%d)".formatted(
                 dataIndex = 0;
                 dataNeeded = dataLength(b);
                 if (dataNeeded == 0) { // e.g. tune request 0xf6
-                    emit(status, 0, 0, 0);
                     status = 0;
+                    emit(b, 0, 0, 0);
                 }
                 return;
             }
@@ -499,11 +499,16 @@ logger.log(Level.DEBUG, "midi volume: gain=%.3f (master=%d, midi=%d)".formatted(
                 return;
             }
             if (status == 0) return; // data byte without a status: ignore
-            data[dataIndex++] = (byte) b;
+            if (dataIndex < data.length) data[dataIndex] = (byte) b;
+            dataIndex++;
             if (dataIndex >= dataNeeded) {
-                emit(status, dataNeeded, data[0] & 0xff, data[1] & 0xff);
+                // the state is settled before the message goes out: a receiver that throws (a
+                // closed port, a synthesizer that gave up) would otherwise leave dataIndex where
+                // it was and every byte after it would run off the end of data, for good
+                int pending = status;
                 dataIndex = 0; // running status: keep status for the next message
                 if (status >= 0xf0) status = 0; // system common is not retained as running status
+                emit(pending, dataNeeded, data[0] & 0xff, data[1] & 0xff);
             }
         }
 

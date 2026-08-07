@@ -139,6 +139,7 @@ public class MID {
 
                 if (isDelta.get(trk)) {
                     delta = getDelta(ptr, data);
+                    ptr += deltaLength(ptr, data);
                     midWaitCounter.set(trk, delta);
 
                     logger.log(Level.TRACE, "delta:%10d ".formatted(delta));
@@ -149,6 +150,7 @@ public class MID {
 
                     if ((cmd & 0xff) == 0xf0 || (cmd & 0xff) == 0xf7) {
                         int eventLen = getDelta(ptr, data);
+                        ptr += deltaLength(ptr, data);
                         //logger.log(Level.TRACE, "evntLen:%10D ".formatted(eventLen));
                         logger.log(Level.TRACE, "%2x ".formatted(cmd));
                         List<Byte> eventData = new ArrayList<>();
@@ -165,6 +167,7 @@ public class MID {
                     } else if ((cmd & 0xff) == 0xff) {
                         byte eventType = data[ptr++];
                         int eventLen = getDelta(ptr, data);
+                        ptr += deltaLength(ptr, data);
 
                         logger.log(Level.TRACE, "evntTyp:%2x evntLen:%10d ".formatted(eventType, eventLen));
 
@@ -286,7 +289,7 @@ public class MID {
                 isDelta.set(trk, !isDelta.get(trk));
 
                 musicPtr.set(trk, ptr);
-                if (ptr == trkEndAdr.get(trk)) {
+                if (ptr >= trkEndAdr.get(trk)) {
                     isEnd.set(trk, true);
                     break;
                 }
@@ -350,17 +353,35 @@ public class MID {
         }
     }
 
+    /**
+     * The variable length quantity at {@code trkPtr}. It does not say how many bytes it took -
+     * the pointer is the caller's, see {@link #deltaLength}.
+     */
     public static int getDelta(int trkPtr, byte[] bs) {
         int delta = 0;
-        while (true) {
+        while (trkPtr < bs.length) {
             delta = (delta << 7) + (bs[trkPtr] & 0x7f);
             if ((bs[trkPtr] & 0x80) == 0) {
-                trkPtr++;
                 break;
             }
             trkPtr++;
         }
 
         return delta;
+    }
+
+    /**
+     * How many bytes the variable length quantity at {@code trkPtr} takes, so the caller can step
+     * over what {@link #getDelta} just read. (The original took the pointer by reference and
+     * advanced it itself, which Java cannot do.)
+     */
+    public static int deltaLength(int trkPtr, byte[] bs) {
+        int len = 0;
+        while (trkPtr + len < bs.length) {
+            len++;
+            if ((bs[trkPtr + len - 1] & 0x80) == 0) break;
+        }
+
+        return len;
     }
 }
