@@ -318,6 +318,7 @@ public class VgmDriver extends BaseDriver {
         isDataBlock = false;
 
         vgm.vgmBuf = dataBuf;
+        vgm.dacControl = new DacControl(plugin.chipRegister, model);
 
         vgm.init();
 

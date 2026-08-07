@@ -44,14 +44,10 @@ public class VGMPlugin extends BasePlugin<VgmDriver> {
     @Override
     public void prepare() {
         driverVirtual = new VgmDriver(this);
-        driverVirtual.vgm.dacControl.chipRegister = chipRegister;
-        driverVirtual.vgm.dacControl.model = EnmModel.VirtualModel;
 
         driverReal = null;
 //        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
 //            driverReal = new VgmDriver(this);
-//            driverReal.dacControl.chipRegister = chipRegister;
-//            driverReal.dacControl.model = EnmModel.RealModel;
 //        }
 
         super.prepare();

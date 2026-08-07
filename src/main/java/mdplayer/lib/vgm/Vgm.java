@@ -12,7 +12,6 @@ import java.util.function.LongConsumer;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 
-import mdplayer.DacControl;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
@@ -21,10 +20,6 @@ import static java.lang.System.getLogger;
 public class Vgm {
 
     private static final Logger logger = getLogger(Vgm.class.getName());
-
-    public Vgm() {
-        dacControl = new DacControl();
-    }
 
     public static final int FCC_VGM = 0x206D6756; // "Vgm "
     public static final int FCC_GD3 = 0x20336447; // "Gd3 "
@@ -139,7 +134,7 @@ public class Vgm {
     public boolean uPD7759DualChipFlag;
     public boolean pokeyDualChipFlag;
 
-    public final DacControl dacControl;
+    public IDac dacControl;
     public boolean isPcmRAMWrite = false;
     public boolean useChipYM2612Ch6 = false;
     public int es5503Ch = 2;
@@ -897,8 +892,8 @@ public class Vgm {
             return;
         }
         if (!dacCtrl[si].enable) {
-            dacControl.device_start_daccontrol(si);
-            dacControl.device_reset_daccontrol(si);
+            dacControl.deviceStart(si);
+            dacControl.deviceReset(si);
             dacCtrl[si].enable = true;
             dacCtrlUsg[dacCtrlUsed] = (byte) si;
             dacCtrlUsed++;
@@ -946,7 +941,7 @@ public class Vgm {
         }
         int tempLng = ByteUtil.readLeInt(vgmBuf, vgmAdr + 2);
         //last95Freq = tempLng;
-        dacControl.set_frequency(si, tempLng);
+        dacControl.setFrequency(si, tempLng);
         vgmAdr += 6;
     }
 
@@ -1010,7 +1005,7 @@ public class Vgm {
             TempSht = 0x00;
         VgmPcmData tempBnk = tempPCM.bank.get(TempSht);
 
-        int tempByt = DacControl.DacControl_.DCTRL_LMODE_BYTES |
+        int tempByt = IDac.DCTRL_LMODE_BYTES |
                 (vgmBuf[vgmAdr + 4] & 0x10) |         // Reverse Mode
                 ((vgmBuf[vgmAdr + 4] & 0x01) << 7);   // Looping
         dacControl.start(curChip, tempBnk.dataStart, tempByt, tempBnk.dataSize);
@@ -1166,7 +1161,7 @@ public class Vgm {
         // realloc may've moved the Bank block, so refresh all DAC Streams
         for (curDAC = 0x00; curDAC < dacCtrlUsed; curDAC++) {
             if (dacCtrl[dacCtrlUsg[curDAC] & 0xff].bank == bnkType)
-                dacControl.refresh_data(dacCtrlUsg[curDAC] & 0xff, tempPCM.data, tempPCM.dataSize);
+                dacControl.refreshData(dacCtrlUsg[curDAC] & 0xff, tempPCM.data, tempPCM.dataSize);
         }
     }
 
@@ -2077,5 +2072,24 @@ logger.log(Level.INFO, "usedChips: " + getUsedChips.get());
         void writeC140(int chipId, int addr, int data);
         void writeEs5503(int chipId, int addr, int data);
         void writeC352(int chipId, int addr, int data);
+    }
+
+    public interface IDac {
+        int DCTRL_LMODE_IGNORE = 0x00;
+        int DCTRL_LMODE_CMDS = 0x01;
+        int DCTRL_LMODE_MSEC = 0x02;
+        int DCTRL_LMODE_TOEND = 0x03;
+        int DCTRL_LMODE_BYTES = 0x0F;
+
+        void refresh();
+        int deviceStart(int chipId);
+        void deviceReset(int chipId);
+        void setupChip(int chipId, int chType, int chNum, int command);
+        void setData(int chipId, byte[] data, int dataLen, int stepSize, int stepBase);
+        void setFrequency(int chipId, int frequency);
+        void start(int chipId, int dataPos, int lenMode, int length);
+        void stop(int chipId);
+        void refreshData(int chipId, byte[] data, int dataLen);
+        void update(int chipId, int samples);
     }
 }

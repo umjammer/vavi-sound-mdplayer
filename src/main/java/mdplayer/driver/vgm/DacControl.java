@@ -1,5 +1,6 @@
-package mdplayer;
+package mdplayer.driver.vgm;
 
+import mdplayer.ChipRegister;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.Ay8910Chip;
 import mdplayer.chips.DmgChip;
@@ -23,18 +24,23 @@ import mdplayer.chips.YmF262Chip;
 import mdplayer.chips.YmF271Chip;
 import mdplayer.chips.YmF278BChip;
 import mdplayer.chips.YmZ280BChip;
+import mdplayer.lib.vgm.Vgm;
 
 
-public class DacControl {
+// TODO move to lib?
+class DacControl implements Vgm.IDac {
 
     private static final int MAX_CHIPS = 0xff;
     private final DacControl_[] DACData = new DacControl_[MAX_CHIPS];
-    public EnmModel model = EnmModel.VirtualModel;
-    public ChipRegister chipRegister = null;
+    private EnmModel model;
+    private final ChipRegister chipRegister;
 
-    public DacControl() {
+    public DacControl(ChipRegister chipRegister, EnmModel model) {
+        this.chipRegister = chipRegister;
+        this.model = model;
     }
 
+    @Override
     public void update(int chipId, int samples) {
 //#if DEBUG
         if (model != EnmModel.VirtualModel) return;
@@ -43,7 +49,8 @@ public class DacControl {
         chip.update(samples);
     }
 
-    public int device_start_daccontrol(int chipId) {
+    @Override
+    public int deviceStart(int chipId) {
         if ((chipId & 0xff) >= MAX_CHIPS)
             return 0;
 
@@ -53,48 +60,56 @@ public class DacControl {
         return 1;
     }
 
-    public void device_stop_daccontrol(int chipId) {
+    public void deviceStop(int chipId) {
         DacControl_ chip = DACData[chipId];
         chip.stopDacControl();
     }
 
-    public void device_reset_daccontrol(int chipId) {
+    @Override
+    public void deviceReset(int chipId) {
         DacControl_ chip = DACData[chipId];
         chip.reset();
     }
 
+    @Override
     public void setupChip(int chipId, int chType, int chNum, int command) {
         DacControl_ chip = DACData[chipId];
         chip.setup(chType, chNum, command);
     }
 
+    @Override
     public void setData(int chipId, byte[] data, int dataLen, int stepSize, int stepBase) {
         DacControl_ chip = DACData[chipId];
         chip.setData(data, dataLen, stepSize, stepBase);
     }
 
-    public void refresh_data(int chipId, byte[] data, int dataLen) {
+    @Override
+    public void refreshData(int chipId, byte[] data, int dataLen) {
         // Should be called to fix the data pointer. (e.g. after a realloc)
         DacControl_ chip = DACData[chipId];
         chip.refreshData(data, dataLen);
     }
 
-    public void set_frequency(int chipId, int frequency) {
+    @Override
+    public void setFrequency(int chipId, int frequency) {
         //logger.log(Level.TRACE, "chipId%d frequency%d".formatted(chipId, frequency));
         DacControl_ chip = DACData[chipId];
         chip.setFrequency(chipId, frequency);
     }
 
+    @Override
     public void start(int chipId, int dataPos, int lenMode, int length) {
         DacControl_ chip = DACData[chipId];
         chip.start(dataPos, lenMode, length);
     }
 
+    @Override
     public void stop(int chipId) {
         DacControl_ chip = DACData[chipId];
         chip.stop();
     }
 
+    @Override
     public void refresh() {
         for (int i = 0; i < MAX_CHIPS; i++) DACData[i] = new DacControl_();
     }
@@ -173,11 +188,6 @@ public class DacControl {
 
     public class DacControl_ {
 
-        private static final int DCTRL_LMODE_IGNORE = 0x00;
-        private static final int DCTRL_LMODE_CMDS = 0x01;
-        private static final int DCTRL_LMODE_MSEC = 0x02;
-        private static final int DCTRL_LMODE_TOEND = 0x03;
-        public static final int DCTRL_LMODE_BYTES = 0x0F;
         private static final int DAC_SMPL_RATE = 44100; // DAC control's own sample rate (Fixed)
 
         private static int mulDiv64Round(int multiplicand, int multiplier, int divisor) {
