@@ -722,7 +722,7 @@ public class Ym2608Chip extends BaseChip {
         return false;
     }
 
-    /** */
+    /** TODO consider is here ok? or in vgm */
     public void updateRamType(byte[] vgmBuf, int vgmDataOffset) {
         opnaRamType = searchOpnaRamType(vgmBuf, vgmDataOffset) ? 0x2 : 0x0;
     }
