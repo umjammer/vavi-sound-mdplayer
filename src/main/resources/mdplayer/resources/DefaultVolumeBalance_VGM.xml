@@ -15,18 +15,18 @@
    <HuC6280Volume>-8</HuC6280Volume>
    <YM2151Volume>0</YM2151Volume>
    <YM2608Volume>-18</YM2608Volume>
-   <YM2608FMVolume>-18</YM2608FMVolume>
-   <YM2608PSGVolume>-18</YM2608PSGVolume>
-   <YM2608RhythmVolume>-18</YM2608RhythmVolume>
-   <YM2608AdpcmVolume>-18</YM2608AdpcmVolume>
+   <YM2608FMVolume>0</YM2608FMVolume>
+   <YM2608PSGVolume>0</YM2608PSGVolume>
+   <YM2608RhythmVolume>0</YM2608RhythmVolume>
+   <YM2608AdpcmVolume>0</YM2608AdpcmVolume>
    <YM2203Volume>0</YM2203Volume>
    <YM2203FMVolume>0</YM2203FMVolume>
    <YM2203PSGVolume>0</YM2203PSGVolume>
    <YM2610Volume>-10</YM2610Volume>
-   <YM2610FMVolume>-10</YM2610FMVolume>
-   <YM2610PSGVolume>-10</YM2610PSGVolume>
-   <YM2610AdpcmAVolume>-10</YM2610AdpcmAVolume>
-   <YM2610AdpcmBVolume>-10</YM2610AdpcmBVolume>
+   <YM2610FMVolume>0</YM2610FMVolume>
+   <YM2610PSGVolume>0</YM2610PSGVolume>
+   <YM2610AdpcmAVolume>0</YM2610AdpcmAVolume>
+   <YM2610AdpcmBVolume>0</YM2610AdpcmBVolume>
    <C352Volume>6</C352Volume>
    <K054539Volume>-2</K054539Volume>
    <K053260Volume>-5</K053260Volume>

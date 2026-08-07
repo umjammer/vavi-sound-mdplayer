@@ -15,10 +15,10 @@
    <HuC6280Volume>0</HuC6280Volume>
    <YM2151Volume>0</YM2151Volume>
    <YM2608Volume>-6</YM2608Volume>
-   <YM2608FMVolume>-6</YM2608FMVolume>
-   <YM2608PSGVolume>-6</YM2608PSGVolume>
-   <YM2608RhythmVolume>-6</YM2608RhythmVolume>
-   <YM2608AdpcmVolume>-6</YM2608AdpcmVolume>
+   <YM2608FMVolume>0</YM2608FMVolume>
+   <YM2608PSGVolume>0</YM2608PSGVolume>
+   <YM2608RhythmVolume>0</YM2608RhythmVolume>
+   <YM2608AdpcmVolume>0</YM2608AdpcmVolume>
    <YM2203Volume>0</YM2203Volume>
    <YM2203FMVolume>0</YM2203FMVolume>
    <YM2203PSGVolume>0</YM2203PSGVolume>

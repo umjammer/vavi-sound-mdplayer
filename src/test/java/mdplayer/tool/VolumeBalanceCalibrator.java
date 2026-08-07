@@ -52,8 +52,9 @@ import mdsound.MDSound;
  * {@code v = 40*log10(gain)}, clamped to {@code [-192, 20]}.
  * <p>
  * Limitations (minimal first pass): balances at chip-class granularity — a chip's computed
- * gain is written to all of its mixer tags equally, sub-tag (FM/SSG/&hellip;) ratios keep
- * their defaults. NES-family chips ignore the volume field (mdsound forces it to 0 for
+ * gain is written to its {@code MAIN} tag only, which scales the whole chip; the sub-tags
+ * (FM/SSG/&hellip;) are independent multipliers on top of it and keep their neutral 0, so
+ * they stay free as part trim. NES-family chips ignore the volume field (mdsound forces it to 0 for
  * {@code NesInst}), so NSF gets {@code MasterVolume} leveling only. Only {@code inst(0)}
  * of a multi-instance chip is muted during isolation.
  *
@@ -294,10 +295,12 @@ public final class VolumeBalanceCalibrator {
             int gain = (rms == null || rms <= 0 || tRef <= 0)
                     ? 0 // unmeasured / silent -> neutral
                     : clampVol((int) Math.round(40.0 * Math.log10(tRef / rms)));
-            for (String tag : chipTags.get(chip)) {
-                balance.setVolume(tag, chip, gain);
-            }
-            System.out.printf("      %-12s gain=%4d  tags=%s%n", chip.getSimpleName(), gain, chipTags.get(chip));
+            // MAIN only: the sub-tags (FM/SSG/...) are *separate* multipliers on top of MAIN, so
+            // writing the same gain to every tag would attenuate a multi-part chip twice (a YM2608
+            // at -18 came out -18 dB instead of the -9 dB meant). Sub-tags stay 0 = part trim.
+            balance.setVolume(MDSound.Chip.MAIN_TAG, chip, gain);
+            System.out.printf("      %-12s gain=%4d  tags=%s (written to %s)%n",
+                    chip.getSimpleName(), gain, chipTags.get(chip), MDSound.Chip.MAIN_TAG);
         }
 
         // measure the real full mix (all chips at computed gains); master leveling is global (phase 2)
