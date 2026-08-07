@@ -87,7 +87,10 @@ import mdplayer.form.ScreenPanel;
 import mdplayer.Setting;
 import mdplayer.TonePallet;
 import mdplayer.YM2612MIDI;
+import mdplayer.ChipRegister;
 import mdplayer.chips.RealChipPlugin;
+import mdplayer.chips.VstPlugin;
+import mdplayer.vst.FormVSTeffectList;
 import mdplayer.driver.BaseDriver;
 import mdplayer.form.Layouts;
 import mdplayer.driver.FileFormat;
@@ -154,6 +157,7 @@ public class FormMain extends JFrame {
 
     private FormMixer2 frmMixer2 = null;
     private FormVisWave frmVisWave;
+    private FormVSTeffectList frmVSTeffectList;
 
     /** every chip/panel view the providers contribute, in provider order, indexed primary/secondary */
     private final Map<ViewProvider, View[]> views = new LinkedHashMap<>();
@@ -506,6 +510,7 @@ public class FormMain extends JFrame {
         if (setting.getLocation().getOInfo()) openInfo();
         if (setting.getLocation().getOMixer()) openMixer();
         if (setting.getLocation().getOpenVisWave()) openFormVisWave();
+        if (setting.getLocation().getOpenVSTeffectList()) openVSTeffectList();
 
         for (Map.Entry<ViewProvider, View[]> e : views.entrySet()) {
             for (int i = 0; i < e.getValue().length; i++) {
@@ -914,7 +919,18 @@ public class FormMain extends JFrame {
             setting.getLocation().setOpenVisWave(true);
         }
 
+        setting.getLocation().setOpenVSTeffectList(frmVSTeffectList != null && !frmVSTeffectList.isClosed);
+        if (frmVSTeffectList != null && !frmVSTeffectList.isClosed) {
+            setting.getLocation().setPosVSTeffectList(frmVSTeffectList.getLocation());
+            frmVSTeffectList.setVisible(false);
+        }
+
         logger.log(Level.ERROR, "frmMain_FormClosing:STEP 05");
+
+        // the VST plug-ins outlive every song - this is the one place they are let go of, and it
+        // has to be before the settings are written, since it is what puts the effect chain in them
+        VstPlugin vst = ChipRegister.shared(VstPlugin.class);
+        if (vst != null) vst.shutdown();
 
         setting.save();
 
@@ -1031,6 +1047,33 @@ public class FormMain extends JFrame {
 
     private void tsmiVisWave_Click(ActionEvent ev) {
         openFormVisWave();
+    }
+
+    /**
+     * Builds and shows the effect chain window.
+     * <p>
+     * Nothing ever built this class before: the effects an old settings file named could be
+     * loaded but never added to or taken away, because {@link #dispVSTList} - all the VST button
+     * and menu item ever did - had no body.
+     */
+    private void openVSTeffectList() {
+        if (frmVSTeffectList != null) {
+            if (!frmVSTeffectList.isClosed) {
+                frmVSTeffectList.requestFocus();
+                return;
+            }
+            frmVSTeffectList.dispose();
+        }
+
+        frmVSTeffectList = new FormVSTeffectList(this, setting);
+        Point p = setting.getLocation().getPosVSTeffectList();
+        if (p == null || p.equals(empty)) {
+            frmVSTeffectList.setLocation(this.getLocation().x, this.getLocation().y + 264);
+        } else {
+            frmVSTeffectList.setLocation(p);
+        }
+        frmVSTeffectList.setVisible(true);
+        frmVSTeffectList.dispPluginList();
     }
 
     private void tsmiConsole_Click(ActionEvent ev) {
@@ -1933,11 +1976,26 @@ public class FormMain extends JFrame {
         }
     }
 
+    /**
+     * Shows or hides the VST effect chain.
+     * <p>
+     * This is what the VST button on the main window and the VST entry of the window menu have
+     * always called; it was an empty method, so both did nothing. The window is built on first
+     * use rather than with the rest of them, since most sessions never open it.
+     */
     private void dispVSTList() {
-//        frmVSTeffectList.setVisible(!frmVSTeffectList.isVisible());
-//        if (frmVSTeffectList.isVisible()) checkAndSetForm(frmVSTeffectList);
-//        frmVSTeffectList.toFront();
-//        frmVSTeffectList.toBack();
+        if (frmVSTeffectList == null || frmVSTeffectList.isClosed) {
+            openVSTeffectList();
+            return;
+        }
+
+        frmVSTeffectList.setVisible(!frmVSTeffectList.isVisible());
+        if (frmVSTeffectList.isVisible()) {
+            checkAndSetForm(frmVSTeffectList);
+            frmVSTeffectList.dispPluginList();
+            frmVSTeffectList.toFront();
+            frmVSTeffectList.requestFocus();
+        }
     }
 
     private void showContextMenu() {

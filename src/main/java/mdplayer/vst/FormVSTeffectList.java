@@ -11,35 +11,53 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.prefs.Preferences;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JSeparator;
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JToolBar;
-import javax.swing.filechooser.FileFilter;
+import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.JTableHeader;
 
 import mdplayer.Audio;
+import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Setting;
 import mdplayer.chips.RealChipPlugin;
 import mdplayer.chips.VstPlugin;
 import mdplayer.form.sys.FormMain;
 
+import static java.lang.System.getLogger;
 
+
+/**
+ * The list of VST effects the mix is run through.
+ * <p>
+ * Clicking the power or editor column of a row switches that plug-in on and off, or shows and
+ * hides its editor; the right button offers to take one out of the chain.
+ *
+ * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
+ */
 public class FormVSTeffectList extends JFrame {
+
+    private static final Logger logger = getLogger(FormVSTeffectList.class.getName());
+
+    private static final int COLUMN_KEY = 0;
+    private static final int COLUMN_FILE = 1;
+    private static final int COLUMN_POWER = 2;
+    private static final int COLUMN_EDITOR = 3;
+    private static final int COLUMN_NAME = 4;
 
     private final FormMain parent;
     public boolean isClosed = false;
@@ -47,69 +65,73 @@ public class FormVSTeffectList extends JFrame {
     private static final boolean isInitialOpenFolder = true;
     final Audio audio = Audio.getInstance();
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormVSTeffectList.class);
-
     public FormVSTeffectList(FormMain parent, Setting setting) {
-        initializeComponent();
-        this.setVisible(false);
         this.parent = parent;
         this.setting = setting;
+        initializeComponent();
+        this.setVisible(false);
+    }
+
+    /**
+     * The plugin that owns the chain.
+     * <p>
+     * Not through {@code audio.plugin}, which is null until the first song has been loaded: this
+     * window can be opened straight away, and adding an effect before playing anything is a
+     * perfectly ordinary thing to do.
+     */
+    private static VstPlugin vst() {
+        return ChipRegister.shared(VstPlugin.class);
+    }
+
+    /** stops whatever is playing, if anything is */
+    private void stopPlaying(boolean untilClosed) {
+        if (audio.plugin == null) return;
+        parent.stop();
+        RealChipPlugin real = audio.plugin.chipRegister.plugin(RealChipPlugin.class);
+        while (untilClosed ? !real.isThreadClosed() : !real.isThreadStopped()) {
+            Thread.yield();
+        }
     }
 
     private void tsbAddVST_Click(ActionEvent ev) {
         JFileChooser ofd = new JFileChooser();
-        ofd.setFileFilter(new FileFilter() {
-            @Override
-            public boolean accept(File f) {
-                return f.getName().toLowerCase().endsWith(".dll");
-            }
-
-            @Override
-            public String getDescription() {
-                return "VST Plugin file (*.dll)";
-            }
-        });
-        ofd.setDialogTitle("Select a file");
-        int filterIndex = setting.getOther().getFilterIndex();
-        FileFilter[] filters = ofd.getChoosableFileFilters();
-        if (filterIndex >= 0 && filterIndex < filters.length) {
-            ofd.setFileFilter(filters[filterIndex]);
-        }
-
-        if (!setting.getVst().getDefaultPath().isEmpty() && Files.exists(Path.of(setting.getVst().getDefaultPath())) && isInitialOpenFolder) {
-            ofd.setCurrentDirectory(new File(setting.getVst().getDefaultPath()));
-//        } else {
-//            ofd.RestoreDirectory = true;
-        }
-//        ofd.CheckPathExists = true;
+        ofd.setFileFilter(VstFileChooser.filter());
+        ofd.setDialogTitle("Select a VST plugin");
+        // a plug-in is a bundle - that is, a directory - on macOS, so one has to be selectable
+        ofd.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         ofd.setMultiSelectionEnabled(false);
 
-        if (ofd.showOpenDialog(null) != JFileChooser.APPROVE_OPTION) {
+        String defaultPath = setting.getVst().getDefaultPath();
+        if (defaultPath != null && !defaultPath.isEmpty() && Files.exists(Path.of(defaultPath)) && isInitialOpenFolder) {
+            ofd.setCurrentDirectory(new File(defaultPath));
+        } else {
+            File known = VstFileChooser.defaultDirectory();
+            if (known != null) ofd.setCurrentDirectory(known);
+        }
+
+        if (ofd.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
             return;
         }
 
-        setting.getVst().setDefaultPath(Path.of(ofd.getSelectedFile().getName()).getParent().toString());
-        parent.stop();
-        while (!audio.plugin.chipRegister.plugin(RealChipPlugin.class).isThreadStopped()) {
-            Thread.yield();
-        }
-        audio.plugin.chipRegister.plugin(VstPlugin.class).addVSTeffect(ofd.getSelectedFile().getName());
-        dispPluginList();
+        File selected = ofd.getSelectedFile();
+        File directory = selected.getParentFile();
+        if (directory != null) setting.getVst().setDefaultPath(directory.getAbsolutePath());
 
+        stopPlaying(false);
+        // the whole path, not just the name - the chooser can be anywhere
+        if (!vst().addEffect(selected.getAbsolutePath())) {
+            JOptionPane.showMessageDialog(this, selected.getName() + " could not be loaded as a VST effect.",
+                    "VST", JOptionPane.ERROR_MESSAGE);
+        }
+        dispPluginList();
     }
 
     private final WindowListener windowListener = new WindowAdapter() {
         @Override
-        public void windowClosed(WindowEvent e) {
+        public void windowClosing(WindowEvent e) {
             isClosed = true;
-            if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
-                parent.setting.getLocation().setPosVSTeffectList(getLocation());
-            } else {
-                parent.setting.getLocation().setPosVSTeffectList(new Point(prefs.getInt("x", 0), prefs.getInt("y", 0)));
-            }
-            //setting.location.PPlayListWH = new Point(this.getWidth(), this.getHeight());
+            setting.getLocation().setPosVSTeffectList(getLocation());
             setVisible(false);
-//            e.Cancel = true;
         }
 
         @Override
@@ -119,7 +141,8 @@ public class FormVSTeffectList extends JFrame {
 
         @Override
         public void windowOpened(WindowEvent e) {
-            setLocation(new Point((int) setting.getLocation().getPosVSTeffectList().getX(), (int) setting.getLocation().getPosVSTeffectList().getY()));
+            Point p = setting.getLocation().getPosVSTeffectList();
+            if (p != null && (p.x != 0 || p.y != 0)) setLocation(p);
         }
     };
 
@@ -128,38 +151,32 @@ public class FormVSTeffectList extends JFrame {
     public void dispPluginList() {
         model.setRowCount(0);
 
-        vstInfos = audio.plugin.chipRegister.plugin(VstPlugin.class).getVSTInfos();
+        vstInfos = vst().getEffects();
 
-        int i = 0;
         for (VstMng.VstInfo2 vi : vstInfos) {
             if (vi.isInstrument) continue;
 
-            model.insertRow(i++, new Object[] {vi.key, vi.fileName, vi.power ? "ON" : "OFF", vi.editor ? "OPENED" : "CLOSED", vi.effectName});
+            model.addRow(new Object[] {
+                    vi.key, vi.fileName, vi.power ? "ON" : "OFF", vi.editor ? "OPENED" : "CLOSED", vi.effectName});
         }
     }
 
     private void tsmiDelThis_Click(ActionEvent ev) {
-        if (dgvList.getSelectedRowCount() < 0) return;
+        int row = dgvList.getSelectedRow();
+        if (row < 0) return;
 
-        parent.stop();
-        while (!audio.plugin.chipRegister.plugin(RealChipPlugin.class).isThreadStopped()) {
-            Thread.yield();
-        }
-        int row = dgvList.getSelectionModel().getSelectedIndices()[0];
-        audio.plugin.chipRegister.plugin(VstPlugin.class).delVSTeffect((String) model.getValueAt(row, 1 /* clmKey */));
+        stopPlaying(false);
+        vst().removeEffect((String) model.getValueAt(row, COLUMN_KEY));
         dispPluginList();
     }
 
     private void tsmiDelAll_Click(ActionEvent ev) {
-        int res = JOptionPane.showConfirmDialog(null, "All VSTs in the VST list will be removed. Are you sure?", "PlayList", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
-        if (res != JFileChooser.APPROVE_OPTION) return;
+        int res = JOptionPane.showConfirmDialog(this, "All VSTs in the VST list will be removed. Are you sure?",
+                "VST", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
+        if (res != JOptionPane.YES_OPTION) return;
 
-        parent.stop();
-        //while (!Audio.trdStopped) { Thread.sleep(1); }
-        while (!audio.plugin.chipRegister.plugin(RealChipPlugin.class).isThreadClosed()) {
-            Thread.yield();
-        }
-        audio.plugin.chipRegister.plugin(VstPlugin.class).delVSTeffect("");
+        stopPlaying(true);
+        vst().removeEffect("");
         dispPluginList();
     }
 
@@ -168,178 +185,88 @@ public class FormVSTeffectList extends JFrame {
         public void mouseClicked(MouseEvent e) {
             int row = dgvList.rowAtPoint(e.getPoint());
             if (row < 0) return;
-            dgvList.getSelectionModel().setLeadSelectionIndex(row);
+            dgvList.setRowSelectionInterval(row, row);
 
-            if (e.getButton() == MouseEvent.BUTTON2) {
-                if (dgvList.getSelectedRowCount() > 1) {
-                    tsmiDelThis.setText("Remove Selected VST");
-                } else {
-                    tsmiDelThis.setText("Remove this VST");
-                }
-                cmsVSTEffectList.setVisible(true);
-                cmsVSTEffectList.setLocation(e.getX(), e.getY());
-            } else {
-                if (vstInfos == null) return;
+            if (e.isPopupTrigger() || e.getButton() != MouseEvent.BUTTON1) {
+                tsmiDelThis.setText(dgvList.getSelectedRowCount() > 1 ? "Remove Selected VST" : "Remove this VST");
+                cmsVSTEffectList.show(dgvList, e.getX(), e.getY());
+                return;
+            }
 
-                int column = dgvList.columnAtPoint(e.getPoint());
-                if (column == 2) {
-                    vstInfos.get(row).power = !vstInfos.get(row).power;
-                    if (vstInfos.get(row).power)
-                        vstInfos.get(row).vstPlugins.open();
-                    else
-                        vstInfos.get(row).vstPlugins.close();
-                    model.setValueAt(vstInfos.get(row).power ? "ON" : "OFF", row, 2);
-                }
+            if (vstInfos == null || row >= vstInfos.size()) return;
+            VstMng.VstInfo2 vi = vstInfos.get(row);
+            VstMng manager = vst().getManager();
 
-                if (column == 3) {
-                    vstInfos.get(row).editor = !vstInfos.get(row).editor;
-                    if (!vstInfos.get(row).editor) {
-                        vstInfos.get(row).vstPluginsForm.timer1.stop();
-                        vstInfos.get(row).location = vstInfos.get(row).vstPluginsForm.getLocation();
-                        vstInfos.get(row).vstPluginsForm.setVisible(false);
+            int column = dgvList.columnAtPoint(e.getPoint());
+            try {
+                if (column == COLUMN_POWER) {
+                    manager.setPower(vi, !vi.power);
+                    model.setValueAt(vi.power ? "ON" : "OFF", row, COLUMN_POWER);
+                } else if (column == COLUMN_EDITOR) {
+                    if (vi.editor) {
+                        manager.closeEditor(vi);
                     } else {
-                        FormVST dlg = new FormVST(FormVSTeffectList.this);
-                        dlg.setPluginCommandStub(vstInfos.get(row).vstPlugins);
-                        dlg.Show(vstInfos.get(row));
-                        vstInfos.get(row).vstPluginsForm = dlg;
+                        manager.openEditor(vi);
                     }
-                    model.setValueAt(vstInfos.get(row).editor ? "OPENED" : "CLOSED", row, 3);
+                    model.setValueAt(vi.editor ? "OPENED" : "CLOSED", row, COLUMN_EDITOR);
                 }
+            } catch (Exception ex) {
+                logger.log(Level.ERROR, ex.getMessage(), ex);
             }
         }
     };
 
     private void initializeComponent() {
-        this.model = new DefaultTableModel();
+        this.model = new DefaultTableModel(new Object[] {"key", "file", "power", "editor", "name"}, 0) {
+            @Override public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
 
-        JList<String> JListCellStyle1 = new JList<>();
-        JList<String> JListCellStyle3 = new JList<>();
-        JList<String> JListCellStyle4 = new JList<>();
-        JList<String> JListCellStyle2 = new JList<>();
-        this.dgvList = new JTable();
-        this.clmKey = new JTableHeader();
-        this.clmFileName = new JTableHeader();
-        this.clmPow = new JTableHeader();
-        this.clmEdit = new JTableHeader();
-        this.clmName = new JTableHeader();
-        this.clmSpacer = new JTableHeader();
-        this.toolStripContainer1 = new JPanel();
+        this.dgvList = new JTable(this.model);
+        this.dgvList.setBackground(Color.black);
+        this.dgvList.setForeground(Color.lightGray);
+        this.dgvList.setName("dgvList");
+        this.dgvList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        this.dgvList.addMouseListener(this.dgvList_CellMouseClick);
+        // the key is what a row is found by, not something to look at
+        this.dgvList.getColumnModel().getColumn(COLUMN_KEY).setMinWidth(0);
+        this.dgvList.getColumnModel().getColumn(COLUMN_KEY).setMaxWidth(0);
+        this.dgvList.getColumnModel().getColumn(COLUMN_FILE).setPreferredWidth(160);
+        this.dgvList.getColumnModel().getColumn(COLUMN_POWER).setPreferredWidth(50);
+        this.dgvList.getColumnModel().getColumn(COLUMN_EDITOR).setPreferredWidth(70);
+        this.dgvList.getColumnModel().getColumn(COLUMN_NAME).setPreferredWidth(120);
+
+        this.toolStripContainer1 = new JPanel(new BorderLayout());
         this.toolStrip1 = new JToolBar();
         this.tsbAddVST = new JButton();
-        this.toolStripSeparator1 = new JSeparator();
-        this.tsbUp = new JButton();
-        this.tsbDown = new JButton();
         this.cmsVSTEffectList = new JPopupMenu();
         this.tsmiDelThis = new JMenuItem();
-        this.toolStripSeparator2 = new JSeparator();
         this.tsmiDelAll = new JMenuItem();
 
-        //
-        // dgvList
-        //
-        this.dgvList.setBackground(Color.black);
-        JListCellStyle1.setBackground(Color.black);
-        this.dgvList.setLocation(new Point(0, 0));
-        this.dgvList.setName("dgvList");
-        JListCellStyle3.setBackground(Color.black);
-        JListCellStyle4.setBackground(Color.black);
-        this.dgvList.setPreferredSize(new Dimension(410, 236));
-        this.dgvList.addMouseListener(this.dgvList_CellMouseClick);
-        //
-        // clmKey
-        //
-        this.clmKey.setName("clmKey");
-        this.clmKey.setVisible(false);
-        //
-        // clmFileName
-        //
-        this.clmFileName.setVisible(false);
-        //
-        // clmPow
-        //
-//        this.clmPow.setName("clmPow");
-        //
-        // clmEdit
-        //
-//        this.clmEdit.setName("clmEdit");
-        //
-        // clmName
-        //
-//        this.clmName.setName("clmName");
-        //
-        // clmSpacer
-        //
-//        this.clmSpacer.setName("clmSpacer");
-        //
-        // toolStripContainer1
-        //
-        //
-        // toolStripContainer1.ContentPanel
-        //
-        this.toolStripContainer1.setLayout(new BorderLayout());
-        //
-        // toolStripContainer1.TopToolStripPanel
-        //
-        //
-        // toolStrip1
-        //
-        this.toolStrip1.add(this.tsbAddVST);
-        this.toolStrip1.add(this.toolStripSeparator1);
-        this.toolStrip1.add(this.tsbUp);
-        this.toolStrip1.add(this.tsbDown);
-        this.toolStripContainer1.add(this.toolStrip1, BorderLayout.NORTH);
-        //
-        // tsbAddVST
-        //
         this.tsbAddVST.setIcon(new ImageIcon(Common.getImage("addPL")));
-        this.tsbAddVST.setText("Add VST effect.");
+        this.tsbAddVST.setText("Add VST effect");
         this.tsbAddVST.addActionListener(this::tsbAddVST_Click);
-        //
-        // toolStripSeparator1
-        //
-        this.toolStripSeparator1.setName("toolStripSeparator1");
-        this.toolStripSeparator1.setPreferredSize(new Dimension(6, 25));
-        //
-        // tsbUp
-        //
-        this.tsbUp.setEnabled(false);
-        this.tsbUp.setIcon(new ImageIcon(Common.getImage("upPL")));
-        this.tsbUp.setText("Up VST effect.");
-        //
-        // tsbDown
-        //
-        this.tsbDown.setEnabled(false);
-        this.tsbDown.setIcon(new ImageIcon(Common.getImage("downPL")));
-        this.tsbDown.setText("Down VST effect.");
-        //
-        // cmsVSTEffectList
-        //
-        this.cmsVSTEffectList.add(this.tsmiDelThis);
-        this.cmsVSTEffectList.add(this.toolStripSeparator2);
-        this.cmsVSTEffectList.add(this.tsmiDelAll);
-        //
-        // tsmiDelThis
-        //
+        this.toolStrip1.add(this.tsbAddVST);
+        this.toolStripContainer1.add(this.toolStrip1, BorderLayout.NORTH);
+        this.toolStripContainer1.add(new JScrollPane(this.dgvList), BorderLayout.CENTER);
+
         this.tsmiDelThis.setText("Remove this VST");
         this.tsmiDelThis.addActionListener(this::tsmiDelThis_Click);
-        //
-        // toolStripSeparator2
-        //
-        //
-        // tsmiDelAll
-        //
         this.tsmiDelAll.setText("Remove all VSTs");
         this.tsmiDelAll.addActionListener(this::tsmiDelAll_Click);
-        //
-        // frmVSTeffectList
-        //
-        this.setPreferredSize(new Dimension(410, 261));
+        this.cmsVSTEffectList.add(this.tsmiDelThis);
+        this.cmsVSTEffectList.addSeparator();
+        this.cmsVSTEffectList.add(this.tsmiDelAll);
+
         this.getContentPane().add(this.toolStripContainer1);
         this.setIconImage(Common.getImage("Feli128"));
         this.setMinimumSize(new Dimension(400, 120));
-        this.setOpacity(0f);
+        this.setPreferredSize(new Dimension(410, 261));
         this.setTitle("VST Effect List");
+        this.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
         this.addWindowListener(this.windowListener);
+        this.pack();
     }
 
     private DefaultTableModel model;
@@ -347,17 +274,7 @@ public class FormVSTeffectList extends JFrame {
     private JPanel toolStripContainer1;
     private JToolBar toolStrip1;
     private JButton tsbAddVST;
-    private JSeparator toolStripSeparator1;
-    private JButton tsbUp;
-    private JButton tsbDown;
-    private JTableHeader clmKey;
-    private JTableHeader clmFileName;
-    private JTableHeader clmPow;
-    private JTableHeader clmEdit;
-    private JTableHeader clmName;
-    private JTableHeader clmSpacer;
     private JPopupMenu cmsVSTEffectList;
     private JMenuItem tsmiDelThis;
-    private JSeparator toolStripSeparator2;
     private JMenuItem tsmiDelAll;
 }

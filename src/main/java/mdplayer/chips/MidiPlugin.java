@@ -30,6 +30,8 @@ import mdplayer.MidiOutInfo;
 import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.BasePlugin;
+import mdplayer.vst.VstMng.VstInfo2;
+import mdplayer.vst.VstReceiver;
 import mdsound.Instrument;
 import mdsound.MDSound;
 import mdsound.instrument.Sn76489Inst;
@@ -147,24 +149,11 @@ public class MidiPlugin implements Plugin {
                 this.outInfos[i].vendor = midiOutInfos[i].vendor;
             }
         }
-//        VstMng.vstMidiOuts = vstMidiOuts;
-//        this.vstMidiOutsType = vstMidiOutsType;
 
         if (params == null && params.length < 1) return;
-//        if (outsType == null && vstMng.vstMidiOutsType == null) return;
-//        if (outs == null && vstMng.vstMidiOuts == null) return;
 
         if (!outsType.isEmpty()) params[0].MIDIModule = Math.min(outsType.get(0), 2);
         if (outsType.size() > 1) params[1].MIDIModule = Math.min(outsType.get(1), 2);
-
-//        if (vstMng.vstMidiOutsType.size() > 0) {
-//            if (outsType.size() < 1 || (outsType.size() > 0 && outs.get(0) == null))
-//                params[0].MIDIModule = Math.min(vstMng.vstMidiOutsType.get(0), 2);
-//        }
-//        if (vstMng.vstMidiOutsType.size() > 1) {
-//            if (outsType.size() < 2 || (outsType.size() > 1 && outs.get(1) == null))
-//                params[1].MIDIModule = Math.min(vstMng.vstMidiOutsType.get(1), 2);
-//        }
     }
 
     public void setFileName(String fn) {
@@ -186,20 +175,23 @@ public class MidiPlugin implements Plugin {
     }
 
     public void send(EnmModel model, int num, byte[] data, int deltaFrames /* = 0 */) {
-        // In the original, VirtualModel is routed to VST software synths. VST is not ported,
-        // so both models are sent to the (possibly software) MIDI out here.
+        // Both models go to the same place. An out is whatever was configured for it - a port, the
+        // fallback software synthesizer, or a VST instrument, which is what the original reserved
+        // VirtualModel for; the difference no longer has to be made here.
         if (outs.isEmpty()) return;
         if (num >= outs.size()) return;
         Receiver out = outs.get(num);
         if (out == null) return;
+
+        // a VST instrument is rendered by this player, so unlike a port it can place a message
+        // exactly where in the block it was produced rather than at the start of the next one
+        if (out instanceof VstReceiver vst) vst.setDeltaFrames(deltaFrames);
 
         // Some drivers (e.g. ZMS emulating an X68000 MIDI board) emit a raw MIDI byte stream one
         // byte at a time using running status, others (e.g. RCP) emit complete messages; a per
         // receiver stream parser assembles both into whole MidiMessages before dispatching them.
         parsers.computeIfAbsent(out, MidiStreamParser::new).feed(data);
         if (num < params.length) params[num].sendBuffer(data);
-
-//        vstMng.sendMIDIout(model, num, data, deltaFrames);
     }
 
     /**
@@ -634,6 +626,22 @@ logger.log(Level.DEBUG, "midi volume: gain=%.3f (master=%d, midi=%d)".formatted(
             Receiver mo = null;
             MidiDevice found = null;
 
+            MidiOutInfo out = setting.getMidiOut().getMidiOutInfos().get(midiMode)[i];
+            if (out.isVST) {
+                // a VST instrument is a MIDI out like any other from here on: it takes the same
+                // messages, and the sound it makes is mixed in by VstPlugin#update rather than by
+                // something outside the player
+                VstPlugin vst = context == null ? null : context.chipRegister.plugin(VstPlugin.class);
+                VstInfo2 instrument = vst == null ? null : vst.acquireInstrument(out.fileName);
+                if (instrument != null) {
+                    outs.add(new VstReceiver(instrument));
+                    outsType.add(out.type);
+                } else {
+                    logger.log(Level.WARNING, "MIDI out " + i + " is a VST that could not be loaded: " + out.fileName);
+                }
+                continue;
+            }
+
             MidiDevice.Info[] midiDeviceInfos = MidiSystem.getMidiDeviceInfo();
             for (var info : midiDeviceInfos) {
                 MidiDevice device;
@@ -645,11 +653,11 @@ logger.log(Level.DEBUG, "midi volume: gain=%.3f (master=%d, midi=%d)".formatted(
                 if (device.getMaxReceivers() == 0) {
                     continue;
                 }
-                if (!setting.getMidiOut().getMidiOutInfos().get(midiMode)[i].name.equals(info.getName()))
+                if (!out.name.equals(info.getName()))
                     continue;
 
                 found = device;
-                t = setting.getMidiOut().getMidiOutInfos().get(midiMode)[i].type;
+                t = out.type;
                 break;
             }
 
@@ -666,10 +674,6 @@ logger.log(Level.DEBUG, "midi volume: gain=%.3f (master=%d, midi=%d)".formatted(
                 }
             }
 
-//            if (n == -1) {
-//                vstMng.SetupVstMidiOut(setting.getMidiOut().getMidiOutInfos().get(m)[i]);
-//            }
-
             if (mo != null) {
                 outs.add(mo);
                 outsType.add(t);
@@ -678,8 +682,6 @@ logger.log(Level.DEBUG, "midi volume: gain=%.3f (master=%d, midi=%d)".formatted(
 
         applyVolume();
     }
-
-//    public static final VstMng vstMng = new VstMng();
 
     public void releaseAll() {
         // before the outs go: closing a receiver does not silence the synthesizer behind it, and
@@ -698,7 +700,7 @@ logger.log(Level.DEBUG, "midi volume: gain=%.3f (master=%d, midi=%d)".formatted(
         }
         parsers.clear();
 
-//        vstMng.ReleaseAllMIDIout();
+        releaseVstInstruments();
     }
 
     public void midiClose() {
@@ -715,8 +717,20 @@ logger.log(Level.DEBUG, "midi volume: gain=%.3f (master=%d, midi=%d)".formatted(
         }
         parsers.clear();
 
-//        vstMng.ReleaseAllMIDIout();
-//        vstMng.Close();
+        releaseVstInstruments();
+    }
+
+    /**
+     * Hands back any VST instrument the outs were playing through.
+     * <p>
+     * The plug-ins stay loaded - {@link mdplayer.vst.VstMng#acquireInstrument} gives the same ones
+     * out for the next song, since reloading one costs seconds - so this only silences them and
+     * marks them free.
+     */
+    private void releaseVstInstruments() {
+        if (context == null) return;
+        VstPlugin vst = context.chipRegister.plugin(VstPlugin.class);
+        if (vst != null) vst.releaseInstruments();
     }
 
     public int[][] readYM2612() {

@@ -1,849 +1,588 @@
+/*
+ * Copyright (c) 2022 by Naohide Sano, All rights reserved.
+ *
+ * Programmed by Naohide Sano
+ */
+
 package mdplayer.vst;
 
 import java.io.File;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.util.ArrayList;
-import java.util.EventObject;
+import java.util.Base64;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
+import javax.swing.SwingUtilities;
 
-import mdplayer.Common.EnmModel;
-import mdplayer.MIDIParam;
-import mdplayer.MidiOutInfo;
 import mdplayer.Setting;
-import org.urish.jnavst.AEffect;
+import org.urish.jnavst.VstHost;
 import org.urish.jnavst.VstPlugin;
-import vavi.util.event.GenericListener;
 
 import static java.lang.System.getLogger;
 
 
+/**
+ * The VST plug-ins a song is played through.
+ * <p>
+ * There are two kinds and they sit at opposite ends of the mixer. An <em>effect</em> is handed the
+ * finished stereo mix and replaces it, one after another in the order they were added. An
+ * <em>instrument</em> has no input at all: it is sent the MIDI a driver produces and its own sound
+ * is added to the mix, which is what lets a MIDI song be heard through something other than the
+ * platform synthesizer.
+ * <p>
+ * Loading and unloading happens on whichever thread the UI or a song change runs on while
+ * {@link #update} runs on the audio thread, so the two are held apart by {@link #lock} - a plug-in
+ * being destroyed underneath a render call would take the process with it.
+ *
+ * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
+ * @version 0.00 2022-07-07 nsano initial version <br>
+ * @version 0.01 2026-08-08 nsano works <br>
+ */
 public class VstMng {
 
     private static final Logger logger = getLogger(VstMng.class.getName());
 
-    public Setting setting = null;
-    // Get an instance from ChipRegister
-    public MIDIParam[] midiParams = null;
+    private final Setting setting = Setting.getInstance();
 
-    private final List<VstInfo2> vstPlugins = new ArrayList<>();
-    private final List<VstInfo2> vstPluginsInst = new ArrayList<>();
-    public final List<VstInfo2> vstMidiOuts = new ArrayList<>();
-    public final List<Integer> vstMidiOutsType = new ArrayList<>();
+    /** the effect chain, applied to the mix in this order */
+    private final List<VstInfo2> effects = new ArrayList<>();
 
+    /** every instrument that has been loaded, in use or not */
+    private final List<VstInfo2> instruments = new ArrayList<>();
 
-    public void vstparse() {
-        while (!vstPluginsInst.isEmpty()) {
-            if (vstPluginsInst.getFirst() != null) {
-                if (vstPluginsInst.getFirst().vstPlugins != null)
-                    vstPluginsInst.getFirst().vstPlugins.editClose();
-                vstPluginsInst.getFirst().vstPluginsForm.timer1.stop();
-                vstPluginsInst.getFirst().location = vstPluginsInst.getFirst().vstPluginsForm.getLocation();
-                vstPluginsInst.getFirst().vstPluginsForm.setVisible(false);
-                if (vstPluginsInst.getFirst().vstPlugins != null)
-                    vstPluginsInst.getFirst().vstPlugins.close();
-//                if (vstPluginsInst.get(0).vstPlugins != null)
-//                    vstPluginsInst.get(0).vstPlugins.MainsChanged(false);
-                vstPluginsInst.getFirst().vstPlugins.close();
-            }
+    /** held by everything that loads, unloads or renders */
+    private final ReentrantLock lock = new ReentrantLock();
 
-            vstPluginsInst.removeFirst();
+    /** what the effect chain was built from, so a song change does not reload an unchanged chain */
+    private String effectSignature = null;
+
+    private final Host host = new Host();
+
+    /** de-interleaved scratch, stereo, reallocated only when a bigger block arrives */
+    private float[][] in = new float[2][0];
+    private float[][] out = new float[2][0];
+
+    private static final float[][] NO_INPUT = new float[0][];
+
+    /** what this host answers a plug-in with */
+    private class Host implements VstHost {
+
+        /** the transport position, in frames; only ever moved by the audio thread */
+        long samplePosition;
+
+        @Override public float getSampleRate() {
+            return setting.getOutputDevice().getSampleRate();
         }
 
-        while (!vstPlugins.isEmpty()) {
-            if (vstPlugins.getFirst() != null) {
-                if (vstPlugins.getFirst().vstPlugins != null)
-                    vstPlugins.getFirst().vstPlugins.editClose();
-                vstPlugins.getFirst().vstPluginsForm.timer1.stop();
-                vstPlugins.getFirst().location = vstPlugins.getFirst().vstPluginsForm.getLocation();
-                vstPlugins.getFirst().vstPluginsForm.setVisible(false);
-                if (vstPlugins.getFirst().vstPlugins != null)
-                    vstPlugins.getFirst().vstPlugins.close();
-//                if (vstPlugins.get(0).vstPlugins != null)
-//                    vstPlugins.get(0).vstPlugins.MainsChanged(false);
-                vstPlugins.getFirst().vstPlugins.close();
-            }
-
-            vstPlugins.removeFirst();
-        }
-    }
-
-    public void SetUpVstInstrument(Map.Entry<String, Integer> kv) {
-        VstPlugin ctx = OpenPlugin(kv.getKey());
-        if (ctx == null) return;
-
-        VstInfo2 vi = new VstInfo2();
-        vi.key = String.valueOf(System.currentTimeMillis());
-        try {
-            Thread.sleep(1);
-        } catch (InterruptedException e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-        }
-        vi.vstPlugins = ctx;
-        vi.fileName = kv.getKey();
-        vi.isInstrument = true;
-
-        ctx.setBlockSize(512);
-        ctx.setSampleRate(setting.getOutputDevice().getSampleRate());
-//        ctx.MainsChanged(true);
-        ctx.open();
-        vi.effectName = ctx.getProgramName();
-        vi.editor = true;
-
-        if (vi.editor) {
-            FormVST dlg = new FormVST(null);
-            dlg.setPluginCommandStub(ctx);
-            dlg.Show(vi);
-            vi.vstPluginsForm = dlg;
+        @Override public int getBlockSize() {
+            return BLOCK_SIZE;
         }
 
-        vstPluginsInst.add(vi);
-    }
-
-    public void SetUpVstEffect() {
-        for (int i = 0; i < setting.getVst().getVSTInfo().length; i++) {
-            if (setting.getVst().getVSTInfo()[i] == null) continue;
-            VstPlugin ctx = OpenPlugin(setting.getVst().getVSTInfo()[i].fileName);
-            if (ctx == null) continue;
-
-            VstInfo2 vi = new VstInfo2();
-            vi.vstPlugins = ctx;
-            vi.fileName = setting.getVst().getVSTInfo()[i].fileName;
-            vi.key = setting.getVst().getVSTInfo()[i].key;
-
-            ctx.setBlockSize(512);
-            ctx.setSampleRate(setting.getOutputDevice().getSampleRate() / 1000.0f);
-//            ctx.MainsChanged(true);
-//            ctx.StartProcess();
-            vi.effectName = ctx.getProgramName();
-            vi.power = setting.getVst().getVSTInfo()[i].power;
-            vi.editor = setting.getVst().getVSTInfo()[i].editor;
-            vi.location = setting.getVst().getVSTInfo()[i].location;
-            vi.param = setting.getVst().getVSTInfo()[i].param;
-
-            if (vi.editor) {
-                FormVST dlg = new FormVST(null);
-                dlg.setPluginCommandStub(ctx);
-                dlg.Show(vi);
-                vi.vstPluginsForm = dlg;
-            }
-
-            if (vi.param != null) {
-                for (int p = 0; p < vi.param.length; p++) {
-//                    ctx.setParameter(p, vi.param[p]);
-                }
-            }
-
-            vstPlugins.add(vi);
+        @Override public long getSamplePosition() {
+            return samplePosition;
         }
-    }
-
-    public void SetupVstMidiOut(MidiOutInfo mi) {
-        int vn = -1;
-        int vt = 0;
-        VstInfo2 vmo = null;
-
-        for (int j = 0; j < vstPluginsInst.size(); j++) {
-            if (!vstPluginsInst.get(j).isInstrument || !mi.fileName.equals(vstPluginsInst.get(j).fileName)) continue;
-            boolean k = false;
-            for (VstInfo2 v : vstMidiOuts)
-                if (v == vstPluginsInst.get(j)) {
-                    k = true;
-                    break;
-                }
-            if (k) continue;
-            vn = j;
-            vt = mi.type;
-            break;
-        }
-
-        if (vn != -1) {
-            try {
-                vmo = vstPluginsInst.get(vn);
-            } catch (Exception e) {
-                logger.log(Level.ERROR, e.getMessage(), e);
-                vmo = null;
-            }
-        }
-
-        if (vmo != null) {
-            vstMidiOuts.add(vmo);
-            vstMidiOutsType.add(vt);
-        }
-
-    }
-
-    public void ReleaseAllMIDIout() {
-        if (vstMidiOuts != null && !vstMidiOuts.isEmpty()) {
-            vstMidiOuts.clear();
-            vstMidiOutsType.clear();
-        }
-    }
-
-    private void ReleaseAllPlugins() {
-        for (VstInfo2 ctx : vstPlugins) {
-            // dispose of all (unmanaged) resources
-            ctx.vstPlugins.close();
-        }
-
-        vstPlugins.clear();
-    }
-
-
-    public void Close() {
-        setting.getVst().setVSTInfo(null);
-        List<VstInfo> vstlst = new ArrayList<>();
-
-        for (VstInfo2 vstPlugin : vstPlugins) {
-            try {
-                vstPlugin.vstPluginsForm.timer1.stop();
-                vstPlugin.location = vstPlugin.vstPluginsForm.getLocation();
-                vstPlugin.vstPluginsForm.setVisible(false);
-            } catch (Exception e) {
-                logger.log(Level.ERROR, e.getMessage(), e);
-            }
-
-            try {
-                if (vstPlugin.vstPlugins != null) {
-                    vstPlugin.vstPlugins.editClose();
-                    vstPlugin.vstPlugins.close();
-                    int pc = vstPlugin.vstPlugins.getNumOutputs();
-                    List<Float> plst = new ArrayList<>();
-                    for (int p = 0; p < pc; p++) {
-//                        float v = vstPlugin.vstPlugins.getParameter(p);
-//                        plst.add(v);
-                    }
-//                    vstPlugin.param = Common.toArray(plst);
-                    vstPlugin.vstPlugins.close();
-                }
-            } catch (Exception e) {
-                logger.log(Level.ERROR, e.getMessage(), e);
-            }
-
-            VstInfo vi = new VstInfo();
-            vi.editor = vstPlugin.editor;
-            vi.fileName = vstPlugin.fileName;
-            vi.key = vstPlugin.key;
-            vi.effectName = vstPlugin.effectName;
-            vi.power = vstPlugin.power;
-            vi.location = vstPlugin.location;
-            vi.param = vstPlugin.param;
-
-            if (!vstPlugin.isInstrument) vstlst.add(vi);
-        }
-        setting.getVst().setVSTInfo(vstlst.toArray(VstInfo[]::new));
-
-
-        for (VstInfo2 vstInfo2 : vstPluginsInst) {
-            try {
-                vstInfo2.vstPluginsForm.timer1.stop();
-                vstInfo2.location = vstInfo2.vstPluginsForm.getLocation();
-                vstInfo2.vstPluginsForm.setVisible(false);
-            } catch (Exception e) {
-                logger.log(Level.ERROR, e.getMessage(), e);
-            }
-
-            try {
-                if (vstInfo2.vstPlugins != null) {
-                    vstInfo2.vstPlugins.editClose();
-                    vstInfo2.vstPlugins.close();
-                    int pc = vstInfo2.vstPlugins.getNumInputs() + vstInfo2.vstPlugins.getNumOutputs();
-                    List<Float> plst = new ArrayList<>();
-                    for (int p = 0; p < pc; p++) {
-//                        float v = vstInfo2.vstPlugins.PluginCommandStub.GetParameter(p);
-//                        plst.add(v);
-                    }
-//                    vstInfo2.param = Common.toArray(plst);
-                    vstInfo2.vstPlugins.close();
-                }
-            } catch (Exception e) {
-                logger.log(Level.ERROR, e.getMessage(), e);
-            }
-
-            VstInfo vi = new VstInfo();
-            vi.editor = vstInfo2.editor;
-            vi.fileName = vstInfo2.fileName;
-            vi.key = vstInfo2.key;
-            vi.effectName = vstInfo2.effectName;
-            vi.power = vstInfo2.power;
-            vi.location = vstInfo2.location;
-            vi.param = vstInfo2.param;
-        }
-    }
-
-    public void VST_Update(short[] buffer, int offset, int sampleCount) {
-        if (vstPlugins.isEmpty() && vstPluginsInst.isEmpty()) return;
-        if (buffer == null || buffer.length < 1 || sampleCount == 0) return;
-
-        try {
-             // if (trdStopped) return;
-
-            int blockSize = sampleCount / 2;
-
-            for (VstInfo2 info2 : vstPluginsInst) {
-                VstPlugin PluginContext = info2.vstPlugins;
-                if (PluginContext == null) continue;
-//                if (PluginContext == null) continue;
-
-                int inputCount = info2.vstPlugins.getNumInputs();
-                int outputCount = info2.vstPlugins.getNumOutputs();
-
-//                try (VstAudioBufferManager inputMgr = new VstAudioBufferManager(inputCount, blockSize)) {
-//                    try (VstAudioBufferManager outputMgr = new VstAudioBufferManager(outputCount, blockSize)) {
-//                        VstAudioBuffer[] inputBuffers = inputMgr.toArray();
-//                        VstAudioBuffer[] outputBuffers = outputMgr.toArray();
-//
-//                        if (inputCount != 0) {
-//                            inputMgr.ClearBuffer(inputBuffers[0]);
-//                            inputMgr.ClearBuffer(inputBuffers[1]);
-//
-//                            for (int j = 0; j < blockSize; j++) {
-//                                // generate a value between -1.0 and 1.0
-//                                inputBuffers[0].set(j, buffer[j * 2 + offset + 0] / (float) Short.MAX_VALUE);
-//                                inputBuffers[1].set(j, buffer[j * 2 + offset + 1] / (float) Short.MAX_VALUE);
-//                            }
-//                        }
-//
-//                        outputMgr.ClearBuffer(outputBuffers[0]);
-//                        outputMgr.ClearBuffer(outputBuffers[1]);
-//
-//                        PluginContext.PluginCommandStub.ProcessEvents(info2.lstEvent.toArray());
-//                        info2.lstEvent.clear();
-//
-//
-//                        PluginContext.PluginCommandStub.ProcessReplacing(inputBuffers, outputBuffers);
-//
-//                        for (int j = 0; j < blockSize; j++) {
-//                            // generate a value between -1.0 and 1.0
-//                            if (inputCount == 0) {
-//                                buffer[j * 2 + offset + 0] += (short) (outputBuffers[0][j] * Short.MAX_VALUE);
-//                                buffer[j * 2 + offset + 1] += (short) (outputBuffers[1][j] * Short.MAX_VALUE);
-//                            } else {
-//                                buffer[j * 2 + offset + 0] = (short) (outputBuffers[0][j] * Short.MAX_VALUE);
-//                                buffer[j * 2 + offset + 1] = (short) (outputBuffers[1][j] * Short.MAX_VALUE);
-//                            }
-//                        }
-//                    }
-//                }
-            }
-
-            for (VstInfo2 info2 : vstPlugins) {
-//                VstPluginContext PluginContext = info2.vstPlugins;
-//                if (PluginContext == null) continue;
-//                if (PluginContext.PluginCommandStub == null) continue;
-//
-//
-//                int inputCount = info2.vstPlugins.PluginInfo.AudioInputCount;
-//                int outputCount = info2.vstPlugins.PluginInfo.AudioOutputCount;
-//
-//                try (VstAudioBufferManager inputMgr = new VstAudioBufferManager(inputCount, blockSize)) {
-//                    try (VstAudioBufferManager outputMgr = new VstAudioBufferManager(outputCount, blockSize)) {
-//                        VstAudioBuffer[] inputBuffers = inputMgr.toArray();
-//                        VstAudioBuffer[] outputBuffers = outputMgr.toArray();
-//
-//                        if (inputCount != 0) {
-//                            inputMgr.ClearBuffer(inputBuffers[0]);
-//                            inputMgr.ClearBuffer(inputBuffers[1]);
-//
-//                            for (int j = 0; j < blockSize; j++) {
-//                                // generate a value between -1.0 and 1.0
-//                                inputBuffers[0][j] = buffer[j * 2 + offset + 0] / (float) Short.MAX_VALUE;
-//                                inputBuffers[1][j] = buffer[j * 2 + offset + 1] / (float) Short.MAX_VALUE;
-//                            }
-//                        }
-//
-//                        outputMgr.ClearBuffer(outputBuffers[0]);
-//                        outputMgr.ClearBuffer(outputBuffers[1]);
-//
-//                        PluginContext.PluginCommandStub.ProcessReplacing(inputBuffers, outputBuffers);
-//
-//                        for (int j = 0; j < blockSize; j++) {
-//                            // generate a value between -1.0 and 1.0
-//                            if (inputCount == 0) {
-//                                buffer[j * 2 + offset + 0] += (short) (outputBuffers[0][j] * Short.MAX_VALUE);
-//                                buffer[j * 2 + offset + 1] += (short) (outputBuffers[1][j] * Short.MAX_VALUE);
-//                            } else {
-//                                buffer[j * 2 + offset + 0] = (short) (outputBuffers[0][j] * Short.MAX_VALUE);
-//                                buffer[j * 2 + offset + 1] = (short) (outputBuffers[1][j] * Short.MAX_VALUE);
-//                            }
-//                        }
-//                    }
-//                }
-            }
-        } catch (Exception e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-        }
-    }
-
-    public void sendMIDIout(EnmModel model, int num, byte cmd, byte prm1, byte prm2, int deltaFrames/* = 0*/) {
-        if (model == EnmModel.RealModel) return;
-        if (vstMidiOuts == null) return;
-        if (num >= vstMidiOuts.size()) return;
-        if (vstMidiOuts.get(num) == null) return;
-
-//        VstMidiEvent evt = new VstMidiEvent(
-//                deltaFrames
-//                , 0 // noteLength
-//                , 0 // noteOffset
-//                , new byte[] {cmd, prm1, prm2}
-//                , 0 // detune
-//                , 0 // noteOffVelocity
-//        );
-//        vstMidiOuts.get(num).AddMidiEvent(evt);
-//        if (num < midiParams.length) midiParams[num].sendBuffer(new byte[] {cmd, prm1, prm2});
-    }
-
-    public void sendMIDIout(EnmModel model, int num, byte cmd, byte prm1, int deltaFrames /* = 0 */) {
-        if (model == EnmModel.RealModel) return;
-        if (vstMidiOuts == null) return;
-        if (num >= vstMidiOuts.size()) return;
-        if (vstMidiOuts.get(num) == null) return;
-
-//        Jacobi.Vst.Core.VstMidiEvent evt = new Jacobi.Vst.Core.VstMidiEvent(
-//                deltaFrames
-//                , 0 // noteLength
-//                , 0 // noteOffset
-//                , new byte[] {cmd, prm1}
-//                , 0 // detune
-//                , 0 // noteOffVelocity
-//        );
-//        vstMidiOuts.get(num).AddMidiEvent(evt);
-        if (num < midiParams.length) midiParams[num].sendBuffer(new byte[] {cmd, prm1});
-    }
-
-    public void sendMIDIout(EnmModel model, int num, byte[] data, int deltaFrames/* = 0*/) {
-        if (model == EnmModel.RealModel) return;
-        if (vstMidiOuts == null) return;
-        if (num >= vstMidiOuts.size()) return;
-        if (vstMidiOuts.get(num) == null) return;
-
-//        VstMidiEvent evt = new VstMidiEvent(
-//                deltaFrames
-//                , 0 // noteLength
-//                , 0 // noteOffset
-//                , data
-//                , 0 // detune
-//                , 0 // noteOffVelocity
-//        );
-//        vstMidiOuts.get(num).AddMidiEvent(evt);
-        if (num < midiParams.length) midiParams[num].sendBuffer(data);
-    }
-
-    public void resetAllMIDIout(EnmModel model) {
-        if (model == EnmModel.RealModel) return;
-
-        if (vstMidiOuts == null) return;
-        for (int i = 0; i < vstMidiOuts.size(); i++) {
-//            if (vstMidiOuts[i] == null) continue;
-//            if (vstMidiOuts[i].vstPlugins == null) continue;
-//            if (vstMidiOuts[i].vstPlugins.PluginCommandStub == null) continue;
-
-            try {
-                List<Byte> dat = new ArrayList<>();
-                for (int ch = 0; ch < 16; ch++) {
-                    sendMIDIout(EnmModel.VirtualModel, i, new byte[] {(byte) (0xb0 + ch), 120, 0x00}, 0);
-                    sendMIDIout(EnmModel.VirtualModel, i, new byte[] {(byte) (0xb0 + ch), 64, 0x00}, 0);
-                }
-
-            } catch (Exception e) {
-                logger.log(Level.ERROR, e.getMessage(), e);
-            }
-        }
-    }
-
-    public VstPlugin OpenPlugin(String pluginPath) {
-        try {
-            HostCommandStub hostCmdStub = new HostCommandStub(setting);
-//            hostCmdStub.PluginCalled += new EventHandler<>(HostCmdStub_PluginCalled);
-
-            VstPlugin ctx = new VstPlugin(new File(pluginPath)/*, hostCmdStub*/);
-
-            // add custom data to the context
-//            ctx.Set("PluginPath", pluginPath);
-//            ctx.Set("HostCmdStub", hostCmdStub);
-
-            // actually open the chips itself
-            ctx.open();
-
-            return ctx;
-        } catch (Exception e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-            //JOptionPane.showMessageDialog(this, e.toString(), Text, JOptionPane.ERROR_MESSAGE);
-        }
-
-        return null;
-    }
-
-    private static void HostCmdStub_PluginCalled(Object sender, PluginCalledEventArgs e) {
-        HostCommandStub hostCmdStub = (HostCommandStub) sender;
-
-        // can be null when called from inside the chips main entry point.
-//        if (hostCmdStub.PluginContext.PluginInfo != null) {
-//            logger.log(Level.DEBUG, "Plugin " + hostCmdStub.PluginContext.PluginInfo.PluginID + " called:" + e.getMessage());
-//        } else {
-//            logger.log(Level.DEBUG, "The loading Plugin called:" + e.getMessage());
-//        }
-    }
-
-    public List<VstInfo2> getVSTInfos() {
-        return vstPlugins;
-    }
-
-    public VstInfo getVSTInfo(String filename) {
-        VstPlugin ctx = OpenPlugin(filename);
-        if (ctx == null) return null;
-
-        VstInfo ret = new VstInfo();
-        ret.effectName = ctx.getName();
-        ret.productName = ctx.getProductString();
-        ret.vendorName = ctx.getVendorString();
-        ret.programName = ctx.getProgramName();
-        ret.fileName = filename;
-        ret.midiInputChannels = ctx.getNumInputs();
-        ret.midiOutputChannels = ctx.getNumOutputs();
-        ctx.close();
-
-        return ret;
-    }
-
-    public boolean addVSTeffect(String fileName) {
-        VstPlugin ctx = OpenPlugin(fileName);
-        if (ctx == null) return false;
-
-         // Stop();
-
-        VstInfo2 vi = new VstInfo2();
-        vi.vstPlugins = ctx;
-        vi.fileName = fileName;
-        vi.key = String.valueOf(System.currentTimeMillis());
-        Thread.yield();
-
-        ctx.setBlockSize(512);
-        ctx.setSampleRate(setting.getOutputDevice().getSampleRate());
-//        ctx.MainsChanged(true);
-//        ctx.StartProcess();
-        vi.effectName = ctx.getName();
-        vi.power = true;
-//        ctx.getParameterProperties(0);
-
-
-        FormVST dlg = new FormVST(null);
-        dlg.setPluginCommandStub(ctx);
-        dlg.Show(vi);
-        vi.vstPluginsForm = dlg;
-        vi.editor = true;
-
-        vstPlugins.add(vi);
-
-        List<VstInfo> lvi = new ArrayList<>();
-        for (VstInfo2 vi2 : vstPlugins) {
-            VstInfo v = new VstInfo();
-            v.editor = vi.editor;
-            v.effectName = vi.effectName;
-            v.fileName = vi.fileName;
-            v.key = vi.key;
-            v.location = vi.location;
-            v.midiInputChannels = vi.midiInputChannels;
-            v.midiOutputChannels = vi.midiOutputChannels;
-            v.param = vi.param;
-            v.power = vi.power;
-            v.productName = vi.productName;
-            v.programName = vi.programName;
-            v.vendorName = vi.vendorName;
-            lvi.add(v);
-        }
-        setting.getVst().setVSTInfo(lvi.toArray(VstInfo[]::new));
-
-        return true;
-    }
-
-    public boolean delVSTeffect(String key) {
-        if (key.isEmpty()) {
-            for (VstInfo2 vstPlugin : vstPlugins) {
-                try {
-                    if (vstPlugin.vstPlugins != null) {
-                        vstPlugin.vstPluginsForm.timer1.stop();
-                        vstPlugin.location = vstPlugin.vstPluginsForm.getLocation();
-                        vstPlugin.vstPluginsForm.setVisible(false);
-                        vstPlugin.vstPlugins.editClose();
-//                        vstPlugin.vstPlugins.StopProcess();
-//                        vstPlugin.vstPlugins.MainsChanged(false);
-                        vstPlugin.vstPlugins.close();
-                    }
-                } catch (Exception e) {
-                }
-            }
-            vstPlugins.clear();
-            setting.getVst().setVSTInfo(new VstInfo[0]);
-        } else {
-            int ind = -1;
-            for (int i = 0; i < vstPlugins.size(); i++) {
-                 // if (vstPlugins.get(i).fileName == fileName)
-                if (vstPlugins.get(i).key.equals(key)) {
-                    ind = i;
-                    break;
-                }
-            }
-
-            if (ind != -1) {
-                try {
-                    if (vstPlugins.get(ind).vstPlugins != null) {
-                        vstPlugins.get(ind).vstPluginsForm.timer1.stop();
-                        vstPlugins.get(ind).location = vstPlugins.get(ind).vstPluginsForm.getLocation();
-                        vstPlugins.get(ind).vstPluginsForm.setVisible(false);
-                        vstPlugins.get(ind).vstPlugins.editClose();
-//                        vstPlugins.get(ind).vstPlugins.StopProcess();
-//                        vstPlugins.get(ind).vstPlugins.MainsChanged(false);
-                        vstPlugins.get(ind).vstPlugins.close();
-                    }
-                } catch (Exception e) {
-                    logger.log(Level.ERROR, e.getMessage(), e);
-                }
-                vstPlugins.remove(ind);
-            }
-
-            List<VstInfo> nvst = new ArrayList<>();
-            for (VstInfo vi : setting.getVst().getVSTInfo()) {
-                if (vi.key.equals(key)) continue;
-                nvst.add(vi);
-            }
-//            setting.getVst().setVSTInfo(nvst.toArray(VstInfo::new));
-        }
-
-        return true;
     }
 
     /**
-     * The HostCommandStub class represents the part of the host that a chips can call.
+     * The largest block a plug-in is told to expect.
+     * <p>
+     * The mixer hands out whatever the sound card asked for, which is not a constant, so this is
+     * simply large enough to cover it; a plug-in is allowed to be given fewer frames than this but
+     * never more, and {@link VstPlugin#processReplacing} reallocates rather than overrun if one is.
      */
-    public static class HostCommandStub /* implements IVstHostCommandStub */ {
-        private final Setting setting;
+    private static final int BLOCK_SIZE = 8192;
 
-        public HostCommandStub(Setting setting) {
-            this.setting = setting;
-        }
+    // loading
 
-        /**
-         * Raised when one of the methods instanceof called.
-         */
-        public GenericListener PluginCalled;
-
-        private void RaisePluginCalled(String message) {
-            GenericListener handler = PluginCalled;
-
-            if (handler != null) {
-//                handler(this, new PluginCalledEventArgs(message));
-            }
-        }
-
-//#region IVstHostCommandsStub Members
-
-        /* TODO */
-//        public IVstPluginContext getPluginContext() {
-//            return null;
-//        }
-
-//        public void setPluginContext(IVstPluginContext value) {
-//        }
-
-        /* */
-        public boolean BeginEdit(int index) {
-            RaisePluginCalled("BeginEdit(" + index + ")");
-
-            return false;
-        }
-
-        /* */
-//        public VstCanDoResult CanDo(String cando) {
-//            RaisePluginCalled("CanDo(" + cando + ")");
-//            return VstCanDoResult.Unknown;
-//        }
-
-        /* */
-//        public boolean CloseFileSelector(VstFileSelect fileSelect) {
-//            RaisePluginCalled("CloseFileSelector(" + fileSelect.Command + ")");
-//            return false;
-//        }
-
-        /* */
-        public boolean EndEdit(int index) {
-            RaisePluginCalled("EndEdit(" + index + ")");
-            return false;
-        }
-
-        /* */
-//        public VstAutomationStates GetAutomationState() {
-//            RaisePluginCalled("GetAutomationState()");
-//            return VstAutomationStates.Off;
-//        }
-
-        /* */
-        public int GetBlockSize() {
-            RaisePluginCalled("GetBlockSize()");
-            return 1024;
-        }
-
-        /* */
-        public String GetDirectory() {
-            RaisePluginCalled("GetDirectory()");
+    /**
+     * Loads a plug-in and gets it as far as being ready to render.
+     *
+     * @return null when it could not be loaded, which is not fatal - the song plays without it
+     */
+    public VstPlugin openPlugin(String pluginPath) {
+        try {
+            VstPlugin plugin = new VstPlugin(new File(pluginPath), host);
+            plugin.open();
+            plugin.setSampleRate(setting.getOutputDevice().getSampleRate());
+            plugin.setBlockSize(BLOCK_SIZE);
+            plugin.resume();
+            return plugin;
+        } catch (Throwable t) {
+            // a plug-in built for another architecture fails inside dlopen, i.e. as an Error
+            logger.log(Level.WARNING, "cannot load the VST plugin " + pluginPath + ": " + t);
             return null;
         }
+    }
 
-        /* */
-        public int GetInputLatency() {
-            RaisePluginCalled("GetInputLatency()");
-            return 0;
+    /**
+     * What a plug-in says about itself, for a chooser that has just been pointed at a file. The
+     * plug-in is loaded and thrown away again.
+     *
+     * @return null when the file is not a VST plug-in this can load
+     */
+    public VstInfo getInfo(String fileName) {
+        VstPlugin plugin = openPlugin(fileName);
+        if (plugin == null) return null;
+        try {
+            VstInfo info = new VstInfo();
+            info.fileName = fileName;
+            info.effectName = plugin.getName();
+            info.productName = plugin.getProductString();
+            info.vendorName = plugin.getVendorString();
+            info.programName = plugin.getProgramName();
+            info.midiInputChannels = plugin.isSynth() ? 16 : 0;
+            info.midiOutputChannels = 0;
+            return info;
+        } finally {
+            plugin.close();
         }
+    }
 
-        /* */
-//        public VstHostLanguage GetLanguage() {
-//            RaisePluginCalled("GetLanguage()");
-//            return VstHostLanguage.NotSupported;
-//        }
+    // the effect chain
 
-        /* */
-        public int GetOutputLatency() {
-            RaisePluginCalled("GetOutputLatency()");
-            return 0;
-        }
+    /**
+     * Builds the effect chain the settings describe.
+     * <p>
+     * Called before every song, so it does nothing at all while the settings still name the same
+     * plug-ins in the same order: reloading a chain means re-reading megabytes of plug-in for no
+     * reason, and it would drop the state the plug-ins hold.
+     */
+    public void setUpEffects() {
+        VstInfo[] infos = setting.getVst().getVSTInfo();
+        String signature = signatureOf(infos);
+        lock.lock();
+        try {
+            if (signature.equals(effectSignature)) return;
 
-        /* */
-//        public VstProcessLevels GetProcessLevel() {
-//            RaisePluginCalled("GetProcessLevel()");
-//            return VstProcessLevels.Unknown;
-//        }
+            closeAll(effects);
+            effectSignature = signature;
+            if (infos == null) return;
 
-        /* */
-        public String GetProductString() {
-            RaisePluginCalled("GetProductString()");
-            return "VST.NET";
-        }
+            for (VstInfo info : infos) {
+                if (info == null || info.fileName == null || info.fileName.isEmpty()) continue;
+                VstPlugin plugin = openPlugin(info.fileName);
+                if (plugin == null) continue;
 
-        /* */
-        public float GetSampleRate() {
-            RaisePluginCalled("GetSampleRate()");
-            return setting.getOutputDevice().getSampleRate() / 1000.0f;
-        }
+                VstInfo2 vi = new VstInfo2();
+                vi.plugin = plugin;
+                vi.fileName = info.fileName;
+                vi.key = info.key == null || info.key.isEmpty() ? newKey() : info.key;
+                vi.effectName = plugin.getName();
+                vi.productName = plugin.getProductString();
+                vi.vendorName = plugin.getVendorString();
+                vi.programName = plugin.getProgramName();
+                vi.power = info.power;
+                vi.location = info.location;
+                vi.param = info.param;
+                restoreState(plugin, info);
+                // it was loaded switched on, which is what an effect saved as off must not be
+                if (!vi.power) plugin.suspend();
+                effects.add(vi);
 
-        /* */
-//        public VstTimeInfo GetTimeInfo(VstTimeInfoFlags filterFlags) {
-//            //RaisePluginCalled("GetTimeInfo(" + filterFlags + ")");
-//            VstTimeInfo vti = new VstTimeInfo();
-//            vti.samplePos = 0;
-//            vti.sampleRate = setting.getOutputDevice().getSampleRate() / 1000.0f;
-//            vti.nanoSeconds = 0;
-//            vti.ppqPos = 0;
-//            vti.tempo = 120;
-//            vti.barStartPos = 0;
-//            vti.cycleStartPos = 0;
-//            vti.cycleEndPos = 0;
-//            vti.timeSigNumerator = 4;
-//            vti.timeSigDenominator = 4;
-//            vti.smpteOffset = 0;
-//            vti.smpteFrameRate = VstSmpteFrameRate.Smpte24fps;
-//            vti.samplesToNextClock = 0;
-//            vti.flags = VstConst.VST_NanosValid
-//                    | VstConst.VST_PpqPosValid
-//                    | VstConst.VST_TempoValid
-//                    | VstConst.VST_TimeSigValid;
-//            return vti;
-//        }
-
-        /** */
-        public String GetVendorString() {
-            RaisePluginCalled("GetVendorString()");
-            return "";
-        }
-
-        /** */
-        public int GetVendorVersion() {
-            RaisePluginCalled("GetVendorVersion()");
-            return 1000;
-        }
-
-        /** */
-        public boolean IoChanged() {
-            RaisePluginCalled("IoChanged()");
-            return false;
-        }
-
-//        /** */
-//        public boolean OpenFileSelector(VstFileSelect fileSelect) {
-//            RaisePluginCalled("OpenFileSelector(" + fileSelect.Command + ")");
-//            return false;
-//        }
-
-        /** */
-        public boolean ProcessEvents(AEffect[] events) {
-            RaisePluginCalled("ProcessEvents(" + events.length + ")");
-            return false;
-        }
-
-        /** */
-        public boolean SizeWindow(int width, int height) {
-            RaisePluginCalled("SizeWindow(" + width + ", " + height + ")");
-            return false;
-        }
-
-        /** */
-        public boolean UpdateDisplay() {
-            RaisePluginCalled("UpdateDisplay()");
-            return false;
-        }
-
-//        public int GetCurrentPluginID() {
-//            RaisePluginCalled("GetCurrentPluginID()");
-//            return PluginContext.PluginInfo.PluginID;
-//        }
-
-        public int GetVersion() {
-            RaisePluginCalled("GetVersion()");
-            return 1000;
-        }
-
-        public void ProcessIdle() {
-            RaisePluginCalled("ProcessIdle()");
-        }
-
-        public void SetParameterAutomated(int index, float value) {
-            RaisePluginCalled("SetParameterAutomated(" + index + ", " + value + ")");
+                if (info.editor) openEditor(vi);
+            }
+        } finally {
+            lock.unlock();
         }
     }
 
     /**
-     * Event arguments used when one of the mehtods instanceof called.
+     * Puts a plug-in back the way it was left.
+     * <p>
+     * A plug-in that keeps its own state hands the host an opaque chunk and ignores the parameter
+     * values, so which of the two is restored is the plug-in's choice, not ours.
      */
-    public static class PluginCalledEventArgs extends EventObject {
-        /**
-         * Constructs a new instance with a "message".
-         * @param message
-         */
-        public PluginCalledEventArgs(Object source, String message) {
-            super(source);
-            this.message = message;
-        }
-
-        private final String message;
-
-        /**
-         * Gets the message.
-         */
-        public String getMessage() {
-            return message;
+    private static void restoreState(VstPlugin plugin, VstInfo info) {
+        if (plugin.usesChunks()) {
+            if (info.chunk != null && !info.chunk.isEmpty()) {
+                try {
+                    plugin.setChunk(Base64.getDecoder().decode(info.chunk), false);
+                } catch (IllegalArgumentException e) {
+                    logger.log(Level.WARNING, "the saved state of " + info.fileName + " is unreadable", e);
+                }
+            }
+        } else {
+            plugin.setParameters(info.param);
         }
     }
 
-    public static class VstInfo2 extends VstInfo {
-        public VstPlugin vstPlugins = null;
-        public FormVST vstPluginsForm = null;
+    /** what a plug-in has to say about its own state, or empty when it keeps none */
+    private static String stateOf(VstPlugin plugin) {
+        byte[] chunk = plugin == null ? null : plugin.getChunk(false);
+        return chunk == null ? "" : Base64.getEncoder().encodeToString(chunk);
+    }
 
-        // It doesn't matter if it's actually a VSTi or not.
-        public boolean isInstrument = false;
-        public final List<AEffect> lstEvent = new ArrayList<>();
-
-        public void AddMidiEvent(AEffect evt) {
-            lstEvent.add(evt);
+    /** what the chain is made of, so an unchanged one can be left alone */
+    private static String signatureOf(VstInfo[] infos) {
+        if (infos == null) return "";
+        StringBuilder sb = new StringBuilder();
+        for (VstInfo info : infos) {
+            if (info == null) continue;
+            sb.append(info.fileName).append('\n');
         }
+        return sb.toString();
+    }
+
+    /** adds a plug-in to the end of the chain and remembers it in the settings */
+    public boolean addEffect(String fileName) {
+        VstPlugin plugin = openPlugin(fileName);
+        if (plugin == null) return false;
+
+        lock.lock();
+        try {
+            VstInfo2 vi = new VstInfo2();
+            vi.plugin = plugin;
+            vi.fileName = fileName;
+            vi.key = newKey();
+            vi.effectName = plugin.getName();
+            vi.productName = plugin.getProductString();
+            vi.vendorName = plugin.getVendorString();
+            vi.programName = plugin.getProgramName();
+            vi.power = true;
+            effects.add(vi);
+            storeEffects();
+            if (plugin.hasEditor()) {
+                vi.editor = true;
+                openEditor(vi);
+            }
+            return true;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /**
+     * Takes a plug-in back out of the chain.
+     *
+     * @param key the plug-in to remove, or empty for all of them
+     */
+    public boolean removeEffect(String key) {
+        lock.lock();
+        try {
+            if (key == null || key.isEmpty()) {
+                closeAll(effects);
+            } else {
+                for (int i = 0; i < effects.size(); i++) {
+                    if (!key.equals(effects.get(i).key)) continue;
+                    close(effects.remove(i));
+                    break;
+                }
+            }
+            storeEffects();
+            return true;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /** switches an effect in or out of the chain without unloading it */
+    public void setPower(VstInfo2 vi, boolean power) {
+        lock.lock();
+        try {
+            vi.power = power;
+            if (vi.plugin == null) return;
+            if (power) vi.plugin.resume(); else vi.plugin.suspend();
+            storeEffects();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public List<VstInfo2> getEffects() {
+        return effects;
+    }
+
+    // instruments
+
+    /**
+     * Hands out an instrument for a MIDI out to play through, loading it the first time it is
+     * asked for.
+     * <p>
+     * A file asked for twice gets two instances, because two MIDI outs pointed at the same plug-in
+     * are two independent synthesizers. Instances are kept between songs and handed out again by
+     * {@link #releaseInstruments}, so changing song does not reload them.
+     *
+     * @return null when the plug-in could not be loaded
+     */
+    public VstInfo2 acquireInstrument(String fileName) {
+        lock.lock();
+        try {
+            for (VstInfo2 vi : instruments) {
+                if (!vi.inUse && fileName.equals(vi.fileName)) {
+                    vi.inUse = true;
+                    if (vi.plugin != null) vi.plugin.resume();
+                    return vi;
+                }
+            }
+
+            VstPlugin plugin = openPlugin(fileName);
+            if (plugin == null) return null;
+
+            VstInfo2 vi = new VstInfo2();
+            vi.plugin = plugin;
+            vi.fileName = fileName;
+            vi.key = newKey();
+            vi.isInstrument = true;
+            vi.inUse = true;
+            vi.power = true;
+            vi.effectName = plugin.getName();
+            vi.productName = plugin.getProductString();
+            vi.vendorName = plugin.getVendorString();
+            vi.programName = plugin.getProgramName();
+            instruments.add(vi);
+            return vi;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /**
+     * Gives every instrument back, ready to be handed out for the next song.
+     * <p>
+     * Suspending is what actually silences a plug-in - it drops the voices it is holding and the
+     * tail of whatever was sounding, which an all sound off would only ask it to do and which it
+     * could not act on anyway with nothing left to render it.
+     */
+    public void releaseInstruments() {
+        lock.lock();
+        try {
+            for (VstInfo2 vi : instruments) {
+                if (vi.plugin != null) vi.plugin.suspend();
+                vi.inUse = false;
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    // rendering
+
+    /**
+     * Mixes the instruments in and runs the mix through the effects.
+     * <p>
+     * Called from the audio thread once per block, right after the drivers have rendered.
+     *
+     * @param buffer stereo, interleaved
+     * @param sampleCount how much of it to work on, counted in samples rather than frames
+     */
+    public void update(short[] buffer, int offset, int sampleCount) {
+        if (buffer == null || sampleCount < 2) return;
+        // read without the lock: nothing is loaded for most songs, and this runs every block. The
+        // worst a stale answer costs is one block of a plugin that was added the instant before
+        if (effects.isEmpty() && instruments.isEmpty()) return;
+        int frames = sampleCount / 2;
+
+        lock.lock();
+        try {
+            allocate(frames);
+
+            for (VstInfo2 vi : instruments) {
+                if (!vi.inUse || !vi.power || !renders(vi)) continue;
+                vi.plugin.processReplacing(NO_INPUT, out, frames);
+                mix(buffer, offset, frames, vi.plugin.getNumOutputs());
+            }
+
+            for (VstInfo2 vi : effects) {
+                if (!vi.power || !renders(vi)) continue;
+                deinterleave(buffer, offset, frames);
+                vi.plugin.processReplacing(in, out, frames);
+                replace(buffer, offset, frames, vi.plugin.getNumOutputs());
+            }
+
+            host.samplePosition += frames;
+        } catch (Throwable t) {
+            logger.log(Level.ERROR, "VST rendering failed, the plugins are being switched off", t);
+            panic();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /**
+     * Whether there is anything to take from this plug-in.
+     * <p>
+     * A plug-in with no outputs would leave the scratch buffers holding the last block another
+     * plug-in wrote, which would then be mixed in as noise.
+     */
+    private static boolean renders(VstInfo2 vi) {
+        return vi.plugin != null && vi.plugin.getNumOutputs() > 0;
+    }
+
+    /** after a plug-in has misbehaved: keep the song playing rather than fail every block */
+    private void panic() {
+        for (VstInfo2 vi : effects) vi.power = false;
+        for (VstInfo2 vi : instruments) vi.power = false;
+    }
+
+    private void allocate(int frames) {
+        if (in[0].length >= frames) return;
+        in = new float[][] {new float[frames], new float[frames]};
+        out = new float[][] {new float[frames], new float[frames]};
+    }
+
+    private void deinterleave(short[] buffer, int offset, int frames) {
+        for (int i = 0; i < frames; i++) {
+            in[0][i] = buffer[offset + i * 2] / 32768f;
+            in[1][i] = buffer[offset + i * 2 + 1] / 32768f;
+        }
+    }
+
+    /** the plug-in's output replaces what was there, which is what an effect is for */
+    private void replace(short[] buffer, int offset, int frames, int channels) {
+        int right = channels > 1 ? 1 : 0;
+        for (int i = 0; i < frames; i++) {
+            buffer[offset + i * 2] = toShort(out[0][i]);
+            buffer[offset + i * 2 + 1] = toShort(out[right][i]);
+        }
+    }
+
+    /** the plug-in's output is added to what was there, which is what an instrument is for */
+    private void mix(short[] buffer, int offset, int frames, int channels) {
+        int right = channels > 1 ? 1 : 0;
+        for (int i = 0; i < frames; i++) {
+            buffer[offset + i * 2] = add(buffer[offset + i * 2], out[0][i]);
+            buffer[offset + i * 2 + 1] = add(buffer[offset + i * 2 + 1], out[right][i]);
+        }
+    }
+
+    private static short toShort(float value) {
+        return (short) Math.clamp((int) (value * 32767f), -32768, 32767);
+    }
+
+    private static short add(short sample, float value) {
+        return (short) Math.clamp(sample + (int) (value * 32767f), -32768, 32767);
+    }
+
+    // editors
+
+    /**
+     * Shows a plug-in's own editor, which is a window of the plug-in's making inside one of ours.
+     * <p>
+     * The window is always built on the event thread, because this is also reached from the one
+     * that starts a song. Never with {@code invokeAndWait}: the caller may hold {@link #lock},
+     * which the event thread takes whenever a row of the effect list is clicked.
+     */
+    public void openEditor(VstInfo2 vi) {
+        if (vi.plugin == null) {
+            vi.editor = false;
+            return;
+        }
+        if (vi.form != null && vi.form.isVisible()) return;
+        vi.editor = true;
+        onEventThread(() -> {
+            try {
+                FormVST form = new FormVST(null);
+                form.setPlugin(vi.plugin);
+                form.show(vi);
+                vi.form = form;
+            } catch (Throwable t) {
+                logger.log(Level.WARNING, "cannot open the editor of " + vi.fileName, t);
+                vi.editor = false;
+            }
+        });
+    }
+
+    /** closes the editor and keeps where it was, so it opens in the same place next time */
+    public void closeEditor(VstInfo2 vi) {
+        FormVST form = vi.form;
+        if (form == null) {
+            vi.editor = false;
+            return;
+        }
+        vi.location = form.getLocation();
+        vi.form = null;
+        vi.editor = false;
+        onEventThread(form::close);
+    }
+
+    private static void onEventThread(Runnable task) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            task.run();
+        } else {
+            SwingUtilities.invokeLater(task);
+        }
+    }
+
+    // lifecycle
+
+    /** writes the effect chain back into the settings, which is what is reloaded next time */
+    private void storeEffects() {
+        List<VstInfo> stored = new ArrayList<>();
+        for (VstInfo2 vi : effects) {
+            VstInfo info = new VstInfo();
+            info.key = vi.key;
+            info.fileName = vi.fileName;
+            info.power = vi.power;
+            info.editor = vi.editor;
+            info.effectName = vi.effectName;
+            info.productName = vi.productName;
+            info.vendorName = vi.vendorName;
+            info.programName = vi.programName;
+            info.location = vi.form != null ? vi.form.getLocation() : vi.location;
+            info.param = vi.plugin != null ? vi.plugin.getParameters() : vi.param;
+            info.chunk = stateOf(vi.plugin);
+            info.midiInputChannels = vi.midiInputChannels;
+            info.midiOutputChannels = vi.midiOutputChannels;
+            stored.add(info);
+        }
+        setting.getVst().setVSTInfo(stored.toArray(VstInfo[]::new));
+        effectSignature = signatureOf(setting.getVst().getVSTInfo());
+    }
+
+    /**
+     * Unloads everything, on the way out of the application. The plug-ins survive a song change -
+     * see {@link #setUpEffects} and {@link #releaseInstruments} - so this is the only place they
+     * are actually let go of.
+     */
+    public void close() {
+        lock.lock();
+        try {
+            storeEffects();
+            closeAll(effects);
+            closeAll(instruments);
+            effectSignature = null;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private void closeAll(List<VstInfo2> list) {
+        for (VstInfo2 vi : list) {
+            close(vi);
+        }
+        list.clear();
+    }
+
+    private void close(VstInfo2 vi) {
+        try {
+            closeEditor(vi);
+            if (vi.plugin != null) vi.plugin.close();
+        } catch (Throwable t) {
+            logger.log(Level.WARNING, "closing the VST plugin " + vi.fileName + " failed", t);
+        }
+        vi.plugin = null;
+    }
+
+    /** the identity an effect is found by in the settings and in the list window */
+    private static String newKey() {
+        return String.valueOf(System.nanoTime());
+    }
+
+    /**
+     * A loaded plug-in, which is {@link VstInfo} - what the settings keep about it - plus the
+     * things that only exist while it is loaded.
+     */
+    public static class VstInfo2 extends VstInfo {
+
+        public VstPlugin plugin = null;
+
+        /** the window its editor is in, or null while the editor is closed */
+        public FormVST form = null;
+
+        public boolean isInstrument = false;
+
+        /** whether a MIDI out is currently pointed at this instrument */
+        public boolean inUse = false;
     }
 }
