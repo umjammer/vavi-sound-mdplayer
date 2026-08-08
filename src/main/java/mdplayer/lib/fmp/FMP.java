@@ -158,7 +158,7 @@ logger.log(Level.ERROR, e.getMessage());
         regs.setDX((short) 0x0000);
         regs.setSS((short) 0xe000);
         regs.setSP((short) 0x0000);
-        nise98.callRunFunctionCall((byte) 0xd2, true, true, true, 10_000_000_000L, 0_000);
+        nise98.callRunFunctionCall((byte) 0xd2, false, true, true, 10_000_000_000L, 0_000);
 
         if (pcmDataSendCount != 0) {
             blockWrite.accept(true);

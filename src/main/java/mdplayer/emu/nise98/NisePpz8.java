@@ -90,7 +90,7 @@ public class NisePpz8 {
         regs[0].setSI(ppz8IDOfs); // 'PPZ8''s ofs
         regs[0].setDX(ppz8ReleaseOfs); // Far call when resident is released
         regs[0].setCL((byte) 0x00); // TASK_ASIN
-        nise98.callRunFunctionCall((byte) 0xd2, true, true, true, 10_000_000_000L, 0_000);
+        nise98.callRunFunctionCall((byte) 0xd2, false, true, true, 10_000_000_000L, 0_000);
 
         logger.log(Level.TRACE, "set the fake PPZ8 to the FMP task.");
     }
