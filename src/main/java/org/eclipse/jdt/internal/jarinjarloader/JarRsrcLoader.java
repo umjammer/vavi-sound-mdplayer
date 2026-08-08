@@ -15,14 +15,13 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
 import static java.lang.System.getLogger;
-import static mdsound.MDSound.Chip.MAIN_TAG;
 
 
 public class JarRsrcLoader {
 
    private static final Logger logger = getLogger(JarRsrcLoader.class.getName());
 
-   static void main(String[] args) throws ClassNotFoundException, IllegalArgumentException, IllegalAccessException, InvocationTargetException, SecurityException, NoSuchMethodException, IOException {
+   public static void main(String[] args) throws ClassNotFoundException, IllegalArgumentException, IllegalAccessException, InvocationTargetException, SecurityException, NoSuchMethodException, IOException {
       ManifestInfo mi = getManifestInfo();
       ClassLoader cl = Thread.currentThread().getContextClassLoader();
       URL.setURLStreamHandlerFactory(new RsrcURLStreamHandlerFactory(cl));
@@ -40,7 +39,7 @@ public class JarRsrcLoader {
       ClassLoader jceClassLoader = new URLClassLoader(rsrcUrls, null);
       Thread.currentThread().setContextClassLoader(jceClassLoader);
       Class<?> c = Class.forName(mi.rsrcMainClass, true, jceClassLoader);
-      Method main = c.getMethod(MAIN_TAG, args.getClass());
+      Method main = c.getMethod(JIJConstants.MAIN_METHOD_NAME, args.getClass());
       main.invoke(null, (Object) args);
    }
 

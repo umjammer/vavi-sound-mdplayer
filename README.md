@@ -64,6 +64,18 @@ this is a fork of [MDPlayer](https://github.com/kuma4649/MDPlayer)
 
  https://jitpack.io/#umjammer/vavi-apps-mdplayer
 
+### Standalone Jar
+
+a nested jar (jar in jar, not uber jar, so each nested jar keeps its own `META-INF/services`)
+loaded by [jarinjarloader](src/main/java/org/eclipse/jdt/internal/jarinjarloader)
+
+```shell
+mvn -P nested package
+java -jar target/vavi-apps-mdplayer-x.y.z-app.jar [file]
+```
+
+(the jvm options below are in the manifest, so no need to specify them)
+
 ### Other Binaries
 
 get those binaries from the internet and put those at somewhere (set system properties described below)
