@@ -5,12 +5,6 @@ import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.IntSupplier;
-import java.util.function.LongConsumer;
-import java.util.function.LongSupplier;
-import java.util.function.Supplier;
 
 import vavi.util.ByteUtil;
 
@@ -83,7 +77,7 @@ public class Vgm {
      * Header "Volume Modifier" (0x7c), raw. The file asks the player to play it at
      * {@code 2^(volumeModifier / 0x20)}; 0 (the default) means 100%. See {@link #getVolumeGain()}.
      */
-    public int volumeModifier;
+    private int volumeModifier;
 
     /**
      * The gain the header's volume modifier asks for. 0x01..0xc0 are +1..+192 (up to x64),
@@ -134,7 +128,8 @@ public class Vgm {
     public boolean uPD7759DualChipFlag;
     public boolean pokeyDualChipFlag;
 
-    public IDac dacControl;
+    private IVgm ivgm;
+    private IDac dacControl;
     public boolean isPcmRAMWrite = false;
     public boolean useChipYM2612Ch6 = false;
     public int es5503Ch = 2;
@@ -157,18 +152,11 @@ public class Vgm {
     private final DacCtrlData[] dacCtrl = new DacCtrlData[0xff];
 
     public byte[] vgmBuf;
-    public IVgm ivgm;
-    public IntSupplier frameCounter;
-    public Consumer<Boolean> dataBlock;
-    public LongSupplier getTotalCounter;
-    public LongConsumer setTotalCounter;
-    public LongConsumer setLoopCounter;
-    public BiConsumer<byte[], Integer> updateMetaData;
-    public IntSupplier loop;
-    public Consumer<String> setUsedChips;
-    public Supplier<String> getUsedChips;
-    public Consumer<String> setVersion;
-    public Supplier<String> getVersion;
+
+    public void setIVgm(IVgm ivgm) {
+        this.ivgm = ivgm;
+        this.dacControl = new DacControl(ivgm);
+    }
 
     public void init() {
         if (!getInformationHeader()) throw new IllegalArgumentException("invalid vgm header");
@@ -468,6 +456,7 @@ public class Vgm {
     }
 
     private void vcuPD7759() {
+        //if (ivgm.isVirtual()) logger.log(Level.TRACE, "adr:%d data:%02x".formatted(vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff));
         ivgm.writeUpd7759((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff);
         vgmAdr += 3;
     }
@@ -508,12 +497,12 @@ public class Vgm {
     }
 
     private void vcYM2612Port0() {
-        ivgm.writeYm2612((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, frameCounter.getAsInt());
+        ivgm.writeYm2612((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, ivgm.frameCounter());
         vgmAdr += 3;
     }
 
     private void vcYM2612Port1() {
-        ivgm.writeYm2612((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 1, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, frameCounter.getAsInt());
+        ivgm.writeYm2612((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 1, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, ivgm.frameCounter());
         vgmAdr += 3;
     }
 
@@ -603,7 +592,7 @@ public class Vgm {
     }
 
     private void vcYM2151() {
-        ivgm.writeYm2151((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, vgmBuf[vgmAdr] & 0x80, frameCounter.getAsInt());
+        ivgm.writeYm2151((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, vgmBuf[vgmAdr] & 0x80, ivgm.frameCounter());
         vgmAdr += 3;
     }
 
@@ -668,7 +657,7 @@ public class Vgm {
 
     private void vcDataBlock() {
 
-        dataBlock.accept(true);
+        ivgm.dataBlock(true);
 
         int bAdr = vgmAdr + 7;
         int bType = vgmBuf[vgmAdr + 2] & 0xff;
@@ -836,7 +825,7 @@ public class Vgm {
             break;
         }
 
-        dataBlock.accept(false);
+        ivgm.dataBlock(false);
     }
 
     private void vcPCMRamWrite() {
@@ -875,7 +864,7 @@ public class Vgm {
 
         vgmWait += (vgmBuf[vgmAdr] & 0xff) - 0x80;
 
-        ivgm.writeYm2612(0, 0, 0x2a, dat, frameCounter.getAsInt());
+        ivgm.writeYm2612(0, 0, 0x2a, dat, ivgm.frameCounter());
 
         vgmAdr++;
     }
@@ -1110,7 +1099,7 @@ public class Vgm {
         int curDAC;
 
         bnkType = Type & 0x3F;
-        if (bnkType >= PCM_BANK_COUNT || loop.getAsInt() > 0)
+        if (bnkType >= PCM_BANK_COUNT || ivgm.loop() > 0)
             return;
 
         if (Type == 0x7F) {
@@ -1442,7 +1431,7 @@ logger.log(Level.TRACE, "Bad PCM Table Length!");
 
     private boolean getInformationHeader() {
         List<String> chips = new ArrayList<>();
-        setUsedChips.accept("");
+        ivgm.setUsedChips("");
 
         sn76489ClockValue = 0; // defaultSN76489ClockValue;
         ym2612ClockValue = 0; // defaultYM2612ClockValue;
@@ -1483,10 +1472,10 @@ logger.log(Level.TRACE, "Bad PCM Table Length!");
         vgmEof = ByteUtil.readLeInt(vgmBuf, 0x04) + 4;
 
         int version = ByteUtil.readLeInt(vgmBuf, 0x08);
-        setVersion.accept("%d.%d%d".formatted((version & 0xf00) / 0x100, (version & 0xf0) / 0x10, (version & 0xf)));
+        ivgm.setVersion("%d.%d%d".formatted((version & 0xf00) / 0x100, (version & 0xf0) / 0x10, (version & 0xf)));
         // Version Check
         if (version < 0x0101) {
-            logger.log(Level.WARNING, "This file instanceof older version(%s).".formatted(getVersion.get()));
+            logger.log(Level.WARNING, "This file instanceof older version(%s).".formatted(ivgm.getVersion()));
             //return false;
         }
 
@@ -1546,12 +1535,12 @@ logger.log(Level.TRACE, "Bad PCM Table Length!");
             }
         }
 
-        setTotalCounter.accept(ByteUtil.readLeInt(vgmBuf, 0x18));
-        if (getTotalCounter.getAsLong() < 0) return false;
+        ivgm.setTotalCounter(ByteUtil.readLeInt(vgmBuf, 0x18));
+        if (ivgm.getTotalCounter() < 0) return false;
 
         vgmLoopOffset = ByteUtil.readLeInt(vgmBuf, 0x1c);
 
-        setLoopCounter.accept(ByteUtil.readLeInt(vgmBuf, 0x20));
+        ivgm.setLoopCounter(ByteUtil.readLeInt(vgmBuf, 0x20));
 
         if (version > 0x0101) {
 
@@ -1960,14 +1949,14 @@ logger.log(Level.TRACE, "Bad PCM Table Length!");
             vgmDataOffset = 0x40;
         }
 
-        setUsedChips.accept(String.join(", ", chips));
-logger.log(Level.INFO, "usedChips: " + getUsedChips.get());
+        ivgm.setUsedChips(String.join(", ", chips));
+logger.log(Level.INFO, "usedChips: " + ivgm.getUsedChips());
 
         int vgmGd3 = ByteUtil.readLeInt(vgmBuf, 0x14);
         if (vgmGd3 != 0) {
             int vgmGd3Id = ByteUtil.readLeInt(vgmBuf, vgmGd3 + 0x14);
             if (vgmGd3Id != FCC_GD3) return false;
-            updateMetaData.accept(vgmBuf, vgmGd3);
+            ivgm.updateMetaData(vgmBuf, vgmGd3);
         }
 
         return true;
@@ -2072,6 +2061,19 @@ logger.log(Level.INFO, "usedChips: " + getUsedChips.get());
         void writeC140(int chipId, int addr, int data);
         void writeEs5503(int chipId, int addr, int data);
         void writeC352(int chipId, int addr, int data);
+        int readHuC6280(int chipId, int addr);
+        boolean isVirtual();
+        int frameCounter();
+        void dataBlock(boolean b);
+        long getTotalCounter();
+        void setTotalCounter(long v);
+        void setLoopCounter(long v);
+        int loop();
+        void setUsedChips(String s);
+        String getUsedChips();
+        void setVersion(String s);
+        String getVersion();
+        void updateMetaData(byte[] b, Object... o);
     }
 
     public interface IDac {

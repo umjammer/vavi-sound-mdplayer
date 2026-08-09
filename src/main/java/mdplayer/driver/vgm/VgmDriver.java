@@ -7,8 +7,8 @@ import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.*;
 import mdplayer.driver.BaseDriver;
-import mdplayer.lib.vgm.Vgm;
 import mdplayer.driver.BasePlugin;
+import mdplayer.lib.vgm.Vgm;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 
@@ -30,18 +30,7 @@ public class VgmDriver extends BaseDriver {
         super(plugin);
 
         this.vgm = new Vgm();
-        vgm.frameCounter = () -> frameCounter;
-        vgm.dataBlock = b -> isDataBlock = b;
-        vgm.getTotalCounter = () -> totalCounter;
-        vgm.setTotalCounter = v -> totalCounter = v;
-        vgm.setLoopCounter = v -> loopCounter = v;
-        vgm.loop = () -> curLoop;
-        vgm.setUsedChips = s -> usedChips = s;
-        vgm.getUsedChips = () -> usedChips;
-        vgm.setVersion = s -> version = s;
-        vgm.getVersion = () -> version;
-        vgm.updateMetaData = (b, o) -> metaData = getMetaData(b, o);
-        vgm.ivgm = new Vgm.IVgm() {
+        vgm.setIVgm(new Vgm.IVgm() {
             @Override public void setPanSn76489(int chipId, int data) {
                 plugin.chipRegister.chip(Sn76489Chip.class).setPan(chipId, data, model);
             }
@@ -67,7 +56,6 @@ public class VgmDriver extends BaseDriver {
             }
 
             @Override public void writeUpd7759(int chipId, int addr, int data) {
-                //if (model== EnmModel.VirtualModel) logger.log(Level.TRACE, "adr:%d data:%02x".formatted(addr, data));
                 plugin.chipRegister.chip(Upd7759Chip.class).write(chipId, addr, data, model);
             }
 
@@ -239,7 +227,7 @@ public class VgmDriver extends BaseDriver {
                 plugin.chipRegister.chip(Rf5C164Chip.class).writePcm(chipId, offset, length, buf, srcOffset, model);
             }
             @Override public void writePcmNes(int chipId, int stAdr, int dataSize, byte[] vgmBuf, int vgmAdr) {
-                plugin.chipRegister.chip(NesChip.class).writePcm(chipId, stAdr, dataSize, vgmBuf, vgmAdr + 9, model);
+                plugin.chipRegister.chip(NesChip.class).writePcm(chipId, stAdr, dataSize, vgmBuf, vgmAdr, model);
             }
             @Override public void writePcmEs5503(int chipId, int offset, int length, byte[] buf, int srcOffset) {
                 plugin.chipRegister.chip(Es5503Chip.class).writePcm(chipId, offset, length, buf, srcOffset, model);
@@ -295,7 +283,27 @@ public class VgmDriver extends BaseDriver {
             @Override public void writeC352(int chipId, int addr, int data) {
                 plugin.chipRegister.chip(C352Chip.class).write(chipId, addr, data, model);
             }
-        };
+
+            @Override public int readHuC6280(int chipId, int addr) {
+                return plugin.chipRegister.chip(HuC6280Chip.class).read(chipId, addr, model);
+            }
+
+            @Override public boolean isVirtual() {
+                return model == EnmModel.VirtualModel;
+            }
+
+            @Override public int frameCounter() { return frameCounter; }
+            @Override public void dataBlock(boolean b) { isDataBlock = b; }
+            @Override public long getTotalCounter() { return totalCounter; }
+            @Override public void setTotalCounter(long v) { totalCounter = v; }
+            @Override public void setLoopCounter(long v) { loopCounter = v; }
+            @Override public int loop() { return curLoop; }
+            @Override public void setUsedChips(String s) { usedChips = s; }
+            @Override public String getUsedChips() { return usedChips; }
+            @Override public void setVersion(String s) { version = s; }
+            @Override public String getVersion() { return version; }
+            @Override public void updateMetaData(byte[] b, Object... o) { metaData = getMetaData(b, o); }
+        });
     }
 
     public VgmDriver() {
@@ -318,7 +326,6 @@ public class VgmDriver extends BaseDriver {
         isDataBlock = false;
 
         vgm.vgmBuf = dataBuf;
-        vgm.dacControl = new DacControl(plugin.chipRegister, model);
 
         vgm.init();
 
@@ -368,7 +375,6 @@ public class VgmDriver extends BaseDriver {
 
     private void oneFrameVGMMain() {
         if (vgm.vgmWait > 0) {
-            //if (model == enmModel.VirtualModel)
             vgm.oneFrameVGMStream();
             vgm.vgmWait--;
             counter++;
@@ -380,8 +386,6 @@ public class VgmDriver extends BaseDriver {
         vgm.oneFrameVGMStream();
 
         if (!vgm.vgmAnalyze) {
-            //if (model == enmModel.VirtualModel)
-            //    oneFrameVGMStream();
             stopped = true;
             logger.log(Level.DEBUG, "ret: not analyze");
             return;
@@ -434,9 +438,6 @@ public class VgmDriver extends BaseDriver {
                 plugin.chipRegister.plugin(RealChipPlugin.class).process3(vgm.useChipYM2612Ch6, vgm.vgmWait);
             }
         }
-
-//        if (model == enmModel.VirtualModel)
-//           oneFrameVGMStream();
 
         vgm.vgmWait--;
         counter++;
