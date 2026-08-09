@@ -1184,7 +1184,12 @@ public class PsxHw implements PsxBus {
                 int spec = calcSpec(a1);
 
                 if (eventStatus(ev, spec) != EvStACTIVE) {
-                    return;
+                    // Nothing to deliver, but the call still has to return: aosdk leaves the
+                    // function here instead, which skips the "PC = RA" at the bottom and leaves
+                    // the pc on the HLECALL that got us here, so the next step runs the same
+                    // call again and the song spins at 0xb0 for ever. Fourteen of the forty six
+                    // tracks of Dragon Quest Monsters 1+2 are silent in aosdk for this reason.
+                    break;
                 }
 
                 if (eventMode(ev, spec) == EvMdINTR) {
