@@ -92,7 +92,12 @@ logger.log(Level.DEBUG, "not a psf2: " + e.getMessage());
         // the driver registers no chip, so this is what names it on the fmdsp header
         md.set(Tag.Chip, "SPU2");
 
+        // what will actually play: the file's own length, or the fallback that ends a rip
+        // whose tags do not carry one
         double length = psf.length();
+        if (length == 0) {
+            length = setting.getPsf().defaultLength;
+        }
         if (length > 0) {
             int seconds = (int) length;
             md.set(Tag.Duration, "%d:%02d".formatted(seconds / 60, seconds % 60));
@@ -143,6 +148,12 @@ logger.log(Level.DEBUG, "not a psf2: " + e.getMessage());
         double length = files[0].length();
         double fade = files[0].fade();
         if (length == 0) {
+            // the file does not say how long it is, so the setting decides; 0 there means the
+            // song is left to play for ever, which is what the format's own players do
+            length = setting.getPsf().defaultLength;
+            fade = setting.getPsf().defaultFade;
+        }
+        if (length <= 0) {
             decayBegin = -1;
             decayEnd = -1;
         } else {

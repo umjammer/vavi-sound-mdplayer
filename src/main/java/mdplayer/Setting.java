@@ -497,6 +497,29 @@ public class Setting implements Serializable, Cloneable {
         }
     }
 
+    /**
+     * A psf says how long it is in its "length" tag, and most rips carry one. A rip that does not
+     * - the whole PlayOnline Viewer set, for one - has nothing to end it, and the player would sit
+     * on it for ever. These stand in when the file is silent about it, the way the other psf
+     * players default to three minutes.
+     */
+    public static class Psf implements Serializable, Cloneable {
+        /** seconds to play a psf whose tags do not say; 0 lets such a song play for ever */
+        public int defaultLength = 180;
+
+        /** seconds to fade one of those out over */
+        public int defaultFade = 10;
+
+        @Override
+        public Psf clone() {
+            Psf p = new Psf();
+            p.defaultLength = this.defaultLength;
+            p.defaultFade = this.defaultFade;
+
+            return p;
+        }
+    }
+
     public static class Rcs implements Serializable, Cloneable {
         public int pcm8type = Integer.getInteger("mdplayer.variant.pcm8", 1); // PCM8PP is the default
 
@@ -1673,6 +1696,16 @@ public class Setting implements Serializable, Cloneable {
     public Mndrv getMnDrv() { return mnDrv; }
 
     public void setMnDrv(Mndrv value) { mnDrv = value; }
+
+    private Psf psf = new Psf();
+
+    public Psf getPsf() {
+        return psf;
+    }
+
+    public void setPsf(Psf value) {
+        psf = value;
+    }
 
     private Rcs rcs = new Rcs();
 

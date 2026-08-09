@@ -16,8 +16,10 @@ import mdplayer.driver.BaseDriver;
 import mdplayer.driver.BasePlugin;
 import mdplayer.driver.FileFormat;
 import mdplayer.driver.psf2.Psf2Driver;
+import mdplayer.lib.psf.PsfFile;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -56,10 +58,79 @@ class PsfDriverTest {
     /**
      * A rip whose driver puts a branch in a branch's delay slot, which used to take the player
      * down with an {@link ArrayIndexOutOfBoundsException} out of the cpu - see {@code R3000Test}.
+     * It also carries no tags at all, so it is the untagged case as well.
      */
     @Test
     void aBranchInADelaySlotDoesNotKillThePlayer() throws Exception {
-        play("tmp/psf/BATTLE1.psf2", Psf2Driver.class);
+        BaseDriver driver = play("tmp/psf/BATTLE1.psf2", Psf2Driver.class);
+
+        // nothing in the file says when it is over, so the setting has to end it
+        Setting.Psf psf = Setting.getInstance().getPsf();
+        long expected = (long) (psf.defaultLength + psf.defaultFade)
+                * Setting.getInstance().getOutputDevice().getSampleRate();
+        assertEquals(expected, driver.totalCounter, "an untagged rip should still have an end");
+    }
+
+    /**
+     * The same for a psf1: the rips mostly carry a length, but one that does not must still end.
+     * Built here by stripping the tags off a song that works, so it needs no untagged psf1 rip.
+     */
+    @Test
+    void anUntaggedPsf1AlsoGetsAnEnd(@TempDir Path dir) throws Exception {
+        assumeTrue(Files.exists(Path.of("tmp/psf/pe.psf")),
+                "tmp/psf/pe.psf is missing, see mdplayer/driver/readme.md");
+
+        PsfFile tagged = PsfFile.decode(Files.readAllBytes(Path.of("tmp/psf/pe.psf")));
+        Path untagged = dir.resolve("untagged.psf");
+        Files.write(untagged, PsfFileFormatTest.buildPsf(1, tagged.program, ""));
+
+        BaseDriver driver = play(untagged.toString(), PsfDriver.class);
+
+        Setting.Psf psf = Setting.getInstance().getPsf();
+        long expected = (long) (psf.defaultLength + psf.defaultFade)
+                * Setting.getInstance().getOutputDevice().getSampleRate();
+        assertEquals(expected, driver.totalCounter, "an untagged psf1 should still have an end");
+    }
+
+    /** and a song does end when it gets there, rather than playing for ever */
+    @Test
+    void anUntaggedSongEndsAtTheDefaultLength() throws Exception {
+        assumeTrue(Files.exists(Path.of("tmp/psf/BATTLE1.psf2")),
+                "tmp/psf/BATTLE1.psf2 is missing, see mdplayer/driver/readme.md");
+
+        Setting setting = Setting.getInstance();
+        setting.getOutputDevice().setDeviceType(Common.DEV_Null);
+        Setting.Psf psf = setting.getPsf();
+        int was = psf.defaultLength;
+        int wasFade = psf.defaultFade;
+        // a few seconds rather than three minutes, so the test is not a coffee break
+        psf.defaultLength = 2;
+        psf.defaultFade = 1;
+        try {
+            FileFormat format = FileFormat.getFileFormat("tmp/psf/BATTLE1.psf2");
+            format.load(new java.io.BufferedInputStream(
+                    Files.newInputStream(Path.of("tmp/psf/BATTLE1.psf2"))), null);
+            @SuppressWarnings("unchecked")
+            BasePlugin<? extends BaseDriver> plugin = (BasePlugin<? extends BaseDriver>) format.getPlugin();
+            plugin.setParams(format, Map.of("fileName", "tmp/psf/BATTLE1.psf2"));
+            plugin.prepare();
+
+            BaseDriver driver = plugin.getDriver();
+            short[] buffer = new short[2048];
+            int rendered = 0;
+            int limit = setting.getOutputDevice().getSampleRate() * 10;
+            while (!driver.stopped && rendered < limit) {
+                driver.render(buffer, 0, buffer.length);
+                rendered += buffer.length / 2;
+            }
+
+            assertTrue(driver.stopped, "the song should have ended by itself");
+            plugin.stop();
+            plugin.close();
+        } finally {
+            psf.defaultLength = was;
+            psf.defaultFade = wasFade;
+        }
     }
 
     private BaseDriver play(String filename, Class<? extends BaseDriver> expected) throws Exception {
