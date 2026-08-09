@@ -89,6 +89,35 @@ class PsxHwTest {
     }
 
     /**
+     * The IOP's printf, whose integer conversions {@link String#format} cannot spell: it has no
+     * {@code %u}, and it rejects a precision on {@code %d} and {@code %x} where C reads one as
+     * "at least this many digits, zero filled".
+     * <p>
+     * Square's IOP driver asks for its wave bank as {@code wave%4.4u.wd}, so getting this wrong
+     * looked for {@code wave103.wd} where the filesystem holds {@code wave0103.wd}, and every
+     * PlayOnline Viewer track played silence.
+     */
+    @Test
+    void theIntegerConversionsFollowC() {
+        assertEquals("0103", PsxHw.integer("4.4", 103, 10, false, false), "%4.4u");
+        assertEquals("103", PsxHw.integer("3.3", 103, 10, false, false), "%3.3u");
+        assertEquals("00103", PsxHw.integer("5.5", 103, 10, false, false), "%5.5u");
+        assertEquals(" 103", PsxHw.integer("4", 103, 10, false, false), "%4u");
+        assertEquals("0103", PsxHw.integer("04", 103, 10, false, false), "%04u");
+        assertEquals("103", PsxHw.integer("", 103, 10, false, false), "%u");
+
+        // a precision makes the zero flag mean nothing, as in C
+        assertEquals("  0103", PsxHw.integer("06.4", 103, 10, false, false), "%06.4u");
+
+        assertEquals("-7", PsxHw.integer("", -7, 10, false, true), "%d");
+        assertEquals("-007", PsxHw.integer(".3", -7, 10, false, true), "%.3d");
+        assertEquals("4294967289", PsxHw.integer("", 0xfffffff9L, 10, false, false), "%u of -7");
+
+        assertEquals("00ff", PsxHw.integer("04", 0xff, 16, false, false), "%04x");
+        assertEquals("00FF", PsxHw.integer("04", 0xff, 16, true, false), "%04X");
+    }
+
+    /**
      * ReturnFromException is the one call that deliberately does not: it puts the pc back where
      * the exception came from itself.
      */

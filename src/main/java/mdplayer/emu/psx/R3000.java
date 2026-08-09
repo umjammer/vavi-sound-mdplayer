@@ -263,7 +263,15 @@ public class R3000 {
 
     private void commitDelayedLoad() {
         if (delayr != 0) {
-            r[delayr] = delayv;
+            // REGPC is not a register, it is "a branch is pending". {@link #advancePc} and
+            // {@link #delayedLoad} test for it before they get here, but {@link #delayedBranch}
+            // does not, so a branch in a branch's delay slot arrives with it set - and the C
+            // then writes the pending target one past the end of its register file, into a cop0
+            // register nothing reads. The store simply goes nowhere; what matters is that the
+            // pending branch is dropped, which is what the caller does next.
+            if (delayr != REGPC) {
+                r[delayr] = delayv;
+            }
             delayr = 0;
             delayv = 0;
         }

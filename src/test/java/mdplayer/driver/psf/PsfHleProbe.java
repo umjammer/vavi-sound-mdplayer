@@ -5,6 +5,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
+import mdplayer.lib.psf.Psf2Engine;
 import mdplayer.lib.psf.PsfEngine;
 import mdplayer.lib.psf.PsfFile;
 import org.junit.jupiter.api.Test;
@@ -27,26 +28,56 @@ class PsfHleProbe {
         if (dir == null) return;
         int seconds = Integer.getInteger("probe.seconds", 5);
 
-        try (var files = Files.list(Path.of(dir))) {
+        try (var files = Files.walk(Path.of(dir))) {
             for (Path p : files.sorted().toList()) {
                 String n = p.getFileName().toString().toLowerCase();
-                if (!n.endsWith(".psf") && !n.endsWith(".minipsf")) continue;
+                boolean two = n.endsWith(".psf2") || n.endsWith(".minipsf2");
+                if (!two && !n.endsWith(".psf") && !n.endsWith(".minipsf")) continue;
                 try {
-                    PsfEngine engine = new PsfEngine();
-                    engine.start(PsfFile.load(Files.readAllBytes(p), name -> null));
-                    int peak = 0;
-                    for (int f = 0; f < 60 * seconds; f++) {
-                        for (int s = 0; s < 735; s++) {
-                            engine.sample();
-                            peak = Math.max(peak, Math.abs(engine.getLeft()));
-                        }
-                        engine.frame();
-                    }
-System.err.println("%6d  %s".formatted(peak, p.getFileName()));
-                } catch (Exception e) {
+                    int peak = two ? peak2(p, seconds) : peak1(p, seconds);
+System.err.println("%6d  %s".formatted(peak, dir.length() < p.toString().length()
+        ? p.toString().substring(dir.length()) : p.getFileName().toString()));
+                } catch (Throwable e) {
 System.err.println("  FAIL  %s: %s".formatted(p.getFileName(), e));
                 }
             }
+        }
+    }
+
+    private static int peak1(Path p, int seconds) throws Exception {
+        PsfEngine engine = new PsfEngine();
+        engine.start(PsfFile.load(Files.readAllBytes(p), name -> resolve(p, name)));
+        int peak = 0;
+        for (int f = 0; f < 60 * seconds; f++) {
+            for (int s = 0; s < 735; s++) {
+                engine.sample();
+                peak = Math.max(peak, Math.abs(engine.getLeft()));
+            }
+            engine.frame();
+        }
+        return peak;
+    }
+
+    private static int peak2(Path p, int seconds) throws Exception {
+        Psf2Engine engine = new Psf2Engine();
+        engine.start(PsfFile.load(Files.readAllBytes(p), name -> resolve(p, name)));
+        int peak = 0;
+        for (int f = 0; f < 60 * seconds; f++) {
+            for (int s = 0; s < 735; s++) {
+                engine.sample();
+                peak = Math.max(peak, Math.abs(engine.getLeft()));
+            }
+            engine.frame();
+        }
+        return peak;
+    }
+
+    /** a "_lib" sits beside the file that names it */
+    private static byte[] resolve(Path psf, String name) {
+        try {
+            return Files.readAllBytes(psf.resolveSibling(name));
+        } catch (Exception e) {
+            return null;
         }
     }
 
@@ -57,31 +88,37 @@ System.err.println("  FAIL  %s: %s".formatted(p.getFileName(), e));
         if (file == null) return;
         int seconds = Integer.getInteger("probe.seconds", 5);
 
-        PsfEngine engine = new PsfEngine();
-        engine.start(PsfFile.load(Files.readAllBytes(Path.of(file)), name -> null));
+        boolean two = file.toLowerCase().endsWith("2");
+        PsfEngine engine = two ? null : new PsfEngine();
+        Psf2Engine engine2 = two ? new Psf2Engine() : null;
+        Path path = Path.of(file);
+        PsfFile[] files = PsfFile.load(Files.readAllBytes(path), name -> resolve(path, name));
+        if (two) engine2.start(files); else engine.start(files);
+        var hw = two ? engine2.hw : engine.hw;
+        var spu = two ? (mdplayer.emu.psx.SpuVoices) engine2.spu : engine.spu;
 
         Map<Integer, Integer> pcs = new HashMap<>();
         int peak = 0;
         for (int f = 0; f < 60 * seconds; f++) {
             for (int s = 0; s < 735; s++) {
-                engine.sample();
-                peak = Math.max(peak, Math.abs(engine.getLeft()));
+                if (two) engine2.sample(); else engine.sample();
+                peak = Math.max(peak, Math.abs(two ? engine2.getLeft() : engine.getLeft()));
                 if ((s & 63) == 0) {
-                    int pc = engine.hw.cpu.pc;
+                    int pc = hw.cpu.pc;
                     // at a BIOS vector the address alone says nothing; the subcall is in t1
                     int key = pc == 0xa0 || pc == 0xb0 || pc == 0xc0
-                            ? (pc << 16) | (engine.hw.cpu.r[9] & 0xff) : pc;
+                            ? (pc << 16) | (hw.cpu.r[9] & 0xff) : pc;
                     pcs.merge(key, 1, Integer::sum);
                 }
             }
-            engine.frame();
+            if (two) engine2.frame(); else engine.frame();
         }
 
         int voices = 0;
-        for (int v = 0; v < engine.spu.voiceCount(); v++) {
-            if (engine.spu.keyOnCount(v) > 0) voices++;
+        for (int v = 0; v < spu.voiceCount(); v++) {
+            if (spu.keyOnCount(v) > 0) voices++;
         }
-System.err.println("peak=%d voices keyed=%d".formatted(peak, voices));
+System.err.println("peak=%d voices keyed=%d songDone=%s".formatted(peak, voices, hw.songDone));
         pcs.entrySet().stream()
                 .sorted(Map.Entry.<Integer, Integer>comparingByValue().reversed())
                 .limit(8)

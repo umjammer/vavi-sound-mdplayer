@@ -193,9 +193,11 @@ public class Psf2Engine implements Psf2Filesystem {
             }
             int len = loadFileFrom(filesys[i], 0, name, buffer, bufferLength);
             if (len != NOT_FOUND) {
+logger.log(Level.DEBUG, "loadFile: %s -> %d bytes".formatted(name, len));
                 return len;
             }
         }
+logger.log(Level.DEBUG, "loadFile: %s not found".formatted(name));
         return NOT_FOUND;
     }
 

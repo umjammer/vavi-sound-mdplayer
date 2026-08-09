@@ -54,3 +54,9 @@ skips the `PC = RA` at the bottom of the function and leaves the pc on the call 
 re-runs it for ever and plays silence. `PsxHw` returns to the caller instead (`PsxHwTest`
 covers it). Fourteen of the forty six tracks of Dragon Quest Monsters 1+2 are silent in aosdk
 for this reason and play here.
+
+Two other things a real rip will find, both covered by tests: a branch in a branch's delay slot
+leaves the "a branch is pending" marker in `delayr`, which the C then writes one past the end of
+its register file (`R3000Test`), and the IOP printf's integer conversions have to be written by
+hand because java's `Formatter` has no `%u` and rejects a precision on `%d` and `%x` - Square's
+IOP driver asks for its wave bank as `wave%4.4u.wd` (`PsxHwTest`).

@@ -53,6 +53,15 @@ class PsfDriverTest {
         play("tmp/psf/01.psf2", Psf2Driver.class);
     }
 
+    /**
+     * A rip whose driver puts a branch in a branch's delay slot, which used to take the player
+     * down with an {@link ArrayIndexOutOfBoundsException} out of the cpu - see {@code R3000Test}.
+     */
+    @Test
+    void aBranchInADelaySlotDoesNotKillThePlayer() throws Exception {
+        play("tmp/psf/BATTLE1.psf2", Psf2Driver.class);
+    }
+
     private BaseDriver play(String filename, Class<? extends BaseDriver> expected) throws Exception {
         // the samples live under tmp/, which is not in the repository - see driver/readme.md
         assumeTrue(Files.exists(Path.of(filename)), filename + " is missing, see mdplayer/driver/readme.md");

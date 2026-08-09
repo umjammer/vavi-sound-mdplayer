@@ -1330,12 +1330,16 @@ public class PsxHw implements PsxBus {
             int value = curparm < 32 ? cpu.r[curparm] : 0;
             curparm++;
 
+            // what was collected between the '%' and the conversion, e.g. "04" or "4.4"
+            String spec = tfmt.substring(1);
+
             try {
                 switch (conv) {
-                case 'x', 'X' -> out.append(String.format(tfmt.toString() + conv, value));
-                case 'd', 'D' -> out.append(String.format(tfmt + "d", value));
-                case 'c', 'C' -> out.append((char) value);
-                case 'u', 'U' -> out.append(Integer.toUnsignedString(value));
+                case 'x' -> out.append(integer(spec, Integer.toUnsignedLong(value), 16, false, false));
+                case 'X' -> out.append(integer(spec, Integer.toUnsignedLong(value), 16, true, false));
+                case 'd', 'D' -> out.append(integer(spec, value, 10, false, true));
+                case 'u', 'U' -> out.append(integer(spec, Integer.toUnsignedLong(value), 10, false, false));
+                case 'c', 'C' -> out.append(pad(String.valueOf((char) value), spec));
                 case 's' -> out.append(String.format(tfmt + "s", ramString(value)));
                 case '%' -> {
                     out.append('%');
@@ -1352,6 +1356,73 @@ public class PsxHw implements PsxBus {
         }
 
         return out.toString();
+    }
+
+    /**
+     * One of C's integer conversions, which {@link String#format} cannot spell: it has no
+     * {@code %u} at all, and it rejects a precision on {@code %d} and {@code %x} - where C reads
+     * one as "at least this many digits, zero filled". Square's IOP driver asks for its wave bank
+     * as {@code wave%4.4u.wd}, so getting that wrong looks for {@code wave103.wd} instead of
+     * {@code wave0103.wd} and the song plays silence.
+     *
+     * @param spec what stood between the '%' and the conversion; the caller only ever collects
+     *             digits and dots, so it is {@code [0]?width[.precision]}
+     */
+    static String integer(String spec, long value, int radix, boolean upperCase, boolean signed) {
+        boolean negative = signed && value < 0;
+        String digits = Long.toString(negative ? -value : value, radix);
+        if (upperCase) {
+            digits = digits.toUpperCase();
+        }
+
+        boolean zeroPad = spec.startsWith("0");
+        int dot = spec.indexOf('.');
+        int width = number(dot < 0 ? spec : spec.substring(0, dot));
+        int precision = dot < 0 ? -1 : number(spec.substring(dot + 1));
+
+        StringBuilder sb = new StringBuilder(digits);
+        if (precision >= 0) {
+            zeroPad = false; // a precision makes the zero flag mean nothing, as in C
+            while (sb.length() < precision) {
+                sb.insert(0, '0');
+            }
+        }
+
+        String sign = negative ? "-" : "";
+        if (zeroPad) {
+            while (sign.length() + sb.length() < width) {
+                sb.insert(0, '0');
+            }
+        }
+
+        sb.insert(0, sign);
+        while (sb.length() < width) {
+            sb.insert(0, ' ');
+        }
+        return sb.toString();
+    }
+
+    /** the width of a conversion that has nothing to zero fill */
+    private static String pad(String value, String spec) {
+        int dot = spec.indexOf('.');
+        int width = number(dot < 0 ? spec : spec.substring(0, dot));
+        StringBuilder sb = new StringBuilder(value);
+        while (sb.length() < width) {
+            sb.insert(0, ' ');
+        }
+        return sb.toString();
+    }
+
+    private static int number(String s) {
+        int value = 0;
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c < '0' || c > '9') {
+                break;
+            }
+            value = value * 10 + (c - '0');
+        }
+        return value;
     }
 
     // ---- the PS2 IOP kernel, in software ----
