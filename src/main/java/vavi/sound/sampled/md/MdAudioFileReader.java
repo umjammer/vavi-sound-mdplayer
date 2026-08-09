@@ -83,7 +83,7 @@ public class MdAudioFileReader extends AudioFileReader {
      *                                       valid audio file data recognized by the system.
      * @throws IOException                   if an I/O exception occurs.
      */
-    protected static AudioFileFormat getAudioFileFormat(InputStream bitStream, int mediaLength) throws UnsupportedAudioFileException, IOException {
+    private static AudioFileFormat getAudioFileFormat(InputStream bitStream, int mediaLength) throws UnsupportedAudioFileException, IOException {
 logger.log(DEBUG, "enter: available: " + bitStream.available() + ", " + bitStream);
         if (!bitStream.markSupported()) {
             throw new IllegalArgumentException("input stream not supported mark");
@@ -180,7 +180,7 @@ logger.log(TRACE, e.getMessage(), e);
      *                                       valid audio file data recognized by the system.
      * @throws IOException                   if an I/O exception occurs.
      */
-    protected static AudioInputStream getAudioInputStream(InputStream inputStream, int mediaLength) throws UnsupportedAudioFileException, IOException {
+    private static AudioInputStream getAudioInputStream(InputStream inputStream, int mediaLength) throws UnsupportedAudioFileException, IOException {
         AudioFileFormat audioFileFormat = getAudioFileFormat(inputStream, mediaLength);
         return new AudioInputStream(inputStream, audioFileFormat.getFormat(), audioFileFormat.getFrameLength());
     }

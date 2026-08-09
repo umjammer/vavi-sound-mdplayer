@@ -205,13 +205,13 @@ public class PeopsSpu2 implements Spu2, SpuVoices {
 
     /** one of the two reverb units. Its address fields are 20 bit, unlike the PS1's */
     private static class Reverb {
-        int StartAddr;
-        int EndAddr;
-        int CurrAddr;
+        int startAddr;
+        int endAddr;
+        int currAddr;
         int iCnt;
 
-        int VolLeft;
-        int VolRight;
+        int volLeft;
+        int volRight;
         int iLastRVBLeft;
         int iLastRVBRight;
         int iRVBLeft;
@@ -230,8 +230,8 @@ public class PeopsSpu2 implements Spu2, SpuVoices {
         int IN_COEF_L, IN_COEF_R;
 
         void clear() {
-            StartAddr = EndAddr = CurrAddr = iCnt = 0;
-            VolLeft = VolRight = iLastRVBLeft = iLastRVBRight = iRVBLeft = iRVBRight = 0;
+            startAddr = endAddr = currAddr = iCnt = 0;
+            volLeft = volRight = iLastRVBLeft = iLastRVBRight = iRVBLeft = iRVBRight = 0;
             FB_SRC_A = FB_SRC_B = IIR_ALPHA = ACC_COEF_A = ACC_COEF_B = ACC_COEF_C = 0;
             ACC_COEF_D = IIR_COEF = FB_ALPHA = FB_X = IIR_DEST_A0 = IIR_DEST_A1 = 0;
             ACC_SRC_A0 = ACC_SRC_A1 = ACC_SRC_B0 = ACC_SRC_B1 = IIR_SRC_A0 = IIR_SRC_A1 = 0;
@@ -486,23 +486,23 @@ public class PeopsSpu2 implements Spu2, SpuVoices {
     }
 
     private int gBuffer(int iOff, int core) {
-        iOff = iOff + rvb[core].CurrAddr;
-        while (iOff > rvb[core].EndAddr) {
-            iOff = rvb[core].StartAddr + (iOff - (rvb[core].EndAddr + 1));
+        iOff = iOff + rvb[core].currAddr;
+        while (iOff > rvb[core].endAddr) {
+            iOff = rvb[core].startAddr + (iOff - (rvb[core].endAddr + 1));
         }
-        while (iOff < rvb[core].StartAddr) {
-            iOff = rvb[core].EndAddr - (rvb[core].StartAddr - iOff);
+        while (iOff < rvb[core].startAddr) {
+            iOff = rvb[core].endAddr - (rvb[core].startAddr - iOff);
         }
         return spuMem[iOff & 0xfffff];
     }
 
     private void sBuffer(int iOff, int iVal, int core) {
-        iOff = iOff + rvb[core].CurrAddr;
-        while (iOff > rvb[core].EndAddr) {
-            iOff = rvb[core].StartAddr + (iOff - (rvb[core].EndAddr + 1));
+        iOff = iOff + rvb[core].currAddr;
+        while (iOff > rvb[core].endAddr) {
+            iOff = rvb[core].startAddr + (iOff - (rvb[core].endAddr + 1));
         }
-        while (iOff < rvb[core].StartAddr) {
-            iOff = rvb[core].EndAddr - (rvb[core].StartAddr - iOff);
+        while (iOff < rvb[core].startAddr) {
+            iOff = rvb[core].endAddr - (rvb[core].startAddr - iOff);
         }
         if (iVal < -32768) iVal = -32768;
         if (iVal > 32767) iVal = 32767;
@@ -510,12 +510,12 @@ public class PeopsSpu2 implements Spu2, SpuVoices {
     }
 
     private void sBuffer1(int iOff, int iVal, int core) {
-        iOff = iOff + rvb[core].CurrAddr + 1;
-        while (iOff > rvb[core].EndAddr) {
-            iOff = rvb[core].StartAddr + (iOff - (rvb[core].EndAddr + 1));
+        iOff = iOff + rvb[core].currAddr + 1;
+        while (iOff > rvb[core].endAddr) {
+            iOff = rvb[core].startAddr + (iOff - (rvb[core].endAddr + 1));
         }
-        while (iOff < rvb[core].StartAddr) {
-            iOff = rvb[core].EndAddr - (rvb[core].StartAddr - iOff);
+        while (iOff < rvb[core].startAddr) {
+            iOff = rvb[core].endAddr - (rvb[core].startAddr - iOff);
         }
         if (iVal < -32768) iVal = -32768;
         if (iVal > 32767) iVal = 32767;
@@ -525,7 +525,7 @@ public class PeopsSpu2 implements Spu2, SpuVoices {
     private int mixReverbLeft(int core) {
         Reverb v = rvb[core];
 
-        if (v.StartAddr == 0 || v.EndAddr == 0 || v.StartAddr >= v.EndAddr) { // reverb is off
+        if (v.startAddr == 0 || v.endAddr == 0 || v.startAddr >= v.endAddr) { // reverb is off
             v.iLastRVBLeft = v.iLastRVBRight = v.iRVBLeft = v.iRVBRight = 0;
             return 0;
         }
@@ -591,12 +591,12 @@ public class PeopsSpu2 implements Spu2, SpuVoices {
                 v.iRVBLeft = (gBuffer(v.MIX_DEST_A0, core) + gBuffer(v.MIX_DEST_B0, core)) / 3;
                 v.iRVBRight = (gBuffer(v.MIX_DEST_A1, core) + gBuffer(v.MIX_DEST_B1, core)) / 3;
 
-                v.iRVBLeft = (v.iRVBLeft * v.VolLeft) / 0x4000;
-                v.iRVBRight = (v.iRVBRight * v.VolRight) / 0x4000;
+                v.iRVBLeft = (v.iRVBLeft * v.volLeft) / 0x4000;
+                v.iRVBRight = (v.iRVBRight * v.volRight) / 0x4000;
 
-                v.CurrAddr++;
-                if (v.CurrAddr > v.EndAddr) {
-                    v.CurrAddr = v.StartAddr;
+                v.currAddr++;
+                if (v.currAddr > v.endAddr) {
+                    v.currAddr = v.startAddr;
                 }
 
                 return v.iLastRVBLeft + (v.iRVBLeft - v.iLastRVBLeft) / 2;
@@ -604,9 +604,9 @@ public class PeopsSpu2 implements Spu2, SpuVoices {
                 v.iLastRVBLeft = v.iLastRVBRight = v.iRVBLeft = v.iRVBRight = 0;
             }
 
-            v.CurrAddr++;
-            if (v.CurrAddr > v.EndAddr) {
-                v.CurrAddr = v.StartAddr;
+            v.currAddr++;
+            if (v.currAddr > v.endAddr) {
+                v.currAddr = v.startAddr;
             }
         }
 
@@ -1026,11 +1026,11 @@ public class PeopsSpu2 implements Spu2, SpuVoices {
         }
         case PS2_C0_ReverbAEnd_Hi -> {
             spuRvbAEnd2[0] = ((val & 0xf) << 16) | 0xFFFF;
-            rvb[0].EndAddr = spuRvbAEnd2[0];
+            rvb[0].endAddr = spuRvbAEnd2[0];
         }
         case PS2_C1_ReverbAEnd_Hi -> {
             spuRvbAEnd2[1] = ((val & 0xf) << 16) | 0xFFFF;
-            rvb[1].EndAddr = spuRvbAEnd2[1];
+            rvb[1].endAddr = spuRvbAEnd2[1];
         }
         case PS2_C0_SPUirqAddr_Hi -> {
             spuIrq2[0] = ((val & 0xf) << 16) | (spuIrq2[0] & 0xFFFF);
@@ -1048,10 +1048,10 @@ public class PeopsSpu2 implements Spu2, SpuVoices {
             spuIrq2[1] = (spuIrq2[1] & 0xF0000) | (val & 0xFFFF);
             pSpuIrq[1] = spuIrq2[1] << 1;
         }
-        case PS2_C0_SPUrvolL -> rvb[0].VolLeft = val;
-        case PS2_C0_SPUrvolR -> rvb[0].VolRight = val;
-        case PS2_C1_SPUrvolL -> rvb[1].VolLeft = val;
-        case PS2_C1_SPUrvolR -> rvb[1].VolRight = val;
+        case PS2_C0_SPUrvolL -> rvb[0].volLeft = val;
+        case PS2_C0_SPUrvolR -> rvb[0].volRight = val;
+        case PS2_C1_SPUrvolL -> rvb[1].volLeft = val;
+        case PS2_C1_SPUrvolR -> rvb[1].volRight = val;
         case PS2_C0_SPUon1 -> soundOn(0, 16, val);
         case PS2_C0_SPUon2 -> soundOn(16, 24, val);
         case PS2_C1_SPUon1 -> soundOn(24, 40, val);
@@ -1380,12 +1380,12 @@ public class PeopsSpu2 implements Spu2, SpuVoices {
     private void setReverbAddr(int core) {
         int val = spuRvbAddr2[core];
 
-        if (rvb[core].StartAddr != val) {
+        if (rvb[core].startAddr != val) {
             if (val <= 0x27ff) {
-                rvb[core].StartAddr = rvb[core].CurrAddr = 0;
+                rvb[core].startAddr = rvb[core].currAddr = 0;
             } else {
-                rvb[core].StartAddr = val;
-                rvb[core].CurrAddr = rvb[core].StartAddr;
+                rvb[core].startAddr = val;
+                rvb[core].currAddr = rvb[core].startAddr;
             }
         }
     }

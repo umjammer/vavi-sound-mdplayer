@@ -161,17 +161,17 @@ public class EnvelopeGenerator {
     public int ratePeriod; // reg16
     public int exponentialCounter; // reg8
     public int exponentialCounterPeriod; // reg8
-    public int newExponentialCounterPeriod;
+    private int newExponentialCounterPeriod;
     public int envelopeCounter;
-    public int env3;
+    private int env3;
 
     // Emulation of pipeline delay for envelope decrement.
 
     public int envelopePipeline;
-    public int exponentialPipeline;
-    public int statePipeline;
+    private int exponentialPipeline;
+    private int statePipeline;
     public boolean holdZero;
-    public boolean resetRateCounter;
+    private boolean resetRateCounter;
 
     public int attack; // reg4
     public int decay; // reg4
@@ -181,15 +181,15 @@ public class EnvelopeGenerator {
     public int gate;// reg8
 
     public State state;
-    public State nextState;
+    private State nextState;
 
-    protected SidDefs.ChipModel sidModel;
+    private SidDefs.ChipModel sidModel;
 
     /**
      * Lookup table to convert from attack, decay, or release value to rate
      * counter period.
      */
-    protected static final int[] rateCounterPeriod = { // reg16
+    private static final int[] rateCounterPeriod = { // reg16
             9,  //   2ms*1.0MHz/256 =     7.81
             32,  //   8ms*1.0MHz/256 =    31.25
             63,  //  16ms*1.0MHz/256 =    62.50
@@ -211,7 +211,7 @@ public class EnvelopeGenerator {
     /**
      * The 16 selectable sustain levels.
      */
-    protected static final int[] sustainLevel = { // reg8
+    private static final int[] sustainLevel = { // reg8
             0x00,
             0x11,
             0x22,
@@ -233,7 +233,7 @@ public class EnvelopeGenerator {
     /**
      * DAC lookup tables.
      */
-    protected static final short[][] modelDac = new short[][] {new short[1 << 8], new short[1 << 8]};
+    private static final short[][] modelDac = new short[][] {new short[1 << 8], new short[1 << 8]};
 
     /*
      * Inline functions.
@@ -470,7 +470,7 @@ public class EnvelopeGenerator {
         return modelDac[(short) sidModel.ordinal()][envelopeCounter];
     }
 
-    protected void setExponentialCounter() {
+    private void setExponentialCounter() {
         // Check for change of exponential counter period.
         switch (envelopeCounter) {
         case 0xff:

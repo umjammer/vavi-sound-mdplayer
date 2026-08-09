@@ -16,10 +16,10 @@ import java.util.Map;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.BasePlugin;
 import mdplayer.driver.FileFormat;
-import mdplayer.Setting;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
-import vavi.sound.visualizer.fmdsp.FmDspDataSource;
+
 import vavi.sound.visualizer.fmdsp.FmDspVisualizer;
 import vavi.sound.visualizer.fmdsp.WorkStateSource;
 import vavi.util.archive.Archives;
@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * Run with: mvn test -Dtest=DurationBarProbeTest -Dvavi.test=ai
  */
-public class DurationBarProbeTest {
+class DurationBarProbeTest {
 
     static {
         // X68Sound's PCM8, as local.properties runs the player with: the other one leaves the OPM
@@ -47,7 +47,7 @@ public class DurationBarProbeTest {
      * Load a file through the standard plugin pipeline, render 5 seconds of audio,
      * check that timerBCount advances and the rendered duration bar moves.
      */
-    private void probe(String file) throws Exception {
+    private static void probe(String file) throws Exception {
         System.err.printf("%n=== PROBE: %s ===%n", Path.of(file).getFileName());
 
         FileFormat format = FileFormat.getFileFormat(file);
@@ -61,7 +61,7 @@ public class DurationBarProbeTest {
         source.bind(plugin);
 
         FmDspVisualizer vis = new FmDspVisualizer(60);
-        vis.setDataSource((FmDspDataSource) source);
+        vis.setDataSource(source);
         vis.setSize(640, 400);
 
         // Paint initial frame (before any audio)

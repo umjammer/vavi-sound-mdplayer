@@ -2,8 +2,10 @@ package mdplayer.tool;
 
 import java.nio.file.Path;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 
+import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
@@ -25,7 +27,7 @@ import mdsound.MDSound;
  *   java -cp <cp> mdplayer.tool.VolumeAuditProbe [--seconds N] <file> ...
  * }</pre>
  */
-public final class VolumeAuditProbe {
+final class VolumeAuditProbe {
 
     /** print each chip's isolated full/active RMS instead of the song's mixed output */
     static boolean isolate = false;
@@ -83,7 +85,7 @@ public final class VolumeAuditProbe {
     /** same isolation, but only {@code MAIN} (plus {@code extra}, if given) is set to 0 -- MAIN alone
      *  is all the playback path ever applies, since sub-tag volumes are not pushed in at init */
     static VolumeBalanceCalibrator.Meas mainOnly(Path sample,
-            java.util.Map<Class<? extends mdplayer.Chip>, Set<String>> all,
+            Map<Class<? extends Chip>, Set<String>> all,
             Class<? extends mdplayer.Chip> target, String... extra) throws Exception {
         BasePlugin<? extends BaseDriver> plugin = VolumeBalanceCalibrator.build(sample);
         try {

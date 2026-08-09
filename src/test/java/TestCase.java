@@ -69,7 +69,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 @EnabledIf("localPropertiesExists")
 @PropsEntity(url = "file:local.properties")
-public class TestCase {
+class TestCase {
 
     static boolean localPropertiesExists() {
         return Files.exists(Paths.get("local.properties"));
@@ -400,17 +400,17 @@ Debug.println("Stop took: " + duration + " ms");
 
     @Test
     void testJacksonSerialization() throws Exception {
-        mdplayer.Setting setting = new mdplayer.Setting();
+        Setting setting = new Setting();
         setting.init();
         var midiOut = setting.getMidiOut();
         var list = new ArrayList<MidiOutInfo[]>();
-        MidiOutInfo info1 = new mdplayer.MidiOutInfo();
+        MidiOutInfo info1 = new MidiOutInfo();
         info1.id = 1;
         info1.name = "TestMIDI1";
-        MidiOutInfo info2 = new mdplayer.MidiOutInfo();
+        MidiOutInfo info2 = new MidiOutInfo();
         info2.id = 2;
         info2.name = "TestMIDI2";
-        list.add(new mdplayer.MidiOutInfo[]{info1, info2});
+        list.add(new MidiOutInfo[] {info1, info2});
         midiOut.setMidiOutInfos(list);
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();

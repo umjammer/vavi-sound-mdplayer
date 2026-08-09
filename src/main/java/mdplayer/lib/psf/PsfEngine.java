@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 import mdplayer.emu.psx.PeopsSpu;
 import mdplayer.emu.psx.PsxHw;
@@ -39,7 +40,7 @@ public class PsfEngine {
     private final int[] initialRam = new int[(2 * 1024 * 1024) / 4];
 
     /** the tags of the file itself, not of its libraries */
-    public PsfFile main;
+    private PsfFile main;
 
     /**
      * @param files what {@link PsfFile#load} returned: the file at 0 and its libraries at 1 to 9
@@ -47,7 +48,7 @@ public class PsfEngine {
     public void start(PsfFile[] files) throws IOException {
         this.main = files[0];
 
-        java.util.Arrays.fill(hw.ram, 0);
+        Arrays.fill(hw.ram, 0);
 
         for (int i = 0; i < files.length; i++) {
             if (files[i] != null && !isPsxExe(files[i].program)) {

@@ -765,7 +765,7 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
                 noteLengths[row] = (int) Math.min(measured, maxNoteLength);
                 // a note the key never came up on was played legato, so its gate is its length
                 long held = keyOffTicks[row] < 0 ? measured : keyOffTicks[row] - keyOnTicks[row];
-                gates[row] = (int) Math.clamp(held, 0, maxNoteLength);
+                gates[row] = Math.clamp(held, 0, maxNoteLength);
             }
             keyOnTicks[row] = noteTicks;
             keyOffTicks[row] = -1;
@@ -838,7 +838,7 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
     private static final int maxNoteLength = (int) (noteTickHz * 60);
 
     /** MML key: high nibble octave, low nibble note, 0xff while the part rests */
-    static int keyOf(int note) {
+    private static int keyOf(int note) {
         return note < 0 ? 0xff : (note / 12) << 4 | note % 12;
     }
 

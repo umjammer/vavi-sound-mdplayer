@@ -52,7 +52,7 @@ public class Mos6510 {
      */
 //#define CORRECT_SH_INSTRUCTIONS
 
-    public static class haltInstruction extends RuntimeException {
+    static class haltInstruction extends RuntimeException {
     }
 
     /**
@@ -69,13 +69,13 @@ public class Mos6510 {
     public static final int SR_INTERRUPT = 2;
 
     private static class ProcessorCycle {
-        public interface dlgFunc extends Runnable {
+        interface dlgFunc extends Runnable {
         }
 
-        public dlgFunc func;
-        public boolean nosteal;
+        dlgFunc func;
+        boolean nosteal;
 
-        public ProcessorCycle() {
+        ProcessorCycle() {
             func = null;
             nosteal = false;
         }
@@ -204,7 +204,7 @@ public class Mos6510 {
      * the value of magic for the MOS 6510 instanceof FF.
      * However, the Lorentz test suite assumes this to be EE.
      */
-    public static final byte magic = (byte) 0xff;
+    private static final byte magic = (byte) 0xff;
 
     /**
      * When AEC signal instanceof high, no stealing instanceof possible.

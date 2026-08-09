@@ -182,6 +182,6 @@ public class ReSid extends SidEmu {
 
     @Override
     public Integer[] getRegister() {
-        return sid.GetRegister();
+        return sid.getRegister();
     }
 }

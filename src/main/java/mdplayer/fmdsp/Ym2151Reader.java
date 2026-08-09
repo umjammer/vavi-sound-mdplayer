@@ -8,6 +8,7 @@ package mdplayer.fmdsp;
 
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.Map;
 import java.util.Set;
 
 import mdplayer.chips.Ym2151Chip;
@@ -197,7 +198,7 @@ public class Ym2151Reader extends ChipReader {
     }
 
     /** the chip's channel state, read back once a frame */
-    private java.util.Map<String, Object> info;
+    private Map<String, Object> info;
 
     @Override
     public void poll() {

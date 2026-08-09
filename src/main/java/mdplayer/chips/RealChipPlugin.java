@@ -25,12 +25,12 @@ public class RealChipPlugin implements Plugin {
 
     public RealChip realChip;
 
-    BasePlugin<? extends BaseDriver> context;
+    private BasePlugin<? extends BaseDriver> context;
 
     public int realFadeoutVol = 0;
     public int realFadeoutVolWait = 4;
 
-    public int hiyorimiEven = 0;
+    private int hiyorimiEven = 0;
     private boolean hiyorimiNecessary = setting.getHiyorimiMode();
 
     public boolean isHiyorimiNecessary() {

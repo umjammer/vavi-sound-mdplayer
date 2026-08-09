@@ -18,7 +18,6 @@ import vavix.util.screenscrape.annotation.Target;
 import vavix.util.screenscrape.annotation.WebScraper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 /**
@@ -27,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-04 nsano initial version <br>
  */
-public class ResxTest {
+class ResxTest {
 
     @WebScraper(
             url = "classpath:mdplayer/properties/Resources.resx",
@@ -86,7 +85,7 @@ public class ResxTest {
         a = (byte) 128;
         b = (byte) 128;
         c = (byte) (a + b);
-        assertEquals(c, (byte) ((a & 0xff) + (b & 0xff)));
+        assertEquals((byte) ((a & 0xff) + (b & 0xff)), c);
 
         int i1 = 0xf000_e000;
         short s1 = (short) i1;
@@ -95,7 +94,7 @@ public class ResxTest {
         assertEquals((short) 0xf000, s2);
 
         byte b1 = 'x';
-        assertTrue('x' == b1);
+        assertEquals('x', b1);
 
         char[] c1 = {'s', '\0'};
 Debug.println(StringUtil.getDump(new String(c1)));

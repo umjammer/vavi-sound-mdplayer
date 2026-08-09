@@ -35,7 +35,7 @@ public class SidMdDriver2 extends BaseDriver implements SidDriver {
 
     private final Sid2 sid;
 
-    public SidMdDriver2(BasePlugin<? extends BaseDriver> plugin) {
+    private SidMdDriver2(BasePlugin<? extends BaseDriver> plugin) {
         super(plugin);
 
         this.sid = new Sid2();
@@ -161,8 +161,8 @@ public class SidMdDriver2 extends BaseDriver implements SidDriver {
         return sid.songs;
     }
 
-int CC;
-static final int INTERVAL = 1024;
+private int CC;
+private static final int INTERVAL = 1024;
 
     @Override
     public int render(short[] buffer, int offset, int sampleCount) {

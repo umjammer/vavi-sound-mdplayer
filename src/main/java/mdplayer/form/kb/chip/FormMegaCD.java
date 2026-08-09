@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
+import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.form.FrameBuffer;
 import mdplayer.form.ScreenPanel;
@@ -25,11 +26,12 @@ import mdplayer.form.kb.ChannelParams;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
 import mdplayer.form.View;
+import mdsound.MDSound;
 
 
 public class FormMegaCD extends FormChipBase<FormMegaCD.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormMegaCD.class);
+    private static final Preferences prefs = Preferences.userNodeForPackage(FormMegaCD.class);
 
     public FormMegaCD(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -63,7 +65,7 @@ public class FormMegaCD extends FormChipBase<FormMegaCD.Params> {
         }
     };
 
-    public void changeZoom() {
+    private void changeZoom() {
         this.setMaximumSize(new Dimension(frameSizeW + Common.getImage("planeC").getWidth() * zoom, frameSizeH + Common.getImage("planeC").getHeight() * zoom));
         this.setMinimumSize(new Dimension(frameSizeW + Common.getImage("planeC").getWidth() * zoom, frameSizeH + Common.getImage("planeC").getHeight() * zoom));
         this.setPreferredSize(new Dimension(frameSizeW + Common.getImage("planeC").getWidth() * zoom, frameSizeH + Common.getImage("planeC").getHeight() * zoom));
@@ -200,7 +202,7 @@ public class FormMegaCD extends FormChipBase<FormMegaCD.Params> {
         this.addComponentListener(this.componentListener);
     }
 
-    BufferedImage image;
+    private BufferedImage image;
 
 //#region draw buffer
 
@@ -238,9 +240,9 @@ public class FormMegaCD extends FormChipBase<FormMegaCD.Params> {
 //#endregion
 
     /** this panel's per-frame draw state, diffed new against old (see {@link FormChipBase}) */
-    public static class Params {
+    static class Params {
 
-        public final ChannelParams[] channels = {
+        final ChannelParams[] channels = {
                 new ChannelParams(), new ChannelParams(), new ChannelParams(), new ChannelParams(),
                 new ChannelParams(), new ChannelParams(), new ChannelParams(), new ChannelParams()
         };
@@ -252,33 +254,33 @@ public class FormMegaCD extends FormChipBase<FormMegaCD.Params> {
 
         @Override public String id() { return "RF5C164"; }
         @Override public String category() { return "pcm"; }
-        @Override public Class<? extends mdplayer.Chip> chip() { return mdplayer.chips.Rf5C164Chip.class; }
+        @Override public Class<? extends mdplayer.Chip> chip() { return Rf5C164Chip.class; }
         @Override public View create(FormMain frm, int chipId, int zoom) { return new FormMegaCD(frm, chipId, zoom); }
 
-        @Override public void setChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
-            mdplayer.chips.Rf5C164Chip c = audio.plugin.chipRegister.chip(mdplayer.chips.Rf5C164Chip.class);
+        @Override public void setChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+            Rf5C164Chip c = audio.plugin.chipRegister.chip(Rf5C164Chip.class);
             if (!c.getMask(chipId, ch)) c.setMask(chipId, ch); else c.resetMask(chipId, ch);
         }
 
-        @Override public void resetChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
-            audio.plugin.chipRegister.chip(mdplayer.chips.Rf5C164Chip.class).resetMask(chipId, ch);
+        @Override public void resetChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+            audio.plugin.chipRegister.chip(Rf5C164Chip.class).resetMask(chipId, ch);
         }
 
-        @Override public void forceChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
+        @Override public void forceChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
             if (mask)
-                audio.plugin.chipRegister.chip(mdplayer.chips.Rf5C164Chip.class).setMask(chipId, ch);
+                audio.plugin.chipRegister.chip(Rf5C164Chip.class).setMask(chipId, ch);
             else
-                audio.plugin.chipRegister.chip(mdplayer.chips.Rf5C164Chip.class).resetMask(chipId, ch);
+                audio.plugin.chipRegister.chip(Rf5C164Chip.class).resetMask(chipId, ch);
         }
 
-        @Override public void reapplyChannelMasks(mdplayer.Audio audio, int chipId) {
+        @Override public void reapplyChannelMasks(Audio audio, int chipId) {
             for (int ch = 0; ch < 8; ch++)
-                forceChannelMask(audio, mdplayer.chips.Rf5C164Chip.class, chipId, ch,
-                        audio.plugin.chipRegister.chip(mdplayer.chips.Rf5C164Chip.class).getMask(chipId, ch));
+                forceChannelMask(audio, Rf5C164Chip.class, chipId, ch,
+                        audio.plugin.chipRegister.chip(Rf5C164Chip.class).getMask(chipId, ch));
         }
 
         @Override public List<MixerSlot> mixerSlots() {
-            return List.of(new MixerSlot(34, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Rf5C164Chip.class, "rf5c164", 200));
+            return List.of(new MixerSlot(34, MDSound.Chip.MAIN_TAG, Rf5C164Chip.class, "rf5c164", 200));
         }
     }
 }

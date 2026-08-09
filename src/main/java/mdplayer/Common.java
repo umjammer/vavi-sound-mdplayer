@@ -11,6 +11,7 @@ import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
@@ -286,13 +287,13 @@ logger.log(Level.INFO, "metaData: " + metaData);
     /**
      * Empty the directory
      */
-    public static void deleteDataUnderDirectory(Path directory) throws IOException {
+    private static void deleteDataUnderDirectory(Path directory) throws IOException {
 logger.log(Level.DEBUG, "delete: " + directory);
         Files.walk(directory)
                 .sorted(Comparator.reverseOrder())
                 .filter(p -> p != directory)
                 .map(Path::toFile)
-                .forEach(java.io.File::delete);
+                .forEach(File::delete);
     }
 
     /**
@@ -305,7 +306,7 @@ logger.log(Level.DEBUG, "delete attributes: " + dir);
                     .sorted(Comparator.reverseOrder())
                     .filter(p -> p != dir)
                     .map(Path::toFile)
-                    .filter(not(java.io.File::canWrite))
+                    .filter(not(File::canWrite))
                     .forEach(f -> f.setWritable(true));
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -380,7 +381,7 @@ logger.log(Level.DEBUG, "delete attributes: " + dir);
         clip.setContents(ss, ss);
     }
 
-    static Robot robot;
+    private static Robot robot;
 
     public static void sendKey(int mod, int key) {
         if (robot == null) {

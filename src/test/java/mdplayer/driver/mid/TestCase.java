@@ -17,6 +17,7 @@ import java.util.List;
 
 import mdplayer.lib.mid.MID;
 import musicDriverInterface.MetaData;
+import musicDriverInterface.MetaData.Tag;
 import vavi.util.properties.annotation.Property;
 import vavi.util.properties.annotation.PropsEntity;
 
@@ -26,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
@@ -36,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @version 0.00 2026-08-08 nsano initial version <br>
  */
 @PropsEntity(url = "file:local.properties")
-public class TestCase {
+class TestCase {
 
     static boolean localPropertiesExists() {
         return Files.exists(Paths.get("local.properties"));
@@ -168,6 +170,6 @@ public class TestCase {
         assertEquals(on, off, "every note that started has to stop");
 
         MetaData md = new MidiDriver().getMetaData(buf);
-        assertTrue(!md.getFirst(MetaData.Tag.Title).isEmpty(), "no title");
+        assertFalse(md.getFirst(Tag.Title).isEmpty(), "no title");
     }
 }

@@ -8,11 +8,13 @@ package vavi.sound.visualizer.fmdsp;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -67,7 +69,7 @@ class LogoTitleTest {
     void testMddsp() {
         int[] logo = band(null);
         int[] mddsp = band("MDDSP");
-        assertFalse(java.util.Arrays.equals(logo, mddsp), "MDDSP is not FMDSP");
+        assertFalse(Arrays.equals(logo, mddsp), "MDDSP is not FMDSP");
 
         // it is the art, not the font: same stroke weight, so a comparable amount of ink
         int inked = ink(mddsp);
@@ -90,7 +92,7 @@ class LogoTitleTest {
         // Y, L, A and R are not in "FMDSP", so this one is drawn with the vector font
         int[] band = band("MDPLAYER");
         assertTrue(ink(band) > 0, "nothing was drawn");
-        assertFalse(java.util.Arrays.equals(band(null), band), "should not be the logo art");
+        assertFalse(Arrays.equals(band(null), band), "should not be the logo art");
     }
 
     @Test
@@ -101,8 +103,7 @@ class LogoTitleTest {
             int[] band = band(title);
             for (int y = 0; y < H; y++) {
                 for (int x = 397 - X; x < W; x++) {
-                    assertTrue((band[y * W + x] & 0xffffff) == 0,
-                            title + " reaches x=" + (X + x));
+                    assertEquals(0, (band[y * W + x] & 0xffffff), title + " reaches x=" + (X + x));
                 }
             }
         }

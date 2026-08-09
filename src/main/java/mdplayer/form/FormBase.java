@@ -9,7 +9,7 @@ import mdplayer.form.sys.FormMain;
 
 public class FormBase extends JFrame {
 
-    public FormMain parent = null;
+    protected FormMain parent = null;
     protected final Audio audio = Audio.getInstance();
 
     private void initializeComponent() {
@@ -21,7 +21,7 @@ public class FormBase extends JFrame {
         this.setTitle("frmBase");
     }
 
-    public FormBase() {
+    protected FormBase() {
         initializeComponent();
     }
 

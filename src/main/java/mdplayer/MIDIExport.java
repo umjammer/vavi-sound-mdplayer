@@ -914,10 +914,10 @@ public class MIDIExport {
     }
 
     static class MidiChip {
-        public List<Byte>[] data = null;
-        public long[] oldFrameCounter = null;
-        public int[] oldCode = null;
-        public int[] oldFreq = null;
-        public int maxTrk = 0;
+        List<Byte>[] data = null;
+        long[] oldFrameCounter = null;
+        int[] oldCode = null;
+        int[] oldFreq = null;
+        int maxTrk = 0;
     }
 }

@@ -6,6 +6,7 @@
 
 package vavi.sound.visualizer.boids;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.nio.file.Files;
@@ -124,7 +125,7 @@ class BoidsVisualizerTest {
         for (int y = 0; y < image.getHeight(); y++) {
             for (int x = 0; x < image.getWidth(); x++) {
                 int rgb = image.getRGB(x, y);
-                java.awt.Color.RGBtoHSB((rgb >> 16) & 0xff, (rgb >> 8) & 0xff, rgb & 0xff, hsb);
+                Color.RGBtoHSB((rgb >> 16) & 0xff, (rgb >> 8) & 0xff, rgb & 0xff, hsb);
                 if (hsb[2] < 0.3 || hsb[1] < 0.3) continue;
                 double a = hsb[0] * 2 * Math.PI;
                 sx += Math.cos(a) * hsb[2];
@@ -187,7 +188,7 @@ class BoidsVisualizerTest {
         assertEquals(hueC, hueOf(0x40), 0.02);
     }
 
-    private double hueOf(int key) {
+    private static double hueOf(int key) {
         Manual source = new Manual();
         source.key = key;
         source.level = 24000;

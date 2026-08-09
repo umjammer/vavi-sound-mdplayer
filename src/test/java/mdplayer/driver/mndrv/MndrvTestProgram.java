@@ -22,7 +22,7 @@ import static vavi.sound.SoundUtil.volume;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-02-10 nsano initial version <br>
  */
-public class MndrvTestProgram {
+class MndrvTestProgram {
 
     private SourceDataLine audioOutput = null;
     private Thread playbackThread;
@@ -38,7 +38,7 @@ public class MndrvTestProgram {
         new MndrvTestProgram().play(args[0]);
     }
 
-    public void play(String filename) throws Exception {
+    private void play(String filename) throws Exception {
         Audio audio = Audio.getInstance();
         Setting setting = Setting.getInstance();
         int samplingRate = setting.getOutputDevice().getSampleRate();

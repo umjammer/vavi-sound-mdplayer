@@ -10,6 +10,7 @@ import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,12 +61,12 @@ public class MidiPlugin implements Plugin {
 
     private MidiOutInfo[] outInfos = null;
 
-    public final MDSound mds;
+    private final MDSound mds;
 
     private final List<Receiver> outs = new ArrayList<>();
     private final List<Integer> outsType = new ArrayList<>();
 
-    protected short[] bufVirtualFunction_MIDIKeyboard = null;
+    private short[] bufVirtualFunction_MIDIKeyboard = null;
 
     private BasePlugin<? extends BaseDriver> context;
 
@@ -133,7 +134,7 @@ public class MidiPlugin implements Plugin {
         set(midiOutInfos.get(midiMode));
     }
 
-    public void set(MidiOutInfo[] midiOutInfos) {
+    private void set(MidiOutInfo[] midiOutInfos) {
         this.outInfos = null;
         if (midiOutInfos != null && midiOutInfos.length > 0) {
             this.outInfos = new MidiOutInfo[midiOutInfos.length];
@@ -152,8 +153,8 @@ public class MidiPlugin implements Plugin {
 
         if (params == null && params.length < 1) return;
 
-        if (!outsType.isEmpty()) params[0].MIDIModule = Math.min(outsType.get(0), 2);
-        if (outsType.size() > 1) params[1].MIDIModule = Math.min(outsType.get(1), 2);
+        if (!outsType.isEmpty()) params[0].midiModule = Math.min(outsType.get(0), 2);
+        if (outsType.size() > 1) params[1].midiModule = Math.min(outsType.get(1), 2);
     }
 
     public void setFileName(String fn) {
@@ -226,7 +227,7 @@ public class MidiPlugin implements Plugin {
      */
     private int scaleVolume(int value) {
         if (value <= 0) return 0; // the song is silencing the channel, leave it silenced
-        return (int) Math.clamp(Math.round(value * midiGain()), 1, 127);
+        return Math.clamp(Math.round(value * midiGain()), 1, 127);
     }
 
     /**
@@ -272,9 +273,9 @@ logger.log(Level.DEBUG, "midi volume: gain=%.3f (master=%d, midi=%d)".formatted(
     private final boolean[][] keys = new boolean[MIDI_CHANNELS][128];
 
     {
-        java.util.Arrays.fill(volumes, 100); // the General MIDI default
-        java.util.Arrays.fill(expressions, 127);
-        java.util.Arrays.fill(pans, 64);
+        Arrays.fill(volumes, 100); // the General MIDI default
+        Arrays.fill(expressions, 127);
+        Arrays.fill(pans, 64);
     }
 
     /**
@@ -336,7 +337,7 @@ logger.log(Level.DEBUG, "midi volume: gain=%.3f (master=%d, midi=%d)".formatted(
     }
 
     private void releaseAll(int ch) {
-        java.util.Arrays.fill(keys[ch], false);
+        Arrays.fill(keys[ch], false);
         velocities[ch] = 0;
     }
 
@@ -399,8 +400,8 @@ logger.log(Level.DEBUG, "midi volume: gain=%.3f (master=%d, midi=%d)".formatted(
                 }
             }
         }
-        java.util.Arrays.fill(velocities, 0);
-        for (boolean[] channel : keys) java.util.Arrays.fill(channel, false);
+        Arrays.fill(velocities, 0);
+        for (boolean[] channel : keys) Arrays.fill(channel, false);
     }
 
     private static void send(Receiver out, int command, int channel, int data1, int data2)
@@ -438,13 +439,13 @@ logger.log(Level.DEBUG, "midi volume: gain=%.3f (master=%d, midi=%d)".formatted(
 
     /** forgets the last song's notes; the channels are shared between songs */
     public void clearChannels() {
-        java.util.Arrays.fill(notes, 0);
-        java.util.Arrays.fill(velocities, 0);
-        java.util.Arrays.fill(programs, 0);
-        java.util.Arrays.fill(volumes, 100);
-        java.util.Arrays.fill(expressions, 127);
-        java.util.Arrays.fill(pans, 64);
-        for (boolean[] channel : keys) java.util.Arrays.fill(channel, false);
+        Arrays.fill(notes, 0);
+        Arrays.fill(velocities, 0);
+        Arrays.fill(programs, 0);
+        Arrays.fill(volumes, 100);
+        Arrays.fill(expressions, 127);
+        Arrays.fill(pans, 64);
+        for (boolean[] channel : keys) Arrays.fill(channel, false);
     }
 
     /** stream parser per receiver, keyed by receiver identity */
@@ -580,7 +581,7 @@ logger.log(Level.DEBUG, "midi volume: gain=%.3f (master=%d, midi=%d)".formatted(
         resetAll();
     }
 
-    public void mdsInit() {
+    private void mdsInit() {
         List<MDSound.Chip> infos = new ArrayList<>();
         //
         MDSound.Chip chip = new MDSound.Chip();

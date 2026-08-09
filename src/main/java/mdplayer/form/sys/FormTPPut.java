@@ -30,7 +30,7 @@ public class FormTPPut extends JFrame {
 
     private Setting setting = null;
     private TonePallet tonePallet = null;
-    int DialogResult;
+    private int DialogResult;
 
     public FormTPPut() {
         initializeComponent();

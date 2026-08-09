@@ -34,19 +34,19 @@ import mdplayer.lib.sid.libsidplayfp.SidEndian;
  */
 public class Timer extends Event {
 
-    protected static final int CIAT_CR_START = 0x01;
-    protected static final int CIAT_STEP = 0x04;
-    protected static final int CIAT_CR_ONESHOT = 0x08;
-    protected static final int CIAT_CR_FLOAD = 0x10;
-    protected static final int CIAT_PHI2IN = 0x20;
-    protected static final int CIAT_CR_MASK = CIAT_CR_START | CIAT_CR_ONESHOT | CIAT_CR_FLOAD | CIAT_PHI2IN;
-    protected static final int CIAT_COUNT2 = 0x100;
-    protected static final int CIAT_COUNT3 = 0x200;
-    protected static final int CIAT_ONESHOT0 = 0x08 << 8;
-    protected static final int CIAT_ONESHOT = 0x08 << 16;
-    protected static final int CIAT_LOAD1 = 0x10 << 8;
-    protected static final int CIAT_LOAD = 0x10 << 16;
-    protected static final int CIAT_OUT = 0x80000000;
+    static final int CIAT_CR_START = 0x01;
+    static final int CIAT_STEP = 0x04;
+    private static final int CIAT_CR_ONESHOT = 0x08;
+    private static final int CIAT_CR_FLOAD = 0x10;
+    private static final int CIAT_PHI2IN = 0x20;
+    private static final int CIAT_CR_MASK = CIAT_CR_START | CIAT_CR_ONESHOT | CIAT_CR_FLOAD | CIAT_PHI2IN;
+    private static final int CIAT_COUNT2 = 0x100;
+    private static final int CIAT_COUNT3 = 0x200;
+    private static final int CIAT_ONESHOT0 = 0x08 << 8;
+    private static final int CIAT_ONESHOT = 0x08 << 16;
+    private static final int CIAT_LOAD1 = 0x10 << 8;
+    private static final int CIAT_LOAD = 0x10 << 16;
+    private static final int CIAT_OUT = 0x80000000;
 
     private final EventCallback<Timer> m_cycleSkippingEvent;
 
@@ -76,21 +76,21 @@ public class Timer extends Event {
     private byte lastControlValue;
 
     /** Pointer to the Mos6526 which this Timer belongs to. */
-    protected final Mos6526 parent;
+    final Mos6526 parent;
 
     /** CRA/CRB control register / state. */
-    protected int state;
+    int state;
 
     /**
      * Signal timer underflow.
      */
-    public void underFlow() {
+    void underFlow() {
     }
 
     /**
      * Handle the serial port.
      */
-    public void serialPort() {
+    void serialPort() {
     }
 
     /**
@@ -100,7 +100,7 @@ public class Timer extends Event {
      * @param scheduler event context
      * @param parent    the Mos6526 which this Timer belongs to
      */
-    protected Timer(String name, EventScheduler scheduler, Mos6526 parent) {
+    Timer(String name, EventScheduler scheduler, Mos6526 parent) {
         super(name);
         m_cycleSkippingEvent = new EventCallback<>("Skip CIA clock decrement cycles", this, this::cycleSkippingEvent);
         eventScheduler = (scheduler);

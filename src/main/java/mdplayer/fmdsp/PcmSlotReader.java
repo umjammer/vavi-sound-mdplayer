@@ -32,7 +32,7 @@ import vavi.sound.visualizer.fmdsp.LevelDataSource.Pan;
 public abstract class PcmSlotReader extends ChipReader {
 
     /** the chip's own state, read back once a frame */
-    protected Map<String, Object> info;
+    Map<String, Object> info;
 
     private boolean[] prevSoundings;
     private int[] prevRates;
@@ -46,6 +46,7 @@ public abstract class PcmSlotReader extends ChipReader {
     /** how many channels the chip has */
     protected abstract int channelCount();
 
+    @Override
     protected abstract BaseChip chip();
 
     /** whether the channel is sounding, as the chip has it now */
@@ -160,12 +161,12 @@ public abstract class PcmSlotReader extends ChipReader {
 
     // helpers for reading the chip's map
 
-    protected int intOf(int ch, String field, int fallback) {
+    int intOf(int ch, String field, int fallback) {
         Object value = info.get("channels." + ch + "." + field);
         return value instanceof Integer i ? i : fallback;
     }
 
-    protected boolean boolOf(int ch, String field) {
+    boolean boolOf(int ch, String field) {
         Object value = info.get("channels." + ch + "." + field);
         return value instanceof Boolean b && b;
     }
@@ -181,7 +182,7 @@ public abstract class PcmSlotReader extends ChipReader {
      * being the mix, it says the same thing for every channel of a chip sounding more than one at
      * a time. That is still worth more than a bar that never moves.
      */
-    protected double outputLevel() {
+    double outputLevel() {
         Object value = info.get("output");
         if (!(value instanceof Integer sample)) return -1;
         int level = Math.abs(sample);
@@ -204,7 +205,7 @@ public abstract class PcmSlotReader extends ChipReader {
     private static final int quietest = Short.MAX_VALUE / 8;
 
     /** a left and right level of any depth, as one of the pans the display has */
-    protected static Pan panOf(int l, int r) {
+    static Pan panOf(int l, int r) {
         if (l == 0 && r == 0) return Pan.NONE;
         if (r == 0) return Pan.LEFT;
         if (l == 0) return Pan.RIGHT;

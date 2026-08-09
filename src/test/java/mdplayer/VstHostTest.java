@@ -24,6 +24,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -46,7 +47,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 class VstHostTest {
 
     /** {@code -Dvst.file} plays a particular plug-in instead of hunting for one */
-    static final String FILE = System.getProperty("vst.file", "");
+    private static final String FILE = System.getProperty("vst.file", "");
 
     /** enough blocks for an instrument's attack to be well underway */
     static final int BLOCKS = 40;
@@ -100,7 +101,7 @@ class VstHostTest {
                 assertTrue(plugin.getVstVersion() >= 2, file + ": not a VST 2 plugin, " + plugin.getVstVersion());
                 assertTrue(plugin.canReplacing(), file + ": cannot processReplacing, which every 2.4 plugin can");
                 assertNotNull(plugin.getName());
-                assertTrue(!plugin.getName().isEmpty(), file + ": the plugin did not say its name");
+                assertFalse(plugin.getName().isEmpty(), file + ": the plugin did not say its name");
                 assertTrue(plugin.getNumOutputs() > 0, file + ": no audio output");
             } finally {
                 plugin.close();
@@ -141,7 +142,7 @@ class VstHostTest {
         }
 
         assumeTrue(sounded != null || !silent.isEmpty(), "no loadable VST 2 instrument is installed");
-        assertTrue(sounded != null, "no instrument played anything for a note on, tried " + silent);
+        assertNotNull(sounded, "no instrument played anything for a note on, tried " + silent);
     }
 
     /** the loudest sample over some blocks */

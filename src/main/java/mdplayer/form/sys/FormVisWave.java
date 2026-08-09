@@ -39,7 +39,7 @@ public class FormVisWave extends FormBase {
     private double dispHeight = 1.0;
     private boolean fft = false;
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormVisWave.class);
+    private static final Preferences prefs = Preferences.userNodeForPackage(FormVisWave.class);
 
     /** where in {@link #buf} the next sample goes */
     private int writeIndex;
@@ -164,14 +164,14 @@ public class FormVisWave extends FormBase {
         dispHeight = 0.3;
     }
 
-    public float[] convertTo(short[] src) {
+    private float[] convertTo(short[] src) {
         for (int i = 0; i < src.length; i++) {
             destF[i] = src[i] / 32768.0f;
         }
         return destF;
     }
 
-    public short[] convertTo(float[] src) {
+    private short[] convertTo(float[] src) {
         for (int i = 0; i < src.length / 2; i++) {
             destS[i * 2] = (short) (Math.clamp(-src[i] * 150.0f * 32768.0f * 0.6, Short.MIN_VALUE, Short.MAX_VALUE));
             destS[i * 2 + 1] = (short) (Math.clamp(-src[i] * 150.0f * 32768.0f * 0.6, Short.MIN_VALUE, Short.MAX_VALUE));
@@ -179,7 +179,7 @@ public class FormVisWave extends FormBase {
         return destS;
     }
 
-    public short[] convertTo2(float[] src) {
+    private short[] convertTo2(float[] src) {
         for (int i = 0; i < src.length / 2; i++) {
             destS2[i * 2] = (short) (Math.clamp(-src[i] * 150.0f * 32768.0f * 0.6, Short.MIN_VALUE, Short.MAX_VALUE));
             destS2[i * 2 + 1] = (short) (Math.clamp(-src[i] * 150.0f * 32768.0f * 0.6, Short.MIN_VALUE, Short.MAX_VALUE));
@@ -200,7 +200,7 @@ public class FormVisWave extends FormBase {
     }
 
     // @see "https://raptorcafeterrace.hatenablog.com/entry/2017/05/08/191704"
-    public void processFFT(float[] sdata) {
+    private void processFFT(float[] sdata) {
         FFT fft = new FFT();
 
         for (int i = 0; i < sdata.length; i++) {

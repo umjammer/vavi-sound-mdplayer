@@ -24,7 +24,7 @@ import java.io.IOException;
 import mdplayer.lib.sid.libsidplayfp.sidplayfp.SidTuneInfo;
 
 
-public class Prg extends SidTuneBase {
+class Prg extends SidTuneBase {
 
     Prg() {
     }
@@ -38,7 +38,7 @@ public class Prg extends SidTuneBase {
     }
 
     // FileFormat Strings
-    public static final String TXT_FORMAT_PRG = "Tape image file (PRG)";
+    private static final String TXT_FORMAT_PRG = "Tape image file (PRG)";
 
     /**
      * @return pointer to a SidTune or 0 if not a Prg file

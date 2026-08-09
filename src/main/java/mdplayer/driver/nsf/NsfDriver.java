@@ -15,7 +15,7 @@ import musicDriverInterface.MetaData;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-02-16 nsano initial version <br>
  */
-public interface NsfDriver {
+interface NsfDriver {
 
     void setSong(int songNo);
 

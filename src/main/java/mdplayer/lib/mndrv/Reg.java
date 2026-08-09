@@ -14,8 +14,8 @@ public class Reg implements IRegister {
     public int D3_L;
     public int D4_L;
     public int D5_L;
-    public int D6_L;
-    public int D7_L;
+    int D6_L;
+    int D7_L;
     public int a0;
     public int a1;
     public int a2;
@@ -23,7 +23,7 @@ public class Reg implements IRegister {
     public int a4;
     public int a5;
     public int a6;
-    public int a7;
+    private int a7;
 
     public int sr;
 

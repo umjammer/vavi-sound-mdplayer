@@ -89,7 +89,7 @@ public class MPcmChip extends BaseChip {
         return switch (context.mds.inst(inst(chipId))) {
             case X68kMPcmInst mpcm -> new float[] {mpcm.chips[chipId].rate, mpcm.chips[chipId].base};
             case MPcmPPInst mpcmpp -> new float[] {mpcmpp.chips[chipId].rate, mpcmpp.chips[chipId].base};
-            default -> { throw new IllegalStateException(); }
+            default -> throw new IllegalStateException();
         };
     }
 

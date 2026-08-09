@@ -60,11 +60,11 @@ public class Mos656X extends Event {
     }
 
     private static class data {
-        public final int rasterLines;
-        public final int cyclesPerLine;
-        public final ClockFunc clock;
+        final int rasterLines;
+        final int cyclesPerLine;
+        final ClockFunc clock;
 
-        public data(int rasterLines, int cyclesPerLine, ClockFunc clock) {
+        data(int rasterLines, int cyclesPerLine, ClockFunc clock) {
             this.rasterLines = rasterLines;
             this.cyclesPerLine = cyclesPerLine;
             this.clock = clock;
@@ -255,7 +255,7 @@ public class Mos656X extends Event {
     /**
      * Start DMA for sprite 0.
      */
-    public void startDma(int n) {
+    private void startDma(int n) {
         if (n == 0) setBA(!sprites.isDma(0x01));
         else {
             if (sprites.isDma(0x01 << n))
@@ -266,7 +266,7 @@ public class Mos656X extends Event {
     /**
      * End DMA for sprite 7.
      */
-    public void endDma(int n) {
+    private void endDma(int n) {
         if (n == 7) setBA(true);
         else {
             if (!sprites.isDma(0x06 << n))

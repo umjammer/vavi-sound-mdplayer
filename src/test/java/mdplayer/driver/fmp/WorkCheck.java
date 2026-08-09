@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 
-public class WorkCheck {
+class WorkCheck {
 
     /** what the chip was last told, to check the work area against */
     final int[][] fnum = new int[6][2];

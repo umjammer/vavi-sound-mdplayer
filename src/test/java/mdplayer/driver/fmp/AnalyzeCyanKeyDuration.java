@@ -14,7 +14,7 @@ import vavi.sound.visualizer.fmdsp.TrackStatus;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
-public class AnalyzeCyanKeyDuration {
+class AnalyzeCyanKeyDuration {
 
     @Test
     @EnabledIfSystemProperty(named = "vavi.test", matches = "ai")

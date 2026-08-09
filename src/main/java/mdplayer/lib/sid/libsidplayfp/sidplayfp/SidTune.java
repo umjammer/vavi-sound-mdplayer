@@ -107,7 +107,7 @@ public class SidTune {
      * <p>
      * @param fileNameExt
      */
-    public void setFileNameExtensions(String[] fileNameExt) {
+    private void setFileNameExtensions(String[] fileNameExt) {
         fileNameExtensions = ((fileNameExt != null) ? fileNameExt : defaultFileNameExt);
     }
 
@@ -117,7 +117,7 @@ public class SidTune {
      * @param fileName
      * @param separatorIsSlash
      */
-    public void load(String fileName, boolean separatorIsSlash/* = false*/) {
+    private void load(String fileName, boolean separatorIsSlash /* = false */) {
         try {
             tune = tune.load(fileName, fileNameExtensions, separatorIsSlash);
             status = true;
@@ -135,7 +135,7 @@ public class SidTune {
      * @param sourceBuffer the buffer that contains song data
      * @param bufferLen length of the buffer
      */
-    public void read(byte[] sourceBuffer, int bufferLen) {
+    private void read(byte[] sourceBuffer, int bufferLen) {
         try {
             tune = tune.read(sourceBuffer, bufferLen);
             status = true;

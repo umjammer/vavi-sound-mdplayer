@@ -41,14 +41,14 @@ public class YM2612MIDI {
     private final MDSound mdsMIDI;
     private final Audio audio = Audio.getInstance();
 
-    public Runnable fadeout;
-    public Runnable next;
-    public Runnable ff;
-    public Runnable pause;
-    public Runnable play;
-    public Runnable prev;
-    public Runnable slow;
-    public Runnable stop;
+    private Runnable fadeout;
+    private Runnable next;
+    private Runnable ff;
+    private Runnable pause;
+    private Runnable play;
+    private Runnable prev;
+    private Runnable slow;
+    private Runnable stop;
 
     private int[][] _noteLog = {
             new int[100], new int[100], new int[100], new int[100], new int[100], new int[100]
@@ -72,7 +72,7 @@ public class YM2612MIDI {
         _noteLogPtr = value;
     }
 
-    public YM2612MIDI(mdsound.MDSound mdsMIDI) {
+    public YM2612MIDI(MDSound mdsMIDI) {
         this.setting = Setting.getInstance();
         this.mdsMIDI = mdsMIDI;
 
@@ -775,7 +775,7 @@ public class YM2612MIDI {
         }
     }
 
-    public void loadTonePalletFromMml2Vgm(String[] tnt, TonePallet tonePallet) {
+    private void loadTonePalletFromMml2Vgm(String[] tnt, TonePallet tonePallet) {
         String line;
         int stage = 0;
         List<Integer> toneBuf = new ArrayList<>();
@@ -836,7 +836,7 @@ public class YM2612MIDI {
         }
     }
 
-    public void loadTonePalletFromFMP7(String[] tnt, TonePallet tonePallet) {
+    private void loadTonePalletFromFMP7(String[] tnt, TonePallet tonePallet) {
         String line;
         int stage = 0;
         List<Integer> toneBuf = new ArrayList<>();
@@ -969,7 +969,7 @@ public class YM2612MIDI {
         }
     }
 
-    public void loadTonePalletFromNRTDRV(String[] tnt, TonePallet tonePallet) {
+    private void loadTonePalletFromNRTDRV(String[] tnt, TonePallet tonePallet) {
         int voiceMode = 0;
 
         String line;
@@ -1270,7 +1270,7 @@ public class YM2612MIDI {
 
     }
 
-    public void loadTonePalletFromMXDRV(String[] tnt, TonePallet tonePallet) {
+    private void loadTonePalletFromMXDRV(String[] tnt, TonePallet tonePallet) {
         String line;
         int stage = 0;
         List<Integer> toneBuf = new ArrayList<>();
@@ -1388,7 +1388,7 @@ public class YM2612MIDI {
         } while (line != null);
     }
 
-    public void loadTonePalletFromMUSICLALF(String[] tnt, TonePallet tonePallet) {
+    private void loadTonePalletFromMUSICLALF(String[] tnt, TonePallet tonePallet) {
         String line;
         int stage = 0;
         List<Integer> toneBuf = new ArrayList<>();
@@ -1715,5 +1715,5 @@ public class YM2612MIDI {
         public final boolean[] useChannel = {false, false, false, false, false, false};
     }
 
-    public mdplayer.YM2612MIDI.Params ym2612Midi = new mdplayer.YM2612MIDI.Params();
+    public final YM2612MIDI.Params ym2612Midi = new YM2612MIDI.Params();
 }

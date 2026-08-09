@@ -68,11 +68,11 @@ public class Zms {
     private List<String> dirZPDs = new ArrayList<>();
     public int version = 0;
     private FMTimer timerOPM;
-    public final Pcm8St[] pcm8St = {
+    private final Pcm8St[] pcm8St = {
             new Pcm8St(), new Pcm8St(), new Pcm8St(), new Pcm8St(),
             new Pcm8St(), new Pcm8St(), new Pcm8St(), new Pcm8St()
     };
-    public final MPCMSt[] mpcmSt = {
+    private final MPCMSt[] mpcmSt = {
             new MPCMSt(), new MPCMSt(), new MPCMSt(), new MPCMSt(),
             new MPCMSt(), new MPCMSt(), new MPCMSt(), new MPCMSt(),
             new MPCMSt(), new MPCMSt(), new MPCMSt(), new MPCMSt(),
@@ -94,8 +94,8 @@ public class Zms {
         public int pitch = 0;
         public int volume = 0;
         public int pan = 0;
-        public float rate = 0;
-        public float base = 0;
+        float rate = 0;
+        float base = 0;
 
         public void fill(IMemory mem, IRegister reg) {
             this.type = mem.readByte(0x00 + reg.getAl(1));

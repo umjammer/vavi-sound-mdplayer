@@ -45,7 +45,7 @@ public class Ym2608Chip extends BaseChip {
 
     private final Setting.ChipType2[] chipTypes = setting.getYM2608Type();
 
-    public final RSoundChip[] realChips = {null, null};
+    private final RSoundChip[] realChips = {null, null};
 
     @Deprecated
     public final int[][][] register = {
@@ -371,7 +371,7 @@ public class Ym2608Chip extends BaseChip {
         }
     }
 
-    public void softReset(int chipId, EnmModel model) {
+    private void softReset(int chipId, EnmModel model) {
         // FM All Channel Key Off
         _write(chipId, 0, 0x28, 0x00, model);
         _write(chipId, 0, 0x28, 0x01, model);
@@ -659,7 +659,7 @@ public class Ym2608Chip extends BaseChip {
             } catch (InterruptedException ignore) {
             }
         }
-        if (model == mdplayer.Common.EnmModel.RealModel) {
+        if (model == EnmModel.RealModel) {
             if ((chipId == 0 && setting.getYM2608Type()[0].getUseReal()[0])
                     || (chipId == 1 && setting.getYM2608Type()[1].getUseReal()[0])) {
                 try {

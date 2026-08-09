@@ -15,6 +15,7 @@ import javax.swing.filechooser.FileFilter;
 
 import mdplayer.Audio;
 import mdplayer.Chip;
+import mdplayer.Common.EnmInstFormat;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.chips.Ym2203Chip;
 import mdplayer.chips.Ym2608Chip;
@@ -28,8 +29,8 @@ import musicDriverInterface.MetaData.Tag;
 public class Rym2612InstWriter implements InstWriter {
 
     @Override
-    public mdplayer.Common.EnmInstFormat format() {
-        return mdplayer.Common.EnmInstFormat.RYM2612;
+    public EnmInstFormat format() {
+        return EnmInstFormat.RYM2612;
     }
 
     //

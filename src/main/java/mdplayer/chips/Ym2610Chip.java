@@ -432,7 +432,7 @@ public class Ym2610Chip extends BaseChip {
         }
     }
 
-    public void writeAdpcmA(int chipId, EnmModel model, int startAddr, int length, byte[] buf, int srcStartAddr) {
+    private void writeAdpcmA(int chipId, EnmModel model, int startAddr, int length, byte[] buf, int srcStartAddr) {
         if (model == EnmModel.VirtualModel) {
         } else {
             if (realChips[chipId] != null) {
@@ -511,7 +511,7 @@ public class Ym2610Chip extends BaseChip {
         }
     }
 
-    public void writeAdpcmB(int chipId, EnmModel model, int startAddr, int length, byte[] buf, int srcStartAddr) {
+    private void writeAdpcmB(int chipId, EnmModel model, int startAddr, int length, byte[] buf, int srcStartAddr) {
         if (model == EnmModel.VirtualModel) {
         } else {
             if (realChips[chipId] != null) {
@@ -649,7 +649,7 @@ public class Ym2610Chip extends BaseChip {
             for (int cnt = 0; cnt < bLen - 8; cnt++) {
                 ym2610AdpcmA[chipId][startAddress + cnt] = vgmBuf[vgmAdr + 15 + cnt];
             }
-            if (model == mdplayer.Common.EnmModel.VirtualModel)
+            if (model == EnmModel.VirtualModel)
                 writeAdpcmA(chipId, ym2610AdpcmA[chipId], model);
             else
                 writeAdpcmA(chipId, model, startAddress, bLen - 8, vgmBuf, vgmAdr + 15);
@@ -665,7 +665,7 @@ public class Ym2610Chip extends BaseChip {
             for (int cnt = 0; cnt < bLen - 8; cnt++) {
                 ym2610AdpcmB[chipId][startAddress + cnt] = vgmBuf[vgmAdr + 15 + cnt];
             }
-            if (model == mdplayer.Common.EnmModel.VirtualModel)
+            if (model == EnmModel.VirtualModel)
                 writeAdpcmB(chipId, ym2610AdpcmB[chipId], model);
             else
                 writeAdpcmB(chipId, model, startAddress, bLen - 8, vgmBuf, vgmAdr + 15);

@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
+import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.form.FrameBuffer;
 import mdplayer.form.ScreenPanel;
@@ -28,6 +29,7 @@ import mdplayer.form.sys.FormMain;
 
 import static mdplayer.Common.searchSSGNote;
 import mdplayer.form.View;
+import mdsound.MDSound;
 
 
 public class FormHuC6280 extends FormChipBase<FormHuC6280.Params> {
@@ -55,9 +57,9 @@ public class FormHuC6280 extends FormChipBase<FormHuC6280.Params> {
         this.addComponentListener(this.componentListener);
     }
 
-    BufferedImage image;
+    private BufferedImage image;
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormHuC6280.class);
+    private static final Preferences prefs = Preferences.userNodeForPackage(FormHuC6280.class);
 
     public FormHuC6280(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -91,7 +93,7 @@ public class FormHuC6280 extends FormChipBase<FormHuC6280.Params> {
         }
     };
 
-    public void changeZoom() {
+    private void changeZoom() {
         this.setMaximumSize(new Dimension(frameSizeW + Common.getImage("planeHuC6280").getWidth() * zoom, frameSizeH + Common.getImage("planeHuC6280").getHeight() * zoom));
         this.setMinimumSize(new Dimension(frameSizeW + Common.getImage("planeHuC6280").getWidth() * zoom, frameSizeH + Common.getImage("planeHuC6280").getHeight() * zoom));
         this.setPreferredSize(new Dimension(frameSizeW + Common.getImage("planeHuC6280").getWidth() * zoom, frameSizeH + Common.getImage("planeHuC6280").getHeight() * zoom));
@@ -407,22 +409,22 @@ public class FormHuC6280 extends FormChipBase<FormHuC6280.Params> {
 //#endregion
 
     /** this panel's channel row: the common core plus what only this chip displays */
-    public static class Channel extends ChannelParams {
+    static class Channel extends ChannelParams {
 
-        public boolean dda = false;
-        public int nfrq = -1;
-        public boolean noise = false;
+        boolean dda = false;
+        int nfrq = -1;
+        boolean noise = false;
     }
 
     /** this panel's per-frame draw state, diffed new against old (see {@link FormChipBase}) */
-    public static class Params {
+    static class Params {
 
-        public int mvolL = -1;
-        public int mvolR = -1;
-        public int LfoCtrl = -1;
-        public int LfoFrq = -1;
+        int mvolL = -1;
+        int mvolR = -1;
+        int LfoCtrl = -1;
+        int LfoFrq = -1;
 
-        public final Channel[] channels = {new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel()};
+        final Channel[] channels = {new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel()};
     }
 
     /** what this panel contributes to the GUI; see {@link ViewProvider} */
@@ -430,34 +432,34 @@ public class FormHuC6280 extends FormChipBase<FormHuC6280.Params> {
 
         @Override public String id() { return "HuC6280"; }
         @Override public String category() { return "wf"; }
-        @Override public Class<? extends mdplayer.Chip> chip() { return mdplayer.chips.HuC6280Chip.class; }
+        @Override public Class<? extends mdplayer.Chip> chip() { return HuC6280Chip.class; }
         @Override public String title(int chipId) { return "OotakeHuC6280 (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"); }
         @Override public View create(FormMain frm, int chipId, int zoom) { return new FormHuC6280(frm, chipId, zoom); }
 
-        @Override public void setChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
-            mdplayer.chips.HuC6280Chip c = audio.plugin.chipRegister.chip(mdplayer.chips.HuC6280Chip.class);
+        @Override public void setChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+            HuC6280Chip c = audio.plugin.chipRegister.chip(HuC6280Chip.class);
             if (!c.getMask(chipId, ch)) c.setMask(chipId, ch); else c.resetMask(chipId, ch);
         }
 
-        @Override public void resetChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
-            audio.plugin.chipRegister.chip(mdplayer.chips.HuC6280Chip.class).resetMask(chipId, ch);
+        @Override public void resetChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+            audio.plugin.chipRegister.chip(HuC6280Chip.class).resetMask(chipId, ch);
         }
 
-        @Override public void forceChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
+        @Override public void forceChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
             if (mask)
-                audio.plugin.chipRegister.chip(mdplayer.chips.HuC6280Chip.class).setMask(chipId, ch);
+                audio.plugin.chipRegister.chip(HuC6280Chip.class).setMask(chipId, ch);
             else
-                audio.plugin.chipRegister.chip(mdplayer.chips.HuC6280Chip.class).resetMask(chipId, ch);
+                audio.plugin.chipRegister.chip(HuC6280Chip.class).resetMask(chipId, ch);
         }
 
-        @Override public void reapplyChannelMasks(mdplayer.Audio audio, int chipId) {
+        @Override public void reapplyChannelMasks(Audio audio, int chipId) {
             for (int ch = 0; ch < 6; ch++)
-                forceChannelMask(audio, mdplayer.chips.HuC6280Chip.class, chipId, ch,
-                        audio.plugin.chipRegister.chip(mdplayer.chips.HuC6280Chip.class).getMask(chipId, ch));
+                forceChannelMask(audio, HuC6280Chip.class, chipId, ch,
+                        audio.plugin.chipRegister.chip(HuC6280Chip.class).getMask(chipId, ch));
         }
 
         @Override public List<MixerSlot> mixerSlots() {
-            return List.of(new MixerSlot(27, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.HuC6280Chip.class, "huc6280", 120));
+            return List.of(new MixerSlot(27, MDSound.Chip.MAIN_TAG, HuC6280Chip.class, "huc6280", 120));
         }
     }
 }

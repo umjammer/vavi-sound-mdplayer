@@ -10,6 +10,7 @@ import mdplayer.chips.ZxBeepChip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.lib.ay.AY;
 import mdplayer.driver.BasePlugin;
+import mdsound.np.LoopDetector;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 
@@ -39,7 +40,7 @@ public class AyDriver extends BaseDriver {
 
     /** what the header says this song lasts, fade included; 0 when it says nothing */
     private int songLengthMs;
-    private final mdsound.np.LoopDetector.BasicDetector ld = new mdsound.np.LoopDetector.BasicDetector(20);
+    private final LoopDetector.BasicDetector ld = new LoopDetector.BasicDetector(20);
     private boolean playtimeDetected;
 
     public AyDriver(BasePlugin<? extends BaseDriver> plugin) {

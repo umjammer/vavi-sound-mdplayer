@@ -3,6 +3,7 @@ package mdplayer.driver.mxdrv;
 import java.io.BufferedInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -18,7 +19,7 @@ import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 
 /** temporary probe */
-public class MxProbe {
+class MxProbe {
 
     static {
         System.setProperty("mdplayer.variant.pcm8", "0");
@@ -35,7 +36,7 @@ public class MxProbe {
         for (String file : new String[] {"tmp/mdx/MHAWK/MHAWKN1.MDX", "tmp/mdx/sorc/SE313S.mdx"}) probe(file);
     }
 
-    void probe(String file) throws Exception {
+    private void probe(String file) throws Exception {
 
         FileFormat format = FileFormat.getFileFormat(file);
         format.load(Archives.getInputStream(new BufferedInputStream(Files.newInputStream(Path.of(file)))), null);
@@ -55,7 +56,7 @@ public class MxProbe {
                 java.lang.reflect.Field cf = x.getClass().getDeclaredField("clocks");
                 cf.setAccessible(true);
                 Object[] clocks = (Object[]) cf.get(x);
-                System.err.println("XXX   clocks: " + java.util.Arrays.toString(clocks));
+                System.err.println("XXX   clocks: " + Arrays.toString(clocks));
             }
         }
         System.err.printf("XXX totalCounter: %d (%.1f sec)%n", driver.totalCounter, driver.totalCounter / (double) sampleRate);

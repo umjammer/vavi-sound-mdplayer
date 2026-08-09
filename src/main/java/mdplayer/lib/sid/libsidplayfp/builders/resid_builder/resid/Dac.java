@@ -45,12 +45,12 @@ package mdplayer.lib.sid.libsidplayfp.builders.resid_builder.resid;
  * These DACs include the correct termination resistor, and also seem to have
  * very accurately matched R and 2R resistors (2R/R = 2.00).
  */
-public abstract class Dac {
+abstract class Dac {
 
     /**
      * Calculation of lookup tables for Sid DACs.
      */
-    public static void buildDacTable(short[] dac, int bits, double _2R_div_R, boolean term) {
+    static void buildDacTable(short[] dac, int bits, double _2R_div_R, boolean term) {
         // FIXME: No variable length arrays : ISO C++, hardcoding to max 12 bits.
         double[] vBit = new double[12];
 

@@ -13,7 +13,7 @@ import mdplayer.lib.sid.libsidplayfp.builders.resid_builder.resid.Voice;
  * from voice 1/2 at the bit level, the bug is voice-0-specific (sync, ring,
  * or per-voice init). Otherwise the bug is upstream.
  */
-public class VoiceCompareTest {
+class VoiceCompareTest {
 
     static void main(String[] args) throws Exception {
         Sid sid = new Sid(44100);

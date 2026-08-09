@@ -6,6 +6,7 @@ import java.util.Map;
 import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common;
+import mdplayer.Common.EnmInstFormat;
 import mdplayer.chips.HuC6280Chip;
 
 
@@ -13,8 +14,8 @@ import mdplayer.chips.HuC6280Chip;
 public class HusicInstWriter implements InstWriter {
 
     @Override
-    public mdplayer.Common.EnmInstFormat format() {
-        return mdplayer.Common.EnmInstFormat.HUSIC;
+    public EnmInstFormat format() {
+        return EnmInstFormat.HUSIC;
     }
 
     @Override

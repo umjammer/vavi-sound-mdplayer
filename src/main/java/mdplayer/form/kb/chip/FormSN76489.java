@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
+import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.Tables;
 import mdplayer.chips.Sn76489Chip;
@@ -25,6 +26,7 @@ import mdplayer.form.View;
 import mdplayer.form.kb.ChannelParams;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
+import mdsound.MDSound;
 import mdsound.instrument.Sn76489Inst;
 
 import static mdplayer.Common.searchSSGNote;
@@ -32,7 +34,7 @@ import static mdplayer.Common.searchSSGNote;
 
 public class FormSN76489 extends FormChipBase<FormSN76489.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormSN76489.class);
+    private static final Preferences prefs = Preferences.userNodeForPackage(FormSN76489.class);
 
     public FormSN76489(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -68,7 +70,7 @@ public class FormSN76489 extends FormChipBase<FormSN76489.Params> {
         }
     };
 
-    public void changeZoom() {
+    private void changeZoom() {
         this.setMaximumSize(new Dimension(frameSizeW + Common.getImage("planeSN76489").getWidth() * zoom, frameSizeH + Common.getImage("planeSN76489").getHeight() * zoom));
         this.setMinimumSize(new Dimension(frameSizeW + Common.getImage("planeSN76489").getWidth() * zoom, frameSizeH + Common.getImage("planeSN76489").getHeight() * zoom));
         this.setPreferredSize(new Dimension(frameSizeW + Common.getImage("planeSN76489").getWidth() * zoom, frameSizeH + Common.getImage("planeSN76489").getHeight() * zoom));
@@ -186,7 +188,7 @@ public class FormSN76489 extends FormChipBase<FormSN76489.Params> {
             if (ngpFlag) {
                 osc.pan = frameBuffer.PanType2(c, osc.pan, nsc.pan, tp);
             } else {
-                int[] r = frameBuffer.Pan(24, 8 + c * 8, osc.pan, nsc.pan, osc.pantp, tp);
+                int[] r = frameBuffer.pan(24, 8 + c * 8, osc.pan, nsc.pan, osc.pantp, tp);
                 osc.pan = r[0]; osc.pantp = r[1];
             }
         }
@@ -200,7 +202,7 @@ public class FormSN76489 extends FormChipBase<FormSN76489.Params> {
         if (ngpFlag) {
             osc.pan = frameBuffer.PanType2(3, osc.pan, nsc.pan, tp);
         } else {
-            int[] r =  frameBuffer.Pan(24, 8 + 3 * 8, osc.pan, nsc.pan, osc.pantp, tp);
+            int[] r =  frameBuffer.pan(24, 8 + 3 * 8, osc.pan, nsc.pan, osc.pantp, tp);
             osc.pan = r[0]; osc.pantp = r[1];
         }
         if (osc.freq != nsc.freq) {
@@ -308,7 +310,7 @@ public class FormSN76489 extends FormChipBase<FormSN76489.Params> {
         this.addComponentListener(this.componentListener);
     }
 
-    BufferedImage image;
+    private BufferedImage image;
 
 //#region draw buffer
 
@@ -365,8 +367,8 @@ public class FormSN76489 extends FormChipBase<FormSN76489.Params> {
 //#endregion
 
     /** this panel's per-frame draw state, diffed new against old (see {@link FormChipBase}) */
-    public static class Params {
-        public final ChannelParams[] channels = {new ChannelParams(), new ChannelParams(), new ChannelParams(), new ChannelParams()};
+    static class Params {
+        final ChannelParams[] channels = {new ChannelParams(), new ChannelParams(), new ChannelParams(), new ChannelParams()};
     }
 
 
@@ -376,34 +378,34 @@ public class FormSN76489 extends FormChipBase<FormSN76489.Params> {
         @Override public String id() { return "SN76489"; }
         @Override public String menuText() { return "DCSG"; }
         @Override public String category() { return "psg"; }
-        @Override public Class<? extends mdplayer.Chip> chip() { return mdplayer.chips.Sn76489Chip.class; }
+        @Override public Class<? extends mdplayer.Chip> chip() { return Sn76489Chip.class; }
         @Override public boolean hasRegisterDump() { return true; }
         @Override public View create(FormMain frm, int chipId, int zoom) { return new FormSN76489(frm, chipId, zoom); }
 
-        @Override public void setChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
-            mdplayer.chips.Sn76489Chip c = audio.plugin.chipRegister.chip(mdplayer.chips.Sn76489Chip.class);
+        @Override public void setChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+            Sn76489Chip c = audio.plugin.chipRegister.chip(Sn76489Chip.class);
             if (!c.getMask(chipId, ch)) c.setMask(chipId, ch); else c.resetMask(chipId, ch);
         }
 
-        @Override public void resetChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
-            audio.plugin.chipRegister.chip(mdplayer.chips.Sn76489Chip.class).resetMask(chipId, ch);
+        @Override public void resetChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+            audio.plugin.chipRegister.chip(Sn76489Chip.class).resetMask(chipId, ch);
         }
 
-        @Override public void forceChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
+        @Override public void forceChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
             if (mask)
-                audio.plugin.chipRegister.chip(mdplayer.chips.Sn76489Chip.class).setMask(chipId, ch);
+                audio.plugin.chipRegister.chip(Sn76489Chip.class).setMask(chipId, ch);
             else
-                audio.plugin.chipRegister.chip(mdplayer.chips.Sn76489Chip.class).resetMask(chipId, ch);
+                audio.plugin.chipRegister.chip(Sn76489Chip.class).resetMask(chipId, ch);
         }
 
-        @Override public void reapplyChannelMasks(mdplayer.Audio audio, int chipId) {
+        @Override public void reapplyChannelMasks(Audio audio, int chipId) {
             for (int ch = 0; ch < 4; ch++)
-                forceChannelMask(audio, mdplayer.chips.Sn76489Chip.class, chipId, ch,
-                        audio.plugin.chipRegister.chip(mdplayer.chips.Sn76489Chip.class).getMask(chipId, ch));
+                forceChannelMask(audio, Sn76489Chip.class, chipId, ch,
+                        audio.plugin.chipRegister.chip(Sn76489Chip.class).getMask(chipId, ch));
         }
 
         @Override public List<MixerSlot> mixerSlots() {
-            return List.of(new MixerSlot(26, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Sn76489Chip.class, "sn76489", 120));
+            return List.of(new MixerSlot(26, MDSound.Chip.MAIN_TAG, Sn76489Chip.class, "sn76489", 120));
         }
     }
 }

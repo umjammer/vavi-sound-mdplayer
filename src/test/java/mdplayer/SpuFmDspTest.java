@@ -97,8 +97,7 @@ class SpuFmDspTest {
             }
         }
 
-System.err.println("%s: rows %d, keyed snapshots %d, levelled meters %d, chips [%s],%s"
-        .formatted(file, playingRows, noted, levelled, source.chips(), shown));
+System.err.printf("%s: rows %d, keyed snapshots %d, levelled meters %d, chips [%s],%s%n", file, playingRows, noted, levelled, source.chips(), shown);
 
         assertTrue(playingRows > 0, "no SPU voice reached a row");
         assertTrue(noted > 0, "no voice ever showed a key");

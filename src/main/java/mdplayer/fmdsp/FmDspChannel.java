@@ -6,6 +6,8 @@
 
 package mdplayer.fmdsp;
 
+import java.util.Arrays;
+
 import vavi.sound.visualizer.fmdsp.LevelDataSource.Pan;
 import vavi.sound.visualizer.fmdsp.TrackInfo;
 
@@ -118,7 +120,7 @@ public class FmDspChannel {
         sampled = false;
         pan = Pan.CENTER;
         info = TrackInfo.NORMAL;
-        java.util.Arrays.fill(fmSlotMask, false);
+        Arrays.fill(fmSlotMask, false);
         ssgTone = false;
         ssgNoise = false;
         ssgNoiseFreq = 0;

@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.zip.GZIPInputStream;
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
@@ -162,11 +163,11 @@ logger.log(Level.DEBUG, "try: " + extFn);
 
     private static List<java.nio.file.Path> getFileSearchPathList(String srcFn) {
         List<java.nio.file.Path> result = new ArrayList<>();
-        result.add(java.nio.file.Path.of(srcFn).getParent());
+        result.add(Path.of(srcFn).getParent());
         String fileSearchPathList = Setting.getInstance().getFileSearchPathList() != null ? Setting.getInstance().getFileSearchPathList() : "";
         Arrays.stream(fileSearchPathList.split(";"))
                 .filter(path -> !path.isEmpty())
-                .map(java.nio.file.Path::of)
+                .map(Path::of)
                 .forEach(result::add);
 logger.log(Level.DEBUG, result);
         return result;
@@ -178,7 +179,7 @@ logger.log(Level.DEBUG, result);
      * @param arcFn   OUT entry file name resolved by the entry
      * @return extracted
      */
-    public byte[] getBytesFromZipFile(Archive archive, Entry entry, String[] arcFn) {
+    private byte[] getBytesFromZipFile(Archive archive, Entry entry, String[] arcFn) {
         byte[] buf;
         if (entry == null) return null;
         arcFn[0] = entry.getName();
@@ -280,7 +281,7 @@ logger.log(Level.DEBUG, result);
     }
 
     protected byte[] srcBuf;
-    protected List<Tuple<String, byte[]>> extendFiles;
+    private List<Tuple<String, byte[]>> extendFiles;
     protected String filename;
     protected FileFormat realFormat;
 
@@ -322,7 +323,7 @@ logger.log(Level.DEBUG, result);
                     pathField.setAccessible(true);
                     object = pathField.get(object);
                 }
-                if (object instanceof java.util.zip.GZIPInputStream) {
+                if (object instanceof GZIPInputStream) {
                     return true;
                 }
                 if (object.getClass().getName().equals("sun.nio.ch.ChannelInputStream")) { // because it's package private

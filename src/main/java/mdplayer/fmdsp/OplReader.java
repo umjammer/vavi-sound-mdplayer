@@ -36,14 +36,15 @@ public abstract class OplReader extends ChipReader {
     private boolean active;
 
     /** the chip this reads */
+    @Override
     protected abstract BaseChip chip();
 
     /** the chip's channel state, read back once a frame */
-    protected Map<String, Object> info;
+    Map<String, Object> info;
 
     protected abstract boolean chipMask(int ch);
 
-    protected Pan pan(int ch) {
+    Pan pan(int ch) {
         return Pan.CENTER;
     }
 
@@ -75,12 +76,12 @@ public abstract class OplReader extends ChipReader {
         }
     }
 
-    protected int intOf(int ch, String field) {
+    private int intOf(int ch, String field) {
         Object value = info.get("channels." + ch + "." + field);
         return value instanceof Integer i ? i : 0;
     }
 
-    protected boolean boolOf(int ch, String field) {
+    boolean boolOf(int ch, String field) {
         Object value = info == null ? null : info.get("channels." + ch + "." + field);
         return value instanceof Boolean b && b;
     }

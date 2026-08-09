@@ -75,8 +75,8 @@ public class MgsDriver extends BaseDriver {
                     }
                 }
                 if (!validLines.isEmpty()) {
-                    md.set(Tag.Title, validLines.get(0).strip());
-                    md.set(Tag.TitleJ, validLines.get(0).strip());
+                    md.set(Tag.Title, validLines.getFirst().strip());
+                    md.set(Tag.TitleJ, validLines.getFirst().strip());
                 }
                 if (validLines.size() > 1) {
                     md.set(Tag.Composer, validLines.get(1).strip());

@@ -1963,32 +1963,32 @@ logger.log(Level.INFO, "usedChips: " + ivgm.getUsedChips());
     }
 
     static class VgmPcmData {
-        public int dataSize;
-        public byte[] data;
-        public int dataStart;
+        int dataSize;
+        byte[] data;
+        int dataStart;
     }
 
     static class VgmPcmBank {
-        public int bankCount;
-        public final List<VgmPcmData> bank = new ArrayList<>();
-        public int dataSize;
-        public byte[] data;
-        public int dataPos;
-        public int bnkPos;
+        int bankCount;
+        final List<VgmPcmData> bank = new ArrayList<>();
+        int dataSize;
+        byte[] data;
+        int dataPos;
+        int bnkPos;
     }
 
     static class DacCtrlData {
-        public boolean enable;
-        public int bank;
+        boolean enable;
+        int bank;
     }
 
     static class PcmBankTbl {
-        public int comprType;
-        public int cmpSubType;
-        public int bitDec;
-        public int bitCmp;
-        public int entryCount;
-        public byte[] entries;
+        int comprType;
+        int cmpSubType;
+        int bitDec;
+        int bitCmp;
+        int entryCount;
+        byte[] entries;
     }
 
     public interface IVgm {

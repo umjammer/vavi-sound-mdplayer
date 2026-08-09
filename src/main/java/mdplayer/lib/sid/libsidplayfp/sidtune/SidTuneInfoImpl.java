@@ -155,7 +155,7 @@ public class SidTuneInfoImpl extends SidTuneInfo {
     }
 
     @Override
-    public int getNumberOfInfoStrings() {
+    protected int getNumberOfInfoStrings() {
         return infoString.size();
     }
 
@@ -165,7 +165,7 @@ public class SidTuneInfoImpl extends SidTuneInfo {
     }
 
     @Override
-    public int getNumberOfCommentStrings() {
+    protected int getNumberOfCommentStrings() {
         return commentString.size();
     }
 

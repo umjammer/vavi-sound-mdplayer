@@ -11,7 +11,7 @@ import static java.lang.System.getLogger;
 
 
 // @see "Outside X68000"
-public class MidiBoard {
+class MidiBoard {
 
     private static final Logger logger = getLogger(MidiBoard.class.getName());
 
@@ -121,7 +121,7 @@ public class MidiBoard {
         setClock(renderingFreq);
     }
 
-    public void setClock(int renderingFreq) {
+    private void setClock(int renderingFreq) {
         this.renderingFreq = renderingFreq;
         stepM = clkM / (double) renderingFreq;
     }

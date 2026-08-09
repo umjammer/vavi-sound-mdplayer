@@ -8,14 +8,14 @@ public class Cpu {
 
     private static final Logger logger = System.getLogger(Cpu.class.getName());
 
-    public Registers reg = new Registers();
-    public Memory mem;
-    public int clock;
+    public final Registers reg = new Registers();
+    private final Memory mem;
+    public final int clock;
     public boolean isHalt = false;
     public boolean isStop = false;
-    public String nimo = "";
-    public boolean cbSwitch = false;
-    public int ime = 1;
+    private String nimo = "";
+    private boolean cbSwitch = false;
+    private int ime = 1;
 
     public Cpu(int clock, Memory memory) {
         this.clock = clock;
@@ -408,7 +408,7 @@ public class Cpu {
         return insts[0].cycle[0];
     }
 
-    int LD_BC_d16() {
+    private int LD_BC_d16() {
         int d = mem.peekW(reg.pc);
         reg.pc += 2;
         reg.setBc(d);
@@ -418,7 +418,7 @@ public class Cpu {
         return insts[0x01].cycle[0];
     }
 
-    int LD_pBCs_A() {
+    private int LD_pBCs_A() {
         mem.pokeB(reg.getBc(), reg.a);
 
         nimo = "LD (BC),A";
@@ -426,7 +426,7 @@ public class Cpu {
         return insts[0x02].cycle[0];
     }
 
-    int INC_BC() {
+    private int INC_BC() {
         reg.setBc(reg.getBc() + 1);
 
         nimo = "INC BC";
@@ -434,7 +434,7 @@ public class Cpu {
         return insts[0x03].cycle[0];
     }
 
-    int INC_B() {
+    private int INC_B() {
         byte d = reg.b;
         reg.b++;
 
@@ -448,7 +448,7 @@ public class Cpu {
         return insts[0x04].cycle[0];
     }
 
-    int DEC_B() {
+    private int DEC_B() {
         byte d = reg.b;
         reg.b--;
 
@@ -462,7 +462,7 @@ public class Cpu {
         return insts[0x05].cycle[0];
     }
 
-    int LD_B_d8() {
+    private int LD_B_d8() {
         byte d = mem.peekB(reg.pc++);
         reg.pc &= 0xffff;
         reg.b = d;
@@ -472,7 +472,7 @@ public class Cpu {
         return insts[0x06].cycle[0];
     }
 
-    int RLCA() {
+    private int RLCA() {
         byte d = reg.a;
         reg.setC((d & 0x80) != 0);
 
@@ -489,7 +489,7 @@ public class Cpu {
     }
 
     // 0x08
-    int LD_pa16s_SP() {
+    private int LD_pa16s_SP() {
         int a = mem.peekW(reg.pc);
         reg.pc += 2;
         mem.pokeW(a, reg.sp);
@@ -499,7 +499,7 @@ public class Cpu {
         return insts[0x08].cycle[0];
     }
 
-    int ADD_HL_BC() {
+    private int ADD_HL_BC() {
         int hl = reg.getHl();
         int rr = reg.getBc();
         int res = hl + rr;
@@ -514,7 +514,7 @@ public class Cpu {
         return insts[0x09].cycle[0];
     }
 
-    int LD_A_pBCs() {
+    private int LD_A_pBCs() {
         reg.a = mem.peekB(reg.getBc());
 
         nimo = "LD A,(BC)";
@@ -522,7 +522,7 @@ public class Cpu {
         return insts[0x0a].cycle[0];
     }
 
-    int DEC_BC() {
+    private int DEC_BC() {
         reg.setBc(reg.getBc() - 1);
 
         nimo = "DEC BC";
@@ -530,7 +530,7 @@ public class Cpu {
         return insts[0x0b].cycle[0];
     }
 
-    int INC_C() {
+    private int INC_C() {
         byte d = reg.c;
         reg.c++;
 
@@ -544,7 +544,7 @@ public class Cpu {
         return insts[0x0c].cycle[0];
     }
 
-    int DEC_C() {
+    private int DEC_C() {
         byte d = reg.c;
         reg.c--;
 
@@ -558,7 +558,7 @@ public class Cpu {
         return insts[0x0d].cycle[0];
     }
 
-    int LD_C_d8() {
+    private int LD_C_d8() {
         byte d = mem.peekB(reg.pc++);
         reg.pc &= 0xffff;
         reg.c = d;
@@ -568,7 +568,7 @@ public class Cpu {
         return insts[0x0e].cycle[0];
     }
 
-    int RRCA() {
+    private int RRCA() {
         byte d = reg.a;
         reg.setC((d & 0x01) != 0);
 
@@ -585,7 +585,7 @@ public class Cpu {
     }
 
     // 0x10
-    int STOP_0() {
+    private int STOP_0() {
         reg.pc++;
         reg.pc &= 0xFFFF;
         isStop = true;
@@ -593,7 +593,7 @@ public class Cpu {
         return insts[0x10].cycle[0];
     }
 
-    int LD_DE_d16() {
+    private int LD_DE_d16() {
         int d = mem.peekW(reg.pc);
         reg.pc += 2;
         reg.setDe(d);
@@ -603,7 +603,7 @@ public class Cpu {
         return insts[0x11].cycle[0];
     }
 
-    int LD_pDEs_A() {
+    private int LD_pDEs_A() {
         mem.pokeB(reg.getDe(), reg.a);
 
         nimo = "LD (DE),A";
@@ -611,7 +611,7 @@ public class Cpu {
         return insts[0x12].cycle[0];
     }
 
-    int INC_DE() {
+    private int INC_DE() {
         reg.setDe(reg.getDe() + 1);
 
         nimo = "INC DE";
@@ -619,7 +619,7 @@ public class Cpu {
         return insts[0x13].cycle[0];
     }
 
-    int INC_D() {
+    private int INC_D() {
         byte d = reg.d;
         reg.d++;
 
@@ -633,7 +633,7 @@ public class Cpu {
         return insts[0x14].cycle[0];
     }
 
-    int DEC_D() {
+    private int DEC_D() {
         byte d = reg.d;
         reg.d--;
 
@@ -647,7 +647,7 @@ public class Cpu {
         return insts[0x15].cycle[0];
     }
 
-    int LD_D_d8() {
+    private int LD_D_d8() {
         byte d = mem.peekB(reg.pc++);
         reg.pc &= 0xffff;
         reg.d = d;
@@ -657,7 +657,7 @@ public class Cpu {
         return insts[0x16].cycle[0];
     }
 
-    int RLA() {
+    private int RLA() {
         byte d = reg.a;
         byte e = (byte) (reg.isC() ? 0x01 : 0);
         reg.setC((d & 0x80) != 0);
@@ -675,7 +675,7 @@ public class Cpu {
     }
 
     // 0x18
-    int JR_r8() {
+    private int JR_r8() {
         byte b = mem.peekB(reg.pc);
         int d = b; // signed
         reg.pc++;
@@ -688,7 +688,7 @@ public class Cpu {
         return c;
     }
 
-    int ADD_HL_DE() {
+    private int ADD_HL_DE() {
         int hl = reg.getHl();
         int rr = reg.getDe();
         int res = hl + rr;
@@ -703,7 +703,7 @@ public class Cpu {
         return insts[0x19].cycle[0];
     }
 
-    int LD_A_pDEs() {
+    private int LD_A_pDEs() {
         reg.a = mem.peekB(reg.getDe());
 
         nimo = "LD A,(DE)";
@@ -711,7 +711,7 @@ public class Cpu {
         return insts[0x1a].cycle[0];
     }
 
-    int DEC_DE() {
+    private int DEC_DE() {
         reg.setDe(reg.getDe() - 1);
 
         nimo = "DEC DE";
@@ -719,7 +719,7 @@ public class Cpu {
         return insts[0x1b].cycle[0];
     }
 
-    int INC_E() {
+    private int INC_E() {
         byte d = reg.e;
         reg.e++;
 
@@ -733,7 +733,7 @@ public class Cpu {
         return insts[0x1c].cycle[0];
     }
 
-    int DEC_E() {
+    private int DEC_E() {
         byte d = reg.e;
         reg.e--;
 
@@ -747,7 +747,7 @@ public class Cpu {
         return insts[0x1d].cycle[0];
     }
 
-    int LD_E_d8() {
+    private int LD_E_d8() {
         byte d = mem.peekB(reg.pc++);
         reg.pc &= 0xffff;
         reg.e = d;
@@ -757,7 +757,7 @@ public class Cpu {
         return insts[0x1e].cycle[0];
     }
 
-    int RRA() {
+    private int RRA() {
         byte d = reg.a;
         byte e = (byte) (reg.isC() ? 0x80 : 0);
         reg.setC((d & 0x01) != 0);
@@ -775,7 +775,7 @@ public class Cpu {
     }
 
     // 0x20
-    int JR_NZ_r8() {
+    private int JR_NZ_r8() {
         byte b = mem.peekB(reg.pc);
         int d = b; // signed
         reg.pc++;
@@ -791,7 +791,7 @@ public class Cpu {
         return c;
     }
 
-    int LD_HL_d16() {
+    private int LD_HL_d16() {
         int d = mem.peekW(reg.pc);
         reg.pc += 2;
         reg.setHl(d);
@@ -801,7 +801,7 @@ public class Cpu {
         return insts[0x21].cycle[0];
     }
 
-    int LD_pHLplss_A() {
+    private int LD_pHLplss_A() {
         mem.pokeB(reg.getHl(), reg.a);
         reg.setHl(reg.getHl() + 1);
 
@@ -810,7 +810,7 @@ public class Cpu {
         return insts[0x22].cycle[0];
     }
 
-    int INC_HL() {
+    private int INC_HL() {
         reg.setHl(reg.getHl() + 1);
 
         nimo = "INC HL";
@@ -818,7 +818,7 @@ public class Cpu {
         return insts[0x23].cycle[0];
     }
 
-    int INC_H() {
+    private int INC_H() {
         byte d = reg.h;
         reg.h++;
 
@@ -832,7 +832,7 @@ public class Cpu {
         return insts[0x24].cycle[0];
     }
 
-    int DEC_H() {
+    private int DEC_H() {
         byte d = reg.h;
         reg.h--;
 
@@ -846,7 +846,7 @@ public class Cpu {
         return insts[0x25].cycle[0];
     }
 
-    int LD_H_d8() {
+    private int LD_H_d8() {
         byte d = mem.peekB(reg.pc++);
         reg.pc &= 0xffff;
         reg.h = d;
@@ -856,7 +856,7 @@ public class Cpu {
         return insts[0x26].cycle[0];
     }
 
-    int DAA() {
+    private int DAA() {
         int a = reg.a & 0xFF;
         if (!reg.isS()) {
             if (reg.isH() || (a & 0x0F) > 0x09) {
@@ -885,7 +885,7 @@ public class Cpu {
     }
 
     // 0x28
-    int JR_Z_r8() {
+    private int JR_Z_r8() {
         byte b = mem.peekB(reg.pc);
         int d = b; // signed
         reg.pc++;
@@ -901,7 +901,7 @@ public class Cpu {
         return c;
     }
 
-    int ADD_HL_HL() {
+    private int ADD_HL_HL() {
         int hl = reg.getHl();
         int res = hl + hl;
         reg.setHl(res & 0xFFFF);
@@ -915,7 +915,7 @@ public class Cpu {
         return insts[0x29].cycle[0];
     }
 
-    int LD_A_pHLplss() {
+    private int LD_A_pHLplss() {
         byte d = mem.peekB(reg.getHl());
         reg.a = d;
         reg.setHl(reg.getHl() + 1);
@@ -925,7 +925,7 @@ public class Cpu {
         return insts[0x2a].cycle[0];
     }
 
-    int DEC_HL() {
+    private int DEC_HL() {
         reg.setHl(reg.getHl() - 1);
 
         nimo = "DEC HL";
@@ -933,7 +933,7 @@ public class Cpu {
         return insts[0x2b].cycle[0];
     }
 
-    int INC_L() {
+    private int INC_L() {
         byte d = reg.l;
         reg.l++;
 
@@ -947,7 +947,7 @@ public class Cpu {
         return insts[0x2c].cycle[0];
     }
 
-    int DEC_L() {
+    private int DEC_L() {
         byte d = reg.l;
         reg.l--;
 
@@ -961,7 +961,7 @@ public class Cpu {
         return insts[0x2d].cycle[0];
     }
 
-    int LD_L_d8() {
+    private int LD_L_d8() {
         byte d = mem.peekB(reg.pc++);
         reg.pc &= 0xffff;
         reg.l = d;
@@ -971,7 +971,7 @@ public class Cpu {
         return insts[0x2e].cycle[0];
     }
 
-    int CPL() {
+    private int CPL() {
         reg.a = (byte) (~reg.a);
 
         nimo = "CPL";
@@ -980,7 +980,7 @@ public class Cpu {
     }
 
     // 0x30
-    int JR_NC_r8() {
+    private int JR_NC_r8() {
         byte b = mem.peekB(reg.pc);
         int d = b; // signed
         reg.pc++;
@@ -996,7 +996,7 @@ public class Cpu {
         return c;
     }
 
-    int LD_SP_d16() {
+    private int LD_SP_d16() {
         int d = mem.peekW(reg.pc);
         reg.pc += 2;
         reg.sp = d;
@@ -1006,7 +1006,7 @@ public class Cpu {
         return insts[0x31].cycle[0];
     }
 
-    int LD_pHLmiss_A() {
+    private int LD_pHLmiss_A() {
         mem.pokeB(reg.getHl(), reg.a);
         reg.setHl(reg.getHl() - 1);
 
@@ -1015,7 +1015,7 @@ public class Cpu {
         return insts[0x32].cycle[0];
     }
 
-    int INC_SP() {
+    private int INC_SP() {
         reg.sp++;
         reg.sp &= 0xFFFF;
 
@@ -1024,7 +1024,7 @@ public class Cpu {
         return insts[0x33].cycle[0];
     }
 
-    int INC_pHLs() {
+    private int INC_pHLs() {
         byte d = mem.peekB(reg.getHl());
         byte e = (byte) (d + 1);
         mem.pokeB(reg.getHl(), e);
@@ -1039,7 +1039,7 @@ public class Cpu {
         return insts[0x34].cycle[0];
     }
 
-    int DEC_pHLs() {
+    private int DEC_pHLs() {
         byte d = mem.peekB(reg.getHl());
         byte e = (byte) (d - 1);
         mem.pokeB(reg.getHl(), e);
@@ -1054,7 +1054,7 @@ public class Cpu {
         return insts[0x35].cycle[0];
     }
 
-    int LD_pHLs_d8() {
+    private int LD_pHLs_d8() {
         byte d = mem.peekB(reg.pc++);
         reg.pc &= 0xffff;
         mem.pokeB(reg.getHl(), d);
@@ -1064,7 +1064,7 @@ public class Cpu {
         return insts[0x36].cycle[0];
     }
 
-    int SCF() {
+    private int SCF() {
         reg.setS(false);
         reg.setH(false);
         reg.setC(true);
@@ -1075,7 +1075,7 @@ public class Cpu {
     }
 
     // 0x38
-    int JR_C_r8() {
+    private int JR_C_r8() {
         byte b = mem.peekB(reg.pc);
         int d = b; // signed
         reg.pc++;
@@ -1091,7 +1091,7 @@ public class Cpu {
         return c;
     }
 
-    int ADD_HL_SP() {
+    private int ADD_HL_SP() {
         int hl = reg.getHl();
         int sp = reg.sp;
         int res = hl + sp;
@@ -1106,7 +1106,7 @@ public class Cpu {
         return insts[0x39].cycle[0];
     }
 
-    int LD_A_pHLmiss() {
+    private int LD_A_pHLmiss() {
         byte d = mem.peekB(reg.getHl());
         reg.a = d;
         reg.setHl(reg.getHl() - 1);
@@ -1116,7 +1116,7 @@ public class Cpu {
         return insts[0x3a].cycle[0];
     }
 
-    int DEC_SP() {
+    private int DEC_SP() {
         reg.sp--;
         reg.sp &= 0xFFFF;
 
@@ -1125,7 +1125,7 @@ public class Cpu {
         return insts[0x3b].cycle[0];
     }
 
-    int INC_A() {
+    private int INC_A() {
         byte d = reg.a;
         reg.a++;
 
@@ -1139,7 +1139,7 @@ public class Cpu {
         return insts[0x3c].cycle[0];
     }
 
-    int DEC_A() {
+    private int DEC_A() {
         byte d = reg.a;
         reg.a--;
 
@@ -1153,7 +1153,7 @@ public class Cpu {
         return insts[0x3d].cycle[0];
     }
 
-    int LD_A_d8() {
+    private int LD_A_d8() {
         byte d = mem.peekB(reg.pc++);
         reg.pc &= 0xffff;
         reg.a = d;
@@ -1163,7 +1163,7 @@ public class Cpu {
         return insts[0x3e].cycle[0];
     }
 
-    int CCF() {
+    private int CCF() {
         reg.setS(false);
         reg.setH(false);
         reg.setC(!reg.isC());
@@ -1174,15 +1174,15 @@ public class Cpu {
     }
 
     // 0x40
-    int LD_B_B() {
-        reg.b = reg.b;
+    private int LD_B_B() {
+//        reg.b = reg.b;
 
         nimo = "LD B,B";
 
         return insts[0x40].cycle[0];
     }
 
-    int LD_B_C() {
+    private int LD_B_C() {
         reg.b = reg.c;
 
         nimo = "LD B,C";
@@ -1190,7 +1190,7 @@ public class Cpu {
         return insts[0x41].cycle[0];
     }
 
-    int LD_B_D() {
+    private int LD_B_D() {
         reg.b = reg.d;
 
         nimo = "LD B,D";
@@ -1198,7 +1198,7 @@ public class Cpu {
         return insts[0x42].cycle[0];
     }
 
-    int LD_B_E() {
+    private int LD_B_E() {
         reg.b = reg.e;
 
         nimo = "LD B,E";
@@ -1206,7 +1206,7 @@ public class Cpu {
         return insts[0x43].cycle[0];
     }
 
-    int LD_B_H() {
+    private int LD_B_H() {
         reg.b = reg.h;
 
         nimo = "LD B,H";
@@ -1214,7 +1214,7 @@ public class Cpu {
         return insts[0x44].cycle[0];
     }
 
-    int LD_B_L() {
+    private int LD_B_L() {
         reg.b = reg.l;
 
         nimo = "LD B,L";
@@ -1222,7 +1222,7 @@ public class Cpu {
         return insts[0x45].cycle[0];
     }
 
-    int LD_B_pHLs() {
+    private int LD_B_pHLs() {
         byte d = mem.peekB(reg.getHl());
         reg.b = d;
 
@@ -1231,7 +1231,7 @@ public class Cpu {
         return insts[0x46].cycle[0];
     }
 
-    int LD_B_A() {
+    private int LD_B_A() {
         reg.b = reg.a;
 
         nimo = "LD B,A";
@@ -1240,7 +1240,7 @@ public class Cpu {
     }
 
     // 0x48
-    int LD_C_B() {
+    private int LD_C_B() {
         reg.c = reg.b;
 
         nimo = "LD C,B";
@@ -1248,15 +1248,15 @@ public class Cpu {
         return insts[0x48].cycle[0];
     }
 
-    int LD_C_C() {
-        reg.c = reg.c;
+    private int LD_C_C() {
+//        reg.c = reg.c;
 
         nimo = "LD C,C";
 
         return insts[0x49].cycle[0];
     }
 
-    int LD_C_D() {
+    private int LD_C_D() {
         reg.c = reg.d;
 
         nimo = "LD C,D";
@@ -1264,7 +1264,7 @@ public class Cpu {
         return insts[0x4a].cycle[0];
     }
 
-    int LD_C_E() {
+    private int LD_C_E() {
         reg.c = reg.e;
 
         nimo = "LD C,E";
@@ -1272,7 +1272,7 @@ public class Cpu {
         return insts[0x4b].cycle[0];
     }
 
-    int LD_C_H() {
+    private int LD_C_H() {
         reg.c = reg.h;
 
         nimo = "LD C,H";
@@ -1280,7 +1280,7 @@ public class Cpu {
         return insts[0x4c].cycle[0];
     }
 
-    int LD_C_L() {
+    private int LD_C_L() {
         reg.c = reg.l;
 
         nimo = "LD C,L";
@@ -1288,7 +1288,7 @@ public class Cpu {
         return insts[0x4d].cycle[0];
     }
 
-    int LD_C_pHLs() {
+    private int LD_C_pHLs() {
         byte d = mem.peekB(reg.getHl());
         reg.c = d;
 
@@ -1297,7 +1297,7 @@ public class Cpu {
         return insts[0x4e].cycle[0];
     }
 
-    int LD_C_A() {
+    private int LD_C_A() {
         reg.c = reg.a;
 
         nimo = "LD C,A";
@@ -1306,7 +1306,7 @@ public class Cpu {
     }
 
     // 0x50
-    int LD_D_B() {
+    private int LD_D_B() {
         reg.d = reg.b;
 
         nimo = "LD D,B";
@@ -1314,7 +1314,7 @@ public class Cpu {
         return insts[0x50].cycle[0];
     }
 
-    int LD_D_C() {
+    private int LD_D_C() {
         reg.d = reg.c;
 
         nimo = "LD D,C";
@@ -1322,15 +1322,15 @@ public class Cpu {
         return insts[0x51].cycle[0];
     }
 
-    int LD_D_D() {
-        reg.d = reg.d;
+    private int LD_D_D() {
+//        reg.d = reg.d;
 
         nimo = "LD D,D";
 
         return insts[0x52].cycle[0];
     }
 
-    int LD_D_E() {
+    private int LD_D_E() {
         reg.d = reg.e;
 
         nimo = "LD D,E";
@@ -1338,7 +1338,7 @@ public class Cpu {
         return insts[0x53].cycle[0];
     }
 
-    int LD_D_H() {
+    private int LD_D_H() {
         reg.d = reg.h;
 
         nimo = "LD D,H";
@@ -1346,7 +1346,7 @@ public class Cpu {
         return insts[0x54].cycle[0];
     }
 
-    int LD_D_L() {
+    private int LD_D_L() {
         reg.d = reg.l;
 
         nimo = "LD D,L";
@@ -1354,7 +1354,7 @@ public class Cpu {
         return insts[0x55].cycle[0];
     }
 
-    int LD_D_pHLs() {
+    private int LD_D_pHLs() {
         byte d = mem.peekB(reg.getHl());
         reg.d = d;
 
@@ -1363,7 +1363,7 @@ public class Cpu {
         return insts[0x56].cycle[0];
     }
 
-    int LD_D_A() {
+    private int LD_D_A() {
         reg.d = reg.a;
 
         nimo = "LD D,A";
@@ -1372,7 +1372,7 @@ public class Cpu {
     }
 
     // 0x58
-    int LD_E_B() {
+    private int LD_E_B() {
         reg.e = reg.b;
 
         nimo = "LD E,B";
@@ -1380,7 +1380,7 @@ public class Cpu {
         return insts[0x58].cycle[0];
     }
 
-    int LD_E_C() {
+    private int LD_E_C() {
         reg.e = reg.c;
 
         nimo = "LD E,C";
@@ -1388,7 +1388,7 @@ public class Cpu {
         return insts[0x59].cycle[0];
     }
 
-    int LD_E_D() {
+    private int LD_E_D() {
         reg.e = reg.d;
 
         nimo = "LD E,D";
@@ -1396,15 +1396,15 @@ public class Cpu {
         return insts[0x5a].cycle[0];
     }
 
-    int LD_E_E() {
-        reg.e = reg.e;
+    private int LD_E_E() {
+//        reg.e = reg.e;
 
         nimo = "LD E,E";
 
         return insts[0x5b].cycle[0];
     }
 
-    int LD_E_H() {
+    private int LD_E_H() {
         reg.e = reg.h;
 
         nimo = "LD E,H";
@@ -1412,7 +1412,7 @@ public class Cpu {
         return insts[0x5c].cycle[0];
     }
 
-    int LD_E_L() {
+    private int LD_E_L() {
         reg.e = reg.l;
 
         nimo = "LD E,L";
@@ -1420,7 +1420,7 @@ public class Cpu {
         return insts[0x5d].cycle[0];
     }
 
-    int LD_E_pHLs() {
+    private int LD_E_pHLs() {
         byte d = mem.peekB(reg.getHl());
         reg.e = d;
 
@@ -1429,7 +1429,7 @@ public class Cpu {
         return insts[0x5e].cycle[0];
     }
 
-    int LD_E_A() {
+    private int LD_E_A() {
         reg.e = reg.a;
 
         nimo = "LD E,A";
@@ -1438,7 +1438,7 @@ public class Cpu {
     }
 
     // 0x60
-    int LD_H_B() {
+    private int LD_H_B() {
         reg.h = reg.b;
 
         nimo = "LD H,B";
@@ -1446,7 +1446,7 @@ public class Cpu {
         return insts[0x60].cycle[0];
     }
 
-    int LD_H_C() {
+    private int LD_H_C() {
         reg.h = reg.c;
 
         nimo = "LD H,C";
@@ -1454,7 +1454,7 @@ public class Cpu {
         return insts[0x61].cycle[0];
     }
 
-    int LD_H_D() {
+    private int LD_H_D() {
         reg.h = reg.d;
 
         nimo = "LD H,D";
@@ -1462,7 +1462,7 @@ public class Cpu {
         return insts[0x62].cycle[0];
     }
 
-    int LD_H_E() {
+    private int LD_H_E() {
         reg.h = reg.e;
 
         nimo = "LD H,E";
@@ -1470,15 +1470,15 @@ public class Cpu {
         return insts[0x63].cycle[0];
     }
 
-    int LD_H_H() {
-        reg.h = reg.h;
+    private int LD_H_H() {
+//        reg.h = reg.h;
 
         nimo = "LD H,H";
 
         return insts[0x64].cycle[0];
     }
 
-    int LD_H_L() {
+    private int LD_H_L() {
         reg.h = reg.l;
 
         nimo = "LD H,L";
@@ -1486,7 +1486,7 @@ public class Cpu {
         return insts[0x65].cycle[0];
     }
 
-    int LD_H_pHLs() {
+    private int LD_H_pHLs() {
         byte d = mem.peekB(reg.getHl());
         reg.h = d;
 
@@ -1495,7 +1495,7 @@ public class Cpu {
         return insts[0x66].cycle[0];
     }
 
-    int LD_H_A() {
+    private int LD_H_A() {
         reg.h = reg.a;
 
         nimo = "LD H,A";
@@ -1504,7 +1504,7 @@ public class Cpu {
     }
 
     // 0x68
-    int LD_L_B() {
+    private int LD_L_B() {
         reg.l = reg.b;
 
         nimo = "LD L,B";
@@ -1512,7 +1512,7 @@ public class Cpu {
         return insts[0x68].cycle[0];
     }
 
-    int LD_L_C() {
+    private int LD_L_C() {
         reg.l = reg.c;
 
         nimo = "LD L,C";
@@ -1520,7 +1520,7 @@ public class Cpu {
         return insts[0x69].cycle[0];
     }
 
-    int LD_L_D() {
+    private int LD_L_D() {
         reg.l = reg.d;
 
         nimo = "LD L,D";
@@ -1528,7 +1528,7 @@ public class Cpu {
         return insts[0x6a].cycle[0];
     }
 
-    int LD_L_E() {
+    private int LD_L_E() {
         reg.l = reg.e;
 
         nimo = "LD L,E";
@@ -1536,7 +1536,7 @@ public class Cpu {
         return insts[0x6b].cycle[0];
     }
 
-    int LD_L_H() {
+    private int LD_L_H() {
         reg.l = reg.h;
 
         nimo = "LD L,H";
@@ -1544,15 +1544,15 @@ public class Cpu {
         return insts[0x6c].cycle[0];
     }
 
-    int LD_L_L() {
-        reg.l = reg.l;
+    private int LD_L_L() {
+//        reg.l = reg.l;
 
         nimo = "LD L,L";
 
         return insts[0x6d].cycle[0];
     }
 
-    int LD_L_pHLs() {
+    private int LD_L_pHLs() {
         byte d = mem.peekB(reg.getHl());
         reg.l = d;
 
@@ -1561,7 +1561,7 @@ public class Cpu {
         return insts[0x6e].cycle[0];
     }
 
-    int LD_L_A() {
+    private int LD_L_A() {
         reg.l = reg.a;
 
         nimo = "LD L,A";
@@ -1570,7 +1570,7 @@ public class Cpu {
     }
 
     // 0x70
-    int LD_pHLs_B() {
+    private int LD_pHLs_B() {
         mem.pokeB(reg.getHl(), reg.b);
 
         nimo = "LD (HL),B";
@@ -1578,7 +1578,7 @@ public class Cpu {
         return insts[0x70].cycle[0];
     }
 
-    int LD_pHLs_C() {
+    private int LD_pHLs_C() {
         mem.pokeB(reg.getHl(), reg.c);
 
         nimo = "LD (HL),C";
@@ -1586,7 +1586,7 @@ public class Cpu {
         return insts[0x71].cycle[0];
     }
 
-    int LD_pHLs_D() {
+    private int LD_pHLs_D() {
         mem.pokeB(reg.getHl(), reg.d);
 
         nimo = "LD (HL),D";
@@ -1594,7 +1594,7 @@ public class Cpu {
         return insts[0x72].cycle[0];
     }
 
-    int LD_pHLs_E() {
+    private int LD_pHLs_E() {
         mem.pokeB(reg.getHl(), reg.e);
 
         nimo = "LD (HL),E";
@@ -1602,7 +1602,7 @@ public class Cpu {
         return insts[0x73].cycle[0];
     }
 
-    int LD_pHLs_H() {
+    private int LD_pHLs_H() {
         mem.pokeB(reg.getHl(), reg.h);
 
         nimo = "LD (HL),H";
@@ -1610,7 +1610,7 @@ public class Cpu {
         return insts[0x74].cycle[0];
     }
 
-    int LD_pHLs_L() {
+    private int LD_pHLs_L() {
         mem.pokeB(reg.getHl(), reg.l);
 
         nimo = "LD (HL),L";
@@ -1618,7 +1618,7 @@ public class Cpu {
         return insts[0x75].cycle[0];
     }
 
-    int HALT() {
+    private int HALT() {
         isHalt = true;
 
         nimo = "HALT";
@@ -1626,7 +1626,7 @@ public class Cpu {
         return insts[0x76].cycle[0];
     }
 
-    int LD_pHLs_A() {
+    private int LD_pHLs_A() {
         mem.pokeB(reg.getHl(), reg.a);
 
         nimo = "LD (HL),A";
@@ -1635,7 +1635,7 @@ public class Cpu {
     }
 
     // 0x78
-    int LD_A_B() {
+    private int LD_A_B() {
         reg.a = reg.b;
 
         nimo = "LD A,B";
@@ -1643,7 +1643,7 @@ public class Cpu {
         return insts[0x78].cycle[0];
     }
 
-    int LD_A_C() {
+    private int LD_A_C() {
         reg.a = reg.c;
 
         nimo = "LD A,C";
@@ -1651,7 +1651,7 @@ public class Cpu {
         return insts[0x79].cycle[0];
     }
 
-    int LD_A_D() {
+    private int LD_A_D() {
         reg.a = reg.d;
 
         nimo = "LD A,D";
@@ -1659,7 +1659,7 @@ public class Cpu {
         return insts[0x7a].cycle[0];
     }
 
-    int LD_A_E() {
+    private int LD_A_E() {
         reg.a = reg.e;
 
         nimo = "LD A,E";
@@ -1667,7 +1667,7 @@ public class Cpu {
         return insts[0x7b].cycle[0];
     }
 
-    int LD_A_H() {
+    private int LD_A_H() {
         reg.a = reg.h;
 
         nimo = "LD A,H";
@@ -1675,7 +1675,7 @@ public class Cpu {
         return insts[0x7c].cycle[0];
     }
 
-    int LD_A_L() {
+    private int LD_A_L() {
         reg.a = reg.l;
 
         nimo = "LD A,L";
@@ -1683,7 +1683,7 @@ public class Cpu {
         return insts[0x7d].cycle[0];
     }
 
-    int LD_A_pHLs() {
+    private int LD_A_pHLs() {
         byte d = mem.peekB(reg.getHl());
         reg.a = d;
 
@@ -1692,8 +1692,8 @@ public class Cpu {
         return insts[0x7e].cycle[0];
     }
 
-    int LD_A_A() {
-        reg.a = reg.a;
+    private int LD_A_A() {
+//        reg.a = reg.a;
 
         nimo = "LD A,A";
 
@@ -1701,7 +1701,7 @@ public class Cpu {
     }
 
     // 0x80
-    int ADD_A_B() {
+    private int ADD_A_B() {
         int a = reg.a & 0xFF;
         int b = reg.b & 0xFF;
         reg.a = (byte) ((a + b) & 0xFF);
@@ -1716,7 +1716,7 @@ public class Cpu {
         return insts[0x80].cycle[0];
     }
 
-    int ADD_A_C() {
+    private int ADD_A_C() {
         int a = reg.a & 0xFF;
         int b = reg.c & 0xFF;
         reg.a = (byte) ((a + b) & 0xFF);
@@ -1731,7 +1731,7 @@ public class Cpu {
         return insts[0x81].cycle[0];
     }
 
-    int ADD_A_D() {
+    private int ADD_A_D() {
         int a = reg.a & 0xFF;
         int b = reg.d & 0xFF;
         reg.a = (byte) ((a + b) & 0xFF);
@@ -1746,7 +1746,7 @@ public class Cpu {
         return insts[0x82].cycle[0];
     }
 
-    int ADD_A_E() {
+    private int ADD_A_E() {
         int a = reg.a & 0xFF;
         int b = reg.e & 0xFF;
         reg.a = (byte) ((a + b) & 0xFF);
@@ -1761,7 +1761,7 @@ public class Cpu {
         return insts[0x83].cycle[0];
     }
 
-    int ADD_A_H() {
+    private int ADD_A_H() {
         int a = reg.a & 0xFF;
         int b = reg.h & 0xFF;
         reg.a = (byte) ((a + b) & 0xFF);
@@ -1776,7 +1776,7 @@ public class Cpu {
         return insts[0x84].cycle[0];
     }
 
-    int ADD_A_L() {
+    private int ADD_A_L() {
         int a = reg.a & 0xFF;
         int b = reg.l & 0xFF;
         reg.a = (byte) ((a + b) & 0xFF);
@@ -1791,7 +1791,7 @@ public class Cpu {
         return insts[0x85].cycle[0];
     }
 
-    int ADD_A_pHLs() {
+    private int ADD_A_pHLs() {
         int a = reg.a & 0xFF;
         int b = mem.peekB(reg.getHl()) & 0xFF;
         reg.a = (byte) ((a + b) & 0xFF);
@@ -1806,7 +1806,7 @@ public class Cpu {
         return insts[0x86].cycle[0];
     }
 
-    int ADD_A_A() {
+    private int ADD_A_A() {
         int a = reg.a & 0xFF;
         int b = reg.a & 0xFF;
         reg.a = (byte) ((a + b) & 0xFF);
@@ -1822,7 +1822,7 @@ public class Cpu {
     }
 
     // 0x88
-    int ADC_A_B() {
+    private int ADC_A_B() {
         int a = reg.a & 0xFF;
         int b = reg.b & 0xFF;
         int carry = reg.isC() ? 1 : 0;
@@ -1838,7 +1838,7 @@ public class Cpu {
         return insts[0x88].cycle[0];
     }
 
-    int ADC_A_C() {
+    private int ADC_A_C() {
         int a = reg.a & 0xFF;
         int b = reg.c & 0xFF;
         int carry = reg.isC() ? 1 : 0;
@@ -1854,7 +1854,7 @@ public class Cpu {
         return insts[0x89].cycle[0];
     }
 
-    int ADC_A_D() {
+    private int ADC_A_D() {
         int a = reg.a & 0xFF;
         int b = reg.d & 0xFF;
         int carry = reg.isC() ? 1 : 0;
@@ -1870,7 +1870,7 @@ public class Cpu {
         return insts[0x8a].cycle[0];
     }
 
-    int ADC_A_E() {
+    private int ADC_A_E() {
         int a = reg.a & 0xFF;
         int b = reg.e & 0xFF;
         int carry = reg.isC() ? 1 : 0;
@@ -1886,7 +1886,7 @@ public class Cpu {
         return insts[0x8b].cycle[0];
     }
 
-    int ADC_A_H() {
+    private int ADC_A_H() {
         int a = reg.a & 0xFF;
         int b = reg.h & 0xFF;
         int carry = reg.isC() ? 1 : 0;
@@ -1902,7 +1902,7 @@ public class Cpu {
         return insts[0x8c].cycle[0];
     }
 
-    int ADC_A_L() {
+    private int ADC_A_L() {
         int a = reg.a & 0xFF;
         int b = reg.l & 0xFF;
         int carry = reg.isC() ? 1 : 0;
@@ -1918,7 +1918,7 @@ public class Cpu {
         return insts[0x8d].cycle[0];
     }
 
-    int ADC_A_pHLs() {
+    private int ADC_A_pHLs() {
         int a = reg.a & 0xFF;
         int b = mem.peekB(reg.getHl()) & 0xFF;
         int carry = reg.isC() ? 1 : 0;
@@ -1934,7 +1934,7 @@ public class Cpu {
         return insts[0x8e].cycle[0];
     }
 
-    int ADC_A_A() {
+    private int ADC_A_A() {
         int a = reg.a & 0xFF;
         int b = reg.a & 0xFF;
         int carry = reg.isC() ? 1 : 0;
@@ -1951,7 +1951,7 @@ public class Cpu {
     }
 
     // 0x90
-    int SUB_B() {
+    private int SUB_B() {
         int a = reg.a & 0xFF;
         int b = reg.b & 0xFF;
         reg.a = (byte) ((a - b) & 0xFF);
@@ -1966,7 +1966,7 @@ public class Cpu {
         return insts[0x90].cycle[0];
     }
 
-    int SUB_C() {
+    private int SUB_C() {
         int a = reg.a & 0xFF;
         int b = reg.c & 0xFF;
         reg.a = (byte) ((a - b) & 0xFF);
@@ -1981,7 +1981,7 @@ public class Cpu {
         return insts[0x91].cycle[0];
     }
 
-    int SUB_D() {
+    private int SUB_D() {
         int a = reg.a & 0xFF;
         int b = reg.d & 0xFF;
         reg.a = (byte) ((a - b) & 0xFF);
@@ -1996,7 +1996,7 @@ public class Cpu {
         return insts[0x92].cycle[0];
     }
 
-    int SUB_E() {
+    private int SUB_E() {
         int a = reg.a & 0xFF;
         int b = reg.e & 0xFF;
         reg.a = (byte) ((a - b) & 0xFF);
@@ -2011,7 +2011,7 @@ public class Cpu {
         return insts[0x93].cycle[0];
     }
 
-    int SUB_H() {
+    private int SUB_H() {
         int a = reg.a & 0xFF;
         int b = reg.h & 0xFF;
         reg.a = (byte) ((a - b) & 0xFF);
@@ -2026,7 +2026,7 @@ public class Cpu {
         return insts[0x94].cycle[0];
     }
 
-    int SUB_L() {
+    private int SUB_L() {
         int a = reg.a & 0xFF;
         int b = reg.l & 0xFF;
         reg.a = (byte) ((a - b) & 0xFF);
@@ -2041,7 +2041,7 @@ public class Cpu {
         return insts[0x95].cycle[0];
     }
 
-    int SUB_pHLs() {
+    private int SUB_pHLs() {
         int a = reg.a & 0xFF;
         int b = mem.peekB(reg.getHl()) & 0xFF;
         reg.a = (byte) ((a - b) & 0xFF);
@@ -2056,7 +2056,7 @@ public class Cpu {
         return insts[0x96].cycle[0];
     }
 
-    int SUB_A() {
+    private int SUB_A() {
         int a = reg.a & 0xFF;
         int b = reg.a & 0xFF;
         reg.a = (byte) ((a - b) & 0xFF);
@@ -2072,7 +2072,7 @@ public class Cpu {
     }
 
     // 0x98
-    int SBC_A_B() {
+    private int SBC_A_B() {
         int a = reg.a & 0xFF;
         int b = reg.b & 0xFF;
         int carry = reg.isC() ? 1 : 0;
@@ -2088,7 +2088,7 @@ public class Cpu {
         return insts[0x98].cycle[0];
     }
 
-    int SBC_A_C() {
+    private int SBC_A_C() {
         int a = reg.a & 0xFF;
         int b = reg.c & 0xFF;
         int carry = reg.isC() ? 1 : 0;
@@ -2104,7 +2104,7 @@ public class Cpu {
         return insts[0x99].cycle[0];
     }
 
-    int SBC_A_D() {
+    private int SBC_A_D() {
         int a = reg.a & 0xFF;
         int b = reg.d & 0xFF;
         int carry = reg.isC() ? 1 : 0;
@@ -2120,7 +2120,7 @@ public class Cpu {
         return insts[0x9a].cycle[0];
     }
 
-    int SBC_A_E() {
+    private int SBC_A_E() {
         int a = reg.a & 0xFF;
         int b = reg.e & 0xFF;
         int carry = reg.isC() ? 1 : 0;
@@ -2136,7 +2136,7 @@ public class Cpu {
         return insts[0x9b].cycle[0];
     }
 
-    int SBC_A_H() {
+    private int SBC_A_H() {
         int a = reg.a & 0xFF;
         int b = reg.h & 0xFF;
         int carry = reg.isC() ? 1 : 0;
@@ -2152,7 +2152,7 @@ public class Cpu {
         return insts[0x9c].cycle[0];
     }
 
-    int SBC_A_L() {
+    private int SBC_A_L() {
         int a = reg.a & 0xFF;
         int b = reg.l & 0xFF;
         int carry = reg.isC() ? 1 : 0;
@@ -2168,7 +2168,7 @@ public class Cpu {
         return insts[0x9d].cycle[0];
     }
 
-    int SBC_A_pHLs() {
+    private int SBC_A_pHLs() {
         int a = reg.a & 0xFF;
         int b = mem.peekB(reg.getHl()) & 0xFF;
         int carry = reg.isC() ? 1 : 0;
@@ -2184,7 +2184,7 @@ public class Cpu {
         return insts[0x9e].cycle[0];
     }
 
-    int SBC_A_A() {
+    private int SBC_A_A() {
         int a = reg.a & 0xFF;
         int b = reg.a & 0xFF;
         int carry = reg.isC() ? 1 : 0;
@@ -2201,7 +2201,7 @@ public class Cpu {
     }
 
     // 0xa0
-    int AND_B() {
+    private int AND_B() {
         reg.a = (byte) (reg.a & reg.b);
 
         reg.setZ(reg.a == 0);
@@ -2214,7 +2214,7 @@ public class Cpu {
         return insts[0xa0].cycle[0];
     }
 
-    int AND_C() {
+    private int AND_C() {
         reg.a = (byte) (reg.a & reg.c);
 
         reg.setZ(reg.a == 0);
@@ -2227,7 +2227,7 @@ public class Cpu {
         return insts[0xa1].cycle[0];
     }
 
-    int AND_D() {
+    private int AND_D() {
         reg.a = (byte) (reg.a & reg.d);
 
         reg.setZ(reg.a == 0);
@@ -2240,7 +2240,7 @@ public class Cpu {
         return insts[0xa2].cycle[0];
     }
 
-    int AND_E() {
+    private int AND_E() {
         reg.a = (byte) (reg.a & reg.e);
 
         reg.setZ(reg.a == 0);
@@ -2253,7 +2253,7 @@ public class Cpu {
         return insts[0xa3].cycle[0];
     }
 
-    int AND_H() {
+    private int AND_H() {
         reg.a = (byte) (reg.a & reg.h);
 
         reg.setZ(reg.a == 0);
@@ -2266,7 +2266,7 @@ public class Cpu {
         return insts[0xa4].cycle[0];
     }
 
-    int AND_L() {
+    private int AND_L() {
         reg.a = (byte) (reg.a & reg.l);
 
         reg.setZ(reg.a == 0);
@@ -2279,7 +2279,7 @@ public class Cpu {
         return insts[0xa5].cycle[0];
     }
 
-    int AND_pHLs() {
+    private int AND_pHLs() {
         byte d = mem.peekB(reg.getHl());
         reg.a = (byte) (reg.a & d);
 
@@ -2293,7 +2293,7 @@ public class Cpu {
         return insts[0xa6].cycle[0];
     }
 
-    int AND_A() {
+    private int AND_A() {
         reg.a = (byte) (reg.a & reg.a);
 
         reg.setZ(reg.a == 0);
@@ -2307,7 +2307,7 @@ public class Cpu {
     }
 
     // 0xa8
-    int XOR_B() {
+    private int XOR_B() {
         reg.a = (byte) (reg.a ^ reg.b);
 
         reg.setZ(reg.a == 0);
@@ -2320,7 +2320,7 @@ public class Cpu {
         return insts[0xa8].cycle[0];
     }
 
-    int XOR_C() {
+    private int XOR_C() {
         reg.a = (byte) (reg.a ^ reg.c);
 
         reg.setZ(reg.a == 0);
@@ -2333,7 +2333,7 @@ public class Cpu {
         return insts[0xa9].cycle[0];
     }
 
-    int XOR_D() {
+    private int XOR_D() {
         reg.a = (byte) (reg.a ^ reg.d);
 
         reg.setZ(reg.a == 0);
@@ -2346,7 +2346,7 @@ public class Cpu {
         return insts[0xaa].cycle[0];
     }
 
-    int XOR_E() {
+    private int XOR_E() {
         reg.a = (byte) (reg.a ^ reg.e);
 
         reg.setZ(reg.a == 0);
@@ -2359,7 +2359,7 @@ public class Cpu {
         return insts[0xab].cycle[0];
     }
 
-    int XOR_H() {
+    private int XOR_H() {
         reg.a = (byte) (reg.a ^ reg.h);
 
         reg.setZ(reg.a == 0);
@@ -2372,7 +2372,7 @@ public class Cpu {
         return insts[0xac].cycle[0];
     }
 
-    int XOR_L() {
+    private int XOR_L() {
         reg.a = (byte) (reg.a ^ reg.l);
 
         reg.setZ(reg.a == 0);
@@ -2385,7 +2385,7 @@ public class Cpu {
         return insts[0xad].cycle[0];
     }
 
-    int XOR_pHLs() {
+    private int XOR_pHLs() {
         byte d = mem.peekB(reg.getHl());
         reg.a = (byte) (reg.a ^ d);
 
@@ -2399,7 +2399,7 @@ public class Cpu {
         return insts[0xae].cycle[0];
     }
 
-    int XOR_A() {
+    private int XOR_A() {
         reg.a = (byte) (reg.a ^ reg.a);
 
         reg.setZ(reg.a == 0);
@@ -2413,7 +2413,7 @@ public class Cpu {
     }
 
     // 0xb0
-    int OR_B() {
+    private int OR_B() {
         reg.a = (byte) (reg.a | reg.b);
 
         reg.setZ(reg.a == 0);
@@ -2426,7 +2426,7 @@ public class Cpu {
         return insts[0xb0].cycle[0];
     }
 
-    int OR_C() {
+    private int OR_C() {
         reg.a = (byte) (reg.a | reg.c);
 
         reg.setZ(reg.a == 0);
@@ -2439,7 +2439,7 @@ public class Cpu {
         return insts[0xb1].cycle[0];
     }
 
-    int OR_D() {
+    private int OR_D() {
         reg.a = (byte) (reg.a | reg.d);
 
         reg.setZ(reg.a == 0);
@@ -2452,7 +2452,7 @@ public class Cpu {
         return insts[0xb2].cycle[0];
     }
 
-    int OR_E() {
+    private int OR_E() {
         reg.a = (byte) (reg.a | reg.e);
 
         reg.setZ(reg.a == 0);
@@ -2465,7 +2465,7 @@ public class Cpu {
         return insts[0xb3].cycle[0];
     }
 
-    int OR_H() {
+    private int OR_H() {
         reg.a = (byte) (reg.a | reg.h);
 
         reg.setZ(reg.a == 0);
@@ -2478,7 +2478,7 @@ public class Cpu {
         return insts[0xb4].cycle[0];
     }
 
-    int OR_L() {
+    private int OR_L() {
         reg.a = (byte) (reg.a | reg.l);
 
         reg.setZ(reg.a == 0);
@@ -2491,7 +2491,7 @@ public class Cpu {
         return insts[0xb5].cycle[0];
     }
 
-    int OR_pHLs() {
+    private int OR_pHLs() {
         byte d = mem.peekB(reg.getHl());
         reg.a = (byte) (reg.a | d);
 
@@ -2505,7 +2505,7 @@ public class Cpu {
         return insts[0xb6].cycle[0];
     }
 
-    int OR_A() {
+    private int OR_A() {
         reg.a = (byte) (reg.a | reg.a);
 
         reg.setZ(reg.a == 0);
@@ -2519,7 +2519,7 @@ public class Cpu {
     }
 
     // 0xb8
-    int CP_B() {
+    private int CP_B() {
         int a = reg.b & 0xFF;
         int b = (reg.a & 0xFF) - a;
         int h = (reg.a & 0xf) - (a & 0xf);
@@ -2534,7 +2534,7 @@ public class Cpu {
         return insts[0xb8].cycle[0];
     }
 
-    int CP_C() {
+    private int CP_C() {
         int a = reg.c & 0xFF;
         int b = (reg.a & 0xFF) - a;
         int h = (reg.a & 0xf) - (a & 0xf);
@@ -2549,7 +2549,7 @@ public class Cpu {
         return insts[0xb9].cycle[0];
     }
 
-    int CP_D() {
+    private int CP_D() {
         int a = reg.d & 0xFF;
         int b = (reg.a & 0xFF) - a;
         int h = (reg.a & 0xf) - (a & 0xf);
@@ -2564,7 +2564,7 @@ public class Cpu {
         return insts[0xba].cycle[0];
     }
 
-    int CP_E() {
+    private int CP_E() {
         int a = reg.e & 0xFF;
         int b = (reg.a & 0xFF) - a;
         int h = (reg.a & 0xf) - (a & 0xf);
@@ -2579,7 +2579,7 @@ public class Cpu {
         return insts[0xbb].cycle[0];
     }
 
-    int CP_H() {
+    private int CP_H() {
         int a = reg.h & 0xFF;
         int b = (reg.a & 0xFF) - a;
         int h = (reg.a & 0xf) - (a & 0xf);
@@ -2594,7 +2594,7 @@ public class Cpu {
         return insts[0xbc].cycle[0];
     }
 
-    int CP_L() {
+    private int CP_L() {
         int a = reg.l & 0xFF;
         int b = (reg.a & 0xFF) - a;
         int h = (reg.a & 0xf) - (a & 0xf);
@@ -2609,7 +2609,7 @@ public class Cpu {
         return insts[0xbd].cycle[0];
     }
 
-    int CP_pHLs() {
+    private int CP_pHLs() {
         int a = mem.peekB(reg.getHl()) & 0xFF;
         int b = (reg.a & 0xFF) - a;
         int h = (reg.a & 0xf) - (a & 0xf);
@@ -2624,7 +2624,7 @@ public class Cpu {
         return insts[0xbe].cycle[0];
     }
 
-    int CP_A() {
+    private int CP_A() {
         int a = reg.a & 0xFF;
         int b = (reg.a & 0xFF) - a;
         int h = (reg.a & 0xf) - (a & 0xf);
@@ -2640,7 +2640,7 @@ public class Cpu {
     }
 
     // 0xc0
-    int RET_NZ() {
+    private int RET_NZ() {
         int c = insts[0xc0].cycle[1];
         if (!reg.isZ()) {
             reg.pc = pop();
@@ -2652,7 +2652,7 @@ public class Cpu {
         return c;
     }
 
-    int POP_BC() {
+    private int POP_BC() {
         reg.setBc(pop());
 
         nimo = "POP BC";
@@ -2660,7 +2660,7 @@ public class Cpu {
         return insts[0xc1].cycle[0];
     }
 
-    int JP_NZ_a16() {
+    private int JP_NZ_a16() {
         int d = mem.peekW(reg.pc);
         reg.pc += 2;
         reg.pc &= 0xFFFF;
@@ -2675,7 +2675,7 @@ public class Cpu {
         return c;
     }
 
-    int JP_a16() {
+    private int JP_a16() {
         int d = mem.peekW(reg.pc);
         reg.pc = d;
 
@@ -2684,7 +2684,7 @@ public class Cpu {
         return insts[0xc3].cycle[0];
     }
 
-    int CALL_NZ_a16() {
+    private int CALL_NZ_a16() {
         int d = mem.peekW(reg.pc);
         int cycle = 0;
         if (!reg.isZ()) {
@@ -2701,7 +2701,7 @@ public class Cpu {
         return insts[0xc4].cycle[cycle];
     }
 
-    int PUSH_BC() {
+    private int PUSH_BC() {
         push(reg.getBc());
 
         nimo = "PUSH BC";
@@ -2709,7 +2709,7 @@ public class Cpu {
         return insts[0xc5].cycle[0];
     }
 
-    int ADD_A_d8() {
+    private int ADD_A_d8() {
         int a = reg.a & 0xFF;
         int b = mem.peekB(reg.pc) & 0xFF;
         reg.a = (byte) ((a + b) & 0xFF);
@@ -2726,7 +2726,7 @@ public class Cpu {
         return insts[0xc6].cycle[0];
     }
 
-    int RST_00H() {
+    private int RST_00H() {
         push(reg.pc);
         reg.pc = 0x00;
 
@@ -2736,7 +2736,7 @@ public class Cpu {
     }
 
     // 0xc8
-    int RET_Z() {
+    private int RET_Z() {
         int c = insts[0xc8].cycle[1];
         if (reg.isZ()) {
             reg.pc = pop();
@@ -2748,7 +2748,7 @@ public class Cpu {
         return c;
     }
 
-    int RET() {
+    private int RET() {
         reg.pc = pop();
 
         nimo = "RET";
@@ -2756,7 +2756,7 @@ public class Cpu {
         return insts[0xc9].cycle[0];
     }
 
-    int JP_Z_a16() {
+    private int JP_Z_a16() {
         int d = mem.peekW(reg.pc);
         reg.pc += 2;
         reg.pc &= 0xFFFF;
@@ -2771,7 +2771,7 @@ public class Cpu {
         return c;
     }
 
-    int PREFIX_CB() {
+    private int PREFIX_CB() {
         cbSwitch = true;
 
         nimo = "PREFIX CB";
@@ -2779,7 +2779,7 @@ public class Cpu {
         return insts[0xcb].cycle[0];
     }
 
-    int CALL_Z_a16() {
+    private int CALL_Z_a16() {
         int d = mem.peekW(reg.pc);
         int cycle = 0;
         if (reg.isZ()) {
@@ -2796,7 +2796,7 @@ public class Cpu {
         return insts[0xcc].cycle[cycle];
     }
 
-    int CALL_a16() {
+    private int CALL_a16() {
         push((reg.pc + 2) & 0xFFFF);
         reg.pc = mem.peekW(reg.pc);
 
@@ -2805,7 +2805,7 @@ public class Cpu {
         return insts[0xcd].cycle[0];
     }
 
-    int ADC_A_d8() {
+    private int ADC_A_d8() {
         int a = reg.a & 0xFF;
         int b = mem.peekB(reg.pc) & 0xFF;
         reg.pc++;
@@ -2823,7 +2823,7 @@ public class Cpu {
         return insts[0xce].cycle[0];
     }
 
-    int RST_08H() {
+    private int RST_08H() {
         push(reg.pc);
         reg.pc = 0x08;
 
@@ -2833,7 +2833,7 @@ public class Cpu {
     }
 
     // 0xd0
-    int RET_NC() {
+    private int RET_NC() {
         int c = insts[0xd0].cycle[1];
         if (!reg.isC()) {
             reg.pc = pop();
@@ -2845,7 +2845,7 @@ public class Cpu {
         return c;
     }
 
-    int POP_DE() {
+    private int POP_DE() {
         reg.setDe(pop());
 
         nimo = "POP DE";
@@ -2853,7 +2853,7 @@ public class Cpu {
         return insts[0xd1].cycle[0];
     }
 
-    int JP_NC_a16() {
+    private int JP_NC_a16() {
         int d = mem.peekW(reg.pc);
         reg.pc += 2;
         reg.pc &= 0xFFFF;
@@ -2870,7 +2870,7 @@ public class Cpu {
 
     // 0xd3 is not present (no op)
 
-    int CALL_NC_a16() {
+    private int CALL_NC_a16() {
         int d = mem.peekW(reg.pc);
         int cycle = 0;
         if (!reg.isC()) {
@@ -2887,7 +2887,7 @@ public class Cpu {
         return insts[0xd4].cycle[cycle];
     }
 
-    int PUSH_DE() {
+    private int PUSH_DE() {
         push(reg.getDe());
 
         nimo = "PUSH DE";
@@ -2895,7 +2895,7 @@ public class Cpu {
         return insts[0xd5].cycle[0];
     }
 
-    int SUB_d8() {
+    private int SUB_d8() {
         int a = reg.a & 0xFF;
         int b = mem.peekB(reg.pc) & 0xFF;
         reg.a = (byte) ((a - b) & 0xFF);
@@ -2912,7 +2912,7 @@ public class Cpu {
         return insts[0xd6].cycle[0];
     }
 
-    int RST_10H() {
+    private int RST_10H() {
         push(reg.pc);
         reg.pc = 0x10;
 
@@ -2922,7 +2922,7 @@ public class Cpu {
     }
 
     // 0xd8
-    int RET_C() {
+    private int RET_C() {
         int c = insts[0xd8].cycle[1];
         if (reg.isC()) {
             reg.pc = pop();
@@ -2934,7 +2934,7 @@ public class Cpu {
         return c;
     }
 
-    int RETI() {
+    private int RETI() {
         int c = insts[0xd9].cycle[0];
         reg.pc = pop();
         ime = 1;
@@ -2944,7 +2944,7 @@ public class Cpu {
         return c;
     }
 
-    int JP_C_a16() {
+    private int JP_C_a16() {
         int d = mem.peekW(reg.pc);
         reg.pc += 2;
         reg.pc &= 0xFFFF;
@@ -2961,7 +2961,7 @@ public class Cpu {
 
     // 0xdb nasi (no op)
 
-    int CALL_C_a16() {
+    private int CALL_C_a16() {
         int cycle = 0;
         int d = mem.peekW(reg.pc);
 
@@ -2979,7 +2979,7 @@ public class Cpu {
         return insts[0xdc].cycle[cycle];
     }
 
-    int SBC_A_d8() {
+    private int SBC_A_d8() {
         int a = reg.a & 0xFF;
         int b = mem.peekB(reg.pc) & 0xFF;
         reg.pc++;
@@ -2997,7 +2997,7 @@ public class Cpu {
         return insts[0xde].cycle[0];
     }
 
-    int RST_18H() {
+    private int RST_18H() {
         push(reg.pc);
         reg.pc = 0x18;
 
@@ -3007,7 +3007,7 @@ public class Cpu {
     }
 
     // 0xe0
-    int LDH_pa8s_A() {
+    private int LDH_pa8s_A() {
         byte p = mem.peekB(reg.pc++);
         reg.pc &= 0xffff;
         mem.pokeB(0xff00 + (p & 0xFF), reg.a);
@@ -3017,7 +3017,7 @@ public class Cpu {
         return insts[0xe0].cycle[0];
     }
 
-    int POP_HL() {
+    private int POP_HL() {
         reg.setHl(pop());
 
         nimo = "POP HL";
@@ -3025,7 +3025,7 @@ public class Cpu {
         return insts[0xe1].cycle[0];
     }
 
-    int LD_pCs_A() {
+    private int LD_pCs_A() {
         mem.pokeB(0xff00 + (reg.c & 0xFF), reg.a);
 
         nimo = "LD ($ff00+C),A";
@@ -3033,7 +3033,7 @@ public class Cpu {
         return insts[0xe2].cycle[0];
     }
 
-    int PUSH_HL() {
+    private int PUSH_HL() {
         push(reg.getHl());
 
         nimo = "PUSH HL";
@@ -3041,7 +3041,7 @@ public class Cpu {
         return insts[0xe5].cycle[0];
     }
 
-    int AND_d8() {
+    private int AND_d8() {
         byte d = mem.peekB(reg.pc++);
         reg.pc &= 0xffff;
         reg.a = (byte) (reg.a & d);
@@ -3056,7 +3056,7 @@ public class Cpu {
         return insts[0xe6].cycle[0];
     }
 
-    int RST_20H() {
+    private int RST_20H() {
         push(reg.pc);
         reg.pc = 0x20;
 
@@ -3066,7 +3066,7 @@ public class Cpu {
     }
 
     // 0xe8
-    int ADD_SP_r8() {
+    private int ADD_SP_r8() {
         int sp = reg.sp;
         byte b = mem.peekB(reg.pc);
         int r8 = b & 0xFF;
@@ -3086,7 +3086,7 @@ public class Cpu {
         return insts[0xe8].cycle[0];
     }
 
-    int JP_pHLs() {
+    private int JP_pHLs() {
         int d = reg.getHl();
         reg.pc = d;
 
@@ -3095,7 +3095,7 @@ public class Cpu {
         return insts[0xe9].cycle[0];
     }
 
-    int LD_pa16s_A() {
+    private int LD_pa16s_A() {
         int d = mem.peekW(reg.pc);
         reg.pc += 2;
         reg.pc &= 0xFFFF;
@@ -3106,7 +3106,7 @@ public class Cpu {
         return insts[0xea].cycle[0];
     }
 
-    int XOR_d8() {
+    private int XOR_d8() {
         byte a = mem.peekB(reg.pc);
         reg.pc++;
         reg.pc &= 0xffff;
@@ -3122,7 +3122,7 @@ public class Cpu {
         return insts[0xee].cycle[0];
     }
 
-    int RST_28H() {
+    private int RST_28H() {
         push(reg.pc);
         reg.pc = 0x28;
 
@@ -3132,7 +3132,7 @@ public class Cpu {
     }
 
     // 0xf0
-    int LDH_A_pa8s() {
+    private int LDH_A_pa8s() {
         byte p = mem.peekB(reg.pc++);
         reg.pc &= 0xffff;
         reg.a = mem.peekB(0xff00 + (p & 0xFF));
@@ -3142,7 +3142,7 @@ public class Cpu {
         return insts[0xf0].cycle[0];
     }
 
-    int POP_AF() {
+    private int POP_AF() {
         reg.setAf(pop());
         reg.setAf(reg.getAf() & 0xfff0);
 
@@ -3151,7 +3151,7 @@ public class Cpu {
         return insts[0xf1].cycle[0];
     }
 
-    int LD_A_pCs() {
+    private int LD_A_pCs() {
         reg.a = mem.peekB(0xff00 + (reg.c & 0xFF));
 
         nimo = "LD A,($ff00+C)";
@@ -3159,7 +3159,7 @@ public class Cpu {
         return insts[0xf2].cycle[0];
     }
 
-    int DI() {
+    private int DI() {
         ime = 0;
 
         nimo = "DI";
@@ -3167,7 +3167,7 @@ public class Cpu {
         return insts[0xf3].cycle[0];
     }
 
-    int PUSH_AF() {
+    private int PUSH_AF() {
         push(reg.getAf());
 
         nimo = "PUSH AF";
@@ -3175,7 +3175,7 @@ public class Cpu {
         return insts[0xf5].cycle[0];
     }
 
-    int OR_d8() {
+    private int OR_d8() {
         byte d = mem.peekB(reg.pc++);
         reg.pc &= 0xffff;
         reg.a = (byte) (reg.a | d);
@@ -3190,7 +3190,7 @@ public class Cpu {
         return insts[0xf6].cycle[0];
     }
 
-    int RST_30H() {
+    private int RST_30H() {
         push(reg.pc);
         reg.pc = 0x30;
 
@@ -3200,7 +3200,7 @@ public class Cpu {
     }
 
     // 0xf8
-    int LD_HL_SPplsr8() {
+    private int LD_HL_SPplsr8() {
         int sp = reg.sp;
         byte b = mem.peekB(reg.pc);
         int r8 = b & 0xFF;
@@ -3220,7 +3220,7 @@ public class Cpu {
         return insts[0xf8].cycle[0];
     }
 
-    int LD_SP_HL() {
+    private int LD_SP_HL() {
         reg.sp = reg.getHl();
 
         nimo = "LD SP,HL";
@@ -3228,7 +3228,7 @@ public class Cpu {
         return insts[0xf9].cycle[0];
     }
 
-    int LD_A_pa16s() {
+    private int LD_A_pa16s() {
         int d = mem.peekW(reg.pc);
         reg.pc += 2;
         reg.pc &= 0xFFFF;
@@ -3239,7 +3239,7 @@ public class Cpu {
         return insts[0xfa].cycle[0];
     }
 
-    int EI() {
+    private int EI() {
         ime = 1;
 
         nimo = "EI";
@@ -3247,7 +3247,7 @@ public class Cpu {
         return insts[0xfb].cycle[0];
     }
 
-    int CP_d8() {
+    private int CP_d8() {
         int a = mem.peekB(reg.pc) & 0xFF;
         int b = (reg.a & 0xFF) - a;
         int h = (reg.a & 0xf) - (a & 0xf);
@@ -3265,7 +3265,7 @@ public class Cpu {
         return insts[0xfe].cycle[0];
     }
 
-    int RST_38H() {
+    private int RST_38H() {
         push(reg.pc);
         reg.pc = 0x38;
 
@@ -3275,7 +3275,7 @@ public class Cpu {
     }
 
     // 0x00 (CB) - 0x100
-    int RLC_B() {
+    private int RLC_B() {
         byte d = reg.b;
         reg.setC((d & 0x80) != 0);
         d = (byte)((d << 1) | (reg.isC() ? 1 : 0));
@@ -3290,7 +3290,7 @@ public class Cpu {
         return insts[0x100].cycle[0];
     }
 
-    int RLC_C() {
+    private int RLC_C() {
         byte d = reg.c;
         reg.setC((d & 0x80) != 0);
         d = (byte)((d << 1) | (reg.isC() ? 1 : 0));
@@ -3305,7 +3305,7 @@ public class Cpu {
         return insts[0x101].cycle[0];
     }
 
-    int RLC_D() {
+    private int RLC_D() {
         byte d = reg.d;
         reg.setC((d & 0x80) != 0);
         d = (byte)((d << 1) | (reg.isC() ? 1 : 0));
@@ -3320,7 +3320,7 @@ public class Cpu {
         return insts[0x102].cycle[0];
     }
 
-    int RLC_E() {
+    private int RLC_E() {
         byte d = reg.e;
         reg.setC((d & 0x80) != 0);
         d = (byte)((d << 1) | (reg.isC() ? 1 : 0));
@@ -3335,7 +3335,7 @@ public class Cpu {
         return insts[0x103].cycle[0];
     }
 
-    int RLC_H() {
+    private int RLC_H() {
         byte d = reg.h;
         reg.setC((d & 0x80) != 0);
         d = (byte)((d << 1) | (reg.isC() ? 1 : 0));
@@ -3350,7 +3350,7 @@ public class Cpu {
         return insts[0x104].cycle[0];
     }
 
-    int RLC_L() {
+    private int RLC_L() {
         byte d = reg.l;
         reg.setC((d & 0x80) != 0);
         d = (byte)((d << 1) | (reg.isC() ? 1 : 0));
@@ -3365,7 +3365,7 @@ public class Cpu {
         return insts[0x105].cycle[0];
     }
 
-    int RLC_pHLs() {
+    private int RLC_pHLs() {
         byte d = mem.peekB(reg.getHl());
         reg.setC((d & 0x80) != 0);
         d = (byte)((d << 1) | (reg.isC() ? 1 : 0));
@@ -3380,7 +3380,7 @@ public class Cpu {
         return insts[0x106].cycle[0];
     }
 
-    int RLC_A() {
+    private int RLC_A() {
         byte d = reg.a;
         reg.setC((d & 0x80) != 0);
         d = (byte)((d << 1) | (reg.isC() ? 1 : 0));
@@ -3396,7 +3396,7 @@ public class Cpu {
     }
 
     // 0x08 (CB) - 0x108
-    int RRC_B() {
+    private int RRC_B() {
         byte d = reg.b;
         reg.setC((d & 0x01) != 0);
         d = (byte)(((d & 0xFF) >>> 1) | (reg.isC() ? 0x80 : 0));
@@ -3411,7 +3411,7 @@ public class Cpu {
         return insts[0x108].cycle[0];
     }
 
-    int RRC_C() {
+    private int RRC_C() {
         byte d = reg.c;
         reg.setC((d & 0x01) != 0);
         d = (byte)(((d & 0xFF) >>> 1) | (reg.isC() ? 0x80 : 0));
@@ -3426,7 +3426,7 @@ public class Cpu {
         return insts[0x109].cycle[0];
     }
 
-    int RRC_D() {
+    private int RRC_D() {
         byte d = reg.d;
         reg.setC((d & 0x01) != 0);
         d = (byte)(((d & 0xFF) >>> 1) | (reg.isC() ? 0x80 : 0));
@@ -3441,7 +3441,7 @@ public class Cpu {
         return insts[0x10a].cycle[0];
     }
 
-    int RRC_E() {
+    private int RRC_E() {
         byte d = reg.e;
         reg.setC((d & 0x01) != 0);
         d = (byte)(((d & 0xFF) >>> 1) | (reg.isC() ? 0x80 : 0));
@@ -3456,7 +3456,7 @@ public class Cpu {
         return insts[0x10b].cycle[0];
     }
 
-    int RRC_H() {
+    private int RRC_H() {
         byte d = reg.h;
         reg.setC((d & 0x01) != 0);
         d = (byte)(((d & 0xFF) >>> 1) | (reg.isC() ? 0x80 : 0));
@@ -3471,7 +3471,7 @@ public class Cpu {
         return insts[0x10c].cycle[0];
     }
 
-    int RRC_L() {
+    private int RRC_L() {
         byte d = reg.l;
         reg.setC((d & 0x01) != 0);
         d = (byte)(((d & 0xFF) >>> 1) | (reg.isC() ? 0x80 : 0));
@@ -3486,7 +3486,7 @@ public class Cpu {
         return insts[0x10d].cycle[0];
     }
 
-    int RRC_pHLs() {
+    private int RRC_pHLs() {
         byte d = mem.peekB(reg.getHl());
         reg.setC((d & 0x01) != 0);
         d = (byte)(((d & 0xFF) >>> 1) | (reg.isC() ? 0x80 : 0));
@@ -3501,7 +3501,7 @@ public class Cpu {
         return insts[0x10e].cycle[0];
     }
 
-    int RRC_A() {
+    private int RRC_A() {
         byte d = reg.a;
         reg.setC((d & 0x01) != 0);
         d = (byte)(((d & 0xFF) >>> 1) | (reg.isC() ? 0x80 : 0));
@@ -3517,7 +3517,7 @@ public class Cpu {
     }
 
     // 0x10 (CB) - 0x110
-    int RL_B() {
+    private int RL_B() {
         byte d = reg.b;
         byte e = (byte)(reg.isC() ? 0x01 : 0);
         reg.setC((d & 0x80) != 0);
@@ -3534,7 +3534,7 @@ public class Cpu {
         return insts[0x110].cycle[0];
     }
 
-    int RL_C() {
+    private int RL_C() {
         byte d = reg.c;
         byte e = (byte)(reg.isC() ? 0x01 : 0);
         reg.setC((d & 0x80) != 0);
@@ -3551,7 +3551,7 @@ public class Cpu {
         return insts[0x111].cycle[0];
     }
 
-    int RL_D() {
+    private int RL_D() {
         byte d = reg.d;
         byte e = (byte)(reg.isC() ? 0x01 : 0);
         reg.setC((d & 0x80) != 0);
@@ -3568,7 +3568,7 @@ public class Cpu {
         return insts[0x112].cycle[0];
     }
 
-    int RL_E() {
+    private int RL_E() {
         byte d = reg.e;
         byte e = (byte)(reg.isC() ? 0x01 : 0);
         reg.setC((d & 0x80) != 0);
@@ -3585,7 +3585,7 @@ public class Cpu {
         return insts[0x113].cycle[0];
     }
 
-    int RL_H() {
+    private int RL_H() {
         byte d = reg.h;
         byte e = (byte)(reg.isC() ? 0x01 : 0);
         reg.setC((d & 0x80) != 0);
@@ -3602,7 +3602,7 @@ public class Cpu {
         return insts[0x114].cycle[0];
     }
 
-    int RL_L() {
+    private int RL_L() {
         byte d = reg.l;
         byte e = (byte)(reg.isC() ? 0x01 : 0);
         reg.setC((d & 0x80) != 0);
@@ -3619,7 +3619,7 @@ public class Cpu {
         return insts[0x115].cycle[0];
     }
 
-    int RL_pHLs() {
+    private int RL_pHLs() {
         byte d = mem.peekB(reg.getHl());
         byte e = (byte)(reg.isC() ? 0x01 : 0);
         reg.setC((d & 0x80) != 0);
@@ -3636,7 +3636,7 @@ public class Cpu {
         return insts[0x116].cycle[0];
     }
 
-    int RL_A() {
+    private int RL_A() {
         byte d = reg.a;
         byte e = (byte)(reg.isC() ? 0x01 : 0);
         reg.setC((d & 0x80) != 0);
@@ -3654,7 +3654,7 @@ public class Cpu {
     }
 
     // 0x18 (CB) - 0x118
-    int RR_B() {
+    private int RR_B() {
         byte d = reg.b;
         byte e = (byte)(reg.isC() ? 0x80 : 0);
         reg.setC((d & 0x01) != 0);
@@ -3671,7 +3671,7 @@ public class Cpu {
         return insts[0x118].cycle[0];
     }
 
-    int RR_C() {
+    private int RR_C() {
         byte d = reg.c;
         byte e = (byte)(reg.isC() ? 0x80 : 0);
         reg.setC((d & 0x01) != 0);
@@ -3688,7 +3688,7 @@ public class Cpu {
         return insts[0x119].cycle[0];
     }
 
-    int RR_D() {
+    private int RR_D() {
         byte d = reg.d;
         byte e = (byte)(reg.isC() ? 0x80 : 0);
         reg.setC((d & 0x01) != 0);
@@ -3705,7 +3705,7 @@ public class Cpu {
         return insts[0x11a].cycle[0];
     }
 
-    int RR_E() {
+    private int RR_E() {
         byte d = reg.e;
         byte e = (byte)(reg.isC() ? 0x80 : 0);
         reg.setC((d & 0x01) != 0);
@@ -3722,7 +3722,7 @@ public class Cpu {
         return insts[0x11b].cycle[0];
     }
 
-    int RR_H() {
+    private int RR_H() {
         byte d = reg.h;
         byte e = (byte)(reg.isC() ? 0x80 : 0);
         reg.setC((d & 0x01) != 0);
@@ -3739,7 +3739,7 @@ public class Cpu {
         return insts[0x11c].cycle[0];
     }
 
-    int RR_L() {
+    private int RR_L() {
         byte d = reg.l;
         byte e = (byte)(reg.isC() ? 0x80 : 0);
         reg.setC((d & 0x01) != 0);
@@ -3756,7 +3756,7 @@ public class Cpu {
         return insts[0x11d].cycle[0];
     }
 
-    int RR_pHLs() {
+    private int RR_pHLs() {
         byte d = mem.peekB(reg.getHl());
         byte e = (byte)(reg.isC() ? 0x80 : 0);
         reg.setC((d & 0x01) != 0);
@@ -3773,7 +3773,7 @@ public class Cpu {
         return insts[0x11e].cycle[0];
     }
 
-    int RR_A() {
+    private int RR_A() {
         byte d = reg.a;
         byte e = (byte)(reg.isC() ? 0x80 : 0);
         reg.setC((d & 0x01) != 0);
@@ -3791,7 +3791,7 @@ public class Cpu {
     }
 
     // 0x20 (CB) - 0x120
-    int SLA_B() {
+    private int SLA_B() {
         byte a = reg.b;
         reg.b = (byte)(a << 1);
 
@@ -3805,7 +3805,7 @@ public class Cpu {
         return insts[0x120].cycle[0];
     }
 
-    int SLA_C() {
+    private int SLA_C() {
         byte a = reg.c;
         reg.c = (byte)(a << 1);
 
@@ -3819,7 +3819,7 @@ public class Cpu {
         return insts[0x121].cycle[0];
     }
 
-    int SLA_D() {
+    private int SLA_D() {
         byte a = reg.d;
         reg.d = (byte)(a << 1);
 
@@ -3833,7 +3833,7 @@ public class Cpu {
         return insts[0x122].cycle[0];
     }
 
-    int SLA_E() {
+    private int SLA_E() {
         byte a = reg.e;
         reg.e = (byte)(a << 1);
 
@@ -3847,7 +3847,7 @@ public class Cpu {
         return insts[0x123].cycle[0];
     }
 
-    int SLA_H() {
+    private int SLA_H() {
         byte a = reg.h;
         reg.h = (byte)(a << 1);
 
@@ -3861,7 +3861,7 @@ public class Cpu {
         return insts[0x124].cycle[0];
     }
 
-    int SLA_L() {
+    private int SLA_L() {
         byte a = reg.l;
         reg.l = (byte)(a << 1);
 
@@ -3875,7 +3875,7 @@ public class Cpu {
         return insts[0x125].cycle[0];
     }
 
-    int SLA_pHLs() {
+    private int SLA_pHLs() {
         byte a = mem.peekB(reg.getHl());
         byte b = (byte)(a << 1);
         mem.pokeB(reg.getHl(), b);
@@ -3890,7 +3890,7 @@ public class Cpu {
         return insts[0x126].cycle[0];
     }
 
-    int SLA_A() {
+    private int SLA_A() {
         byte a = reg.a;
         reg.a = (byte)(a << 1);
 
@@ -3905,7 +3905,7 @@ public class Cpu {
     }
 
     // 0x28 (CB) - 0x128
-    int SRA_B() {
+    private int SRA_B() {
         byte a = reg.b;
         reg.b = (byte)(((a & 0xFF) >>> 1) | (a & 0x80));
 
@@ -3919,7 +3919,7 @@ public class Cpu {
         return insts[0x128].cycle[0];
     }
 
-    int SRA_C() {
+    private int SRA_C() {
         byte a = reg.c;
         reg.c = (byte)(((a & 0xFF) >>> 1) | (a & 0x80));
 
@@ -3933,7 +3933,7 @@ public class Cpu {
         return insts[0x129].cycle[0];
     }
 
-    int SRA_D() {
+    private int SRA_D() {
         byte a = reg.d;
         reg.d = (byte)(((a & 0xFF) >>> 1) | (a & 0x80));
 
@@ -3947,7 +3947,7 @@ public class Cpu {
         return insts[0x12a].cycle[0];
     }
 
-    int SRA_E() {
+    private int SRA_E() {
         byte a = reg.e;
         reg.e = (byte)(((a & 0xFF) >>> 1) | (a & 0x80));
 
@@ -3961,7 +3961,7 @@ public class Cpu {
         return insts[0x12b].cycle[0];
     }
 
-    int SRA_H() {
+    private int SRA_H() {
         byte a = reg.h;
         reg.h = (byte)(((a & 0xFF) >>> 1) | (a & 0x80));
 
@@ -3975,7 +3975,7 @@ public class Cpu {
         return insts[0x12c].cycle[0];
     }
 
-    int SRA_L() {
+    private int SRA_L() {
         byte a = reg.l;
         reg.l = (byte)(((a & 0xFF) >>> 1) | (a & 0x80));
 
@@ -3989,7 +3989,7 @@ public class Cpu {
         return insts[0x12d].cycle[0];
     }
 
-    int SRA_pHLs() {
+    private int SRA_pHLs() {
         byte a = mem.peekB(reg.getHl());
         byte b = (byte)(((a & 0xFF) >>> 1) | (a & 0x80));
         mem.pokeB(reg.getHl(), b);
@@ -4004,7 +4004,7 @@ public class Cpu {
         return insts[0x12e].cycle[0];
     }
 
-    int SRA_A() {
+    private int SRA_A() {
         byte a = reg.a;
         reg.a = (byte)(((a & 0xFF) >>> 1) | (a & 0x80));
 
@@ -4019,7 +4019,7 @@ public class Cpu {
     }
 
     // 0x30 (CB) - 0x130
-    int SWAP_B() {
+    private int SWAP_B() {
         byte a = reg.b;
         reg.b = (byte)((((a & 0xFF) >>> 4) & 0xf) | ((a << 4) & 0xf0));
         reg.setZ(reg.b == 0);
@@ -4032,7 +4032,7 @@ public class Cpu {
         return insts[0x130].cycle[0];
     }
 
-    int SWAP_C() {
+    private int SWAP_C() {
         byte a = reg.c;
         reg.c = (byte)((((a & 0xFF) >>> 4) & 0xf) | ((a << 4) & 0xf0));
         reg.setZ(reg.c == 0);
@@ -4045,7 +4045,7 @@ public class Cpu {
         return insts[0x131].cycle[0];
     }
 
-    int SWAP_D() {
+    private int SWAP_D() {
         byte a = reg.d;
         reg.d = (byte)((((a & 0xFF) >>> 4) & 0xf) | ((a << 4) & 0xf0));
         reg.setZ(reg.d == 0);
@@ -4058,7 +4058,7 @@ public class Cpu {
         return insts[0x132].cycle[0];
     }
 
-    int SWAP_E() {
+    private int SWAP_E() {
         byte a = reg.e;
         reg.e = (byte)((((a & 0xFF) >>> 4) & 0xf) | ((a << 4) & 0xf0));
         reg.setZ(reg.e == 0);
@@ -4071,7 +4071,7 @@ public class Cpu {
         return insts[0x133].cycle[0];
     }
 
-    int SWAP_H() {
+    private int SWAP_H() {
         byte a = reg.h;
         reg.h = (byte)((((a & 0xFF) >>> 4) & 0xf) | ((a << 4) & 0xf0));
         reg.setZ(reg.h == 0);
@@ -4084,7 +4084,7 @@ public class Cpu {
         return insts[0x134].cycle[0];
     }
 
-    int SWAP_L() {
+    private int SWAP_L() {
         byte a = reg.l;
         reg.l = (byte)((((a & 0xFF) >>> 4) & 0xf) | ((a << 4) & 0xf0));
         reg.setZ(reg.l == 0);
@@ -4097,7 +4097,7 @@ public class Cpu {
         return insts[0x135].cycle[0];
     }
 
-    int SWAP_pHLs() {
+    private int SWAP_pHLs() {
         byte a = mem.peekB(reg.getHl());
         a = (byte)((((a & 0xFF) >>> 4) & 0xf) | ((a << 4) & 0xf0));
         mem.pokeB(reg.getHl(), a);
@@ -4111,7 +4111,7 @@ public class Cpu {
         return insts[0x136].cycle[0];
     }
 
-    int SWAP_A() {
+    private int SWAP_A() {
         byte a = reg.a;
         reg.a = (byte)((((a & 0xFF) >>> 4) & 0xf) | ((a << 4) & 0xf0));
         reg.setZ(reg.a == 0);
@@ -4125,7 +4125,7 @@ public class Cpu {
     }
 
     // 0x38 (CB) - 0x138
-    int SRL_B() {
+    private int SRL_B() {
         byte a = reg.b;
         reg.b = (byte)((a & 0xFF) >>> 1);
 
@@ -4139,7 +4139,7 @@ public class Cpu {
         return insts[0x138].cycle[0];
     }
 
-    int SRL_C() {
+    private int SRL_C() {
         byte a = reg.c;
         reg.c = (byte)((a & 0xFF) >>> 1);
 
@@ -4153,7 +4153,7 @@ public class Cpu {
         return insts[0x139].cycle[0];
     }
 
-    int SRL_D() {
+    private int SRL_D() {
         byte a = reg.d;
         reg.d = (byte)((a & 0xFF) >>> 1);
 
@@ -4167,7 +4167,7 @@ public class Cpu {
         return insts[0x13a].cycle[0];
     }
 
-    int SRL_E() {
+    private int SRL_E() {
         byte a = reg.e;
         reg.e = (byte)((a & 0xFF) >>> 1);
 
@@ -4181,7 +4181,7 @@ public class Cpu {
         return insts[0x13b].cycle[0];
     }
 
-    int SRL_H() {
+    private int SRL_H() {
         byte a = reg.h;
         reg.h = (byte)((a & 0xFF) >>> 1);
 
@@ -4195,7 +4195,7 @@ public class Cpu {
         return insts[0x13c].cycle[0];
     }
 
-    int SRL_L() {
+    private int SRL_L() {
         byte a = reg.l;
         reg.l = (byte)((a & 0xFF) >>> 1);
 
@@ -4209,7 +4209,7 @@ public class Cpu {
         return insts[0x13d].cycle[0];
     }
 
-    int SRL_pHLs() {
+    private int SRL_pHLs() {
         byte a = mem.peekB(reg.getHl());
         byte b = (byte)((a & 0xFF) >>> 1);
         mem.pokeB(reg.getHl(), b);
@@ -4224,7 +4224,7 @@ public class Cpu {
         return insts[0x13e].cycle[0];
     }
 
-    int SRL_A() {
+    private int SRL_A() {
         byte a = reg.a;
         reg.a = (byte)((a & 0xFF) >>> 1);
 
@@ -4239,7 +4239,7 @@ public class Cpu {
     }
 
     // 0x40 (CB) - 0x140
-    int BIT_0_B() {
+    private int BIT_0_B() {
         boolean a = (reg.b & 0x1) == 0;
 
         reg.setZ(a);
@@ -4251,7 +4251,7 @@ public class Cpu {
         return insts[0x140].cycle[0];
     }
 
-    int BIT_0_C() {
+    private int BIT_0_C() {
         boolean a = (reg.c & 0x1) == 0;
 
         reg.setZ(a);
@@ -4263,7 +4263,7 @@ public class Cpu {
         return insts[0x141].cycle[0];
     }
 
-    int BIT_0_D() {
+    private int BIT_0_D() {
         boolean a = (reg.d & 0x1) == 0;
 
         reg.setZ(a);
@@ -4275,7 +4275,7 @@ public class Cpu {
         return insts[0x142].cycle[0];
     }
 
-    int BIT_0_E() {
+    private int BIT_0_E() {
         boolean a = (reg.e & 0x1) == 0;
 
         reg.setZ(a);
@@ -4287,7 +4287,7 @@ public class Cpu {
         return insts[0x143].cycle[0];
     }
 
-    int BIT_0_H() {
+    private int BIT_0_H() {
         boolean a = (reg.h & 0x1) == 0;
 
         reg.setZ(a);
@@ -4299,7 +4299,7 @@ public class Cpu {
         return insts[0x144].cycle[0];
     }
 
-    int BIT_0_L() {
+    private int BIT_0_L() {
         boolean a = (reg.l & 0x1) == 0;
 
         reg.setZ(a);
@@ -4311,7 +4311,7 @@ public class Cpu {
         return insts[0x145].cycle[0];
     }
 
-    int BIT_0_pHLs() {
+    private int BIT_0_pHLs() {
         boolean a = (mem.peekB(reg.getHl()) & 0x1) == 0;
 
         reg.setZ(a);
@@ -4323,7 +4323,7 @@ public class Cpu {
         return insts[0x146].cycle[0];
     }
 
-    int BIT_0_A() {
+    private int BIT_0_A() {
         boolean a = (reg.a & 0x1) == 0;
 
         reg.setZ(a);
@@ -4336,7 +4336,7 @@ public class Cpu {
     }
 
     // 0x48 (CB) - 0x148
-    int BIT_1_B() {
+    private int BIT_1_B() {
         boolean a = (reg.b & 0x2) == 0;
 
         reg.setZ(a);
@@ -4348,7 +4348,7 @@ public class Cpu {
         return insts[0x148].cycle[0];
     }
 
-    int BIT_1_C() {
+    private int BIT_1_C() {
         boolean a = (reg.c & 0x2) == 0;
 
         reg.setZ(a);
@@ -4360,7 +4360,7 @@ public class Cpu {
         return insts[0x149].cycle[0];
     }
 
-    int BIT_1_D() {
+    private int BIT_1_D() {
         boolean a = (reg.d & 0x2) == 0;
 
         reg.setZ(a);
@@ -4372,7 +4372,7 @@ public class Cpu {
         return insts[0x14a].cycle[0];
     }
 
-    int BIT_1_E() {
+    private int BIT_1_E() {
         boolean a = (reg.e & 0x2) == 0;
 
         reg.setZ(a);
@@ -4384,7 +4384,7 @@ public class Cpu {
         return insts[0x14b].cycle[0];
     }
 
-    int BIT_1_H() {
+    private int BIT_1_H() {
         boolean a = (reg.h & 0x2) == 0;
 
         reg.setZ(a);
@@ -4396,7 +4396,7 @@ public class Cpu {
         return insts[0x14c].cycle[0];
     }
 
-    int BIT_1_L() {
+    private int BIT_1_L() {
         boolean a = (reg.l & 0x2) == 0;
 
         reg.setZ(a);
@@ -4408,7 +4408,7 @@ public class Cpu {
         return insts[0x14d].cycle[0];
     }
 
-    int BIT_1_pHLs() {
+    private int BIT_1_pHLs() {
         boolean a = (mem.peekB(reg.getHl()) & 0x2) == 0;
 
         reg.setZ(a);
@@ -4420,7 +4420,7 @@ public class Cpu {
         return insts[0x14e].cycle[0];
     }
 
-    int BIT_1_A() {
+    private int BIT_1_A() {
         boolean a = (reg.a & 0x2) == 0;
 
         reg.setZ(a);
@@ -4433,7 +4433,7 @@ public class Cpu {
     }
 
     // 0x50 (CB) - 0x150
-    int BIT_2_B() {
+    private int BIT_2_B() {
         boolean a = (reg.b & 0x4) == 0;
 
         reg.setZ(a);
@@ -4445,7 +4445,7 @@ public class Cpu {
         return insts[0x150].cycle[0];
     }
 
-    int BIT_2_C() {
+    private int BIT_2_C() {
         boolean a = (reg.c & 0x4) == 0;
 
         reg.setZ(a);
@@ -4457,7 +4457,7 @@ public class Cpu {
         return insts[0x151].cycle[0];
     }
 
-    int BIT_2_D() {
+    private int BIT_2_D() {
         boolean a = (reg.d & 0x4) == 0;
 
         reg.setZ(a);
@@ -4469,7 +4469,7 @@ public class Cpu {
         return insts[0x152].cycle[0];
     }
 
-    int BIT_2_E() {
+    private int BIT_2_E() {
         boolean a = (reg.e & 0x4) == 0;
 
         reg.setZ(a);
@@ -4481,7 +4481,7 @@ public class Cpu {
         return insts[0x153].cycle[0];
     }
 
-    int BIT_2_H() {
+    private int BIT_2_H() {
         boolean a = (reg.h & 0x4) == 0;
 
         reg.setZ(a);
@@ -4493,7 +4493,7 @@ public class Cpu {
         return insts[0x154].cycle[0];
     }
 
-    int BIT_2_L() {
+    private int BIT_2_L() {
         boolean a = (reg.l & 0x4) == 0;
 
         reg.setZ(a);
@@ -4505,7 +4505,7 @@ public class Cpu {
         return insts[0x155].cycle[0];
     }
 
-    int BIT_2_pHLs() {
+    private int BIT_2_pHLs() {
         boolean a = (mem.peekB(reg.getHl()) & 0x4) == 0;
 
         reg.setZ(a);
@@ -4517,7 +4517,7 @@ public class Cpu {
         return insts[0x156].cycle[0];
     }
 
-    int BIT_2_A() {
+    private int BIT_2_A() {
         boolean a = (reg.a & 0x4) == 0;
 
         reg.setZ(a);
@@ -4530,7 +4530,7 @@ public class Cpu {
     }
 
     // 0x58 (CB) - 0x158
-    int BIT_3_B() {
+    private int BIT_3_B() {
         boolean a = (reg.b & 0x8) == 0;
 
         reg.setZ(a);
@@ -4542,7 +4542,7 @@ public class Cpu {
         return insts[0x158].cycle[0];
     }
 
-    int BIT_3_C() {
+    private int BIT_3_C() {
         boolean a = (reg.c & 0x8) == 0;
 
         reg.setZ(a);
@@ -4554,7 +4554,7 @@ public class Cpu {
         return insts[0x159].cycle[0];
     }
 
-    int BIT_3_D() {
+    private int BIT_3_D() {
         boolean a = (reg.d & 0x8) == 0;
 
         reg.setZ(a);
@@ -4566,7 +4566,7 @@ public class Cpu {
         return insts[0x15a].cycle[0];
     }
 
-    int BIT_3_E() {
+    private int BIT_3_E() {
         boolean a = (reg.e & 0x8) == 0;
 
         reg.setZ(a);
@@ -4578,7 +4578,7 @@ public class Cpu {
         return insts[0x15b].cycle[0];
     }
 
-    int BIT_3_H() {
+    private int BIT_3_H() {
         boolean a = (reg.h & 0x8) == 0;
 
         reg.setZ(a);
@@ -4590,7 +4590,7 @@ public class Cpu {
         return insts[0x15c].cycle[0];
     }
 
-    int BIT_3_L() {
+    private int BIT_3_L() {
         boolean a = (reg.l & 0x8) == 0;
 
         reg.setZ(a);
@@ -4602,7 +4602,7 @@ public class Cpu {
         return insts[0x15d].cycle[0];
     }
 
-    int BIT_3_pHLs() {
+    private int BIT_3_pHLs() {
         boolean a = (mem.peekB(reg.getHl()) & 0x8) == 0;
 
         reg.setZ(a);
@@ -4614,7 +4614,7 @@ public class Cpu {
         return insts[0x15e].cycle[0];
     }
 
-    int BIT_3_A() {
+    private int BIT_3_A() {
         boolean a = (reg.a & 0x8) == 0;
 
         reg.setZ(a);
@@ -4627,7 +4627,7 @@ public class Cpu {
     }
 
     // 0x60 (CB) - 0x160
-    int BIT_4_B() {
+    private int BIT_4_B() {
         boolean a = (reg.b & 0x10) == 0;
 
         reg.setZ(a);
@@ -4639,7 +4639,7 @@ public class Cpu {
         return insts[0x160].cycle[0];
     }
 
-    int BIT_4_C() {
+    private int BIT_4_C() {
         boolean a = (reg.c & 0x10) == 0;
 
         reg.setZ(a);
@@ -4651,7 +4651,7 @@ public class Cpu {
         return insts[0x161].cycle[0];
     }
 
-    int BIT_4_D() {
+    private int BIT_4_D() {
         boolean a = (reg.d & 0x10) == 0;
 
         reg.setZ(a);
@@ -4663,7 +4663,7 @@ public class Cpu {
         return insts[0x162].cycle[0];
     }
 
-    int BIT_4_E() {
+    private int BIT_4_E() {
         boolean a = (reg.e & 0x10) == 0;
 
         reg.setZ(a);
@@ -4675,7 +4675,7 @@ public class Cpu {
         return insts[0x163].cycle[0];
     }
 
-    int BIT_4_H() {
+    private int BIT_4_H() {
         boolean a = (reg.h & 0x10) == 0;
 
         reg.setZ(a);
@@ -4687,7 +4687,7 @@ public class Cpu {
         return insts[0x164].cycle[0];
     }
 
-    int BIT_4_L() {
+    private int BIT_4_L() {
         boolean a = (reg.l & 0x10) == 0;
 
         reg.setZ(a);
@@ -4699,7 +4699,7 @@ public class Cpu {
         return insts[0x165].cycle[0];
     }
 
-    int BIT_4_pHLs() {
+    private int BIT_4_pHLs() {
         boolean a = (mem.peekB(reg.getHl()) & 0x10) == 0;
 
         reg.setZ(a);
@@ -4711,7 +4711,7 @@ public class Cpu {
         return insts[0x166].cycle[0];
     }
 
-    int BIT_4_A() {
+    private int BIT_4_A() {
         boolean a = (reg.a & 0x10) == 0;
 
         reg.setZ(a);
@@ -4724,7 +4724,7 @@ public class Cpu {
     }
 
     // 0x68 (CB) - 0x168
-    int BIT_5_B() {
+    private int BIT_5_B() {
         boolean a = (reg.b & 0x20) == 0;
 
         reg.setZ(a);
@@ -4736,7 +4736,7 @@ public class Cpu {
         return insts[0x168].cycle[0];
     }
 
-    int BIT_5_C() {
+    private int BIT_5_C() {
         boolean a = (reg.c & 0x20) == 0;
 
         reg.setZ(a);
@@ -4748,7 +4748,7 @@ public class Cpu {
         return insts[0x169].cycle[0];
     }
 
-    int BIT_5_D() {
+    private int BIT_5_D() {
         boolean a = (reg.d & 0x20) == 0;
 
         reg.setZ(a);
@@ -4760,7 +4760,7 @@ public class Cpu {
         return insts[0x16a].cycle[0];
     }
 
-    int BIT_5_E() {
+    private int BIT_5_E() {
         boolean a = (reg.e & 0x20) == 0;
 
         reg.setZ(a);
@@ -4772,7 +4772,7 @@ public class Cpu {
         return insts[0x16b].cycle[0];
     }
 
-    int BIT_5_H() {
+    private int BIT_5_H() {
         boolean a = (reg.h & 0x20) == 0;
 
         reg.setZ(a);
@@ -4784,7 +4784,7 @@ public class Cpu {
         return insts[0x16c].cycle[0];
     }
 
-    int BIT_5_L() {
+    private int BIT_5_L() {
         boolean a = (reg.l & 0x20) == 0;
 
         reg.setZ(a);
@@ -4796,7 +4796,7 @@ public class Cpu {
         return insts[0x16d].cycle[0];
     }
 
-    int BIT_5_pHLs() {
+    private int BIT_5_pHLs() {
         boolean a = (mem.peekB(reg.getHl()) & 0x20) == 0;
 
         reg.setZ(a);
@@ -4808,7 +4808,7 @@ public class Cpu {
         return insts[0x16e].cycle[0];
     }
 
-    int BIT_5_A() {
+    private int BIT_5_A() {
         boolean a = (reg.a & 0x20) == 0;
 
         reg.setZ(a);
@@ -4821,7 +4821,7 @@ public class Cpu {
     }
 
     // 0x70 (CB) - 0x170
-    int BIT_6_B() {
+    private int BIT_6_B() {
         boolean a = (reg.b & 0x40) == 0;
 
         reg.setZ(a);
@@ -4833,7 +4833,7 @@ public class Cpu {
         return insts[0x170].cycle[0];
     }
 
-    int BIT_6_C() {
+    private int BIT_6_C() {
         boolean a = (reg.c & 0x40) == 0;
 
         reg.setZ(a);
@@ -4845,7 +4845,7 @@ public class Cpu {
         return insts[0x171].cycle[0];
     }
 
-    int BIT_6_D() {
+    private int BIT_6_D() {
         boolean a = (reg.d & 0x40) == 0;
 
         reg.setZ(a);
@@ -4857,7 +4857,7 @@ public class Cpu {
         return insts[0x172].cycle[0];
     }
 
-    int BIT_6_E() {
+    private int BIT_6_E() {
         boolean a = (reg.e & 0x40) == 0;
 
         reg.setZ(a);
@@ -4869,7 +4869,7 @@ public class Cpu {
         return insts[0x173].cycle[0];
     }
 
-    int BIT_6_H() {
+    private int BIT_6_H() {
         boolean a = (reg.h & 0x40) == 0;
 
         reg.setZ(a);
@@ -4881,7 +4881,7 @@ public class Cpu {
         return insts[0x174].cycle[0];
     }
 
-    int BIT_6_L() {
+    private int BIT_6_L() {
         boolean a = (reg.l & 0x40) == 0;
 
         reg.setZ(a);
@@ -4893,7 +4893,7 @@ public class Cpu {
         return insts[0x175].cycle[0];
     }
 
-    int BIT_6_pHLs() {
+    private int BIT_6_pHLs() {
         byte b = mem.peekB(reg.getHl());
         boolean a = (b & 0x40) == 0;
 
@@ -4906,7 +4906,7 @@ public class Cpu {
         return insts[0x176].cycle[0];
     }
 
-    int BIT_6_A() {
+    private int BIT_6_A() {
         boolean a = (reg.a & 0x40) == 0;
 
         reg.setZ(a);
@@ -4919,7 +4919,7 @@ public class Cpu {
     }
 
     // 0x78 (CB) - 0x178
-    int BIT_7_B() {
+    private int BIT_7_B() {
         boolean a = (reg.b & 0x80) == 0;
 
         reg.setZ(a);
@@ -4931,7 +4931,7 @@ public class Cpu {
         return insts[0x178].cycle[0];
     }
 
-    int BIT_7_C() {
+    private int BIT_7_C() {
         boolean a = (reg.c & 0x80) == 0;
 
         reg.setZ(a);
@@ -4943,7 +4943,7 @@ public class Cpu {
         return insts[0x179].cycle[0];
     }
 
-    int BIT_7_D() {
+    private int BIT_7_D() {
         boolean a = (reg.d & 0x80) == 0;
 
         reg.setZ(a);
@@ -4955,7 +4955,7 @@ public class Cpu {
         return insts[0x17a].cycle[0];
     }
 
-    int BIT_7_E() {
+    private int BIT_7_E() {
         boolean a = (reg.e & 0x80) == 0;
 
         reg.setZ(a);
@@ -4967,7 +4967,7 @@ public class Cpu {
         return insts[0x17b].cycle[0];
     }
 
-    int BIT_7_H() {
+    private int BIT_7_H() {
         boolean a = (reg.h & 0x80) == 0;
 
         reg.setZ(a);
@@ -4979,7 +4979,7 @@ public class Cpu {
         return insts[0x17c].cycle[0];
     }
 
-    int BIT_7_L() {
+    private int BIT_7_L() {
         boolean a = (reg.l & 0x80) == 0;
 
         reg.setZ(a);
@@ -4991,7 +4991,7 @@ public class Cpu {
         return insts[0x17d].cycle[0];
     }
 
-    int BIT_7_pHLs() {
+    private int BIT_7_pHLs() {
         byte b = mem.peekB(reg.getHl());
         boolean a = (b & 0x80) == 0;
 
@@ -5004,7 +5004,7 @@ public class Cpu {
         return insts[0x17e].cycle[0];
     }
 
-    int BIT_7_A() {
+    private int BIT_7_A() {
         boolean a = (reg.a & 0x80) == 0;
 
         reg.setZ(a);
@@ -5017,7 +5017,7 @@ public class Cpu {
     }
 
     // 0x80 (CB) - 0x180
-    int RES_0_B() {
+    private int RES_0_B() {
         reg.b &= (byte) ~(1 << 0);
 
         nimo = "RES 0,B";
@@ -5025,7 +5025,7 @@ public class Cpu {
         return insts[0x180].cycle[0];
     }
 
-    int RES_0_C() {
+    private int RES_0_C() {
         reg.c &= (byte) ~(1 << 0);
 
         nimo = "RES 0,C";
@@ -5033,7 +5033,7 @@ public class Cpu {
         return insts[0x181].cycle[0];
     }
 
-    int RES_0_D() {
+    private int RES_0_D() {
         reg.d &= (byte) ~(1 << 0);
 
         nimo = "RES 0,D";
@@ -5041,7 +5041,7 @@ public class Cpu {
         return insts[0x182].cycle[0];
     }
 
-    int RES_0_E() {
+    private int RES_0_E() {
         reg.e &= (byte) ~(1 << 0);
 
         nimo = "RES 0,E";
@@ -5049,7 +5049,7 @@ public class Cpu {
         return insts[0x183].cycle[0];
     }
 
-    int RES_0_H() {
+    private int RES_0_H() {
         reg.h &= (byte) ~(1 << 0);
 
         nimo = "RES 0,H";
@@ -5057,7 +5057,7 @@ public class Cpu {
         return insts[0x184].cycle[0];
     }
 
-    int RES_0_L() {
+    private int RES_0_L() {
         reg.l &= (byte) ~(1 << 0);
 
         nimo = "RES 0,L";
@@ -5065,7 +5065,7 @@ public class Cpu {
         return insts[0x185].cycle[0];
     }
 
-    int RES_0_pHLs() {
+    private int RES_0_pHLs() {
         byte a = mem.peekB(reg.getHl());
         a &= (byte) ~(1 << 0);
         mem.pokeB(reg.getHl(), a);
@@ -5075,7 +5075,7 @@ public class Cpu {
         return insts[0x186].cycle[0];
     }
 
-    int RES_0_A() {
+    private int RES_0_A() {
         reg.a &= (byte) ~(1 << 0);
 
         nimo = "RES 0,A";
@@ -5084,7 +5084,7 @@ public class Cpu {
     }
 
     // 0x88 (CB) - 0x188
-    int RES_1_B() {
+    private int RES_1_B() {
         reg.b &= (byte) ~(1 << 1);
 
         nimo = "RES 1,B";
@@ -5092,7 +5092,7 @@ public class Cpu {
         return insts[0x188].cycle[0];
     }
 
-    int RES_1_C() {
+    private int RES_1_C() {
         reg.c &= (byte) ~(1 << 1);
 
         nimo = "RES 1,C";
@@ -5100,7 +5100,7 @@ public class Cpu {
         return insts[0x189].cycle[0];
     }
 
-    int RES_1_D() {
+    private int RES_1_D() {
         reg.d &= (byte) ~(1 << 1);
 
         nimo = "RES 1,D";
@@ -5108,7 +5108,7 @@ public class Cpu {
         return insts[0x18a].cycle[0];
     }
 
-    int RES_1_E() {
+    private int RES_1_E() {
         reg.e &= (byte) ~(1 << 1);
 
         nimo = "RES 1,E";
@@ -5116,7 +5116,7 @@ public class Cpu {
         return insts[0x18b].cycle[0];
     }
 
-    int RES_1_H() {
+    private int RES_1_H() {
         reg.h &= (byte) ~(1 << 1);
 
         nimo = "RES 1,H";
@@ -5124,7 +5124,7 @@ public class Cpu {
         return insts[0x18c].cycle[0];
     }
 
-    int RES_1_L() {
+    private int RES_1_L() {
         reg.l &= (byte) ~(1 << 1);
 
         nimo = "RES 1,L";
@@ -5132,7 +5132,7 @@ public class Cpu {
         return insts[0x18d].cycle[0];
     }
 
-    int RES_1_pHLs() {
+    private int RES_1_pHLs() {
         byte a = mem.peekB(reg.getHl());
         a &= (byte) ~(1 << 1);
         mem.pokeB(reg.getHl(), a);
@@ -5142,7 +5142,7 @@ public class Cpu {
         return insts[0x18e].cycle[0];
     }
 
-    int RES_1_A() {
+    private int RES_1_A() {
         reg.a &= (byte) ~(1 << 1);
 
         nimo = "RES 1,A";
@@ -5151,7 +5151,7 @@ public class Cpu {
     }
 
     // 0x90 (CB) - 0x190
-    int RES_2_B() {
+    private int RES_2_B() {
         reg.b &= (byte) ~(1 << 2);
 
         nimo = "RES 2,B";
@@ -5159,7 +5159,7 @@ public class Cpu {
         return insts[0x190].cycle[0];
     }
 
-    int RES_2_C() {
+    private int RES_2_C() {
         reg.c &= (byte) ~(1 << 2);
 
         nimo = "RES 2,C";
@@ -5167,7 +5167,7 @@ public class Cpu {
         return insts[0x191].cycle[0];
     }
 
-    int RES_2_D() {
+    private int RES_2_D() {
         reg.d &= (byte) ~(1 << 2);
 
         nimo = "RES 2,D";
@@ -5175,7 +5175,7 @@ public class Cpu {
         return insts[0x192].cycle[0];
     }
 
-    int RES_2_E() {
+    private int RES_2_E() {
         reg.e &= (byte) ~(1 << 2);
 
         nimo = "RES 2,E";
@@ -5183,7 +5183,7 @@ public class Cpu {
         return insts[0x193].cycle[0];
     }
 
-    int RES_2_H() {
+    private int RES_2_H() {
         reg.h &= (byte) ~(1 << 2);
 
         nimo = "RES 2,H";
@@ -5191,7 +5191,7 @@ public class Cpu {
         return insts[0x194].cycle[0];
     }
 
-    int RES_2_L() {
+    private int RES_2_L() {
         reg.l &= (byte) ~(1 << 2);
 
         nimo = "RES 2,L";
@@ -5199,7 +5199,7 @@ public class Cpu {
         return insts[0x195].cycle[0];
     }
 
-    int RES_2_pHLs() {
+    private int RES_2_pHLs() {
         byte a = mem.peekB(reg.getHl());
         a &= (byte) ~(1 << 2);
         mem.pokeB(reg.getHl(), a);
@@ -5209,7 +5209,7 @@ public class Cpu {
         return insts[0x196].cycle[0];
     }
 
-    int RES_2_A() {
+    private int RES_2_A() {
         reg.a &= (byte) ~(1 << 2);
 
         nimo = "RES 2,A";
@@ -5218,7 +5218,7 @@ public class Cpu {
     }
 
     // 0x98 (CB) - 0x198
-    int RES_3_B() {
+    private int RES_3_B() {
         reg.b &= (byte) ~(1 << 3);
 
         nimo = "RES 3,B";
@@ -5226,7 +5226,7 @@ public class Cpu {
         return insts[0x198].cycle[0];
     }
 
-    int RES_3_C() {
+    private int RES_3_C() {
         reg.c &= (byte) ~(1 << 3);
 
         nimo = "RES 3,C";
@@ -5234,7 +5234,7 @@ public class Cpu {
         return insts[0x199].cycle[0];
     }
 
-    int RES_3_D() {
+    private int RES_3_D() {
         reg.d &= (byte) ~(1 << 3);
 
         nimo = "RES 3,D";
@@ -5242,7 +5242,7 @@ public class Cpu {
         return insts[0x19a].cycle[0];
     }
 
-    int RES_3_E() {
+    private int RES_3_E() {
         reg.e &= (byte) ~(1 << 3);
 
         nimo = "RES 3,E";
@@ -5250,7 +5250,7 @@ public class Cpu {
         return insts[0x19b].cycle[0];
     }
 
-    int RES_3_H() {
+    private int RES_3_H() {
         reg.h &= (byte) ~(1 << 3);
 
         nimo = "RES 3,H";
@@ -5258,7 +5258,7 @@ public class Cpu {
         return insts[0x19c].cycle[0];
     }
 
-    int RES_3_L() {
+    private int RES_3_L() {
         reg.l &= (byte) ~(1 << 3);
 
         nimo = "RES 3,L";
@@ -5266,7 +5266,7 @@ public class Cpu {
         return insts[0x19d].cycle[0];
     }
 
-    int RES_3_pHLs() {
+    private int RES_3_pHLs() {
         byte a = mem.peekB(reg.getHl());
         a &= (byte) ~(1 << 3);
         mem.pokeB(reg.getHl(), a);
@@ -5276,7 +5276,7 @@ public class Cpu {
         return insts[0x19e].cycle[0];
     }
 
-    int RES_3_A() {
+    private int RES_3_A() {
         reg.a &= (byte) ~(1 << 3);
 
         nimo = "RES 3,A";
@@ -5285,7 +5285,7 @@ public class Cpu {
     }
 
     // 0xa0 (CB) - 0x1a0
-    int RES_4_B() {
+    private int RES_4_B() {
         reg.b &= (byte) ~(1 << 4);
 
         nimo = "RES 4,B";
@@ -5293,7 +5293,7 @@ public class Cpu {
         return insts[0x1a0].cycle[0];
     }
 
-    int RES_4_C() {
+    private int RES_4_C() {
         reg.c &= (byte) ~(1 << 4);
 
         nimo = "RES 4,C";
@@ -5301,7 +5301,7 @@ public class Cpu {
         return insts[0x1a1].cycle[0];
     }
 
-    int RES_4_D() {
+    private int RES_4_D() {
         reg.d &= (byte) ~(1 << 4);
 
         nimo = "RES 4,D";
@@ -5309,7 +5309,7 @@ public class Cpu {
         return insts[0x1a2].cycle[0];
     }
 
-    int RES_4_E() {
+    private int RES_4_E() {
         reg.e &= (byte) ~(1 << 4);
 
         nimo = "RES 4,E";
@@ -5317,7 +5317,7 @@ public class Cpu {
         return insts[0x1a3].cycle[0];
     }
 
-    int RES_4_H() {
+    private int RES_4_H() {
         reg.h &= (byte) ~(1 << 4);
 
         nimo = "RES 4,H";
@@ -5325,7 +5325,7 @@ public class Cpu {
         return insts[0x1a4].cycle[0];
     }
 
-    int RES_4_L() {
+    private int RES_4_L() {
         reg.l &= (byte) ~(1 << 4);
 
         nimo = "RES 4,L";
@@ -5333,7 +5333,7 @@ public class Cpu {
         return insts[0x1a5].cycle[0];
     }
 
-    int RES_4_pHLs() {
+    private int RES_4_pHLs() {
         byte a = mem.peekB(reg.getHl());
         a &= (byte) ~(1 << 4);
         mem.pokeB(reg.getHl(), a);
@@ -5343,7 +5343,7 @@ public class Cpu {
         return insts[0x1a6].cycle[0];
     }
 
-    int RES_4_A() {
+    private int RES_4_A() {
         reg.a &= (byte) ~(1 << 4);
 
         nimo = "RES 4,A";
@@ -5352,7 +5352,7 @@ public class Cpu {
     }
 
     // 0xa8 (CB) - 0x1a8
-    int RES_5_B() {
+    private int RES_5_B() {
         reg.b &= (byte) ~(1 << 5);
 
         nimo = "RES 5,B";
@@ -5360,7 +5360,7 @@ public class Cpu {
         return insts[0x1a8].cycle[0];
     }
 
-    int RES_5_C() {
+    private int RES_5_C() {
         reg.c &= (byte) ~(1 << 5);
 
         nimo = "RES 5,C";
@@ -5368,7 +5368,7 @@ public class Cpu {
         return insts[0x1a9].cycle[0];
     }
 
-    int RES_5_D() {
+    private int RES_5_D() {
         reg.d &= (byte) ~(1 << 5);
 
         nimo = "RES 5,D";
@@ -5376,7 +5376,7 @@ public class Cpu {
         return insts[0x1aa].cycle[0];
     }
 
-    int RES_5_E() {
+    private int RES_5_E() {
         reg.e &= (byte) ~(1 << 5);
 
         nimo = "RES 5,E";
@@ -5384,7 +5384,7 @@ public class Cpu {
         return insts[0x1ab].cycle[0];
     }
 
-    int RES_5_H() {
+    private int RES_5_H() {
         reg.h &= (byte) ~(1 << 5);
 
         nimo = "RES 5,H";
@@ -5392,7 +5392,7 @@ public class Cpu {
         return insts[0x1ac].cycle[0];
     }
 
-    int RES_5_L() {
+    private int RES_5_L() {
         reg.l &= (byte) ~(1 << 5);
 
         nimo = "RES 5,L";
@@ -5400,7 +5400,7 @@ public class Cpu {
         return insts[0x1ad].cycle[0];
     }
 
-    int RES_5_pHLs() {
+    private int RES_5_pHLs() {
         byte a = mem.peekB(reg.getHl());
         a &= (byte) ~(1 << 5);
         mem.pokeB(reg.getHl(), a);
@@ -5410,7 +5410,7 @@ public class Cpu {
         return insts[0x1ae].cycle[0];
     }
 
-    int RES_5_A() {
+    private int RES_5_A() {
         reg.a &= (byte) ~(1 << 5);
 
         nimo = "RES 5,A";
@@ -5419,7 +5419,7 @@ public class Cpu {
     }
 
     // 0xb0 (CB) - 0x1b0
-    int RES_6_B() {
+    private int RES_6_B() {
         reg.b &= (byte) ~(1 << 6);
 
         nimo = "RES 6,B";
@@ -5427,7 +5427,7 @@ public class Cpu {
         return insts[0x1b0].cycle[0];
     }
 
-    int RES_6_C() {
+    private int RES_6_C() {
         reg.c &= (byte) ~(1 << 6);
 
         nimo = "RES 6,C";
@@ -5435,7 +5435,7 @@ public class Cpu {
         return insts[0x1b1].cycle[0];
     }
 
-    int RES_6_D() {
+    private int RES_6_D() {
         reg.d &= (byte) ~(1 << 6);
 
         nimo = "RES 6,D";
@@ -5443,7 +5443,7 @@ public class Cpu {
         return insts[0x1b2].cycle[0];
     }
 
-    int RES_6_E() {
+    private int RES_6_E() {
         reg.e &= (byte) ~(1 << 6);
 
         nimo = "RES 6,E";
@@ -5451,7 +5451,7 @@ public class Cpu {
         return insts[0x1b3].cycle[0];
     }
 
-    int RES_6_H() {
+    private int RES_6_H() {
         reg.h &= (byte) ~(1 << 6);
 
         nimo = "RES 6,H";
@@ -5459,7 +5459,7 @@ public class Cpu {
         return insts[0x1b4].cycle[0];
     }
 
-    int RES_6_L() {
+    private int RES_6_L() {
         reg.l &= (byte) ~(1 << 6);
 
         nimo = "RES 6,L";
@@ -5467,7 +5467,7 @@ public class Cpu {
         return insts[0x1b5].cycle[0];
     }
 
-    int RES_6_pHLs() {
+    private int RES_6_pHLs() {
         byte a = mem.peekB(reg.getHl());
         a &= (byte) ~(1 << 6);
         mem.pokeB(reg.getHl(), a);
@@ -5477,7 +5477,7 @@ public class Cpu {
         return insts[0x1b6].cycle[0];
     }
 
-    int RES_6_A() {
+    private int RES_6_A() {
         reg.a &= (byte) ~(1 << 6);
 
         nimo = "RES 6,A";
@@ -5486,7 +5486,7 @@ public class Cpu {
     }
 
     // 0xb8 (CB) - 0x1b8
-    int RES_7_B() {
+    private int RES_7_B() {
         reg.b &= (byte) ~(1 << 7);
 
         nimo = "RES 7,B";
@@ -5494,7 +5494,7 @@ public class Cpu {
         return insts[0x1b8].cycle[0];
     }
 
-    int RES_7_C() {
+    private int RES_7_C() {
         reg.c &= (byte) ~(1 << 7);
 
         nimo = "RES 7,C";
@@ -5502,7 +5502,7 @@ public class Cpu {
         return insts[0x1b9].cycle[0];
     }
 
-    int RES_7_D() {
+    private int RES_7_D() {
         reg.d &= (byte) ~(1 << 7);
 
         nimo = "RES 7,D";
@@ -5510,7 +5510,7 @@ public class Cpu {
         return insts[0x1ba].cycle[0];
     }
 
-    int RES_7_E() {
+    private int RES_7_E() {
         reg.e &= (byte) ~(1 << 7);
 
         nimo = "RES 7,E";
@@ -5518,7 +5518,7 @@ public class Cpu {
         return insts[0x1bb].cycle[0];
     }
 
-    int RES_7_H() {
+    private int RES_7_H() {
         reg.h &= (byte) ~(1 << 7);
 
         nimo = "RES 7,H";
@@ -5526,7 +5526,7 @@ public class Cpu {
         return insts[0x1bc].cycle[0];
     }
 
-    int RES_7_L() {
+    private int RES_7_L() {
         reg.l &= (byte) ~(1 << 7);
 
         nimo = "RES 7,L";
@@ -5534,7 +5534,7 @@ public class Cpu {
         return insts[0x1bd].cycle[0];
     }
 
-    int RES_7_pHLs() {
+    private int RES_7_pHLs() {
         byte a = mem.peekB(reg.getHl());
         a &= (byte) ~(1 << 7);
         mem.pokeB(reg.getHl(), a);
@@ -5544,7 +5544,7 @@ public class Cpu {
         return insts[0x1be].cycle[0];
     }
 
-    int RES_7_A() {
+    private int RES_7_A() {
         reg.a &= (byte) ~(1 << 7);
 
         nimo = "RES 7,A";
@@ -5553,7 +5553,7 @@ public class Cpu {
     }
 
     // 0xc0 (CB) - 0x1c0
-    int SET_0_B() {
+    private int SET_0_B() {
         reg.b |= (byte) (1 << 0);
 
         nimo = "SET 0,B";
@@ -5561,7 +5561,7 @@ public class Cpu {
         return insts[0x1c0].cycle[0];
     }
 
-    int SET_0_C() {
+    private int SET_0_C() {
         reg.c |= (byte) (1 << 0);
 
         nimo = "SET 0,C";
@@ -5569,7 +5569,7 @@ public class Cpu {
         return insts[0x1c1].cycle[0];
     }
 
-    int SET_0_D() {
+    private int SET_0_D() {
         reg.d |= (byte) (1 << 0);
 
         nimo = "SET 0,D";
@@ -5577,7 +5577,7 @@ public class Cpu {
         return insts[0x1c2].cycle[0];
     }
 
-    int SET_0_E() {
+    private int SET_0_E() {
         reg.e |= (byte) (1 << 0);
 
         nimo = "SET 0,E";
@@ -5585,7 +5585,7 @@ public class Cpu {
         return insts[0x1c3].cycle[0];
     }
 
-    int SET_0_H() {
+    private int SET_0_H() {
         reg.h |= (byte) (1 << 0);
 
         nimo = "SET 0,H";
@@ -5593,7 +5593,7 @@ public class Cpu {
         return insts[0x1c4].cycle[0];
     }
 
-    int SET_0_L() {
+    private int SET_0_L() {
         reg.l |= (byte) (1 << 0);
 
         nimo = "SET 0,L";
@@ -5601,7 +5601,7 @@ public class Cpu {
         return insts[0x1c5].cycle[0];
     }
 
-    int SET_0_pHLs() {
+    private int SET_0_pHLs() {
         byte a = mem.peekB(reg.getHl());
         a |= (byte) (1 << 0);
         mem.pokeB(reg.getHl(), a);
@@ -5611,7 +5611,7 @@ public class Cpu {
         return insts[0x1c6].cycle[0];
     }
 
-    int SET_0_A() {
+    private int SET_0_A() {
         reg.a |= (byte) (1 << 0);
 
         nimo = "SET 0,A";
@@ -5620,7 +5620,7 @@ public class Cpu {
     }
 
     // 0xc8 (CB) - 0x1c8
-    int SET_1_B() {
+    private int SET_1_B() {
         reg.b |= (byte) (1 << 1);
 
         nimo = "SET 1,B";
@@ -5628,7 +5628,7 @@ public class Cpu {
         return insts[0x1c8].cycle[0];
     }
 
-    int SET_1_C() {
+    private int SET_1_C() {
         reg.c |= (byte) (1 << 1);
 
         nimo = "SET 1,C";
@@ -5636,7 +5636,7 @@ public class Cpu {
         return insts[0x1c9].cycle[0];
     }
 
-    int SET_1_D() {
+    private int SET_1_D() {
         reg.d |= (byte) (1 << 1);
 
         nimo = "SET 1,D";
@@ -5644,7 +5644,7 @@ public class Cpu {
         return insts[0x1ca].cycle[0];
     }
 
-    int SET_1_E() {
+    private int SET_1_E() {
         reg.e |= (byte) (1 << 1);
 
         nimo = "SET 1,E";
@@ -5652,7 +5652,7 @@ public class Cpu {
         return insts[0x1cb].cycle[0];
     }
 
-    int SET_1_H() {
+    private int SET_1_H() {
         reg.h |= (byte) (1 << 1);
 
         nimo = "SET 1,H";
@@ -5660,7 +5660,7 @@ public class Cpu {
         return insts[0x1cc].cycle[0];
     }
 
-    int SET_1_L() {
+    private int SET_1_L() {
         reg.l |= (byte) (1 << 1);
 
         nimo = "SET 1,L";
@@ -5668,7 +5668,7 @@ public class Cpu {
         return insts[0x1cd].cycle[0];
     }
 
-    int SET_1_pHLs() {
+    private int SET_1_pHLs() {
         byte a = mem.peekB(reg.getHl());
         a |= (byte) (1 << 1);
         mem.pokeB(reg.getHl(), a);
@@ -5678,7 +5678,7 @@ public class Cpu {
         return insts[0x1ce].cycle[0];
     }
 
-    int SET_1_A() {
+    private int SET_1_A() {
         reg.a |= (byte) (1 << 1);
 
         nimo = "SET 1,A";
@@ -5687,7 +5687,7 @@ public class Cpu {
     }
 
     // 0xd0 (CB) - 0x1d0
-    int SET_2_B() {
+    private int SET_2_B() {
         reg.b |= (byte) (1 << 2);
 
         nimo = "SET 2,B";
@@ -5695,7 +5695,7 @@ public class Cpu {
         return insts[0x1d0].cycle[0];
     }
 
-    int SET_2_C() {
+    private int SET_2_C() {
         reg.c |= (byte) (1 << 2);
 
         nimo = "SET 2,C";
@@ -5703,7 +5703,7 @@ public class Cpu {
         return insts[0x1d1].cycle[0];
     }
 
-    int SET_2_D() {
+    private int SET_2_D() {
         reg.d |= (byte) (1 << 2);
 
         nimo = "SET 2,D";
@@ -5711,7 +5711,7 @@ public class Cpu {
         return insts[0x1d2].cycle[0];
     }
 
-    int SET_2_E() {
+    private int SET_2_E() {
         reg.e |= (byte) (1 << 2);
 
         nimo = "SET 2,E";
@@ -5719,7 +5719,7 @@ public class Cpu {
         return insts[0x1d3].cycle[0];
     }
 
-    int SET_2_H() {
+    private int SET_2_H() {
         reg.h |= (byte) (1 << 2);
 
         nimo = "SET 2,H";
@@ -5727,7 +5727,7 @@ public class Cpu {
         return insts[0x1d4].cycle[0];
     }
 
-    int SET_2_L() {
+    private int SET_2_L() {
         reg.l |= (byte) (1 << 2);
 
         nimo = "SET 2,L";
@@ -5735,7 +5735,7 @@ public class Cpu {
         return insts[0x1d5].cycle[0];
     }
 
-    int SET_2_pHLs() {
+    private int SET_2_pHLs() {
         byte a = mem.peekB(reg.getHl());
         a |= (byte) (1 << 2);
         mem.pokeB(reg.getHl(), a);
@@ -5745,7 +5745,7 @@ public class Cpu {
         return insts[0x1d6].cycle[0];
     }
 
-    int SET_2_A() {
+    private int SET_2_A() {
         reg.a |= (byte) (1 << 2);
 
         nimo = "SET 2,A";
@@ -5754,7 +5754,7 @@ public class Cpu {
     }
 
     // 0xd8 (CB) - 0x1d8
-    int SET_3_B() {
+    private int SET_3_B() {
         reg.b |= (byte) (1 << 3);
 
         nimo = "SET 3,B";
@@ -5762,7 +5762,7 @@ public class Cpu {
         return insts[0x1d8].cycle[0];
     }
 
-    int SET_3_C() {
+    private int SET_3_C() {
         reg.c |= (byte) (1 << 3);
 
         nimo = "SET 3,C";
@@ -5770,7 +5770,7 @@ public class Cpu {
         return insts[0x1d9].cycle[0];
     }
 
-    int SET_3_D() {
+    private int SET_3_D() {
         reg.d |= (byte) (1 << 3);
 
         nimo = "SET 3,D";
@@ -5778,7 +5778,7 @@ public class Cpu {
         return insts[0x1da].cycle[0];
     }
 
-    int SET_3_E() {
+    private int SET_3_E() {
         reg.e |= (byte) (1 << 3);
 
         nimo = "SET 3,E";
@@ -5786,7 +5786,7 @@ public class Cpu {
         return insts[0x1db].cycle[0];
     }
 
-    int SET_3_H() {
+    private int SET_3_H() {
         reg.h |= (byte) (1 << 3);
 
         nimo = "SET 3,H";
@@ -5794,7 +5794,7 @@ public class Cpu {
         return insts[0x1dc].cycle[0];
     }
 
-    int SET_3_L() {
+    private int SET_3_L() {
         reg.l |= (byte) (1 << 3);
 
         nimo = "SET 3,L";
@@ -5802,7 +5802,7 @@ public class Cpu {
         return insts[0x1dd].cycle[0];
     }
 
-    int SET_3_pHLs() {
+    private int SET_3_pHLs() {
         byte a = mem.peekB(reg.getHl());
         a |= (byte) (1 << 3);
         mem.pokeB(reg.getHl(), a);
@@ -5812,7 +5812,7 @@ public class Cpu {
         return insts[0x1de].cycle[0];
     }
 
-    int SET_3_A() {
+    private int SET_3_A() {
         reg.a |= (byte) (1 << 3);
 
         nimo = "SET 3,A";
@@ -5821,7 +5821,7 @@ public class Cpu {
     }
 
     // 0xe0 (CB) - 0x1e0
-    int SET_4_B() {
+    private int SET_4_B() {
         reg.b |= (byte) (1 << 4);
 
         nimo = "SET 4,B";
@@ -5829,7 +5829,7 @@ public class Cpu {
         return insts[0x1e0].cycle[0];
     }
 
-    int SET_4_C() {
+    private int SET_4_C() {
         reg.c |= (byte) (1 << 4);
 
         nimo = "SET 4,C";
@@ -5837,7 +5837,7 @@ public class Cpu {
         return insts[0x1e1].cycle[0];
     }
 
-    int SET_4_D() {
+    private int SET_4_D() {
         reg.d |= (byte) (1 << 4);
 
         nimo = "SET 4,D";
@@ -5845,7 +5845,7 @@ public class Cpu {
         return insts[0x1e2].cycle[0];
     }
 
-    int SET_4_E() {
+    private int SET_4_E() {
         reg.e |= (byte) (1 << 4);
 
         nimo = "SET 4,E";
@@ -5853,7 +5853,7 @@ public class Cpu {
         return insts[0x1e3].cycle[0];
     }
 
-    int SET_4_H() {
+    private int SET_4_H() {
         reg.h |= (byte) (1 << 4);
 
         nimo = "SET 4,H";
@@ -5861,7 +5861,7 @@ public class Cpu {
         return insts[0x1e4].cycle[0];
     }
 
-    int SET_4_L() {
+    private int SET_4_L() {
         reg.l |= (byte) (1 << 4);
 
         nimo = "SET 4,L";
@@ -5869,7 +5869,7 @@ public class Cpu {
         return insts[0x1e5].cycle[0];
     }
 
-    int SET_4_pHLs() {
+    private int SET_4_pHLs() {
         byte a = mem.peekB(reg.getHl());
         a |= (byte) (1 << 4);
         mem.pokeB(reg.getHl(), a);
@@ -5879,7 +5879,7 @@ public class Cpu {
         return insts[0x1e6].cycle[0];
     }
 
-    int SET_4_A() {
+    private int SET_4_A() {
         reg.a |= (byte) (1 << 4);
 
         nimo = "SET 4,A";
@@ -5888,7 +5888,7 @@ public class Cpu {
     }
 
     // 0xe8 (CB) - 0x1e8
-    int SET_5_B() {
+    private int SET_5_B() {
         reg.b |= (byte) (1 << 5);
 
         nimo = "SET 5,B";
@@ -5896,7 +5896,7 @@ public class Cpu {
         return insts[0x1e8].cycle[0];
     }
 
-    int SET_5_C() {
+    private int SET_5_C() {
         reg.c |= (byte) (1 << 5);
 
         nimo = "SET 5,C";
@@ -5904,7 +5904,7 @@ public class Cpu {
         return insts[0x1e9].cycle[0];
     }
 
-    int SET_5_D() {
+    private int SET_5_D() {
         reg.d |= (byte) (1 << 5);
 
         nimo = "SET 5,D";
@@ -5912,7 +5912,7 @@ public class Cpu {
         return insts[0x1ea].cycle[0];
     }
 
-    int SET_5_E() {
+    private int SET_5_E() {
         reg.e |= (byte) (1 << 5);
 
         nimo = "SET 5,E";
@@ -5920,7 +5920,7 @@ public class Cpu {
         return insts[0x1eb].cycle[0];
     }
 
-    int SET_5_H() {
+    private int SET_5_H() {
         reg.h |= (byte) (1 << 5);
 
         nimo = "SET 5,H";
@@ -5928,7 +5928,7 @@ public class Cpu {
         return insts[0x1ec].cycle[0];
     }
 
-    int SET_5_L() {
+    private int SET_5_L() {
         reg.l |= (byte) (1 << 5);
 
         nimo = "SET 5,L";
@@ -5936,7 +5936,7 @@ public class Cpu {
         return insts[0x1ed].cycle[0];
     }
 
-    int SET_5_pHLs() {
+    private int SET_5_pHLs() {
         byte a = mem.peekB(reg.getHl());
         a |= (byte) (1 << 5);
         mem.pokeB(reg.getHl(), a);
@@ -5946,7 +5946,7 @@ public class Cpu {
         return insts[0x1ee].cycle[0];
     }
 
-    int SET_5_A() {
+    private int SET_5_A() {
         reg.a |= (byte) (1 << 5);
 
         nimo = "SET 5,A";
@@ -5955,7 +5955,7 @@ public class Cpu {
     }
 
     // 0xf0 (CB) - 0x1f0
-    int SET_6_B() {
+    private int SET_6_B() {
         reg.b |= (byte) (1 << 6);
 
         nimo = "SET 6,B";
@@ -5963,7 +5963,7 @@ public class Cpu {
         return insts[0x1f0].cycle[0];
     }
 
-    int SET_6_C() {
+    private int SET_6_C() {
         reg.c |= (byte) (1 << 6);
 
         nimo = "SET 6,C";
@@ -5971,7 +5971,7 @@ public class Cpu {
         return insts[0x1f1].cycle[0];
     }
 
-    int SET_6_D() {
+    private int SET_6_D() {
         reg.d |= (byte) (1 << 6);
 
         nimo = "SET 6,D";
@@ -5979,7 +5979,7 @@ public class Cpu {
         return insts[0x1f2].cycle[0];
     }
 
-    int SET_6_E() {
+    private int SET_6_E() {
         reg.e |= (byte) (1 << 6);
 
         nimo = "SET 6,E";
@@ -5987,7 +5987,7 @@ public class Cpu {
         return insts[0x1f3].cycle[0];
     }
 
-    int SET_6_H() {
+    private int SET_6_H() {
         reg.h |= (byte) (1 << 6);
 
         nimo = "SET 6,H";
@@ -5995,7 +5995,7 @@ public class Cpu {
         return insts[0x1f4].cycle[0];
     }
 
-    int SET_6_L() {
+    private int SET_6_L() {
         reg.l |= (byte) (1 << 6);
 
         nimo = "SET 6,L";
@@ -6003,7 +6003,7 @@ public class Cpu {
         return insts[0x1f5].cycle[0];
     }
 
-    int SET_6_pHLs() {
+    private int SET_6_pHLs() {
         byte a = mem.peekB(reg.getHl());
         a |= (byte) (1 << 6);
         mem.pokeB(reg.getHl(), a);
@@ -6013,7 +6013,7 @@ public class Cpu {
         return insts[0x1f6].cycle[0];
     }
 
-    int SET_6_A() {
+    private int SET_6_A() {
         reg.a |= (byte) (1 << 6);
 
         nimo = "SET 6,A";
@@ -6022,7 +6022,7 @@ public class Cpu {
     }
 
     // 0xf8 (CB) - 0x1f8
-    int SET_7_B() {
+    private int SET_7_B() {
         reg.b |= (byte) (1 << 7);
 
         nimo = "SET 7,B";
@@ -6030,7 +6030,7 @@ public class Cpu {
         return insts[0x1f8].cycle[0];
     }
 
-    int SET_7_C() {
+    private int SET_7_C() {
         reg.c |= (byte) (1 << 7);
 
         nimo = "SET 7,C";
@@ -6038,7 +6038,7 @@ public class Cpu {
         return insts[0x1f9].cycle[0];
     }
 
-    int SET_7_D() {
+    private int SET_7_D() {
         reg.d |= (byte) (1 << 7);
 
         nimo = "SET 7,D";
@@ -6046,7 +6046,7 @@ public class Cpu {
         return insts[0x1fa].cycle[0];
     }
 
-    int SET_7_E() {
+    private int SET_7_E() {
         reg.e |= (byte) (1 << 7);
 
         nimo = "SET 7,E";
@@ -6054,7 +6054,7 @@ public class Cpu {
         return insts[0x1fb].cycle[0];
     }
 
-    int SET_7_H() {
+    private int SET_7_H() {
         reg.h |= (byte) (1 << 7);
 
         nimo = "SET 7,H";
@@ -6062,7 +6062,7 @@ public class Cpu {
         return insts[0x1fc].cycle[0];
     }
 
-    int SET_7_L() {
+    private int SET_7_L() {
         reg.l |= (byte) (1 << 7);
 
         nimo = "SET 7,L";
@@ -6070,7 +6070,7 @@ public class Cpu {
         return insts[0x1fd].cycle[0];
     }
 
-    int SET_7_pHLs() {
+    private int SET_7_pHLs() {
         byte a = mem.peekB(reg.getHl());
         a |= (byte) (1 << 7);
         mem.pokeB(reg.getHl(), a);
@@ -6080,7 +6080,7 @@ public class Cpu {
         return insts[0x1fe].cycle[0];
     }
 
-    int SET_7_A() {
+    private int SET_7_A() {
         reg.a |= (byte) (1 << 7);
 
         nimo = "SET 7,A";

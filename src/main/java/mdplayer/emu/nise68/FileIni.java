@@ -3,7 +3,7 @@ package mdplayer.emu.nise68;
 import java.util.List;
 
 
-public class FileIni {
+class FileIni {
 
     public boolean isopen = false;
     public String filename = "";

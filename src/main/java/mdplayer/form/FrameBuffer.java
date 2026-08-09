@@ -43,13 +43,13 @@ public class FrameBuffer {
     /** bytes per pixel: R, G, B, A */
     private static final int BPP = 4;
 
-    public JComponent pbScreen;
-    public BufferedImage bmpPlane;
-    public int bmpPlaneW = 0;
-    public int bmpPlaneH = 0;
-    public byte[] baPlaneBuffer;
-    public int zoom = 1;
-    public Dimension imageSize = new Dimension(0, 0);
+    private JComponent pbScreen;
+    private BufferedImage bmpPlane;
+    private int bmpPlaneW = 0;
+    private int bmpPlaneH = 0;
+    private byte[] baPlaneBuffer;
+    private int zoom = 1;
+    private Dimension imageSize = new Dimension(0, 0);
 
     /**
      * Binds this buffer to the component that presents it, sized after the skin image, which is
@@ -207,13 +207,13 @@ public class FrameBuffer {
         }
     }
 
-    public static byte[][] rChipName;
+    private static byte[][] rChipName;
     public static byte[][] rFont1;
     public static byte[][] rFont2;
     public static byte[][] rFont3;
     private static byte[][] rKBD;
     public static byte[][] rMenuButtons;
-    public static byte[][] rPan;
+    private static byte[][] rPan;
     public static byte[][] rPan2;
     private static byte[] rPSGEnv;
     public static byte[][] rPSGMode;
@@ -563,7 +563,7 @@ public class FrameBuffer {
         return ot;
     }
 
-    public int[] Pan(int x, int y, int ot, int nt, int otp, int ntp) {
+    public int[] pan(int x, int y, int ot, int nt, int otp, int ntp) {
         if (ot == nt && otp == ntp) {
             return new int[] {ot, otp};
         }
@@ -696,7 +696,7 @@ public class FrameBuffer {
         return oc;
     }
 
-    public void drawButtonP(int x, int y, int t, int m) {
+    private void drawButtonP(int x, int y, int t, int m) {
         if (bmpPlane == null)
             return;
 
@@ -778,7 +778,7 @@ public class FrameBuffer {
         }
     }
 
-    public int[] drawButton(int c, int ot, int nt, int om, int nm) {
+    private int[] drawButton(int c, int ot, int nt, int om, int nm) {
         if (ot == nt && om == nm) {
             return new int[] {ot, om};
         }
@@ -1109,7 +1109,7 @@ public class FrameBuffer {
         drawByteArray(x, y, rFont2[t], 128, n * 4 + 64, 0, 4, 8);
     }
 
-    public void drawFont4Int1(int x, int y, int t, int num) {
+    private void drawFont4Int1(int x, int y, int t, int num) {
         if (bmpPlane == null)
             return;
 
@@ -1150,7 +1150,7 @@ public class FrameBuffer {
         drawByteArray(x, y, rFont2[t], 128, n * 4 + 64, 0, 4, 8);
     }
 
-    public void drawFont4Int3(int x, int y, int t, int k, int num) {
+    private void drawFont4Int3(int x, int y, int t, int k, int num) {
         if (bmpPlane == null)
             return;
 
@@ -1182,7 +1182,7 @@ public class FrameBuffer {
         drawByteArray(x, y, rFont2[t], 128, n * 4 + 64, 0, 4, 8);
     }
 
-    public void drawFont4Hex4Bit(int x, int y, int t, int num) {
+    private void drawFont4Hex4Bit(int x, int y, int t, int num) {
         if (bmpPlane == null)
             return;
 
@@ -1193,7 +1193,7 @@ public class FrameBuffer {
         drawFont4(x, y, t, Tables.hexCh[n]);
     }
 
-    public void drawFont4HexByte(int x, int y, int t, int num) {
+    private void drawFont4HexByte(int x, int y, int t, int num) {
         if (bmpPlane == null)
             return;
 
@@ -1210,7 +1210,7 @@ public class FrameBuffer {
         drawFont4(x, y, t, Tables.hexCh[n]);
     }
 
-    public void drawFont4Hex12Bit(int x, int y, int t, int num) {
+    private void drawFont4Hex12Bit(int x, int y, int t, int num) {
         if (bmpPlane == null)
             return;
 
@@ -1233,7 +1233,7 @@ public class FrameBuffer {
         drawFont4(x, y, t, Tables.hexCh[n]);
     }
 
-    public void drawFont4Hex16Bit(int x, int y, int t, int num) {
+    private void drawFont4Hex16Bit(int x, int y, int t, int num) {
         if (bmpPlane == null)
             return;
 
@@ -1262,7 +1262,7 @@ public class FrameBuffer {
         drawFont4(x, y, t, Tables.hexCh[n]);
     }
 
-    public void drawFont4Hex20Bit(int x, int y, int t, int num) {
+    private void drawFont4Hex20Bit(int x, int y, int t, int num) {
         if (bmpPlane == null)
             return;
 
@@ -1297,7 +1297,7 @@ public class FrameBuffer {
         drawFont4(x, y, t, Tables.hexCh[n]);
     }
 
-    public void drawFont4Hex24Bit(int x, int y, int t, int num) {
+    private void drawFont4Hex24Bit(int x, int y, int t, int num) {
         if (bmpPlane == null)
             return;
 

@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
+import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.Tables;
 import mdplayer.chips.QSoundChip;
@@ -26,11 +27,12 @@ import mdplayer.form.View;
 import mdplayer.form.kb.PcmChannelParams;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
+import mdsound.MDSound;
 
 
 public class FormQSound extends FormChipBase<FormQSound.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormQSound.class);
+    private static final Preferences prefs = Preferences.userNodeForPackage(FormQSound.class);
 
     public FormQSound(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -62,7 +64,7 @@ public class FormQSound extends FormChipBase<FormQSound.Params> {
         }
     };
 
-    public void changeZoom() {
+    private void changeZoom() {
         this.setMaximumSize(new Dimension(frameSizeW + Common.getImage("planeQSound").getWidth() * zoom, frameSizeH + Common.getImage("planeQSound").getHeight() * zoom));
         this.setMinimumSize(new Dimension(frameSizeW + Common.getImage("planeQSound").getWidth() * zoom, frameSizeH + Common.getImage("planeQSound").getHeight() * zoom));
         this.setPreferredSize(new Dimension(frameSizeW + Common.getImage("planeQSound").getWidth() * zoom, frameSizeH + Common.getImage("planeQSound").getHeight() * zoom));
@@ -269,7 +271,7 @@ public class FormQSound extends FormChipBase<FormQSound.Params> {
         this.addComponentListener(this.componentListener);
     }
 
-    BufferedImage image;
+    private BufferedImage image;
 
 //#region draw buffer
 
@@ -341,15 +343,15 @@ public class FormQSound extends FormChipBase<FormQSound.Params> {
 //#endregion
 
     /** this panel's channel row: the common core plus what only this chip displays */
-    public static class Channel extends PcmChannelParams {
+    static class Channel extends PcmChannelParams {
 
-        public int echo = -1;
+        int echo = -1;
     }
 
     /** this panel's per-frame draw state, diffed new against old (see {@link FormChipBase}) */
-    public static class Params {
+    static class Params {
 
-        public final Channel[] channels = {
+        final Channel[] channels = {
                 new Channel(), new Channel(), new Channel(), new Channel(),
                 new Channel(), new Channel(), new Channel(), new Channel(),
                 new Channel(), new Channel(), new Channel(), new Channel(),
@@ -364,37 +366,37 @@ public class FormQSound extends FormChipBase<FormQSound.Params> {
 
         @Override public String id() { return "QSound"; }
         @Override public String category() { return "pcm"; }
-        @Override public Class<? extends mdplayer.Chip> chip() { return mdplayer.chips.QSoundChip.class; }
+        @Override public Class<? extends mdplayer.Chip> chip() { return QSoundChip.class; }
         @Override public boolean hasRegisterDump() { return true; }
         @Override public String title(int chipId) { return "QSoundInst (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"); }
         @Override public View create(FormMain frm, int chipId, int zoom) { return new FormQSound(frm, chipId, zoom); }
 
-        @Override public void setChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
-            mdplayer.chips.QSoundChip c = audio.plugin.chipRegister.chip(mdplayer.chips.QSoundChip.class);
+        @Override public void setChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+            QSoundChip c = audio.plugin.chipRegister.chip(QSoundChip.class);
             if (!c.getMask(chipId, ch)) c.setMask(chipId, ch); else c.resetMask(chipId, ch);
         }
 
-        @Override public void resetChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+        @Override public void resetChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
             if (ch >= 0 && ch < 19) {
-                audio.plugin.chipRegister.chip(mdplayer.chips.QSoundChip.class).resetMask(chipId, ch);
+                audio.plugin.chipRegister.chip(QSoundChip.class).resetMask(chipId, ch);
             }
         }
 
-        @Override public void forceChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
+        @Override public void forceChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
             if (mask)
-                audio.plugin.chipRegister.chip(mdplayer.chips.QSoundChip.class).setMask(chipId, ch);
+                audio.plugin.chipRegister.chip(QSoundChip.class).setMask(chipId, ch);
             else
-                audio.plugin.chipRegister.chip(mdplayer.chips.QSoundChip.class).resetMask(chipId, ch);
+                audio.plugin.chipRegister.chip(QSoundChip.class).resetMask(chipId, ch);
         }
 
-        @Override public void reapplyChannelMasks(mdplayer.Audio audio, int chipId) {
+        @Override public void reapplyChannelMasks(Audio audio, int chipId) {
             for (int ch = 0; ch < 19; ch++)
-                forceChannelMask(audio, mdplayer.chips.QSoundChip.class, chipId, ch,
-                        audio.plugin.chipRegister.chip(mdplayer.chips.QSoundChip.class).getMask(chipId, ch));
+                forceChannelMask(audio, QSoundChip.class, chipId, ch,
+                        audio.plugin.chipRegister.chip(QSoundChip.class).getMask(chipId, ch));
         }
 
         @Override public List<MixerSlot> mixerSlots() {
-            return List.of(new MixerSlot(46, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.QSoundChip.class, "qSound", 200));
+            return List.of(new MixerSlot(46, MDSound.Chip.MAIN_TAG, QSoundChip.class, "qSound", 200));
         }
     }
 }

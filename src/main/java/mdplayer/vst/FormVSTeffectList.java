@@ -61,9 +61,9 @@ public class FormVSTeffectList extends JFrame {
 
     private final FormMain parent;
     public boolean isClosed = false;
-    public final Setting setting;
+    private final Setting setting;
     private static final boolean isInitialOpenFolder = true;
-    final Audio audio = Audio.getInstance();
+    private final Audio audio = Audio.getInstance();
 
     public FormVSTeffectList(FormMain parent, Setting setting) {
         this.parent = parent;

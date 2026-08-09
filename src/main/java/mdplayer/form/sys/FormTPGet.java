@@ -26,7 +26,7 @@ import mdplayer.form.Layouts;
 
 public class FormTPGet extends JDialog {
 
-    int DialogResult;
+    private int DialogResult;
 
     private void initializeComponent() {
         this.groupBox1 = new JPanel();

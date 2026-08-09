@@ -42,11 +42,11 @@ logger.log(Level.INFO, "songNo: " + songNo);
 
     @Override
     public void prepare() {
-        driverVirtual = new mdplayer.driver.nsf.NsfMdDriver(this); // use np driver
+        driverVirtual = new NsfMdDriver(this); // use np driver
 
         driverReal = null;
 //        if (setting.getoutputDevice().deviceType != Common.DEV_Null) {
-//            driverReal = new mdplayer.driver.nsf.NsfMdDriver(this);
+//            driverReal = new NsfMdDriver(this);
 //        }
 
         super.prepare();

@@ -16,8 +16,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
+import mdplayer.Audio;
 import mdplayer.Common;
-import mdplayer.chips.Ym2608Chip;
 import mdplayer.form.FrameBuffer;
 import mdplayer.form.ScreenPanel;
 import mdplayer.Tables;
@@ -26,11 +26,12 @@ import mdplayer.form.kb.ChannelParams;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
 import mdplayer.form.View;
+import mdsound.MDSound;
 
 
 public class FormYM2151 extends FormChipBase<FormYM2151.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormYM2151.class);
+    private static final Preferences prefs = Preferences.userNodeForPackage(FormYM2151.class);
 
     public FormYM2151(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -60,7 +61,7 @@ public class FormYM2151 extends FormChipBase<FormYM2151.Params> {
         }
     };
 
-    public void changeZoom() {
+    private void changeZoom() {
         this.setMaximumSize(new Dimension(frameSizeW + Common.getImage("planeE").getWidth() * zoom, frameSizeH + Common.getImage("planeE").getHeight() * zoom));
         this.setMinimumSize(new Dimension(frameSizeW + Common.getImage("planeE").getWidth() * zoom, frameSizeH + Common.getImage("planeE").getHeight() * zoom));
         this.setPreferredSize(new Dimension(frameSizeW + Common.getImage("planeE").getWidth() * zoom, frameSizeH + Common.getImage("planeE").getHeight() * zoom));
@@ -72,10 +73,6 @@ public class FormYM2151 extends FormChipBase<FormYM2151.Params> {
         public void componentMoved(ComponentEvent e) {
             prefs.putInt("x", e.getComponent().getX());
             prefs.putInt("y", e.getComponent().getY());
-        }
-
-        @Override
-        public void componentResized(ComponentEvent e) {
         }
     };
 
@@ -263,7 +260,7 @@ public class FormYM2151 extends FormChipBase<FormYM2151.Params> {
 
             frameBuffer.drawInst(1, 11, c, oyc.inst, nyc.inst);
 
-            { int[] r = frameBuffer.Pan(24, 8 + c * 8, oyc.pan, nyc.pan, oyc.pantp, tp); oyc.pan = r[0]; oyc.pantp = r[1]; }
+            { int[] r = frameBuffer.pan(24, 8 + c * 8, oyc.pan, nyc.pan, oyc.pantp, tp); oyc.pan = r[0]; oyc.pantp = r[1]; }
             oyc.note = frameBuffer.drawKeyBoard(c, oyc.note, nyc.note, tp);
 
             oyc.volumeL = frameBuffer.drawVolumeM(256, 8 + c * 8, 1, oyc.volumeL, nyc.volumeL, tp);
@@ -306,7 +303,7 @@ public class FormYM2151 extends FormChipBase<FormYM2151.Params> {
         this.addComponentListener(this.componentListener);
     }
 
-    BufferedImage image;
+    private BufferedImage image;
 
 //#region draw buffer
 
@@ -434,22 +431,22 @@ public class FormYM2151 extends FormChipBase<FormYM2151.Params> {
 //#endregion
 
     /** this panel's channel row: the common core plus what only this chip displays */
-    public static class Channel extends ChannelParams {
+    static class Channel extends ChannelParams {
 
-        public int kf = -1;
+        int kf = -1;
     }
 
     /** this panel's per-frame draw state, diffed new against old (see {@link FormChipBase}) */
-    public static class Params {
+    static class Params {
 
-        public int ne = -1;
-        public int nfrq = -1;
-        public int lfrq = -1;
-        public int pmd = -1;
-        public int amd = -1;
-        public int waveform = -1;
-        public int lfosync = -1;
-        public final Channel[] channels = {
+        int ne = -1;
+        int nfrq = -1;
+        int lfrq = -1;
+        int pmd = -1;
+        int amd = -1;
+        int waveform = -1;
+        int lfosync = -1;
+        final Channel[] channels = {
                 new Channel(), new Channel(), new Channel(), new Channel(),
                 new Channel(), new Channel(), new Channel(), new Channel()
         };
@@ -460,34 +457,34 @@ public class FormYM2151 extends FormChipBase<FormYM2151.Params> {
 
         @Override public String id() { return "YM2151"; }
         @Override public String menuText() { return "OPM"; }
-        @Override public Class<? extends mdplayer.Chip> chip() { return mdplayer.chips.Ym2151Chip.class; }
+        @Override public Class<? extends mdplayer.Chip> chip() { return Ym2151Chip.class; }
         @Override public boolean hasRegisterDump() { return true; }
         @Override public View create(FormMain frm, int chipId, int zoom) { return new FormYM2151(frm, chipId, zoom); }
 
-        @Override public void setChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
-            mdplayer.chips.Ym2151Chip c = audio.plugin.chipRegister.chip(mdplayer.chips.Ym2151Chip.class);
+        @Override public void setChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+            Ym2151Chip c = audio.plugin.chipRegister.chip(Ym2151Chip.class);
             if (!c.getMask(chipId, ch)) c.setMask(chipId, ch); else c.setMask(chipId, ch, false, audio.plugin.stopped);
         }
 
-        @Override public void resetChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
-            audio.plugin.chipRegister.chip(mdplayer.chips.Ym2151Chip.class).setMask(chipId, ch, false, audio.plugin.stopped);
+        @Override public void resetChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+            audio.plugin.chipRegister.chip(Ym2151Chip.class).setMask(chipId, ch, false, audio.plugin.stopped);
         }
 
-        @Override public void forceChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
+        @Override public void forceChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
             if (mask)
-                audio.plugin.chipRegister.chip(mdplayer.chips.Ym2151Chip.class).setMask(chipId, ch);
+                audio.plugin.chipRegister.chip(Ym2151Chip.class).setMask(chipId, ch);
             else
-                audio.plugin.chipRegister.chip(mdplayer.chips.Ym2151Chip.class).setMask(chipId, ch, false, audio.plugin.stopped);
+                audio.plugin.chipRegister.chip(Ym2151Chip.class).setMask(chipId, ch, false, audio.plugin.stopped);
         }
 
-        @Override public void reapplyChannelMasks(mdplayer.Audio audio, int chipId) {
+        @Override public void reapplyChannelMasks(Audio audio, int chipId) {
             for (int ch = 0; ch < 8; ch++)
-                forceChannelMask(audio, mdplayer.chips.Ym2151Chip.class, chipId, ch,
-                        audio.plugin.chipRegister.chip(mdplayer.chips.Ym2151Chip.class).getMask(chipId, ch));
+                forceChannelMask(audio, Ym2151Chip.class, chipId, ch,
+                        audio.plugin.chipRegister.chip(Ym2151Chip.class).getMask(chipId, ch));
         }
 
         @Override public List<MixerSlot> mixerSlots() {
-            return List.of(new MixerSlot(1, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Ym2151Chip.class, "ym2151", 200));
+            return List.of(new MixerSlot(1, MDSound.Chip.MAIN_TAG, Ym2151Chip.class, "ym2151", 200));
         }
     }
 }

@@ -1,7 +1,7 @@
 package mdplayer.emu.nise98;
 
 
-public class UserInt {
+class UserInt {
 
     private int intNum;
 

@@ -9,6 +9,7 @@ package mdplayer;
 import java.awt.Point;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 
 import mdplayer.vst.VstInfo;
 import vavi.util.serdes.Serdes;
@@ -54,7 +55,7 @@ class VstSettingTest {
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         Serdes.Util.serialize(setting, out);
-        assertTrue(out.toString("utf-8").contains("<effectName>Something</effectName>"),
+        assertTrue(out.toString(StandardCharsets.UTF_8).contains("<effectName>Something</effectName>"),
                 "the effect was not written to the settings at all");
 
         Setting read = Serdes.Util.deserialize(new ByteArrayInputStream(out.toByteArray()), new Setting());

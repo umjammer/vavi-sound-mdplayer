@@ -21,12 +21,12 @@ import java.util.Arrays;
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-07-25 nsano initial version <br>
- * @see FmDspVisualizer#trackDetail
+ * @see "FmDspVisualizer#trackDetail"
  */
 public final class TrackDetail {
 
     /** The most bar lines a row has, which is an FM row's four operators. */
-    public static final int LINES = 4;
+    static final int LINES = 4;
 
     /** Columns of one bar. */
     public static final int COLUMNS = 64;

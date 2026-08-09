@@ -12,6 +12,7 @@ import javax.swing.filechooser.FileFilter;
 
 import mdplayer.Audio;
 import mdplayer.Chip;
+import mdplayer.Common.EnmInstFormat;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.chips.Ym2203Chip;
 import mdplayer.chips.Ym2608Chip;
@@ -23,8 +24,8 @@ import mdplayer.chips.Ym2612Chip;
 public class TfiInstWriter implements InstWriter {
 
     @Override
-    public mdplayer.Common.EnmInstFormat format() {
-        return mdplayer.Common.EnmInstFormat.TFI;
+    public EnmInstFormat format() {
+        return EnmInstFormat.TFI;
     }
 
     @Override

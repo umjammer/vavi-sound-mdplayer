@@ -9,6 +9,7 @@ import mdplayer.chips.HuC6280Chip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.lib.hes.Hes;
 import mdplayer.driver.BasePlugin;
+import mdsound.MDSound;
 import musicDriverInterface.MetaData;
 import vavi.util.ByteUtil;
 
@@ -111,7 +112,7 @@ public class HesDriver extends BaseDriver {
         }
     }
 
-    public void additionalUpdate(mdsound.MDSound.Chip sender, int chipId, int[][] buffer, int length) {
+    public void additionalUpdate(MDSound.Chip sender, int chipId, int[][] buffer, int length) {
         if (plugin.isStopped()) {
             return;
         }

@@ -64,7 +64,7 @@ System.err.println("title: " + file.tag("title") + ", game: " + file.tag("game")
             if (d != 0) diff++;
             worst = Math.max(worst, d);
         }
-System.err.println("samples: %d, differing: %d, worst: %d".formatted(theirs.length, diff, worst));
+System.err.printf("samples: %d, differing: %d, worst: %d%n", theirs.length, diff, worst);
 
         int peak = 0;
         for (short s : mine) peak = Math.max(peak, Math.abs(s));

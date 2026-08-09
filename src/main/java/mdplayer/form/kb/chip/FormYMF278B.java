@@ -17,7 +17,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
+import mdplayer.Audio;
 import mdplayer.Common;
+import mdplayer.Common.EnmInstFormat;
+import mdplayer.Setting;
 import mdplayer.Tables;
 import mdplayer.chips.SegaPcmChip;
 import mdplayer.chips.YmF278BChip;
@@ -25,14 +28,17 @@ import mdplayer.driver.moonDriver.BuiltInMoonDriver;
 import mdplayer.form.FrameBuffer;
 import mdplayer.form.ScreenPanel;
 import mdplayer.form.View;
+import mdplayer.form.inst.OpliInstWriter;
+import mdplayer.form.inst.SendMml2vgmInstWriter;
 import mdplayer.form.kb.ChannelParams;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
+import mdsound.MDSound;
 
 
 public class FormYMF278B extends FormChipBase<FormYMF278B.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormYMF278B.class);
+    private static final Preferences prefs = Preferences.userNodeForPackage(FormYMF278B.class);
 
     public FormYMF278B(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -72,7 +78,7 @@ public class FormYMF278B extends FormChipBase<FormYMF278B.Params> {
         }
     };
 
-    public void changeZoom() {
+    private void changeZoom() {
         this.setMaximumSize(new Dimension(frameSizeW + Common.getImage("planeYMF278B").getWidth() * zoom, frameSizeH + Common.getImage("planeYMF278B").getHeight() * zoom));
         this.setMinimumSize(new Dimension(frameSizeW + Common.getImage("planeYMF278B").getWidth() * zoom, frameSizeH + Common.getImage("planeYMF278B").getHeight() * zoom));
         this.setPreferredSize(new Dimension(frameSizeW + Common.getImage("planeYMF278B").getWidth() * zoom, frameSizeH + Common.getImage("planeYMF278B").getHeight() * zoom));
@@ -472,7 +478,7 @@ public class FormYMF278B extends FormChipBase<FormYMF278B.Params> {
             oyc.inst[14] = frameBuffer.font4Int2(336 + 4 * 73, c * 8 + 8, 0, 0, oyc.inst[14], nyc.inst[14]); // CN
             oyc.inst[15] = frameBuffer.font4Int2(336 + 4 * 76, c * 8 + 8, 0, 0, oyc.inst[15], nyc.inst[15]); // FB
             int dmy = 99;
-            { int[] r = frameBuffer.Pan(24, 8 + c * 8, oyc.inst[36], nyc.inst[36], dmy, 0); oyc.inst[36] = r[0]; dmy = r[1]; }
+            { int[] r = frameBuffer.pan(24, 8 + c * 8, oyc.inst[36], nyc.inst[36], dmy, 0); oyc.inst[36] = r[0]; dmy = r[1]; }
             oyc.note = frameBuffer.drawKeyBoard(c, oyc.note, nyc.note, tp);
             oyc.volumeL = frameBuffer.drawVolumeXY(64, c * 2 + 2, 1, oyc.volumeL, nyc.volumeL, tp);
             oyc.volumeR = frameBuffer.drawVolumeXY(64, c * 2 + 3, 1, oyc.volumeR, nyc.volumeR, tp);
@@ -603,7 +609,7 @@ public class FormYMF278B extends FormChipBase<FormYMF278B.Params> {
         this.addComponentListener(this.componentListener);
     }
 
-    BufferedImage image;
+    private BufferedImage image;
 
 //#region draw buffer
 
@@ -771,15 +777,15 @@ public class FormYMF278B extends FormChipBase<FormYMF278B.Params> {
 //#endregion
 
     /** this panel's channel row: the common core plus what only this chip displays */
-    public static class Channel extends ChannelParams {
+    static class Channel extends ChannelParams {
 
-        public boolean dda = false;
+        boolean dda = false;
     }
 
     /** this panel's per-frame draw state, diffed new against old (see {@link FormChipBase}) */
-    public static class Params {
+    static class Params {
 
-        public final Channel[] channels = {
+        final Channel[] channels = {
                 new Channel(), new Channel(), new Channel(), new Channel(), new Channel(),
                 new Channel(), new Channel(), new Channel(), new Channel(), new Channel(),
                 new Channel(), new Channel(), new Channel(), new Channel(), new Channel(),
@@ -800,39 +806,39 @@ public class FormYMF278B extends FormChipBase<FormYMF278B.Params> {
         @Override public String id() { return "YMF278B"; }
         @Override public String menuText() { return "OPL4"; }
         @Override public String category() { return "opl"; }
-        @Override public Class<? extends mdplayer.Chip> chip() { return mdplayer.chips.YmF278BChip.class; }
+        @Override public Class<? extends mdplayer.Chip> chip() { return YmF278BChip.class; }
         @Override public boolean hasRegisterDump() { return true; }
         @Override public View create(FormMain frm, int chipId, int zoom) { return new FormYMF278B(frm, chipId, zoom); }
 
-        @Override public void setChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+        @Override public void setChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
             if (ch >= 0 && ch < 47) {
-                mdplayer.chips.YmF278BChip c = audio.plugin.chipRegister.chip(mdplayer.chips.YmF278BChip.class);
+                YmF278BChip c = audio.plugin.chipRegister.chip(YmF278BChip.class);
                 if (!c.getMask(chipId, ch)) c.setMask(chipId, ch); else c.resetMask(chipId, ch);
             }
         }
 
-        @Override public void resetChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
-            audio.plugin.chipRegister.chip(mdplayer.chips.YmF278BChip.class).resetMask(chipId, ch);
+        @Override public void resetChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+            audio.plugin.chipRegister.chip(YmF278BChip.class).resetMask(chipId, ch);
         }
 
-        @Override public void forceChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
+        @Override public void forceChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
             if (ch >= 0 && ch < 47) {
                 if (mask)
-                    audio.plugin.chipRegister.chip(mdplayer.chips.YmF278BChip.class).setMask(chipId, ch);
+                    audio.plugin.chipRegister.chip(YmF278BChip.class).setMask(chipId, ch);
                 else
-                    audio.plugin.chipRegister.chip(mdplayer.chips.YmF278BChip.class).resetMask(chipId, ch);
+                    audio.plugin.chipRegister.chip(YmF278BChip.class).resetMask(chipId, ch);
             }
         }
 
         @Override public List<MixerSlot> mixerSlots() {
-            return List.of(new MixerSlot(21, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.YmF278BChip.class, "ymf278b", 200));
+            return List.of(new MixerSlot(21, MDSound.Chip.MAIN_TAG, YmF278BChip.class, "ymf278b", 200));
         }
 
-        @Override public void getInstCh(Component parent, mdplayer.Audio audio, mdplayer.Setting setting, int ch, int chipId) {
-            if (setting.getOther().getInstFormat() == mdplayer.Common.EnmInstFormat.OPLI) {
-                new mdplayer.form.inst.OpliInstWriter().write(parent, audio, chip(), ch, chipId);
+        @Override public void getInstCh(Component parent, Audio audio, Setting setting, int ch, int chipId) {
+            if (setting.getOther().getInstFormat() == EnmInstFormat.OPLI) {
+                new OpliInstWriter().write(parent, audio, chip(), ch, chipId);
             } else {
-                new mdplayer.form.inst.SendMml2vgmInstWriter().write(parent, audio, chip(), ch, chipId);
+                new SendMml2vgmInstWriter().write(parent, audio, chip(), ch, chipId);
             }
         }
     }

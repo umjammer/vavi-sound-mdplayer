@@ -200,7 +200,7 @@ public class MIDIEvent implements Serializable {
         }
     }
 
-    public static class MIDIUserExclusive {
+    static class MIDIUserExclusive {
         private String name = "";
         private String memo = "";
         private byte[] exclusive = null;

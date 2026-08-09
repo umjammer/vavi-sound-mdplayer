@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
+import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.form.FrameBuffer;
 import mdplayer.form.ScreenPanel;
@@ -25,11 +26,12 @@ import mdplayer.form.kb.ChannelParams;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
 import mdplayer.form.View;
+import mdsound.MDSound;
 
 
 public class FormDMG extends FormChipBase<FormDMG.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormDMG.class);
+    private static final Preferences prefs = Preferences.userNodeForPackage(FormDMG.class);
 
     public FormDMG(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -61,7 +63,7 @@ public class FormDMG extends FormChipBase<FormDMG.Params> {
         }
     };
 
-    public void changeZoom() {
+    private void changeZoom() {
         setMaximumSize(new Dimension(frameSizeW + Common.getImage("planeDMG").getWidth() * zoom, frameSizeH + Common.getImage("planeDMG").getHeight() * zoom));
         setMinimumSize(new Dimension(frameSizeW + Common.getImage("planeDMG").getWidth() * zoom, frameSizeH + Common.getImage("planeDMG").getHeight() * zoom));
         setPreferredSize(new Dimension(frameSizeW + Common.getImage("planeDMG").getWidth() * zoom, frameSizeH + Common.getImage("planeDMG").getHeight() * zoom));
@@ -189,7 +191,7 @@ public class FormDMG extends FormChipBase<FormDMG.Params> {
     public void drawScreenParams() {
         Channel oyc = oldParam.channels[0];
         Channel nyc = newParam.channels[0];
-        { int[] r = frameBuffer.Pan(24, 8, oyc.pan, nyc.pan, oyc.pantp, 0); oyc.pan = r[0]; oyc.pantp = r[1]; }
+        { int[] r = frameBuffer.pan(24, 8, oyc.pan, nyc.pan, oyc.pantp, 0); oyc.pan = r[0]; oyc.pantp = r[1]; }
         oyc.freq = frameBuffer.font4Hex12Bit(260, 8, 0, oyc.freq, nyc.freq);
         oyc.volumeL = frameBuffer.drawVolumeXY(68, 2, 1, oyc.volumeL, nyc.volumeL, 0);
         oyc.volumeR = frameBuffer.drawVolumeXY(68, 3, 1, oyc.volumeR, nyc.volumeR, 0);
@@ -208,7 +210,7 @@ public class FormDMG extends FormChipBase<FormDMG.Params> {
 
         oyc = oldParam.channels[1];
         nyc = newParam.channels[1];
-        { int[] r = frameBuffer.Pan(24, 16, oyc.pan, nyc.pan, oyc.pantp, 0); oyc.pan = r[0]; oyc.pantp = r[1]; }
+        { int[] r = frameBuffer.pan(24, 16, oyc.pan, nyc.pan, oyc.pantp, 0); oyc.pan = r[0]; oyc.pantp = r[1]; }
         oyc.freq = frameBuffer.font4Hex12Bit(260, 16, 0, oyc.freq, nyc.freq);
         oyc.volumeL = frameBuffer.drawVolumeXY(68, 4, 1, oyc.volumeL, nyc.volumeL, 0);
         oyc.volumeR = frameBuffer.drawVolumeXY(68, 5, 1, oyc.volumeR, nyc.volumeR, 0);
@@ -224,7 +226,7 @@ public class FormDMG extends FormChipBase<FormDMG.Params> {
 
         oyc = oldParam.channels[2];
         nyc = newParam.channels[2];
-        { int[] r = frameBuffer.Pan(24, 24, oyc.pan, nyc.pan, oyc.pantp, 0); oyc.pan = r[0]; oyc.pantp = r[1]; }
+        { int[] r = frameBuffer.pan(24, 24, oyc.pan, nyc.pan, oyc.pantp, 0); oyc.pan = r[0]; oyc.pantp = r[1]; }
         oyc.freq = frameBuffer.font4Hex12Bit(260, 24, 0, oyc.freq, nyc.freq);
         oyc.volumeL = frameBuffer.drawVolumeXY(68, 6, 1, oyc.volumeL, nyc.volumeL, 0);
         oyc.volumeR = frameBuffer.drawVolumeXY(68, 7, 1, oyc.volumeR, nyc.volumeR, 0);
@@ -238,7 +240,7 @@ public class FormDMG extends FormChipBase<FormDMG.Params> {
 
         oyc = oldParam.channels[3];
         nyc = newParam.channels[3];
-        { int[] r = frameBuffer.Pan(24, 32, oyc.pan, nyc.pan, oyc.pantp, 0); oyc.pan = r[0]; oyc.pantp = r[1]; }
+        { int[] r = frameBuffer.pan(24, 32, oyc.pan, nyc.pan, oyc.pantp, 0); oyc.pan = r[0]; oyc.pantp = r[1]; }
         oyc.volumeL = frameBuffer.drawVolumeXY(68, 8, 1, oyc.volumeL, nyc.volumeL, 0);
         oyc.volumeR = frameBuffer.drawVolumeXY(68, 9, 1, oyc.volumeR, nyc.volumeR, 0);
         oyc.freq = frameBuffer.font4Int1(316, 40, 0, oyc.freq, nyc.freq);
@@ -340,7 +342,7 @@ public class FormDMG extends FormChipBase<FormDMG.Params> {
         this.addComponentListener(this.componentListener);
     }
 
-    BufferedImage image;
+    private BufferedImage image;
 
 //#region draw buffer
 
@@ -433,17 +435,17 @@ public class FormDMG extends FormChipBase<FormDMG.Params> {
 //#endregion
 
     /** this panel's channel row: the common core plus what only this chip displays */
-    public static class Channel extends ChannelParams {
+    static class Channel extends ChannelParams {
 
-        public int tn = 0;
-        public int srcFreq = -1;
+        int tn = 0;
+        int srcFreq = -1;
     }
 
     /** this panel's per-frame draw state, diffed new against old (see {@link FormChipBase}) */
-    public static class Params {
+    static class Params {
 
-        public final byte[] wf = new byte[32];
-        public final Channel[] channels = {new Channel(), new Channel(), new Channel(), new Channel()};
+        final byte[] wf = new byte[32];
+        final Channel[] channels = {new Channel(), new Channel(), new Channel(), new Channel()};
     }
 
     /** what this panel contributes to the GUI; see {@link ViewProvider} */
@@ -451,35 +453,35 @@ public class FormDMG extends FormChipBase<FormDMG.Params> {
 
         @Override public String id() { return "DMG"; }
         @Override public String category() { return "nes"; }
-        @Override public Class<? extends mdplayer.Chip> chip() { return mdplayer.chips.DmgChip.class; }
+        @Override public Class<? extends mdplayer.Chip> chip() { return DmgChip.class; }
         @Override public View create(FormMain frm, int chipId, int zoom) { return new FormDMG(frm, chipId, zoom); }
 
-        @Override public void setChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+        @Override public void setChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
             if (ch >= 0 && ch < 4) {
-                mdplayer.chips.DmgChip c = audio.plugin.chipRegister.chip(mdplayer.chips.DmgChip.class);
+                DmgChip c = audio.plugin.chipRegister.chip(DmgChip.class);
                 if (!c.getMask(chipId, ch)) c.setMask(chipId, ch); else c.resetMask(chipId, ch);
             }
         }
 
-        @Override public void resetChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
-            audio.plugin.chipRegister.chip(mdplayer.chips.DmgChip.class).resetMask(chipId, ch);
+        @Override public void resetChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+            audio.plugin.chipRegister.chip(DmgChip.class).resetMask(chipId, ch);
         }
 
-        @Override public void forceChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
+        @Override public void forceChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
             if (mask)
-                audio.plugin.chipRegister.chip(mdplayer.chips.DmgChip.class).setMask(chipId, ch);
+                audio.plugin.chipRegister.chip(DmgChip.class).setMask(chipId, ch);
             else
-                audio.plugin.chipRegister.chip(mdplayer.chips.DmgChip.class).resetMask(chipId, ch);
+                audio.plugin.chipRegister.chip(DmgChip.class).resetMask(chipId, ch);
         }
 
-        @Override public void reapplyChannelMasks(mdplayer.Audio audio, int chipId) {
+        @Override public void reapplyChannelMasks(Audio audio, int chipId) {
             for (int ch = 0; ch < 4; ch++)
-                forceChannelMask(audio, mdplayer.chips.DmgChip.class, chipId, ch,
-                        audio.plugin.chipRegister.chip(mdplayer.chips.DmgChip.class).getMask(chipId, ch));
+                forceChannelMask(audio, DmgChip.class, chipId, ch,
+                        audio.plugin.chipRegister.chip(DmgChip.class).getMask(chipId, ch));
         }
 
         @Override public List<MixerSlot> mixerSlots() {
-            return List.of(new MixerSlot(56, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.DmgChip.class, "DMG", 50));
+            return List.of(new MixerSlot(56, MDSound.Chip.MAIN_TAG, DmgChip.class, "DMG", 50));
         }
     }
 }

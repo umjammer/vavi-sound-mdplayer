@@ -17,19 +17,22 @@ import java.util.Map;
 import java.util.prefs.Preferences;
 
 import mdplayer.Common;
+import mdplayer.chips.BaseChip;
 import mdplayer.form.FrameBuffer;
 import mdplayer.form.ScreenPanel;
 import mdplayer.Tables;
 import mdplayer.chips.MultiPcmChip;
+import mdplayer.form.VisVolume;
 import mdplayer.form.kb.PcmChannelParams;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
 import mdplayer.form.View;
+import mdsound.MDSound;
 
 
 public class FormMultiPCM extends FormChipBase<FormMultiPCM.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormMultiPCM.class);
+    private static final Preferences prefs = Preferences.userNodeForPackage(FormMultiPCM.class);
 
     public FormMultiPCM(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -61,7 +64,7 @@ public class FormMultiPCM extends FormChipBase<FormMultiPCM.Params> {
         }
     };
 
-    public void changeZoom() {
+    private void changeZoom() {
         this.setMaximumSize(new Dimension(frameSizeW + Common.getImage("planeMultiPCM").getWidth() * zoom, frameSizeH + Common.getImage("planeMultiPCM").getHeight() * zoom));
         this.setMinimumSize(new Dimension(frameSizeW + Common.getImage("planeMultiPCM").getWidth() * zoom, frameSizeH + Common.getImage("planeMultiPCM").getHeight() * zoom));
         this.setPreferredSize(new Dimension(frameSizeW + Common.getImage("planeMultiPCM").getWidth() * zoom, frameSizeH + Common.getImage("planeMultiPCM").getHeight() * zoom));
@@ -261,7 +264,7 @@ public class FormMultiPCM extends FormChipBase<FormMultiPCM.Params> {
         this.addComponentListener(this.componentListener);
     }
 
-    BufferedImage image;
+    private BufferedImage image;
 
 //#region draw buffer
 
@@ -299,9 +302,9 @@ public class FormMultiPCM extends FormChipBase<FormMultiPCM.Params> {
 //#endregion
 
     /** this panel's per-frame draw state, diffed new against old (see {@link FormChipBase}) */
-    public static class Params {
+    static class Params {
 
-        public final PcmChannelParams[] channels = {
+        final PcmChannelParams[] channels = {
                 new PcmChannelParams(), new PcmChannelParams(), new PcmChannelParams(), new PcmChannelParams(),
                 new PcmChannelParams(), new PcmChannelParams(), new PcmChannelParams(), new PcmChannelParams(),
                 new PcmChannelParams(), new PcmChannelParams(), new PcmChannelParams(), new PcmChannelParams(),
@@ -313,24 +316,23 @@ public class FormMultiPCM extends FormChipBase<FormMultiPCM.Params> {
         };
     }
 
-
     /** what this panel contributes to the GUI; see {@link ViewProvider} */
     public static class Provider implements ViewProvider {
 
         @Override public String id() { return "MultiPCM"; }
         @Override public String category() { return "pcm"; }
-        @Override public Class<? extends mdplayer.Chip> chip() { return mdplayer.chips.MultiPcmChip.class; }
+        @Override public Class<? extends mdplayer.Chip> chip() { return MultiPcmChip.class; }
         @Override public View create(FormMain frm, int chipId, int zoom) { return new FormMultiPCM(frm, chipId, zoom); }
 
         @Override public List<MixerSlot> mixerSlots() {
-            return List.of(new MixerSlot(42, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.MultiPcmChip.class, "multiPCM", 200));
+            return List.of(new MixerSlot(42, MDSound.Chip.MAIN_TAG, MultiPcmChip.class, "multiPCM", 200));
         }
 
-        @Override public void updateMeters(mdplayer.Audio audio, mdplayer.form.VisVolume visVolume) {
+        @Override public void updateMeters(mdplayer.Audio audio, VisVolume visVolume) {
             int val = 0;
             try {
-                mdplayer.Chip chip = audio.plugin.chipRegister.chip(mdplayer.chips.MultiPcmChip.class);
-                if (chip instanceof mdplayer.chips.BaseChip base) {
+                mdplayer.Chip chip = audio.plugin.chipRegister.chip(MultiPcmChip.class);
+                if (chip instanceof BaseChip base) {
                     Map<String, Object> info = base.getInfo(0);
                     if (!info.isEmpty()) {
                         for (int ch = 0; ch < 28; ch++) {
@@ -350,7 +352,7 @@ public class FormMultiPCM extends FormChipBase<FormMultiPCM.Params> {
                         }
                     }
                 }
-            } catch (Exception e) {
+            } catch (Exception _) {
             }
             visVolume.put("multiPCM", val);
         }

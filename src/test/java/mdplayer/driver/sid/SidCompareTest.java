@@ -27,7 +27,7 @@ import static org.mockito.Mockito.when;
  * {@link SidTestProgram}. Both should produce identical audio.
  */
 @EnabledIfSystemProperty(named = "vavi.test", matches = "ai")
-public class SidCompareTest {
+class SidCompareTest {
 
     private static final int SamplingRate = 44100;
 
@@ -49,8 +49,8 @@ public class SidCompareTest {
         diffWavs("/tmp/cmp_A.raw", "/tmp/cmp_B.raw");
     }
 
-    /** Mirror of {@link SidTestProgram#init}. */
-    static void runA(byte[] buf, int song, int buffers, String out) throws Exception {
+    /** Mirror of {@code SidTestProgram#init}. */
+    private static void runA(byte[] buf, int song, int buffers, String out) throws Exception {
         Setting setting = mock(Setting.class, Mockito.RETURNS_DEEP_STUBS);
         when(setting.getOutputDevice().getSampleRate()).thenReturn(SamplingRate);
 
@@ -80,14 +80,14 @@ public class SidCompareTest {
     }
 
     /** Mirror of {@link Sid#init} as used by {@link SidMdDriver}. */
-    static void runB(byte[] buf, int song, int buffers, String out) throws Exception {
+    private static void runB(byte[] buf, int song, int buffers, String out) throws Exception {
         Sid sid = new Sid();
         sid.song = song;
         sid.init(buf, null, null, null, 5000, SamplingRate, 1, 0, 0, false, false);
         renderToFile(sid.engine, buffers, out, "B");
     }
 
-    static void renderToFile(playSidFp engine, int buffers, String out, String tag) throws Exception {
+    private static void renderToFile(playSidFp engine, int buffers, String out, String tag) throws Exception {
         // Audio.java calls render(buffer, 0, 4) repeatedly. Mimic that.
         int chunk = 4096; // Use larger chunk
         int totalShorts = buffers * 4096;
@@ -114,7 +114,7 @@ public class SidCompareTest {
         }
     }
 
-    static void diffWavs(String a, String b) throws Exception {
+    private static void diffWavs(String a, String b) throws Exception {
         byte[] da = Files.readAllBytes(Paths.get(a));
         byte[] db = Files.readAllBytes(Paths.get(b));
         System.out.println();

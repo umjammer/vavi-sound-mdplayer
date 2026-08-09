@@ -29,9 +29,9 @@ import mdplayer.lib.sid.Mem;
 /**
  * Sprites handling.
  */
-public class Sprites {
+class Sprites {
 
-    public static final int SPRITES = 8;
+    private static final int SPRITES = 8;
     private final byte[] regs;
     private byte expFlop;
     private byte dma;

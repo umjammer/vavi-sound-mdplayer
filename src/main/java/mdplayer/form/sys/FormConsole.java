@@ -31,7 +31,7 @@ import mdplayer.form.FormBase;
  * {@code java.util.logging}, so this window is simply another {@link Handler} on the root logger,
  * and the level menu is that handler's level.
  */
-public class FormConsole extends FormBase {
+class FormConsole extends FormBase {
 
     /** how much of the log is kept before the oldest of it is dropped */
     private static final int MAX_LINES = 5000;

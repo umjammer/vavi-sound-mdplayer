@@ -7,6 +7,9 @@
 package mdplayer.emu.psx;
 
 
+import java.util.Arrays;
+
+
 /**
  * The PS1 sound processing unit: 24 voices of ADPCM with an ADSR envelope and one reverb unit.
  * <p>
@@ -127,7 +130,7 @@ public class PeopsSpu implements Spu, SpuVoices {
         void clear() {
             bNew = false;
             iSBPos = spos = sinc = sval = 0;
-            java.util.Arrays.fill(SB, 0);
+            Arrays.fill(SB, 0);
             pStart = pCurr = pLoop = 0;
             bOn = bStop = false;
             iActFreq = iUsedFreq = 0;
@@ -149,35 +152,35 @@ public class PeopsSpu implements Spu, SpuVoices {
 
     /** the one reverb unit */
     private static class Reverb {
-        int StartAddr;  // in samples
-        int CurrAddr;
+        int startAddr;  // in samples
+        int currAddr;
 
-        int Enabled;
-        int VolLeft;
-        int VolRight;
+        int enabled;
+        int volLeft;
+        int volRight;
         int iRVBLeft;
         int iRVBRight;
 
-        int FB_SRC_A, FB_SRC_B;
-        int IIR_ALPHA, ACC_COEF_A, ACC_COEF_B, ACC_COEF_C, ACC_COEF_D;
-        int IIR_COEF, FB_ALPHA, FB_X;
-        int IIR_DEST_A0, IIR_DEST_A1;
-        int ACC_SRC_A0, ACC_SRC_A1, ACC_SRC_B0, ACC_SRC_B1;
-        int IIR_SRC_A0, IIR_SRC_A1;
-        int IIR_DEST_B0, IIR_DEST_B1;
-        int ACC_SRC_C0, ACC_SRC_C1, ACC_SRC_D0, ACC_SRC_D1;
-        int IIR_SRC_B1, IIR_SRC_B0;
-        int MIX_DEST_A0, MIX_DEST_A1, MIX_DEST_B0, MIX_DEST_B1;
-        int IN_COEF_L, IN_COEF_R;
+        int fbSrcA, fbSrcB;
+        int iirAlpha, accCoefA, accCoefB, accCoefC, accCoefD;
+        int iirCoef, fbAlpha, fbX;
+        int iirDestA0, iirDestA1;
+        int accSrcA0, accSrcA1, accSrcB0, accSrcB1;
+        int iirSrcA0, iirSrcA1;
+        int iirDestB0, iirDestB1;
+        int accSrcC0, accSrcC1, accSrcD0, accSrcD1;
+        int iirSrcB1, iirSrcB0;
+        int mixDestA0, mixDestA1, mixDestB0, mixDestB1;
+        int inCoefL, inCoefR;
 
         void clear() {
-            StartAddr = CurrAddr = Enabled = VolLeft = VolRight = iRVBLeft = iRVBRight = 0;
-            FB_SRC_A = FB_SRC_B = IIR_ALPHA = ACC_COEF_A = ACC_COEF_B = ACC_COEF_C = 0;
-            ACC_COEF_D = IIR_COEF = FB_ALPHA = FB_X = IIR_DEST_A0 = IIR_DEST_A1 = 0;
-            ACC_SRC_A0 = ACC_SRC_A1 = ACC_SRC_B0 = ACC_SRC_B1 = IIR_SRC_A0 = IIR_SRC_A1 = 0;
-            IIR_DEST_B0 = IIR_DEST_B1 = ACC_SRC_C0 = ACC_SRC_C1 = ACC_SRC_D0 = ACC_SRC_D1 = 0;
-            IIR_SRC_B1 = IIR_SRC_B0 = MIX_DEST_A0 = MIX_DEST_A1 = MIX_DEST_B0 = MIX_DEST_B1 = 0;
-            IN_COEF_L = IN_COEF_R = 0;
+            startAddr = currAddr = enabled = volLeft = volRight = iRVBLeft = iRVBRight = 0;
+            fbSrcA = fbSrcB = iirAlpha = accCoefA = accCoefB = accCoefC = 0;
+            accCoefD = iirCoef = fbAlpha = fbX = iirDestA0 = iirDestA1 = 0;
+            accSrcA0 = accSrcA1 = accSrcB0 = accSrcB1 = iirSrcA0 = iirSrcA1 = 0;
+            iirDestB0 = iirDestB1 = accSrcC0 = accSrcC1 = accSrcD0 = accSrcD1 = 0;
+            iirSrcB1 = iirSrcB0 = mixDestA0 = mixDestA1 = mixDestB0 = mixDestB1 = 0;
+            inCoefL = inCoefR = 0;
         }
     }
 
@@ -255,9 +258,9 @@ public class PeopsSpu implements Spu, SpuVoices {
             c.clear();
         }
         rvb.clear();
-        java.util.Arrays.fill(regArea, 0);
-        java.util.Arrays.fill(spuMem, (short) 0);
-        java.util.Arrays.fill(keyOns, 0);
+        Arrays.fill(regArea, 0);
+        Arrays.fill(spuMem, (short) 0);
+        Arrays.fill(keyOns, 0);
     }
 
     public void open() {
@@ -276,7 +279,7 @@ public class PeopsSpu implements Spu, SpuVoices {
         pSpuIrq = 0;
 
         iVolume = 255;
-        java.util.Arrays.fill(keyOns, 0);
+        Arrays.fill(keyOns, 0);
         setupStreams();
 
         bSPUIsOpen = true;
@@ -396,23 +399,23 @@ public class PeopsSpu implements Spu, SpuVoices {
     // ---- reverb ----
 
     private int gBuffer(int iOff) {
-        iOff = (iOff * 4) + rvb.CurrAddr;
+        iOff = (iOff * 4) + rvb.currAddr;
         while (iOff > 0x3FFFF) {
-            iOff = rvb.StartAddr + (iOff - 0x40000);
+            iOff = rvb.startAddr + (iOff - 0x40000);
         }
-        while (iOff < rvb.StartAddr) {
-            iOff = 0x3ffff - (rvb.StartAddr - iOff);
+        while (iOff < rvb.startAddr) {
+            iOff = 0x3ffff - (rvb.startAddr - iOff);
         }
         return spuMem[iOff & 0x3ffff];
     }
 
     private void sBuffer(int iOff, int iVal) {
-        iOff = (iOff * 4) + rvb.CurrAddr;
+        iOff = (iOff * 4) + rvb.currAddr;
         while (iOff > 0x3FFFF) {
-            iOff = rvb.StartAddr + (iOff - 0x40000);
+            iOff = rvb.startAddr + (iOff - 0x40000);
         }
-        while (iOff < rvb.StartAddr) {
-            iOff = 0x3ffff - (rvb.StartAddr - iOff);
+        while (iOff < rvb.startAddr) {
+            iOff = 0x3ffff - (rvb.startAddr - iOff);
         }
         if (iVal < -32768) iVal = -32768;
         if (iVal > 32767) iVal = 32767;
@@ -420,12 +423,12 @@ public class PeopsSpu implements Spu, SpuVoices {
     }
 
     private void sBuffer1(int iOff, int iVal) {
-        iOff = (iOff * 4) + rvb.CurrAddr + 1;
+        iOff = (iOff * 4) + rvb.currAddr + 1;
         while (iOff > 0x3FFFF) {
-            iOff = rvb.StartAddr + (iOff - 0x40000);
+            iOff = rvb.startAddr + (iOff - 0x40000);
         }
-        while (iOff < rvb.StartAddr) {
-            iOff = 0x3ffff - (rvb.StartAddr - iOff);
+        while (iOff < rvb.startAddr) {
+            iOff = 0x3ffff - (rvb.startAddr - iOff);
         }
         if (iVal < -32768) iVal = -32768;
         if (iVal > 32767) iVal = 32767;
@@ -434,7 +437,7 @@ public class PeopsSpu implements Spu, SpuVoices {
 
     /** the reverb runs at 22 kHz, so the input is downsampled and the wet output upsampled */
     private void mixReverbLeftRight(int[] out, int inLeft, int inRight) {
-        if (rvb.StartAddr == 0) { // reverb is off
+        if (rvb.startAddr == 0) { // reverb is off
             rvb.iRVBLeft = rvb.iRVBRight = 0;
             return;
         }
@@ -457,58 +460,58 @@ public class PeopsSpu implements Spu, SpuVoices {
                 INPUT_SAMPLE_L >>= (16 - 8);
                 INPUT_SAMPLE_R >>= (16 - 8);
 
-                long IIR_INPUT_A0 = ((long) gBuffer(rvb.IIR_SRC_A0) * rvb.IIR_COEF >> 15)
-                        + ((INPUT_SAMPLE_L * rvb.IN_COEF_L) >> 15);
-                long IIR_INPUT_A1 = ((long) gBuffer(rvb.IIR_SRC_A1) * rvb.IIR_COEF >> 15)
-                        + ((INPUT_SAMPLE_R * rvb.IN_COEF_R) >> 15);
-                long IIR_INPUT_B0 = ((long) gBuffer(rvb.IIR_SRC_B0) * rvb.IIR_COEF >> 15)
-                        + ((INPUT_SAMPLE_L * rvb.IN_COEF_L) >> 15);
-                long IIR_INPUT_B1 = ((long) gBuffer(rvb.IIR_SRC_B1) * rvb.IIR_COEF >> 15)
-                        + ((INPUT_SAMPLE_R * rvb.IN_COEF_R) >> 15);
+                long IIR_INPUT_A0 = ((long) gBuffer(rvb.iirSrcA0) * rvb.iirCoef >> 15)
+                        + ((INPUT_SAMPLE_L * rvb.inCoefL) >> 15);
+                long IIR_INPUT_A1 = ((long) gBuffer(rvb.iirSrcA1) * rvb.iirCoef >> 15)
+                        + ((INPUT_SAMPLE_R * rvb.inCoefR) >> 15);
+                long IIR_INPUT_B0 = ((long) gBuffer(rvb.iirSrcB0) * rvb.iirCoef >> 15)
+                        + ((INPUT_SAMPLE_L * rvb.inCoefL) >> 15);
+                long IIR_INPUT_B1 = ((long) gBuffer(rvb.iirSrcB1) * rvb.iirCoef >> 15)
+                        + ((INPUT_SAMPLE_R * rvb.inCoefR) >> 15);
 
-                long IIR_A0 = (IIR_INPUT_A0 * rvb.IIR_ALPHA >> 15)
-                        + ((long) gBuffer(rvb.IIR_DEST_A0) * (32768 - rvb.IIR_ALPHA) >> 15);
-                long IIR_A1 = (IIR_INPUT_A1 * rvb.IIR_ALPHA >> 15)
-                        + ((long) gBuffer(rvb.IIR_DEST_A1) * (32768 - rvb.IIR_ALPHA) >> 15);
-                long IIR_B0 = (IIR_INPUT_B0 * rvb.IIR_ALPHA >> 15)
-                        + ((long) gBuffer(rvb.IIR_DEST_B0) * (32768 - rvb.IIR_ALPHA) >> 15);
-                long IIR_B1 = (IIR_INPUT_B1 * rvb.IIR_ALPHA >> 15)
-                        + ((long) gBuffer(rvb.IIR_DEST_B1) * (32768 - rvb.IIR_ALPHA) >> 15);
+                long IIR_A0 = (IIR_INPUT_A0 * rvb.iirAlpha >> 15)
+                        + ((long) gBuffer(rvb.iirDestA0) * (32768 - rvb.iirAlpha) >> 15);
+                long IIR_A1 = (IIR_INPUT_A1 * rvb.iirAlpha >> 15)
+                        + ((long) gBuffer(rvb.iirDestA1) * (32768 - rvb.iirAlpha) >> 15);
+                long IIR_B0 = (IIR_INPUT_B0 * rvb.iirAlpha >> 15)
+                        + ((long) gBuffer(rvb.iirDestB0) * (32768 - rvb.iirAlpha) >> 15);
+                long IIR_B1 = (IIR_INPUT_B1 * rvb.iirAlpha >> 15)
+                        + ((long) gBuffer(rvb.iirDestB1) * (32768 - rvb.iirAlpha) >> 15);
 
-                sBuffer1(rvb.IIR_DEST_A0, (int) IIR_A0);
-                sBuffer1(rvb.IIR_DEST_A1, (int) IIR_A1);
-                sBuffer1(rvb.IIR_DEST_B0, (int) IIR_B0);
-                sBuffer1(rvb.IIR_DEST_B1, (int) IIR_B1);
+                sBuffer1(rvb.iirDestA0, (int) IIR_A0);
+                sBuffer1(rvb.iirDestA1, (int) IIR_A1);
+                sBuffer1(rvb.iirDestB0, (int) IIR_B0);
+                sBuffer1(rvb.iirDestB1, (int) IIR_B1);
 
-                int ACC0 = (int) (((long) gBuffer(rvb.ACC_SRC_A0) * rvb.ACC_COEF_A >> 15)
-                        + ((long) gBuffer(rvb.ACC_SRC_B0) * rvb.ACC_COEF_B >> 15)
-                        + ((long) gBuffer(rvb.ACC_SRC_C0) * rvb.ACC_COEF_C >> 15)
-                        + ((long) gBuffer(rvb.ACC_SRC_D0) * rvb.ACC_COEF_D >> 15));
-                int ACC1 = (int) (((long) gBuffer(rvb.ACC_SRC_A1) * rvb.ACC_COEF_A >> 15)
-                        + ((long) gBuffer(rvb.ACC_SRC_B1) * rvb.ACC_COEF_B >> 15)
-                        + ((long) gBuffer(rvb.ACC_SRC_C1) * rvb.ACC_COEF_C >> 15)
-                        + ((long) gBuffer(rvb.ACC_SRC_D1) * rvb.ACC_COEF_D >> 15));
+                int ACC0 = (int) (((long) gBuffer(rvb.accSrcA0) * rvb.accCoefA >> 15)
+                        + ((long) gBuffer(rvb.accSrcB0) * rvb.accCoefB >> 15)
+                        + ((long) gBuffer(rvb.accSrcC0) * rvb.accCoefC >> 15)
+                        + ((long) gBuffer(rvb.accSrcD0) * rvb.accCoefD >> 15));
+                int ACC1 = (int) (((long) gBuffer(rvb.accSrcA1) * rvb.accCoefA >> 15)
+                        + ((long) gBuffer(rvb.accSrcB1) * rvb.accCoefB >> 15)
+                        + ((long) gBuffer(rvb.accSrcC1) * rvb.accCoefC >> 15)
+                        + ((long) gBuffer(rvb.accSrcD1) * rvb.accCoefD >> 15));
 
-                int FB_A0 = gBuffer(rvb.MIX_DEST_A0 - rvb.FB_SRC_A);
-                int FB_A1 = gBuffer(rvb.MIX_DEST_A1 - rvb.FB_SRC_A);
-                int FB_B0 = gBuffer(rvb.MIX_DEST_B0 - rvb.FB_SRC_B);
-                int FB_B1 = gBuffer(rvb.MIX_DEST_B1 - rvb.FB_SRC_B);
+                int FB_A0 = gBuffer(rvb.mixDestA0 - rvb.fbSrcA);
+                int FB_A1 = gBuffer(rvb.mixDestA1 - rvb.fbSrcA);
+                int FB_B0 = gBuffer(rvb.mixDestB0 - rvb.fbSrcB);
+                int FB_B1 = gBuffer(rvb.mixDestB1 - rvb.fbSrcB);
 
-                sBuffer(rvb.MIX_DEST_A0, ACC0 - ((FB_A0 * rvb.FB_ALPHA) >> 15));
-                sBuffer(rvb.MIX_DEST_A1, ACC1 - ((FB_A1 * rvb.FB_ALPHA) >> 15));
+                sBuffer(rvb.mixDestA0, ACC0 - ((FB_A0 * rvb.fbAlpha) >> 15));
+                sBuffer(rvb.mixDestA1, ACC1 - ((FB_A1 * rvb.fbAlpha) >> 15));
 
-                sBuffer(rvb.MIX_DEST_B0, ((rvb.FB_ALPHA * ACC0) >> 15)
-                        - ((FB_A0 * (rvb.FB_ALPHA ^ 0xFFFF8000)) >> 15)
-                        - ((FB_B0 * rvb.FB_X) >> 15));
-                sBuffer(rvb.MIX_DEST_B1, ((rvb.FB_ALPHA * ACC1) >> 15)
-                        - ((FB_A1 * (rvb.FB_ALPHA ^ 0xFFFF8000)) >> 15)
-                        - ((FB_B1 * rvb.FB_X) >> 15));
+                sBuffer(rvb.mixDestB0, ((rvb.fbAlpha * ACC0) >> 15)
+                        - ((FB_A0 * (rvb.fbAlpha ^ 0xFFFF8000)) >> 15)
+                        - ((FB_B0 * rvb.fbX) >> 15));
+                sBuffer(rvb.mixDestB1, ((rvb.fbAlpha * ACC1) >> 15)
+                        - ((FB_A1 * (rvb.fbAlpha ^ 0xFFFF8000)) >> 15)
+                        - ((FB_B1 * rvb.fbX) >> 15));
 
-                rvb.iRVBLeft = (gBuffer(rvb.MIX_DEST_A0) + gBuffer(rvb.MIX_DEST_B0)) / 3;
-                rvb.iRVBRight = (gBuffer(rvb.MIX_DEST_A1) + gBuffer(rvb.MIX_DEST_B1)) / 3;
+                rvb.iRVBLeft = (gBuffer(rvb.mixDestA0) + gBuffer(rvb.mixDestB0)) / 3;
+                rvb.iRVBRight = (gBuffer(rvb.mixDestA1) + gBuffer(rvb.mixDestB1)) / 3;
 
-                rvb.iRVBLeft = (int) ((long) rvb.iRVBLeft * rvb.VolLeft >> 14);
-                rvb.iRVBRight = (int) ((long) rvb.iRVBRight * rvb.VolRight >> 14);
+                rvb.iRVBLeft = (int) ((long) rvb.iRVBLeft * rvb.volLeft >> 14);
+                rvb.iRVBRight = (int) ((long) rvb.iRVBRight * rvb.volRight >> 14);
 
                 upbuf[0][ubpos] = rvb.iRVBLeft;
                 upbuf[1][ubpos] = rvb.iRVBRight;
@@ -517,9 +520,9 @@ public class PeopsSpu implements Spu, SpuVoices {
                 rvb.iRVBLeft = rvb.iRVBRight = 0;
                 return;
             }
-            rvb.CurrAddr++;
-            if (rvb.CurrAddr > 0x3ffff) {
-                rvb.CurrAddr = rvb.StartAddr;
+            rvb.currAddr++;
+            if (rvb.currAddr > 0x3ffff) {
+                rvb.currAddr = rvb.startAddr;
             }
         } else {
             upbuf[0][ubpos] = 0;
@@ -742,7 +745,7 @@ public class PeopsSpu implements Spu, SpuVoices {
                 sl += tmpl;
                 sr += tmpr;
 
-                if (((rvb.Enabled >> ch) & 1) != 0 && (spuCtrl & 0x80) != 0) {
+                if (((rvb.enabled >> ch) & 1) != 0 && (spuCtrl & 0x80) != 0) {
                     revLeft += tmpl;
                     revRight += tmpr;
                 }
@@ -818,12 +821,12 @@ public class PeopsSpu implements Spu, SpuVoices {
         case H_SPUstat -> spuStat = val & 0xf800;
         case H_SPUReverbAddr -> {
             if (val == 0xFFFF || val <= 0x200) {
-                rvb.StartAddr = rvb.CurrAddr = 0;
+                rvb.startAddr = rvb.currAddr = 0;
             } else {
                 int iv = val << 2;
-                if (rvb.StartAddr != iv) {
-                    rvb.StartAddr = iv;
-                    rvb.CurrAddr = rvb.StartAddr;
+                if (rvb.startAddr != iv) {
+                    rvb.startAddr = iv;
+                    rvb.currAddr = rvb.startAddr;
                 }
             }
         }
@@ -831,8 +834,8 @@ public class PeopsSpu implements Spu, SpuVoices {
             spuIrq = val;
             pSpuIrq = val << 3;
         }
-        case H_SPUrvolL -> rvb.VolLeft = (short) val;
-        case H_SPUrvolR -> rvb.VolRight = (short) val;
+        case H_SPUrvolL -> rvb.volLeft = (short) val;
+        case H_SPUrvolR -> rvb.volRight = (short) val;
         case H_SPUon1 -> soundOn(0, 16, val);
         case H_SPUon2 -> soundOn(16, 24, val);
         case H_SPUoff1 -> soundOff(0, 16, val);
@@ -842,45 +845,45 @@ public class PeopsSpu implements Spu, SpuVoices {
         case H_Noise1 -> noiseOn(0, 16, val);
         case H_Noise2 -> noiseOn(16, 24, val);
         case H_RVBon1 -> {
-            rvb.Enabled &= ~0xFFFF;
-            rvb.Enabled |= val;
+            rvb.enabled &= ~0xFFFF;
+            rvb.enabled |= val;
         }
         case H_RVBon2 -> {
-            rvb.Enabled &= 0xFFFF;
-            rvb.Enabled |= val << 16;
+            rvb.enabled &= 0xFFFF;
+            rvb.enabled |= val << 16;
         }
-        case H_Reverb -> rvb.FB_SRC_A = val;
-        case H_Reverb + 2 -> rvb.FB_SRC_B = (short) val;
-        case H_Reverb + 4 -> rvb.IIR_ALPHA = (short) val;
-        case H_Reverb + 6 -> rvb.ACC_COEF_A = (short) val;
-        case H_Reverb + 8 -> rvb.ACC_COEF_B = (short) val;
-        case H_Reverb + 10 -> rvb.ACC_COEF_C = (short) val;
-        case H_Reverb + 12 -> rvb.ACC_COEF_D = (short) val;
-        case H_Reverb + 14 -> rvb.IIR_COEF = (short) val;
-        case H_Reverb + 16 -> rvb.FB_ALPHA = (short) val;
-        case H_Reverb + 18 -> rvb.FB_X = (short) val;
-        case H_Reverb + 20 -> rvb.IIR_DEST_A0 = (short) val;
-        case H_Reverb + 22 -> rvb.IIR_DEST_A1 = (short) val;
-        case H_Reverb + 24 -> rvb.ACC_SRC_A0 = (short) val;
-        case H_Reverb + 26 -> rvb.ACC_SRC_A1 = (short) val;
-        case H_Reverb + 28 -> rvb.ACC_SRC_B0 = (short) val;
-        case H_Reverb + 30 -> rvb.ACC_SRC_B1 = (short) val;
-        case H_Reverb + 32 -> rvb.IIR_SRC_A0 = (short) val;
-        case H_Reverb + 34 -> rvb.IIR_SRC_A1 = (short) val;
-        case H_Reverb + 36 -> rvb.IIR_DEST_B0 = (short) val;
-        case H_Reverb + 38 -> rvb.IIR_DEST_B1 = (short) val;
-        case H_Reverb + 40 -> rvb.ACC_SRC_C0 = (short) val;
-        case H_Reverb + 42 -> rvb.ACC_SRC_C1 = (short) val;
-        case H_Reverb + 44 -> rvb.ACC_SRC_D0 = (short) val;
-        case H_Reverb + 46 -> rvb.ACC_SRC_D1 = (short) val;
-        case H_Reverb + 48 -> rvb.IIR_SRC_B1 = (short) val;
-        case H_Reverb + 50 -> rvb.IIR_SRC_B0 = (short) val;
-        case H_Reverb + 52 -> rvb.MIX_DEST_A0 = (short) val;
-        case H_Reverb + 54 -> rvb.MIX_DEST_A1 = (short) val;
-        case H_Reverb + 56 -> rvb.MIX_DEST_B0 = (short) val;
-        case H_Reverb + 58 -> rvb.MIX_DEST_B1 = (short) val;
-        case H_Reverb + 60 -> rvb.IN_COEF_L = (short) val;
-        case H_Reverb + 62 -> rvb.IN_COEF_R = (short) val;
+        case H_Reverb -> rvb.fbSrcA = val;
+        case H_Reverb + 2 -> rvb.fbSrcB = (short) val;
+        case H_Reverb + 4 -> rvb.iirAlpha = (short) val;
+        case H_Reverb + 6 -> rvb.accCoefA = (short) val;
+        case H_Reverb + 8 -> rvb.accCoefB = (short) val;
+        case H_Reverb + 10 -> rvb.accCoefC = (short) val;
+        case H_Reverb + 12 -> rvb.accCoefD = (short) val;
+        case H_Reverb + 14 -> rvb.iirCoef = (short) val;
+        case H_Reverb + 16 -> rvb.fbAlpha = (short) val;
+        case H_Reverb + 18 -> rvb.fbX = (short) val;
+        case H_Reverb + 20 -> rvb.iirDestA0 = (short) val;
+        case H_Reverb + 22 -> rvb.iirDestA1 = (short) val;
+        case H_Reverb + 24 -> rvb.accSrcA0 = (short) val;
+        case H_Reverb + 26 -> rvb.accSrcA1 = (short) val;
+        case H_Reverb + 28 -> rvb.accSrcB0 = (short) val;
+        case H_Reverb + 30 -> rvb.accSrcB1 = (short) val;
+        case H_Reverb + 32 -> rvb.iirSrcA0 = (short) val;
+        case H_Reverb + 34 -> rvb.iirSrcA1 = (short) val;
+        case H_Reverb + 36 -> rvb.iirDestB0 = (short) val;
+        case H_Reverb + 38 -> rvb.iirDestB1 = (short) val;
+        case H_Reverb + 40 -> rvb.accSrcC0 = (short) val;
+        case H_Reverb + 42 -> rvb.accSrcC1 = (short) val;
+        case H_Reverb + 44 -> rvb.accSrcD0 = (short) val;
+        case H_Reverb + 46 -> rvb.accSrcD1 = (short) val;
+        case H_Reverb + 48 -> rvb.iirSrcB1 = (short) val;
+        case H_Reverb + 50 -> rvb.iirSrcB0 = (short) val;
+        case H_Reverb + 52 -> rvb.mixDestA0 = (short) val;
+        case H_Reverb + 54 -> rvb.mixDestA1 = (short) val;
+        case H_Reverb + 56 -> rvb.mixDestB0 = (short) val;
+        case H_Reverb + 58 -> rvb.mixDestB1 = (short) val;
+        case H_Reverb + 60 -> rvb.inCoefL = (short) val;
+        case H_Reverb + 62 -> rvb.inCoefR = (short) val;
         default -> { /* nothing */ }
         }
     }
@@ -1085,7 +1088,7 @@ public class PeopsSpu implements Spu, SpuVoices {
 
     @Override
     public boolean reverb(int voice) {
-        return ((rvb.Enabled >> voice) & 1) != 0 && (spuCtrl & 0x80) != 0;
+        return ((rvb.enabled >> voice) & 1) != 0 && (spuCtrl & 0x80) != 0;
     }
 
     // ---- dma ----

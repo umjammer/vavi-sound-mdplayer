@@ -44,15 +44,15 @@ public class NiseDos {
     private static final int pspStartAddress = 0x2_0000;
     private static final int inDOSFLAGAdr = 0x1_1000;
 
-    public static class FileStatus {
+    static class FileStatus {
 
-        public Path name;
-        public int ptr = 0;
-        public int size = 0;
-        public Path path;
-        public int handle = 0;
-        public int mode = 0;
-        public List<Byte> lstBuf = new ArrayList<>();
+        Path name;
+        int ptr = 0;
+        int size = 0;
+        Path path;
+        int handle = 0;
+        int mode = 0;
+        List<Byte> lstBuf = new ArrayList<>();
     }
 
     private final List<FileStatus> files = new ArrayList<>();
@@ -146,7 +146,7 @@ public class NiseDos {
         }
     }
 
-    public void makeDummyMCB() {
+    private void makeDummyMCB() {
         mem.pokeB(mcbStartAddress + 0x00, (byte) 'M'); // member of a MCB chain, (not last)
         mem.pokeW(mcbStartAddress + 0x01, (short) (pspStartAddress >> 4)); // free PSP segment address of MCB owner (Process Id)
         mem.pokeW(mcbStartAddress + 0x03, (short) 0);// The size of this mcb
@@ -739,7 +739,7 @@ logger.log(Level.INFO, "file not found: " + filename);
         }
     }
 
-    public FileStatus searchFileStatus(int handle) {
+    private FileStatus searchFileStatus(int handle) {
         for (FileStatus fs : files) {
             if (fs.handle == regs.getBX()) {
                 return fs;

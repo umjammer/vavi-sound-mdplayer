@@ -28,10 +28,10 @@ public class ZgmDriver extends BaseDriver {
 
     private static final Logger logger = getLogger(ZgmDriver.class.getName());
 
-    public static final int FCC_ZGM = 0x204D475A;  // "ZGM "
-    public static final int FCC_GD3 = 0x20336447;  // "Gd3 "
-    public static final int FCC_DEF = 0x666544;  // "Def"
-    public static final int FCC_TRK = 0x6b7254;  // "Trk"
+    private static final int FCC_ZGM = 0x204D475A;  // "ZGM "
+    private static final int FCC_GD3 = 0x20336447;  // "Gd3 "
+    private static final int FCC_DEF = 0x666544;  // "Def"
+    private static final int FCC_TRK = 0x6b7254;  // "Trk"
 
     private int vgmEof;
     private long vgmLoopOffset = 0;
@@ -161,7 +161,7 @@ logger.log(Level.ERROR, "An exception occurred while getting XGM information. Me
         }
     }
 
-    static class TrackInfo {
+    private static class TrackInfo {
         public int offset = 0;
     }
 

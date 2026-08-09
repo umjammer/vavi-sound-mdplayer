@@ -3,46 +3,46 @@
 package mdplayer.lib.sid.libsidplayfp.utils.md5;
 
 
-public class KimMD5 {
+class KimMD5 {
 
-    byte[] M;
-    final long[] T = new long[64];
-    final long[] X = new long[16];
-    static long A = 0x6745_2301;
-    static long B = 0xefcd_ab89L;
-    static long C = 0x98ba_dcfeL;
-    static long D = 0x1032_5476;
+    private byte[] M;
+    private final long[] T = new long[64];
+    private final long[] X = new long[16];
+    private static long A = 0x6745_2301;
+    private static long B = 0xefcd_ab89L;
+    private static long C = 0x98ba_dcfeL;
+    private static long D = 0x1032_5476;
 
-    long temp_A;
-    long temp_B;
-    long temp_C;
-    long temp_D;
+    private long temp_A;
+    private long temp_B;
+    private long temp_C;
+    private long temp_D;
 
-    public static long rotate_left(long x, long s) {
+    private static long rotate_left(long x, long s) {
         return ((x) << (s)) | ((x) >>> (32 - s)) & 0xffff_ffffL;
     }
 
-    public static long encode(long t) {
+    private static long encode(long t) {
         return ((t >> 24) & 0xff) | ((t >> 16) & 0xff) << 8 | ((t >> 8) & 0xff) << 16 | (t & 0xff) << 24;
     }
 
-    public static long ff(long a, long b, long c, long d, long k, long s, long i) {
+    private static long ff(long a, long b, long c, long d, long k, long s, long i) {
         return (b + rotate_left(((a + ((b & c) | ((~b) & d)) + k + i) & 0xffff_ffffL), s)) & 0xffff_ffffL;
     }
 
-    public static long gg(long a, long b, long c, long d, long k, long s, long i) {
+    private static long gg(long a, long b, long c, long d, long k, long s, long i) {
         return (b + rotate_left(((a + ((b & d) | (c & (~d))) + k + i) & 0xffff_ffffL), s)) & 0xffff_ffffL;
     }
 
-    public static long hh(long a, long b, long c, long d, long k, long s, long i) {
+    private static long hh(long a, long b, long c, long d, long k, long s, long i) {
         return (b + rotate_left(((a + (b ^ c ^ d) + k + i) & 0xffff_ffffL), s)) & 0xffff_ffffL;
     }
 
-    public static long ii(long a, long b, long c, long d, long k, long s, long i) {
+    private static long ii(long a, long b, long c, long d, long k, long s, long i) {
         return (b + rotate_left(((a + (c ^ (b | (~d))) + k + i) & 0xffff_ffffL), s)) & 0xffff_ffffL;
     }
 
-    public static byte[] longToByteArray(long value) {
+    private static byte[] longToByteArray(long value) {
         return new byte[] {
                 (byte) (value),
                 (byte) (value >> 8),
@@ -55,7 +55,7 @@ public class KimMD5 {
         };
     }
 
-    public void table_T() {
+    private void table_T() {
         for (int i = 0; i < 64; i++) {
             T[i] = (long) (Math.floor(Math.abs(Math.sin(i + 1)) * (long) Math.pow(2, 32)));
         }

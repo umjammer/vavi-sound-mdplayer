@@ -38,7 +38,7 @@ public class PokeyChip extends BaseChip {
 
     @Override
     public Map<String, Object> getInfo(int chipId) {
-        mdsound.instrument.PokeyInst inst = context.mds.inst(mdsound.instrument.PokeyInst.class);
+        PokeyInst inst = context.mds.inst(PokeyInst.class);
         return inst == null ? Collections.emptyMap() : inst.getView(chipId, "info");
     }
 }

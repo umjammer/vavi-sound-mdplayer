@@ -20,10 +20,10 @@ public class MmfControl {
     private final Object lockObj = new Object();
     private MappedByteBuffer _map;
     private byte[] mmfBuf;
-    public String mmfName = "dummy";
-    public int mmfSize = 1024;
+    private String mmfName = "dummy";
+    private int mmfSize = 1024;
 
-    public MmfControl() {
+    private MmfControl() {
     }
 
     public MmfControl(boolean isClient, String mmfName, int mmfSize) {
@@ -32,7 +32,7 @@ public class MmfControl {
         if (!isClient) open(mmfName, mmfSize);
     }
 
-    public void open(String mmfName, int mmfSize) {
+    private void open(String mmfName, int mmfSize) {
         try {
             mmfBuf = new byte[mmfSize];
 

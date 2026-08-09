@@ -159,7 +159,7 @@ class DacControl implements Vgm.IDac {
         }
     }
 
-    public class DacControl_ {
+    class DacControl_ {
 
         private static final int DAC_SMPL_RATE = 44100; // DAC control's own sample rate (Fixed)
 
@@ -175,10 +175,10 @@ class DacControl implements Vgm.IDac {
         int cmdSize;
 
         // Frequency (Hz) at which the commands are sent
-        public int frequency;
+        int frequency;
         // to protect from reading beyond End Of data
         int dataLen;
-        public byte[] data;
+        byte[] data;
         // Position where to start
         int dataStart;
         // usually 1, set to 2 for L/R interleaved data
@@ -191,12 +191,12 @@ class DacControl implements Vgm.IDac {
         //					2 (04) - loop sample (simple loop from start to end)
         //					4 (10) - already sent this command
         //					7 (80) - disabled
-        public int running;
-        public int reverse;
+        int running;
+        int reverse;
         // Position : Player SampleRate
-        public int step;
+        int step;
         // Position : data SampleRate
-        public int pos;
+        int pos;
         int remainCmds;
         // true Position : data (== Pos, if Reverse instanceof off)
         int realPos;
@@ -345,7 +345,7 @@ class DacControl implements Vgm.IDac {
             running |= 0x10;
         }
 
-        public void update(int samples) {
+        void update(int samples) {
             int newPos;
             int realDataStp;
 
@@ -401,7 +401,7 @@ class DacControl implements Vgm.IDac {
                 this.running &= 0xfe; // stop
         }
 
-        public void startDacControl() {
+        void startDacControl() {
             this.dstChipType2 = 0xff;
             this.dstChipID = 0x00;
             this.dstCommand = 0x0000;
@@ -409,11 +409,11 @@ class DacControl implements Vgm.IDac {
             this.running = 0xff; // disable all actions (except setup_chip)
         }
 
-        public void stopDacControl() {
+        void stopDacControl() {
             this.running = 0xff;
         }
 
-        public void reset() {
+        void reset() {
             this.dstChipType2 = 0x00;
             this.dstChipID = 0x00;
             this.dstCommand = 0x00;
@@ -435,7 +435,7 @@ class DacControl implements Vgm.IDac {
             this.dataStep = 0x00;
         }
 
-        public void setup(int chType, int chNum, int command) {
+        void setup(int chType, int chNum, int command) {
             this.dstChipType2 = chType; // TypeID (e.g. 0x02 for Ym2612)
             this.dstChipID = chNum; // chips number (to send commands to 1st or 2nd chips)
             this.dstCommand = command; // Port and command (would be 0x02A for Ym2612)
@@ -461,7 +461,7 @@ class DacControl implements Vgm.IDac {
             this.dataStep = this.cmdSize * this.stepSize;
         }
 
-        public void setData(byte[] data, int dataLen, int stepSize, int stepBase) {
+        void setData(byte[] data, int dataLen, int stepSize, int stepBase) {
             if ((this.running & 0x80) > 0)
                 return;
 
@@ -477,7 +477,7 @@ class DacControl implements Vgm.IDac {
             this.dataStep = this.cmdSize * this.stepSize;
         }
 
-        public void refreshData(byte[] data, int dataLen) {
+        void refreshData(byte[] data, int dataLen) {
             if ((this.running & 0x80) != 0)
                 return;
 
@@ -490,7 +490,7 @@ class DacControl implements Vgm.IDac {
             }
         }
 
-        public void setFrequency(int chipId, int frequency) {
+        void setFrequency(int chipId, int frequency) {
             if ((this.running & 0x80) != 0)
                 return;
 
@@ -499,7 +499,7 @@ class DacControl implements Vgm.IDac {
             this.frequency = frequency;
         }
 
-        public void start(int dataPos, int lenMode, int length) {
+        void start(int dataPos, int lenMode, int length) {
             int cmdStepBase;
 
             if ((this.running & 0x80) != 0)
@@ -548,7 +548,7 @@ class DacControl implements Vgm.IDac {
             this.running &= 0xef; // command isn't yet sent
         }
 
-        public void stop() {
+        void stop() {
             if ((this.running & 0x80) != 0)
                 return;
 

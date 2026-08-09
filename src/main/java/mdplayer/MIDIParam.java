@@ -3,13 +3,13 @@ package mdplayer;
 // view (same as Chip#getInfo)
 public class MIDIParam {
 
-    public int MIDIModule = 0; // 0:GMIDI 1:XG 2:GS
+    public int midiModule = 0; // 0:GMIDI 1:XG 2:GS
     public final byte[][] note;
     public final String[] notes;
-    public final byte[][] keyPress;
+    private final byte[][] keyPress;
     public final byte[][] cc;
     public final byte[] pc;
-    public final byte[] cPress;
+    private final byte[] cPress;
     public final short[] bend;
     public final int[][] level;
     public final byte[] nrpnVibRate;
@@ -26,51 +26,51 @@ public class MIDIParam {
     public final byte[] nrpnEGDecay;
     public final byte[] nrpnEGRls;
     public final byte[] LCDDisplay;
-    public int LCDDisplayTime;
-    public final byte[] LCD8850Display;
-    public int LCD8850DisplayTime;
-    public int LCDDisplayTimeXG;
-    public final byte[] LCDDisplayLetter;
-    public int LCDDisplayLetterTime;
-    public int LCDDisplayLetterTimeXG;
-    public int LCDDisplayLetterLen = 0;
+    public int lcdDisplayTime;
+    public final byte[] lcd8850Display;
+    public int lcd8850DisplayTime;
+    public int lcdDisplayTimeXG;
+    public final byte[] lcdDisplayLetter;
+    public int lcdDisplayLetterTime;
+    public int lcdDisplayLetterTimeXG;
+    public int lcdDisplayLetterLen = 0;
     public String lyric;
 
-    public byte MasterVolume = 0;
+    public byte masterVolume = 0;
 
-    public int ReverbXG = 1;  // HALL1
-    public int ChorusXG = 1;  // CHORUS1
-    public int VariationXG = 15;  // DELAY LCR
-    public int Insertion1XG = 56; // DISTORTION
-    public int Insertion2XG = 56; // DISTORTION
-    public int Insertion3XG = 56; // DISTORTION
-    public int Insertion4XG = 56; // DISTORTION
+    public int reverbXG = 1;  // HALL1
+    public int chorusXG = 1;  // CHORUS1
+    public int variationXG = 15;  // DELAY LCR
+    public int insertion1XG = 56; // DISTORTION
+    public int insertion2XG = 56; // DISTORTION
+    public int insertion3XG = 56; // DISTORTION
+    public int insertion4XG = 56; // DISTORTION
 
-    public int ReverbGS = 4; // Room1(default)
-    public int ChorusGS = 2; // Chorus3(default)
-    public int DelayGS = 0; // Delay1(default)
-    public int EFXGS = 0; // Thru(default)
+    public int reverbGS = 4; // Room1(default)
+    public int chorusGS = 2; // Chorus3(default)
+    public int delayGS = 0; // Delay1(default)
+    public int efxGS = 0; // Thru(default)
 
-    public int RevType_MSB = 0;
-    public int RevType_LSB = 0;
-    public int ChoType_MSB = 0;
-    public int ChoType_LSB = 0;
-    public int VarType_MSB = 0;
-    public int VarType_LSB = 0;
-    public int Ins1Type_MSB = 0;
-    public int Ins1Type_LSB = 0;
-    public int Ins2Type_MSB = 0;
-    public int Ins2Type_LSB = 0;
-    public int Ins3Type_MSB = 0;
-    public int Ins3Type_LSB = 0;
-    public int Ins4Type_MSB = 0;
-    public int Ins4Type_LSB = 0;
-    public int EFXType_MSB = 0;
-    public int EFXType_LSB = 0;
+    private int RevType_MSB = 0;
+    private int RevType_LSB = 0;
+    private int ChoType_MSB = 0;
+    private int ChoType_LSB = 0;
+    private int VarType_MSB = 0;
+    private int VarType_LSB = 0;
+    private int Ins1Type_MSB = 0;
+    private int Ins1Type_LSB = 0;
+    private int Ins2Type_MSB = 0;
+    private int Ins2Type_LSB = 0;
+    private int Ins3Type_MSB = 0;
+    private int Ins3Type_LSB = 0;
+    private int Ins4Type_MSB = 0;
+    private int Ins4Type_LSB = 0;
+    private int EFXType_MSB = 0;
+    private int EFXType_LSB = 0;
 
     private final byte[] msg;
     private int msgInd;
-    private boolean NowSystemMsg;
+    private boolean nowSystemMsg;
 
     private static final int[] tblRevTypeXG = {
             0x0000,
@@ -199,18 +199,18 @@ public class MIDIParam {
         nrpnEGDecay = new byte[16];
         nrpnEGRls = new byte[16];
         LCDDisplay = new byte[64];
-        LCD8850Display = new byte[27 * 4 * 16]; // 160*8];
-        LCDDisplayTime = 0;
-        LCD8850DisplayTime = 0;
-        LCDDisplayTimeXG = 0;
+        lcd8850Display = new byte[27 * 4 * 16]; // 160*8];
+        lcdDisplayTime = 0;
+        lcd8850DisplayTime = 0;
+        lcdDisplayTimeXG = 0;
 
-        LCDDisplayLetter = new byte[32];
-        LCDDisplayLetterTime = 0;
-        LCDDisplayLetterTimeXG = 0;
+        lcdDisplayLetter = new byte[32];
+        lcdDisplayLetterTime = 0;
+        lcdDisplayLetterTimeXG = 0;
 
         msg = new byte[256];
         msgInd = 0;
-        NowSystemMsg = false;
+        nowSystemMsg = false;
 
         for (int ch = 0; ch < 16; ch++) {
             for (int n = 0; n < 256; n++) {
@@ -246,11 +246,11 @@ public class MIDIParam {
 
             if (IsStatusByte) {
                 //logger.log(Level.TRACE, "");
-                NowSystemMsg = ((d & 0xf0) == 0xf0);
-                if ((d & 0xff) == 0xf7 && NowSystemMsg) {
+                nowSystemMsg = ((d & 0xf0) == 0xf0);
+                if ((d & 0xff) == 0xf7 && nowSystemMsg) {
                     if (msgInd < msg.length) msg[msgInd] = (byte) 0xf7;
                     analyzeSystemMsg();
-                    NowSystemMsg = false;
+                    nowSystemMsg = false;
                 }
                 msgInd = 0;
             }
@@ -394,7 +394,7 @@ public class MIDIParam {
             ptr = 8;
         } else if (manufactureID == 0x7f) { // universal realtime message
             if ((msg[2] & 0xff) == 0x7f && (msg[3] & 0xff) == 0x04 && (msg[4] & 0xff) == 0x01 && (msg[7] & 0xff) == 0xf7) {
-                MasterVolume = msg[5];
+                masterVolume = msg[5];
             }
             return;
         }
@@ -407,94 +407,94 @@ public class MIDIParam {
                     // REVERB TYPE MSB/LSB
                     if (adr == 0x020100) RevType_MSB = dat;
                     else RevType_LSB = dat;
-                    ReverbXG = getRevTypeXG();
+                    reverbXG = getRevTypeXG();
                 } else if (adr == 0x020120 || adr == 0x020121) {
                     // CHORUS TYPE MSB/LSB
                     if (adr == 0x020120) ChoType_MSB = dat;
                     else ChoType_LSB = dat;
-                    ChorusXG = getChoTypeXG();
+                    chorusXG = getChoTypeXG();
                 } else if (adr == 0x020140 || adr == 0x020141) {
                     // VARIATION TYPE MSB/LSB
                     if (adr == 0x020140) VarType_MSB = dat;
                     else VarType_LSB = dat;
-                    VariationXG = getVarTypeXG();
+                    variationXG = getVarTypeXG();
                 } else if (adr == 0x030000 || adr == 0x030001) {
                     // INSERTION EFFECT1 TYPE MSB/LSB
                     if (adr == 0x030000) Ins1Type_MSB = dat;
                     else Ins1Type_LSB = dat;
-                    Insertion1XG = getIns1TypeXG();
+                    insertion1XG = getIns1TypeXG();
                 } else if (adr == 0x030100 || adr == 0x030101) {
                     // INSERTION EFFECT2 TYPE MSB/LSB
                     if (adr == 0x030100) Ins2Type_MSB = dat;
                     else Ins2Type_LSB = dat;
-                    Insertion2XG = getIns2TypeXG();
+                    insertion2XG = getIns2TypeXG();
                 } else if (adr == 0x030200 || adr == 0x030201) {
                     // INSERTION EFFECT3 TYPE MSB/LSB
                     if (adr == 0x030200) Ins3Type_MSB = dat;
                     else Ins3Type_LSB = dat;
-                    Insertion3XG = getIns3TypeXG();
+                    insertion3XG = getIns3TypeXG();
                 } else if (adr == 0x030300 || adr == 0x030301) {
                     // INSERTION EFFECT4 TYPE MSB/LSB
                     if (adr == 0x030300) Ins4Type_MSB = dat;
                     else Ins4Type_LSB = dat;
-                    Insertion4XG = getIns4TypeXG();
+                    insertion4XG = getIns4TypeXG();
                 } else if (adr >= 0x060000 && adr <= 0x06001f) {
-                    if (adr == 0x060000) for (int i = 0; i < 32; i++) LCDDisplayLetter[i] = 0x20;
+                    if (adr == 0x060000) for (int i = 0; i < 32; i++) lcdDisplayLetter[i] = 0x20;
 
                     // DISPLAY LETTER data
                     dat = (dat < 0x20 || dat > 0x7f) ? 0x20 : dat;
-                    LCDDisplayLetter[adr & 0x1f] = (byte) dat;
-                    LCDDisplayLetterLen = (adr & 0x1f) + 1;
-                    LCDDisplayLetterTime = 400;
-                    if (LCDDisplayLetterLen > 16) LCDDisplayLetterTime = 40;
+                    lcdDisplayLetter[adr & 0x1f] = (byte) dat;
+                    lcdDisplayLetterLen = (adr & 0x1f) + 1;
+                    lcdDisplayLetterTime = 400;
+                    if (lcdDisplayLetterLen > 16) lcdDisplayLetterTime = 40;
                 } else if (adr >= 0x070000 && adr <= 0x07002f) {
                     // DISPLAY Dot data
                     LCDDisplay[adr & 0x3f] = (byte) dat;
                     if (adr == 0x07002f) {
-                        LCDDisplayTimeXG = 400;
+                        lcdDisplayTimeXG = 400;
                     }
                 }
             } else if (manufactureID == 0x41) { // GS
                 if (adr >= 0x100000 && adr <= 0x10001f) {
-                    if (adr == 0x100000) for (int i = 0; i < 32; i++) LCDDisplayLetter[i] = 0x20;
+                    if (adr == 0x100000) for (int i = 0; i < 32; i++) lcdDisplayLetter[i] = 0x20;
 
                     // DISPLAY LETTER data
                     dat = (dat < 0x20 || dat > 0x7f) ? 0x20 : dat;
-                    LCDDisplayLetter[adr & 0x1f] = (byte) dat;
-                    LCDDisplayLetterLen = (adr & 0x1f);// + 1;
-                    LCDDisplayLetterTime = 400;
-                    if (LCDDisplayLetterLen > 16) LCDDisplayLetterTime = 40;
+                    lcdDisplayLetter[adr & 0x1f] = (byte) dat;
+                    lcdDisplayLetterLen = (adr & 0x1f);// + 1;
+                    lcdDisplayLetterTime = 400;
+                    if (lcdDisplayLetterLen > 16) lcdDisplayLetterTime = 40;
                 } else if (adr >= 0x100100 && adr <= 0x10013f) {
                     // DISPLAY Dot data
                     LCDDisplay[adr & 0x3f] = (byte) dat;
                     if (adr == 0x10013f) {
-                        LCDDisplayTime = 400;
+                        lcdDisplayTime = 400;
                     }
                 } else if (adr >= 0x200000 && adr < 0x201000) {
                     //8850Display Dot data(160px x 64 px) ((27byte x 4row) x 16set)
                     if ((adr & 0x7f) < 108) {
-                        LCD8850Display[((adr & 0xf00) >> 8) * 108 + (adr & 0x7f)] = (byte) dat; // % (27*4)] = dat;
+                        lcd8850Display[((adr & 0xf00) >> 8) * 108 + (adr & 0x7f)] = (byte) dat; // % (27*4)] = dat;
                     }
                     if (adr == 0x200000 + 0xf00 + 108 - 1) {
-                        LCD8850DisplayTime = 400;
+                        lcd8850DisplayTime = 400;
                     }
                 } else if (adr == 0x400130) {
                     //REVERB MACRO
-                    if (dat >= 0 && dat <= 7) ReverbGS = dat;
+                    if (dat >= 0 && dat <= 7) reverbGS = dat;
                 } else if (adr == 0x400138) {
                     //CHORUS MACRO
-                    if (dat >= 0 && dat <= 7) ChorusGS = dat;
+                    if (dat >= 0 && dat <= 7) chorusGS = dat;
                 } else if (adr == 0x400150) {
                     //Delay MACRO
-                    if (dat >= 0 && dat <= 9) DelayGS = dat;
+                    if (dat >= 0 && dat <= 9) delayGS = dat;
                 } else if (adr == 0x400300) {
                     //EFX Type
                     EFXType_MSB = dat;
-                    EFXGS = getIns1TypeFromEFX();
+                    efxGS = getIns1TypeFromEFX();
                 } else if (adr == 0x400301) {
                     //EFX Type
                     EFXType_LSB = dat;
-                    EFXGS = getIns1TypeFromEFX();
+                    efxGS = getIns1TypeFromEFX();
                 }
             }
 

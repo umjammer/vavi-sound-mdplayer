@@ -27,7 +27,7 @@ public class KeyboardHook {
         }
     }
 
-    static class GlobalKeyListener implements NativeKeyListener {
+    private static class GlobalKeyListener implements NativeKeyListener {
         @Override
         public void nativeKeyPressed(NativeKeyEvent e) {
             logger.log(Level.TRACE, "Key Pressed: " + NativeKeyEvent.getKeyText(e.getKeyCode()));
@@ -59,7 +59,7 @@ public class KeyboardHook {
         GlobalScreen.addNativeKeyListener(handler);
     }
 
-    void removeKeyboardHooked(NativeKeyListener handler) {
+    public void removeKeyboardHooked(NativeKeyListener handler) {
         GlobalScreen.addNativeKeyListener(handler);
     }
 

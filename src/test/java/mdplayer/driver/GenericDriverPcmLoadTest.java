@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 class GenericDriverPcmLoadTest {
 
     static class TestPlugin extends BasePlugin<BaseDriver> {
-        public TestPlugin(List<Tuple<String, byte[]>> extendFiles) {
+        TestPlugin(List<Tuple<String, byte[]>> extendFiles) {
             this.extendFiles = extendFiles;
         }
 
@@ -32,7 +32,7 @@ class GenericDriverPcmLoadTest {
     }
 
     static class DummyDriver extends BaseDriver {
-        public DummyDriver(BasePlugin<? extends BaseDriver> plugin) {
+        DummyDriver(BasePlugin<? extends BaseDriver> plugin) {
             super(plugin);
         }
 

@@ -48,7 +48,7 @@ final class FmDspSprites {
     static final byte[] s_rew;
     static final byte[] s_floppy;
     static final byte[] s_panpot;
-    static final byte[] s_comment_tri;
+    private static final byte[] s_comment_tri;
     static final byte[] fontdat;
     static final byte[] fmdsp_medium_dat;
 

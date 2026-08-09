@@ -42,7 +42,7 @@ import vavi.util.compat.Tuple3;
 import static java.lang.System.getLogger;
 
 
-public class FormInfo extends JFrame {
+class FormInfo extends JFrame {
 
     private static final Logger logger = getLogger(FormInfo.class.getName());
 

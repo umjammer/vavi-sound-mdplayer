@@ -20,7 +20,7 @@ import java.util.Arrays;
  * @author christopherbare@cbare.org
  * @version 2006.03.26
  */
-public class CBareMD5 {
+class CBareMD5 {
 
     private final static int BLOCK_SIZE = 16;
     private final static int BLOCK_SIZE_BYTES = BLOCK_SIZE * 4;

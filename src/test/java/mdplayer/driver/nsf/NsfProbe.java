@@ -9,6 +9,7 @@ package mdplayer.driver.nsf;
 import java.io.BufferedInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 
 import mdplayer.chips.NpNesChip;
@@ -45,7 +46,7 @@ class NsfProbe {
         System.err.println("apu.nsf=" + apu.nsf + " dmc.nsf=" + dmc.nsf);
         // every panel of the family now gets a machine: none of them may throw on a song that
         // does not have their chip
-        for (Class<? extends mdplayer.Chip> c : java.util.List.of(
+        for (Class<? extends mdplayer.Chip> c : List.of(
                 NpNesChip.class, NpNesChip.DmcChip.class, NpNesChip.FdsChip.class,
                 NpNesChip.Mmc5Chip.class, NpNesChip.Vrc6Chip.class, NpNesChip.Vrc7Chip.class,
                 NpNesChip.N163Chip.class, NpNesChip.Fme7Chip.class)) {

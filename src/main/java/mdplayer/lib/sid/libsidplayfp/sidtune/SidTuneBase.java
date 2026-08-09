@@ -50,7 +50,7 @@ public class SidTuneBase {
     private static final Logger logger = getLogger(SidTuneBase.class.getName());
 
     /** Also PSid file format limit. */
-    public static final int MAX_SONGS = 256;
+    private static final int MAX_SONGS = 256;
 
     /**
      * Calculates the MD5 hash of the tune.
@@ -104,15 +104,15 @@ public class SidTuneBase {
         return cache.get(fileOffset);
     }
 
-    protected SidTuneInfoImpl info;
+    SidTuneInfoImpl info;
 
-    protected final byte[] songSpeed = new byte[MAX_SONGS];
-    protected final long[] clockSpeed = new long[MAX_SONGS];
+    final byte[] songSpeed = new byte[MAX_SONGS];
+    final long[] clockSpeed = new long[MAX_SONGS];
 
     /** For files with header: offset to real data */
-    protected int fileOffset;
+    int fileOffset;
 
-    protected List<Byte> cache;
+    List<Byte> cache;
 
     /** prevent copying */
     public SidTuneBase(SidTuneBase a) {
@@ -135,8 +135,8 @@ public class SidTuneBase {
     private static final String ERR_CORRUPT = "SIDTUNE ERROR: File instanceof incomplete or corrupt";
     // static final String ERR_NOT_ENOUGH_MEMORY = "SIDTUNE ERROR: Not enough free memory";
 
-    public static final String ERR_TRUNCATED = "SIDTUNE ERROR: File instanceof most likely truncated";
-    public static final String ERR_INVALID = "SIDTUNE ERROR: File contains invalid data";
+    static final String ERR_TRUNCATED = "SIDTUNE ERROR: File instanceof most likely truncated";
+    static final String ERR_INVALID = "SIDTUNE ERROR: File contains invalid data";
 
     /**
      * Petscii to Ascii conversion table (0x01 = no Output).
@@ -290,7 +290,7 @@ public class SidTuneBase {
      * @param bufferRef
      * @throws IOException
      */
-    protected void loadFile(String fileName, List<Byte> bufferRef) throws IOException {
+    private void loadFile(String fileName, List<Byte> bufferRef) throws IOException {
         try (RandomAccessFile inFile = new RandomAccessFile(fileName, "r")) {
             inFile.seek(0);
             long fileLen = inFile.getFilePointer();
@@ -371,7 +371,7 @@ public class SidTuneBase {
      *                          separator instanceof the forward slash.
      * @throws IOException
      */
-    protected void acceptSidTune(String dataFileName, String infoFileName, List<Byte> buf, boolean isSlashedFileName) throws IOException {
+    void acceptSidTune(String dataFileName, String infoFileName, List<Byte> buf, boolean isSlashedFileName) throws IOException {
         // Make a copy of the data file name and path, if available.
         if (dataFileName != null) {
             int fileNamePos = (int) (isSlashedFileName ?
@@ -512,7 +512,7 @@ public class SidTuneBase {
      * @param speed
      * @param clock
      */
-    protected void convertOldStyleSpeedToTables(int speed, long clock /*= CLOCK_PAL*/) {
+    void convertOldStyleSpeedToTables(int speed, long clock /*= CLOCK_PAL*/) {
         // Create the speed/clock setting tables.
         //
         // This routine implements the PSIDv2NG compliant speed conversion. All tunes
@@ -533,7 +533,7 @@ public class SidTuneBase {
     /**
      * Check for valid relocation information.
      */
-    protected boolean checkRelocInfo() {
+    private boolean checkRelocInfo() {
         // Fix relocation information
         if (info.relocatedStartPage == (byte) 0xff) {
             info.relocatedPages = 0;
@@ -577,7 +577,7 @@ public class SidTuneBase {
      *
      * @param c64data
      */
-    protected void resolveAddrs(List<Byte> c64data, int ptr/* = 0*/) throws IOException {
+    private void resolveAddrs(List<Byte> c64data, int ptr/* = 0*/) throws IOException {
         // Originally used as a first attempt at an RSID
         // style format. Now reserved for future use
         if (info.playAddress == (short) 0xffff) {
@@ -607,7 +607,7 @@ public class SidTuneBase {
     /**
      * Check if compatibility constraints are fulfilled.
      */
-    protected boolean checkCompatibility() {
+    private boolean checkCompatibility() {
         if (info.compatibility == SidTuneInfo.Compatibility.R64) {
             // Check valid init address
             switch ((info.initAddress & 0xffff) >> 12) {
@@ -636,7 +636,7 @@ public class SidTuneBase {
      * Petscii to Ascii converter.
      * @see "https://en.wikipedia.org/wiki/PETSCII"
      */
-    protected String petsciiToAscii(ByteBuffer spPet) {
+    String petsciiToAscii(ByteBuffer spPet) {
         List<Byte> buffer = new ArrayList<>();
 
         while (spPet.hasRemaining()) {

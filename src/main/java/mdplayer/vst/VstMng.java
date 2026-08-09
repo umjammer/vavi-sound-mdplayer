@@ -100,7 +100,7 @@ public class VstMng {
      *
      * @return null when it could not be loaded, which is not fatal - the song plays without it
      */
-    public VstPlugin openPlugin(String pluginPath) {
+    private VstPlugin openPlugin(String pluginPath) {
         try {
             VstPlugin plugin = new VstPlugin(new File(pluginPath), host);
             plugin.open();
@@ -578,11 +578,11 @@ public class VstMng {
         public VstPlugin plugin = null;
 
         /** the window its editor is in, or null while the editor is closed */
-        public FormVST form = null;
+        FormVST form = null;
 
         public boolean isInstrument = false;
 
         /** whether a MIDI out is currently pointed at this instrument */
-        public boolean inUse = false;
+        boolean inUse = false;
     }
 }

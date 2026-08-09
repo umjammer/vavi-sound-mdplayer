@@ -19,6 +19,8 @@ import java.util.prefs.Preferences;
 
 import mdplayer.Audio;
 import mdplayer.Common;
+import mdplayer.Common.EnmInstFormat;
+import mdplayer.Setting;
 import mdplayer.Tables;
 import mdplayer.chips.SegaPcmChip;
 import mdplayer.chips.YmF262Chip;
@@ -30,11 +32,12 @@ import mdplayer.form.inst.SendMml2vgmInstWriter;
 import mdplayer.form.kb.ChannelParams;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
+import mdsound.MDSound;
 
 
 public class FormYMF262 extends FormChipBase<FormYMF262.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormYMF262.class);
+    private static final Preferences prefs = Preferences.userNodeForPackage(FormYMF262.class);
 
     public FormYMF262(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -74,7 +77,7 @@ public class FormYMF262 extends FormChipBase<FormYMF262.Params> {
         }
     };
 
-    public void changeZoom() {
+    private void changeZoom() {
         this.setMaximumSize(new Dimension(frameSizeW + Common.getImage("planeYMF262").getWidth() * zoom, frameSizeH + Common.getImage("planeYMF262").getHeight() * zoom));
         this.setMinimumSize(new Dimension(frameSizeW + Common.getImage("planeYMF262").getWidth() * zoom, frameSizeH + Common.getImage("planeYMF262").getHeight() * zoom));
         this.setPreferredSize(new Dimension(frameSizeW + Common.getImage("planeYMF262").getWidth() * zoom, frameSizeH + Common.getImage("planeYMF262").getHeight() * zoom));
@@ -115,7 +118,7 @@ public class FormYMF262 extends FormChipBase<FormYMF262.Params> {
     @Override
     public void changeScreenParams() {
         Map<String, Object> info = audio.plugin.chipRegister.chip(YmF262Chip.class).getInfo(chipId);
-        if (info.isEmpty()) return;;
+        if (info.isEmpty()) return;
 
         int[][] register = (int[][]) info.get("register");
 
@@ -369,7 +372,7 @@ public class FormYMF262 extends FormChipBase<FormYMF262.Params> {
             oyc.inst[14] = frameBuffer.font4Int2(16 + 4 * 72, c * 8 + 168, 0, 0, oyc.inst[14], nyc.inst[14]); // CN
             oyc.inst[15] = frameBuffer.font4Int2(16 + 4 * 75, c * 8 + 168, 0, 0, oyc.inst[15], nyc.inst[15]); // FB
             int dmy = 99;
-            { int[] r = frameBuffer.Pan(24, 8 + c * 8, oyc.inst[36], nyc.inst[36], dmy, 0); oyc.inst[36] = r[0]; dmy = r[1]; }
+            { int[] r = frameBuffer.pan(24, 8 + c * 8, oyc.inst[36], nyc.inst[36], dmy, 0); oyc.inst[36] = r[0]; dmy = r[1]; }
             oyc.note = frameBuffer.drawKeyBoard(c, oyc.note, nyc.note, tp);
             oyc.volumeL = frameBuffer.drawVolumeXY(64, c * 2 + 2, 1, oyc.volumeL, nyc.volumeL, tp);
             oyc.volumeR = frameBuffer.drawVolumeXY(64, c * 2 + 3, 1, oyc.volumeR, nyc.volumeR, tp);
@@ -471,7 +474,7 @@ public class FormYMF262 extends FormChipBase<FormYMF262.Params> {
         this.addComponentListener(this.componentListener);
     }
 
-    BufferedImage image;
+    private BufferedImage image;
 
 //#region draw buffer
 
@@ -562,15 +565,15 @@ public class FormYMF262 extends FormChipBase<FormYMF262.Params> {
 //#endregion
 
     /** this panel's channel row: the common core plus what only this chip displays */
-    public static class Channel extends ChannelParams {
+    static class Channel extends ChannelParams {
 
-        public boolean dda = false;
+        boolean dda = false;
     }
 
     /** this panel's per-frame draw state, diffed new against old (see {@link FormChipBase}) */
-    public static class Params {
+    static class Params {
 
-        public final Channel[] channels = {
+        final Channel[] channels = {
                 new Channel(), new Channel(), new Channel(), new Channel(), new Channel(),
                 new Channel(), new Channel(), new Channel(), new Channel(), new Channel(),
                 new Channel(), new Channel(), new Channel(), new Channel(), new Channel(),
@@ -610,11 +613,11 @@ public class FormYMF262 extends FormChipBase<FormYMF262.Params> {
         }
 
         @Override public List<MixerSlot> mixerSlots() {
-            return List.of(new MixerSlot(20, mdsound.MDSound.Chip.MAIN_TAG, YmF262Chip.class, "ymf262", 200));
+            return List.of(new MixerSlot(20, MDSound.Chip.MAIN_TAG, YmF262Chip.class, "ymf262", 200));
         }
 
-        @Override public void getInstCh(Component parent, mdplayer.Audio audio, mdplayer.Setting setting, int ch, int chipId) {
-            if (setting.getOther().getInstFormat() == mdplayer.Common.EnmInstFormat.OPLI) {
+        @Override public void getInstCh(Component parent, Audio audio, Setting setting, int ch, int chipId) {
+            if (setting.getOther().getInstFormat() == EnmInstFormat.OPLI) {
                 new OpliInstWriter().write(parent, audio, chip(), ch, chipId);
             } else {
                 new SendMml2vgmInstWriter().write(parent, audio, chip(), ch, chipId);

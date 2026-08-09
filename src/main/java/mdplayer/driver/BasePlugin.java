@@ -1,5 +1,6 @@
 package mdplayer.driver;
 
+import java.io.InputStream;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.nio.file.Files;
@@ -59,7 +60,6 @@ public abstract class BasePlugin<T extends BaseDriver> implements Plugin {
     public boolean oneTimeReset = false;
 
     protected FileFormat fileFormat;
-    public FileFormat playingFileFormat;
 
     public int procTimePer1Frame = 0;
     public int stepCounter = 0;
@@ -197,7 +197,7 @@ logger.log(Level.INFO, "stop: " + this.stopped);
         }
     }
 
-    protected void resetFadeOutParam() {
+    private void resetFadeOutParam() {
         this.fadeout = false;
         this.fadeoutCounter = 1.0;
         this.fadeoutCounterV = 0.00001;
@@ -213,7 +213,6 @@ logger.log(Level.INFO, "stop: " + this.stopped);
     /** @param params tags: fileName, arcFileName, midiMode, songNo */
     public void setParams(FileFormat format, Map<String, Object> params) {
         this.fileFormat = format;
-        this.playingFileFormat = format;
         this.dataBuf = format.getData();
         this.playingFileName = params.get("fileName") != null ? (String) params.get("fileName") : format.getCompiledFilename();
         this.playingArcFileName = (String) params.get("arcFileName");
@@ -240,7 +239,7 @@ logger.log(Level.INFO, "stop: " + this.stopped);
      * {@code .mbc} on first play (which is what this used to do) meant a recalibrated preset was
      * then shadowed forever by that first copy.
      */
-    protected void loadPresetMixerBalance() {
+    private void loadPresetMixerBalance() {
         if (!setting.getAutoBalance().getUseThis()) return;
 
         try {
@@ -274,7 +273,7 @@ logger.log(Level.INFO, "stop: " + this.stopped);
             if (mbc != null) {
                 balance = Setting.Balance.load(mbc);
             } else if (bundled != null) {
-                try (java.io.InputStream in = getClass().getResourceAsStream(bundled)) {
+                try (InputStream in = getClass().getResourceAsStream(bundled)) {
                     if (in != null) balance = Setting.Balance.load(in);
                 }
             }

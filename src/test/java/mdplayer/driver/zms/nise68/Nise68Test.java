@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-07-21 nsano initial version <br>
  */
-public class Nise68Test {
+class Nise68Test {
 
     static final String testSuite = "Test_Suite.bin";
 

@@ -28,13 +28,13 @@ import static org.mockito.Mockito.when;
  * The songlength database — how long a SID tune plays for, when the collection says so.
  */
 @EnabledIfSystemProperty(named = "vavi.test", matches = "ai")
-public class SongLengthTest {
+class SongLengthTest {
 
     static final String tune = "../JSIDPlay2/tmp/Last_Ninja.sid";
 
     /** the times are "m:ss" with the milliseconds, when there are any, one to three digits */
     @Test
-    public void testParseTime() {
+    void testParseTime() {
         assertEquals(62000, SidDatabase.parseTime("1:02"));
         assertEquals(62500, SidDatabase.parseTime("1:02.5"));
         assertEquals(62500, SidDatabase.parseTime("1:02.500"));
@@ -44,7 +44,7 @@ public class SongLengthTest {
 
     /** an entry lists a time per subtune, and says nothing at all about a tune it does not have */
     @Test
-    public void testLookup(@TempDir Path dir) throws Exception {
+    void testLookup(@TempDir Path dir) throws Exception {
         Path db = write(dir, "1:53.500 2:04 0:06");
 
         SidDatabase database = new SidDatabase();
@@ -63,7 +63,7 @@ public class SongLengthTest {
 
     /** the database is keyed by the md5 of the whole file, header and all */
     @Test
-    public void testFingerprint() throws Exception {
+    void testFingerprint() throws Exception {
         byte[] data = Files.readAllBytes(Paths.get(tune));
         SidTune sidTune = new SidTune(data, data.length);
         sidTune.selectSong(1);
@@ -78,7 +78,7 @@ public class SongLengthTest {
      * of the register writes works out that it has come around again.
      */
     @Test
-    public void testDriverEndsWhereTheDatabaseSays(@TempDir Path dir) throws Exception {
+    void testDriverEndsWhereTheDatabaseSays(@TempDir Path dir) throws Exception {
         int seconds = 5;
         // the tune's own third subtune is the one that plays, so that is the time that counts
         Path db = write(dir, "9:99 9:99 0:0" + seconds);

@@ -24,6 +24,7 @@ import mdplayer.chips.K054539Chip;
 import mdplayer.form.kb.PcmChannelParams;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
+import mdsound.MDSound;
 import mdsound.instrument.K054539Inst;
 
 import static mdplayer.form.kb.chip.FormC352.drawChC352;
@@ -32,7 +33,7 @@ import mdplayer.form.View;
 
 public class FormK054539 extends FormChipBase<FormK054539.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormK054539.class);
+    private static final Preferences prefs = Preferences.userNodeForPackage(FormK054539.class);
 
     private static final int[] pantbl = {
             0 * 5 + 4, 1 * 5 + 4, 1 * 5 + 4, 2 * 5 + 4, 2 * 5 + 4, 3 * 5 + 4, 3 * 5 + 4,
@@ -70,7 +71,7 @@ public class FormK054539 extends FormChipBase<FormK054539.Params> {
         }
     };
 
-    public void changeZoom() {
+    private void changeZoom() {
         this.setMaximumSize(new Dimension(frameSizeW + Common.getImage("planeK054539").getWidth() * zoom, frameSizeH + Common.getImage("planeK054539").getHeight() * zoom));
         this.setMinimumSize(new Dimension(frameSizeW + Common.getImage("planeK054539").getWidth() * zoom, frameSizeH + Common.getImage("planeK054539").getHeight() * zoom));
         this.setPreferredSize(new Dimension(frameSizeW + Common.getImage("planeK054539").getWidth() * zoom, frameSizeH + Common.getImage("planeK054539").getHeight() * zoom));
@@ -248,7 +249,7 @@ public class FormK054539 extends FormChipBase<FormK054539.Params> {
         this.addComponentListener(this.componentListener);
     }
 
-    BufferedImage image;
+    private BufferedImage image;
 
 //#region draw buffer
 
@@ -309,20 +310,20 @@ public class FormK054539 extends FormChipBase<FormK054539.Params> {
 //#endregion
 
     /** this panel's channel row: the common core plus what only this chip displays */
-    public static class Channel extends PcmChannelParams {
+    static class Channel extends PcmChannelParams {
 
-        public boolean dda = false;
-        public int echo = -1;
-        public boolean ex = false;
-        public int kf = -1;
-        public boolean loopFlg = false;
-        public boolean noise = false;
+        boolean dda = false;
+        int echo = -1;
+        boolean ex = false;
+        int kf = -1;
+        boolean loopFlg = false;
+        boolean noise = false;
     }
 
     /** this panel's per-frame draw state, diffed new against old (see {@link FormChipBase}) */
-    public static class Params {
+    static class Params {
 
-        public final Channel[] channels = {
+        final Channel[] channels = {
                 new Channel(), new Channel(), new Channel(), new Channel(),
                 new Channel(), new Channel(), new Channel(), new Channel()
         };
@@ -333,11 +334,11 @@ public class FormK054539 extends FormChipBase<FormK054539.Params> {
 
         @Override public String id() { return "K054539"; }
         @Override public String category() { return "pcm"; }
-        @Override public Class<? extends mdplayer.Chip> chip() { return mdplayer.chips.K054539Chip.class; }
+        @Override public Class<? extends mdplayer.Chip> chip() { return K054539Chip.class; }
         @Override public View create(FormMain frm, int chipId, int zoom) { return new FormK054539(frm, chipId, zoom); }
 
         @Override public List<MixerSlot> mixerSlots() {
-            return List.of(new MixerSlot(45, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.K054539Chip.class, "k054539", 200));
+            return List.of(new MixerSlot(45, MDSound.Chip.MAIN_TAG, K054539Chip.class, "k054539", 200));
         }
     }
 }

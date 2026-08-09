@@ -35,10 +35,10 @@ class PsfHleProbe {
                 if (!two && !n.endsWith(".psf") && !n.endsWith(".minipsf")) continue;
                 try {
                     int peak = two ? peak2(p, seconds) : peak1(p, seconds);
-System.err.println("%6d  %s".formatted(peak, dir.length() < p.toString().length()
-        ? p.toString().substring(dir.length()) : p.getFileName().toString()));
+System.err.printf("%6d  %s%n", peak, dir.length() < p.toString().length()
+        ? p.toString().substring(dir.length()) : p.getFileName().toString());
                 } catch (Throwable e) {
-System.err.println("  FAIL  %s: %s".formatted(p.getFileName(), e));
+System.err.printf("  FAIL  %s: %s%n", p.getFileName(), e);
                 }
             }
         }
@@ -118,10 +118,10 @@ System.err.println("  FAIL  %s: %s".formatted(p.getFileName(), e));
         for (int v = 0; v < spu.voiceCount(); v++) {
             if (spu.keyOnCount(v) > 0) voices++;
         }
-System.err.println("peak=%d voices keyed=%d songDone=%s".formatted(peak, voices, hw.songDone));
+System.err.printf("peak=%d voices keyed=%d songDone=%s%n", peak, voices, hw.songDone);
         pcs.entrySet().stream()
                 .sorted(Map.Entry.<Integer, Integer>comparingByValue().reversed())
                 .limit(8)
-                .forEach(e -> System.err.println("  %08x  %d".formatted(e.getKey(), e.getValue())));
+                .forEach(e -> System.err.printf("  %08x  %d%n", e.getKey(), e.getValue()));
     }
 }

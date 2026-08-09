@@ -44,7 +44,7 @@ public class WaveformGenerator {
     public int accumulator;
 
     /** Tell whether the accumulator MSB was set high on this cycle. */
-    protected boolean msbRising;
+    private boolean msbRising;
 
     /**
      * Fout  = (Fn*Fclk/16777216)Hz
@@ -62,19 +62,19 @@ public class WaveformGenerator {
     public int shiftPipeline;
 
     // Helper variables for waveform table lookup.
-    protected int ringMsbMask;
-    protected short noNoise;
-    protected short noiseOutput;
-    protected short noNoiseOrNoiseOutput;
-    protected short noPulse;
+    private int ringMsbMask;
+    private short noNoise;
+    private short noiseOutput;
+    private short noNoiseOrNoiseOutput;
+    private short noPulse;
     public short pulseOutput;
 
     /** The control register right-shifted 4 bits; used for waveform table lookup. */
     public int waveform;
 
     // 8580 tri/saw pipeline
-    protected int triSawPipeline;
-    protected int osc3;
+    private int triSawPipeline;
+    private int osc3;
 
     // The remaining control register bits.
     public int test;
@@ -83,14 +83,14 @@ public class WaveformGenerator {
     // The gate bit instanceof handled by the EnvelopeGenerator.
 
     /** DAC input. */
-    protected int waveformOutput;
+    private int waveformOutput;
     /** Fading time for floating DAC input (waveform 0). */
     public int floatingOutputTtl;
 
-    protected SidDefs.ChipModel sidModel;
+    private SidDefs.ChipModel sidModel;
 
     /** Sample data for waveforms, not including noise. */
-    protected short[] wave;
+    private short[] wave;
 
     // Inline functions.
     // The following functions are defined inline because they are called every
@@ -263,7 +263,7 @@ public class WaveformGenerator {
      * </pre>
      * The low 4 waveform bits are zero (grounded).
      */
-    protected void clockShiftRegister() {
+    private void clockShiftRegister() {
         // bit0 = (bit22 | test) ^ bit17
         int bit0 = ((shiftRegister >> 22) ^ (shiftRegister >> 17)) & 0x1;
         shiftRegister = ((shiftRegister << 1) | bit0) & 0x7fffff;
@@ -272,7 +272,7 @@ public class WaveformGenerator {
         setNoiseOutput();
     }
 
-    protected void write_shift_register() {
+    private void write_shift_register() {
         // Write changes to the shift register Output caused by combined waveforms
         // back into the shift register.
         // a bit once set to zero cannot be changed, hence the and'ing.
@@ -293,7 +293,7 @@ public class WaveformGenerator {
         noNoiseOrNoiseOutput = (short) (noNoise | (noiseOutput & 0xffff));
     }
 
-    protected void resetShiftRegister() {
+    private void resetShiftRegister() {
         shiftRegister = 0x7fffff;
         shiftRegisterReset = 0;
 
@@ -301,7 +301,7 @@ public class WaveformGenerator {
         setNoiseOutput();
     }
 
-    protected void setNoiseOutput() {
+    private void setNoiseOutput() {
         noiseOutput = (short) (
                 ((shiftRegister & 0x100000) >> 9) |
                         ((shiftRegister & 0x040000) >> 8) |
@@ -558,7 +558,7 @@ public class WaveformGenerator {
     }
 
     // DAC lookup tables.
-    protected static final short[][] modelDac = {
+    private static final short[][] modelDac = {
             new short[1 << 12],
             new short[1 << 12]
     };

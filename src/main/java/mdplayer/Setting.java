@@ -8,8 +8,11 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +21,7 @@ import java.util.stream.IntStream;
 
 import mdplayer.Common.EnmInstFormat;
 import mdplayer.vst.VstInfo;
+import mdsound.MDSound;
 import vavi.util.serdes.JacksonXMLBeanBinder;
 import vavi.util.serdes.Serdes;
 import tools.jackson.databind.annotation.JsonDeserialize;
@@ -453,7 +457,7 @@ public class Setting implements Serializable, Cloneable {
     public static class ZMusic implements Serializable, Cloneable {
         public int compilePriority = 0;
         public int pcm8Type = Integer.getInteger("mdplayer.variant.pcm8", 1);
-        public int mpcmType = Integer.getInteger("mdplayer.variant.mpcm", 1);
+        int mpcmType = Integer.getInteger("mdplayer.variant.mpcm", 1);
         public int waitNextPlay = 1000;
         public int pcm8ppsOption = -1;
 
@@ -932,12 +936,12 @@ public class Setting implements Serializable, Cloneable {
             return vst;
         }
     }
-    public static class MidiOutInfoArray implements Serializable {
+    static class MidiOutInfoArray implements Serializable {
         private MidiOutInfo[] infos = new MidiOutInfo[0];
-        public MidiOutInfo[] getInfos() { return infos; }
+        MidiOutInfo[] getInfos() { return infos; }
         public void setInfos(MidiOutInfo[] value) { infos = value; }
         public MidiOutInfoArray() {}
-        public MidiOutInfoArray(MidiOutInfo[] value) { infos = value; }
+        MidiOutInfoArray(MidiOutInfo[] value) { infos = value; }
     }
 
     public static class MidiOut implements Serializable, Cloneable {
@@ -985,7 +989,7 @@ public class Setting implements Serializable, Cloneable {
         @tools.jackson.dataformat.xml.annotation.JacksonXmlProperty(localName = "midiOutInfoArray")
         public List<MidiOutInfoArray> getMidiOutInfosForJackson() {
             if (midiOutInfos == null) return null;
-            List<MidiOutInfoArray> result = new java.util.ArrayList<>();
+            List<MidiOutInfoArray> result = new ArrayList<>();
             for (MidiOutInfo[] array : midiOutInfos) {
                 result.add(new MidiOutInfoArray(array));
             }
@@ -998,7 +1002,7 @@ public class Setting implements Serializable, Cloneable {
                 midiOutInfos = null;
                 return;
             }
-            midiOutInfos = new java.util.ArrayList<>();
+            midiOutInfos = new ArrayList<>();
             for (MidiOutInfoArray wrapper : value) {
                 if (wrapper == null) {
                     midiOutInfos.add(null);
@@ -1032,7 +1036,7 @@ public class Setting implements Serializable, Cloneable {
         instance.init();
     }
 
-    static int parseInt(String str, int def) {
+    private static int parseInt(String str, int def) {
         try {
             return Integer.parseInt(System.getProperty(str, String.valueOf(def)));
         } catch (Exception e) {
@@ -2361,11 +2365,11 @@ public class Setting implements Serializable, Cloneable {
         record VolEntry(String element, Class<? extends Chip> chip, String tag) {}
 
         /** same value as {@code mdsound.MDSound.Chip.MAIN_TAG}; plugins key single-part chips with it */
-        private static final String MAIN = mdsound.MDSound.Chip.MAIN_TAG;
+        private static final String MAIN = MDSound.Chip.MAIN_TAG;
 
         /** authoritative, ordered element &harr; (chip, tag) table; enumerated from every
          *  {@code getBalance().getVolume(tag, X.class)} call site across the plugins. */
-        static final java.util.List<VolEntry> VOL_TABLE = java.util.List.of(
+        static final List<VolEntry> VOL_TABLE = List.of(
             new VolEntry("YM2612Volume", mdplayer.chips.Ym2612Chip.class, MAIN),
             new VolEntry("SN76489Volume", mdplayer.chips.Sn76489Chip.class, MAIN),
             new VolEntry("RF5C68Volume", mdplayer.chips.Rf5C68Chip.class, MAIN),
@@ -2438,12 +2442,12 @@ public class Setting implements Serializable, Cloneable {
         }
 
         /** every chip class that has a persistable balance slot (for calibration coverage checks) */
-        public static List<Class<? extends Chip>> knownChipClasses() {
+        public static List<? extends Class<? extends Chip>> knownChipClasses() {
             return VOL_TABLE.stream().map(VolEntry::chip).distinct().toList();
         }
 
         /** writes the flat {@code <Balance>} document (MasterVolume, every chip, Gimic) into the runtime map. */
-        public static class BalanceSerializer extends ValueSerializer<Balance> {
+        static class BalanceSerializer extends ValueSerializer<Balance> {
             @Override
             public void serialize(Balance b, JsonGenerator gen, SerializationContext ctxt) throws JacksonException {
                 gen.writeStartObject();
@@ -2459,7 +2463,7 @@ public class Setting implements Serializable, Cloneable {
         }
 
         /** routes each {@code <XxxVolume>} element back through the table into the runtime map. */
-        public static class BalanceDeserializer extends ValueDeserializer<Balance> {
+        static class BalanceDeserializer extends ValueDeserializer<Balance> {
             @Override
             public Balance deserialize(JsonParser p, DeserializationContext ctxt) throws JacksonException {
                 Balance b = new Balance();
@@ -4060,8 +4064,8 @@ public class Setting implements Serializable, Cloneable {
 
     /** Moves a freshly deserialized Setting's state into the singleton, field by field. */
     private static void copyInto(Setting from, Setting to) {
-        for (java.lang.reflect.Field f : Setting.class.getDeclaredFields()) {
-            if (java.lang.reflect.Modifier.isStatic(f.getModifiers())) continue;
+        for (Field f : Setting.class.getDeclaredFields()) {
+            if (Modifier.isStatic(f.getModifiers())) continue;
             try {
                 f.setAccessible(true);
                 f.set(to, f.get(from));
@@ -4093,7 +4097,7 @@ public class Setting implements Serializable, Cloneable {
         }
     }
 
-    public static class DimensionDeserializer extends ValueDeserializer<Dimension> {
+    private static class DimensionDeserializer extends ValueDeserializer<Dimension> {
         @Override
         public Dimension deserialize(JsonParser p, DeserializationContext ctxt) throws JacksonException {
             double width = 0;

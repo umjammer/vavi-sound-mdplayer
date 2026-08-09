@@ -21,9 +21,9 @@ public class MID {
 
     public static final int FCC_MID = 0x6468544d;
     public static final int FCC_TRK = 0x6b72544d;
-    public int format = 0;
-    public int trkCount = 0;
-    public int reso = 196;
+    private int format = 0;
+    private int trkCount = 0;
+    private int reso = 196;
     public int sampleRate;
 
     private double oneSyncTime = 0.0001;
@@ -47,7 +47,7 @@ public class MID {
     private List<Boolean> isDelta = null;
 
     public byte midiEvent = 0;
-    List<Byte> midiEventBackup = null;
+    private List<Byte> midiEventBackup = null;
     public int midiEventCh = 0;
     public int midiEventChBackup = 0;
     private final List<Byte> eventStr = new ArrayList<>();

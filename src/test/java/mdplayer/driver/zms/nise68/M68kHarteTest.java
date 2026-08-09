@@ -68,21 +68,21 @@ class M68kHarteTest {
     };
 
     static class NameResult {
-        public final int ptr;
-        public final String name;
+        final int ptr;
+        final String name;
 
-        public NameResult(int ptr, String name) {
+        NameResult(int ptr, String name) {
             this.ptr = ptr;
             this.name = name;
         }
     }
 
     static class TransactionResult {
-        public final int ptr;
-        public final List<Object> transactions;
-        public final int numCycles;
+        final int ptr;
+        final List<Object> transactions;
+        final int numCycles;
 
-        public TransactionResult(int ptr, List<Object> transactions, int numCycles) {
+        TransactionResult(int ptr, List<Object> transactions, int numCycles) {
             this.ptr = ptr;
             this.transactions = transactions;
             this.numCycles = numCycles;
@@ -90,20 +90,20 @@ class M68kHarteTest {
     }
 
     static class StateResult {
-        public final int ptr;
-        public final Map<String, Object> state;
+        final int ptr;
+        final Map<String, Object> state;
 
-        public StateResult(int ptr, Map<String, Object> state) {
+        StateResult(int ptr, Map<String, Object> state) {
             this.ptr = ptr;
             this.state = state;
         }
     }
 
     static class TestResult {
-        public final int ptr;
-        public final Map<String, Object> test;
+        final int ptr;
+        final Map<String, Object> test;
 
-        public TestResult(int ptr, Map<String, Object> test) {
+        TestResult(int ptr, Map<String, Object> test) {
             this.ptr = ptr;
             this.test = test;
         }
@@ -121,7 +121,7 @@ class M68kHarteTest {
         return content[offset];
     }
 
-    static NameResult readName(byte[] content, int ptr) {
+    private static NameResult readName(byte[] content, int ptr) {
         int numbytes = readIntLE(content, ptr);
         int magicNum = readIntLE(content, ptr + 4);
         ptr += 8;
@@ -139,7 +139,7 @@ class M68kHarteTest {
         return new NameResult(ptr, nstr);
     }
 
-    static TransactionResult readTransactions(byte[] content, int ptr) {
+    private static TransactionResult readTransactions(byte[] content, int ptr) {
         int numbytes = readIntLE(content, ptr);
         int magicNum = readIntLE(content, ptr + 4);
 
@@ -201,7 +201,7 @@ class M68kHarteTest {
         return new TransactionResult(ptr, transactions, numCycles);
     }
 
-    static StateResult readState(byte[] content, int ptr) {
+    private static StateResult readState(byte[] content, int ptr) {
         Map<String, Object> st = new HashMap<>();
 
         int numbytes = readIntLE(content, ptr);
@@ -246,7 +246,7 @@ class M68kHarteTest {
         return new StateResult(ptr, st);
     }
 
-    static TestResult decodeTest(byte[] content, int ptr) {
+    private static TestResult decodeTest(byte[] content, int ptr) {
         Map<String, Object> test = new HashMap<>();
 
         int numbytes = readIntLE(content, ptr);
@@ -278,7 +278,7 @@ class M68kHarteTest {
         return new TestResult(ptr, test);
     }
 
-    static void decodeFile(String infilename, String outfilename) throws IOException {
+    private static void decodeFile(String infilename, String outfilename) throws IOException {
         System.out.println("DECODE " + infilename);
 
         byte[] content = Files.readAllBytes(Paths.get(infilename));
@@ -320,7 +320,7 @@ class M68kHarteTest {
     }
 
     @Test
-    public void test1() throws Exception {
+    void test1() throws Exception {
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(
                 Paths.get(M68K_JSON_PATH), "*.json.bin")) {
 

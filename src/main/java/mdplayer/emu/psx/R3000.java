@@ -42,12 +42,12 @@ public class R3000 {
     private static final int EXC_OVF = 12;
 
     // cop0 registers
-    public static final int CP0_RANDOM = 1;
-    public static final int CP0_BADVADDR = 8;
+    private static final int CP0_RANDOM = 1;
+    private static final int CP0_BADVADDR = 8;
     public static final int CP0_SR = 12;
     public static final int CP0_CAUSE = 13;
     public static final int CP0_EPC = 14;
-    public static final int CP0_PRID = 15;
+    private static final int CP0_PRID = 15;
 
     private static final int SR_IEC = 1 << 0;
     private static final int SR_KUC = 1 << 1;
@@ -166,11 +166,11 @@ public class R3000 {
     private static final int REGPC = 32;
 
     public static final int MIPS_IRQ0 = 0;
-    public static final int MIPS_IRQ1 = 1;
-    public static final int MIPS_IRQ2 = 2;
-    public static final int MIPS_IRQ3 = 3;
-    public static final int MIPS_IRQ4 = 4;
-    public static final int MIPS_IRQ5 = 5;
+    private static final int MIPS_IRQ1 = 1;
+    private static final int MIPS_IRQ2 = 2;
+    private static final int MIPS_IRQ3 = 3;
+    private static final int MIPS_IRQ4 = 4;
+    private static final int MIPS_IRQ5 = 5;
 
     public static final int CLEAR_LINE = 0;
     public static final int ASSERT_LINE = 1;
@@ -202,17 +202,17 @@ public class R3000 {
     // ---- state ----
 
     /** the instruction being executed */
-    public int op;
+    private int op;
     public int pc;
-    public int prevpc;
+    private int prevpc;
     public int delayv;
     public int delayr;
     public int hi;
     public int lo;
     public final int[] r = new int[32];
     public final int[] cp0r = new int[32];
-    public final int[] cp2cr = new int[32];
-    public final int[] cp2dr = new int[32];
+    private final int[] cp2cr = new int[32];
+    private final int[] cp2dr = new int[32];
 
     private int iCount;
 

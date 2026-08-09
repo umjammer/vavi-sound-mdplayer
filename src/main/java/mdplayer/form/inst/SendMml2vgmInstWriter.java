@@ -8,6 +8,7 @@ import javax.swing.JOptionPane;
 
 import mdplayer.Audio;
 import mdplayer.Chip;
+import mdplayer.Common.EnmInstFormat;
 import mdplayer.form.MmfControl;
 
 import static java.lang.System.getLogger;
@@ -19,8 +20,8 @@ public class SendMml2vgmInstWriter implements InstWriter {
     private static final Logger logger = getLogger(SendMml2vgmInstWriter.class.getName());
 
     @Override
-    public mdplayer.Common.EnmInstFormat format() {
-        return mdplayer.Common.EnmInstFormat.SendMML2VGM;
+    public EnmInstFormat format() {
+        return EnmInstFormat.SendMML2VGM;
     }
 
     @Override

@@ -43,13 +43,13 @@ public class SidBuilder {
 
     protected boolean status;
 
-    protected static class applyParameter_LibsidplayfpReSID_bool {
-        protected final boolean m_param;
+    static class applyParameter_LibsidplayfpReSID_bool {
+        final boolean m_param;
 
-        public interface dlgM_method extends Consumer<Boolean> {
+        interface dlgM_method extends Consumer<Boolean> {
         }
 
-        public final dlgM_method m_method;
+        final dlgM_method m_method;
 
         public applyParameter_LibsidplayfpReSID_bool(dlgM_method method, boolean param) {
             m_param = param;
@@ -61,13 +61,13 @@ public class SidBuilder {
         }
     }
 
-    protected static class applyParameter_LibsidplayfpReSID_double {
-        protected final double m_param;
+    static class applyParameter_LibsidplayfpReSID_double {
+        final double m_param;
 
-        public interface dlgM_method extends Consumer<Double> {
+        interface dlgM_method extends Consumer<Double> {
         }
 
-        public final dlgM_method m_method;
+        final dlgM_method m_method;
 
         public applyParameter_LibsidplayfpReSID_double(dlgM_method method, double param) {
             m_param = param;

@@ -213,7 +213,7 @@ public class PmdFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
             // fmdsp prints the detune as three digits and a sign, PMD counts it in f-number steps
             // and does not bound it - clamp the way the C fmdsp does so a deep detune cannot run
             // over the field
-            status.detune = Math.max(-128, Math.min(127, part.detune));
+            status.detune = Math.clamp(part.detune, -128, 127);
             status.status = LFO_STATUS[part.lfoswi & 0xff];
             status.ticksLeft = part.leng & 0xff;
             status.ppz8Ch = status.info == TrackInfo.PPZ8 ? i - TrackId.PPZ8_1.ordinal() + 1 : 0;
@@ -409,7 +409,7 @@ public class PmdFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
             // PPZ8 counts a playback rate, so PMD scales it by the bend instead of shifting it
             long freq = base + ((long) part.porta_num << 4)
                     + (long) (lfo + part.detune) * ((base >> 8) & 0xffff);
-            return (int) Math.max(0, Math.min(Integer.MAX_VALUE, freq));
+            return Math.clamp(freq, 0, Integer.MAX_VALUE);
         }
 
         int base = part.fnum & 0xffff;
@@ -437,7 +437,7 @@ public class PmdFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
             if (part.fnum2 != 0) return -1;
             // it is hard to hear an LFO on a sample, so PMD applies it four times as deep
             int rate = base + part.porta_num + lfo * 4 + part.detune;
-            return Math.max(0, Math.min(0xffff, rate));
+            return Math.clamp(rate, 0, 0xffff);
         }
         default -> {
             // the f-number leaves its block only to be renormalized back into register range

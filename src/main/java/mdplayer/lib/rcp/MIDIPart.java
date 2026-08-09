@@ -29,11 +29,11 @@ public class MIDIPart implements Serializable {
         return beforeIndex;
     }
 
-    public void setAfterIndex(Integer value) {
+    void setAfterIndex(Integer value) {
         afterIndex = value;
     }
 
-    public Integer getAfterIndex() {
+    Integer getAfterIndex() {
         return afterIndex;
     }
 
@@ -53,11 +53,11 @@ public class MIDIPart implements Serializable {
         return name;
     }
 
-    public void setStartTick(int value) {
+    void setStartTick(int value) {
         startTick = value;
     }
 
-    public int getStartTick() {
+    int getStartTick() {
         return startTick;
     }
 

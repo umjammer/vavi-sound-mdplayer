@@ -43,7 +43,7 @@ public class Nise286 {
     public byte w_mmsk = (byte) 0xff; // (IR7 (INT0Fh)-IR0(INT08h)) All interrupts are disabled
     public byte w_smsk = (byte) 0xff; // (IR15(INT17h)-IR8(INT10h)) All interrupts are disabled
     public final boolean[] interruptTrigger = new boolean[24];
-    public int iLevel = 0;
+    private int iLevel = 0;
     private final List<Supplier<Boolean>> lstHook = new ArrayList<>();
 
     public Nise286(Nise98 machine) {

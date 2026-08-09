@@ -32,7 +32,7 @@ import mdplayer.driver.BasePlugin;
  * }</pre>
  * With no file arguments every sample listed in {@code local.properties} is measured.
  */
-public final class LoudnessCheck {
+final class LoudnessCheck {
 
     /** seconds of audio to render per sample */
     static int seconds = 10;

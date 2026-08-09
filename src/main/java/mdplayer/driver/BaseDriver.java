@@ -33,7 +33,7 @@ public abstract class BaseDriver {
 
     protected byte[] dataBuf;
 
-    protected BasePlugin<? extends BaseDriver> plugin;
+    protected final BasePlugin<? extends BaseDriver> plugin;
 
     protected EnmModel model = EnmModel.VirtualModel;
 
@@ -141,7 +141,7 @@ public abstract class BaseDriver {
         return setting.getOther().getNonRenderingForPause();
     }
 
-    protected final GenericSupport viewSupport = new GenericSupport();
+    private final GenericSupport viewSupport = new GenericSupport();
 
     public void addViewListener(GenericListener listener) {
         viewSupport.addGenericListener(listener);

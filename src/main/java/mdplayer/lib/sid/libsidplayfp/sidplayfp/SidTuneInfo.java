@@ -73,103 +73,103 @@ public class SidTuneInfo {
      */
     public static final int SPEED_CIA_1A = 60;
 
-    public short getLoadAddr() {
+    protected short getLoadAddr() {
         return 0;
     }
 
-    public short getInitAddress() {
+    protected short getInitAddress() {
         return 0;
     }
 
-    public short getPlayAddress() {
+    protected short getPlayAddress() {
         return 0;
     }
 
-    public int getSongs() {
+    protected int getSongs() {
         return 0;
     }
 
-    public int getStartSong() {
+    protected int getStartSong() {
         return 0;
     }
 
-    public int getCurrentSong() {
+    protected int getCurrentSong() {
         return 0;
     }
 
-    public short getSidChipBase(int i) {
+    protected short getSidChipBase(int i) {
         return 0;
     }
 
-    public int getSidChips() {
+    protected int getSidChips() {
         return 0;
     }
 
-    public int getSongSpeed() {
+    protected int getSongSpeed() {
         return 0;
     }
 
-    public byte getRelocStartPage() {
+    protected byte getRelocStartPage() {
         return 0;
     }
 
-    public byte getRelocPages() {
+    protected byte getRelocPages() {
         return 0;
     }
 
-    public Model getSidModel(int i) {
+    protected Model getSidModel(int i) {
         return Model.values()[0];
     }
 
-    public Compatibility getCompatibility() {
+    protected Compatibility getCompatibility() {
         return Compatibility.values()[0];
     }
 
-    public int getNumberOfInfoStrings() {
+    protected int getNumberOfInfoStrings() {
         return 0;
     }
 
-    public String getInfoString(int i) {
+    protected String getInfoString(int i) {
         return null;
     }
 
-    public int getNumberOfCommentStrings() {
+    protected int getNumberOfCommentStrings() {
         return 0;
     }
 
-    public String getCommentString(int i) {
+    protected String getCommentString(int i) {
         return null;
     }
 
-    public int getDataFileLen() {
+    protected int getDataFileLen() {
         return 0;
     }
 
-    public int getC64DataLen() {
+    protected int getC64DataLen() {
         return 0;
     }
 
-    public Clock getClockSpeed() {
+    protected Clock getClockSpeed() {
         return Clock.values()[0];
     }
 
-    public String getFormatString() {
+    protected String getFormatString() {
         return null;
     }
 
-    public boolean getFixLoad() {
+    protected boolean getFixLoad() {
         return false;
     }
 
-    public String getPath() {
+    protected String getPath() {
         return null;
     }
 
-    public String getDataFileName() {
+    protected String getDataFileName() {
         return null;
     }
 
-    public String getInfoFileName() {
+    protected String getInfoFileName() {
         return null;
     }
 

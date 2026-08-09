@@ -151,7 +151,7 @@ class MidiSpectrumCapture {
      * Keys each of the sixteen channels is holding, which is the other half of reading the bars: a
      * stream is not obliged to let go of anything, and a ZMS drum channel collects hits it never
      * sends a note off for. A count that only ever climbs is where a spectrum drawn from held
-     * notes goes wrong - see {@link mdplayer.fmdsp.MidiReader#spectral}.
+     * notes goes wrong - see {@code mdplayer.fmdsp.MidiReader#spectral}.
      */
     private static String keys(MidiPlugin midi) {
         StringBuilder sb = new StringBuilder("keys:  ");

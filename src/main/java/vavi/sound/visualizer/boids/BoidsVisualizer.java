@@ -70,7 +70,7 @@ import vavi.sound.visualizer.fmdsp.TrackStatusSource;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-08-03 nsano initial version <br>
  */
-public class BoidsVisualizer extends JComponent {
+class BoidsVisualizer extends JComponent {
 
     /** the rows shown when the source names none of its own */
     private static final TrackId[] DEFAULT_TRACKS = {
@@ -98,7 +98,7 @@ public class BoidsVisualizer extends JComponent {
 
     private final Map<TrackId, Flock> flocks = new EnumMap<>(TrackId.class);
 
-    /** the flocks of {@link #tracks}, in row order, rebuilt only when the row set changes */
+    /** the flocks of {@code scratch.displayTracks()}, in row order, rebuilt only when the row set changes */
     private final List<Flock> shown = new ArrayList<>();
 
     private final TrackStatus scratch = new TrackStatus();
@@ -122,7 +122,7 @@ public class BoidsVisualizer extends JComponent {
     /** the step every frame takes when it is not the clock that decides; 0 means the clock does */
     private double fixedStep;
 
-    private final Font labelFont = new Font(Font.SANS_SERIF, Font.PLAIN, 10);
+    private static final Font labelFont = new Font(Font.SANS_SERIF, Font.PLAIN, 10);
 
     /**
      * @param fps target frame rate, e.g. {@code 60}
@@ -278,7 +278,7 @@ public class BoidsVisualizer extends JComponent {
      * no level strip - a bare {@link TrackStatusSource} in a test - falls back to the track's own
      * volume, whose scale is the chip's business but is at least monotonic.
      */
-    private double level(LevelDataSource ls, TrackId track, TrackStatus status) {
+    private static double level(LevelDataSource ls, TrackId track, TrackStatus status) {
         if (ls != null) {
             for (int c = 0; c < LevelDataSource.COUNT; c++) {
                 if (ls.track(c) != track) continue;
@@ -814,6 +814,6 @@ public class BoidsVisualizer extends JComponent {
 
     private static Color alpha(Color c, double a) {
         return new Color(c.getRed(), c.getGreen(), c.getBlue(),
-                (int) Math.clamp(Math.round(a * 255), 0, 255));
+                Math.clamp(Math.round(a * 255), 0, 255));
     }
 }

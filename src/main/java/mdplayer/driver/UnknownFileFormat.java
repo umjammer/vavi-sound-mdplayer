@@ -2,6 +2,7 @@ package mdplayer.driver;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.System.Logger;
@@ -69,7 +70,7 @@ public class UnknownFileFormat extends BaseFileFormat {
 
                 if (entry == null || entry instanceof JdkZipEntry) {
                     if (archive == null && entry == null) {
-                        archive = Archives.getArchive(new java.io.File(zipFile));
+                        archive = Archives.getArchive(new File(zipFile));
                         entry = archive.getEntry(file);
                     }
                     try (InputStream inStream = archive.getInputStream(entry);

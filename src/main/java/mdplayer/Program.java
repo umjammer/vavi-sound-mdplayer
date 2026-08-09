@@ -41,7 +41,7 @@ public class Program {
         }
     }
 
-    static String checkFiles() {
+    private static String checkFiles() {
 //        List<String> chkFn = Arrays.asList("MDSound.dll", "NAudio.dll", "RealChipCtlWrap.dll", "scci.dll", "c86ctl.dll");
 ////        chkFn.addAll(Arrays.asList(VstMng.chkFn));
 //

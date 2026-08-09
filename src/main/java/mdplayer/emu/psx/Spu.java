@@ -15,7 +15,7 @@ package mdplayer.emu.psx;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-08-09 nsano initial version <br>
  */
-public interface Spu {
+interface Spu {
 
     /** @param reg the full bus address, 0x1f801c00 .. 0x1f801dff */
     int readRegister(int reg);

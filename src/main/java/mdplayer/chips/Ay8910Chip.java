@@ -95,7 +95,7 @@ public class Ay8910Chip extends BaseChip {
         }
     }
 
-    public void softReset(int chipId, EnmModel model) {
+    private void softReset(int chipId, EnmModel model) {
 
         // All Channel Key Off
         write(chipId, 0x07, 0x00, model);

@@ -47,9 +47,9 @@ public class NiseHuman {
     private final List<String> envZPDs;
     private final FileMng fileMng;
 
-    public static class ProcInfo {
+    static class ProcInfo {
 
-        public int startAddress;
+        int startAddress;
     }
 
     public NiseHuman(Memory68 mem, Register68 reg, List<String> envZPDs, FileMng fm) {
@@ -338,7 +338,7 @@ public class NiseHuman {
 
     }
 
-    public void loadImage(byte[] bin, int startAdr) {
+    private void loadImage(byte[] bin, int startAdr) {
         logger.log(Level.TRACE, "<NiseHuman>LoadImage");
         for (int i = 0; i < bin.length; i++) {
             mem.pokeB(startAdr + i, bin[i]);

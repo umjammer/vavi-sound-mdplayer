@@ -115,20 +115,20 @@ public class FormMain extends JFrame {
 
     private static final Logger logger = getLogger(FormMain.class.getName());
 
-    static final ResourceBundle rb = ResourceBundle.getBundle("mdplayer/form/sys/frmMain");
+    private static final ResourceBundle rb = ResourceBundle.getBundle("mdplayer/form/sys/frmMain");
     private static final ResourceBundle rb2 = ResourceBundle.getBundle("mdplayer/properties/resources");
 
-    public final ChipLEDs chipLED = new ChipLEDs();
-    public final ChipLEDs chipLED_old = new ChipLEDs();
+    private final ChipLEDs chipLED = new ChipLEDs();
+    private final ChipLEDs chipLED_old = new ChipLEDs();
 
-    YM2612MIDI ym2612Midi = new YM2612MIDI(null); // TODO
+    private final YM2612MIDI ym2612Midi = new YM2612MIDI(null); // TODO
 
     /** the state the MIDI keyboard panel plays into; its provider needs it to build the panel */
     public YM2612MIDI.Params ym2612MidiParams() {
         return ym2612Midi.ym2612Midi;
     }
 
-    static final Point empty = new Point(0, 0);
+    private static final Point empty = new Point(0, 0);
 
     private BufferedImage pbRf5c164Screen;
     private FrameBuffer mainScreen = new FrameBuffer();
@@ -172,26 +172,26 @@ public class FormMain extends JFrame {
     /** the main window's per-frame draw state, diffed new against old to decide what to redraw */
     public static class ScreenParams {
 
-        public int Cminutes = -1;
-        public int Csecond = -1;
-        public int Cmillisecond = -1;
+        int Cminutes = -1;
+        int Csecond = -1;
+        int Cmillisecond = -1;
 
-        public int TCminutes = -1;
-        public int TCsecond = -1;
-        public int TCmillisecond = -1;
+        int TCminutes = -1;
+        int TCsecond = -1;
+        int TCmillisecond = -1;
 
-        public int LCminutes = -1;
-        public int LCsecond = -1;
-        public int LCmillisecond = -1;
+        int LCminutes = -1;
+        int LCsecond = -1;
+        int LCmillisecond = -1;
 
-        public int Master = -255;
-        public int MasterVis = -255;
-        public int MasterHover = -255;
-        public int MasterDrag = -255;
-        public int TimeLine = -255;
-        public int TimeLineVis = -255;
-        public int TimeLineHover = -255;
-        public int TimeLineDrag = -255;
+        int Master = -255;
+        int MasterVis = -255;
+        int MasterHover = -255;
+        int MasterDrag = -255;
+        int TimeLine = -255;
+        int TimeLineVis = -255;
+        int TimeLineHover = -255;
+        int TimeLineDrag = -255;
     }
 
     public ScreenParams oldParam = new ScreenParams();
@@ -220,7 +220,7 @@ public class FormMain extends JFrame {
     private static final boolean forcedExit = false;
     private YM2612MIDI ym2612MIDI;
     private boolean flgReinit = false;
-    public boolean reqAllScreenInit = true;
+    private boolean reqAllScreenInit = true;
 
     private static final String[] modeTip = {
             "Mode\nNow:Step\nNext:Random",
@@ -354,7 +354,7 @@ public class FormMain extends JFrame {
      * Opens a provider's view, restoring its saved position; called again on an open view it
      * closes it instead (the menu items toggle), unless {@code force} keeps it open.
      */
-    public void openView(ViewProvider p, int chipId, boolean force) {
+    private void openView(ViewProvider p, int chipId, boolean force) {
         View[] slot = views.get(p);
         if (slot[chipId] != null) {
             if (!force) closeView(p, chipId);
@@ -380,7 +380,7 @@ public class FormMain extends JFrame {
         checkAndSetForm(v.frame());
     }
 
-    public void closeView(ViewProvider p, int chipId) {
+    private void closeView(ViewProvider p, int chipId) {
         View[] slot = views.get(p);
         if (slot[chipId] == null) return;
 
@@ -401,7 +401,7 @@ public class FormMain extends JFrame {
      * Opens the register-dump window on the given chip's page, or flips the already open window
      * to it.
      */
-    public void openRegTest(Class<? extends Chip> selectedChip) {
+    private void openRegTest(Class<? extends Chip> selectedChip) {
         ViewProvider p = ViewProvider.byId("RegTest");
         FormRegTest frm = (FormRegTest) views.get(p)[0];
         if (frm != null && !frm.isClosed) {
@@ -1460,7 +1460,7 @@ public class FormMain extends JFrame {
         if (audio.plugin == null) return;
 
         long w = audio.plugin.getCounter();
-        double sec = (double) w / (double) mdplayer.Common.VGMProcSampleRate;
+        double sec = (double) w / (double) Common.VGMProcSampleRate;
         newParam.Cminutes = (int) (sec / 60);
         sec -= newParam.Cminutes * 60;
         newParam.Csecond = (int) sec;
@@ -1468,7 +1468,7 @@ public class FormMain extends JFrame {
         newParam.Cmillisecond = (int) (sec * 100.0);
 
         w = audio.plugin.getTotalCounter();
-        sec = (double) w / (double) mdplayer.Common.VGMProcSampleRate;
+        sec = (double) w / (double) Common.VGMProcSampleRate;
         newParam.TCminutes = (int) (sec / 60);
         sec -= newParam.TCminutes * 60;
         newParam.TCsecond = (int) sec;
@@ -1476,7 +1476,7 @@ public class FormMain extends JFrame {
         newParam.TCmillisecond = (int) (sec * 100.0);
 
         w = audio.plugin.getLoopCounter();
-        sec = (double) w / (double) mdplayer.Common.VGMProcSampleRate;
+        sec = (double) w / (double) Common.VGMProcSampleRate;
         newParam.LCminutes = (int) (sec / 60);
         sec -= newParam.LCminutes * 60;
         newParam.LCsecond = (int) sec;
@@ -1637,7 +1637,7 @@ public class FormMain extends JFrame {
     }
 
     /** Only a vgm writes to PCM RAM, and only once it has a driver behind it. */
-    boolean isPcmRAMWrite(Common.EnmModel model) {
+    private boolean isPcmRAMWrite(Common.EnmModel model) {
         return audio.plugin instanceof VGMPlugin vgmPlugin
                 && vgmPlugin.driverVirtual != null
                 && vgmPlugin.driverVirtual.vgm.isPcmRAMWrite;
@@ -1743,11 +1743,11 @@ public class FormMain extends JFrame {
         audio.pause();
     }
 
-    public void fadeout() {
+    private void fadeout() {
         audio.fadeout();
     }
 
-    public void prev() {
+    private void prev() {
         if (audio.isPaused()) {
             audio.pause();
         }
@@ -1862,7 +1862,7 @@ public class FormMain extends JFrame {
         }
     }
 
-    public void ff() {
+    private void ff() {
         if (audio.isPaused()) {
             audio.pause();
         }
@@ -1870,7 +1870,7 @@ public class FormMain extends JFrame {
         audio.plugin.ff();
     }
 
-    public void next() {
+    private void next() {
         if (audio.isPaused()) {
             audio.pause();
         }
@@ -1890,7 +1890,7 @@ public class FormMain extends JFrame {
         frmPlayList.nextPlayMode(newButtonMode[9]);
     }
 
-    public void slow() {
+    private void slow() {
         if (audio.isPaused()) {
             // upstream STBL506 dropped the frame-advance button: slow while paused now creeps
             // forward at a hundredth of the speed rather than stepping a fixed number of frames
@@ -1912,7 +1912,7 @@ public class FormMain extends JFrame {
         opeButtonMode.setToolTipText(modeTip[newButtonMode[9]]);
     }
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormMain.class);
+    private static final Preferences prefs = Preferences.userNodeForPackage(FormMain.class);
 
     private String[] fileOpen(boolean isMultiSelection) {
         JFileChooser ofd = new JFileChooser();
@@ -1935,7 +1935,7 @@ public class FormMain extends JFrame {
         if (lastPath != null) ofd.setCurrentDirectory(new File(lastPath));
         ofd.setDialogTitle("Select a file");
         int filterIndex = setting.getOther().getFilterIndex();
-        javax.swing.filechooser.FileFilter[] filters = ofd.getChoosableFileFilters();
+        FileFilter[] filters = ofd.getChoosableFileFilters();
         if (filterIndex >= 0 && filterIndex < filters.length) {
             ofd.setFileFilter(filters[filterIndex]);
         }
@@ -2074,7 +2074,7 @@ public class FormMain extends JFrame {
         return true;
     }
 
-    public boolean bufferPlay(byte[] buf, String fullPath) {
+    private boolean bufferPlay(byte[] buf, String fullPath) {
         try {
             // the plugin of the song played so far; there is none before the first one
             if (audio.plugin != null && audio.plugin.flgReinit) flgReinit = true;
@@ -2210,7 +2210,7 @@ public class FormMain extends JFrame {
         }
     }
 
-    final Receiver midiIn_MessageReceived = new Receiver() {
+    private final Receiver midiIn_MessageReceived = new Receiver() {
         @Override
         public void send(MidiMessage message, long timeStamp) {
             if (!setting.getMidiKbd().getUseMIDIKeyboard()) return;
@@ -2333,7 +2333,7 @@ public class FormMain extends JFrame {
         if (!setting.getAutoBalance().getUseThis()) return;
 
         try {
-            Path fullPath = mdplayer.Common.settingFilePath;
+            Path fullPath = Common.settingFilePath;
             fullPath = fullPath.resolve("MixerBalance");
             if (!Files.exists(fullPath)) Files.createDirectory(fullPath);
             String fn = "";
@@ -2375,7 +2375,7 @@ public class FormMain extends JFrame {
 
     public static Consumer<NativeKeyEvent> keyHookMeth = null;
 
-    final NativeKeyListener keyboardHook1_KeyboardHooked = new NativeKeyListener() {
+    private final NativeKeyListener keyboardHook1_KeyboardHooked = new NativeKeyListener() {
         @Override
         public void nativeKeyPressed(NativeKeyEvent e) {
             logger.log(Level.TRACE, "Key Pressed: " + NativeKeyEvent.getKeyText(e.getKeyCode()));
@@ -2486,7 +2486,7 @@ public class FormMain extends JFrame {
             JMenuItem item = new JMenuItem(p.id());
             item.setName("tsmiRD" + p.id());
             item.addActionListener(ev -> openRegTest(p.chip()));
-            RegisterDumpDisplayToolStripMenuItem.add(item);
+            registerDumpDisplayToolStripMenuItem.add(item);
         }
     }
 
@@ -2756,7 +2756,7 @@ public class FormMain extends JFrame {
         redrawButton(opeButtonZoom, setting.getOther().getZoom(), lstOpeButtonLeaveImage[17]);
     }
 
-    final MouseListener opeButton_Mouse = new MouseAdapter() {
+    private final MouseListener opeButton_Mouse = new MouseAdapter() {
         @Override
         public void mouseEntered(MouseEvent ev) {
             JButton btn = (JButton) ev.getSource();
@@ -2893,10 +2893,10 @@ public class FormMain extends JFrame {
         this.primaryToolStripMenuItem = new JMenu();
         this.sencondryToolStripMenuItem = new JMenu();
         this.cmsMenu = new JPopupMenu();
-        this.FileToolStripMenuItem = new JMenu();
+        this.fileToolStripMenuItem = new JMenu();
         this.tsmiOpenFile = new JMenuItem();
         this.tsmiExit = new JMenuItem();
-        this.OperationToolStripMenuItem = new JMenu();
+        this.operationToolStripMenuItem = new JMenu();
         this.tsmiPlay = new JMenuItem();
         this.tsmiStop = new JMenuItem();
         this.tsmiPause = new JMenuItem();
@@ -2909,7 +2909,7 @@ public class FormMain extends JFrame {
         this.tsmiPlayList = new JMenuItem();
         this.tsmiOpenInfo = new JMenuItem();
         this.tsmiOpenMixer = new JMenuItem();
-        this.AnotherWindowDisplayToolStripMenuItem = new JMenu();
+        this.anotherWindowDisplayToolStripMenuItem = new JMenu();
         this.tsmiKBrd = new JMenuItem();
         this.tsmiVST = new JMenuItem();
         this.tsmiMIDIkbd = new JMenuItem();
@@ -2918,7 +2918,7 @@ public class FormMain extends JFrame {
         this.tsmiChangeZoomX2 = new JMenuItem();
         this.tsmiChangeZoomX3 = new JMenuItem();
         this.tsmiChangeZoomX4 = new JMenuItem();
-        this.RegisterDumpDisplayToolStripMenuItem = new JMenu();
+        this.registerDumpDisplayToolStripMenuItem = new JMenu();
         this.tsmiVisualizer = new JMenuItem();
         this.tsmiConsole = new JMenuItem();
         this.opeButtonSetting = new JButton();
@@ -2969,26 +2969,26 @@ public class FormMain extends JFrame {
         //
         // cmsMenu
         //
-        this.cmsMenu.add(this.FileToolStripMenuItem);
-        this.cmsMenu.add(this.OperationToolStripMenuItem);
+        this.cmsMenu.add(this.fileToolStripMenuItem);
+        this.cmsMenu.add(this.operationToolStripMenuItem);
         this.cmsMenu.add(this.tsmiOption);
         this.cmsMenu.add(this.tsmiPlayList);
         this.cmsMenu.add(this.tsmiOpenInfo);
         this.cmsMenu.add(this.tsmiOpenMixer);
-        this.cmsMenu.add(this.AnotherWindowDisplayToolStripMenuItem);
+        this.cmsMenu.add(this.anotherWindowDisplayToolStripMenuItem);
         this.cmsMenu.add(this.tsmiChangeZoom);
-        this.cmsMenu.add(this.RegisterDumpDisplayToolStripMenuItem);
+        this.cmsMenu.add(this.registerDumpDisplayToolStripMenuItem);
         this.cmsMenu.add(this.tsmiVisualizer);
         this.cmsMenu.add(this.tsmiConsole);
         this.cmsMenu.setName("contextMenuStrip1");
         //
-        // FileToolStripMenuItem
+        // fileToolStripMenuItem
         //
-        this.FileToolStripMenuItem.add(this.tsmiOpenFile);
-        this.FileToolStripMenuItem.add(this.tsmiExit);
-        this.FileToolStripMenuItem.setIcon(new ImageIcon(Common.getImage("ccOpenFolder")));
+        this.fileToolStripMenuItem.add(this.tsmiOpenFile);
+        this.fileToolStripMenuItem.add(this.tsmiExit);
+        this.fileToolStripMenuItem.setIcon(new ImageIcon(Common.getImage("ccOpenFolder")));
         // the caption is keyed on the name the designer gave it
-        this.FileToolStripMenuItem.setName("ファイルToolStripMenuItem");
+        this.fileToolStripMenuItem.setName("ファイルToolStripMenuItem");
         //
         // tsmiOpenFile
         //
@@ -3000,18 +3000,18 @@ public class FormMain extends JFrame {
         this.tsmiExit.setName("tsmiExit");
         this.tsmiExit.addActionListener(this::tsmiExit_Click);
         //
-        // OperationToolStripMenuItem
+        // operationToolStripMenuItem
         //
-        this.OperationToolStripMenuItem.add(this.tsmiPlay);
-        this.OperationToolStripMenuItem.add(this.tsmiStop);
-        this.OperationToolStripMenuItem.add(this.tsmiPause);
-        this.OperationToolStripMenuItem.add(this.tsmiFadeOut);
-        this.OperationToolStripMenuItem.add(this.tsmiSlow);
-        this.OperationToolStripMenuItem.add(this.tsmiFf);
-        this.OperationToolStripMenuItem.add(this.tsmiNext);
-        this.OperationToolStripMenuItem.add(this.tsmiPlayMode);
+        this.operationToolStripMenuItem.add(this.tsmiPlay);
+        this.operationToolStripMenuItem.add(this.tsmiStop);
+        this.operationToolStripMenuItem.add(this.tsmiPause);
+        this.operationToolStripMenuItem.add(this.tsmiFadeOut);
+        this.operationToolStripMenuItem.add(this.tsmiSlow);
+        this.operationToolStripMenuItem.add(this.tsmiFf);
+        this.operationToolStripMenuItem.add(this.tsmiNext);
+        this.operationToolStripMenuItem.add(this.tsmiPlayMode);
         // the caption is keyed on the name the designer gave it
-        this.OperationToolStripMenuItem.setName("操作ToolStripMenuItem");
+        this.operationToolStripMenuItem.setName("操作ToolStripMenuItem");
         //
         // tsmiPlay
         //
@@ -3085,13 +3085,13 @@ public class FormMain extends JFrame {
         this.tsmiOpenMixer.setName("tsmiOpenMixer");
         this.tsmiOpenMixer.addActionListener(this::tsmiOpenMixer_Click);
         //
-        // AnotherWindowDisplayToolStripMenuItem
+        // anotherWindowDisplayToolStripMenuItem
         //
-        this.AnotherWindowDisplayToolStripMenuItem.add(this.tsmiKBrd);
-        this.AnotherWindowDisplayToolStripMenuItem.add(this.tsmiVST);
-        this.AnotherWindowDisplayToolStripMenuItem.add(this.tsmiMIDIkbd);
+        this.anotherWindowDisplayToolStripMenuItem.add(this.tsmiKBrd);
+        this.anotherWindowDisplayToolStripMenuItem.add(this.tsmiVST);
+        this.anotherWindowDisplayToolStripMenuItem.add(this.tsmiMIDIkbd);
         // the caption is keyed on the name the designer gave it
-        this.AnotherWindowDisplayToolStripMenuItem.setName("その他ウィンドウ表示ToolStripMenuItem");
+        this.anotherWindowDisplayToolStripMenuItem.setName("その他ウィンドウ表示ToolStripMenuItem");
         //
         // tsmiKBrd
         //
@@ -3141,10 +3141,10 @@ public class FormMain extends JFrame {
         this.tsmiChangeZoomX4.setName("tsmiChangeZoomX4");
         this.tsmiChangeZoomX4.addActionListener(this::tsmiChangeZoom_Click);
         //
-        // RegisterDumpDisplayToolStripMenuItem
+        // registerDumpDisplayToolStripMenuItem
         //
         // the caption is keyed on the name the designer gave it
-        this.RegisterDumpDisplayToolStripMenuItem.setName("レジスタダンプ表示ToolStripMenuItem");
+        this.registerDumpDisplayToolStripMenuItem.setName("レジスタダンプ表示ToolStripMenuItem");
         //
         // tsmiVisualizer
         //
@@ -3411,10 +3411,10 @@ public class FormMain extends JFrame {
     private JMenu sencondryToolStripMenuItem;
     private KeyboardHook keyboardHook1;
     private JPopupMenu cmsMenu;
-    private JMenu FileToolStripMenuItem;
+    private JMenu fileToolStripMenuItem;
     private JMenuItem tsmiOpenFile;
     private JMenuItem tsmiExit;
-    private JMenu OperationToolStripMenuItem;
+    private JMenu operationToolStripMenuItem;
     private JMenuItem tsmiPlay;
     private JMenuItem tsmiStop;
     private JMenuItem tsmiPause;
@@ -3427,12 +3427,12 @@ public class FormMain extends JFrame {
     private JMenuItem tsmiPlayList;
     private JMenuItem tsmiOpenInfo;
     private JMenuItem tsmiOpenMixer;
-    private JMenu AnotherWindowDisplayToolStripMenuItem;
+    private JMenu anotherWindowDisplayToolStripMenuItem;
     private JMenuItem tsmiKBrd;
     private JMenuItem tsmiVST;
     private JMenuItem tsmiMIDIkbd;
     private JMenu tsmiChangeZoom;
-    private JMenu RegisterDumpDisplayToolStripMenuItem;
+    private JMenu registerDumpDisplayToolStripMenuItem;
     private JMenuItem tsmiChangeZoomX1;
     private JMenuItem tsmiChangeZoomX2;
     private JMenuItem tsmiChangeZoomX3;
@@ -3547,16 +3547,16 @@ public class FormMain extends JFrame {
         return chips;
     }
 
-    protected final Object lockObj = new Object();
-    public boolean _fatalError = false;
+    private final Object lockObj = new Object();
+    private boolean _fatalError = false;
 
-    public boolean getFatalError() {
+    private boolean getFatalError() {
         synchronized (lockObj) {
             return _fatalError;
         }
     }
 
-    public void setFatalError(boolean value) {
+    private void setFatalError(boolean value) {
         synchronized (lockObj) {
             _fatalError = value;
         }

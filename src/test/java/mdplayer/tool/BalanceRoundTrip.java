@@ -8,8 +8,10 @@ import mdplayer.chips.Sn76489Chip;
 import mdplayer.chips.Ym2608Chip;
 import static mdsound.MDSound.Chip.MAIN_TAG;
 
+
 /** ad-hoc verification of Setting.Balance XML round-trip. */
-public class BalanceRoundTrip {
+class BalanceRoundTrip {
+
     public static void main(String[] args) throws Exception {
         // 1) load an existing preset xml straight from resources
         Path xml = Path.of("src/main/resources/mdplayer/resources/DefaultVolumeBalance_VGM.xml");

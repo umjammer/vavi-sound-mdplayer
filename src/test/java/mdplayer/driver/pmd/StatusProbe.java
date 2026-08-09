@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 
-public class StatusProbe {
+class StatusProbe {
 
     @Test
     @EnabledIfSystemProperty(named = "vavi.test", matches = "ai")

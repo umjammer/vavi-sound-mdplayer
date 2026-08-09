@@ -74,7 +74,7 @@ public class MidiFmDspSource implements Receiver, FmDspDataSource, FftDataSource
         TrackStatusSource, TrackDetailSource, WorkStateSource {
 
     /** the channels of one MIDI port, a row and a meter column each */
-    public static final int CHANNELS = 16;
+    private static final int CHANNELS = 16;
 
     /** GM puts the drums on channel 10 */
     private static final int DRUM_CHANNEL = 9;
@@ -217,7 +217,7 @@ public class MidiFmDspSource implements Receiver, FmDspDataSource, FftDataSource
      * Forgets the previous song. The channel state is what a synthesizer would have been left in,
      * and the clock only ever runs forwards - call this before each song.
      */
-    public void reset() {
+    private void reset() {
         for (int ch = 0; ch < CHANNELS; ch++) {
             Arrays.fill(keys[ch], false);
             Arrays.fill(damped[ch], false);
@@ -366,7 +366,7 @@ public class MidiFmDspSource implements Receiver, FmDspDataSource, FftDataSource
                 noteLengths[ch] = (int) Math.min(measured, MAX_NOTE_LENGTH);
                 // a note the key never came up on was played legato, so its gate is its length
                 long held = keyOffTicks[ch] < 0 ? measured : keyOffTicks[ch] - keyOnTicks[ch];
-                gates[ch] = (int) Math.clamp(held, 0, MAX_NOTE_LENGTH);
+                gates[ch] = Math.clamp(held, 0, MAX_NOTE_LENGTH);
             }
             keyOnTicks[ch] = tick;
             keyOffTicks[ch] = -1;
@@ -598,7 +598,7 @@ public class MidiFmDspSource implements Receiver, FmDspDataSource, FftDataSource
      * for - middle C, MIDI 60, is {@code o4c} - and it puts MIDI 12..107 on the eight octaves the
      * keyboard has, which is everything but the extremes of the range.
      */
-    static int keyOf(int note) {
+    private static int keyOf(int note) {
         if (note < 0) return 0xff;
         int octave = note / 12 - 1;
         return octave < 0 || octave > 7 ? 0xff : octave << 4 | note % 12;

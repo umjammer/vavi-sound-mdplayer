@@ -1,5 +1,6 @@
 package mdplayer.form.sys.setting;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Desktop;
@@ -9,11 +10,15 @@ import java.awt.Insets;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.lang.System.Logger;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 import java.util.ResourceBundle;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -136,9 +141,9 @@ public class SettingAboutPanel extends SettingTab {
         //
         // tableLayoutPanel
         //
-        this.tableLayoutPanel.setLayout(new java.awt.BorderLayout());
-        this.tableLayoutPanel.add(this.logoBufferedImage, java.awt.BorderLayout.WEST);
-        this.tableLayoutPanel.add(rightPanel, java.awt.BorderLayout.CENTER);
+        this.tableLayoutPanel.setLayout(new BorderLayout());
+        this.tableLayoutPanel.add(this.logoBufferedImage, BorderLayout.WEST);
+        this.tableLayoutPanel.add(rightPanel, BorderLayout.CENTER);
         this.tableLayoutPanel.setName("tableLayoutPanel");
         //
         // tpAbout
@@ -192,7 +197,7 @@ public class SettingAboutPanel extends SettingTab {
     }
 
     private String loadDescriptionFromRawFile() {
-        java.util.Locale locale = java.util.Locale.getDefault();
+        Locale locale = Locale.getDefault();
         String baseName = "/mdplayer/properties/resources";
         String ext = ".properties";
 
@@ -206,7 +211,7 @@ public class SettingAboutPanel extends SettingTab {
             try (InputStream is = SettingAboutPanel.class.getResourceAsStream(name)) {
                 if (is == null) continue;
 
-                try (java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(is, java.nio.charset.StandardCharsets.UTF_8))) {
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
                     StringBuilder sb = new StringBuilder();
                     String line;
                     boolean found = false;

@@ -42,9 +42,9 @@ public class Nise68 {
     private byte hkOPMAdr;
     private byte hkOPMDat;
 
-    public Function<Integer, Integer> mpcm = null;
-    public BiFunction<Integer, Integer, Integer> opm = null;
-    public BiFunction<Integer, Byte, Integer> midi = null;
+    private Function<Integer, Integer> mpcm = null;
+    private BiFunction<Integer, Integer, Integer> opm = null;
+    private BiFunction<Integer, Byte, Integer> midi = null;
 
     public void init(List<String> envZPDs, boolean isVer2, FileMng fm, Charset charset) {
         mem = new Memory68(16 * 1024 * 1024);
@@ -148,11 +148,11 @@ public class Nise68 {
         trap(num, false, false, false, 100_000_000, 0);
     }
 
-    public void trap(int num, boolean dispReg /* = false */,
-                     boolean useStepCounter /* = false */,
-                     boolean dispStepCounter /* = false */,
-                     long MaxStepCounter /* = 100_000_000 */,
-                     long StartStepCounterForDispStep /* = 0 */) {
+    private void trap(int num, boolean dispReg /* = false */,
+                      boolean useStepCounter /* = false */,
+                      boolean dispStepCounter /* = false */,
+                      long MaxStepCounter /* = 100_000_000 */,
+                      long StartStepCounterForDispStep /* = 0 */) {
         if (dispReg) dispRegs(reg);
 
         int waitClock = 0;
@@ -214,11 +214,11 @@ public class Nise68 {
         trapOPM(false, false, false, 100_000_000, 0);
     }
 
-    public void trapOPM(boolean dispReg /* = false */,
-                        boolean useStepCounter /* = false */,
-                        boolean dispStepCounter /* = false */,
-                        long MaxStepCounter /* = 100_000_000 */,
-                        long StartStepCounterForDispStep /* = 0 */) {
+    private void trapOPM(boolean dispReg /* = false */,
+                         boolean useStepCounter /* = false */,
+                         boolean dispStepCounter /* = false */,
+                         long MaxStepCounter /* = 100_000_000 */,
+                         long StartStepCounterForDispStep /* = 0 */) {
         if (dispReg) dispRegs(reg);
 
         int waitClock = 0;

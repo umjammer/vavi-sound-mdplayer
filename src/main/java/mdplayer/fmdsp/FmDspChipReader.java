@@ -7,8 +7,12 @@
 package mdplayer.fmdsp;
 
 import java.util.Set;
+import java.util.function.Supplier;
 
 import mdplayer.ChipRegister;
+import mdplayer.driver.BaseDriver;
+import vavi.sound.visualizer.fmdsp.FftDataSource;
+import vavi.sound.visualizer.fmdsp.TrackDetail;
 
 
 /**
@@ -78,7 +82,7 @@ public interface FmDspChipReader {
      * RCP - render their own audio and register no chip at all, so their state only exists on the
      * driver. Readers for those take it here; the rest need not care.
      */
-    default void bind(java.util.function.Supplier<mdplayer.driver.BaseDriver> driver) {
+    default void bind(Supplier<BaseDriver> driver) {
     }
 
     /** clears per-song state (edge caches, activity); call before every song */
@@ -141,7 +145,7 @@ public interface FmDspChipReader {
      *
      * @return whether the channel has any detail; false leaves its row blank
      */
-    default boolean readDetail(Group group, int ch, vavi.sound.visualizer.fmdsp.TrackDetail out) {
+    default boolean readDetail(Group group, int ch, TrackDetail out) {
         return false;
     }
 
@@ -163,7 +167,7 @@ public interface FmDspChipReader {
      * <p>
      * Called from the drawing thread, once per frame, like {@link #readDetail}.
      */
-    default vavi.sound.visualizer.fmdsp.FftDataSource spectrum() {
+    default FftDataSource spectrum() {
         return null;
     }
 }

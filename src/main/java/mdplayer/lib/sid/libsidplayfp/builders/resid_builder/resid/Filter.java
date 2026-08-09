@@ -304,7 +304,7 @@ import java.lang.System.Logger.Level;
  * terminals are pairwise common), which implies that we can model the two
  * transistors as one.
  */
-public class Filter {
+class Filter {
 
     private static final Logger logger = System.getLogger(Filter.class.getName());
 
@@ -313,8 +313,8 @@ public class Filter {
     /**
      * The highpass summer has 2 - 6 inputs (bandpass, lowpass, and 0 - 4 voices).
      */
-    public static class SummerOffset {
-        public static int intI(int i) {
+    static class SummerOffset {
+        static int intI(int i) {
             if (i == 0) return 0;
             return intI(i - 1) + ((2 + i - 1) << 16);
         }
@@ -324,7 +324,7 @@ public class Filter {
      * The mixer has 0 - 7 inputs (0 - 4 voices and 0 - 3 filter outputs).
      */
     private static class MixerOffset {
-        public static int intI(int i) {
+        static int intI(int i) {
             if (i == 0) return 0;
             if (i == 1) return 1;
             return intI(i - 1) + ((i - 1) << 16);
@@ -332,7 +332,7 @@ public class Filter {
     }
 
     /** Filter enabled. */
-    protected boolean enabled;
+    private boolean enabled;
 
     /** Filter cutoff frequency. */
     public int fc; // reg12 fc;
@@ -359,63 +359,64 @@ public class Filter {
      * Select which inputs to route into the summer / mixer.
      * These are derived from filt, mode, and voice_mask.
      */
-    protected int sum; // reg8 sum;
-    protected int mix; // reg8 mix;
+    private int sum; // reg8 sum;
+    private int mix; // reg8 mix;
 
     // State of filter.
-    protected int vhp; // highpass
-    protected int vbp; // bandpass
-    protected final int[] vbpX = {0};
-    protected final int[] vbpVc = {0};
-    protected int vlp; // lowpass
-    protected final int[] vlpX = {0};
-    protected final int[] vlpVc = {0};
+    private int vhp; // highpass
+    private int vbp; // bandpass
+    private final int[] vbpX = {0};
+    private final int[] vbpVc = {0};
+    private int vlp; // lowpass
+    private final int[] vlpX = {0};
+    private final int[] vlpVc = {0};
     // Filter / mixer inputs.
-    protected int ve;
-    protected int v3;
-    protected int v2;
-    protected int v1;
+    private int ve;
+    private int v3;
+    private int v2;
+    private int v1;
 
     // Cutoff frequency DAC voltage, resonance.
-    protected int vddtVw2, vwBias;
-    protected int _8_div_Q;
+    private int vddtVw2;
+    private int vwBias;
+    private int _8_div_Q;
     // FIXME: Temporarily used for MOS 8580 emulation.
-    protected int w0;
-    protected int _1024_div_Q;
+    private int w0;
+    private int _1024_div_Q;
 
-    protected SidDefs.ChipModel sid_model;
+    private SidDefs.ChipModel sid_model;
 
     private static class ModelFilter {
         // Fixed point scaling for 16 bit op-amp Output.
-        public int voN16;
+        int voN16;
         // K*(Vdd - Vth)
-        public int kVddt;
-        public int nSnake;
-        public int voiceScaleS14;
-        public int voiceDC;
-        public int ak;
-        public int bk;
-        public int vcMin;
-        public int vcMax;
+        int kVddt;
+        int nSnake;
+        int voiceScaleS14;
+        int voiceDC;
+        int ak;
+        int bk;
+        int vcMin;
+        int vcMax;
 
         // Reverse op-amp transfer function.
-        public final short[] opampRev = new short[1 << 16];
+        final short[] opampRev = new short[1 << 16];
         // Lookup tables for gain and summer op-amps : Output stage / filter.
-        public final short[] summer = new short[SummerOffset.intI(5)]; // <5>::value];
-        public final short[][] gain = new short[][] {new short[1 << 16], new short[1 << 16], new short[1 << 16], new short[1 << 16],
+        final short[] summer = new short[SummerOffset.intI(5)]; // <5>::value];
+        final short[][] gain = new short[][] {new short[1 << 16], new short[1 << 16], new short[1 << 16], new short[1 << 16],
                 new short[1 << 16], new short[1 << 16], new short[1 << 16], new short[1 << 16],
                 new short[1 << 16], new short[1 << 16], new short[1 << 16], new short[1 << 16],
                 new short[1 << 16], new short[1 << 16], new short[1 << 16], new short[1 << 16]};
-        public final short[] mixer = new short[MixerOffset.intI(8)]; // <8>::value];
+        final short[] mixer = new short[MixerOffset.intI(8)]; // <8>::value];
         // Cutoff frequency DAC Output voltage table. FC instanceof an 11 bit register.
-        public final short[] f0Dac = new short[1 << 11];
+        final short[] f0Dac = new short[1 << 11];
     }
 
     // VCR - 6581 only.
 
     // Common parameters.
 
-    protected static final ModelFilter[] modelFilters = {new ModelFilter(), new ModelFilter()};
+    private static final ModelFilter[] modelFilters = {new ModelFilter(), new ModelFilter()};
 
     //
     // Inline functions.
@@ -1268,7 +1269,7 @@ public class Filter {
       f = a*(b - vx)^2 - c - (b - (vx + x))^2
       df = 2*((b - (vx + x))*(dvx + 1) - a*(b - vx)*dvx)
     */
-    protected int solveGain(int[] opamp, int n, int vi, /* ref */ int[] x, ModelFilter mf) {
+    private int solveGain(int[] opamp, int n, int vi, /* ref */ int[] x, ModelFilter mf) {
         // Note that all variables are translated and scaled : order to fit
         // : 16 bits. It instanceof not necessary to explicitly translate the variables here,
         // since they are all used : subtractions which cancel  the translation:
@@ -1457,7 +1458,7 @@ public class Filter {
     Vg = Vddt - sqrt(((Vddt - vi)^2 + (Vddt - Vw)^2)/2)
 
     */
-    protected int solve_integrate_6581(int dt, int vi, int[] vx, int[] vc, ModelFilter mf) {
+    private int solve_integrate_6581(int dt, int vi, int[] vx, int[] vc, ModelFilter mf) {
         // Note that all variables are translated and scaled : order to fit
         // : 16 bits. It instanceof not necessary to explicitly translate the variables here,
         // since they are all used : subtractions which cancel  the translation:
@@ -1578,37 +1579,37 @@ public class Filter {
             {8.91, 1.30}   // Repeated end point
     };
 
-    public static class ModelFilterInit {
+    static class ModelFilterInit {
         // Op-amp transfer function.
-        public double[][] opampVoltage;
-        public int opampVoltageSize;
+        double[][] opampVoltage;
+        int opampVoltageSize;
         // Voice Output characteristics.
-        public double voiceVoltageRange;
-        public double voiceDCVoltage;
+        double voiceVoltageRange;
+        double voiceDCVoltage;
         /** Capacitor value. */
-        public double c;
+        double c;
         /** Transistor parameters. */
-        public double vdd;
+        double vdd;
         /** Threshold voltage */
-        public double vth;
+        double vth;
         /** Thermal voltage: Ut = k*T/q = 8.61734315e-5*T ~ 26mV */
-        public double ut;
+        double ut;
         /** Gate coupling coefficient: K = Cox/(Cox+Cdep) ~ 0.7 */
-        public double k;
+        double k;
         /** u*Cox */
-        public double uCox;
+        double uCox;
         /** W/L for VCR */
-        public double wlVcr;
+        double wlVcr;
         /** W/L for "snake" */
-        public double wlSnake;
+        double wlSnake;
         // DAC parameters.
-        public double dacZero;
-        public double dacScale;
-        public double dac2RDivR;
-        public boolean dacTerm;
+        double dacZero;
+        double dacScale;
+        double dac2RDivR;
+        boolean dacTerm;
     }
 
-    public static final ModelFilterInit[] modelFilterInits = {
+    private static final ModelFilterInit[] modelFilterInits = {
             new ModelFilterInit(), new ModelFilterInit()
     };
 
@@ -1657,11 +1658,11 @@ public class Filter {
         modelFilterInits[1].dacTerm = true;
     }
 
-    public static final short[] vcr_kVg = new short[1 << 16];
-    public static final short[] vcr_n_Ids_term = new short[1 << 16];
+    private static final short[] vcr_kVg = new short[1 << 16];
+    private static final short[] vcr_n_Ids_term = new short[1 << 16];
 
 //# ifndef HAS_LOG1P
-    public static double log1p(double x) {
+    private static double log1p(double x) {
         return Math.log(1 + x) - (((1 + x) - 1) - x) / (1 + x);
     }
 
@@ -2001,7 +2002,7 @@ public class Filter {
     /**
      * Set filter cutoff frequency.
      */
-    protected void setW0() {
+    private void setW0() {
         ModelFilter f = modelFilters[sid_model.ordinal()];
         int Vw = vwBias + (f.f0Dac[fc] & 0xffff);
         vddtVw2 = (int) (((long) (f.kVddt - Vw) * (long) (f.kVddt - Vw) & 0xffffffffL) >> 1);
@@ -2101,7 +2102,7 @@ public class Filter {
       1/Q = 2^(1/2)*2^(-x/8) = 2^(1/2 - x/8) = 2^((4 - x)/8)
 
     */
-    protected void set_Q() {
+    private void set_Q() {
         // Cutoff for MOS 6581.
         // The coefficient 8 instanceof dispensed of later by right-shifting 3 times
         // (2 ^ 3 = 8).
@@ -2136,7 +2137,7 @@ public class Filter {
     /**
      * Set input routing bits.
      */
-    protected void set_sum_mix() {
+    private void set_sum_mix() {
         // NB! voice3off (mode bit 7) only affects voice 3 if it instanceof routed directly
         // to the mixer.
         sum = (enabled ? filt : 0x00) & voiceMask;

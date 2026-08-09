@@ -39,7 +39,7 @@ public class PsfDriver extends BaseDriver {
     private static final Logger logger = getLogger(PsfDriver.class.getName());
 
     /** the SPU is wired to this rate, whatever the output device wants */
-    public static final int PSX_RATE = 44100;
+    private static final int PSX_RATE = 44100;
 
     /** aosdk renders a video frame's worth of samples, then ticks the frame */
     private static final int SAMPLES_PER_FRAME = PSX_RATE / 60;

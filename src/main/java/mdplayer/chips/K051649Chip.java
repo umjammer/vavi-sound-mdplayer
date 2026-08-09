@@ -48,7 +48,7 @@ public class K051649Chip extends BaseChip {
             0, 0
     };
 
-    public final boolean[][] mask = {
+    private final boolean[][] mask = {
             {false, false, false, false, false},
             {false, false, false, false, false}
     };
@@ -133,7 +133,7 @@ public class K051649Chip extends BaseChip {
         }
     }
 
-    public void softReset(int chipId, EnmModel model) {
+    private void softReset(int chipId, EnmModel model) {
         // All channel volume zero
         for (int i = 0; i < 5; i++) {
             write(chipId, (0x00 << 1) + 0, i, model);

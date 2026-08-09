@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-02-15 nsano initial version <br>
  */
-public class MndrvWavTestProgram {
+class MndrvWavTestProgram {
 
     static {
         System.setProperty("mdplayer.variant.ymf262", "0");
@@ -41,10 +41,10 @@ public class MndrvWavTestProgram {
             return;
         }
 
-        new MndrvWavTestProgram().play(args[0], args[1]);
+        MndrvWavTestProgram.play(args[0], args[1]);
     }
 
-    public void play(String filename, String refWavFile) throws Exception {
+    public static void play(String filename, String refWavFile) throws Exception {
         System.err.println("filename: " + filename);
         System.err.println("refWavFile: " + refWavFile);
         Setting setting = Setting.getInstance();
@@ -117,7 +117,7 @@ public class MndrvWavTestProgram {
     }
 
     /** compare two wav files and report similarity metrics */
-    static void compareWavFiles(String refPath, String outPath) throws Exception {
+    private static void compareWavFiles(String refPath, String outPath) throws Exception {
 System.out.println("out size: " + new File(outPath).length());
         AudioInputStream refAis = AudioSystem.getAudioInputStream(new File(refPath));
         AudioInputStream outAis = AudioSystem.getAudioInputStream(new File(outPath));

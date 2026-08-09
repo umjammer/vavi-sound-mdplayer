@@ -9,7 +9,6 @@ package mdplayer.driver.psf;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.sound.sampled.AudioFileFormat.Type;
@@ -39,7 +38,7 @@ import vavi.util.compat.Tuple;
 public class PsfFileFormat extends BaseFileFormat {
 
     /** the version byte a PSF1 carries */
-    protected int version() {
+    public int version() {
         return 1;
     }
 

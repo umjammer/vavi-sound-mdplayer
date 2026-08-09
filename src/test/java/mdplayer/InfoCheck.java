@@ -12,7 +12,7 @@ import mdplayer.driver.BasePlugin;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
-public class InfoCheck {
+class InfoCheck {
     @Test
     @EnabledIfSystemProperty(named = "vavi.test", matches = "ai")
     void check() throws Exception {

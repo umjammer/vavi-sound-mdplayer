@@ -21,7 +21,7 @@ public class ComAnalyze {
      * every other entry is the identity. Derived from the 62 files of MND_SXP1 -- see
      * {@code MndV1AnalyzerTest} for how each entry was established.
      */
-    static final byte[] V1_CMD_MAP = new byte[0x80];
+    private static final byte[] V1_CMD_MAP = new byte[0x80];
 
     static {
         for (int i = 0; i < V1_CMD_MAP.length; i++) {
@@ -32,7 +32,7 @@ public class ComAnalyze {
         V1_CMD_MAP[0xed - 0x80] = (byte) (0xc0 - 0x80);
     }
 
-    public void _track_ana_quit() {
+    private void _track_ana_quit() {
         // rts
     }
 
@@ -76,7 +76,7 @@ public class ComAnalyze {
         _track_ana_echo_atq();
     }
 
-    public void _track_ana_echo_atq() {
+    private void _track_ana_echo_atq() {
         reg.setD0_B(mm.readByte(reg.a5 + W.at_q_work) & 0xff);
         boolean gotoL1 = false;
         if (reg.getD0_B() != 0) { // break L1;
@@ -97,7 +97,7 @@ public class ComAnalyze {
         _track_echo_next();
     }
 
-    public void _track_echo_next() {
+    private void _track_echo_next() {
         reg.setD0_B(mm.readByte(reg.a5 + W.reverb_time_work) & 0xff);
         if (reg.getD0_B() != 0) {
             reg.setD0_B(reg.getD0_B() - 1);
@@ -125,7 +125,7 @@ public class ComAnalyze {
     }
 
     // ----
-    public void _track_ana_normal() {
+    private void _track_ana_normal() {
         reg.setD4_B(mm.readByte(reg.a5 + W.len) & 0xff);
         reg.setD4_B(reg.getD4_B() - 1);
         if ((mm.readByte(reg.a5 + W.flag) & 0x40) != 0) {
@@ -147,7 +147,7 @@ public class ComAnalyze {
         _track_ana_normal_atq();
     }
 
-    public void _track_ana_normal_atq() {
+    private void _track_ana_normal_atq() {
         reg.setD0_B(mm.readByte(reg.a5 + W.at_q_work) & 0xff);
         boolean gotoL1 = false;
         if (reg.getD0_B() != 0) { // break L1;
@@ -168,7 +168,7 @@ public class ComAnalyze {
         _track_ana_next();
     }
 
-    public void _track_ana_next() {
+    private void _track_ana_next() {
         mm.write(reg.a5 + W.len, (byte) reg.getD4_B());
         if (reg.getD4_B() != 0) {
             _track_ana_quit();
@@ -194,7 +194,7 @@ public class ComAnalyze {
     }
 
     /** HACK: (MNDRV) Track Fetch */
-    public void _track_ana_fetch() {
+    private void _track_ana_fetch() {
         mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) & 0x7f));
         reg.a1 = mm.readInt(reg.a5 + W.dataptr);
         // break _track_ana_fetch_L1;
@@ -317,7 +317,7 @@ public class ComAnalyze {
         }
     }
 
-    public void _track_ana_exit_atq() {
+    private void _track_ana_exit_atq() {
         if ((byte) (mm.readByte(reg.a6 + Dw.DRV_FLAG2) & 0x10) != 0) {
             _track_ana_exit_atq_new();
             return;
@@ -330,7 +330,7 @@ public class ComAnalyze {
         _track_ana_exit_atq_final();
     }
 
-    public void _track_ana_exit_atq_new() {
+    private void _track_ana_exit_atq_new() {
         reg.D1_L = 0;
         reg.setD1_B(mm.readByte(reg.a5 + W.at_q) & 0xff);
         reg.setD0_W(reg.getD0_W() - (int) (short) reg.getD1_W());
@@ -342,14 +342,14 @@ public class ComAnalyze {
         _track_ana_exit_atq_final();
     }
 
-    public void _track_ana_exit_atq_final() {
+    private void _track_ana_exit_atq_final() {
         if ((byte) (mm.readByte(reg.a5 + W.flag3) & 0x20) != 0) {
             mm.write(reg.a5 + W.at_q_work, mm.readByte(reg.a5 + W.at_q));
         }
         _track_ana_exit_();
     }
 
-    public void _track_ana_exit_() {
+    private void _track_ana_exit_() {
         if ((mm.readByte(reg.a1) & 0xff) - 0x81 != 0) {
             if ((byte) (mm.readByte(reg.a5 + W.flag3) & 0x40) == 0) {
                 mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) & 0xbf));

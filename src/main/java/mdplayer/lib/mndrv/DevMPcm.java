@@ -50,7 +50,7 @@ public class DevMPcm {
     }
 
     /** */
-    public void _init_lfo_mpcm() {
+    private void _init_lfo_mpcm() {
         if (mm.readByte(reg.a6 + Dw.FADEFLAG) == 0) {
             reg.D5_L = 0x70;
             reg.setD5_B(reg.getD5_B() & (mm.readByte(reg.a5 + W.lfo) & 0xff));
@@ -84,7 +84,7 @@ public class DevMPcm {
     }
 
     /** */
-    public void _mpcm_freq() {
+    private void _mpcm_freq() {
         mm.write(reg.a5 + W.keycode, (short) reg.getD2_W());
         reg.setD1_W(reg.getD2_W());
 
@@ -96,7 +96,7 @@ public class DevMPcm {
     }
 
     /** NOTE KEY ON */
-    public void _mpcm_note_keyon_pdx() {
+    private void _mpcm_note_keyon_pdx() {
         reg.D5_L = mm.readInt(reg.a6 + Dw.PCMBUFADR);
         if (reg.D5_L == 0) {
             _mpcm_note_keyon_set_noload();
@@ -152,7 +152,7 @@ public class DevMPcm {
         _mpcm_pdx_keyon();
     }
 
-    public void _mpcm_pdx_keyon() {
+    private void _mpcm_pdx_keyon() {
         if ((mm.readByte(reg.a6 + Dw.DRV_FLAG) & 0x02) == 0) {
             _mpcm_keyon();
             return;
@@ -168,7 +168,7 @@ public class DevMPcm {
     /**
      * NOTE KEY ON
      */
-    public void _mpcm_note_keyon() {
+    private void _mpcm_note_keyon() {
         reg.setD5_B(mm.readByte(reg.a6 + Dw.DRV_FLAG) & 0xff);
         if ((reg.D5_L & 0x2) == 0) {
             _mpcm_note_keyon_set_noload();
@@ -210,7 +210,7 @@ public class DevMPcm {
         } while (reg.D0_L != 0);
     }
 
-    public void _mpcm_note_keyon_set() {
+    private void _mpcm_note_keyon_set() {
         int s = reg.a1;
         reg.a1 = reg.a2;
         reg.a2 = s;
@@ -231,7 +231,7 @@ public class DevMPcm {
      *
      * KEY ON
      */
-    public void _mpcm_keyon() {
+    private void _mpcm_keyon() {
         if ((mm.readByte(reg.a6 + Dw.DRV_FLAG) & 0x02) != 0) {
             comwave._wave_init_kon();
             mm.write(reg.a5 + W.revexec, 0x00);
@@ -246,7 +246,7 @@ public class DevMPcm {
         }
     }
 
-    public void _mpcm_keyon_nomask() {
+    private void _mpcm_keyon_nomask() {
         mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) | 0x20));
         if ((mm.readByte(reg.a5 + W.flag3) & 0x40) == 0) {
             if ((mm.readByte(reg.a5 + W.flag) & 0x40) != 0) return;
@@ -267,7 +267,7 @@ public class DevMPcm {
     }
 
     /** */
-    public void _mpcm_note_keyon_set_noload() {
+    private void _mpcm_note_keyon_set_noload() {
         reg.setD2_W(reg.getD2_W() << 6);
         mm.write(reg.a5 + W.keycode2, (short) reg.getD2_W());
         mm.write(reg.a5 + W.keycode, (short) reg.getD2_W());
@@ -337,7 +337,7 @@ public class DevMPcm {
     }
 
     /** */
-    public void _mpcm_echo_volume() {
+    private void _mpcm_echo_volume() {
         if ((byte) (mm.readByte(reg.a5 + W.reverb) & 0x10) != 0) {
             _mpcm_echo_common_atv();
             return;
@@ -349,22 +349,22 @@ public class DevMPcm {
         _mpcm_echo_common_v();
     }
 
-    public void _mpcm_echo_volume_pan_tone() {
+    private void _mpcm_echo_volume_pan_tone() {
         _mpcm_echo_tone();
         _mpcm_echo_volume_pan();
     }
 
-    public void _mpcm_echo_volume_pan() {
+    private void _mpcm_echo_volume_pan() {
         _mpcm_echo_pan();
         _mpcm_echo_volume();
     }
 
-    public void _mpcm_echo_volume_tone() {
+    private void _mpcm_echo_volume_tone() {
         _mpcm_echo_tone();
         _mpcm_echo_volume();
     }
 
-    public void _mpcm_echo_volume_() {
+    private void _mpcm_echo_volume_() {
         if ((byte) (mm.readByte(reg.a5 + W.reverb) & 0x10) != 0) {
             _mpcm_echo_volume_atv();
             return;
@@ -377,7 +377,7 @@ public class DevMPcm {
     }
 
     /** */
-    public void _mpcm_echo_pan() {
+    private void _mpcm_echo_pan() {
         if ((byte) (mm.readByte(reg.a6 + Dw.DRV_FLAG) & 0x02) == 0) return;
         reg.setD1_B(mm.readByte(reg.a5 + W.reverb_pan) & 0xff);
         reg.setD0_W(0x600);
@@ -386,7 +386,7 @@ public class DevMPcm {
     }
 
     /** */
-    public void _mpcm_echo_tone() {
+    private void _mpcm_echo_tone() {
         reg.D5_L = 0;
         reg.setD5_B(mm.readByte(reg.a5 + W.reverb_tone) & 0xff);
         _mpcm_echo_tone_change();
@@ -395,7 +395,7 @@ public class DevMPcm {
     /**
      * v normal
      */
-    public void _mpcm_echo_common_v() {
+    private void _mpcm_echo_common_v() {
         if ((byte) (mm.readByte(reg.a5 + W.reverb) & 0x08) != 0) {
             _mpcm_echo_direct_v();
             return;
@@ -419,7 +419,7 @@ public class DevMPcm {
         _MPCM_F2_softenv();
     }
 
-    public void _mpcm_echo_plus_v() {
+    private void _mpcm_echo_plus_v() {
         reg.setD4_B(reg.getD4_B() + (int) (byte) reg.getD0_B());
         if (/* signed */ (byte) reg.getD4_B() < 0) {
             reg.D4_L = 0x7f;
@@ -435,7 +435,7 @@ public class DevMPcm {
     /**
      * "@v" normal
      */
-    public void _mpcm_echo_common_atv() {
+    private void _mpcm_echo_common_atv() {
         if ((mm.readByte(reg.a5 + W.reverb) & 0x08) != 0) {
             _mpcm_echo_direct_atv();
             return;
@@ -458,7 +458,7 @@ public class DevMPcm {
         _MPCM_F2_softenv();
     }
 
-    public void _mpcm_echo_plus() {
+    private void _mpcm_echo_plus() {
         reg.setD4_B(reg.getD4_B() + (int) (byte) reg.getD0_B());
         if (/* signed */ (byte) reg.getD4_B() >= 0) {
             _MPCM_F2_softenv();
@@ -471,7 +471,7 @@ public class DevMPcm {
     /**
      * "v" fine tune
      */
-    public void _mpcm_echo_volume_v() {
+    private void _mpcm_echo_volume_v() {
         reg.D4_L = 0;
         reg.setD4_B(mm.readByte(reg.a5 + W.volume) & 0xff);
         reg.setD0_B(mm.readByte(reg.a5 + W.reverb_vol) & 0xff);
@@ -490,7 +490,7 @@ public class DevMPcm {
         _MPCM_F2_softenv();
     }
 
-    public void _mpcm_echo_vol_plus() {
+    private void _mpcm_echo_vol_plus() {
         reg.setD4_B(reg.getD4_B() + (int) (byte) reg.getD0_B());
         reg.setD4_B(reg.getD4_B() >> 1);
         reg.setD4_W(reg.getD4_W() & 0x7f);
@@ -502,7 +502,7 @@ public class DevMPcm {
     /**
      * "@v" fine tune
      */
-    public void _mpcm_echo_volume_atv() {
+    private void _mpcm_echo_volume_atv() {
         reg.setD4_B(mm.readByte(reg.a5 + W.vol) & 0xff);
         reg.setD0_B(mm.readByte(reg.a5 + W.reverb_vol) & 0xff);
         reg.setD4_B(reg.getD4_B() + (int) (byte) reg.getD0_B());
@@ -513,7 +513,7 @@ public class DevMPcm {
     /**
      * "v" direct
      */
-    public void _mpcm_echo_direct_v() {
+    private void _mpcm_echo_direct_v() {
         reg.D4_L = 0;
         reg.setD4_B(mm.readByte(reg.a5 + W.reverb_vol) & 0xff);
         reg.a0 = reg.a5 + W.voltable;
@@ -524,13 +524,13 @@ public class DevMPcm {
     /**
      * "@v" direct
      */
-    public void _mpcm_echo_direct_atv() {
+    private void _mpcm_echo_direct_atv() {
         reg.setD4_B(mm.readByte(reg.a5 + W.reverb_vol) & 0xff);
         _MPCM_F2_softenv();
     }
 
     /** */
-    public void _mpcm_echo_ret() {
+    private void _mpcm_echo_ret() {
         int sp = reg.getD4_W();
 
         mm.write(reg.a5 + W.revexec, 0);
@@ -971,7 +971,7 @@ public class DevMPcm {
     }
 
     /** */
-    public void _MPCM_NOP() {
+    private void _MPCM_NOP() {
         mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) & 0x7f));
         _mpcm_keyoff2();
     }
@@ -979,7 +979,7 @@ public class DevMPcm {
     /**
      * Forced Key Off
      */
-    public void _MPCM_82() {
+    private void _MPCM_82() {
         _mpcm_keyoff2();
     }
 
@@ -997,7 +997,7 @@ public class DevMPcm {
      * 	bit0 1:panpot change
      * </pre>
      */
-    public void _MPCM_98() {
+    private void _MPCM_98() {
         comcmds._COM_98();
         if ((mm.readByte(reg.a5 + W.reverb) & 0x80) == 0) {
             _mpcm_keyoff2();
@@ -1007,7 +1007,7 @@ public class DevMPcm {
     /**
      * Pseudo Echo
      */
-    public void _MPCM_99() {
+    private void _MPCM_99() {
         comcmds._COM_99();
     }
 
@@ -1015,7 +1015,7 @@ public class DevMPcm {
      * bank & tone set
      * [$A1] + [bank]b + [tone]b
      */
-    public void _MPCM_A1() {
+    private void _MPCM_A1() {
         mm.write(reg.a5 + W.bank, mm.readByte(reg.a1++));
         _MPCM_F0();
     }
@@ -1024,7 +1024,7 @@ public class DevMPcm {
      * TONE / TIMBRE
      * [$A2] + [switch]b
      */
-    public void _MPCM_A2() {
+    private void _MPCM_A2() {
         mm.write(reg.a5 + W.bank, 0);
         mm.write(reg.a5 + W.program, 0);
         mm.write(reg.a5 + W.program2, 0);
@@ -1040,7 +1040,7 @@ public class DevMPcm {
         mm.write(reg.a5 + W.pcm_tone, (byte) ((reg.getD0_B() != 0) ? 0xff : 0x00));
     }
 
-    public void _MPCM_A2_mx() {
+    private void _MPCM_A2_mx() {
         reg.setD0_B(reg.getD0_B() + 1);
         if (reg.getD0_B() != 0) { // break _MPCM_A2_8;
             reg.setD0_B(reg.getD0_B() + 1);
@@ -1057,7 +1057,7 @@ public class DevMPcm {
     /**
      * volume table
      */
-    public void _MPCM_A3() {
+    private void _MPCM_A3() {
         comcmds._COM_A3();
 
         if ((mm.readByte(reg.a5 + W.flag3) & 0x10) == 0) return;
@@ -1071,7 +1071,7 @@ public class DevMPcm {
     /**
      * 127-step volume table switching
      */
-    public void _MPCM_A7() {
+    private void _MPCM_A7() {
         reg.setD1_B(mm.readByte(reg.a1++) & 0xff);
         reg.setD5_B(mm.readByte(reg.a1++) & 0xff);
 
@@ -1119,7 +1119,7 @@ public class DevMPcm {
      * volume LFO on /off
      * $E8,num,switch
      */
-    public void _MPCM_E8() {
+    private void _MPCM_E8() {
         //	pea	_COM_E8(pc)
         reg.setD4_B(mm.readByte(reg.a5 + W.vol) & 0xff);
         _MPCM_F2_lfo();
@@ -1130,7 +1130,7 @@ public class DevMPcm {
      * tone set
      * [$F0] + [num]b
      */
-    public void _MPCM_F0() {
+    private void _MPCM_F0() {
         if (/* signed */ mm.readByte(reg.a5 + W.reverb) < 0) {
             _mpcm_keyoff();
         }
@@ -1147,7 +1147,7 @@ public class DevMPcm {
         mm.write(reg.a5 + W.bank, (byte) reg.getD5_B());
     }
 
-    public void _mpcm_echo_tone_change() {
+    private void _mpcm_echo_tone_change() {
         mm.write(reg.a5 + W.program, (byte) reg.getD5_B());
 
         if ((mm.readByte(reg.a6 + Dw.DRV_FLAG) & 0x2) == 0) {
@@ -1179,7 +1179,7 @@ public class DevMPcm {
         } while (reg.D0_L != 0); // break _mpcm_f0_timbre_ana;
     }
 
-    public void _mpcm_tone_ana_set() {
+    private void _mpcm_tone_ana_set() {
         int e = reg.a1;
         reg.a1 = reg.a2;
         reg.a2 = e;
@@ -1194,7 +1194,7 @@ public class DevMPcm {
      * volume
      * [$F2] + [volume]b
      */
-    public void _MPCM_F2() {
+    private void _MPCM_F2() {
         mm.write(reg.a5 + W.flag3, (byte) (mm.readByte(reg.a5 + W.flag3) & 0xef));
         reg.D4_L = 0;
         reg.setD4_B(mm.readByte(reg.a1++) & 0xff);
@@ -1217,7 +1217,7 @@ public class DevMPcm {
         _MPCM_F2_v();
     }
 
-    public void _MPCM_F2_v() {
+    private void _MPCM_F2_v() {
         mm.write(reg.a5 + W.vol, (byte) reg.getD4_B());
         _MPCM_F2_softenv();
     }
@@ -1238,7 +1238,7 @@ public class DevMPcm {
         _MPCM_F2_lfo();
     }
 
-    public void _MPCM_F2_lfo() {
+    private void _MPCM_F2_lfo() {
         reg.setD4_B(reg.getD4_B() - mm.readByte(reg.a6 + Dw.MASTER_VOL_PCM) & 0xff);
         if (/* signed */ (byte) reg.getD4_B() < 0) {
             reg.D4_L = 0;
@@ -1257,7 +1257,7 @@ public class DevMPcm {
      * frequency
      * [$F3] + [freq]b
      */
-    public void _MPCM_F3() {
+    private void _MPCM_F3() {
         reg.D1_L = 0;
         reg.setD1_B(mm.readByte(reg.a1++) & 0xff);
 
@@ -1272,7 +1272,7 @@ public class DevMPcm {
      * panpot
      * [$F4] + [pan]b
      */
-    public void _MPCM_F4() {
+    private void _MPCM_F4() {
         reg.setD1_B(mm.readByte(reg.a1++) & 0xff);
         mm.write(reg.a5 + W.pan_ampm, (byte) reg.getD1_B());
 
@@ -1287,7 +1287,7 @@ public class DevMPcm {
      * volup
      * [$F5] + [DATA]b
      */
-    public void _MPCM_F5() {
+    private void _MPCM_F5() {
         if (mm.readByte(reg.a5 + W.volmode) == 0) {
             _MPCM_F5_normal();
             return;
@@ -1311,7 +1311,7 @@ public class DevMPcm {
         _MPCM_F2_v();
     }
 
-    public void _MPCM_F5_normal() {
+    private void _MPCM_F5_normal() {
         reg.setD4_B(mm.readByte(reg.a5 + W.vol) & 0xff);
         reg.setD4_B(reg.getD4_B() + (mm.readByte(reg.a1++) & 0xff));
         if (/* signed */ (byte) reg.getD4_B() >= 0) {
@@ -1326,7 +1326,7 @@ public class DevMPcm {
      * voldown
      * [$F6] + [DATA]b
      */
-    public void _MPCM_F6() {
+    private void _MPCM_F6() {
         if (mm.readByte(reg.a5 + W.volmode) == 0) {
             _MPCM_F6_normal();
             return;
@@ -1348,7 +1348,7 @@ public class DevMPcm {
         _MPCM_F2_v();
     }
 
-    public void _MPCM_F6_normal() {
+    private void _MPCM_F6_normal() {
         reg.setD4_B(mm.readByte(reg.a5 + W.vol) & 0xff);
         reg.setD4_B(reg.getD4_B() - (mm.readByte(reg.a1++) & 0xff));
         if (/* signed */ (byte) reg.getD4_B() >= 0) {
@@ -1360,7 +1360,7 @@ public class DevMPcm {
     }
 
     /** */
-    public void _MPCM_FF() {
+    private void _MPCM_FF() {
         mm.write(reg.a5 + W.flag2, (byte) (mm.readByte(reg.a5 + W.flag2) & 0xfe));
 
         reg.setD0_W(mm.readShort(reg.a6 + Dw.USE_TRACK) & 0xffff);
@@ -1530,19 +1530,19 @@ L1:
     }
 
     /** */
-    public void _ch_mpcm_plfo_1() {
+    private void _ch_mpcm_plfo_1() {
         reg.a4 = reg.a5 + W.p_pattern1;
         reg.a3 = reg.a5 + W.wp_pattern1;
         _ch_mpcm_p_common();
     }
 
-    public void _ch_mpcm_plfo_2() {
+    private void _ch_mpcm_plfo_2() {
         reg.a4 = reg.a5 + W.p_pattern2;
         reg.a3 = reg.a5 + W.wp_pattern2;
         _ch_mpcm_p_common();
     }
 
-    public void _ch_mpcm_plfo_3() {
+    private void _ch_mpcm_plfo_3() {
         reg.a4 = reg.a5 + W.p_pattern1;
         reg.a3 = reg.a5 + W.wp_pattern1;
         _ch_mpcm_p_common();
@@ -1551,31 +1551,31 @@ L1:
         _ch_mpcm_p_common();
     }
 
-    public void _ch_mpcm_plfo_4() {
+    private void _ch_mpcm_plfo_4() {
         reg.a4 = reg.a5 + W.p_pattern3;
         reg.a3 = reg.a5 + W.wp_pattern3;
         _ch_mpcm_p_common();
     }
 
-    public void _ch_mpcm_plfo_5() {
+    private void _ch_mpcm_plfo_5() {
         reg.a4 = reg.a5 + W.p_pattern1;
         reg.a3 = reg.a5 + W.wp_pattern1;
-        _ch_mpcm_p_common();
-        reg.a4 = reg.a5 + W.p_pattern3;
-        reg.a3 = reg.a5 + W.wp_pattern3;
-        _ch_mpcm_p_common();
-    }
-
-    public void _ch_mpcm_plfo_6() {
-        reg.a4 = reg.a5 + W.p_pattern2;
-        reg.a3 = reg.a5 + W.wp_pattern2;
         _ch_mpcm_p_common();
         reg.a4 = reg.a5 + W.p_pattern3;
         reg.a3 = reg.a5 + W.wp_pattern3;
         _ch_mpcm_p_common();
     }
 
-    public void _ch_mpcm_plfo_7() {
+    private void _ch_mpcm_plfo_6() {
+        reg.a4 = reg.a5 + W.p_pattern2;
+        reg.a3 = reg.a5 + W.wp_pattern2;
+        _ch_mpcm_p_common();
+        reg.a4 = reg.a5 + W.p_pattern3;
+        reg.a3 = reg.a5 + W.wp_pattern3;
+        _ch_mpcm_p_common();
+    }
+
+    private void _ch_mpcm_plfo_7() {
         reg.a4 = reg.a5 + W.p_pattern1;
         reg.a3 = reg.a5 + W.wp_pattern1;
         _ch_mpcm_p_common();
@@ -1588,19 +1588,19 @@ L1:
     }
 
     /** */
-    public void _ch_mpcm_alfo_1() {
+    private void _ch_mpcm_alfo_1() {
         reg.a4 = reg.a5 + W.v_pattern1;
         reg.a3 = reg.a5 + W.wv_pattern1;
         _ch_mpcm_a_common();
     }
 
-    public void _ch_mpcm_alfo_2() {
+    private void _ch_mpcm_alfo_2() {
         reg.a4 = reg.a5 + W.v_pattern2;
         reg.a3 = reg.a5 + W.wv_pattern2;
         _ch_mpcm_a_common();
     }
 
-    public void _ch_mpcm_alfo_3() {
+    private void _ch_mpcm_alfo_3() {
         reg.a4 = reg.a5 + W.v_pattern1;
         reg.a3 = reg.a5 + W.wv_pattern1;
         _ch_mpcm_a_common();
@@ -1609,31 +1609,31 @@ L1:
         _ch_mpcm_a_common();
     }
 
-    public void _ch_mpcm_alfo_4() {
+    private void _ch_mpcm_alfo_4() {
         reg.a4 = reg.a5 + W.v_pattern3;
         reg.a3 = reg.a5 + W.wv_pattern3;
         _ch_mpcm_a_common();
     }
 
-    public void _ch_mpcm_alfo_5() {
+    private void _ch_mpcm_alfo_5() {
         reg.a4 = reg.a5 + W.v_pattern1;
         reg.a3 = reg.a5 + W.wv_pattern1;
-        _ch_mpcm_a_common();
-        reg.a4 = reg.a5 + W.v_pattern3;
-        reg.a3 = reg.a5 + W.wv_pattern3;
-        _ch_mpcm_a_common();
-    }
-
-    public void _ch_mpcm_alfo_6() {
-        reg.a4 = reg.a5 + W.v_pattern2;
-        reg.a3 = reg.a5 + W.wv_pattern2;
         _ch_mpcm_a_common();
         reg.a4 = reg.a5 + W.v_pattern3;
         reg.a3 = reg.a5 + W.wv_pattern3;
         _ch_mpcm_a_common();
     }
 
-    public void _ch_mpcm_alfo_7() {
+    private void _ch_mpcm_alfo_6() {
+        reg.a4 = reg.a5 + W.v_pattern2;
+        reg.a3 = reg.a5 + W.wv_pattern2;
+        _ch_mpcm_a_common();
+        reg.a4 = reg.a5 + W.v_pattern3;
+        reg.a3 = reg.a5 + W.wv_pattern3;
+        _ch_mpcm_a_common();
+    }
+
+    private void _ch_mpcm_alfo_7() {
         reg.a4 = reg.a5 + W.v_pattern1;
         reg.a3 = reg.a5 + W.wv_pattern1;
         _ch_mpcm_a_common();
@@ -1646,7 +1646,7 @@ L1:
     }
 
     /** */
-    public void _ch_mpcm_a_common() {
+    private void _ch_mpcm_a_common() {
         reg.D0_L = 1;
         reg.setD1_B(mm.readByte(reg.a4 + W_L.pattern) & 0xff);
         if (/* signed */ (byte) reg.getD1_B() < 0) {
@@ -1672,13 +1672,13 @@ L1:
         }
     }
 
-    public void _ch_mpcm_v_keyon_only() {
+    private void _ch_mpcm_v_keyon_only() {
         if ((mm.readByte(reg.a5 + W.flag) & 0x20) != 0) {
             _ch_mpcm_v_com_exec();
         }
     }
 
-    public void _ch_mpcm_v_com_exec() {
+    private void _ch_mpcm_v_com_exec() {
         reg.setD0_B(reg.getD0_B() + (int) (byte) reg.getD1_B());
         reg.setD0_W(reg.getD0_W() + (int) (short) reg.getD0_W());
         //_mpcm_velocity_pattern
@@ -1697,7 +1697,7 @@ L1:
     }
 
     /** */
-    public void _ch_mpcm_p_common() {
+    private void _ch_mpcm_p_common() {
         reg.D0_L = 1;
         reg.setD1_B(mm.readByte(reg.a4 + W_L.pattern) & 0xff);
         if (/* signed */ (byte) reg.getD1_B() < 0) {
@@ -1722,13 +1722,13 @@ L1:
         }
     }
 
-    public void _ch_mpcm_p_keyon_only() {
+    private void _ch_mpcm_p_keyon_only() {
         if ((mm.readByte(reg.a5 + W.flag) & 0x20) != 0) {
             _ch_mpcm_p_com_exec();
         }
     }
 
-    public void _ch_mpcm_p_com_exec() {
+    private void _ch_mpcm_p_com_exec() {
         reg.setD0_B(reg.getD0_B() + (int) (byte) reg.getD1_B());
         reg.setD0_W(reg.getD0_W() + (int) (short) reg.getD0_W());
 
@@ -1805,7 +1805,7 @@ L1:
     /**
      * pitch bend
      */
-    public void _ch_mpcm_bend() {
+    private void _ch_mpcm_bend() {
         reg.a4 = reg.a5 + W.p_pattern4;
         mm.write(reg.a4 + W_L.delay_work, (byte) ((mm.readByte(reg.a4 + W_L.delay_work) - 1) & 0xff));
         if (mm.readByte(reg.a4 + W_L.delay_work) != 0) return;
@@ -1831,7 +1831,7 @@ L1:
         _mpcm_freq();
     }
 
-    public void _ch_mpcm_bend_plus() {
+    private void _ch_mpcm_bend_plus() {
         mm.write(reg.a4 + W_L.bendwork, (short) ((mm.readShort(reg.a4 + W_L.bendwork) & 0xffff) + /* signed */ (short) reg.getD1_W()));
         reg.setD2_W(reg.getD2_W() + (int) (short) reg.getD1_W());
         if (/* signed */ (short) reg.getD2_W() < 0) {
@@ -1845,7 +1845,7 @@ L1:
         _mpcm_freq();
     }
 
-    public void _ch_mpcm_bend_end() {
+    private void _ch_mpcm_bend_end() {
         mm.write(reg.a4 + W_L.bendwork, (short) 0);
         mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) & 0x7f));
 
@@ -1865,7 +1865,7 @@ L1:
     /**
      * portamento
      */
-    public void _ch_mpcm_porta() {
+    private void _ch_mpcm_porta() {
         reg.a4 = reg.a5 + W.p_pattern4;
 
         if ((mm.readByte(reg.a5 + W.flag2) & 0x10) != 0) {
@@ -1891,19 +1891,19 @@ L1:
         _ch_mpcm_porta_common();
     }
 
-    public void _ch_mpcm_porta_minus() {
+    private void _ch_mpcm_porta_minus() {
         mm.write(reg.a4 + W_L.henka_work, (short) ((mm.readShort(reg.a4 + W_L.henka_work) + 1) & 0xffff));
         mm.write(reg.a4 + W_L.bendwork, (short) ((mm.readShort(reg.a4 + W_L.bendwork) + 1) & 0xffff));
         reg.setD2_W(reg.getD2_W() - 1);
         _ch_mpcm_porta_common();
     }
 
-    public void _ch_mpcm_porta_common() {
+    private void _ch_mpcm_porta_common() {
         mm.write(reg.a5 + W.keycode3, (short) reg.getD2_W());
         _mpcm_freq();
     }
 
-    public void _ch_mpcm_lw_port() {
+    private void _ch_mpcm_lw_port() {
         reg.D1_L = 0;
         reg.D2_L = 0;
         reg.setD1_B(mm.readByte(reg.a4 + W_L.lfo_sp) & 0xff);
@@ -1937,7 +1937,7 @@ L1:
         _mpcm_freq();
     }
 
-    public void _ch_mpcm_lw_porta_end() {
+    private void _ch_mpcm_lw_porta_end() {
         mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) & 0x7f));
         mm.write(reg.a5 + W.flag2, (byte) (mm.readByte(reg.a5 + W.flag2) & 0xfd));
     }

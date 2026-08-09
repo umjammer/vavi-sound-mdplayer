@@ -26,30 +26,30 @@ import mdsound.MDSound;
 public abstract class FormChipBase<P> extends FormBase implements View {
 
     public boolean isClosed = false;
-    public int x = -1;
-    public int y = -1;
-    protected int frameSizeW = 0;
-    protected int frameSizeH = 0;
-    protected int chipId = 0;
-    protected int zoom = 1;
+    int x = -1;
+    int y = -1;
+    int frameSizeW = 0;
+    int frameSizeH = 0;
+    int chipId = 0;
+    int zoom = 1;
 
-    protected P newParam = null;
-    protected P oldParam = null;
+    P newParam = null;
+    P oldParam = null;
 
     /** the screen this panel's skin and sprites are drawn into */
-    protected final FrameBuffer frameBuffer = new FrameBuffer();
+    final FrameBuffer frameBuffer = new FrameBuffer();
 
     /** the component that frame buffer is presented on */
-    protected ScreenPanel pbScreen;
+    ScreenPanel pbScreen;
 
-    protected static final double LOG2_440 = 8.7813597135246596040696824762152;
-    protected static final double LOG_2 = 0.69314718055994530941723212145818;
-    protected static final int NOTE_440HZ = 12 * 4 + 9;
+    static final double LOG2_440 = 8.7813597135246596040696824762152;
+    static final double LOG_2 = 0.69314718055994530941723212145818;
+    static final int NOTE_440HZ = 12 * 4 + 9;
 
-    public FormChipBase() {
+    FormChipBase() {
     }
 
-    public FormChipBase(FormMain frm, int chipId, int zoom, P newParam, P oldParam) {
+    FormChipBase(FormMain frm, int chipId, int zoom, P newParam, P oldParam) {
         super(frm);
         parent = frm;
         this.chipId = chipId;
@@ -62,7 +62,7 @@ public abstract class FormChipBase<P> extends FormBase implements View {
      * Puts the panel on screen, once the subclass has built its components. Call at the end of the
      * constructor, with the skin this chip is drawn on.
      */
-    protected final void bind(BufferedImage plane) {
+    final void bind(BufferedImage plane) {
         setIconImage(Common.getImage("Feli128"));
         frameBuffer.add(pbScreen, plane, null, zoom);
         initScreen();
@@ -90,7 +90,7 @@ public abstract class FormChipBase<P> extends FormBase implements View {
      * The clock of one of this panel's chips, or 0 when the song being played does not use it — a
      * panel can be open for a chip the current song has nothing to say about.
      */
-    protected int clock(Class<? extends Instrument> instrument) {
+    int clock(Class<? extends Instrument> instrument) {
         if (audio == null || audio.plugin == null) return 0;
         MDSound.Chip chip = audio.plugin.mds.getChipInfo(instrument);
         return chip == null ? 0 : chip.clock;

@@ -180,7 +180,7 @@ public class MXDRV {
         int Length = 171;
     }
 
-    public interface MXWORK_KEY {
+    interface MXWORK_KEY {
         int OPT1 = 0;
         int OPT2 = 1;
         int SHIFT = 2;
@@ -191,7 +191,7 @@ public class MXDRV {
         int Length = 7;
     }
 
-    public interface MXWORK_OPM {
+    interface MXWORK_OPM {
         int Length = 256;
     }
 
@@ -215,7 +215,7 @@ public class MXDRV {
         }
     }
 
-    public void MXDRV_Call(int a) {
+    private void MXDRV_Call(int a) {
         X68Reg reg = new X68Reg();
 
         reg.d0 = a;
@@ -223,7 +223,7 @@ public class MXDRV {
         MXDRV_(reg);
     }
 
-    public void MXDRV_Call_2(int a, int b) {
+    private void MXDRV_Call_2(int a, int b) {
         X68Reg reg = new X68Reg();
 
         reg.d0 = a;
@@ -235,7 +235,7 @@ public class MXDRV {
         MXDRV_Call(0x0f);
     }
 
-    public void MXDRV_Stop() {
+    private void MXDRV_Stop() {
         MXDRV_Call(0x05);
     }
 
@@ -247,7 +247,7 @@ public class MXDRV {
         MXDRV_Call(0x07);
     }
 
-    public void MXDRV_Fadeout() {
+    private void MXDRV_Fadeout() {
         MXDRV_Call_2(0x0c, 19);
     }
 
@@ -289,7 +289,7 @@ public class MXDRV {
     private int KEY = 0;
 
     //static MXWORK_OPM MXWORK_OPMBUF;
-    public int OPMBUF = 0;
+    private int OPMBUF = 0;
 
     //static byte MXWORK_PCM8;
     //private MXWORK_PCM8 PCM8 = null;
@@ -732,7 +732,7 @@ public class MXDRV {
         MXCALLBACK_OPMINT = this::MXDRV_MeasurePlayTime_OPMINT;
     }
 
-    public void MXDRV_MeasurePlayTime_OPMINT() {
+    private void MXDRV_MeasurePlayTime_OPMINT() {
         if ((mm.readInt(G + MXWORK_GLOBAL.PLAYTIME) & 0xffff_ffffL) >= (mm.readInt(G + MXWORK_GLOBAL.MEASURETIMELIMIT) & 0xffff_ffffL)) {
             terminatePlay = true;
         }
@@ -2941,7 +2941,7 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
         }
     }
 
-    short L001190 = 0x1234;
+    private short L001190 = 0x1234;
 
     //
     private void L00117a() {

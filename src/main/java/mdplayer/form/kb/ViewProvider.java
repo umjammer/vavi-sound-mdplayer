@@ -8,10 +8,13 @@ import java.util.ServiceLoader;
 
 import mdplayer.Audio;
 import mdplayer.Chip;
+import mdplayer.Setting;
 import mdplayer.form.SettingTab;
 import mdplayer.form.View;
+import mdplayer.form.VisVolume;
 import mdplayer.form.inst.InstWriter;
 import mdplayer.form.sys.FormMain;
+import mdsound.MDSound;
 
 
 /**
@@ -126,7 +129,7 @@ public interface ViewProvider {
      * format the user chose. The default asks {@link InstWriter#of} for the chosen format's
      * writer; chips with a format quirk of their own (OPLL and friends) override.
      */
-    default void getInstCh(Component parent, Audio audio, mdplayer.Setting setting, int ch, int chipId) {
+    default void getInstCh(Component parent, Audio audio, Setting setting, int ch, int chipId) {
         InstWriter w = InstWriter.of(setting.getOther().getInstFormat());
         if (w != null) w.write(parent, audio, chip(), ch, chipId);
     }
@@ -136,9 +139,9 @@ public interface ViewProvider {
      * {@link #mixerSlots()} declared. The default reads the chip's overall reported volume;
      * chips with part meters (FM/SSG/rhythm...) or their own level source override.
      */
-    default void updateMeters(Audio audio, mdplayer.form.VisVolume visVolume) {
+    default void updateMeters(Audio audio, VisVolume visVolume) {
         for (MixerSlot s : mixerSlots()) {
-            if (mdsound.MDSound.Chip.MAIN_TAG.equals(s.tag())) {
+            if (MDSound.Chip.MAIN_TAG.equals(s.tag())) {
                 visVolume.put(s.visKey(), Meters.chipVolume(audio, s.chip()) * 5);
             }
         }

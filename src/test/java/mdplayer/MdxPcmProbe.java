@@ -20,7 +20,7 @@ import vavi.util.archive.Archives;
 import org.junit.jupiter.api.Test;
 
 
-public class MdxPcmProbe {
+class MdxPcmProbe {
 
     @Test
     void probe() throws Exception {

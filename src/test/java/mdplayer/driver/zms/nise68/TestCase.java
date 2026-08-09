@@ -21,7 +21,7 @@ import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-01-01 nsano initial version <br>
  */
-public class TestCase {
+class TestCase {
 
     @Test
     @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")

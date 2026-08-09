@@ -9,7 +9,7 @@ import mdplayer.lib.mndrv.MnWork.W_L;
 /**
  * part of YM2608 - Psg emulation
  */
-public class DevPsgEmu {
+class DevPsgEmu {
     public Reg reg;
     public XMemory mm;
     public MnDrv mndrv;
@@ -31,7 +31,7 @@ public class DevPsgEmu {
     }
 
     /** */
-    public void _emu_psg_freq() {
+    private void _emu_psg_freq() {
         reg.D1_L = 0;
         reg.D2_L = 12;
         while (reg.getD0_B() >= reg.getD2_B()) {
@@ -65,7 +65,7 @@ public class DevPsgEmu {
         _emu_set_psg_bend();
     }
 
-    public void _emu_set_psg_() {
+    private void _emu_set_psg_() {
         reg.setD0_W(reg.getD0_W() + (mm.readShort(reg.a5 + W.detune) & 0xffff));
         if ((short) reg.getD0_W() < 0) {
             reg.D0_L = 0;
@@ -79,7 +79,7 @@ public class DevPsgEmu {
         _emu_set_psg_bend();
     }
 
-    public void _emu_set_psg_bend() {
+    private void _emu_set_psg_bend() {
         mm.write(reg.a5 + W.keycode, (short) reg.getD0_W());
         reg.setD0_W(reg.getD0_W() & 0xfff);
         reg.setD0_W(reg.getD0_W() + (short) reg.getD0_W());
@@ -500,13 +500,13 @@ public class DevPsgEmu {
     }
 
     /** */
-    public void _PSGE_C9() {
+    private void _PSGE_C9() {
         reg.D1_L = 0;
         reg.setD1_B(mm.readByte(reg.a1++) & 0xff);
     }
 
     /** */
-    public void _PSGE_NOP() {
+    private void _PSGE_NOP() {
         mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) & 0x7f));
         devopm._opm_keyoff();
     }
@@ -590,7 +590,7 @@ public class DevPsgEmu {
     /**
      * pitch bend
      */
-    public void _ch_psge_bend() {
+    private void _ch_psge_bend() {
         reg.a4 = reg.a5 + W.p_pattern4;
         mm.write(reg.a4 + W_L.delay_work, (byte) (mm.readByte(reg.a4 + W_L.delay_work) - 1));
         if (mm.readByte(reg.a4 + W_L.delay_work) != 0) return;
@@ -634,7 +634,7 @@ public class DevPsgEmu {
     /**
      * portamento
      */
-    public void _ch_psge_porta() {
+    private void _ch_psge_porta() {
         reg.a4 = reg.a5 + W.p_pattern4;
         mm.write(reg.a4 + W_L.count, (byte) (mm.readByte(reg.a4 + W_L.count) - 1));
         if (mm.readByte(reg.a4 + W_L.count) != 0) { // break _ch_psge_porta_end;

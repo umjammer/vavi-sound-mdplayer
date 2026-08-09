@@ -34,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  */
-public class NsfLoopProbe {
+class NsfLoopProbe {
 
     static final String file = System.getProperty("nsf",
             "../simplevgm/tmp/Thunder Force IV - Sand Hell [5-N163].nsf");

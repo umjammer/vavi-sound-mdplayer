@@ -16,23 +16,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
+import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.Tables;
+import mdplayer.chips.NesChip;
 import mdplayer.chips.NesChip.FdsChip;
 import mdplayer.chips.NpNesChip;
 import mdplayer.form.FrameBuffer;
 import mdplayer.form.ScreenPanel;
 import mdplayer.form.View;
+import mdplayer.form.VisVolume;
 import mdplayer.form.kb.ChannelParams;
 import mdplayer.form.kb.Meters;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
+import mdsound.MDSound;
 
 
 public class FormFDS extends FormChipBase<FormFDS.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormFDS.class);
+    private static final Preferences prefs = Preferences.userNodeForPackage(FormFDS.class);
 
     public FormFDS(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -66,7 +70,7 @@ public class FormFDS extends FormChipBase<FormFDS.Params> {
         }
     };
 
-    public void changeZoom() {
+    private void changeZoom() {
         this.setMaximumSize(new Dimension(frameSizeW + Common.getImage("planeFDS").getWidth() * zoom, frameSizeH + Common.getImage("planeFDS").getHeight() * zoom));
         this.setMinimumSize(new Dimension(frameSizeW + Common.getImage("planeFDS").getWidth() * zoom, frameSizeH + Common.getImage("planeFDS").getHeight() * zoom));
         this.setPreferredSize(new Dimension(frameSizeW + Common.getImage("planeFDS").getWidth() * zoom, frameSizeH + Common.getImage("planeFDS").getHeight() * zoom));
@@ -250,7 +254,7 @@ public class FormFDS extends FormChipBase<FormFDS.Params> {
         this.addComponentListener(this.componentListener);
     }
 
-    BufferedImage image;
+    private BufferedImage image;
 
 //#region draw buffer
 
@@ -311,32 +315,32 @@ public class FormFDS extends FormChipBase<FormFDS.Params> {
 //#endregion
 
     /** this panel's per-frame draw state, diffed new against old (see {@link FormChipBase}) */
-    public static class Params {
+    static class Params {
 
-        public final ChannelParams channel = new ChannelParams();
-        public final int[] wave = new int[32];
-        public final int[] mod = new int[32];
+        final ChannelParams channel = new ChannelParams();
+        final int[] wave = new int[32];
+        final int[] mod = new int[32];
 
-        public boolean VolDir = false;
-        public int VolSpd = 0;
-        public int VolGain = 0;
-        public boolean VolDi = false;
-        public int VolFrq = 0;
-        public boolean VolHlR = false;
+        boolean VolDir = false;
+        int VolSpd = 0;
+        int VolGain = 0;
+        boolean VolDi = false;
+        int VolFrq = 0;
+        boolean VolHlR = false;
 
-        public boolean ModDir = false;
-        public int ModSpd = 0;
-        public int ModGain = 0;
-        public boolean ModDi = false;
-        public int ModFrq = 0;
-        public int ModCnt = 0;
+        boolean ModDir = false;
+        int ModSpd = 0;
+        int ModGain = 0;
+        boolean ModDi = false;
+        int ModFrq = 0;
+        int ModCnt = 0;
 
-        public int EnvSpd = 0;
-        public boolean EnvVolSw = false;
-        public boolean EnvModSw = false;
+        int EnvSpd = 0;
+        boolean EnvVolSw = false;
+        boolean EnvModSw = false;
 
-        public int MasterVol = 0;
-        public boolean WE = false;
+        int MasterVol = 0;
+        boolean WE = false;
     }
 
     /** what this panel contributes to the GUI; see {@link ViewProvider} */
@@ -344,32 +348,32 @@ public class FormFDS extends FormChipBase<FormFDS.Params> {
 
         @Override public String id() { return "FDS"; }
         @Override public String category() { return "nes"; }
-        @Override public Class<? extends mdplayer.Chip> chip() { return mdplayer.chips.NpNesChip.FdsChip.class; }
+        @Override public Class<? extends mdplayer.Chip> chip() { return NpNesChip.FdsChip.class; }
         @Override public View create(FormMain frm, int chipId, int zoom) { return new FormFDS(frm, chipId, zoom); }
 
         @Override public List<Class<? extends Chip>> maskChips() {
-            return List.of(mdplayer.chips.NpNesChip.FdsChip.class, mdplayer.chips.NesChip.FdsChip.class);
+            return List.of(NpNesChip.FdsChip.class, NesChip.FdsChip.class);
         }
 
-        @Override public void setChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
-            mdplayer.chips.NpNesChip.FdsChip c = audio.plugin.chipRegister.chip(mdplayer.chips.NpNesChip.FdsChip.class);
+        @Override public void setChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+            NpNesChip.FdsChip c = audio.plugin.chipRegister.chip(NpNesChip.FdsChip.class);
             if (!c.getMask(chipId, -1)) c.setMask(chipId, -1); else c.resetMask(chipId, -1);
         }
 
-        @Override public void resetChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+        @Override public void resetChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
             // the reset always went to the vgm-side FDS, kept as the original had it
-            audio.plugin.chipRegister.chip(mdplayer.chips.NesChip.FdsChip.class).setMask(chipId, -1);
+            audio.plugin.chipRegister.chip(NesChip.FdsChip.class).setMask(chipId, -1);
         }
 
-        @Override public void reapplyChannelMasks(mdplayer.Audio audio, int chipId) {
-            resetChannelMask(audio, mdplayer.chips.NpNesChip.FdsChip.class, chipId, 0);
+        @Override public void reapplyChannelMasks(Audio audio, int chipId) {
+            resetChannelMask(audio, NpNesChip.FdsChip.class, chipId, 0);
         }
 
         @Override public List<MixerSlot> mixerSlots() {
-            return List.of(new MixerSlot(50, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.NpNesChip.FdsChip.class, "FDS", 200));
+            return List.of(new MixerSlot(50, MDSound.Chip.MAIN_TAG, NpNesChip.FdsChip.class, "FDS", 200));
         }
 
-        @Override public void updateMeters(mdplayer.Audio audio, mdplayer.form.VisVolume visVolume) {
+        @Override public void updateMeters(Audio audio, VisVolume visVolume) {
             int fds = Meters.npNesVolume(audio, 2);
             if (fds >= 0) visVolume.put("FDS", fds * 15);
         }

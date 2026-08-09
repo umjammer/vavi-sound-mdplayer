@@ -36,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
  * @version 0.00 2026-04-27 nsano initial version <br>
  */
 @PropsEntity(url = "file:local.properties")
-public class TestCase {
+class TestCase {
 
     static boolean localPropertiesExists() {
         return Files.exists(Paths.get("local.properties"));

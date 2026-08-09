@@ -4,16 +4,18 @@
 
 package mdplayer;
 
+import java.awt.image.BufferedImage;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
+import javax.imageio.ImageIO;
+
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.FileFormat;
 import mdplayer.driver.BasePlugin;
 import vavi.sound.visualizer.fmdsp.TrackId;
-import vavi.sound.visualizer.fmdsp.TrackInfo;
 import vavi.sound.visualizer.fmdsp.TrackStatus;
 
 
@@ -21,7 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 
-public class ChipStatusProbe {
+class ChipStatusProbe {
 
     @Test
     @EnabledIfSystemProperty(named = "vavi.test", matches = "ai")
@@ -97,10 +99,9 @@ public class ChipStatusProbe {
         visualizer.setDataSource(source);
         visualizer.setSize(visualizer.getPreferredSize());
         visualizer.doLayout();
-        var image = new java.awt.image.BufferedImage(visualizer.getWidth(), visualizer.getHeight(),
-                java.awt.image.BufferedImage.TYPE_INT_RGB);
+        var image = new BufferedImage(visualizer.getWidth(), visualizer.getHeight(), BufferedImage.TYPE_INT_RGB);
         for (int i = 0; i < 120; i++) visualizer.paint(image.getGraphics());
-        javax.imageio.ImageIO.write(image, "png", Path.of(out).toFile());
+        ImageIO.write(image, "png", Path.of(out).toFile());
         System.err.printf("wrote %s%n", out);
     }
 }

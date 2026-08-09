@@ -54,14 +54,14 @@ public class FormRegTest extends FormChipBase<Void> {
 
     static class ChipData {
 
-        public final Class<? extends Chip> chipName;
-        public final int baseIndex;
+        final Class<? extends Chip> chipName;
+        final int baseIndex;
         /** GetRegisterDelegate */
-        public final Function<Integer, Object> register;
-        public final int maxRegisterSize;
-        public final int regWind;
+        final Function<Integer, Object> register;
+        final int maxRegisterSize;
+        final int regWind;
 
-        public ChipData(Class<? extends Chip> chipName, int baseIndex, int maxRegisterSize, int regWindow, Function<Integer, Object> register) {
+        ChipData(Class<? extends Chip> chipName, int baseIndex, int maxRegisterSize, int regWindow, Function<Integer, Object> register) {
             this.chipName = chipName;
             this.baseIndex = baseIndex;
             this.register = register;
@@ -73,10 +73,10 @@ public class FormRegTest extends FormChipBase<Void> {
     class RegisterManager {
 
         int select;
-        public boolean needRefresh = false;
+        boolean needRefresh = false;
         final List<ChipData> chipData = new ArrayList<>();
 
-        public RegisterManager() {
+        RegisterManager() {
             addChip(YmF278BChip.class, 3, 0x100, select -> { // 0
                 Map<String, Object> info = audio.plugin.chipRegister.chip(YmF278BChip.class).getInfo(0);
                 return !info.isEmpty() && info.containsKey("register") ? ((int[][]) info.get("register"))[select] : null;
@@ -136,35 +136,35 @@ public class FormRegTest extends FormChipBase<Void> {
             }
         }
 
-        public void prev() {
+        void prev() {
             select--;
             if (select < 0) select = chipData.size() - 1;
             needRefresh = true;
         }
 
-        public void next() {
+        void next() {
             select++;
             if (select > chipData.size() - 1) select = 0;
             needRefresh = true;
             //if (Select < ChipList.size()-1) Select++;
         }
 
-        public Object getData() {
+        Object getData() {
             ChipData x = chipData.get(select);
             return x.register.apply(select - x.baseIndex);
         }
 
-        public String getName() {
+        String getName() {
             ChipData x = chipData.get(select);
             return "%-10s  ".formatted(x.chipName.getSimpleName().replace("Chip", ""));
         }
 
-        public String getName2() {
+        String getName2() {
             ChipData x = chipData.get(select);
             return "#%d REGISTER (%d/%d)  ".formatted(select - x.baseIndex, select + 1, chipData.size());
         }
 
-        public int getRegisterSize() {
+        int getRegisterSize() {
             return chipData.get(select).maxRegisterSize;
         }
 
@@ -172,28 +172,28 @@ public class FormRegTest extends FormChipBase<Void> {
         //    return ChipList.get(Select).regWind;
         //}
 
-        public int getCurrentPage() {
+        int getCurrentPage() {
             ChipData x = chipData.get(select);
             return select - x.baseIndex;
         }
 
-        public int getSelect() {
+        int getSelect() {
             return select;
         }
 
-        public void setSelect(int val) {
+        void setSelect(int val) {
             select = val;
         }
     }
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormRegTest.class);
+    private static final Preferences prefs = Preferences.userNodeForPackage(FormRegTest.class);
 
     private final int formWidth;
     private final int formHeight;
 
     //private FrameBuffer frameBuffer = new FrameBuffer();
 
-    final FormRegTest.RegisterManager regMan = new RegisterManager();
+    private final FormRegTest.RegisterManager regMan = new RegisterManager();
 
     private final Map<Class<? extends Chip>, Integer> pageDict = new HashMap<>() {{
         put(YmF278BChip.class, 0);
@@ -216,7 +216,7 @@ public class FormRegTest extends FormChipBase<Void> {
         put(SidChip.class, 20);
     }};
 
-    public FormRegTest(FormMain frm, int chipId, Class<? extends Chip> enmPage, int zoom) {
+    private FormRegTest(FormMain frm, int chipId, Class<? extends Chip> enmPage, int zoom) {
         parent = frm;
         this.chipId = chipId;
         this.zoom = zoom;
@@ -277,7 +277,7 @@ public class FormRegTest extends FormChipBase<Void> {
         }
     };
 
-    public void changeZoom() {
+    private void changeZoom() {
         this.setMaximumSize(new Dimension(frameSizeW + formWidth * zoom, frameSizeH + formHeight * zoom));
         //this.setMinimumSize(new Dimension(frameSizeW + FormWidth * zoom, frameSizeH + FormHeight * zoom));
         this.setPreferredSize(new Dimension(frameSizeW + formWidth * zoom, frameSizeH + formHeight * zoom));
@@ -571,7 +571,7 @@ public class FormRegTest extends FormChipBase<Void> {
         this.addComponentListener(this.componentListener);
     }
 
-    public ScreenPanel pbScreen;
+    private ScreenPanel pbScreen;
     private JPanel panel1;
 
     /** what this panel contributes to the GUI; see {@link ViewProvider} */

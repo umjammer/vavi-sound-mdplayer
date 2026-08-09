@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
+import mdplayer.Audio;
 import mdplayer.Chip.ChipKeyInfo;
 import mdplayer.Common;
 import mdplayer.form.FrameBuffer;
@@ -26,13 +27,14 @@ import mdplayer.chips.Ym3526Chip;
 import mdplayer.form.kb.ChannelParams;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
+import mdsound.MDSound;
 import mdsound.instrument.Ym3526Inst;
 import mdplayer.form.View;
 
 
 public class FormYM3526 extends FormChipBase<FormYM3526.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormYM3526.class);
+    private static final Preferences prefs = Preferences.userNodeForPackage(FormYM3526.class);
 
     public FormYM3526(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -73,7 +75,7 @@ public class FormYM3526 extends FormChipBase<FormYM3526.Params> {
         }
     };
 
-    public void changeZoom() {
+    private void changeZoom() {
         this.setMaximumSize(new Dimension(frameSizeW + Common.getImage("planeYM3526").getWidth() * zoom, frameSizeH + Common.getImage("planeYM3526").getHeight() * zoom));
         this.setMinimumSize(new Dimension(frameSizeW + Common.getImage("planeYM3526").getWidth() * zoom, frameSizeH + Common.getImage("planeYM3526").getHeight() * zoom));
         this.setPreferredSize(new Dimension(frameSizeW + Common.getImage("planeYM3526").getWidth() * zoom, frameSizeH + Common.getImage("planeYM3526").getHeight() * zoom));
@@ -326,7 +328,7 @@ public class FormYM3526 extends FormChipBase<FormYM3526.Params> {
         this.addComponentListener(this.componentListener);
     }
 
-    BufferedImage image;
+    private BufferedImage image;
 
 //#region draw buffer
 
@@ -392,15 +394,15 @@ public class FormYM3526 extends FormChipBase<FormYM3526.Params> {
 //#endregion
 
     /** this panel's channel row: the common core plus what only this chip displays */
-    public static class Channel extends ChannelParams {
+    static class Channel extends ChannelParams {
 
-        public boolean dda = false;
+        boolean dda = false;
     }
 
     /** this panel's per-frame draw state, diffed new against old (see {@link FormChipBase}) */
-    public static class Params {
+    static class Params {
 
-        public final Channel[] channels = {
+        final Channel[] channels = {
                 new Channel(), new Channel(), new Channel(), new Channel(), new Channel(),
                 new Channel(), new Channel(), new Channel(), new Channel(), // FM 9
                 new Channel(), new Channel(), new Channel(), new Channel(), new Channel() // Rhythm 5
@@ -413,31 +415,31 @@ public class FormYM3526 extends FormChipBase<FormYM3526.Params> {
         @Override public String id() { return "YM3526"; }
         @Override public String menuText() { return "OPL"; }
         @Override public String category() { return "opl"; }
-        @Override public Class<? extends mdplayer.Chip> chip() { return mdplayer.chips.Ym3526Chip.class; }
+        @Override public Class<? extends mdplayer.Chip> chip() { return Ym3526Chip.class; }
         @Override public View create(FormMain frm, int chipId, int zoom) { return new FormYM3526(frm, chipId, zoom); }
 
-        @Override public void setChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+        @Override public void setChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
             if (ch >= 0 && ch < 14) {
-                mdplayer.chips.Ym3526Chip c = audio.plugin.chipRegister.chip(mdplayer.chips.Ym3526Chip.class);
+                Ym3526Chip c = audio.plugin.chipRegister.chip(Ym3526Chip.class);
                 if (!c.getMask(chipId, ch)) c.setMask(chipId, ch); else c.resetMask(chipId, ch);
             }
         }
 
-        @Override public void resetChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
-            audio.plugin.chipRegister.chip(mdplayer.chips.Ym3526Chip.class).resetMask(chipId, ch);
+        @Override public void resetChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+            audio.plugin.chipRegister.chip(Ym3526Chip.class).resetMask(chipId, ch);
         }
 
-        @Override public void forceChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
+        @Override public void forceChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
             if (ch >= 0 && ch < 14) {
                 if (mask)
-                    audio.plugin.chipRegister.chip(mdplayer.chips.Ym3526Chip.class).setMask(chipId, ch);
+                    audio.plugin.chipRegister.chip(Ym3526Chip.class).setMask(chipId, ch);
                 else
-                    audio.plugin.chipRegister.chip(mdplayer.chips.Ym3526Chip.class).resetMask(chipId, ch);
+                    audio.plugin.chipRegister.chip(Ym3526Chip.class).resetMask(chipId, ch);
             }
         }
 
         @Override public List<MixerSlot> mixerSlots() {
-            return List.of(new MixerSlot(17, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Ym3526Chip.class, "ym3526", 200));
+            return List.of(new MixerSlot(17, MDSound.Chip.MAIN_TAG, Ym3526Chip.class, "ym3526", 200));
         }
     }
 }

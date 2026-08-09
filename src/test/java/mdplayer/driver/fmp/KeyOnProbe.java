@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 
-public class KeyOnProbe {
+class KeyOnProbe {
 
     static final int STRIDE = 0x6f;
 

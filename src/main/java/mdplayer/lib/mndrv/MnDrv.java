@@ -26,7 +26,7 @@ public class MnDrv {
 
     public List<Tuple<String, byte[]>> extendFile = null;
 
-    public MPCMSt[] mpcmSt = {
+    private MPCMSt[] mpcmSt = {
             new MPCMSt(), new MPCMSt(), new MPCMSt(), new MPCMSt(),
             new MPCMSt(), new MPCMSt(), new MPCMSt(), new MPCMSt(),
             new MPCMSt(), new MPCMSt(), new MPCMSt(), new MPCMSt(),
@@ -131,21 +131,21 @@ public class MnDrv {
 
     public final Reg reg;
     public final XMemory mm;
-    public final ComAnalyze comanalyze;
-    public final ComCmds comcmds;
-    public final ComLfo comlfo;
-    public final ComWave comwave;
-    public final DevMPcm devmpcm;
-    public final DevOpm devopm;
-    public final DevOpn devopn;
-    public final DevOpnEmu devopnemu;
-    public final DevPsg devpsg;
-    public final DevPsgEmu devpsgemu;
-    public final DevRhy devrhy;
-    public final Interrupt interrupt;
-    public final Ab ab;
-    public FMTimer timerOPM;
-    public FMTimer timerOPN;
+    private final ComAnalyze comanalyze;
+    private final ComCmds comcmds;
+    private final ComLfo comlfo;
+    private final ComWave comwave;
+    private final DevMPcm devmpcm;
+    private final DevOpm devopm;
+    private final DevOpn devopn;
+    private final DevOpnEmu devopnemu;
+    private final DevPsg devpsg;
+    private final DevPsgEmu devpsgemu;
+    private final DevRhy devrhy;
+    private final Interrupt interrupt;
+    private final Ab ab;
+    private FMTimer timerOPM;
+    private FMTimer timerOPN;
 
     final byte[] vtbl = new byte[128 * 2];
     public MPcmInterface mpcm;
@@ -298,15 +298,15 @@ public class MnDrv {
      * 	    MXDRV Music driver          - mxdrv16y
      */
 
-    public static final int MNDVER = 17 + 1;
+    private static final int MNDVER = 17 + 1;
     /**
      * Oldest MND data version we play. mndrv.x 1.37 itself stops at 2 -- it turns version 1 away
      * with {@code cmpi.b #1,d2 / beq _play_music_ver_err} -- but the v1 container and track table
      * are identical to v2 and the MML grammar differs in only a few opcodes, which
      * {@link ComAnalyze#V1_CMD_MAP} maps back. See {@code MndV1AnalyzerTest} for the evidence.
      */
-    public static final int MNDVERMIN = 1;
-    public static final String DRVVER = "1.37";
+    private static final int MNDVERMIN = 1;
+    private static final String DRVVER = "1.37";
 
     /**
      * top:
@@ -316,7 +316,7 @@ public class MnDrv {
      *
      * trap 4 entry
      */
-    public void _trap4_entry() {
+    private void _trap4_entry() {
         Reg spReg = new Reg();
         spReg.D1_L = reg.D1_L;
         spReg.D2_L = reg.D2_L;
@@ -454,7 +454,7 @@ public class MnDrv {
         reg.a6 = spReg.a6;
     }
 
-    public void _t_nop() {
+    private void _t_nop() {
         reg.D0_L = 0xffff_ffff;
     }
 
@@ -464,7 +464,7 @@ public class MnDrv {
      * MNCALL 0
      * Uninstall (actually just stops playback and initializes)
      */
-    public void _t_release() {
+    private void _t_release() {
         if (mm.readShort(reg.a6 + Dw.UNREMOVE) != 0) {
             reg.D0_L = 0xffff_ffff;
             return;
@@ -504,7 +504,7 @@ public class MnDrv {
      * 	a1 : pointer
      * </pre>
      */
-    public void _t_trans_mnd() {
+    private void _t_trans_mnd() {
         int sp = reg.D1_L;
         _d_stop_music();
         _reset_work();
@@ -544,7 +544,7 @@ public class MnDrv {
      * 	a1 : pointer
      * </pre>
      */
-    public void _t_trans_pcm() {
+    private void _t_trans_pcm() {
         mm.write(reg.a6 + Dw.DRV_FLAG, (byte) (mm.readByte(reg.a6 + Dw.DRV_FLAG) & 0xed));
         if (reg.D1_L != 0) {
             _t_trans_pcm_();
@@ -564,7 +564,7 @@ public class MnDrv {
         reg.D0_L = 0;
     }
 
-    public void _t_trans_pcm_() {
+    private void _t_trans_pcm_() {
         int sp = reg.D1_L;
 
         reg.D1_L = mm.readInt(reg.a6 + Dw.PCMBUFADR);
@@ -676,7 +676,7 @@ public class MnDrv {
     }
 
     /** */
-    public void _trans_nozpd() {
+    private void _trans_nozpd() {
         reg.D1_L = P._pcm_work_size;
         if (_MCMALLOC() < 0) {
             reg.D0_L = 0xffff_ffff;
@@ -720,7 +720,7 @@ public class MnDrv {
      *
      * from MCDRV.s (MCDRV)
      */
-    public void HSCOPY() {
+    private void HSCOPY() {
         Reg spReg = new Reg();
         spReg.D1_L = reg.D1_L;
         spReg.D2_L = reg.D2_L;
@@ -1134,7 +1134,7 @@ public class MnDrv {
     }
 
     /** */
-    public void _track_init() {
+    private void _track_init() {
         if ((reg.getD1_B() & 0xff) >= 0xB0) {
             _track_nop();
             return;
@@ -1356,10 +1356,10 @@ public class MnDrv {
         }
     }
 
-    public void _track_nop() {
+    private void _track_nop() {
     }
 
-    public void _track_rhy() {
+    private void _track_rhy() {
         if ((mm.readByte(reg.a6 + Dw.DRV_FLAG) & 1) != 0) return;
 
         mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) | 0x80));
@@ -1387,7 +1387,7 @@ public class MnDrv {
 
     }
 
-    public void _track_opn() {
+    private void _track_opn() {
         if ((mm.readByte(reg.a6 + Dw.DRV_FLAG) & 1) != 0) return;
 
         mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) | 0x80));
@@ -1475,7 +1475,7 @@ public class MnDrv {
 
     }
 
-    public void _track_psg() {
+    private void _track_psg() {
         if ((mm.readByte(reg.a6 + Dw.DRV_FLAG) & 1) != 0) return;
 
         mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) | 0x80));
@@ -1569,7 +1569,7 @@ public class MnDrv {
         mm.write(reg.a5 + W.volcount, (byte) 16);
     }
 
-    public void _track_opm() {
+    private void _track_opm() {
         reg.setD2_B(mm.readByte(reg.a6 + Dw.EMUMODE) & 0xff);
         if (reg.getD2_B() != 0) { // break _track_opm_normal;
 
@@ -1752,7 +1752,7 @@ public class MnDrv {
         ab.hlw_we_ycom_adrs.put(reg.a5, act);
     }
 
-    public void _track_pcm() {
+    private void _track_pcm() {
         mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) | 0x80));
         mm.write(reg.a5 + W.pcmmode, (byte) 0xff);
         reg.D2_L = 64;
@@ -1838,20 +1838,20 @@ public class MnDrv {
     }
 
     /** */
-    public static final byte[] _fm_volume_table = {
+    private static final byte[] _fm_volume_table = {
             0x2A, 0x28, 0x25, 0x22, 0x20, 0x1D, 0x1A, 0x18, 0x15, 0x12, 0x10, 0x0D, 0x0A, 0x08, 0x05, 0x02
     };
-    public static final byte[] _mpcm_vol_table = {
+    private static final byte[] _mpcm_vol_table = {
             0x01, 0x08, 0x10, 0x18, 0x20, 0x28, 0x30, 0x38, 0x40, 0x48, 0x50, 0x58, 0x60, 0x68, 0x70, 0x78
     };
-    public static final byte[] _psg_volume_table = {
+    private static final byte[] _psg_volume_table = {
             0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F
     };
 
     /**
      * Common Command Analysis
      */
-    public void _common_analyze() {
+    private void _common_analyze() {
         do {
             reg.D4_L = 0;
             reg.setD4_B(mm.readByte(reg.a2++) & 0xff);
@@ -1902,14 +1902,14 @@ public class MnDrv {
         } while (true);
     }
 
-    public void _common_nop() {
+    private void _common_nop() {
         // rts
     }
 
     /**
      * TEMPO Drive Timer
      */
-    public void _common_timer() {
+    private void _common_timer() {
         reg.setD4_B(mm.readByte(reg.a2++) & 0xff);
         if (reg.getD4_B() != 0) {
             mm.write(reg.a6 + Dw.DRV_FLAG, (byte) (mm.readByte(reg.a6 + Dw.DRV_FLAG) & 0xdf));
@@ -1921,7 +1921,7 @@ public class MnDrv {
     /**
      * LFO Driven Timer
      */
-    public void _common_lfotimer() {
+    private void _common_lfotimer() {
         reg.setD4_B(mm.readByte(reg.a2++) & 0xff);
         if (reg.getD4_B() != 0) {
             mm.write(reg.a6 + Dw.DRV_FLAG3, (byte) (mm.readByte(reg.a6 + Dw.DRV_FLAG3) | 0x80)); //  use TIMER-a
@@ -1933,7 +1933,7 @@ public class MnDrv {
     /**
      * Psg Drive Timer
      */
-    public void _common_psgtimer() {
+    private void _common_psgtimer() {
         reg.setD4_B(mm.readByte(reg.a2++) & 0xff);
         if (reg.getD4_B() != 0) {
             mm.write(reg.a6 + Dw.DRV_FLAG3, (byte) (mm.readByte(reg.a6 + Dw.DRV_FLAG3) | 0x40)); //  use TIMER-a
@@ -1945,14 +1945,14 @@ public class MnDrv {
     /**
      * Initial Tempo
      */
-    public void _common_tempo() {
+    private void _common_tempo() {
         mm.write(reg.a6 + Dw.TEMPO, mm.readByte(reg.a2++));
     }
 
     /**
      * Tie Operation Mode
      */
-    public void _common_tie() {
+    private void _common_tie() {
         mm.write(reg.a6 + Dw.DRV_FLAG2, (byte) (mm.readByte(reg.a6 + Dw.DRV_FLAG2) & 0x3f));
         reg.setD4_B(mm.readByte(reg.a2++) & 0xff);
         if (reg.getD4_B() == 0) return;
@@ -1967,7 +1967,7 @@ public class MnDrv {
     /**
      * LFO Operation Mode
      */
-    public void _common_lfo() {
+    private void _common_lfo() {
         reg.setD4_B(mm.readByte(reg.a2++) & 0xff);
         if (reg.getD4_B() == 0) return;
         reg.setD4_B(reg.getD4_B() - 1);
@@ -1981,7 +1981,7 @@ public class MnDrv {
     /**
      * Whole Note Clock
      */
-    public void _common_clock() {
+    private void _common_clock() {
         reg.setD0_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
         mm.write(reg.a6 + Dw.DIV, (short) reg.getD0_W());
@@ -1990,7 +1990,7 @@ public class MnDrv {
     /**
      * Relative Volume Mode
      */
-    public void _common_volume() {
+    private void _common_volume() {
         reg.setD4_B(mm.readByte(reg.a2++) & 0xff);
         if (reg.getD4_B() != 0) {
             mm.write(reg.a6 + Dw.VOLMODE, (byte) 0xff);
@@ -2000,14 +2000,14 @@ public class MnDrv {
     /**
      * OPN Emulation Mode
      */
-    public void _common_opnemu() {
+    private void _common_opnemu() {
         mm.write(reg.a6 + Dw.EMUMODE, mm.readByte(reg.a2++));
     }
 
     /**
      * Quantize Mode
      */
-    public void _common_q_mode() {
+    private void _common_q_mode() {
         mm.write(reg.a6 + Dw.DRV_FLAG2, (byte) (mm.readByte(reg.a6 + Dw.DRV_FLAG2) & 0xef));
         if (mm.readByte(reg.a2++) == 0) return;
         mm.write(reg.a6 + Dw.DRV_FLAG2, (byte) (mm.readByte(reg.a6 + Dw.DRV_FLAG2) | 0x10));
@@ -2016,7 +2016,7 @@ public class MnDrv {
     /**
      * Software Envelope
      */
-    public void _common_env_mode() {
+    private void _common_env_mode() {
         mm.write(reg.a6 + Dw.DRV_FLAG2, (byte) (mm.readByte(reg.a6 + Dw.DRV_FLAG2) & 0xfb));
         if (mm.readByte(reg.a2++) == 0) return;
         mm.write(reg.a6 + Dw.DRV_FLAG2, (byte) (mm.readByte(reg.a6 + Dw.DRV_FLAG2) | 0x04));
@@ -2039,7 +2039,7 @@ public class MnDrv {
         _all_mute();
     }
 
-    public void _all_mute() {
+    private void _all_mute() {
         reg.a5 = reg.a6 + Dw.TRACKWORKADR;
         reg.setD7_W(mm.readShort(reg.a6 + Dw.USE_TRACK) & 0xffff);
 
@@ -2082,7 +2082,7 @@ public class MnDrv {
         trap(1);
     }
 
-    public void _pause_release() {
+    private void _pause_release() {
         reg.a5 = reg.a6 + Dw.TRACKWORKADR;
         reg.setD7_W(mm.readShort(reg.a6 + Dw.USE_TRACK) & 0xffff);
 //_pause_rel_loop:
@@ -2140,7 +2140,7 @@ public class MnDrv {
      * MNCALL 5
      * Stop playing
      */
-    public void _t_stop_music() {
+    private void _t_stop_music() {
         reg.D0_L = 2;
         SUBEVENT();
         _d_stop_music();
@@ -2177,7 +2177,7 @@ public class MnDrv {
      * Get a pointer to the title data
      * out	a1 : title pointer
      */
-    public void _t_get_title() {
+    private void _t_get_title() {
         reg.a1 = mm.readInt(reg.a6 + Dw.TITLE_PTR);
         reg.D0_L = reg.a1;
     }
@@ -2187,7 +2187,7 @@ public class MnDrv {
      * Get work address
      * out	a1 : work pointer
      */
-    public void _t_get_work() {
+    private void _t_get_work() {
         reg.a1 = _work_top; //  mm.Readint(_work_top);
         reg.D0_L = reg.a1;
     }
@@ -2197,7 +2197,7 @@ public class MnDrv {
      * Get trackwork address
      * out	a1 : work pointer
      */
-    public void _t_get_track_work() {
+    private void _t_get_track_work() {
         reg.a1 = reg.a6 + Dw.TRACKWORKADR;
         reg.D0_L = reg.a1;
     }
@@ -2207,7 +2207,7 @@ public class MnDrv {
      * Get track work size
      * out	d0 : work pointer
      */
-    public void _t_get_trwork_size() {
+    private void _t_get_trwork_size() {
         reg.D0_L = W._track_work_size; //  Dw._trackworksize;
     }
 
@@ -2217,7 +2217,7 @@ public class MnDrv {
      * in	d1 : device
      * d2 : volume
      */
-    public void _t_set_master_vol() {
+    private void _t_set_master_vol() {
         reg.D6_L = 1;
         reg.setD6_B((reg.getD6_B() & 0xff) + (reg.getD1_B() & 0xff));
         reg.setD6_W(reg.getD6_W() + (int) (short) reg.getD6_W());
@@ -2242,7 +2242,7 @@ public class MnDrv {
      * Track Mask
      * in	d1 : track
      */
-    public void _t_track_mask() {
+    private void _t_track_mask() {
         reg.a5 = reg.a6 + Dw.TRACKWORKADR;
         reg.setD1_W(reg.getD1_W() - 1);
 //L1:
@@ -2269,7 +2269,7 @@ public class MnDrv {
      * Key Control
      * in	d1 : enabe / disable
      */
-    public void _t_key_mask() {
+    private void _t_key_mask() {
         if (reg.getD1_B() != 0) {
             mm.write(reg.a6 + Dw.DRV_FLAG, (byte) (mm.readByte(reg.a6 + Dw.DRV_FLAG) | 0x80));
         } else {
@@ -2281,7 +2281,7 @@ public class MnDrv {
      * MNCALL $0D
      * FADEOUT
      */
-    public void _t_fadeout() {
+    private void _t_fadeout() {
         mm.write(reg.a6 + Dw.DRV_STATUS, (byte) (mm.readByte(reg.a6 + Dw.DRV_STATUS) | 0x10));
         mm.write(reg.a6 + Dw.FADEFLAG, (byte) 1);
         mm.write(reg.a6 + Dw.FADESPEED, (byte) 7);
@@ -2304,7 +2304,7 @@ public class MnDrv {
      * MNCALL $0E
      * memory purge
      */
-    public void _t_purge() {
+    private void _t_purge() {
         reg.D1_L = mm.readInt(reg.a6 + Dw.MMLBUFADR);
         if (reg.D1_L != 0) {
             _MCMFREE();
@@ -2326,7 +2326,7 @@ public class MnDrv {
      * MNCALL $0F
      * name set
      */
-    public void _t_set_pcmname() {
+    private void _t_set_pcmname() {
         reg.a2 = reg.a1;
         reg.a0 = reg.a6 + Dw.ADPCMNAME;
         reg.D0_L = 96 - 1;
@@ -2349,7 +2349,7 @@ public class MnDrv {
      * MNCALL $10
      * name get
      */
-    public void _t_get_pcmname() {
+    private void _t_get_pcmname() {
         reg.a1 = reg.a6 + Dw.ADPCMNAME;
         reg.D0_L = reg.a1;
     }
@@ -2359,7 +2359,7 @@ public class MnDrv {
      * MNCALL $11
      * name check
      */
-    public void _t_chk_pcmname() {
+    private void _t_chk_pcmname() {
         int sp = reg.a1;
         reg.a0 = reg.a6 + Dw.ADPCMNAME;
         reg.D7_L = 0xdf;
@@ -2419,7 +2419,7 @@ public class MnDrv {
      * MNCALL $12
      * get loopcount
      */
-    public void _t_get_loopcount() {
+    private void _t_get_loopcount() {
         reg.setD0_W(mm.readShort(reg.a6 + Dw.LOOP_COUNTER) & 0xffff);
         reg.D0_L = (short) reg.getD0_W();
     }
@@ -2428,7 +2428,7 @@ public class MnDrv {
      * MNCALL $13
      * set intexec
      */
-    public void _t_intexec() {
+    private void _t_intexec() {
         reg.setD1_W(mm.readShort(reg.a6 + Dw.INTEXECNUM) & 0xffff);
         reg.D0_L = 0xffffffff;
         if (reg.getD1_W() - 8 != 0) {
@@ -2445,7 +2445,7 @@ public class MnDrv {
      * MNCALL $14
      * set subevent
      */
-    public void _t_set_subevent() {
+    private void _t_set_subevent() {
         reg.setD1_W(reg.getD1_W() + (int) (short) reg.getD1_W());
         switch (reg.getD1_W()) {
         case 0:
@@ -2494,7 +2494,7 @@ public class MnDrv {
      * out	d1.l	address
      * a0	Address containing ID
      */
-    public boolean SRCHSSEID() {
+    private boolean SRCHSSEID() {
         reg.a0 = reg.a6 + Dw.SUBEVENTID;
         reg.D0_L = 0xffff_ffff; // -1
         reg.D1_L = 8 - 1;
@@ -2557,7 +2557,7 @@ public class MnDrv {
      * MNCALL $15
      * unremove
      */
-    public void _t_unremove() {
+    private void _t_unremove() {
         mm.write(reg.a6 + Dw.UNREMOVE, (short) ((mm.readShort(reg.a6 + Dw.UNREMOVE) & 0xffff) + (short) reg.getD1_W()));
         reg.setD0_W(mm.readShort(reg.a6 + Dw.UNREMOVE) & 0xffff);
         reg.D0_L = (short) reg.getD0_W();
@@ -2567,7 +2567,7 @@ public class MnDrv {
      * MNCALL $16
      * get status
      */
-    public void _t_get_status() {
+    private void _t_get_status() {
         reg.setD0_W((short) ((mm.readByte(reg.a6 + Dw.DRV_STATUS) & 0xff) * 0x100));
         reg.setD0_B(mm.readByte(reg.a6 + Dw.DRV_FLAG2) & 0xff);
         reg.D0_L = (reg.D0_L >>> 16) | (reg.D0_L << 16);
@@ -2579,7 +2579,7 @@ public class MnDrv {
      * MNCALL $17
      * get tempo
      */
-    public void _t_get_tempo() {
+    private void _t_get_tempo() {
         reg.D0_L = 0;
         reg.setD0_W(mm.readShort(reg.a6 + Dw.DIV) & 0xffff);
         reg.D0_L = (reg.D0_L >>> 16) | (reg.D0_L << 16);
@@ -2673,7 +2673,7 @@ public class MnDrv {
         _OPN_WRITE_();
     }
 
-    public void _OPN_WRITE_() {
+    private void _OPN_WRITE_() {
         reg.setD6_W(reg.getD6_W() + (int) (short) reg.getD6_W());
         reg.setD6_W(_reg_table[reg.getD6_W() / 2]);
         reg.a0 = reg.D5_L;
@@ -2685,7 +2685,7 @@ public class MnDrv {
         _opn_write_direct();
     }
 
-    public void _opn_write_direct() {
+    private void _opn_write_direct() {
         reg.setD6_B(reg.getD1_B());
         reg.a3 = reg.a6 + Dw.REGWORKADR;
         mm.write(reg.a3 + (reg.getD6_W() & 0xffff), (byte) reg.getD0_B());
@@ -2724,7 +2724,7 @@ public class MnDrv {
         }
     }
 
-    public static final short[] _reg_table = {
+    private static final short[] _reg_table = {
             0x0001, // 00 FM1
             0x0001, // 01 FM2
             0x0001, // 02 FM3
@@ -2830,7 +2830,7 @@ public class MnDrv {
      *
      * SAVEREG:	.Reg	d0-d1/d5-d7/a0-a1/a3
      */
-    public void _dev_reset() {
+    private void _dev_reset() {
         Reg spReg = new Reg();
         spReg.D0_L = reg.D0_L;
         spReg.D1_L = reg.D1_L;
@@ -2929,7 +2929,7 @@ public class MnDrv {
         reg.a3 = spReg.a3;
     }
 
-    public static final byte[] _opn_reset_table1 = {
+    private static final byte[] _opn_reset_table1 = {
             0x28, 0x00, 0x28, 0x01, 0x28, 0x02,
             0x28, 0x04, 0x28, 0x05, 0x28, 0x06,
 
@@ -2954,7 +2954,7 @@ public class MnDrv {
             (byte) 0xff, 0x00
     };
 
-    public static final byte[] _opn_reset_table2 = {
+    private static final byte[] _opn_reset_table2 = {
             0x40, 0x7F, 0x41, 0x7F, 0x42, 0x7F,
             0x44, 0x7F, 0x45, 0x7F, 0x46, 0x7F,
             0x48, 0x7F, 0x49, 0x7F, 0x4A, 0x7F,
@@ -2975,7 +2975,7 @@ public class MnDrv {
             (byte) 0xff, 0x00
     };
 
-    public static final byte[] _opm_reset_table = {
+    private static final byte[] _opm_reset_table = {
             0x01, 0x02, 0x01, 0x00,
             0x08, 0x00, 0x08, 0x01, 0x08, 0x02, 0x08, 0x03,
             0x08, 0x04, 0x08, 0x05, 0x08, 0x06, 0x08, 0x07,
@@ -2993,18 +2993,18 @@ public class MnDrv {
     };
 
     /** */
-    public static final int _data_work_size = 384 * 1024;
+    private static final int _data_work_size = 384 * 1024;
     public static final int _work_top = 0x01_0000;
-    public static final int _buffer_top = 0x03_0000;
-    public int _old_trap4_vec = 0;
-    public int _old_opn_vec = 0;
-    public int _old_opm_vec = 0;
-    public byte _old_merc_vec = 0;
+    private static final int _buffer_top = 0x03_0000;
+    private int _old_trap4_vec = 0;
+    private int _old_opn_vec = 0;
+    private int _old_opm_vec = 0;
+    private byte _old_merc_vec = 0;
 
     /**
      * program start
      */
-    public void start() {
+    private void start() {
         logger.log(Level.DEBUG, M_title);
 
         // Supervisor processing not required
@@ -3043,12 +3043,12 @@ public class MnDrv {
     }
 
     /** */
-    public void putdec() {
+    private void putdec() {
         logger.log(Level.DEBUG, "{%d}".formatted(reg.D0_L));
     }
 
     /** */
-    public void _sw_chk() {
+    private void _sw_chk() {
         reg.D7_L = 0;
         reg.a2 += 1;
 
@@ -3130,7 +3130,7 @@ public class MnDrv {
     /**
      * from option.s (MCDRV)
      */
-    public void GETNUM() {
+    private void GETNUM() {
         reg.D1_L = 0;
         reg.D0_L = 0;
 //getnum10:
@@ -3153,7 +3153,7 @@ public class MnDrv {
     }
 
     /** */
-    public int _get_mem() {
+    private int _get_mem() {
         // _SETBLOCK processing not required
 
         reg.a0 = _work_top;
@@ -3193,9 +3193,9 @@ public class MnDrv {
      * in	d1.l	size
      * out	d0.l	Address of the allocated memory block + $10
      */
-    int bufferPtr = 0;
+    private int bufferPtr = 0;
 
-    public byte _MCMALLOC() {
+    private byte _MCMALLOC() {
         if (bufferPtr == 0) {
             bufferPtr = _buffer_top;
         }
@@ -3268,7 +3268,7 @@ public class MnDrv {
      * Freeing a memory block
      * in	d1.l	Address of the memory block to be freed
      */
-    public void _MCMFREE() {
+    private void _MCMFREE() {
         Reg spReg = new Reg();
         spReg.D1_L = reg.D1_L;
         spReg.a0 = reg.a0;
@@ -3365,7 +3365,7 @@ public class MnDrv {
     /**
      *
      */
-    public void _reset_work() {
+    private void _reset_work() {
         // move.W	sr,-(sp)
         // ori.W	//#$700,sr
 
@@ -3381,7 +3381,7 @@ public class MnDrv {
         _work_init_env_();
     }
 
-    public void _work_init() {
+    private void _work_init() {
         // move.W	sr,-(sp)
         // ori.W	//#$700,sr
 
@@ -3397,7 +3397,7 @@ public class MnDrv {
         _work_init_env_();
     }
 
-    public void _work_init_env_() {
+    private void _work_init_env_() {
         reg.a5 = reg.a6 + Dw.SOFTENV_PATTERN;
         reg.D1_L = 7 - 1;
 //_work_init_env:
@@ -3480,21 +3480,21 @@ public class MnDrv {
         ab.hlTRKANA_RESTADR.put(reg.a6, this::_work_init_nop);
     }
 
-    public void _work_init_nop() {
+    private void _work_init_nop() {
         // rts
     }
 
     /** */
-    public final byte[] _psg_env_pattern = {
+    private final byte[] _psg_env_pattern = {
             0x00, 0x01, (byte) 0xff, (byte) 0xff, 0x00, (byte) 0x81, 0x00, 0x00, 0x00, (byte) 0x81, 0x00, 0x00, (byte) 0xff, (byte) 0x81, 0x00, 0x00
     };
 
     /** Probably not */
-    public void _vec_set() {
+    private void _vec_set() {
     }
 
     /** Probably not */
-    public void _vec_release() {
+    private void _vec_release() {
         mm.write(0xe88009, (byte) (mm.readByte(0xe88009) & 0xf7));
         mm.write(0xe88015, (byte) (mm.readByte(0xe88015) & 0xf7));
 
@@ -3519,7 +3519,7 @@ public class MnDrv {
     /**
      * trap check
      */
-    public int _trap4_check() {
+    private int _trap4_check() {
         return 0;
         //return (mm.readByte(0x90) - 0x24) == 0 ? 0 : 1;
     }
@@ -3527,7 +3527,7 @@ public class MnDrv {
     /**
      * driver check
      */
-    public int _mndrv_check() {
+    private int _mndrv_check() {
         // No check required (not always resident)
         return 1;
     }
@@ -3535,7 +3535,7 @@ public class MnDrv {
     /**
      *
      */
-    public void _print_information() {
+    private void _print_information() {
         if ((byte) reg.getD7_B() < 0) {
             mm.write(reg.a6 + Dw.DRV_FLAG, (byte) (mm.readByte(reg.a6 + Dw.DRV_FLAG) | 0x80));
         }
@@ -3570,7 +3570,7 @@ public class MnDrv {
     /**
      * OPM interrupt check
      */
-    public int _opm_check() {
+    private int _opm_check() {
         return 0;
         //return mm.readByte(0x10c) - 0x43;
     }
@@ -3578,7 +3578,7 @@ public class MnDrv {
     /**
      * PCM driver resident check
      */
-    public void _mpcm_check() {
+    private void _mpcm_check() {
         //Reg.a1 = mm.Readint(0x84);
         //if (mm.Readint(Reg.a1 - 8) - 0x4d50434d != 0) return;
         //if ((int)(mm.Readint(Reg.a1 - 4) - 0x2f303430) < 0) return;
@@ -3595,7 +3595,7 @@ public class MnDrv {
         _mpcm_init();
     }
 
-    public void _mpcm_init() {
+    private void _mpcm_init() {
         reg.setD0_W(0x01ff);
         trap(1);
 
@@ -3620,14 +3620,14 @@ public class MnDrv {
     /**
      * zdd resident check
      */
-    public void _zdd_check() {
+    private void _zdd_check() {
     }
 
     /**
      * "Mercury" existence check
      * with Xellent30 / YMF288 detection
      */
-    public void _mercury_check() {
+    private void _mercury_check() {
         Reg spReg = new Reg();
         spReg.a0 = reg.a0;
         spReg.a1 = reg.a1;
@@ -3649,7 +3649,7 @@ public class MnDrv {
         reg.a2 = spReg.a2;
     }
 
-    public int _opn_check() {
+    private int _opn_check() {
         return 0;
         //Reg.a0 = 0xecc0c1;
         //mm.Write(Reg.a0, (byte)0x20);
@@ -3668,7 +3668,7 @@ public class MnDrv {
         mm.readByte(0xe9a001);
     }
 
-    public int _unit_check() {
+    private int _unit_check() {
         reg.a0 = 0xecc080;
         if (_bus_check() == 0) { // break _unit_check_notmerc;
             reg.a0 = 0xecc100;
@@ -3681,7 +3681,7 @@ public class MnDrv {
         return 1;
     }
 
-    public int _bus_check() {
+    private int _bus_check() {
         // 0xecc080 -> L1 and onwards are executed only if there is no merc
         // 0xecc100 -> L1 and onwards are executed only if merc is present
         if (reg.a0 == 0xecc080) return 0;
@@ -3706,7 +3706,7 @@ public class MnDrv {
     /**
      *
      */
-    public void _make_table() {
+    private void _make_table() {
         //
         // MAKE F-Number → OPM KC/KF CONVERT TABLE
         //
@@ -3856,35 +3856,35 @@ public class MnDrv {
     /**
      * error exit
      */
-    public void _not_remove() {
+    private void _not_remove() {
         logger.log(Level.DEBUG, M_notremove);
     }
 
-    public void _not_kept() {
+    private void _not_kept() {
         logger.log(Level.DEBUG, M_notkept);
     }
 
-    public void _help_exit() {
+    private void _help_exit() {
         logger.log(Level.DEBUG, M_help);
     }
 
-    public void _mndrv_already() {
+    private void _mndrv_already() {
         logger.log(Level.DEBUG, M_already);
     }
 
-    public void _trap4_already() {
+    private void _trap4_already() {
         logger.log(Level.DEBUG, M_trap4err);
     }
 
-    public void _opm_used() {
+    private void _opm_used() {
         logger.log(Level.DEBUG, M_opmerr);
     }
 
-    public void _numover() {
+    private void _numover() {
         logger.log(Level.DEBUG, M_numover);
     }
 
-    public void _memory_err() {
+    private void _memory_err() {
         logger.log(Level.DEBUG, M_memory_msg);
     }
 
@@ -3913,7 +3913,7 @@ public class MnDrv {
     /**
      * OPN → OPM TUNE CONVERT TABLE (DEFAULT)
      */
-    public static final short[] FNUM_BASE = {
+    private static final short[] FNUM_BASE = {
             0x00A3, 0x00AD, 0x00B7, 0x00C2,
             0x00CD, 0x00DA, 0x00E7, 0x00F4,
             0x0103, 0x0112, 0x0123, 0x0134,
@@ -3928,7 +3928,7 @@ public class MnDrv {
             0x081C, 0x0896, 0x091A, 0x09A4
     };
 
-    public static final byte[] FNUM_KC_BASE = {
+    private static final byte[] FNUM_KC_BASE = {
             (byte) 0xDD, (byte) 0xDE, (byte) 0xE0, (byte) 0xE1, (byte) 0xE2, (byte) 0xE4, (byte) 0xE5, (byte) 0xE6,
             (byte) 0xE8, (byte) 0xE9, (byte) 0xEA, (byte) 0xEC, (byte) 0xED, (byte) 0xEE, (byte) 0xF0, (byte) 0xF1,
             (byte) 0xF2, (byte) 0xF4, (byte) 0xF5, (byte) 0xF6, (byte) 0xF8, (byte) 0xF9, (byte) 0xFA, (byte) 0xFC,
@@ -3937,7 +3937,7 @@ public class MnDrv {
             0x12, 0x14, 0x15, 0x16, 0x18, 0x19, 0x1A, 0x1C
     };
 
-    public static final short[] FREQ_BASE = {
+    private static final short[] FREQ_BASE = {
             0x000E, 0x000F, 0x0010, 0x0011,
             0x0012, 0x0013, 0x0015, 0x0016,
             0x0017, 0x0019, 0x001A, 0x001C,
@@ -3967,7 +3967,7 @@ public class MnDrv {
             0x17B0, 0x1910, 0x1A90, 0x1C20
     };
 
-    public static final byte[] FREQ_KC_BASE = {
+    private static final byte[] FREQ_KC_BASE = {
             (byte) 0x8C, (byte) 0x8A, (byte) 0x89, (byte) 0x88, (byte) 0x86, (byte) 0x85, (byte) 0x84, (byte) 0x82,
             (byte) 0x81, (byte) 0x80, 0x7E, 0x7D, 0x7C, 0x7A, 0x79, 0x78,
             0x76, 0x75, 0x74, 0x72, 0x71, 0x70, 0x6E, 0x6D,
@@ -3984,24 +3984,24 @@ public class MnDrv {
             0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
     };
 
-    public static final String M_title =
+    private static final String M_title =
             "X68k MnDrv mania driver version " +
                     DRVVER +
                     " (c)1997-2000 BEL.\n";
-    public static final String M_merc = "Output is possible from 'Mercury Unit'\n";
-    public static final String M_MPCM = "MPCM";
-    public static final String M_zdd = "zdd";
-    public static final String M_PCMOUT = "Multiplexing/pitch and volume conversion output is possible\n";
-    public static final String M_buf = "KB buffer reserved\n";
-    public static final String M_release = "released mndrv\n";
-    public static final String M_already = "Already resident\n";
-    public static final String M_notkept = "mndrv is not resident\n";
-    public static final String M_notremove = "It is occupied and cannot be released\n";
-    public static final String M_trap4err = "trap //#4 is already in use\n";
-    public static final String M_opmerr = "OPM interrupt already in use\n";
-    public static final String M_memory_msg = "Not enough memory\n";
-    public static final String M_numover = "Number out of range\n";
-    public static final String M_help = """
+    private static final String M_merc = "Output is possible from 'Mercury Unit'\n";
+    private static final String M_MPCM = "MPCM";
+    private static final String M_zdd = "zdd";
+    private static final String M_PCMOUT = "Multiplexing/pitch and volume conversion output is possible\n";
+    private static final String M_buf = "KB buffer reserved\n";
+    private static final String M_release = "released mndrv\n";
+    private static final String M_already = "Already resident\n";
+    private static final String M_notkept = "mndrv is not resident\n";
+    private static final String M_notremove = "It is occupied and cannot be released\n";
+    private static final String M_trap4err = "trap //#4 is already in use\n";
+    private static final String M_opmerr = "OPM interrupt already in use\n";
+    private static final String M_memory_msg = "Not enough memory\n";
+    private static final String M_numover = "Number out of range\n";
+    private static final String M_help = """
             usage: MnDrv [option]
             	-b[num]	Buffer size specification
             	-k	Key control disabled

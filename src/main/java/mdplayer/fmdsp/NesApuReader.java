@@ -54,7 +54,7 @@ public abstract class NesApuReader implements FmDspChipReader {
     /** the same register in the other half, which is {@code 0x4008} relative */
     private static final int DMC_STATUS = 0x0d;
 
-    protected ChipRegister chipRegister;
+    ChipRegister chipRegister;
 
     /** the pulses, {@code 0x4000} relative */
     private int[] regs;

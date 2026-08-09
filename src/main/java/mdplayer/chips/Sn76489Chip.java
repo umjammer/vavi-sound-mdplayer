@@ -49,9 +49,9 @@ public class Sn76489Chip extends BaseChip {
             {new int[2], new int[2], new int[2], new int[2]}
     };
 
-    public final int[] fadeout = {0, 0};
+    private final int[] fadeout = {0, 0};
 
-    public final boolean[][] mask = {
+    private final boolean[][] mask = {
             {false, false, false, false},
             {false, false, false, false}
     };
@@ -223,7 +223,7 @@ public class Sn76489Chip extends BaseChip {
         }
     }
 
-    protected void sendVolumeForced(int chipId, int ch) {
+    private void sendVolumeForced(int chipId, int ch) {
         Setting.ChipType2 ct = setting.getSN76489Type()[chipId];
         write(chipId, (0x90 |
                         ((ch & 3) << 5) |

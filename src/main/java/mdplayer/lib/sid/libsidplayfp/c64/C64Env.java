@@ -30,11 +30,11 @@ import mdplayer.lib.sid.libsidplayfp.EventScheduler;
  * specifics. a pointer to this child class can then be passed to each of the
  * components, so they can interact with it.
  */
-public class C64Env {
+class C64Env {
 
-    public final EventScheduler eventScheduler;
+    final EventScheduler eventScheduler;
 
-    public C64Env(EventScheduler scheduler) {
+    C64Env(EventScheduler scheduler) {
         eventScheduler = scheduler;
     }
 

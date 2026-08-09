@@ -133,7 +133,7 @@ public class NoteSpectrum implements FftDataSource {
      * @param from first bar of the band, and {@code to} its last; it fades over {@link #BAND_EDGE}
      *             bars either side so that it has no walls
      */
-    public void addBand(double amplitude, double from, double to) {
+    private void addBand(double amplitude, double from, double to) {
         if (amplitude <= 0) return;
         for (int b = (int) (from - BAND_EDGE); b <= to + BAND_EDGE; b++) {
             double weight = b < from ? ramp((b - from + BAND_EDGE) / BAND_EDGE)
@@ -232,7 +232,7 @@ public class NoteSpectrum implements FftDataSource {
             levels[i] += (target - levels[i]) * (target > levels[i] ? attack : release);
 
             double db = 20 * Math.log10(Math.max(levels[i] * GAIN, 1e-9));
-            out[i] = (int) Math.clamp(Math.round((db - FLOOR_DB) / -FLOOR_DB * (MAX + 1)), 0, MAX);
+            out[i] = Math.clamp(Math.round((db - FLOOR_DB) / -FLOOR_DB * (MAX + 1)), 0, MAX);
         }
     }
 

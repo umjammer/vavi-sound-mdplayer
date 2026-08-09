@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 
 @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
-public class FormInfoTest {
+class FormInfoTest {
 
     @Test
     public void testFormInfo() throws Exception {

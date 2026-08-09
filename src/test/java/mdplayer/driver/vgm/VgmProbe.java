@@ -15,7 +15,7 @@ import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 
 /** temporary probe */
-public class VgmProbe {
+class VgmProbe {
 
     @Test
     @EnabledIfSystemProperty(named = "vavi.test", matches = "ai")

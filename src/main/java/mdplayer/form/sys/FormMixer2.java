@@ -49,14 +49,14 @@ import static java.lang.System.getLogger;
 import mdplayer.form.kb.ViewProvider;
 
 
-public class FormMixer2 extends JFrame {
+class FormMixer2 extends JFrame {
 
     private static final Logger logger = getLogger(FormMixer2.class.getName());
 
     public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
-    public final FormMain parent;
+    private final FormMain parent;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
     private final int zoom;
@@ -64,8 +64,8 @@ public class FormMixer2 extends JFrame {
 
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormMixer2.class);
-    final Audio audio = Audio.getInstance();
+    private static final Preferences prefs = Preferences.userNodeForPackage(FormMixer2.class);
+    private final Audio audio = Audio.getInstance();
 
     /**
      * Draw state of one mixer slot — the fader position and the two-stage level meter.
@@ -195,7 +195,7 @@ public class FormMixer2 extends JFrame {
         }
     };
 
-    public void changeZoom() {
+    private void changeZoom() {
         int w = Common.getImage("planeMixer").getWidth() * zoom;
         int h = Common.getImage("planeMixer").getHeight() * zoom;
 
@@ -444,7 +444,7 @@ public class FormMixer2 extends JFrame {
             sfd.setDialogTitle(" Mixer - Save Balance");
             sfd.setCurrentDirectory(Path.of(ms.arcFileName == null || ms.arcFileName.isEmpty() ? ms.fileName : ms.arcFileName).getParent().toFile());
             if (!parent.setting.getAutoBalance().getSamePositionAsSongData())
-                sfd.setCurrentDirectory(new File((Common.settingFilePath = java.nio.file.Path.of("MixerBalance")).toString()));
+                sfd.setCurrentDirectory(new File((Common.settingFilePath = Path.of("MixerBalance")).toString()));
 
 //            sfd.RestoreDirectory = false;
             sfd.setSelectedFile(Path.of(Path.of((ms.arcFileName == null || ms.arcFileName.isEmpty() ? ms.fileName : ms.arcFileName)).getFileName() + ".mbc").toFile());
@@ -454,7 +454,7 @@ public class FormMixer2 extends JFrame {
                 return;
             }
 
-            bln.save(java.nio.file.Path.of(sfd.getSelectedFile().getPath()));
+            bln.save(Path.of(sfd.getSelectedFile().getPath()));
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
             JOptionPane.showMessageDialog(null, "%s".formatted(ex.getMessage()), "Save failed", JOptionPane.ERROR_MESSAGE);
@@ -540,8 +540,8 @@ public class FormMixer2 extends JFrame {
         this.addComponentListener(this.componentListener);
     }
 
-    BufferedImage image;
-    public ScreenPanel pbScreen;
+    private BufferedImage image;
+    private ScreenPanel pbScreen;
     private JPopupMenu ctxtMenu;
     private JMenuItem tsmiSaveDriverBalance;
     private JMenuItem tsmiSaveSongBalance;

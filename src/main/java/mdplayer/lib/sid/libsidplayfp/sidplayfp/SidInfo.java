@@ -28,35 +28,35 @@ package mdplayer.lib.sid.libsidplayfp.sidplayfp;
  */
 public class SidInfo {
 
-    public String getName() {
+    protected String getName() {
         return null;
     }
 
-    public String getVersion() {
+    protected String getVersion() {
         return null;
     }
 
-    public int getNumberOfCredits() {
+    protected int getNumberOfCredits() {
         return 0;
     }
 
-    public String getCredits(int i) {
+    protected String getCredits(int i) {
         return null;
     }
 
-    public int getMaxsids() {
+    protected int getMaxsids() {
         return 0;
     }
 
-    public int getChannels() {
+    protected int getChannels() {
         return 0;
     }
 
-    public short getDriverAddress() {
+    protected short getDriverAddress() {
         return 0;
     }
 
-    public short getDriverLength() {
+    protected short getDriverLength() {
         return 0;
     }
 
@@ -64,15 +64,15 @@ public class SidInfo {
         return null;
     }
 
-    public String getKernalDesc() {
+    protected String getKernalDesc() {
         return null;
     }
 
-    public String getBasicDesc() {
+    protected String getBasicDesc() {
         return null;
     }
 
-    public String getChargenDesc() {
+    protected String getChargenDesc() {
         return null;
     }
 

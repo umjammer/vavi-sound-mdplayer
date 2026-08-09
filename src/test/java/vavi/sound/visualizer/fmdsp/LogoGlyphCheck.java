@@ -6,6 +6,9 @@
 
 package vavi.sound.visualizer.fmdsp;
 
+import java.util.Set;
+import java.util.TreeSet;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
@@ -44,7 +47,7 @@ class LogoGlyphCheck {
         }
         System.err.println(cols);
         // the palette values used, so the blit can reproduce them
-        java.util.Set<Integer> vals = new java.util.TreeSet<>();
+        Set<Integer> vals = new TreeSet<>();
         for (byte b : data) vals.add(b & 0xff);
         System.err.println("values: " + vals);
     }

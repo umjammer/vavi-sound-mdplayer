@@ -16,16 +16,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
+import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.form.FrameBuffer;
 import mdplayer.form.ScreenPanel;
 import mdplayer.Tables;
 import mdplayer.chips.Ym2203Chip;
 import mdplayer.chips.Ym2608Chip;
+import mdplayer.form.VisVolume;
 import mdplayer.form.kb.ChannelParams;
 import mdplayer.form.kb.Meters;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
+import mdsound.MDSound;
 import mdsound.instrument.YmFmYm2203Inst;
 
 import static mdplayer.form.kb.chip.FormYM2612.drawCh3YM2612_P;
@@ -34,7 +37,7 @@ import mdplayer.form.View;
 
 public class FormYM2203 extends FormChipBase<FormYM2203.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormYM2203.class);
+    private static final Preferences prefs = Preferences.userNodeForPackage(FormYM2203.class);
 
     public FormYM2203(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -74,7 +77,7 @@ public class FormYM2203 extends FormChipBase<FormYM2203.Params> {
         }
     };
 
-    public void changeZoom() {
+    private void changeZoom() {
         this.setMaximumSize(new Dimension(frameSizeW + Common.getImage("planeYM2203").getWidth() * zoom, frameSizeH + Common.getImage("planeYM2203").getHeight() * zoom));
         this.setMinimumSize(new Dimension(frameSizeW + Common.getImage("planeYM2203").getWidth() * zoom, frameSizeH + Common.getImage("planeYM2203").getHeight() * zoom));
         this.setPreferredSize(new Dimension(frameSizeW + Common.getImage("planeYM2203").getWidth() * zoom, frameSizeH + Common.getImage("planeYM2203").getHeight() * zoom));
@@ -439,7 +442,7 @@ public class FormYM2203 extends FormChipBase<FormYM2203.Params> {
         this.addComponentListener(this.componentListener);
     }
 
-    BufferedImage image;
+    private BufferedImage image;
 
 //#region draw buffer
 
@@ -518,19 +521,19 @@ public class FormYM2203 extends FormChipBase<FormYM2203.Params> {
 //#endregion
 
     /** this panel's channel row: the common core plus what only this chip displays */
-    public static class Channel extends ChannelParams {
+    static class Channel extends ChannelParams {
 
-        public boolean ex = false;
-        public int tn = 0;
-        public int tntp = -1;
+        boolean ex = false;
+        int tn = 0;
+        int tntp = -1;
     }
 
     /** this panel's per-frame draw state, diffed new against old (see {@link FormChipBase}) */
-    public static class Params {
-        public int nfrq = -1;
-        public int efrq = -1;
-        public int etype = -1;
-        public final Channel[] channels = {
+    static class Params {
+        int nfrq = -1;
+        int efrq = -1;
+        int etype = -1;
+        final Channel[] channels = {
                 new Channel(), new Channel(), new Channel(), new Channel(),
                 new Channel(), new Channel(), new Channel(), new Channel(),
                 new Channel()
@@ -544,48 +547,48 @@ public class FormYM2203 extends FormChipBase<FormYM2203.Params> {
         @Override public String id() { return "YM2203"; }
         @Override public String menuText() { return "OPN"; }
         @Override public String category() { return "opn"; }
-        @Override public Class<? extends mdplayer.Chip> chip() { return mdplayer.chips.Ym2203Chip.class; }
+        @Override public Class<? extends mdplayer.Chip> chip() { return Ym2203Chip.class; }
         @Override public boolean hasRegisterDump() { return true; }
         @Override public View create(FormMain frm, int chipId, int zoom) { return new FormYM2203(frm, chipId, zoom); }
 
-        @Override public void setChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+        @Override public void setChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
             if (ch >= 0 && ch < 9) {
-                audio.plugin.chipRegister.chip(mdplayer.chips.Ym2203Chip.class).setMask(chipId, ch);
+                audio.plugin.chipRegister.chip(Ym2203Chip.class).setMask(chipId, ch);
             }
         }
 
-        @Override public void resetChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+        @Override public void resetChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
             if (ch >= 0 && ch < 9) {
-                audio.plugin.chipRegister.chip(mdplayer.chips.Ym2203Chip.class).setMask(chipId, ch, false, audio.plugin.stopped);
+                audio.plugin.chipRegister.chip(Ym2203Chip.class).setMask(chipId, ch, false, audio.plugin.stopped);
             }
         }
 
-        @Override public void forceChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
+        @Override public void forceChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
             if (ch >= 0 && ch < 9) {
                 if (mask)
-                    audio.plugin.chipRegister.chip(mdplayer.chips.Ym2203Chip.class).setMask(chipId, ch);
+                    audio.plugin.chipRegister.chip(Ym2203Chip.class).setMask(chipId, ch);
                 else
-                    audio.plugin.chipRegister.chip(mdplayer.chips.Ym2203Chip.class).setMask(chipId, ch, false, audio.plugin.stopped);
+                    audio.plugin.chipRegister.chip(Ym2203Chip.class).setMask(chipId, ch, false, audio.plugin.stopped);
             }
         }
 
-        @Override public void reapplyChannelMasks(mdplayer.Audio audio, int chipId) {
+        @Override public void reapplyChannelMasks(Audio audio, int chipId) {
             for (int ch = 0; ch < 9; ch++)
-                forceChannelMask(audio, mdplayer.chips.Ym2203Chip.class, chipId, ch,
-                        audio.plugin.chipRegister.chip(mdplayer.chips.Ym2203Chip.class).getMask(chipId, ch));
+                forceChannelMask(audio, Ym2203Chip.class, chipId, ch,
+                        audio.plugin.chipRegister.chip(Ym2203Chip.class).getMask(chipId, ch));
         }
 
         @Override public List<MixerSlot> mixerSlots() {
-            return List.of(new MixerSlot(2, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Ym2203Chip.class, "ym2203", 200),
-                    new MixerSlot(3, "FM", mdplayer.chips.Ym2203Chip.class, "ym2203FM", 200),
-                    new MixerSlot(4, "PSG", mdplayer.chips.Ym2203Chip.class, "ym2203SSG", 120));
+            return List.of(new MixerSlot(2, MDSound.Chip.MAIN_TAG, Ym2203Chip.class, "ym2203", 200),
+                    new MixerSlot(3, "FM", Ym2203Chip.class, "ym2203FM", 200),
+                    new MixerSlot(4, "PSG", Ym2203Chip.class, "ym2203SSG", 120));
         }
 
-        @Override public void updateMeters(mdplayer.Audio audio, mdplayer.form.VisVolume visVolume) {
-            int fm = Meters.chipVolume(audio, mdplayer.chips.Ym2203Chip.class) * 5;
+        @Override public void updateMeters(Audio audio, VisVolume visVolume) {
+            int fm = Meters.chipVolume(audio, Ym2203Chip.class) * 5;
             int ssg = 0;
             try {
-                int[] reg = (int[]) Meters.chipInfo(audio, mdplayer.chips.Ym2203Chip.class, "register");
+                int[] reg = (int[]) Meters.chipInfo(audio, Ym2203Chip.class, "register");
                 if (reg != null) {
                     int mixer = reg[0x07];
                     for (int ch = 0; ch < 3; ch++) {
@@ -597,7 +600,7 @@ public class FormYM2203 extends FormChipBase<FormYM2203.Params> {
                         }
                     }
                 }
-            } catch (Exception e) {
+            } catch (Exception _) {
             }
             visVolume.put("ym2203FM", fm);
             visVolume.put("ym2203SSG", ssg);

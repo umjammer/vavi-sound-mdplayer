@@ -42,7 +42,7 @@ public class MdsDriver extends BaseDriver {
 
     private IDriver mdsDriver = null;
 
-    public static final int opmBaseClock = 3579545;
+    private static final int opmBaseClock = 3579545;
 
     public MdsDriver(BasePlugin<? extends BaseDriver> plugin) {
         super(plugin);
@@ -144,12 +144,12 @@ public class MdsDriver extends BaseDriver {
         plugin.chipRegister.chip(Sn76489Chip.class).write(0, cd.data, model);
     }
 
-    public static class MdsChipAction implements ChipAction {
+    static class MdsChipAction implements ChipAction {
         private final Consumer<ChipDatum> write;
         private final TriConsumer<byte[], Integer, Integer> writePCMData;
         private final BiConsumer<Long, Integer> sendWait;
 
-        public MdsChipAction(Consumer<ChipDatum> write, TriConsumer<byte[], Integer, Integer> writePCMData, BiConsumer<Long, Integer> sendWait) {
+        MdsChipAction(Consumer<ChipDatum> write, TriConsumer<byte[], Integer, Integer> writePCMData, BiConsumer<Long, Integer> sendWait) {
             this.write = write;
             this.writePCMData = writePCMData;
             this.sendWait = sendWait;

@@ -5,9 +5,11 @@ import java.lang.System.Logger.Level;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.LineEvent;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
@@ -131,13 +133,13 @@ logger.log(Level.DEBUG, "line: " + e.getType());
 //logger.log(Level.TRACE, "stopped: " + audio.stopped + ", " + audio.hashCode());
 
         if (plugin instanceof SampledPlugin sampledPlugin) {
-            if (sampledPlugin.naudioFileReader != null) {
+            if (sampledPlugin.fileReader != null) {
                 sampledPlugin.stopAudio();
             }
         }
 
         if (plugin instanceof SampledPlugin sampledPlugin) {
-            sampledPlugin.naudioFileName = plugin.playingFileName;
+            sampledPlugin.fileName = plugin.playingFileName;
         }
 
         logger.log(Level.DEBUG, "driver: " + plugin.driverVirtual.getClass().getSimpleName());
@@ -251,7 +253,7 @@ logger.log(Level.DEBUG, "line: " + e.getType());
                 plugin.chipRegister.plugin(RealChipPlugin.class).closeThread();
 
                 if (plugin instanceof SampledPlugin sampledPlugin) {
-                    if (sampledPlugin.naudioFileReader != null) {
+                    if (sampledPlugin.fileReader != null) {
                         sampledPlugin.stopAudio();
                     }
                 }
@@ -274,7 +276,7 @@ logger.log(Level.DEBUG, "line: " + e.getType());
             plugin.chipRegister.plugin(RealChipPlugin.class).setThreadClosed(true);
 
             if (plugin instanceof SampledPlugin sampledPlugin) {
-                if (sampledPlugin.naudioFileReader != null) {
+                if (sampledPlugin.fileReader != null) {
                     return;
                 }
             }
@@ -451,14 +453,14 @@ logger.log(Level.DEBUG, "stop: " + plugin.stopped);
     public void seek(double n) {
         if (plugin instanceof SampledPlugin sampledPlugin) {
             try {
-                if (sampledPlugin.naudioFileReader != null) {
-                    long totalBytes = sampledPlugin.naudioFileReader.getFrameLength() * sampledPlugin.naudioFileReader.getFormat().getFrameSize();
+                if (sampledPlugin.fileReader != null) {
+                    long totalBytes = sampledPlugin.fileReader.getFrameLength() * sampledPlugin.fileReader.getFormat().getFrameSize();
                     long targetPos = (long) (totalBytes * n);
-                    sampledPlugin.naudioFileReader.close();
-                    sampledPlugin.naudioFileReader = javax.sound.sampled.AudioSystem.getAudioInputStream(java.nio.file.Path.of(sampledPlugin.naudioFileName).toFile());
+                    sampledPlugin.fileReader.close();
+                    sampledPlugin.fileReader = AudioSystem.getAudioInputStream(Path.of(sampledPlugin.fileName).toFile());
                     long skipped = 0;
                     while (skipped < targetPos) {
-                        long s = sampledPlugin.naudioFileReader.skip(targetPos - skipped);
+                        long s = sampledPlugin.fileReader.skip(targetPos - skipped);
                         if (s <= 0) break;
                         skipped += s;
                     }
@@ -495,7 +497,7 @@ logger.log(Level.DEBUG, "stop: " + plugin.stopped);
         }
     }
 
-    boolean emuOnly;
+    private boolean emuOnly;
 
     public boolean isEmuOnly() {
         return emuOnly;

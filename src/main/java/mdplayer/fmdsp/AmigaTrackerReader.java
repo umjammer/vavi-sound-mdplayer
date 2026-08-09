@@ -35,7 +35,7 @@ public abstract class AmigaTrackerReader implements FmDspChipReader {
     /** a tracker note of 1 is the replayer's lowest, which these tune to o1 c */
     private static final int lowestNote = 12;
 
-    protected Supplier<BaseDriver> driver;
+    Supplier<BaseDriver> driver;
 
     private final boolean[] prevSoundings = new boolean[MAX_VOICES];
     private final int[] prevNotes = new int[MAX_VOICES];
@@ -59,7 +59,7 @@ public abstract class AmigaTrackerReader implements FmDspChipReader {
     /** the loudest a voice's volume goes */
     protected abstract int volumeMax();
 
-    protected Pan pan(int voice) {
+    Pan pan(int voice) {
         return Pan.CENTER;
     }
 
@@ -67,7 +67,7 @@ public abstract class AmigaTrackerReader implements FmDspChipReader {
      * The note whose period is nearest the one given, which is how a tracker names its pitches.
      * The table runs from note 1 upwards, a period per semitone.
      */
-    protected static int noteOfPeriod(int[] periods, int period) {
+    static int noteOfPeriod(int[] periods, int period) {
         if (period <= 0) return 0;
         int best = 0;
         int bestDiff = Integer.MAX_VALUE;

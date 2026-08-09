@@ -94,7 +94,7 @@ public class SettingMIDIOutPanel extends SettingTab {
     private final JTable dgvMIDIoutListI;
     private final JTable dgvMIDIoutListJ;
 
-    final JTable[] dgv;
+    private final JTable[] dgv;
 
     public SettingMIDIOutPanel() {
         this.btnAddVST = new JButton();

@@ -17,7 +17,7 @@ import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 
 /** temporary probe */
-public class ZanacProbe {
+class ZanacProbe {
 
     static {
         System.setProperty("mdplayer.variant.pcm8", "0");

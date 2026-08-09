@@ -33,9 +33,9 @@ import mdplayer.form.sys.setting.SettingMIDIOutPanel;
 
 public class FormMIDI extends FormBase implements View {
 
-    public boolean isClosed = false;
-    public int x = -1;
-    public int y = -1;
+    private boolean isClosed = false;
+    private int x = -1;
+    private int y = -1;
 
     @Override
     public boolean isClosed() {
@@ -57,7 +57,7 @@ public class FormMIDI extends FormBase implements View {
     private final FrameBuffer frameBuffer = new FrameBuffer();
     private String notes = "";
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormMIDI.class);
+    private static final Preferences prefs = Preferences.userNodeForPackage(FormMIDI.class);
 
     public FormMIDI(FormMain frm, int chipId, int zoom) {
         super(frm);
@@ -102,7 +102,7 @@ public class FormMIDI extends FormBase implements View {
         }
     };
 
-    public void changeZoom() {
+    private void changeZoom() {
         this.setMaximumSize(new Dimension(frameSizeW + Common.getImage("planeMIDI_GM").getWidth() * zoom, frameSizeH + Common.getImage("planeMIDI_GM").getHeight() * zoom));
         this.setMinimumSize(new Dimension(frameSizeW + Common.getImage("planeMIDI_GM").getWidth() * zoom, frameSizeH + Common.getImage("planeMIDI_GM").getHeight() * zoom));
         this.setPreferredSize(new Dimension(frameSizeW + Common.getImage("planeMIDI_GM").getWidth() * zoom, frameSizeH + Common.getImage("planeMIDI_GM").getHeight() * zoom));
@@ -177,57 +177,57 @@ public class FormMIDI extends FormBase implements View {
             newParam.nrpnEGRls[ch] = prm.nrpnEGRls[ch];
         }
 
-        newParam.MIDIModule = prm.MIDIModule;
+        newParam.midiModule = prm.midiModule;
 
         // Display data
         System.arraycopy(prm.LCDDisplay, 0, newParam.LCDDisplay, 0, 64);
-        newParam.LCDDisplayTime = prm.LCDDisplayTime;
-        prm.LCDDisplayTime -= 3;
-        if (prm.LCDDisplayTime < 0) prm.LCDDisplayTime = 0;
+        newParam.lcdDisplayTime = prm.lcdDisplayTime;
+        prm.lcdDisplayTime -= 3;
+        if (prm.lcdDisplayTime < 0) prm.lcdDisplayTime = 0;
 
-        System.arraycopy(prm.LCD8850Display, 0, newParam.LCD8850Display, 0, prm.LCD8850Display.length);
-        newParam.LCD8850DisplayTime = prm.LCD8850DisplayTime;
-        if (newParam.LCD8850DisplayTime != 400) prm.LCD8850DisplayTime -= 3;
-        if (prm.LCD8850DisplayTime < 0) prm.LCD8850DisplayTime = 0;
+        System.arraycopy(prm.lcd8850Display, 0, newParam.lcd8850Display, 0, prm.lcd8850Display.length);
+        newParam.lcd8850DisplayTime = prm.lcd8850DisplayTime;
+        if (newParam.lcd8850DisplayTime != 400) prm.lcd8850DisplayTime -= 3;
+        if (prm.lcd8850DisplayTime < 0) prm.lcd8850DisplayTime = 0;
 
-        newParam.LCDDisplayTimeXG = prm.LCDDisplayTimeXG;
-        prm.LCDDisplayTimeXG -= 3;
-        if (prm.LCDDisplayTimeXG < 0) prm.LCDDisplayTimeXG = 0;
+        newParam.lcdDisplayTimeXG = prm.lcdDisplayTimeXG;
+        prm.lcdDisplayTimeXG -= 3;
+        if (prm.lcdDisplayTimeXG < 0) prm.lcdDisplayTimeXG = 0;
 
         // Display Letter data
-        System.arraycopy(prm.LCDDisplayLetter, 0, newParam.LCDDisplayLetter, 0, 32);
-        newParam.LCDDisplayLetterLen = prm.LCDDisplayLetterLen;
-        newParam.LCDDisplayLetterTime = prm.LCDDisplayLetterTime;
-        prm.LCDDisplayLetterTime -= 3;
-        if (prm.LCDDisplayLetterTime < 0) {
-            if (prm.LCDDisplayLetterLen > 0) {
+        System.arraycopy(prm.lcdDisplayLetter, 0, newParam.lcdDisplayLetter, 0, 32);
+        newParam.lcdDisplayLetterLen = prm.lcdDisplayLetterLen;
+        newParam.lcdDisplayLetterTime = prm.lcdDisplayLetterTime;
+        prm.lcdDisplayLetterTime -= 3;
+        if (prm.lcdDisplayLetterTime < 0) {
+            if (prm.lcdDisplayLetterLen > 0) {
                 for (int i = 1; i < 32; i++) {
-                    prm.LCDDisplayLetter[i - 1] = (byte) (i < prm.LCDDisplayLetterLen ? prm.LCDDisplayLetter[i] : 0x20);
+                    prm.lcdDisplayLetter[i - 1] = (byte) (i < prm.lcdDisplayLetterLen ? prm.lcdDisplayLetter[i] : 0x20);
                 }
-                prm.LCDDisplayLetterTime = 40;
-                prm.LCDDisplayLetterLen--;
+                prm.lcdDisplayLetterTime = 40;
+                prm.lcdDisplayLetterLen--;
             } else {
-                prm.LCDDisplayLetterTime = 0;
+                prm.lcdDisplayLetterTime = 0;
             }
         }
-        newParam.LCDDisplayLetterTimeXG = prm.LCDDisplayLetterTimeXG;
-        prm.LCDDisplayLetterTimeXG -= 3;
-        if (prm.LCDDisplayLetterTimeXG < 0) prm.LCDDisplayLetterTimeXG = 0;
+        newParam.lcdDisplayLetterTimeXG = prm.lcdDisplayLetterTimeXG;
+        prm.lcdDisplayLetterTimeXG -= 3;
+        if (prm.lcdDisplayLetterTimeXG < 0) prm.lcdDisplayLetterTimeXG = 0;
 
-        newParam.ReverbGS = prm.ReverbGS;
-        newParam.ChorusGS = prm.ChorusGS;
-        newParam.DelayGS = prm.DelayGS;
-        newParam.EFXGS = prm.EFXGS;
+        newParam.reverbGS = prm.reverbGS;
+        newParam.chorusGS = prm.chorusGS;
+        newParam.delayGS = prm.delayGS;
+        newParam.efxGS = prm.efxGS;
 
-        newParam.ReverbXG = prm.ReverbXG;
-        newParam.ChorusXG = prm.ChorusXG;
-        newParam.VariationXG = prm.VariationXG;
-        newParam.Insertion1XG = prm.Insertion1XG;
-        newParam.Insertion2XG = prm.Insertion2XG;
-        newParam.Insertion3XG = prm.Insertion3XG;
-        newParam.Insertion4XG = prm.Insertion4XG;
+        newParam.reverbXG = prm.reverbXG;
+        newParam.chorusXG = prm.chorusXG;
+        newParam.variationXG = prm.variationXG;
+        newParam.insertion1XG = prm.insertion1XG;
+        newParam.insertion2XG = prm.insertion2XG;
+        newParam.insertion3XG = prm.insertion3XG;
+        newParam.insertion4XG = prm.insertion4XG;
 
-        newParam.MasterVolume = prm.MasterVolume;
+        newParam.masterVolume = prm.masterVolume;
 
         newParam.lyric = prm.lyric;
 
@@ -235,35 +235,35 @@ public class FormMIDI extends FormBase implements View {
 
     @Override
     public void drawScreenParams() {
-        int module = newParam.MIDIModule;
+        int module = newParam.midiModule;
 
-        if (oldParam.MIDIModule != newParam.MIDIModule) {
-            frameBuffer.drawByteArray(0, 0, FrameBuffer.rPlane_MIDI[newParam.MIDIModule], 440, 0, 0, 440, 352);
-            oldParam.MIDIModule = newParam.MIDIModule;
+        if (oldParam.midiModule != newParam.midiModule) {
+            frameBuffer.drawByteArray(0, 0, FrameBuffer.rPlane_MIDI[newParam.midiModule], 440, 0, 0, 440, 352);
+            oldParam.midiModule = newParam.midiModule;
         }
 
         if (module == 1) {
-            drawMIDI_MacroXG(frameBuffer, module, 0, 4 * 42, 16 + 33 * 8, oldParam.ReverbXG, newParam.ReverbXG);
-            drawMIDI_MacroXG(frameBuffer, module, 1, 4 * 42, 32 + 33 * 8, oldParam.ChorusXG, newParam.ChorusXG);
-            drawMIDI_MacroXG(frameBuffer, module, 2, 4 * 42, 48 + 33 * 8, oldParam.VariationXG, newParam.VariationXG);
-            drawMIDI_MacroXG(frameBuffer, module, 2, 4 * 42, 64 + 33 * 8, oldParam.Insertion1XG, newParam.Insertion1XG);
-            drawMIDI_MacroXG(frameBuffer, module, 2, 4 * 42, 80 + 33 * 8, oldParam.Insertion2XG, newParam.Insertion2XG);
-            drawMIDI_MacroXG(frameBuffer, module, 2, 4 * 60, 32 + 33 * 8, oldParam.Insertion3XG, newParam.Insertion3XG);
-            drawMIDI_MacroXG(frameBuffer, module, 2, 4 * 60, 48 + 33 * 8, oldParam.Insertion4XG, newParam.Insertion4XG);
+            drawMIDI_MacroXG(frameBuffer, module, 0, 4 * 42, 16 + 33 * 8, oldParam.reverbXG, newParam.reverbXG);
+            drawMIDI_MacroXG(frameBuffer, module, 1, 4 * 42, 32 + 33 * 8, oldParam.chorusXG, newParam.chorusXG);
+            drawMIDI_MacroXG(frameBuffer, module, 2, 4 * 42, 48 + 33 * 8, oldParam.variationXG, newParam.variationXG);
+            drawMIDI_MacroXG(frameBuffer, module, 2, 4 * 42, 64 + 33 * 8, oldParam.insertion1XG, newParam.insertion1XG);
+            drawMIDI_MacroXG(frameBuffer, module, 2, 4 * 42, 80 + 33 * 8, oldParam.insertion2XG, newParam.insertion2XG);
+            drawMIDI_MacroXG(frameBuffer, module, 2, 4 * 60, 32 + 33 * 8, oldParam.insertion3XG, newParam.insertion3XG);
+            drawMIDI_MacroXG(frameBuffer, module, 2, 4 * 60, 48 + 33 * 8, oldParam.insertion4XG, newParam.insertion4XG);
         } else {
-            drawMIDI_MacroGS(frameBuffer, module, 0, 4 * 42, 16 + 33 * 8, oldParam.ReverbGS, newParam.ReverbGS);
-            drawMIDI_MacroGS(frameBuffer, module, 1, 4 * 42, 32 + 33 * 8, oldParam.ChorusGS, newParam.ChorusGS);
-            drawMIDI_MacroGS(frameBuffer, module, 2, 4 * 42, 48 + 33 * 8, oldParam.DelayGS, newParam.DelayGS);
-            drawMIDI_MacroGS(frameBuffer, module, 3, 4 * 42, 64 + 33 * 8, oldParam.EFXGS, newParam.EFXGS);
+            drawMIDI_MacroGS(frameBuffer, module, 0, 4 * 42, 16 + 33 * 8, oldParam.reverbGS, newParam.reverbGS);
+            drawMIDI_MacroGS(frameBuffer, module, 1, 4 * 42, 32 + 33 * 8, oldParam.chorusGS, newParam.chorusGS);
+            drawMIDI_MacroGS(frameBuffer, module, 2, 4 * 42, 48 + 33 * 8, oldParam.delayGS, newParam.delayGS);
+            drawMIDI_MacroGS(frameBuffer, module, 3, 4 * 42, 64 + 33 * 8, oldParam.efxGS, newParam.efxGS);
         }
 
-        if (newParam.LCDDisplayLetterTime == 0 && newParam.LCDDisplayLetterTimeXG == 0) {
-            drawMIDILCD_Letter(frameBuffer, module, 4, 277, oldParam.LCDDisplayLetter, 16);
+        if (newParam.lcdDisplayLetterTime == 0 && newParam.lcdDisplayLetterTimeXG == 0) {
+            drawMIDILCD_Letter(frameBuffer, module, 4, 277, oldParam.lcdDisplayLetter, 16);
         } else {
-            drawMIDILCD_Letter(frameBuffer, module, 4, 277, oldParam.LCDDisplayLetter, newParam.LCDDisplayLetter, newParam.LCDDisplayLetterLen);
+            drawMIDILCD_Letter(frameBuffer, module, 4, 277, oldParam.lcdDisplayLetter, newParam.lcdDisplayLetter, newParam.lcdDisplayLetterLen);
         }
 
-        drawFont4IntMIDI(frameBuffer, 60 * 4, 17 * 16 + 8, 2 + module, oldParam.MasterVolume, newParam.MasterVolume);
+        drawFont4IntMIDI(frameBuffer, 60 * 4, 17 * 16 + 8, 2 + module, oldParam.masterVolume, newParam.masterVolume);
 
         drawMIDI_Lyric(frameBuffer, chipId, 60 * 4, 41 * 8, oldParam.lyric, newParam.lyric);
 
@@ -299,7 +299,7 @@ public class FormMIDI extends FormBase implements View {
             oldParam.level[ch][2] = VolumeToMIDILCD(frameBuffer, module, 388, ch * 16 + 24, oldParam.level[ch][2], newParam.level[ch][2]);
 
             // L1:
-            if (newParam.LCDDisplayTime == 0 && newParam.LCD8850DisplayTime == 0 && newParam.LCDDisplayTimeXG == 0) {
+            if (newParam.lcdDisplayTime == 0 && newParam.lcd8850DisplayTime == 0 && newParam.lcdDisplayTimeXG == 0) {
                 VolumeLCDToMIDILCD(frameBuffer,
                         module,
                         5 + ch * 10 + (ch > 3 ? 1 : 0) + (ch > 11 ? 1 : 0),
@@ -315,7 +315,7 @@ public class FormMIDI extends FormBase implements View {
                     oldParam.level[ch][3] = 256;
                     oldParam.level[ch][4] = 256;
                 }
-                if (newParam.LCDDisplayTime > 0) {
+                if (newParam.lcdDisplayTime > 0) {
                     // GS
                     for (int n = 0; n < 64; n++) {
                         s = newParam.LCDDisplay[n];
@@ -338,24 +338,24 @@ public class FormMIDI extends FormBase implements View {
                                 288 + y * 3 + (y + 1) / 2,
                                 FrameBuffer.rMIDILCD[module], 136, 8 * 16, ((s & 0x01) != 0) ? 0 : 8, 8, (y % 2 == 0 || y == 15) ? 3 : 2);
                     }
-                } else if (newParam.LCD8850DisplayTime == 400) {
+                } else if (newParam.lcd8850DisplayTime == 400) {
                     for (int y = 0; y < 64; y++) {
                         for (int n = 0; n < 27; n++) {
-                            s = newParam.LCD8850Display[n + y * 27];
-                            //if (oldParam.LCD8850Display[n + y * 27] != s)
+                            s = newParam.lcd8850Display[n + y * 27];
+                            //if (oldParam.lcd8850Display[n + y * 27] != s)
                             //{
-                            oldParam.LCD8850Display[n + y * 27] = (byte) s;
+                            oldParam.lcd8850Display[n + y * 27] = (byte) s;
                             for (int d = 0; d < 6; d++) {
                                 frameBuffer.drawByteArray(n * 6 + d + 4 + 0, 293 + y - 6, FrameBuffer.rMIDILCD[module], 136, 8 * 16 + 3, ((s & (0x20 >> d)) != 0) ? 0 : 8, 1, 1);
                             }
                             //}
                         }
                     }
-                    newParam.LCD8850DisplayTime--;
-                    if (newParam.LCD8850DisplayTime == 0) {
+                    newParam.lcd8850DisplayTime--;
+                    if (newParam.lcd8850DisplayTime == 0) {
                         frameBuffer.drawByteArray(0, 272, FrameBuffer.rPlane_MIDI[module], 440, 0, 272, 168, 80);
                     }
-                } else if (newParam.LCDDisplayTimeXG > 0) {
+                } else if (newParam.lcdDisplayTimeXG > 0) {
                     // XG
                     for (int n = 0; n < 48; n++) {
                         s = newParam.LCDDisplay[n];
@@ -426,8 +426,8 @@ public class FormMIDI extends FormBase implements View {
 
     @Override
     public void initScreen() {
-        int module = newParam.MIDIModule;
-        newParam.LCD8850DisplayTime = 0;
+        int module = newParam.midiModule;
+        newParam.lcd8850DisplayTime = 0;
         frameBuffer.drawByteArray(0, 272, FrameBuffer.rPlane_MIDI[module], 440, 0, 272, 168, 80);
     }
 
@@ -454,8 +454,8 @@ public class FormMIDI extends FormBase implements View {
         this.addComponentListener(this.componentListener);
     }
 
-    BufferedImage image;
-    public ScreenPanel pbScreen;
+    private BufferedImage image;
+    private ScreenPanel pbScreen;
 
 //#region draw buffer
 

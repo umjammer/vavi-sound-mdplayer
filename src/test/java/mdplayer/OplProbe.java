@@ -16,7 +16,7 @@ import mdplayer.driver.BasePlugin;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
-public class OplProbe {
+class OplProbe {
 
     @Test
     @EnabledIfSystemProperty(named = "vavi.test", matches = "ai")

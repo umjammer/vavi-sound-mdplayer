@@ -30,7 +30,7 @@ import mdplayer.lib.sid.libsidplayfp.sidplayfp.SidTuneInfo;
 
 public class P00 extends SidTuneBase {
 
-    P00() {
+    private P00() {
     }
 
     // prevent copying
@@ -41,8 +41,8 @@ public class P00 extends SidTuneBase {
         return null;
     }
 
-    public static final int X00_ID_LEN = 8;
-    public static final int X00_NAME_LEN = 17;
+    private static final int X00_ID_LEN = 8;
+    private static final int X00_NAME_LEN = 17;
 
     // File format from PC64. PC64 automatically generates
     // the filename from the cbm name (16 to 8 conversion)
@@ -60,11 +60,11 @@ public class P00 extends SidTuneBase {
 
     private static class X00Header {
         // 'C64File' (ASCII)
-        public final byte[] id = new byte[X00_ID_LEN];
+        final byte[] id = new byte[X00_ID_LEN];
         // C64 name (PETSCII)
-        public final byte[] name = new byte[X00_NAME_LEN];
+        final byte[] name = new byte[X00_NAME_LEN];
         // Rel files only (Bytes/Record),
-        public byte length;
+        byte length;
         // should be 0 for all other types
     }
 
@@ -155,7 +155,7 @@ public class P00 extends SidTuneBase {
         return tune;
     }
 
-    public void load(byte[] format, X00Header pHeader) {
+    private void load(byte[] format, X00Header pHeader) {
         info.formatString = new String(format, StandardCharsets.US_ASCII);
 
         {   // Decode file name

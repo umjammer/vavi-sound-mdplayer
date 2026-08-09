@@ -28,7 +28,7 @@ import mdsound.MDSound;
 
 public class FormYMZ280B extends FormChipBase<FormYMZ280B.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormYMZ280B.class);
+    private static final Preferences prefs = Preferences.userNodeForPackage(FormYMZ280B.class);
 
     public FormYMZ280B(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -60,7 +60,7 @@ public class FormYMZ280B extends FormChipBase<FormYMZ280B.Params> {
         }
     };
 
-    public void changeZoom() {
+    private void changeZoom() {
         this.setMaximumSize(new Dimension(frameSizeW + Common.getImage("planeYMZ280B").getWidth() * zoom, frameSizeH + Common.getImage("planeYMZ280B").getHeight() * zoom));
         this.setMinimumSize(new Dimension(frameSizeW + Common.getImage("planeYMZ280B").getWidth() * zoom, frameSizeH + Common.getImage("planeYMZ280B").getHeight() * zoom));
         this.setPreferredSize(new Dimension(frameSizeW + Common.getImage("planeYMZ280B").getWidth() * zoom, frameSizeH + Common.getImage("planeYMZ280B").getHeight() * zoom));
@@ -193,22 +193,22 @@ public class FormYMZ280B extends FormChipBase<FormYMZ280B.Params> {
         this.addComponentListener(this.componentListener);
     }
 
-    BufferedImage image;
+    private BufferedImage image;
 
     /** this panel's channel row: the common core plus what only this chip displays */
-    public static class Channel extends PcmChannelParams {
+    static class Channel extends PcmChannelParams {
 
-        public boolean dda = false;
-        public boolean ex = false;
-        public boolean noise = false;
-        public boolean loopFlg = false;
-        public int nfrq = -1;
+        boolean dda = false;
+        boolean ex = false;
+        boolean noise = false;
+        boolean loopFlg = false;
+        int nfrq = -1;
     }
 
     /** this panel's per-frame draw state, diffed new against old (see {@link FormChipBase}) */
-    public static class Params {
+    static class Params {
 
-        public final Channel[] channels = {
+        final Channel[] channels = {
                 new Channel(), new Channel(), new Channel(), new Channel(),
                 new Channel(), new Channel(), new Channel(), new Channel()
         };

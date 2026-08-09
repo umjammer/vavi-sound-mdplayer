@@ -6,11 +6,12 @@
 
 package mdplayer.lib.psf;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.function.Function;
@@ -61,7 +62,7 @@ public class PsfFile {
     public byte[] program;
 
     /** case insensitive, as the tags are looked up by name */
-    public final Map<String, String> tags = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    private final Map<String, String> tags = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
     /** @return null when the file has no such tag */
     public String tag(String name) {
@@ -154,7 +155,7 @@ logger.log(Level.DEBUG, "loading library #%d: %s".formatted(i + 1, libFile));
         try {
             inflater.setInput(input, offset, length);
             byte[] buffer = new byte[0x10000];
-            java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
             while (!inflater.finished()) {
                 int n = inflater.inflate(buffer);
                 if (n == 0) {
@@ -207,7 +208,7 @@ logger.log(Level.DEBUG, "loading library #%d: %s".formatted(i + 1, libFile));
             if (terminates) {
                 // a delimiter with nothing before it leaves the name or the value unset, and
                 // aosdk then stores nothing - an empty tag simply does not exist
-                byte[] value = start < 0 ? null : java.util.Arrays.copyOfRange(buffer, start, p);
+                byte[] value = start < 0 ? null : Arrays.copyOfRange(buffer, start, p);
                 if (atData) {
                     if (name != null && value != null) {
                         raw.put(name, value);
@@ -236,7 +237,7 @@ logger.log(Level.DEBUG, "loading library #%d: %s".formatted(i + 1, libFile));
      *
      * @return 0 when str is null
      */
-    public static double timeToSeconds(String str) {
+    private static double timeToSeconds(String str) {
         if (str == null) {
             return 0.0;
         }

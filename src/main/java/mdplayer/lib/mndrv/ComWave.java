@@ -94,7 +94,7 @@ public class ComWave {
         }
     }
 
-    public void _wave_init_kon_common_a(byte val) {
+    private void _wave_init_kon_common_a(byte val) {
         if (/* signed */ val >= 0) {
             _wave_init_compatible_a();
             return;
@@ -113,7 +113,7 @@ public class ComWave {
         mm.write(reg.a3 + W_W.loop_flag, 0xff);
     }
 
-    public void _wave_init_compatible_a() {
+    private void _wave_init_compatible_a() {
         if ((mm.readByte(reg.a6 + W.flag3) & 0x40) == 0) {
             if ((mm.readByte(reg.a6 + W.flag) & 0x40) != 0) return;
         }
@@ -123,7 +123,7 @@ public class ComWave {
 
     }
 
-    public void _wave_init_kon_common(byte val) {
+    private void _wave_init_kon_common(byte val) {
         if (/* signed */ val >= 0) {
             _wave_init_compatible();
             return;
@@ -142,7 +142,7 @@ public class ComWave {
         mm.write(reg.a3 + W_W.loop_flag, (byte) 0xff);
     }
 
-    public void _wave_init_compatible() {
+    private void _wave_init_compatible() {
         if ((mm.readByte(reg.a6 + W.flag3) & 0x40) == 0) {
             if ((mm.readByte(reg.a6 + W.flag) & 0x40) != 0) return;
         }
@@ -223,7 +223,7 @@ public class ComWave {
         _wave_init_kof_common(val);
     }
 
-    public void _wave_init_kof_common(byte val) {
+    private void _wave_init_kof_common(byte val) {
         if (/* signed */ val >= 0) {
             return;
         }
@@ -245,7 +245,7 @@ public class ComWave {
     }
 
     //
-    public void _weffect_init_kon() {
+    private void _weffect_init_kon() {
         reg.setD0_B(mm.readByte(reg.a5 + W.weffect) & 0xff);
         if (/* signed */ (byte) reg.getD0_B() >= 0) return;
 
@@ -278,7 +278,7 @@ public class ComWave {
         }
     }
 
-    public void _weffect_init_kon_common() {
+    private void _weffect_init_kon_common() {
         reg.setD1_B(mm.readByte(reg.a3 + W_We.mode) & 0xff);
         if (/* signed */ (byte) reg.getD1_B() < 0) return;
 
@@ -302,7 +302,7 @@ public class ComWave {
     }
 
     //
-    public void _weffect_init_kof() {
+    private void _weffect_init_kof() {
         reg.setD0_B(mm.readByte(reg.a5 + W.weffect) & 0xff);
         if (/* signed */ (byte) reg.getD0_B() >= 0) return;
 
@@ -337,7 +337,7 @@ public class ComWave {
         _weffect_init_kof_common();
     }
 
-    public void _weffect_init_kof_common() {
+    private void _weffect_init_kof_common() {
         reg.setD1_B(mm.readByte(reg.a3 + W_We.mode) & 0xff);
         if (/* signed */ (byte) reg.getD1_B() < 0) return;
 
@@ -395,7 +395,7 @@ public class ComWave {
         }
     }
 
-    public void _ch_effect_exec() {
+    private void _ch_effect_exec() {
         reg.setD4_B(mm.readByte(reg.a3 + W_We.mode) & 0xff);
         if (/* signed */ (byte) reg.getD4_B() >= 0) {
             cf = reg.getD4_B() & 1;
@@ -425,7 +425,7 @@ public class ComWave {
     }
 
     //
-    public void _effect_exec() {
+    private void _effect_exec() {
         short sp = (short) reg.getD0_W();
 
         mm.write(reg.a3 + W_We.delay_work, (byte) ((mm.readByte(reg.a3 + W_We.delay_work) - 1) & 0xff));
@@ -595,12 +595,12 @@ public class ComWave {
     }
 
     //
-    public void _com_wave_nop() {
+    private void _com_wave_nop() {
         reg.D0_L = 0;
     }
 
     //
-    public void _com_wave_normal() {
+    private void _com_wave_normal() {
         mm.write(reg.a4 + W_L.delay_work, (byte) ((mm.readByte(reg.a4 + W_L.delay_work) - 1) & 0xff));
         if (mm.readByte(reg.a4 + W_L.delay_work) == 0) { // break _com_wave_exit;
             mm.write(reg.a4 + W_L.delay_work, mm.readByte(reg.a4 + W_L.lfo_sp));
@@ -639,7 +639,7 @@ public class ComWave {
     }
 
     /** */
-    public void _com_wave_lw() {
+    private void _com_wave_lw() {
         mm.write(reg.a4 + W_L.delay_work, (byte) ((mm.readByte(reg.a4 + W_L.delay_work) - 1) & 0xff));
         if (mm.readByte(reg.a4 + W_L.delay_work) != 0) { // break _com_wave_k_exit;
             reg.setD0_W(mm.readShort(reg.a4 + W_L.bendwork) & 0xffff);
@@ -704,7 +704,7 @@ public class ComWave {
     }
 
     //
-    public void _com_wave_saw() {
+    private void _com_wave_saw() {
         mm.write(reg.a4 + W_L.delay_work, (byte) ((mm.readByte(reg.a4 + W_L.delay_work) - 1) & 0xff));
         if (mm.readByte(reg.a4 + W_L.delay_work) == 0) { // break _com_wave_saw_exit;
             mm.write(reg.a4 + W_L.delay_work, mm.readByte(reg.a4 + W_L.lfo_sp));
@@ -723,7 +723,7 @@ public class ComWave {
     }
 
     //
-    public void _com_wave_square() {
+    private void _com_wave_square() {
         mm.write(reg.a4 + W_L.delay_work, (byte) ((mm.readByte(reg.a4 + W_L.delay_work) - 1) & 0xff));
         if (mm.readByte(reg.a4 + W_L.delay_work) == 0) { // break _com_wave_square_exit;
             mm.write(reg.a4 + W_L.delay_work, mm.readByte(reg.a4 + W_L.lfo_sp));
@@ -742,7 +742,7 @@ public class ComWave {
     }
 
     //
-    public void _com_wave_triangle() {
+    private void _com_wave_triangle() {
         mm.write(reg.a4 + W_L.delay_work, (byte) ((mm.readByte(reg.a4 + W_L.delay_work) - 1) & 0xff));
         if (mm.readByte(reg.a4 + W_L.delay_work) == 0) { // break _com_wave_triangle_exit;
             mm.write(reg.a4 + W_L.delay_work, mm.readByte(reg.a4 + W_L.lfo_sp));
@@ -761,7 +761,7 @@ public class ComWave {
     }
 
     //
-    public void _com_wave_randome() {
+    private void _com_wave_randome() {
         mm.write(reg.a4 + W_L.delay_work, (byte) ((mm.readByte(reg.a4 + W_L.delay_work) - 1) & 0xff));
         if (mm.readByte(reg.a4 + W_L.delay_work) == 0) { // break _com_wave_randome_exit;
             mm.write(reg.a4 + W_L.delay_work, mm.readByte(reg.a4 + W_L.lfo_sp));
@@ -781,7 +781,7 @@ public class ComWave {
     }
 
     //
-    public void _com_wave_saw_a() {
+    private void _com_wave_saw_a() {
         mm.write(reg.a4 + W_L.delay_work, (byte) ((mm.readByte(reg.a4 + W_L.delay_work) - 1) & 0xff));
         if (mm.readByte(reg.a4 + W_L.delay_work) == 0) { // break _com_wave_saw_a_exit;
             mm.write(reg.a4 + W_L.delay_work, mm.readByte(reg.a4 + W_L.lfo_sp));
@@ -803,7 +803,7 @@ public class ComWave {
     }
 
     //
-    public void _com_wave_square_a() {
+    private void _com_wave_square_a() {
         mm.write(reg.a4 + W_L.delay_work, (byte) ((mm.readByte(reg.a4 + W_L.delay_work) - 1) & 0xff));
         if (mm.readByte(reg.a4 + W_L.delay_work) == 0) { // break _com_wave_square_a_exit;
             mm.write(reg.a4 + W_L.delay_work, mm.readByte(reg.a4 + W_L.lfo_sp));
@@ -825,7 +825,7 @@ public class ComWave {
     }
 
     //
-    public void _com_wave_triangle_a() {
+    private void _com_wave_triangle_a() {
         mm.write(reg.a4 + W_L.delay_work, (byte) ((mm.readByte(reg.a4 + W_L.delay_work) - 1) & 0xff));
         if (mm.readByte(reg.a4 + W_L.delay_work) == 0) { // break _com_wave_triangle_a_exit;
             mm.write(reg.a4 + W_L.delay_work, mm.readByte(reg.a4 + W_L.lfo_sp));
@@ -847,7 +847,7 @@ public class ComWave {
     }
 
     //
-    public void _com_wave_randome_a() {
+    private void _com_wave_randome_a() {
         mm.write(reg.a4 + W_L.delay_work, (byte) ((mm.readByte(reg.a4 + W_L.delay_work) - 1) & 0xff));
         if (mm.readByte(reg.a4 + W_L.delay_work) == 0) { // break _com_wave_randome_a_exit;
             mm.write(reg.a4 + W_L.delay_work, mm.readByte(reg.a4 + W_L.lfo_sp));

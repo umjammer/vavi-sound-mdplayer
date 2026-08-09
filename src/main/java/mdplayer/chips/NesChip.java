@@ -132,7 +132,7 @@ public class NesChip extends BaseChip {
 
     // vgm
     @Override
-    protected void setMask(int chipId, int ch, boolean mask, Object... args) {
+    void setMask(int chipId, int ch, boolean mask, Object... args) {
         if (mask) {
             if (chipId == 0) {
                 switch (ch) {

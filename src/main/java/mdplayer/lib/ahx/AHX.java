@@ -10,28 +10,30 @@ package mdplayer.lib.ahx;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 
 public class AHX {
 
-    public static class ByteSlice {
-        public final byte[] array;
-        public final int offset;
-        public final int length;
+    static class ByteSlice {
+        final byte[] array;
+        final int offset;
+        final int length;
 
-        public ByteSlice(byte[] array) {
+        ByteSlice(byte[] array) {
             this(array, 0, array.length);
         }
 
-        public ByteSlice(byte[] array, int offset, int length) {
+        ByteSlice(byte[] array, int offset, int length) {
             this.array = array;
             this.offset = offset;
             this.length = length;
         }
 
-        public byte get(int index) {
+        byte get(int index) {
             return array[offset + index];
         }
 
@@ -53,77 +55,77 @@ public class AHX {
     }
 
     public static class AHXPlayer {
-        public static class AHXPListEntry {
-            public int note;
-            public int fixed;
-            public int waveform;
-            public int[] fx = new int[2];
-            public int[] fxParam = new int[2];
+        static class AHXPListEntry {
+            int note;
+            int fixed;
+            int waveform;
+            final int[] fx = new int[2];
+            final int[] fxParam = new int[2];
         }
 
-        public static class AHXPList {
-            public int speed;
-            public int length;
-            public AHXPListEntry[] entries;
+        static class AHXPList {
+            int speed;
+            int length;
+            AHXPListEntry[] entries;
         }
 
-        public static class AHXEnvelope {
-            public int aFrames;
-            public int aVolume;
-            public int dFrames;
-            public int dVolume;
-            public int sFrames;
-            public int rFrames;
-            public int rVolume;
+        static class AHXEnvelope {
+            int aFrames;
+            int aVolume;
+            int dFrames;
+            int dVolume;
+            int sFrames;
+            int rFrames;
+            int rVolume;
         }
 
-        public static class AHXInstrument {
-            public String name;
-            public int volume; // 0..64
-            public int waveLength; // 0..5 (shifts)
-            public AHXEnvelope envelope = new AHXEnvelope();
-            public int filterLowerLimit;
-            public int filterUpperLimit;
-            public int filterSpeed;
-            public int squareLowerLimit;
-            public int squareUpperLimit;
-            public int squareSpeed;
-            public int vibratoDelay;
-            public int vibratoDepth;
-            public int vibratoSpeed;
-            public int hardCutRelease;
-            public int hardCutReleaseFrames;
-            public AHXPList pList = new AHXPList();
+        static class AHXInstrument {
+            String name;
+            int volume; // 0..64
+            int waveLength; // 0..5 (shifts)
+            final AHXEnvelope envelope = new AHXEnvelope();
+            int filterLowerLimit;
+            int filterUpperLimit;
+            int filterSpeed;
+            int squareLowerLimit;
+            int squareUpperLimit;
+            int squareSpeed;
+            int vibratoDelay;
+            int vibratoDepth;
+            int vibratoSpeed;
+            int hardCutRelease;
+            int hardCutReleaseFrames;
+            final AHXPList pList = new AHXPList();
         }
 
-        public static class AHXPosition {
-            public int[] track = new int[4];
-            public int[] transpose = new int[4];
+        static class AHXPosition {
+            final int[] track = new int[4];
+            final int[] transpose = new int[4];
         }
 
-        public static class AHXStep {
-            public int note;
-            public int instrument;
-            public int fx;
-            public int fxParam;
+        static class AHXStep {
+            int note;
+            int instrument;
+            int fx;
+            int fxParam;
         }
 
         public static class AHXSong {
             public String name;
-            public int restart;
-            public int positionNr;
-            public int trackLength;
-            public int trackNr;
-            public int instrumentNr;
+            int restart;
+            int positionNr;
+            int trackLength;
+            int trackNr;
+            int instrumentNr;
             public int subsongNr;
-            public int revision;
-            public int speedMultiplier;
-            public AHXPosition[] positions;
-            public AHXStep[][] tracks;
-            public AHXInstrument[] instruments;
-            public int[] subsongs;
+            int revision;
+            int speedMultiplier;
+            AHXPosition[] positions;
+            AHXStep[][] tracks;
+            AHXInstrument[] instruments;
+            int[] subsongs;
 
-            public AHXSong() {
+            AHXSong() {
                 restart = positionNr = trackLength = trackNr = instrumentNr = subsongNr = 0;
                 name = null;
                 positions = null;
@@ -133,15 +135,15 @@ public class AHX {
             }
         }
 
-        public int playingTime;
+        int playingTime;
         public AHXSong song;
 
-        public AHXWaves waves;
+        AHXWaves waves;
         private int ourWaves;
-        public AHXVoice[] voices = new AHXVoice[4];
+        public final AHXVoice[] voices = new AHXVoice[4];
 
-        public int stepWaitFrames;
-        public int getNewPosition;
+        int stepWaitFrames;
+        int getNewPosition;
         public int songEndReached;
 
         /**
@@ -150,17 +152,17 @@ public class AHX {
          * more than a second.
          */
         private static final int stallTempo = 0x40;
-        public int timingValue;
-        public int patternBreak;
-        public int mainVolume;
-        public int playing;
-        public int tempo;
-        public int posNr;
-        public int posJump;
-        public int noteNr;
-        public int posJumpNote;
-        public ByteSlice[] waveformTab = new ByteSlice[4];
-        public int wnRandom;
+        int timingValue;
+        int patternBreak;
+        int mainVolume;
+        int playing;
+        int tempo;
+        int posNr;
+        int posJump;
+        int noteNr;
+        int posJumpNote;
+        final ByteSlice[] waveformTab = new ByteSlice[4];
+        int wnRandom;
 
         private static final int[] VIBRATO_TABLE = {
             0, 24, 49, 74, 97, 120, 141, 161, 180, 197, 212, 224, 235, 244, 250, 253, 255,
@@ -185,7 +187,7 @@ public class AHX {
             init(null);
         }
 
-        public void init(AHXWaves waves) {
+        void init(AHXWaves waves) {
             if (waves != null) {
                 ourWaves = 0;
                 this.waves = waves;
@@ -194,16 +196,16 @@ public class AHX {
                 this.waves = new AHXWaves();
             }
 
-            waveformTab[0] = this.waves.Triangle04;
-            waveformTab[1] = this.waves.Sawtooth04;
-            waveformTab[3] = this.waves.WhiteNoiseBig;
+            waveformTab[0] = this.waves.triangle04;
+            waveformTab[1] = this.waves.sawtooth04;
+            waveformTab[3] = this.waves.whiteNoiseBig;
         }
 
         public void dispose() {
         }
 
         public void loadSong(String filename) throws IOException {
-            byte[] songBuffer = Files.readAllBytes(java.nio.file.Paths.get(filename));
+            byte[] songBuffer = Files.readAllBytes(Path.of(filename));
             loadSong(songBuffer, songBuffer.length);
         }
 
@@ -361,7 +363,7 @@ public class AHX {
             }
         }
 
-        public void playIRQ() {
+        void playIRQ() {
             if (stepWaitFrames <= 0) {
                 if (getNewPosition != 0) {
                     int nextPos = (posNr + 1 == song.positionNr) ? 0 : (posNr + 1);
@@ -425,7 +427,7 @@ public class AHX {
             getNewPosition = 1;
         }
 
-        public void processStep(int v) {
+        void processStep(int v) {
             if (voices[v].trackOn == 0) return;
             voices[v].volumeSlideUp = voices[v].volumeSlideDown = 0;
 
@@ -643,7 +645,7 @@ public class AHX {
             }
         }
 
-        public void processFrame(int v) {
+        void processFrame(int v) {
             if (voices[v].trackOn == 0) return;
 
             if (voices[v].noteDelayOn != 0) {
@@ -914,7 +916,7 @@ public class AHX {
             voices[v].audioVolume = ((((((((voices[v].adsrVolume >> 8) * voices[v].noteMaxVolume) >> 6) * voices[v].perfSubVolume) >> 6) * voices[v].trackMasterVolume) >> 6) * mainVolume) >> 6;
         }
 
-        public void setAudio(int v) {
+        void setAudio(int v) {
             if (voices[v].trackOn == 0) {
                 voices[v].voiceVolume = 0;
                 return;
@@ -947,7 +949,7 @@ public class AHX {
             }
         }
 
-        public void pListCommandParse(int v, int fx, int fxParam) {
+        void pListCommandParse(int v, int fx, int fxParam) {
             switch (fx) {
                 case 0:
                     if (song.revision > 0 && fxParam != 0) {
@@ -1030,91 +1032,91 @@ public class AHX {
         }
 
         public static class AHXVoice {
-            public int voiceVolume;
-            public int voicePeriod;
-            public byte[] voiceBuffer = new byte[0x281]; // for oversampling optimization!
+            int voiceVolume;
+            int voicePeriod;
+            final byte[] voiceBuffer = new byte[0x281]; // for oversampling optimization!
 
-            public int track;
-            public int transpose;
-            public int nextTrack;
-            public int nextTranspose;
-            public int adsrVolume; // fixed point 8:8
-            public AHXEnvelope adsr = new AHXEnvelope(); // frames/delta fixed 8:8
-            public AHXInstrument instrument; // current instrument
-            public int instrPeriod;
-            public int trackPeriod;
-            public int vibratoPeriod;
+            int track;
+            int transpose;
+            int nextTrack;
+            int nextTranspose;
+            int adsrVolume; // fixed point 8:8
+            final AHXEnvelope adsr = new AHXEnvelope(); // frames/delta fixed 8:8
+            AHXInstrument instrument; // current instrument
+            int instrPeriod;
+            int trackPeriod;
+            int vibratoPeriod;
             public int noteMaxVolume;
-            public int perfSubVolume;
-            public int trackMasterVolume;
-            public int newWaveform;
-            public int waveform;
-            public int plantSquare;
-            public int plantPeriod;
-            public int ignoreSquare;
+            int perfSubVolume;
+            int trackMasterVolume;
+            int newWaveform;
+            int waveform;
+            int plantSquare;
+            int plantPeriod;
+            int ignoreSquare;
             public int trackOn;
-            public int fixedNote;
-            public int volumeSlideUp;
-            public int volumeSlideDown;
-            public int hardCut;
-            public int hardCutRelease;
-            public int hardCutReleaseF;
-            public int periodSlideSpeed;
-            public int periodSlidePeriod;
-            public int periodSlideLimit;
-            public int periodSlideOn;
-            public int periodSlideWithLimit;
-            public int periodPerfSlideSpeed;
-            public int periodPerfSlidePeriod;
-            public int periodPerfSlideOn;
-            public int vibratoDelay;
-            public int vibratoCurrent;
-            public int vibratoDepth;
-            public int vibratoSpeed;
-            public int squareOn;
-            public int squareInit;
-            public int squareWait;
-            public int squareLowerLimit;
-            public int squareUpperLimit;
-            public int squarePos;
-            public int squareSign;
-            public int squareSlidingIn;
-            public int squareReverse;
-            public int filterOn;
-            public int filterInit;
-            public int filterWait;
-            public int filterLowerLimit;
-            public int filterUpperLimit;
-            public int filterPos;
-            public int filterSign;
-            public int filterSpeed;
-            public int filterSlidingIn;
-            public int ignoreFilter;
-            public int perfCurrent;
-            public int perfSpeed;
-            public int perfWait;
-            public int waveLength;
-            public AHXPList perfList;
-            public int noteDelayWait;
-            public int noteDelayOn;
-            public int noteCutWait;
-            public int noteCutOn;
+            int fixedNote;
+            int volumeSlideUp;
+            int volumeSlideDown;
+            int hardCut;
+            int hardCutRelease;
+            int hardCutReleaseF;
+            int periodSlideSpeed;
+            int periodSlidePeriod;
+            int periodSlideLimit;
+            int periodSlideOn;
+            int periodSlideWithLimit;
+            int periodPerfSlideSpeed;
+            int periodPerfSlidePeriod;
+            int periodPerfSlideOn;
+            int vibratoDelay;
+            int vibratoCurrent;
+            int vibratoDepth;
+            int vibratoSpeed;
+            int squareOn;
+            int squareInit;
+            int squareWait;
+            int squareLowerLimit;
+            int squareUpperLimit;
+            int squarePos;
+            int squareSign;
+            int squareSlidingIn;
+            int squareReverse;
+            int filterOn;
+            int filterInit;
+            int filterWait;
+            int filterLowerLimit;
+            int filterUpperLimit;
+            int filterPos;
+            int filterSign;
+            int filterSpeed;
+            int filterSlidingIn;
+            int ignoreFilter;
+            int perfCurrent;
+            int perfSpeed;
+            int perfWait;
+            int waveLength;
+            AHXPList perfList;
+            int noteDelayWait;
+            int noteDelayOn;
+            int noteCutWait;
+            int noteCutOn;
             public byte[] audioPointer;
-            public ByteSlice audioSource;
+            ByteSlice audioSource;
             public int audioPeriod;
-            public int audioVolume;
-            public byte[] squareTempBuffer = new byte[0x80];
+            int audioVolume;
+            final byte[] squareTempBuffer = new byte[0x80];
 
-            public AHXVoice() {
+            AHXVoice() {
                 init();
             }
 
-            public void init() {
+            void init() {
                 trackOn = 1;
                 trackMasterVolume = 0x40;
             }
 
-            public void calcADSR() {
+            void calcADSR() {
                 adsr.aFrames = instrument.envelope.aFrames;
                 adsr.aVolume = instrument.envelope.aVolume * 256 / adsr.aFrames;
                 adsr.dFrames = instrument.envelope.dFrames;
@@ -1125,8 +1127,8 @@ public class AHX {
             }
         }
 
-        public static class AHXWaves {
-            public final byte[] waveBuffer = new byte[TOTAL_SIZE];
+        static class AHXWaves {
+            final byte[] waveBuffer = new byte[TOTAL_SIZE];
 
             private static final int offLowPasses = 0;
             private static final int offTriangle04 = ((0xfc + 0xfc + 0x80 * 0x1f + 0x80 + 3 * 0x280) * 31);
@@ -1141,64 +1143,64 @@ public class AHX {
             private static final int offSawtooth20 = ((0xfc + 0xfc + 0x80 * 0x1f + 0x80 + 3 * 0x280) * 31) + 4 + 8 + 16 + 32 + 64 + 128 + 4 + 8 + 16;
             private static final int offSawtooth40 = ((0xfc + 0xfc + 0x80 * 0x1f + 0x80 + 3 * 0x280) * 31) + 4 + 8 + 16 + 32 + 64 + 128 + 4 + 8 + 16 + 32;
             private static final int offSawtooth80 = ((0xfc + 0xfc + 0x80 * 0x1f + 0x80 + 3 * 0x280) * 31) + 4 + 8 + 16 + 32 + 64 + 128 + 4 + 8 + 16 + 32 + 64;
-            public static final int offSquares = ((0xfc + 0xfc + 0x80 * 0x1f + 0x80 + 3 * 0x280) * 31) + 4 + 8 + 16 + 32 + 64 + 128 + 4 + 8 + 16 + 32 + 64 + 128;
+            static final int offSquares = ((0xfc + 0xfc + 0x80 * 0x1f + 0x80 + 3 * 0x280) * 31) + 4 + 8 + 16 + 32 + 64 + 128 + 4 + 8 + 16 + 32 + 64 + 128;
             private static final int offWhiteNoiseBig = ((0xfc + 0xfc + 0x80 * 0x1f + 0x80 + 3 * 0x280) * 31) + 4 + 8 + 16 + 32 + 64 + 128 + 4 + 8 + 16 + 32 + 64 + 128 + (0x80 * 0x20);
             private static final int offHighPasses = ((0xfc + 0xfc + 0x80 * 0x1f + 0x80 + 3 * 0x280) * 31) + 4 + 8 + 16 + 32 + 64 + 128 + 4 + 8 + 16 + 32 + 64 + 128 + (0x80 * 0x20) + (0x280 * 3);
             private static final int TOTAL_SIZE = ((0xfc + 0xfc + 0x80 * 0x1f + 0x80 + 3 * 0x280) * 31) + 4 + 8 + 16 + 32 + 64 + 128 + 4 + 8 + 16 + 32 + 64 + 128 + (0x80 * 0x20) + (0x280 * 3) + ((0xfc + 0xfc + 0x80 * 0x1f + 0x80 + 3 * 0x280) * 31);
 
-            public final ByteSlice LowPasses;
-            public final ByteSlice Triangle04;
-            public final ByteSlice Triangle08;
-            public final ByteSlice Triangle10;
-            public final ByteSlice Triangle20;
-            public final ByteSlice Triangle40;
-            public final ByteSlice Triangle80;
-            public final ByteSlice Sawtooth04;
-            public final ByteSlice Sawtooth08;
-            public final ByteSlice Sawtooth10;
-            public final ByteSlice Sawtooth20;
-            public final ByteSlice Sawtooth40;
-            public final ByteSlice Sawtooth80;
-            public final ByteSlice Squares;
-            public final ByteSlice WhiteNoiseBig;
-            public final ByteSlice HighPasses;
+            final ByteSlice lowPasses;
+            final ByteSlice triangle04;
+            final ByteSlice triangle08;
+            final ByteSlice triangle10;
+            final ByteSlice triangle20;
+            final ByteSlice triangle40;
+            final ByteSlice triangle80;
+            final ByteSlice sawtooth04;
+            final ByteSlice sawtooth08;
+            final ByteSlice sawtooth10;
+            final ByteSlice sawtooth20;
+            final ByteSlice sawtooth40;
+            final ByteSlice sawtooth80;
+            final ByteSlice squares;
+            final ByteSlice whiteNoiseBig;
+            final ByteSlice highPasses;
 
             private final Map<Integer, ByteSlice> waveCache = new HashMap<>();
 
-            public AHXWaves() {
-                LowPasses = new ByteSlice(waveBuffer, 0, offTriangle04);
-                Triangle04 = new ByteSlice(waveBuffer, offTriangle04, offTriangle08 - offTriangle04);
-                Triangle08 = new ByteSlice(waveBuffer, offTriangle08, offTriangle10 - offTriangle04);
-                Triangle10 = new ByteSlice(waveBuffer, offTriangle10, offTriangle20 - offTriangle10);
-                Triangle20 = new ByteSlice(waveBuffer, offTriangle20, offTriangle40 - offTriangle20);
-                Triangle40 = new ByteSlice(waveBuffer, offTriangle40, offTriangle80 - offTriangle40);
-                Triangle80 = new ByteSlice(waveBuffer, offTriangle80, offSawtooth04 - offTriangle80);
-                Sawtooth04 = new ByteSlice(waveBuffer, offSawtooth04, offSawtooth08 - offSawtooth04);
-                Sawtooth08 = new ByteSlice(waveBuffer, offSawtooth08, offSawtooth10 - offSawtooth08);
-                Sawtooth10 = new ByteSlice(waveBuffer, offSawtooth10, offSawtooth20 - offSawtooth10);
-                Sawtooth20 = new ByteSlice(waveBuffer, offSawtooth20, offSawtooth40 - offSawtooth20);
-                Sawtooth40 = new ByteSlice(waveBuffer, offSawtooth40, offSawtooth80 - offSawtooth40);
-                Sawtooth80 = new ByteSlice(waveBuffer, offSawtooth80, offSquares - offSawtooth80);
-                Squares = new ByteSlice(waveBuffer, offSquares, offWhiteNoiseBig - offSquares);
-                WhiteNoiseBig = new ByteSlice(waveBuffer, offWhiteNoiseBig, offHighPasses - offWhiteNoiseBig);
-                HighPasses = new ByteSlice(waveBuffer, offHighPasses, waveBuffer.length - offHighPasses);
+            AHXWaves() {
+                lowPasses = new ByteSlice(waveBuffer, 0, offTriangle04);
+                triangle04 = new ByteSlice(waveBuffer, offTriangle04, offTriangle08 - offTriangle04);
+                triangle08 = new ByteSlice(waveBuffer, offTriangle08, offTriangle10 - offTriangle04);
+                triangle10 = new ByteSlice(waveBuffer, offTriangle10, offTriangle20 - offTriangle10);
+                triangle20 = new ByteSlice(waveBuffer, offTriangle20, offTriangle40 - offTriangle20);
+                triangle40 = new ByteSlice(waveBuffer, offTriangle40, offTriangle80 - offTriangle40);
+                triangle80 = new ByteSlice(waveBuffer, offTriangle80, offSawtooth04 - offTriangle80);
+                sawtooth04 = new ByteSlice(waveBuffer, offSawtooth04, offSawtooth08 - offSawtooth04);
+                sawtooth08 = new ByteSlice(waveBuffer, offSawtooth08, offSawtooth10 - offSawtooth08);
+                sawtooth10 = new ByteSlice(waveBuffer, offSawtooth10, offSawtooth20 - offSawtooth10);
+                sawtooth20 = new ByteSlice(waveBuffer, offSawtooth20, offSawtooth40 - offSawtooth20);
+                sawtooth40 = new ByteSlice(waveBuffer, offSawtooth40, offSawtooth80 - offSawtooth40);
+                sawtooth80 = new ByteSlice(waveBuffer, offSawtooth80, offSquares - offSawtooth80);
+                squares = new ByteSlice(waveBuffer, offSquares, offWhiteNoiseBig - offSquares);
+                whiteNoiseBig = new ByteSlice(waveBuffer, offWhiteNoiseBig, offHighPasses - offWhiteNoiseBig);
+                highPasses = new ByteSlice(waveBuffer, offHighPasses, waveBuffer.length - offHighPasses);
 
-                waveCache.put(0, LowPasses);
-                waveCache.put(offTriangle04, Triangle04);
-                waveCache.put(offTriangle08, Triangle08);
-                waveCache.put(offTriangle10, Triangle10);
-                waveCache.put(offTriangle20, Triangle20);
-                waveCache.put(offTriangle40, Triangle40);
-                waveCache.put(offTriangle80, Triangle80);
-                waveCache.put(offSawtooth04, Sawtooth04);
-                waveCache.put(offSawtooth08, Sawtooth08);
-                waveCache.put(offSawtooth10, Sawtooth10);
-                waveCache.put(offSawtooth20, Sawtooth20);
-                waveCache.put(offSawtooth40, Sawtooth40);
-                waveCache.put(offSawtooth80, Sawtooth80);
-                waveCache.put(offSquares, Squares);
-                waveCache.put(offWhiteNoiseBig, WhiteNoiseBig);
-                waveCache.put(offHighPasses, HighPasses);
+                waveCache.put(0, lowPasses);
+                waveCache.put(offTriangle04, triangle04);
+                waveCache.put(offTriangle08, triangle08);
+                waveCache.put(offTriangle10, triangle10);
+                waveCache.put(offTriangle20, triangle20);
+                waveCache.put(offTriangle40, triangle40);
+                waveCache.put(offTriangle80, triangle80);
+                waveCache.put(offSawtooth04, sawtooth04);
+                waveCache.put(offSawtooth08, sawtooth08);
+                waveCache.put(offSawtooth10, sawtooth10);
+                waveCache.put(offSawtooth20, sawtooth20);
+                waveCache.put(offSawtooth40, sawtooth40);
+                waveCache.put(offSawtooth80, sawtooth80);
+                waveCache.put(offSquares, squares);
+                waveCache.put(offWhiteNoiseBig, whiteNoiseBig);
+                waveCache.put(offHighPasses, highPasses);
 
                 generate();
             }
@@ -1221,27 +1223,27 @@ public class AHX {
                 generateFilterWaveforms(waveBuffer, offTriangle04, waveBuffer, 0, waveBuffer, offHighPasses);
             }
 
-            public int waveToOffset(ByteSlice wave) {
-                if (wave.equals(LowPasses)) return offLowPasses;
-                if (wave.equals(Triangle04)) return offTriangle04;
-                if (wave.equals(Triangle08)) return offTriangle08;
-                if (wave.equals(Triangle10)) return offTriangle10;
-                if (wave.equals(Triangle20)) return offTriangle20;
-                if (wave.equals(Triangle40)) return offTriangle40;
-                if (wave.equals(Triangle80)) return offTriangle80;
-                if (wave.equals(Sawtooth04)) return offSawtooth04;
-                if (wave.equals(Sawtooth08)) return offSawtooth08;
-                if (wave.equals(Sawtooth10)) return offSawtooth10;
-                if (wave.equals(Sawtooth20)) return offSawtooth20;
-                if (wave.equals(Sawtooth40)) return offSawtooth40;
-                if (wave.equals(Sawtooth80)) return offSawtooth80;
-                if (wave.equals(Squares)) return offSquares;
-                if (wave.equals(WhiteNoiseBig)) return offWhiteNoiseBig;
-                if (wave.equals(HighPasses)) return offHighPasses;
+            int waveToOffset(ByteSlice wave) {
+                if (wave.equals(lowPasses)) return offLowPasses;
+                if (wave.equals(triangle04)) return offTriangle04;
+                if (wave.equals(triangle08)) return offTriangle08;
+                if (wave.equals(triangle10)) return offTriangle10;
+                if (wave.equals(triangle20)) return offTriangle20;
+                if (wave.equals(triangle40)) return offTriangle40;
+                if (wave.equals(triangle80)) return offTriangle80;
+                if (wave.equals(sawtooth04)) return offSawtooth04;
+                if (wave.equals(sawtooth08)) return offSawtooth08;
+                if (wave.equals(sawtooth10)) return offSawtooth10;
+                if (wave.equals(sawtooth20)) return offSawtooth20;
+                if (wave.equals(sawtooth40)) return offSawtooth40;
+                if (wave.equals(sawtooth80)) return offSawtooth80;
+                if (wave.equals(squares)) return offSquares;
+                if (wave.equals(whiteNoiseBig)) return offWhiteNoiseBig;
+                if (wave.equals(highPasses)) return offHighPasses;
                 throw new IllegalArgumentException();
             }
 
-            public ByteSlice offsetToWave(int offset) {
+            ByteSlice offsetToWave(int offset) {
                 ByteSlice wave = waveCache.get(offset);
                 if (wave != null) return wave;
                 wave = new ByteSlice(waveBuffer, offset, waveBuffer.length - offset);
@@ -1371,25 +1373,26 @@ public class AHX {
     }
 
     public static class AHXOutput {
-        public static final int AHXOF_BOOST = 0;
-        public static final int AHXOI_OVERSAMPLING = 1;
+        static final int AHXOF_BOOST = 0;
+        static final int AHXOI_OVERSAMPLING = 1;
 
-        public static float period2Freq(float period) {
+        static float period2Freq(float period) {
             return 3579545.25f / period;
         }
 
-        public int bits, frequency, mixLen;
-        public int hz;
-        public int playing, paused;
+        int bits, frequency, mixLen;
+        int hz;
+        final int playing;
+        final int paused;
 
         public AHXPlayer player;
 
         // Options
-        public int oversampling;
-        public float boost;
+        int oversampling;
+        float boost;
 
         public int[] mixingBuffer;
-        public final int[][] volumeTable = new int[65][256];
+        final int[][] volumeTable = new int[65][256];
 
         public AHXOutput() {
             player = null;
@@ -1421,7 +1424,7 @@ public class AHX {
             };
         }
 
-        public int setOption(int option, float value) {
+        int setOption(int option, float value) {
             switch (option) {
                 case AHXOF_BOOST: {
                     for (int i = 0; i < 65; i++) {
@@ -1438,13 +1441,13 @@ public class AHX {
         }
 
         public int getOption(int option, int[] pValue) {
-            switch (option) {
-                case AHXOI_OVERSAMPLING:
+            return switch (option) {
+                case AHXOI_OVERSAMPLING -> {
                     pValue[0] = oversampling;
-                    return 1;
-                default:
-                    throw new IllegalArgumentException("option");
-            }
+                    yield 1;
+                }
+                default -> throw new IllegalArgumentException("option");
+            };
         }
 
         public int getOption(int option, float[] pValue) {
@@ -1497,7 +1500,7 @@ public class AHX {
             int nrSamples = frequency / hz / player.song.speedMultiplier;
             int mb = 0;
 
-            java.util.Arrays.fill(mixingBuffer, 0);
+            Arrays.fill(mixingBuffer, 0);
             for (int f = 0; f < mixLen * player.song.speedMultiplier; f++) {
                 player.playIRQ();
                 mb = mixChunk(nrSamples, mb);

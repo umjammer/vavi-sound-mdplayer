@@ -32,14 +32,14 @@ import vavi.util.compat.Tuple;
 import static java.lang.System.getLogger;
 
 
-public class IniParser {
+class IniParser {
 
     private static final Logger logger = getLogger(IniParser.class.getName());
 
     private final List<Tuple<String, List<Tuple<String, String>>>> sections = new ArrayList<>();
     private Tuple<String, List<Tuple<String, String>>> curSection;
 
-    public static class ParseError extends RuntimeException {
+    private static class ParseError extends RuntimeException {
     }
 
     private static String parseSection(String buffer) {
@@ -116,7 +116,7 @@ public class IniParser {
         sections.clear();
     }
 
-    public boolean setSection(String section) {
+    boolean setSection(String section) {
         curSection = null;
         for (Tuple<String, List<Tuple<String, String>>> c : sections) {
             if (c.getItem1().equals(section)) {

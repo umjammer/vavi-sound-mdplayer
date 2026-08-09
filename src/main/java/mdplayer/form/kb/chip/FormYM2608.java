@@ -16,15 +16,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
+import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.form.FrameBuffer;
 import mdplayer.form.ScreenPanel;
 import mdplayer.Tables;
 import mdplayer.chips.Ym2608Chip;
+import mdplayer.form.VisVolume;
 import mdplayer.form.kb.ChannelParams;
 import mdplayer.form.kb.Meters;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
+import mdsound.MDSound;
 import mdsound.instrument.Ym2608Inst;
 
 import static mdplayer.form.kb.chip.FormYM2612.drawCh3YM2612_P;
@@ -33,7 +36,7 @@ import mdplayer.form.View;
 
 public class FormYM2608 extends FormChipBase<FormYM2608.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormYM2608.class);
+    private static final Preferences prefs = Preferences.userNodeForPackage(FormYM2608.class);
 
     public FormYM2608(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -72,7 +75,7 @@ public class FormYM2608 extends FormChipBase<FormYM2608.Params> {
         }
     };
 
-    public void changeZoom() {
+    private void changeZoom() {
         this.setMaximumSize(new Dimension(frameSizeW + Common.getImage("planeD").getWidth() * zoom, frameSizeH + Common.getImage("planeD").getHeight() * zoom));
         this.setMinimumSize(new Dimension(frameSizeW + Common.getImage("planeD").getWidth() * zoom, frameSizeH + Common.getImage("planeD").getHeight() * zoom));
         this.setPreferredSize(new Dimension(frameSizeW + Common.getImage("planeD").getWidth() * zoom, frameSizeH + Common.getImage("planeD").getHeight() * zoom));
@@ -335,7 +338,7 @@ public class FormYM2608 extends FormChipBase<FormYM2608.Params> {
             if (c == 2) {
                 oyc.volumeL = frameBuffer.drawVolumeM(288 + 1, 8 + c * 8, 1, oyc.volumeL, nyc.volumeL, tp);
                 oyc.volumeR = frameBuffer.drawVolumeM(288 + 1, 8 + c * 8, 2, oyc.volumeR, nyc.volumeR, tp);
-                { int[] r = frameBuffer.Pan(25, 8 + c * 8, oyc.pan, nyc.pan, oyc.pantp, tp); oyc.pan = r[0]; oyc.pantp = r[1]; }
+                { int[] r = frameBuffer.pan(25, 8 + c * 8, oyc.pan, nyc.pan, oyc.pantp, tp); oyc.pan = r[0]; oyc.pantp = r[1]; }
                 oyc.note = drawKeyBoardOPNA(frameBuffer, 33, 8 + c * 8, oyc.note, nyc.note, tp);
                 drawInstOPNA(frameBuffer, 4, 17 * 8, c, oyc.inst, nyc.inst);
                 Boolean[] r = drawCh3YM2608(frameBuffer, c, oyc.mask, nyc.mask, oyc.ex, nyc.ex, tp);
@@ -345,7 +348,7 @@ public class FormYM2608 extends FormChipBase<FormYM2608.Params> {
             } else if (c < 6) {
                 oyc.volumeL = frameBuffer.drawVolumeM(288 + 1, 8 + c * 8, 1, oyc.volumeL, nyc.volumeL, tp);
                 oyc.volumeR = frameBuffer.drawVolumeM(288 + 1, 8 + c * 8, 2, oyc.volumeR, nyc.volumeR, tp);
-                { int[] r = frameBuffer.Pan(25, 8 + c * 8, oyc.pan, nyc.pan, oyc.pantp, tp); oyc.pan = r[0]; oyc.pantp = r[1]; }
+                { int[] r = frameBuffer.pan(25, 8 + c * 8, oyc.pan, nyc.pan, oyc.pantp, tp); oyc.pan = r[0]; oyc.pantp = r[1]; }
                 oyc.note = drawKeyBoardOPNA(frameBuffer, 33, 8 + c * 8, oyc.note, nyc.note, tp);
                 drawInstOPNA(frameBuffer, 4, 17 * 8, c, oyc.inst, nyc.inst);
                 oyc.mask = drawChYM2608(frameBuffer, c, oyc.mask, nyc.mask, tp);
@@ -384,7 +387,7 @@ public class FormYM2608 extends FormChipBase<FormYM2608.Params> {
         // ADPCM
         oldParam.channels[12].volumeL = frameBuffer.drawVolumeM(289, 8 + 12 * 8, 1, oldParam.channels[12].volumeL, newParam.channels[12].volumeL, tp);
         oldParam.channels[12].volumeR = frameBuffer.drawVolumeM(289, 8 + 12 * 8, 2, oldParam.channels[12].volumeR, newParam.channels[12].volumeR, tp);
-        { int[] r = frameBuffer.Pan(25, 8 + 12 * 8, oldParam.channels[12].pan, newParam.channels[12].pan, oldParam.channels[12].pantp, tp); oldParam.channels[12].pan = r[0]; oldParam.channels[12].pantp = r[1]; }
+        { int[] r = frameBuffer.pan(25, 8 + 12 * 8, oldParam.channels[12].pan, newParam.channels[12].pan, oldParam.channels[12].pantp, tp); oldParam.channels[12].pan = r[0]; oldParam.channels[12].pantp = r[1]; }
         oldParam.channels[12].note = drawKeyBoardOPNA(frameBuffer, 33, 8 + 12 * 8, oldParam.channels[12].note, newParam.channels[12].note, tp);
         drawChYM2608(frameBuffer, 12, oldParam.channels[12].mask, newParam.channels[12].mask, tp);
         oldParam.channels[12].freq = frameBuffer.font4Hex16Bit(1 + 4 * 68, 8 + 12 * 8, 0, oldParam.channels[12].freq, newParam.channels[12].freq);
@@ -493,7 +496,7 @@ public class FormYM2608 extends FormChipBase<FormYM2608.Params> {
         this.addComponentListener(this.componentListener);
     }
 
-    BufferedImage image;
+    private BufferedImage image;
 
 //#region draw buffer
 
@@ -711,28 +714,28 @@ public class FormYM2608 extends FormChipBase<FormYM2608.Params> {
 //#endregion
 
     /** this panel's channel row: the common core plus what only this chip displays */
-    public static class Channel extends ChannelParams {
+    static class Channel extends ChannelParams {
 
-        public boolean ex = false;
-        public int tn = 0;
-        public int tntp = -1;
-        public int volumeRL = -1;
+        boolean ex = false;
+        int tn = 0;
+        int tntp = -1;
+        int volumeRL = -1;
     }
 
     /** this panel's per-frame draw state, diffed new against old (see {@link FormChipBase}) */
-    public static class Params {
+    static class Params {
 
-        public boolean lfoSw = false;
-        public int lfoFrq = -1;
-        public int nfrq = -1;
-        public int efrq = -1;
-        public int etype = -1;
-        public int timerA = -1;
-        public int timerB = -1;
-        public int rhythmTotalLevel = -1;
-        public int adpcmLevel = -1;
+        boolean lfoSw = false;
+        int lfoFrq = -1;
+        int nfrq = -1;
+        int efrq = -1;
+        int etype = -1;
+        int timerA = -1;
+        int timerB = -1;
+        int rhythmTotalLevel = -1;
+        int adpcmLevel = -1;
 
-        public final Channel[] channels = {
+        final Channel[] channels = {
                 new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), // FM 0
                 new Channel(), new Channel(), new Channel(), // SSG 9
                 new Channel(), // ADPCM 12
@@ -746,39 +749,39 @@ public class FormYM2608 extends FormChipBase<FormYM2608.Params> {
         @Override public String id() { return "YM2608"; }
         @Override public String menuText() { return "OPNA"; }
         @Override public String category() { return "opn"; }
-        @Override public Class<? extends mdplayer.Chip> chip() { return mdplayer.chips.Ym2608Chip.class; }
+        @Override public Class<? extends mdplayer.Chip> chip() { return Ym2608Chip.class; }
         @Override public boolean hasRegisterDump() { return true; }
         @Override public View create(FormMain frm, int chipId, int zoom) { return new FormYM2608(frm, chipId, zoom); }
 
-        @Override public void setChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+        @Override public void setChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
             if (ch >= 0 && ch < 14) {
-                audio.plugin.chipRegister.chip(mdplayer.chips.Ym2608Chip.class).setMask(chipId, ch);
+                audio.plugin.chipRegister.chip(Ym2608Chip.class).setMask(chipId, ch);
             }
         }
 
-        @Override public void resetChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+        @Override public void resetChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
             if (ch >= 0 && ch < 14) {
-                audio.plugin.chipRegister.chip(mdplayer.chips.Ym2608Chip.class).setMask(chipId, ch, false, audio.plugin.stopped);
+                audio.plugin.chipRegister.chip(Ym2608Chip.class).setMask(chipId, ch, false, audio.plugin.stopped);
             }
         }
 
-        @Override public void forceChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
+        @Override public void forceChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
             // reapplying the YM2608 mask was disabled in the original and stays so
         }
 
         @Override public List<MixerSlot> mixerSlots() {
-            return List.of(new MixerSlot(6, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Ym2608Chip.class, "ym2608", 200),
-                    new MixerSlot(7, "FM", mdplayer.chips.Ym2608Chip.class, "ym2608FM", 200),
-                    new MixerSlot(8, "PSG", mdplayer.chips.Ym2608Chip.class, "ym2608SSG", 120),
-                    new MixerSlot(9, "Rhythm", mdplayer.chips.Ym2608Chip.class, "ym2608Rtm", 200),
-                    new MixerSlot(10, "Adpcm", mdplayer.chips.Ym2608Chip.class, "ym2608APCM", 200));
+            return List.of(new MixerSlot(6, MDSound.Chip.MAIN_TAG, Ym2608Chip.class, "ym2608", 200),
+                    new MixerSlot(7, "FM", Ym2608Chip.class, "ym2608FM", 200),
+                    new MixerSlot(8, "PSG", Ym2608Chip.class, "ym2608SSG", 120),
+                    new MixerSlot(9, "Rhythm", Ym2608Chip.class, "ym2608Rtm", 200),
+                    new MixerSlot(10, "Adpcm", Ym2608Chip.class, "ym2608APCM", 200));
         }
 
-        @Override public void updateMeters(mdplayer.Audio audio, mdplayer.form.VisVolume visVolume) {
-            int fm = Meters.chipVolume(audio, mdplayer.chips.Ym2608Chip.class) * 5;
+        @Override public void updateMeters(Audio audio, VisVolume visVolume) {
+            int fm = Meters.chipVolume(audio, Ym2608Chip.class) * 5;
             int ssg = 0;
             try {
-                int[][] reg2d = (int[][]) Meters.chipInfo(audio, mdplayer.chips.Ym2608Chip.class, "register");
+                int[][] reg2d = (int[][]) Meters.chipInfo(audio, Ym2608Chip.class, "register");
                 if (reg2d != null && reg2d.length > 0) {
                     int mixer = reg2d[0][0x07];
                     for (int ch = 0; ch < 3; ch++) {
@@ -790,17 +793,17 @@ public class FormYM2608 extends FormChipBase<FormYM2608.Params> {
                         }
                     }
                 }
-            } catch (Exception e) {
+            } catch (Exception _) {
             }
             int apcm = 0;
             try {
-                apcm = Meters.maxVolume(Meters.chipInfo(audio, mdplayer.chips.Ym2608Chip.class, "adpcmVolume")) * 5;
-            } catch (Exception e) {
+                apcm = Meters.maxVolume(Meters.chipInfo(audio, Ym2608Chip.class, "adpcmVolume")) * 5;
+            } catch (Exception _) {
             }
             int rtm = 0;
             try {
-                rtm = Meters.maxVolume(Meters.chipInfo(audio, mdplayer.chips.Ym2608Chip.class, "rhythmVolume")) * 5;
-            } catch (Exception e) {
+                rtm = Meters.maxVolume(Meters.chipInfo(audio, Ym2608Chip.class, "rhythmVolume")) * 5;
+            } catch (Exception _) {
             }
             visVolume.put("ym2608FM", fm);
             visVolume.put("ym2608SSG", ssg);

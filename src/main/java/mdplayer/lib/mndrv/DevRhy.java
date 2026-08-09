@@ -8,7 +8,7 @@ import mdplayer.lib.mndrv.MnWork.W;
 //
 // part of YM2608 - RHYTHM
 //
-public class DevRhy {
+class DevRhy {
 
     public Reg reg;
     public XMemory mm;
@@ -112,7 +112,7 @@ public class DevRhy {
     /**
      * MML command processing (RHYTHM section)
      */
-    public void _rhythm_command() {
+    private void _rhythm_command() {
         reg.setD0_W(reg.getD0_W() + (int) (short) reg.getD0_W());
 
 //_rhyc:
@@ -512,19 +512,19 @@ public class DevRhy {
 
     /**
      */
-    public void _RHY_NOP() {
+    private void _RHY_NOP() {
         mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) & 0x7f));
     }
 
     /**
      */
-    public void _RHY_81() {
+    private void _RHY_81() {
     }
 
     /**
      * Forced dump
      */
-    public void _RHY_82() {
+    private void _RHY_82() {
         reg.setD0_B(mm.readByte(reg.a1++) & 0xff);
         reg.setD0_B(reg.getD0_B() | 0x80);
         reg.D1_L = 0x11;
@@ -534,7 +534,7 @@ public class DevRhy {
     /**
      * Rhythm Total Volume
      */
-    public void _RHY_F0() {
+    private void _RHY_F0() {
         reg.setD0_B(mm.readByte(reg.a1++) & 0xff);
         mm.write(reg.a6 + Dw.RHY_TV, (byte) reg.getD0_B());
 
@@ -563,7 +563,7 @@ public class DevRhy {
     /**
      * Rhythm Total Volume
      */
-    public void _RHY_F1() {
+    private void _RHY_F1() {
         reg.setD0_B(mm.readByte(reg.a6 + Dw.RHY_TV) & 0xff);
         reg.setD0_B(reg.getD0_B() + (mm.readByte(reg.a1++) & 0xff));
         if ((byte) reg.getD0_B() < 0) {
@@ -598,7 +598,7 @@ public class DevRhy {
     /**
      * volume
      */
-    public void _RHY_F2() {
+    private void _RHY_F2() {
         reg.D1_L = 0;
         reg.setD1_B(mm.readByte(reg.a1++) & 0xff);
         reg.setD2_B(mm.readByte(reg.a1++) & 0xff);
@@ -619,7 +619,7 @@ public class DevRhy {
     /**
      * panpot
      */
-    public void _RHY_F4() {
+    private void _RHY_F4() {
         reg.D1_L = 0;
         reg.setD1_B(mm.readByte(reg.a1++) & 0xff);
         reg.setD2_B(mm.readByte(reg.a1++) & 0xff);
@@ -640,7 +640,7 @@ public class DevRhy {
     /**
      * Crescendo
      */
-    public void _RHY_F5() {
+    private void _RHY_F5() {
         reg.D1_L = 0;
         reg.setD1_B(mm.readByte(reg.a1++) & 0xff);
         reg.setD2_B(mm.readByte(reg.a1++) & 0xff);
@@ -667,7 +667,7 @@ public class DevRhy {
     /**
      * Decrescendo
      */
-    public void _RHY_F6() {
+    private void _RHY_F6() {
         reg.D1_L = 0;
         reg.setD1_B(mm.readByte(reg.a1++) & 0xff);
         reg.setD2_B(mm.readByte(reg.a1++) & 0xff);
@@ -693,7 +693,7 @@ public class DevRhy {
 
     /**
      */
-    public void _RHY_FF() {
+    private void _RHY_FF() {
         mm.write(reg.a5 + W.flag2, (byte) (mm.readByte(reg.a5 + W.flag2) & 0xfe));
 
         reg.setD0_W(mm.readShort(reg.a6 + Dw.USE_TRACK) & 0xffff);

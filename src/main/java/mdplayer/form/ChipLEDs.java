@@ -62,10 +62,10 @@ public class ChipLEDs {
         HuC8(HuC6280Chip.class, 71);
 
         /** the chip whose writes light this lamp */
-        public final Class<? extends Chip> chip;
+        final Class<? extends Chip> chip;
 
         /** where the chip's name is drawn, in units of 4 pixels */
-        public final int x;
+        final int x;
 
         Led(Class<? extends Chip> chip, int x) {
             this.chip = chip;
@@ -73,7 +73,7 @@ public class ChipLEDs {
         }
 
         /** The lamp this chip lights, or none if it has none. */
-        public static Led of(Object chip) {
+        static Led of(Object chip) {
             for (Led led : values()) {
                 if (led.chip.isInstance(chip)) return led;
             }

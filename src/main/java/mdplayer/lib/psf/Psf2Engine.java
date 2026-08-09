@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
@@ -56,7 +57,7 @@ public class Psf2Engine implements Psf2Filesystem {
     private final int[] initialRam = new int[(2 * 1024 * 1024) / 4];
 
     /** the tags of the file itself */
-    public PsfFile main;
+    private PsfFile main;
 
     /**
      * @param files what {@link PsfFile#load} returned: the file at 0 and its libraries at 1 to 9
@@ -68,10 +69,10 @@ public class Psf2Engine implements Psf2Filesystem {
         // has hard coded assumptions about
         loadAddr = 0x23f00;
 
-        java.util.Arrays.fill(hw.ram, 0);
+        Arrays.fill(hw.ram, 0);
 
         numFs = 0;
-        java.util.Arrays.fill(filesys, null);
+        Arrays.fill(filesys, null);
         for (int i = 0; i < files.length; i++) {
             if (files[i] == null) {
                 continue;

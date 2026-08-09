@@ -30,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
@@ -541,7 +542,7 @@ class ChipFmDspSourceTest {
     @Test
     @DisplayName("auto view collects used rows across groups, in group order")
     void testDisplayTracks() {
-        assertEquals(null, source.displayTracks()); // nothing sounded yet: default layout
+        assertNull(source.displayTracks()); // nothing sounded yet: default layout
 
         opnaKeyOnFm1();
         opna.write(0, 1, 0x00, 0xa0, EnmModel.VirtualModel); // and the ADPCM part
@@ -916,7 +917,7 @@ class ChipFmDspSourceTest {
         assertDoesNotThrow(source::snapshot);
 
         // and nothing of theirs is on screen
-        assertEquals(null, source.displayTracks());
+        assertNull(source.displayTracks());
         for (int c = 0; c < LevelDataSource.COUNT; c++) {
             assertEquals(0, source.level(c), "meter " + c);
         }

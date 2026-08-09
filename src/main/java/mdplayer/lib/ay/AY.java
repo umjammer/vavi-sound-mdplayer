@@ -15,13 +15,13 @@ public class AY {
 
     public static class Information {
 
-        public int fileVersion;
-        public int playerVersion;
-        public int pSpecialPlayer;
+        int fileVersion;
+        int playerVersion;
+        int pSpecialPlayer;
         public String pAuthor;
         public String pMisc;
         public int numOfSongs;
-        public int firstSong;
+        int firstSong;
         public List<SongsStructure> songsStructures;
     }
 
@@ -33,33 +33,39 @@ public class AY {
 
     public static class SongData {
 
-        public int aChan, bChan, cChan, noise;
+        int aChan;
+        int bChan;
+        int cChan;
+        int noise;
         public int songLength;
         public int fadeLength;
-        public int hiReg, loReg;
-        public Points points;
-        public List<Block> addresses;
+        int hiReg;
+        int loReg;
+        Points points;
+        List<Block> addresses;
     }
 
-    public static class Points {
+    static class Points {
 
-        public int stack, init, inter;
+        int stack;
+        int init;
+        int inter;
     }
 
-    public static class Block {
+    static class Block {
 
-        public int address;
-        public int length;
-        public int offset;
+        int address;
+        int length;
+        int offset;
     }
 
     private byte[] buf;
     public Information information;
     private Z80Processor z80;
-    public int song = 0;
+    private int song = 0;
     /** 50Hz interrupts run since {@link #setup}: the unit the header states a song's length in */
     public long frames = 0;
-    public static final int zxClock = 3_546_900; // 3.54690MHz
+    private static final int zxClock = 3_546_900; // 3.54690MHz
     private static final int cpcClock = 4_000_000; // 4.000000MHz
     private static final double PAL = 50.0;
     private double clkElp = 0.0;

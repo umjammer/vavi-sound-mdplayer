@@ -24,6 +24,7 @@ import mdplayer.chips.YmF271Chip;
 import mdplayer.form.kb.ChannelParams;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
+import mdsound.MDSound;
 import mdsound.instrument.YmF271Inst;
 
 import static mdplayer.form.FrameBuffer.getByteArray;
@@ -32,7 +33,7 @@ import mdplayer.form.View;
 
 public class FormYMF271 extends FormChipBase<FormYMF271.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormYMF271.class);
+    private static final Preferences prefs = Preferences.userNodeForPackage(FormYMF271.class);
 
     public FormYMF271(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -68,7 +69,7 @@ public class FormYMF271 extends FormChipBase<FormYMF271.Params> {
         }
     };
 
-    public void changeZoom() {
+    private void changeZoom() {
         this.setMaximumSize(new Dimension(frameSizeW + Common.getImage("planeYMF271").getWidth() * zoom, frameSizeH + Common.getImage("planeYMF271").getHeight() * zoom));
         this.setMinimumSize(new Dimension(frameSizeW + Common.getImage("planeYMF271").getWidth() * zoom, frameSizeH + Common.getImage("planeYMF271").getHeight() * zoom));
         this.setPreferredSize(new Dimension(frameSizeW + Common.getImage("planeYMF271").getWidth() * zoom, frameSizeH + Common.getImage("planeYMF271").getHeight() * zoom));
@@ -93,7 +94,7 @@ public class FormYMF271 extends FormChipBase<FormYMF271.Params> {
         }
     };
 
-    public void screenInitYMF271(FrameBuffer screen) {
+    private void screenInitYMF271(FrameBuffer screen) {
         for (int ch = 0; ch < 48; ch++) {
             for (int ot = 0; ot < 12 * 8; ot++) {
                 int kx = Tables.kbl[(ot % 12) * 2] + ot / 12 * 28;
@@ -243,7 +244,7 @@ public class FormYMF271 extends FormChipBase<FormYMF271.Params> {
         this.addComponentListener(this.componentListener);
     }
 
-    BufferedImage image;
+    private BufferedImage image;
 
 //#region draw buffer
 
@@ -294,16 +295,16 @@ public class FormYMF271 extends FormChipBase<FormYMF271.Params> {
 //#endregion
 
     /** this panel's channel row: the common core plus what only this chip displays */
-    public static class Channel extends ChannelParams {
+    static class Channel extends ChannelParams {
 
-        public int echo = -1;
-        public int tn = 0;
+        int echo = -1;
+        int tn = 0;
     }
 
     /** this panel's per-frame draw state, diffed new against old (see {@link FormChipBase}) */
-    public static class Params {
+    static class Params {
 
-        public final Channel[] channels = {
+        final Channel[] channels = {
                 new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(),
                 new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(),
                 new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(),
@@ -319,11 +320,11 @@ public class FormYMF271 extends FormChipBase<FormYMF271.Params> {
         @Override public String id() { return "YMF271"; }
         @Override public String menuText() { return "OPX"; }
         @Override public String category() { return "opx"; }
-        @Override public Class<? extends mdplayer.Chip> chip() { return mdplayer.chips.YmF271Chip.class; }
+        @Override public Class<? extends mdplayer.Chip> chip() { return YmF271Chip.class; }
         @Override public View create(FormMain frm, int chipId, int zoom) { return new FormYMF271(frm, chipId, zoom); }
 
         @Override public List<MixerSlot> mixerSlots() {
-            return List.of(new MixerSlot(23, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.YmF271Chip.class, "ymf271", 200));
+            return List.of(new MixerSlot(23, MDSound.Chip.MAIN_TAG, YmF271Chip.class, "ymf271", 200));
         }
     }
 }

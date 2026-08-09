@@ -10,6 +10,7 @@ import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Random;
 
 import static java.lang.System.getLogger;
 
@@ -195,7 +196,7 @@ public class PsxHw implements PsxBus {
 
     private final int[] irqRegs = new int[37];
 
-    private final java.util.Random random = new java.util.Random();
+    private final Random random = new Random();
 
     public PsxHw() {
         for (int i = 0; i < threads.length; i++) threads[i] = new Thread();
@@ -209,7 +210,7 @@ public class PsxHw implements PsxBus {
     // ---- ram helpers ----
 
     /** the word at a byte address, wrapped into the 2 MB the hardware has */
-    public int ramWord(int byteAddress) {
+    private int ramWord(int byteAddress) {
         return ram[(byteAddress & 0x1fffff) >> 2];
     }
 
@@ -226,7 +227,7 @@ public class PsxHw implements PsxBus {
         ram[wordIndex & (ram.length - 1)] = value;
     }
 
-    public int ramByte(int byteAddress) {
+    private int ramByte(int byteAddress) {
         int a = byteAddress & 0x1fffff;
         return (ram[a >> 2] >>> ((a & 3) * 8)) & 0xff;
     }
@@ -238,7 +239,7 @@ public class PsxHw implements PsxBus {
     }
 
     /** a NUL terminated string out of ram */
-    public String ramString(int byteAddress) {
+    private String ramString(int byteAddress) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < 0x10000; i++) {
             int c = ramByte(byteAddress + i);
@@ -301,7 +302,7 @@ public class PsxHw implements PsxBus {
      * @param memMask has the bits of the bytes that are <em>not</em> being accessed set,
      *                which is how MAME spells it
      */
-    public int read(int offset, int memMask) {
+    private int read(int offset, int memMask) {
         // 0x00000000-0x007fffff and 0x80000000-0x807fffff, the ram and its kseg0 mirror
         if ((offset & 0x7f800000) == 0) {
             return ram[(offset & 0x1fffff) >> 2];
@@ -370,7 +371,7 @@ public class PsxHw implements PsxBus {
     }
 
     /** @param memMask see {@link #read} */
-    public void write(int offset, int data, int memMask) {
+    private void write(int offset, int data, int memMask) {
         if ((offset & 0x7f800000) == 0) {
             int i = (offset & 0x1fffff) >> 2;
             ram[i] &= memMask;
@@ -551,7 +552,7 @@ public class PsxHw implements PsxBus {
         }
     }
 
-    public void irqSet(int irq) {
+    private void irqSet(int irq) {
         irqData |= irq;
         irqUpdate();
     }
@@ -612,7 +613,7 @@ public class PsxHw implements PsxBus {
         reschedule();
     }
 
-    public void runCounters() {
+    private void runCounters() {
         // no irq source runs while interrupts are suspended
         if (!intrSusp) {
             if (dma4Delay != 0) {

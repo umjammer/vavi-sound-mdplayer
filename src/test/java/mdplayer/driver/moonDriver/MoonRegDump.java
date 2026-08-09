@@ -29,7 +29,7 @@ import vavi.util.compat.Tuple;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-08-01 nsano initial version <br>
  */
-public class MoonRegDump {
+class MoonRegDump {
 
     public static void main(String[] args) throws Exception {
         Path mdr = Path.of(args[0]);
@@ -71,7 +71,7 @@ public class MoonRegDump {
         System.exit(0);
     }
 
-    static InputStream read(Path p) {
+    private static InputStream read(Path p) {
         Path path = mdplayer.emu.common.Utils.fileExistsIgnoreCase(p);
         System.err.println("extend file: " + p + " -> " + path);
         try {

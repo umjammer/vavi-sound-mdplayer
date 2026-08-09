@@ -7,7 +7,7 @@ import java.util.function.Consumer;
 public class Request {
     public final enmRequest request;
 
-    public final Object[] args;
+    private final Object[] args;
 
     public Object[] results;
 

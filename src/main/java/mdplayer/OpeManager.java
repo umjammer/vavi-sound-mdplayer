@@ -51,11 +51,11 @@ public class OpeManager {
     static class TrdCallback {
         private final Request request;
 
-        public TrdCallback(Request req) {
+        TrdCallback(Request req) {
             request = req;
         }
 
-        public void callBack() {
+        void callBack() {
             if (request.callBack != null) {
                 request.callBack.accept(request.results);
             }

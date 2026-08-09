@@ -35,31 +35,31 @@ public class Sid {
      */
     public static class State {
 
-        public final byte[] sidRegister = new byte[0x20];
+        final byte[] sidRegister = new byte[0x20];
 
-        public int busValue;
-        public int busValueTtl;
-        public int writePipeline;
-        public int writeAddress;
-        public int voiceMask;
+        int busValue;
+        int busValueTtl;
+        int writePipeline;
+        int writeAddress;
+        int voiceMask;
 
         static class SubState {
 
-            public int accumulator;
-            public int shiftRegister;
-            public int shiftRegisterReset;
-            public int shiftPipeline;
-            public int pulseOutput;
-            public int floatingOutputTtl;
+            int accumulator;
+            int shiftRegister;
+            int shiftRegisterReset;
+            int shiftPipeline;
+            int pulseOutput;
+            int floatingOutputTtl;
 
-            public int rateCounter;
-            public int rateCounterPeriod;
-            public int exponentialCounter;
-            public int exponentialCounterPeriod;
-            public int envelopeCounter;
-            public EnvelopeGenerator.State envelopeState;
-            public boolean holdZero;
-            public int envelopePipeline;
+            int rateCounter;
+            int rateCounterPeriod;
+            int exponentialCounter;
+            int exponentialCounterPeriod;
+            int envelopeCounter;
+            EnvelopeGenerator.State envelopeState;
+            boolean holdZero;
+            int envelopePipeline;
 
             SubState() {
                 accumulator = 0;
@@ -79,7 +79,7 @@ public class Sid {
                 envelopePipeline = 0;
             }
 
-            public void read(Voice voice) {
+            void read(Voice voice) {
                 this.accumulator = voice.wave.accumulator;
                 this.shiftRegister = voice.wave.shiftRegister;
                 this.shiftRegisterReset = voice.wave.shiftRegisterReset;
@@ -97,7 +97,7 @@ public class Sid {
                 this.envelopePipeline = voice.envelope.envelopePipeline;
             }
 
-            public void write(Voice voice) {
+            void write(Voice voice) {
                 voice.wave.accumulator = this.accumulator;
                 voice.wave.shiftRegister = this.shiftRegister;
                 voice.wave.shiftRegisterReset = this.shiftRegisterReset;
@@ -121,7 +121,7 @@ public class Sid {
         /**
          * Constructor.
          */
-        public State() {
+        State() {
             for (int i = 0; i < 0x20; i++) {
                 sidRegister[i] = 0;
             }
@@ -138,24 +138,24 @@ public class Sid {
         }
     }
 
-    protected SidDefs.ChipModel sidModel;
+    private SidDefs.ChipModel sidModel;
     protected final Voice[] voice = {new Voice(), new Voice(), new Voice()};
-    protected final Filter filter = new Filter();
-    protected final ExternalFilter extfilt = new ExternalFilter();
-    protected final Potentiometer potx = new Potentiometer();
-    protected final Potentiometer poty = new Potentiometer();
+    private final Filter filter = new Filter();
+    private final ExternalFilter extfilt = new ExternalFilter();
+    private final Potentiometer potx = new Potentiometer();
+    private final Potentiometer poty = new Potentiometer();
 
-    protected int busValue;
-    protected int busValueTtl;
+    private int busValue;
+    private int busValueTtl;
 
     // The data bus TTL for the selected chips model
-    protected int databusTtl;
+    private int databusTtl;
 
     // Pipeline for writes on the MOS8580.
-    protected int writePipeline;
-    protected int writeAddress;
+    private int writePipeline;
+    private int writeAddress;
 
-    protected double clockFrequency;
+    private double clockFrequency;
 
     /**
      * Resampling constants.
@@ -186,26 +186,27 @@ public class Sid {
     }
 
     // Sampling variables.
-    protected SidDefs.SamplingMethod sampling;
-    protected int cyclesPerSample;
-    protected int sampleOffset;
-    protected int sampleIndex;
-    protected short samplePrev, sampleNow;
-    protected int firN;
-    protected int firRES;
-    protected double firBeta;
-    protected double firFCyclesPerSample;
-    protected double firFilterScale;
+    private SidDefs.SamplingMethod sampling;
+    private int cyclesPerSample;
+    private int sampleOffset;
+    private int sampleIndex;
+    private short samplePrev;
+    private short sampleNow;
+    private int firN;
+    private int firRES;
+    private double firBeta;
+    private double firFCyclesPerSample;
+    private double firFilterScale;
 
     // Ring buffer with overflow for contiguous storage of RINGSIZE samples.
-    protected short[] sample;
+    private short[] sample;
 
     // FIR_RES filter tables (FIR_N*FIR_RES).
-    protected short[] fir;
+    private short[] fir;
 
     private final Integer[] reg = new Integer[0x19];
 
-    public Integer[] GetRegister() {
+    public Integer[] getRegister() {
         return reg;
     }
 
@@ -220,7 +221,7 @@ public class Sid {
     /**
      * Read 16-bit sample from audio Output.
      */
-    public short output() {
+    private short output() {
         return extfilt.output();
     }
 
@@ -425,7 +426,7 @@ public class Sid {
     /**
      * Write registers.
      */
-    protected void write() {
+    private void write() {
         //logger.log(Level.TRACE, "adr:%d val:%d".formatted(write_address, bus_value));
         if (writeAddress >= 0 && writeAddress <= 0x18) logger.log(Level.TRACE, "DEBUG: SID write adr:" + writeAddress + " val:" + busValue);
 
@@ -542,7 +543,7 @@ public class Sid {
      * I0() computes the 0th order modified Bessel function of the first kind.
      * This function instanceof originally from resample-1.5/filterkit.c by J. O. Smith.
      */
-    protected double I0(double x) {
+    private double I0(double x) {
         // Max error acceptable : I0.
         final double I0e = 1e-6;
 
@@ -731,7 +732,7 @@ public class Sid {
     /**
      * Sid clocking - deltaT cycles.
      */
-    public void clock(int deltaT) {
+    private void clock(int deltaT) {
         // Pipelined writes on the MOS8580.
         if (writePipeline != 0 && deltaT > 0) {
             // Step one cycle by a recursive call to ourselves.
@@ -851,7 +852,7 @@ public class Sid {
     /**
      * Sid clocking with audio sampling - delta clocking picking nearest sample.
      */
-    protected int clockFast(int deltaT, short[] buf, int n, int interleave) {
+    private int clockFast(int deltaT, short[] buf, int n, int interleave) {
         int s;
 
         for (s = 0; s < n; s++) {
@@ -876,7 +877,7 @@ public class Sid {
         return s;
     }
 
-    protected int clockFast(int deltaT, short[] buf, int ptrBuf, int n, int interleave) {
+    private int clockFast(int deltaT, short[] buf, int ptrBuf, int n, int interleave) {
         int s;
         final int fixPShift = 16;
         final int fixPShiftS15 = 1 << 15;
@@ -920,7 +921,7 @@ public class Sid {
      * external filter attenuates frequencies above 16kHz, thus reducing
      * sampling noise.
      */
-    protected int clockInterpolate(int delta_t, short[] buf, int n, int interleave) {
+    private int clockInterpolate(int delta_t, short[] buf, int n, int interleave) {
         int s;
 
         for (s = 0; s < n; s++) {
@@ -952,7 +953,7 @@ public class Sid {
         return s;
     }
 
-    protected int clockInterpolate(int deltaT, short[] buf, int ptrBuf, int n, int interleave) {
+    private int clockInterpolate(int deltaT, short[] buf, int ptrBuf, int n, int interleave) {
         int s;
 
         for (s = 0; s < n; s++) {
@@ -1034,7 +1035,7 @@ public class Sid {
      * NB! the result of right shifting negative numbers instanceof really
      * implementation dependent : the C++ standard.
      */
-    protected int clockResample(int deltaT, short[] buf, int n, int interleave) {
+    private int clockResample(int deltaT, short[] buf, int n, int interleave) {
         int s;
 
         for (s = 0; s < n; s++) {
@@ -1103,7 +1104,7 @@ public class Sid {
         return s;
     }
 
-    protected int clockResample(int deltaT, short[] buf, int ptrBuf, int n, int interleave) {
+    private int clockResample(int deltaT, short[] buf, int ptrBuf, int n, int interleave) {
         int s;
         final int half = 1 << 15;
 
@@ -1182,7 +1183,7 @@ public class Sid {
     /**
      * Sid clocking with audio sampling - cycle based with audio resampling.
      */
-    protected int clockResampleFastMem(int delta_t, short[] buf, int n, int interleave) {
+    private int clockResampleFastMem(int delta_t, short[] buf, int n, int interleave) {
         int s;
 
         for (s = 0; s < n; s++) {
@@ -1232,7 +1233,7 @@ public class Sid {
         return s;
     }
 
-    protected int clockResampleFastMem(int deltaT, short[] buf, int ptrBuf, int n, int interleave) {
+    private int clockResampleFastMem(int deltaT, short[] buf, int ptrBuf, int n, int interleave) {
         int s;
 
         for (s = 0; s < n; s++) {
