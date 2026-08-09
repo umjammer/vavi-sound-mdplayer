@@ -15,6 +15,7 @@ import java.util.List;
 import mdplayer.Common.EnmModel;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.BasePlugin;
+import mdplayer.emu.psx.SpuVoices;
 import mdplayer.lib.psf.Psf2Engine;
 import mdplayer.lib.psf.PsfFile;
 import musicDriverInterface.MetaData;
@@ -88,6 +89,8 @@ logger.log(Level.DEBUG, "not a psf2: " + e.getMessage());
         set(md, Tag.Converter, psf.tag("psfby"));
         set(md, Tag.Note, psf.tag("comment"));
         md.set(Tag.NumberOfSongs, "1");
+        // the driver registers no chip, so this is what names it on the fmdsp header
+        md.set(Tag.Chip, "SPU2");
 
         double length = psf.length();
         if (length > 0) {
@@ -255,5 +258,15 @@ logger.log(Level.DEBUG, "not a psf2: " + e.getMessage());
         }
 
         return length;
+    }
+
+    /**
+     * The emulated SPU2's voices, for the visualizer. The driver renders its own audio and
+     * registers no chip, so this is the only view of what its voices are doing.
+     *
+     * @return null before the song has started
+     */
+    public SpuVoices getSpu() {
+        return engine == null ? null : engine.spu;
     }
 }

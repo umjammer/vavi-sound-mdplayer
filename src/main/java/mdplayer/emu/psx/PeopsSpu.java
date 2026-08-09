@@ -16,7 +16,7 @@ package mdplayer.emu.psx;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-08-09 nsano initial version <br>
  */
-public class PeopsSpu implements Spu {
+public class PeopsSpu implements Spu, SpuVoices {
 
     private static final int MAXCHAN = 24;
 
@@ -208,6 +208,9 @@ public class PeopsSpu implements Spu {
     /** IOP ram, which DMA moves samples to and from */
     private int[] psxRam;
 
+    /** key ons per voice, which is how a view spots a note being struck */
+    private final int[] keyOns = new int[MAXCHAN + 1];
+
     /** the last sample {@link #sample()} produced */
     public int left;
     public int right;
@@ -254,6 +257,7 @@ public class PeopsSpu implements Spu {
         rvb.clear();
         java.util.Arrays.fill(regArea, 0);
         java.util.Arrays.fill(spuMem, (short) 0);
+        java.util.Arrays.fill(keyOns, 0);
     }
 
     public void open() {
@@ -272,6 +276,7 @@ public class PeopsSpu implements Spu {
         pSpuIrq = 0;
 
         iVolume = 255;
+        java.util.Arrays.fill(keyOns, 0);
         setupStreams();
 
         bSPUIsOpen = true;
@@ -536,7 +541,10 @@ public class PeopsSpu implements Spu {
 
     // ---- mixing ----
 
-    private static void startSound(Channel c) {
+    private void startSound(int ch) {
+        Channel c = chan[ch];
+        keyOns[ch]++;
+
         startADSR(c);
 
         c.pCurr = c.pStart;
@@ -569,7 +577,7 @@ public class PeopsSpu implements Spu {
             Channel c = chan[ch];
 
             if (c.bNew) {
-                startSound(c);
+                startSound(ch);
             }
             if (!c.bOn) {
                 continue;
@@ -1009,6 +1017,75 @@ public class PeopsSpu implements Spu {
             NP = 1;
         }
         chan[ch].iActFreq = NP;
+    }
+
+
+    // ---- the voice view, for the visualizer ----
+
+    @Override
+    public int voiceCount() {
+        return MAXCHAN;
+    }
+
+    @Override
+    public boolean on(int voice) {
+        return chan[voice].bOn;
+    }
+
+    @Override
+    public boolean released(int voice) {
+        return chan[voice].bStop;
+    }
+
+    @Override
+    public int envelopeLevel(int voice) {
+        return chan[voice].envelopeVol;
+    }
+
+    @Override
+    public int envelopePhase(int voice) {
+        Channel c = chan[voice];
+        return c.bStop ? RELEASE : c.state;
+    }
+
+    @Override
+    public int leftVolume(int voice) {
+        return chan[voice].iLeftVolume;
+    }
+
+    @Override
+    public int rightVolume(int voice) {
+        return chan[voice].iRightVolume;
+    }
+
+    @Override
+    public int pitch(int voice) {
+        return chan[voice].iRawPitch;
+    }
+
+    @Override
+    public int sampleStart(int voice) {
+        return chan[voice].pStart;
+    }
+
+    @Override
+    public int sampleLoop(int voice) {
+        return chan[voice].pLoop;
+    }
+
+    @Override
+    public boolean noise(int voice) {
+        return chan[voice].bNoise;
+    }
+
+    @Override
+    public int keyOnCount(int voice) {
+        return keyOns[voice];
+    }
+
+    @Override
+    public boolean reverb(int voice) {
+        return ((rvb.Enabled >> voice) & 1) != 0 && (spuCtrl & 0x80) != 0;
     }
 
     // ---- dma ----
