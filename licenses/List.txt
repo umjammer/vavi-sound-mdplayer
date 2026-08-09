@@ -3,3 +3,5 @@ vgmplay      - GPL.txt
 libsidplayfp - GPL.txt
 sidplayfp    - GPL.txt
 mucom88torym2612 - MIT
+aosdk        - aosdk_license.txt (psf, psf2: corlett, psx cpu, psx/iop hardware)
+PEOpS        - GPL.txt (psf, psf2: the SPU and SPU2 emulation)

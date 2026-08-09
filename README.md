@@ -44,6 +44,8 @@ this is a fork of [MDPlayer](https://github.com/kuma4649/MDPlayer)
 | YM                              | Atari ST         |       ✅️       |    -     | built-in              | [stymulatorn](https://github.com/ehaupt/stymulatorn)                 |                                                                                   |
 | HVL                             | Amiga            |      ✅️ ️      |    -     | built-in              | [hiivelyplay](https://github.com/pete-gordon/hiivelyplay)            |                                                                                   |
 | AHX                             | Amiga            |      ✅️ ️      |    -     | built-in              | [ahxcs](https://github.com/jimshawx/ahxcs)                           |                                                                                   |
+| PSF/MINIPSF                     | PlayStation      |      ✅️ ️      |    -     | built-in              | [aosdk](https://github.com/nmlgc/aosdk)                              |                                                                                   |
+| PSF2/MINIPSF2                   | PlayStation 2    |      ✅️ ️      |    -     | built-in              | [aosdk](https://github.com/nmlgc/aosdk)                              |                                                                                   |
 | ZGM                             | mml2vgm          |      n/a       |    -     | built-in              |                                                                      | currently support only YM2609                                                     |
 | MID                             | midi             |       ️→       |    -     | spi                   | built-in                                                             |                                                                                   |
 | RCP                             | recomposer       |       ✅️       |    -     | built-in              |                                                                      |                                                                                   |
@@ -209,6 +211,7 @@ you can select a chip implementation variant by number.
 * https://github.com/AnimaInCorpore/portable_mdx (mxdrv)
 * https://github.com/ehaupt/stymulatorn (ym)
 * https://github.com/jimshawx/ahxcs (ahx)
+* https://github.com/nmlgc/aosdk (psf, psf2)
 * https://nfggames.com/X68000/index.php/Mirrors/Groundzero%20Organization/x68tools/music/lzz/ (zms:lzz)
 * s98
   * https://www.zophar.net/music/s98.html (s98)
@@ -342,6 +345,8 @@ We will do our best to accommodate you, but there are many cases where we cannot
  - NSF (NES Sound Format)
  - HES (HES file)
  - SID (File for Commodore)
+ - PSF (PlayStation, a PS-X EXE played on an emulated PS1; .minipsf needs its .psflib beside it)
+ - PSF2 (PlayStation 2, IRX modules played on an emulated IOP)
  - MGS (MGSDRV.COM is required to play MGSDRV files)
  - MDR (MoonDriver MSX, driver performance file that sounds MoonSound (OPL4))
  - MDX (file for MXDRV)
