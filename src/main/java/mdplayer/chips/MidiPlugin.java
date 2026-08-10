@@ -174,7 +174,17 @@ public class MidiPlugin implements Plugin {
         send(model, num, new byte[] {cmd, prm1}, deltaFrames);
     }
 
-    public void send(EnmModel model, int num, byte[] data, int deltaFrames /* = 0 */) {
+    /**
+     * A song is driven by two threads at once - the virtual model from the audio render loop and
+     * the real model from {@link RealChipPlugin}'s thread - and the player thread makes and
+     * releases the outs under them, all through this one shared plugin. So this and every method
+     * that walks or rebuilds {@link #outs} hold the plugin's monitor: without it {@link #parsers}
+     * was structurally modified while another thread was inside {@code computeIfAbsent} (a
+     * ConcurrentModificationException that killed the real model's thread for the rest of the
+     * song), and the bytes of two messages could interleave in the one parser a receiver has,
+     * where running status makes each byte depend on the ones before it.
+     */
+    public synchronized void send(EnmModel model, int num, byte[] data, int deltaFrames /* = 0 */) {
         // Both models go to the same place. An out is whatever was configured for it - a port, the
         // fallback software synthesizer, or a VST instrument, which is what the original reserved
         // VirtualModel for; the difference no longer has to be made here.
@@ -225,7 +235,7 @@ public class MidiPlugin implements Plugin {
      * Sent when the outs are made, so a song that never touches controller 7 is still played at
      * the calibrated level, and again whenever the volume changes under a playing song.
      */
-    public void applyVolume() {
+    public synchronized void applyVolume() {
         if (outs.isEmpty()) return;
 logger.log(Level.DEBUG, "midi volume: gain=%.3f (master=%d, midi=%d)".formatted(
         midiGain(), setting.getBalance().getMasterVolume(), setting.getBalance().getMidiVolume()));
@@ -369,7 +379,7 @@ logger.log(Level.DEBUG, "midi volume: gain=%.3f (master=%d, midi=%d)".formatted(
      * driver has no equivalent because stopping the emulation stops the sound with it. Sent on
      * stop, so the song ends when the player says it ends.
      */
-    public void allSoundOff() {
+    public synchronized void allSoundOff() {
         if (outs == null) return;
         for (Receiver out : outs) {
             if (out == null) continue;
@@ -554,7 +564,7 @@ logger.log(Level.DEBUG, "midi volume: gain=%.3f (master=%d, midi=%d)".formatted(
         }
     }
 
-    public void resetAll() {
+    public synchronized void resetAll() {
         if (outs != null) {
             for (Receiver midiOut : outs) {
                 if (midiOut == null)
@@ -600,7 +610,7 @@ logger.log(Level.DEBUG, "midi volume: gain=%.3f (master=%d, midi=%d)".formatted(
         make();
     }
 
-    public void make() {
+    public synchronized void make() {
         List<MidiOutInfo[]> midiOutInfos = setting.getMidiOut().getMidiOutInfos();
         if (midiOutInfos == null || midiOutInfos.isEmpty()
                 || midiOutInfos.get(midiMode) == null || midiOutInfos.get(midiMode).length < 1) {
@@ -688,7 +698,7 @@ logger.log(Level.DEBUG, "midi volume: gain=%.3f (master=%d, midi=%d)".formatted(
         applyVolume();
     }
 
-    public void releaseAll() {
+    public synchronized void releaseAll() {
         // before the outs go: closing a receiver does not silence the synthesizer behind it, and
         // the fallback one outlives every song, so a note still held here would ring forever with
         // nothing left to send it a note off
@@ -708,7 +718,7 @@ logger.log(Level.DEBUG, "midi volume: gain=%.3f (master=%d, midi=%d)".formatted(
         releaseVstInstruments();
     }
 
-    public void midiClose() {
+    public synchronized void midiClose() {
         // release the midi out
         if (!outs.isEmpty()) {
             for (int i = 0; i < outs.size(); i++) {
