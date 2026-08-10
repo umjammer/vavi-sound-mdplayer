@@ -233,6 +233,7 @@ you can select a chip implementation variant by number.
   * https://nfggames.com/X68000/index.php/Mirrors/Groundzero%20Organization/x68tools/music/mndrv/ (mndrv) ... google censorship
   * https://worldofspectrum.org/projectay/gdmusic.htm (ay)
   * https://archive.org/details/recomposer-collection (rcp)
+  * https://archive.org/details/VGM.Archive.DATs.2025.09.19.RomVault (psf)
 * processor
   * z80 
     * https://github.com/trekawek/coffee-gb (z80)
@@ -305,6 +306,7 @@ you can select a chip implementation variant by number.
      * \[fmp] ... move to emu/util ??? ... yes mdplayer should not care encoding, hide it native driver inside
    * \[pmd] ... add special tag in datasource to display music_title/composer/arranger
  * settings ...  demolish each driver and chips
+ * midi + dls/sf2 (should not be supported, it's normal midi responsibility)
 
 ---
 

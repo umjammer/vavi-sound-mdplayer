@@ -150,9 +150,9 @@
                     <path refid="maven.compile.classpath"/>
                     <path refid="maven.test.classpath"/>
                   </classpath>
-                  <argument>--add-opens=java.base/java.io=ALL-UNNAMED</argument>
-                  <argument>--add-opens=java.base/sun.nio.ch=ALL-UNNAMED</argument>
-                  <argument>--add-exports=java.desktop/com.sun.media.sound=ALL-UNNAMED</argument>
+                  <jvmarg value="--add-opens=java.base/java.io=ALL-UNNAMED" />
+                  <jvmarg value="--add-opens=java.base/sun.nio.ch=ALL-UNNAMED" />
+                  <jvmarg value="--add-exports=java.desktop/com.sun.media.sound=ALL-UNNAMED" />
                   <jvmarg value="-Djava.util.logging.config.file=${project.build.testOutputDirectory}/logging.properties" />
                   <!-- jvmarg value="-Dswing.defaultlaf=com.formdev.flatlaf.FlatLightLaf" / -->
                   <jvmarg value="-Dapple.laf.useScreenMenuBar=true" />
@@ -434,13 +434,13 @@
     <dependency>
       <groupId>com.github.umjammer</groupId>
       <artifactId>vavi-awt</artifactId>
-      <version>1.0.10</version>
+      <version>1.0.11</version>
     </dependency>
 
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
       <artifactId>vavi-sound-mdsound</artifactId>
-      <version>0.0.24</version>
+      <version>0.0.26</version>
     </dependency>
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
@@ -450,27 +450,27 @@
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
       <artifactId>vavi-sound-mucom88</artifactId>
-      <version>0.0.12</version>
+      <version>0.0.13</version>
     </dependency>
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
       <artifactId>vavi-sound-pmd</artifactId>
-      <version>0.0.11</version>
+      <version>0.0.12</version>
     </dependency>
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
       <artifactId>vavi-sound-moon</artifactId>
-      <version>0.0.11</version>
+      <version>0.0.12</version>
     </dependency>
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
       <artifactId>vavi-sound-muap</artifactId>
-      <version>0.0.8</version>
+      <version>0.0.9</version>
     </dependency>
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
       <artifactId>vavi-sound-mdsdrv</artifactId>
-      <version>0.4.9</version>
+      <version>0.4.10</version>
     </dependency>
 
     <dependency>
