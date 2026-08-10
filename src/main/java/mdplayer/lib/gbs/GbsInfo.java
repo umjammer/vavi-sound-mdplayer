@@ -7,15 +7,15 @@ public class GbsInfo {
 
     private static final Charset charset = Charset.forName("ms932");
 
-    public byte version;
+    private byte version;
     public byte nums;
-    public byte firstSong;
-    public int loadAddress;
+    private byte firstSong;
+    private int loadAddress;
     public int initAddress;
     public int playAddress;
     public int sp;
-    public byte timerModulo;
-    public byte timerControl;
+    private byte timerModulo;
+    private byte timerControl;
     public String title;
     public String author;
     public String copyright;

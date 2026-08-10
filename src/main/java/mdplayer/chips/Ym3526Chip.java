@@ -164,7 +164,7 @@ public class Ym3526Chip extends BaseChip {
         }
     }
 
-    public void softReset(int chipId, EnmModel model) {
+    private void softReset(int chipId, EnmModel model) {
         // FM All Channel Key Off
         for (int i = 0; i < 9; i++) {
             _write(chipId, 0xb0 + i, 0x00, model);

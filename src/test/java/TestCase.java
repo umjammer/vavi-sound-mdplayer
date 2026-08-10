@@ -58,6 +58,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 /**
  * TestCase.
@@ -67,7 +69,7 @@ import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
  */
 @EnabledIf("localPropertiesExists")
 @PropsEntity(url = "file:local.properties")
-public class TestCase {
+class TestCase {
 
     static boolean localPropertiesExists() {
         return Files.exists(Paths.get("local.properties"));
@@ -381,13 +383,7 @@ Debug.println("close");
         audio.init(plugin);
 
         ExecutorService es = Executors.newSingleThreadExecutor();
-        es.submit(() -> {
-            try {
-                audio.play();
-            } catch (Exception e) {
-                Debug.printStackTrace(e);
-            }
-        });
+        es.submit(() -> { try { audio.play(); } catch (Exception e) { Debug.printStackTrace(e); }});
 
         // Wait 1.5 seconds for the audio thread to start playing/rendering
         Thread.sleep(1500);
@@ -396,25 +392,25 @@ Debug.println("close");
         audio.stop();
         long duration = System.currentTimeMillis() - start;
 
-        Debug.println("Stop took: " + duration + " ms");
+Debug.println("Stop took: " + duration + " ms");
         es.shutdownNow();
 
-        org.junit.jupiter.api.Assertions.assertTrue(duration < 1000, "Stop took too long: " + duration + " ms");
+        assertTrue(duration < 1000, "Stop took too long: " + duration + " ms");
     }
 
     @Test
     void testJacksonSerialization() throws Exception {
-        mdplayer.Setting setting = new mdplayer.Setting();
+        Setting setting = new Setting();
         setting.init();
         var midiOut = setting.getMidiOut();
         var list = new ArrayList<MidiOutInfo[]>();
-        MidiOutInfo info1 = new mdplayer.MidiOutInfo();
+        MidiOutInfo info1 = new MidiOutInfo();
         info1.id = 1;
         info1.name = "TestMIDI1";
-        MidiOutInfo info2 = new mdplayer.MidiOutInfo();
+        MidiOutInfo info2 = new MidiOutInfo();
         info2.id = 2;
         info2.name = "TestMIDI2";
-        list.add(new mdplayer.MidiOutInfo[]{info1, info2});
+        list.add(new MidiOutInfo[] {info1, info2});
         midiOut.setMidiOutInfos(list);
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();

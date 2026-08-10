@@ -38,12 +38,12 @@ public class RCP {
     public int[] sendControlDelta = null;
     public int[] sendControlIndex = null;
 
-    public static class MIDIRhythm {
+    static class MIDIRhythm {
         private String name = "";
         private int key = 0;
         private int gt = 1;
 
-        public void setName(String value) {
+        void setName(String value) {
             name = value;
         }
 
@@ -68,12 +68,12 @@ public class RCP {
         }
     }
 
-    public static class MIDIUserExclusive {
+    static class MIDIUserExclusive {
         private String name = "";
         private String memo = "";
         private byte[] exclusive = null;
 
-        public void setName(String value) {
+        void setName(String value) {
             name = value;
         }
 
@@ -93,16 +93,16 @@ public class RCP {
             exclusive = value;
         }
 
-        public byte[] getExclusive() {
+        byte[] getExclusive() {
             return exclusive;
         }
     }
 
-    public static class Tick {
-        public int millisec = 0;
-        public int count = 0;
-        public int before = 0;
-        public int sabun = 0;
+    static class Tick {
+        int millisec = 0;
+        int count = 0;
+        int before = 0;
+        int sabun = 0;
     }
 
     private final Tick tick = new Tick();
@@ -179,7 +179,7 @@ public class RCP {
     public IntSupplier midiCount;
     public Runnable stop;
 
-    interface EventHandler extends BiConsumer<MIDITrack, MIDIEvent> {
+    private interface EventHandler extends BiConsumer<MIDITrack, MIDIEvent> {
     }
 
     private final EventHandler[] eventFunc = new EventHandler[256];
@@ -1137,10 +1137,10 @@ logger.log(Level.INFO, "checkHeadString");
         eventFunc[eve.getEventType().v].accept(trk, eve);
     }
 
-    void efn(MIDITrack trk, MIDIEvent eve) {
+    private void efn(MIDITrack trk, MIDIEvent eve) {
     }
 
-    void ef2byteMsg(MIDITrack trk, MIDIEvent eve) {
+    private void ef2byteMsg(MIDITrack trk, MIDIEvent eve) {
         if (trk.getOutChannel() == null) return;
         msgBuf[0] = eve.getMIDIMessage()[0];
         eve.getMIDIMessage()[0] &= 0xf0;
@@ -1149,7 +1149,7 @@ logger.log(Level.INFO, "checkHeadString");
         eve.getMIDIMessage()[0] = msgBuf[0];
     }
 
-    void ef3byteMsg(MIDITrack trk, MIDIEvent eve) {
+    private void ef3byteMsg(MIDITrack trk, MIDIEvent eve) {
         if (trk.getOutChannel() == null) return;
         msgBuf[0] = eve.getMIDIMessage()[0];
         eve.getMIDIMessage()[0] &= 0xf0;
@@ -1158,65 +1158,65 @@ logger.log(Level.INFO, "checkHeadString");
         eve.getMIDIMessage()[0] = msgBuf[0];
     }
 
-    void efnbyteMsg(MIDITrack trk, MIDIEvent eve) {
+    private void efnbyteMsg(MIDITrack trk, MIDIEvent eve) {
         putMIDIMessage(trk.getOutUserDeviceNumber(), eve.getMIDIMessage(), eve.getMIDIMessage().length);
     }
 
-    void efMetaSeqNumber(MIDITrack trk, MIDIEvent eve) {
+    private void efMetaSeqNumber(MIDITrack trk, MIDIEvent eve) {
         logger.log(Level.TRACE, "MetaSeqNumber is not implemented!");
     }
 
-    void efMetaTextEvent(MIDITrack trk, MIDIEvent eve) {
+    private void efMetaTextEvent(MIDITrack trk, MIDIEvent eve) {
         trk.setComment(new String(eve.getMIDIMessage(), charset).replace("\0", ""));
     }
 
-    void efMetaCopyrightNotice(MIDITrack trk, MIDIEvent eve) {
+    private void efMetaCopyrightNotice(MIDITrack trk, MIDIEvent eve) {
         //prj.Information.Copyright = (Charset.forName("Shift_JIS").new String(eve.getMIDIMessage())).replace("\0", "");
     }
 
-    void efMetaTrackName(MIDITrack trk, MIDIEvent eve) {
+    private void efMetaTrackName(MIDITrack trk, MIDIEvent eve) {
         trk.setName(new String(eve.getMIDIMessage(), charset).replace("\0", ""));
     }
 
-    void efMetaInstrumentName(MIDITrack trk, MIDIEvent eve) {
+    private void efMetaInstrumentName(MIDITrack trk, MIDIEvent eve) {
         logger.log(Level.TRACE, "MetaInstrumentName is not implemented!");
     }
 
-    void efMetaLyric(MIDITrack trk, MIDIEvent eve) {
+    private void efMetaLyric(MIDITrack trk, MIDIEvent eve) {
         //ps.Lyric = (Charset.forName("Shift_JIS").new String(eve.MIDIMessage, 2, eve.MIDIMessage.length - 2)).replace("\0", "");
     }
 
-    void efMetaMarker(MIDITrack trk, MIDIEvent eve) {
+    private void efMetaMarker(MIDITrack trk, MIDIEvent eve) {
         logger.log(Level.TRACE, "MetaMarker is not implemented!");
     }
 
-    void efMetaCuePoint(MIDITrack trk, MIDIEvent eve) {
+    private void efMetaCuePoint(MIDITrack trk, MIDIEvent eve) {
         logger.log(Level.TRACE, "MetaCuePoint is not implemented!");
     }
 
-    void efMetaProgramName(MIDITrack trk, MIDIEvent eve) {
+    private void efMetaProgramName(MIDITrack trk, MIDIEvent eve) {
         logger.log(Level.TRACE, "MetaProgramName is not implemented!");
     }
 
-    void efMetaDeviceName(MIDITrack trk, MIDIEvent eve) {
+    private void efMetaDeviceName(MIDITrack trk, MIDIEvent eve) {
         logger.log(Level.TRACE, "MetaDeviceName is not implemented!");
     }
 
-    void efMetaChannelPrefix(MIDITrack trk, MIDIEvent eve) {
+    private void efMetaChannelPrefix(MIDITrack trk, MIDIEvent eve) {
         logger.log(Level.TRACE, "MetaChannelPrefix is not implemented!");
     }
 
-    void efMetaPortPrefix(MIDITrack trk, MIDIEvent eve) {
+    private void efMetaPortPrefix(MIDITrack trk, MIDIEvent eve) {
         logger.log(Level.TRACE, "MetaPortPrefix is not implemented!");
         logger.log(Level.TRACE, "+Track.Number[%d] Event.Index[%d]%n".formatted(trk.getNumber(), eve.getNumber()));
         logger.log(Level.TRACE, "+Message [%d,%d,%d]%n".formatted(eve.getMIDIMessage()[0], eve.getMIDIMessage()[1], eve.getMIDIMessage()[2]));
     }
 
-    void efMetaEndOfTrack(MIDITrack trk, MIDIEvent eve) {
+    private void efMetaEndOfTrack(MIDITrack trk, MIDIEvent eve) {
         // No action is required at this time
     }
 
-    void efMetaTempo(MIDITrack trk, MIDIEvent eve) {
+    private void efMetaTempo(MIDITrack trk, MIDIEvent eve) {
 //        int Tempo = (eve.getMIDIMessage()[2] & 0xff) * 0x1_0000 + (eve.getMIDIMessage()[3] & 0xff) * 0x100 + (eve.getMIDIMessage()[4] & 0xff);
 //        MIDIClock.Stop();
 //        MIDIClock.SetTempo(Tempo);
@@ -1224,24 +1224,24 @@ logger.log(Level.INFO, "checkHeadString");
 //        ps.Tempo = 60000000 / Tempo;
     }
 
-    void efMetaSMPTEOffset(MIDITrack trk, MIDIEvent eve) {
+    private void efMetaSMPTEOffset(MIDITrack trk, MIDIEvent eve) {
         logger.log(Level.TRACE, "MetaSMPTEOffset is not implemented!");
     }
 
-    void efMetaTimeSignature(MIDITrack trk, MIDIEvent eve) {
+    private void efMetaTimeSignature(MIDITrack trk, MIDIEvent eve) {
         beatDen = eve.getMIDIMessage()[2]; // numerator
         beatMol = (int) Math.pow(2.0, eve.getMIDIMessage()[3] & 0xff); // denominator
     }
 
-    void efMetaKeySignature(MIDITrack trk, MIDIEvent eve) {
+    private void efMetaKeySignature(MIDITrack trk, MIDIEvent eve) {
         logger.log(Level.TRACE, "MetaKeySignature is not implemented! Track.Number[%d] Event.Index[%d]%n".formatted(trk.getNumber(), eve.getNumber()));
     }
 
-    void efNoteOff(MIDITrack trk, MIDIEvent eve) {
+    private void efNoteOff(MIDITrack trk, MIDIEvent eve) {
         //ef3byteMsg(trk, eve);
     }
 
-    void efNoteOn(MIDITrack trk, MIDIEvent eve) {
+    private void efNoteOn(MIDITrack trk, MIDIEvent eve) {
         if (eve.getGate() == 0) return;
         int okey = eve.getMIDIMessage()[1];
         //int key = (okey + ((trk.key != null) ? (int)trk.key : 0));
@@ -1273,71 +1273,71 @@ logger.log(Level.INFO, "checkHeadString");
         trk.getNoteGateTime()[okey] = trk.getNextEventTick() + eve.getGate();
     }
 
-    void efKeyAfterTouch(MIDITrack trk, MIDIEvent eve) {
+    private void efKeyAfterTouch(MIDITrack trk, MIDIEvent eve) {
         ef3byteMsg(trk, eve);
     }
 
-    void efControlChange(MIDITrack trk, MIDIEvent eve) {
+    private void efControlChange(MIDITrack trk, MIDIEvent eve) {
         ef3byteMsg(trk, eve);
     }
 
-    void efProgramChange(MIDITrack trk, MIDIEvent eve) {
+    private void efProgramChange(MIDITrack trk, MIDIEvent eve) {
         ef2byteMsg(trk, eve);
     }
 
-    void efChannelAfterTouch(MIDITrack trk, MIDIEvent eve) {
+    private void efChannelAfterTouch(MIDITrack trk, MIDIEvent eve) {
         ef2byteMsg(trk, eve);
     }
 
-    void efPitchBend(MIDITrack trk, MIDIEvent eve) {
+    private void efPitchBend(MIDITrack trk, MIDIEvent eve) {
         ef3byteMsg(trk, eve);
     }
 
-    void efSysExStart(MIDITrack trk, MIDIEvent eve) {
+    private void efSysExStart(MIDITrack trk, MIDIEvent eve) {
         efnbyteMsg(trk, eve);
     }
 
-    void efSysExContinue(MIDITrack trk, MIDIEvent eve) {
+    private void efSysExContinue(MIDITrack trk, MIDIEvent eve) {
         efnbyteMsg(trk, eve);
     }
 
-    void efMetaSequencerSpecific(MIDITrack trk, MIDIEvent eve) {
+    private void efMetaSequencerSpecific(MIDITrack trk, MIDIEvent eve) {
         specialEventFunc[eve.getMIDIMessage()[0] & 0xff].accept(trk, eve);
     }
 
-    void sefUserExclusive1(MIDITrack trk, MIDIEvent eve) {
+    private void sefUserExclusive1(MIDITrack trk, MIDIEvent eve) {
         sefUserExclusiveN(0, trk, eve);
     }
 
-    void sefUserExclusive2(MIDITrack trk, MIDIEvent eve) {
+    private void sefUserExclusive2(MIDITrack trk, MIDIEvent eve) {
         sefUserExclusiveN(1, trk, eve);
     }
 
-    void sefUserExclusive3(MIDITrack trk, MIDIEvent eve) {
+    private void sefUserExclusive3(MIDITrack trk, MIDIEvent eve) {
         sefUserExclusiveN(2, trk, eve);
     }
 
-    void sefUserExclusive4(MIDITrack trk, MIDIEvent eve) {
+    private void sefUserExclusive4(MIDITrack trk, MIDIEvent eve) {
         sefUserExclusiveN(3, trk, eve);
     }
 
-    void sefUserExclusive5(MIDITrack trk, MIDIEvent eve) {
+    private void sefUserExclusive5(MIDITrack trk, MIDIEvent eve) {
         sefUserExclusiveN(4, trk, eve);
     }
 
-    void sefUserExclusive6(MIDITrack trk, MIDIEvent eve) {
+    private void sefUserExclusive6(MIDITrack trk, MIDIEvent eve) {
         sefUserExclusiveN(5, trk, eve);
     }
 
-    void sefUserExclusive7(MIDITrack trk, MIDIEvent eve) {
+    private void sefUserExclusive7(MIDITrack trk, MIDIEvent eve) {
         sefUserExclusiveN(6, trk, eve);
     }
 
-    void sefUserExclusive8(MIDITrack trk, MIDIEvent eve) {
+    private void sefUserExclusive8(MIDITrack trk, MIDIEvent eve) {
         sefUserExclusiveN(7, trk, eve);
     }
 
-    void sefChExclusive(MIDITrack trk, MIDIEvent eve) {
+    private void sefChExclusive(MIDITrack trk, MIDIEvent eve) {
         int i = 0;
         int j = 0;
         int chksum = 0;
@@ -1372,11 +1372,11 @@ logger.log(Level.INFO, "checkHeadString");
         putMIDIMessage(trk.getOutDeviceNumber(), msgBuf, i);
     }
 
-    void sefOutsideProcessExec(MIDITrack trk, MIDIEvent eve) {
+    private void sefOutsideProcessExec(MIDITrack trk, MIDIEvent eve) {
         logger.log(Level.TRACE, "spEventOutsideProcessExec is not implemented!");
     }
 
-    void sefBankProgram(MIDITrack trk, MIDIEvent eve) {
+    private void sefBankProgram(MIDITrack trk, MIDIEvent eve) {
         msgBuf[0] = (byte) ((eve.getMIDIMessages()[1][0] & 0xff) + (trk.getOutChannel() % 16));
         msgBuf[1] = eve.getMIDIMessages()[1][1];
         msgBuf[2] = eve.getMIDIMessages()[1][2];
@@ -1386,11 +1386,11 @@ logger.log(Level.INFO, "checkHeadString");
         putMIDIMessage(trk.getOutDeviceNumber(), msgBuf, 2);
     }
 
-    void sefKeyScan(MIDITrack trk, MIDIEvent eve) {
+    private void sefKeyScan(MIDITrack trk, MIDIEvent eve) {
         logger.log(Level.TRACE, "spEventKeyScan is not implemented!");
     }
 
-    void sefMIDIChChange(MIDITrack trk, MIDIEvent eve) {
+    private void sefMIDIChChange(MIDITrack trk, MIDIEvent eve) {
         int ch = eve.getMIDIMessages()[0][0] & 0xff;
         if (ch == 0) {
             trk.setMute(true);
@@ -1402,7 +1402,7 @@ logger.log(Level.INFO, "checkHeadString");
         trk.setOutChannel(ch % 16);
     }
 
-    void sefTempoChange(MIDITrack trk, MIDIEvent eve) {
+    private void sefTempoChange(MIDITrack trk, MIDIEvent eve) {
         double mul = (eve.getMIDIMessages()[0][0] & 0xff) / 64.0;
 
         if (eve.getMIDIMessages()[0][1] == 0) {
@@ -1421,17 +1421,17 @@ logger.log(Level.INFO, "checkHeadString");
         }
     }
 
-    void sefYAMAHABase(MIDITrack trk, MIDIEvent eve) {
+    private void sefYAMAHABase(MIDITrack trk, MIDIEvent eve) {
         trk.setYAMAHABase_gt(eve.getMIDIMessages()[0][0]);
         trk.setYAMAHABase_vel(eve.getMIDIMessages()[0][1]);
     }
 
-    void sefYAMAHADev(MIDITrack trk, MIDIEvent eve) {
+    private void sefYAMAHADev(MIDITrack trk, MIDIEvent eve) {
         trk.setYAMAHA_dev(eve.getMIDIMessages()[0][0]);
         trk.setYAMAHA_model(eve.getMIDIMessages()[0][1]);
     }
 
-    void sefYAMAHAAddrPara(MIDITrack trk, MIDIEvent eve) {
+    private void sefYAMAHAAddrPara(MIDITrack trk, MIDIEvent eve) {
         trk.setYAMAHAPara_gt(eve.getMIDIMessages()[0][0]);
         trk.setYAMAHAPara_vel(eve.getMIDIMessages()[0][1]);
 
@@ -1447,7 +1447,7 @@ logger.log(Level.INFO, "checkHeadString");
         putMIDIMessage(trk.getOutDeviceNumber(), msgBuf, 9);
     }
 
-    void sefYAMAHAXGAddrPara(MIDITrack trk, MIDIEvent eve) {
+    private void sefYAMAHAXGAddrPara(MIDITrack trk, MIDIEvent eve) {
         trk.setYAMAHAPara_gt(eve.getMIDIMessages()[0][0]);
         trk.setYAMAHAPara_vel(eve.getMIDIMessages()[0][1]);
 
@@ -1463,12 +1463,12 @@ logger.log(Level.INFO, "checkHeadString");
         putMIDIMessage(trk.getOutDeviceNumber(), msgBuf, 9);
     }
 
-    void sefRolandBase(MIDITrack trk, MIDIEvent eve) {
+    private void sefRolandBase(MIDITrack trk, MIDIEvent eve) {
         trk.setRolandBase_gt(eve.getMIDIMessages()[0][0]);
         trk.setRolandBase_vel(eve.getMIDIMessages()[0][1]);
     }
 
-    void sefRolandPara(MIDITrack trk, MIDIEvent eve) {
+    private void sefRolandPara(MIDITrack trk, MIDIEvent eve) {
         trk.setRolandPara_gt(eve.getMIDIMessages()[0][0]);
         trk.setRolandPara_vel(eve.getMIDIMessages()[0][1]);
 
@@ -1486,12 +1486,12 @@ logger.log(Level.INFO, "checkHeadString");
         putMIDIMessage(trk.getOutDeviceNumber(), msgBuf, 11);
     }
 
-    void sefRolandDev(MIDITrack trk, MIDIEvent eve) {
+    private void sefRolandDev(MIDITrack trk, MIDIEvent eve) {
         trk.setRolandDev_gt(eve.getMIDIMessages()[0][0]);
         trk.setRolandDev_vel(eve.getMIDIMessages()[0][1]);
     }
 
-    void sefKeyChange(MIDITrack trk, MIDIEvent eve) {
+    private void sefKeyChange(MIDITrack trk, MIDIEvent eve) {
         int sf, mi;
         int v, vv;
 
@@ -1504,12 +1504,12 @@ logger.log(Level.INFO, "checkHeadString");
         trk.setKeySIG_MI(mi); // Is minor key
     }
 
-    void sefCommentStart(MIDITrack trk, MIDIEvent eve) {
+    private void sefCommentStart(MIDITrack trk, MIDIEvent eve) {
         trk.setComment(new String(eve.getMIDIMessages()[0], charset).replace("\0", ""));
         lyric.accept(trk.getComment());
     }
 
-    void sefLoopEnd(MIDITrack trk, MIDIEvent eve) {
+    private void sefLoopEnd(MIDITrack trk, MIDIEvent eve) {
         if (trk.getLoopTargetEvents().isEmpty()) return;
         MIDIEvent evt = trk.getLoopTargetEvents().pop();
         if ((evt.getMIDIMessages()[0][0] & 0xff) < (eve.getMIDIMessages()[0][0] & 0xff) - 1) {
@@ -1522,13 +1522,13 @@ logger.log(Level.INFO, "checkHeadString");
         }
     }
 
-    void sefLoopStart(MIDITrack trk, MIDIEvent eve) {
+    private void sefLoopStart(MIDITrack trk, MIDIEvent eve) {
         MIDIEvent evt = trk.getNowPart().getEvents().get(trk.getNowPart().getENowIndex());
         evt.getMIDIMessages()[0][0] = 0;
         trk.getLoopTargetEvents().push(evt);
     }
 
-    void sefSameMeasure(MIDITrack trk, MIDIEvent eve) {
+    private void sefSameMeasure(MIDITrack trk, MIDIEvent eve) {
         if (trk.getSameMeasure() != null) {
             trk.setLoopOrSameTargetEventIndex(trk.getSameMeasure());
             trk.setSameMeasure(null);
@@ -1542,66 +1542,66 @@ logger.log(Level.INFO, "checkHeadString");
         }
     }
 
-    void sefMeasureEnd(MIDITrack trk, MIDIEvent eve) {
+    private void sefMeasureEnd(MIDITrack trk, MIDIEvent eve) {
         if (trk.getSameMeasure() != null) {
             trk.setLoopOrSameTargetEventIndex(trk.getSameMeasure());
             trk.setSameMeasure(null);
         }
     }
 
-    void sefEndofTrack(MIDITrack trk, MIDIEvent eve) {
+    private void sefEndofTrack(MIDITrack trk, MIDIEvent eve) {
         trk.setEndMark(true);
     }
 
-    void sefDX7Func(MIDITrack trk, MIDIEvent eve) {
+    private void sefDX7Func(MIDITrack trk, MIDIEvent eve) {
     }
 
-    void sefDXPara(MIDITrack trk, MIDIEvent eve) {
+    private void sefDXPara(MIDITrack trk, MIDIEvent eve) {
     }
 
-    void sefDXRERF(MIDITrack trk, MIDIEvent eve) {
+    private void sefDXRERF(MIDITrack trk, MIDIEvent eve) {
     }
 
-    void sefTXFunc(MIDITrack trk, MIDIEvent eve) {
+    private void sefTXFunc(MIDITrack trk, MIDIEvent eve) {
     }
 
-    void sefFB01PPara(MIDITrack trk, MIDIEvent eve) {
+    private void sefFB01PPara(MIDITrack trk, MIDIEvent eve) {
     }
 
-    void sefFB01SSystem(MIDITrack trk, MIDIEvent eve) {
+    private void sefFB01SSystem(MIDITrack trk, MIDIEvent eve) {
     }
 
-    void sefTX81ZVVCED(MIDITrack trk, MIDIEvent eve) {
+    private void sefTX81ZVVCED(MIDITrack trk, MIDIEvent eve) {
     }
 
-    void sefTX81ZAACED(MIDITrack trk, MIDIEvent eve) {
+    private void sefTX81ZAACED(MIDITrack trk, MIDIEvent eve) {
     }
 
-    void sefTX81ZPPCED(MIDITrack trk, MIDIEvent eve) {
+    private void sefTX81ZPPCED(MIDITrack trk, MIDIEvent eve) {
     }
 
-    void sefTX81ZSSystem(MIDITrack trk, MIDIEvent eve) {
+    private void sefTX81ZSSystem(MIDITrack trk, MIDIEvent eve) {
     }
 
-    void sefTX81ZEEffect(MIDITrack trk, MIDIEvent eve) {
+    private void sefTX81ZEEffect(MIDITrack trk, MIDIEvent eve) {
     }
 
-    void sefDX72RRemoteSW(MIDITrack trk, MIDIEvent eve) {
+    private void sefDX72RRemoteSW(MIDITrack trk, MIDIEvent eve) {
     }
 
-    void sefDX72AACED(MIDITrack trk, MIDIEvent eve) {
+    private void sefDX72AACED(MIDITrack trk, MIDIEvent eve) {
     }
 
-    void sefDX72PPCED(MIDITrack trk, MIDIEvent eve) {
+    private void sefDX72PPCED(MIDITrack trk, MIDIEvent eve) {
     }
 
-    void sefTX802PPCED(MIDITrack trk, MIDIEvent eve) {
+    private void sefTX802PPCED(MIDITrack trk, MIDIEvent eve) {
     }
 
-    void sefMKS7(MIDITrack trk, MIDIEvent eve) {
+    private void sefMKS7(MIDITrack trk, MIDIEvent eve) {
     }
 
-    void sefUserExclusiveN(int num, MIDITrack trk, MIDIEvent eve) {
+    private void sefUserExclusiveN(int num, MIDITrack trk, MIDIEvent eve) {
         int i = 0;
         int j = 0;
         int chksum = 0;
@@ -1640,8 +1640,8 @@ logger.log(Level.INFO, "checkHeadString");
             data = dat;
         }
 
-        public final int delta;
-        public final byte[] data;
+        final int delta;
+        final byte[] data;
 
         @Override public int getDelta() {
             return delta;

@@ -154,7 +154,7 @@ public class Ym2413Chip extends BaseChip {
         return keyInfoRet[chipId];
     }
 
-    public void softReset(int chipId, EnmModel model) {
+    private void softReset(int chipId, EnmModel model) {
         // FM All Channel Key Off
         for (int ch = 0; ch < 9; ch++) {
             write(chipId, 0x20 + ch, 0x00, model);

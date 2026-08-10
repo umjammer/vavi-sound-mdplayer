@@ -36,7 +36,7 @@ import mdplayer.emu.nise98.Memory98;
 public class FmpWork {
 
     /** size of one part work */
-    public static final int PART_SIZE = 0x6f;
+    private static final int PART_SIZE = 0x6f;
 
     /** the note byte of part 0, relative to the work address */
     private static final int PART0 = 0x3b;

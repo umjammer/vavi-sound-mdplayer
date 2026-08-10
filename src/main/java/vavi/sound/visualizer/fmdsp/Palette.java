@@ -13,16 +13,16 @@ import java.awt.Color;
  * 10-color palette table lifted verbatim from {@code fmdsp_sprites.h}. Index 0
  * is background; the C drawing code references colors by these slot indices.
  */
-public final class Palette {
+final class Palette {
 
     /** Number of palette slots. Mirrors {@code FMDSP_PALETTE_COLORS}. */
     public static final int COLORS = 10;
 
     /** Number of selectable palettes (F1..F10). Mirrors {@code PALETTE_NUM}. */
-    public static final int COUNT = 10;
+    private static final int COUNT = 10;
 
     /** Per-frame fade speed in 8-bit channel steps. Mirrors {@code FADEDELTA}. */
-    public static final int FADE_DELTA = 16;
+    private static final int FADE_DELTA = 16;
 
     private static final int LCDWR = 172, LCDWG = 239, LCDWB = 7;
     private static final int LCDBR = 12, LCDBG = 91, LCDBB = 0;

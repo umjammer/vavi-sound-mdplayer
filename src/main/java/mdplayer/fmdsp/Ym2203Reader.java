@@ -6,6 +6,8 @@
 
 package mdplayer.fmdsp;
 
+import java.util.Map;
+
 import vavi.sound.visualizer.fmdsp.LevelDataSource.Pan;
 import mdplayer.chips.Ym2203Chip;
 
@@ -48,7 +50,7 @@ public class Ym2203Reader extends OpnFmReader {
     }
 
     /** the chip's channel state, read back once a frame */
-    private java.util.Map<String, Object> info;
+    private Map<String, Object> info;
 
     private int intOf(String key) {
         Object value = info == null ? null : info.get(key);

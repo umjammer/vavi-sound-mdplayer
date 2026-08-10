@@ -34,7 +34,7 @@ import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
  */
 @EnabledIf("localPropertiesExists")
 @PropsEntity(url = "file:local.properties")
-public class TestCase {
+class TestCase {
 
     static boolean localPropertiesExists() {
         return Files.exists(Paths.get("local.properties"));

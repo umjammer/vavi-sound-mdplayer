@@ -25,7 +25,7 @@ public class TonePallet implements Serializable, Cloneable {
 
     private static final Logger logger = getLogger(TonePallet.class.getName());
 
-    public static final String DEFAULT_TONE_PALLET_XML = "DefaultTonePallet.xml";
+    private static final String DEFAULT_TONE_PALLET_XML = "DefaultTonePallet.xml";
 
     private List<Tone> _lstTone = new ArrayList<>(256);
 

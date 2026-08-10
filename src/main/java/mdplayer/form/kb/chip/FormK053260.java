@@ -24,6 +24,7 @@ import mdplayer.chips.K053260Chip;
 import mdplayer.form.kb.PcmChannelParams;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
+import mdsound.MDSound;
 import mdsound.instrument.K053260Inst;
 
 import static mdplayer.form.kb.chip.FormC352.drawChC352_P;
@@ -32,7 +33,7 @@ import mdplayer.form.View;
 
 public class FormK053260 extends FormChipBase<FormK053260.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormK053260.class);
+    private static final Preferences prefs = Preferences.userNodeForPackage(FormK053260.class);
 
     public FormK053260(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -64,7 +65,7 @@ public class FormK053260 extends FormChipBase<FormK053260.Params> {
         }
     };
 
-    public void changeZoom() {
+    private void changeZoom() {
         this.setMaximumSize(new Dimension(frameSizeW + Common.getImage("planeK053260").getWidth() * zoom, frameSizeH + Common.getImage("planeK053260").getHeight() * zoom));
         this.setMinimumSize(new Dimension(frameSizeW + Common.getImage("planeK053260").getWidth() * zoom, frameSizeH + Common.getImage("planeK053260").getHeight() * zoom));
         this.setPreferredSize(new Dimension(frameSizeW + Common.getImage("planeK053260").getWidth() * zoom, frameSizeH + Common.getImage("planeK053260").getHeight() * zoom));
@@ -230,7 +231,7 @@ public class FormK053260 extends FormChipBase<FormK053260.Params> {
         this.addComponentListener(this.componentListener);
     }
 
-    BufferedImage image;
+    private BufferedImage image;
 
 //#region draw buffer
 
@@ -322,9 +323,9 @@ public class FormK053260 extends FormChipBase<FormK053260.Params> {
 //#endregion
 
     /** this panel's per-frame draw state, diffed new against old (see {@link FormChipBase}) */
-    public static class Params {
+    static class Params {
 
-        public final PcmChannelParams[] channels = {
+        final PcmChannelParams[] channels = {
                 new PcmChannelParams(), new PcmChannelParams(), new PcmChannelParams(), new PcmChannelParams()
         };
     }
@@ -334,11 +335,11 @@ public class FormK053260 extends FormChipBase<FormK053260.Params> {
 
         @Override public String id() { return "K053260"; }
         @Override public String category() { return "pcm"; }
-        @Override public Class<? extends mdplayer.Chip> chip() { return mdplayer.chips.K053260Chip.class; }
+        @Override public Class<? extends mdplayer.Chip> chip() { return K053260Chip.class; }
         @Override public View create(FormMain frm, int chipId, int zoom) { return new FormK053260(frm, chipId, zoom); }
 
         @Override public List<MixerSlot> mixerSlots() {
-            return List.of(new MixerSlot(44, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.K053260Chip.class, "k053260", 200));
+            return List.of(new MixerSlot(44, MDSound.Chip.MAIN_TAG, K053260Chip.class, "k053260", 200));
         }
     }
 }

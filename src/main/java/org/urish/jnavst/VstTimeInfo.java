@@ -6,7 +6,7 @@ import java.util.List;
 import com.sun.jna.Structure;
 
 
-public class VstTimeInfo extends Structure {
+class VstTimeInfo extends Structure {
     /**
      * current Position in audio samples (always valid)
      */
@@ -63,7 +63,9 @@ public class VstTimeInfo extends Structure {
      */
     public int samplesToNextClock;
     /**
-     * @see VstTimeInfoFlags
+     * which of the fields above the host actually filled in
+     *
+     * @see VstConst#VST_PpqPosValid
      */
     public int flags;
 
@@ -72,6 +74,6 @@ public class VstTimeInfo extends Structure {
         return Arrays.asList(
                 "samplePos", "sampleRate", "nanoSeconds", "ppqPos", "tempo", "barStartPos", "cycleStartPos",
                 "cycleEndPos", "timeSigNumerator", "timeSigDenominator", "smpteOffset", "smpteFrameRate",
-                "samplesToNextClock", "Flags");
+                "samplesToNextClock", "flags");
     }
 }

@@ -30,7 +30,7 @@ import mdplayer.driver.FileFormat;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-08-01 nsano initial version <br>
  */
-public class RenderToWav {
+class RenderToWav {
 
     public static void main(String[] args) throws Exception {
         String in = args[0];
@@ -42,7 +42,6 @@ public class RenderToWav {
 
         FileFormat format = FileFormat.getFileFormat(in);
         format.load(Files.newInputStream(Path.of(in)), null);
-        @SuppressWarnings("unchecked")
         BasePlugin<? extends BaseDriver> plugin = (BasePlugin<? extends BaseDriver>) format.getPlugin();
         plugin.setParams(format, Map.of("fileName", in));
         plugin.prepare();

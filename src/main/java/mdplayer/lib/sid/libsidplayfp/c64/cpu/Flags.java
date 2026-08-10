@@ -25,7 +25,7 @@ package mdplayer.lib.sid.libsidplayfp.c64.cpu;
 /**
  * Processor Status Register
  */
-public class Flags {
+class Flags {
 
     /** Carry */
     private boolean c;

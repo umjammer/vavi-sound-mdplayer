@@ -1,6 +1,7 @@
 package mdplayer.lib.hes;
 
 import mdplayer.lib.hes.M_Hes.NezPlay;
+import mdsound.np.LoopDetector;
 
 
 /** HES (PC-Engine) */
@@ -36,8 +37,8 @@ public class Hes {
         this.nezPlay = new NezPlay();
     }
 
-    public static class HESDetector extends mdsound.np.LoopDetector.BasicDetector {
-        public HESDetector() {
+    public static class HESDetector extends LoopDetector.BasicDetector {
+        HESDetector() {
             super(18);
         }
 

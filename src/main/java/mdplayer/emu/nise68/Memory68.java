@@ -6,7 +6,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 
-public class Memory68 {
+public class Memory68 implements IMemory {
 
     public final byte[] mem;
     public final List<MemHook> hookList;
@@ -174,5 +174,20 @@ public class Memory68 {
         }
 
         return false;
+    }
+
+    @Override
+    public byte readByte(int address) {
+        return peekB(address);
+    }
+
+    @Override
+    public int readInt(int address) {
+        return peekL(address);
+    }
+
+    @Override
+    public byte[] getMemory() {
+        return mem;
     }
 }

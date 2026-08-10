@@ -65,7 +65,7 @@ public class DevOpm {
     }
 
     /** */
-    public static final byte[] _kc_table = {
+    private static final byte[] _kc_table = {
             0x00, 0x00, 0x00, 0x00, 0x01, 0x02, 0x04, 0x05, 0x06, 0x08, 0x09, 0x0A,
             0x0C, 0x0D, 0x0E, 0x10, 0x11, 0x12, 0x14, 0x15, 0x16, 0x18, 0x19, 0x1A,
             0x1C, 0x1D, 0x1E, 0x20, 0x21, 0x22, 0x24, 0x25, 0x26, 0x28, 0x29, 0x2A,
@@ -146,7 +146,7 @@ public class DevOpm {
         mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) & 0x98));
     }
 
-    public void _opm_keyoff2() {
+    private void _opm_keyoff2() {
         reg.setD0_B(mm.readByte(reg.a5 + W.dev) & 0xff);
         reg.D1_L = 8;
         mndrv._OPM_WRITE();
@@ -178,7 +178,7 @@ public class DevOpm {
     }
 
     /** */
-    public void _OPM_RR_ret() {
+    private void _OPM_RR_ret() {
         reg.D1_L = 0xe0;
         reg.setD1_B(reg.getD1_B() + mm.readByte(reg.a5 + W.dev) & 0xff);
         reg.a2 = reg.a5 + W.tone_rr;
@@ -235,7 +235,7 @@ public class DevOpm {
     }
 
     /** */
-    public void _opm_echo_volume() {
+    private void _opm_echo_volume() {
         if ((mm.readByte(reg.a5 + W.reverb) & 0x10) != 0) {
             _opm_echo_common_atv();
             return;
@@ -247,17 +247,17 @@ public class DevOpm {
         _opm_echo_common_v();
     }
 
-    public void _opm_echo_volume_pan_tone() {
+    private void _opm_echo_volume_pan_tone() {
         _opm_echo_tone();
         _opm_echo_volume_pan();
     }
 
-    public void _opm_echo_volume_pan() {
+    private void _opm_echo_volume_pan() {
         _opm_echo_pan();
         _opm_echo_volume();
     }
 
-    public void _opm_echo_volume_tone() {
+    private void _opm_echo_volume_tone() {
         _opm_echo_tone();
         _opm_echo_volume();
     }
@@ -275,7 +275,7 @@ public class DevOpm {
     }
 
     /** */
-    public void _opm_echo_pan() {
+    private void _opm_echo_pan() {
         reg.setD0_B(mm.readByte(reg.a5 + W.pan_ampm) & 0xff);
         reg.setD0_B(reg.getD0_B() & 0x3f);
         reg.setD0_B(reg.getD0_B() | mm.readByte(reg.a5 + W.reverb_pan) & 0xff);
@@ -284,7 +284,7 @@ public class DevOpm {
     }
 
     /** */
-    public void _opm_echo_tone() {
+    private void _opm_echo_tone() {
         reg.D5_L = 0;
         reg.setD5_B(mm.readByte(reg.a5 + W.reverb_tone) & 0xff);
         _opm_echo_tone_change();
@@ -293,7 +293,7 @@ public class DevOpm {
     /**
      * v normal
      */
-    public void _opm_echo_common_v() {
+    private void _opm_echo_common_v() {
         if ((mm.readByte(reg.a5 + W.reverb) & 0x08) != 0) {
             _opm_echo_direct_v();
             return;
@@ -317,7 +317,7 @@ public class DevOpm {
         _OPM_F2_softenv();
     }
 
-    public void _opm_echo_common_plus_v() {
+    private void _opm_echo_common_plus_v() {
         reg.setD4_B(reg.getD4_B() + (int) (byte) reg.getD0_B());
         if ((byte) reg.getD4_B() < 0) {
             reg.D4_L = 0x7f;
@@ -334,7 +334,7 @@ public class DevOpm {
     /**
      * "@v" normal
      */
-    public void _opm_echo_common_atv() {
+    private void _opm_echo_common_atv() {
         if ((mm.readByte(reg.a5 + W.reverb) & 0x08) != 0) {
             _opm_echo_direct_atv();
             return;
@@ -356,7 +356,7 @@ public class DevOpm {
         _OPM_F2_softenv();
     }
 
-    public void _opm_echo_common_plus() {
+    private void _opm_echo_common_plus() {
         reg.setD4_B(reg.getD4_B() + (int) (byte) reg.getD0_B());
         if ((byte) reg.getD4_B() >= 0) {
             _OPM_F2_softenv();
@@ -368,7 +368,7 @@ public class DevOpm {
     /**
      * "v" fine tune
      */
-    public void _opm_echo_volume_v() {
+    private void _opm_echo_volume_v() {
         reg.D4_L = 0;
         reg.setD4_B(mm.readByte(reg.a5 + W.volume) & 0xff);
         reg.setD0_B(mm.readByte(reg.a5 + W.reverb_vol) & 0xff);
@@ -387,7 +387,7 @@ public class DevOpm {
         _OPM_F2_softenv();
     }
 
-    public void _opm_echo_vol_v_plus() {
+    private void _opm_echo_vol_v_plus() {
         reg.setD4_B((byte) ((byte) reg.getD4_B() - (byte) reg.getD0_B()));
         reg.setD4_B((reg.getD4_B() & 0xff) >> 1);
         reg.setD4_W(reg.getD4_W() & 0x7f);
@@ -399,7 +399,7 @@ public class DevOpm {
     /**
      * "@v" fine tune
      */
-    public void _opm_echo_volume_atv() {
+    private void _opm_echo_volume_atv() {
         reg.setD4_B(mm.readByte(reg.a5 + W.vol) & 0xff);
         reg.setD0_B(mm.readByte(reg.a5 + W.reverb_vol) & 0xff);
         reg.setD4_B(reg.getD4_B() + (int) (byte) reg.getD0_B());
@@ -414,7 +414,7 @@ public class DevOpm {
     /**
      * "v" direct
      */
-    public void _opm_echo_direct_v() {
+    private void _opm_echo_direct_v() {
         reg.D4_L = 0;
         reg.setD4_B(mm.readByte(reg.a5 + W.reverb_vol) & 0xff);
         reg.a0 = reg.a5 + W.voltable;
@@ -425,13 +425,13 @@ public class DevOpm {
     /**
      * "@v" direct
      */
-    public void _opm_echo_direct_atv() {
+    private void _opm_echo_direct_atv() {
         reg.setD4_B(mm.readByte(reg.a5 + W.reverb_vol) & 0xff);
         _OPM_F2_softenv();
     }
 
     /** */
-    public void _OPM_echo_ret() {
+    private void _OPM_echo_ret() {
         int sp = reg.getD4_W();
 
         mm.write(reg.a5 + W.revexec, 0);
@@ -469,7 +469,7 @@ public class DevOpm {
     }
 
     /** */
-    public void _init_lfo_opm() {
+    private void _init_lfo_opm() {
         if (mm.readByte(reg.a6 + Dw.FADEFLAG) == 0) {
             if ((mm.readByte(reg.a5 + W.effect) & 0x20) != 0) return;
 
@@ -945,7 +945,7 @@ public class DevOpm {
     }
 
     /** */
-    public void _OPM_NOP() {
+    private void _OPM_NOP() {
         mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) & 0x7f));
         _opm_keyoff2();
     }
@@ -1066,7 +1066,7 @@ public class DevOpm {
      *  [$89] + [change value]W + [original note]b + [step]b
      * </pre>
      */
-    public void _OPM_8B() {
+    private void _OPM_8B() {
         reg.a4 = reg.a5 + W.p_pattern4;
         reg.a3 = reg.a5 + W.wp_pattern4;
 
@@ -1286,7 +1286,7 @@ public class DevOpm {
         _OPM_E1_normal();
     }
 
-    public void _OPM_E1_normal() {
+    private void _OPM_E1_normal() {
         mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) | 0x01));
         mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) | 0x02));
 
@@ -1299,18 +1299,18 @@ public class DevOpm {
         mndrv._OPM_WRITE4();
     }
 
-    public void _OPM_E1_off() {
+    private void _OPM_E1_off() {
         mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) & 0xfe));
         _OPM_E1_LW();
     }
 
-    public void _OPM_E1_LW() {
+    private void _OPM_E1_LW() {
         reg.D0_L = 0x0;
         reg.D1_L = 0x38;
         mndrv._OPM_WRITE4();
     }
 
-    public void _OPM_E1_time() {
+    private void _OPM_E1_time() {
         reg.setD0_B(mm.readByte(reg.a1++) & 0xff);
         if (reg.getD0_B() != 0) {
             mm.write(reg.a5 + W.flag2, (byte) (mm.readByte(reg.a5 + W.flag2) | 0x08));
@@ -1419,7 +1419,7 @@ public class DevOpm {
         _opm_echo_tone_change();
     }
 
-    public void _opm_echo_tone_change() {
+    private void _opm_echo_tone_change() {
         mm.write(reg.a5 + W.program, (byte) reg.getD5_B());
         reg.setD3_B(mm.readByte(reg.a5 + W.dev) & 0xff);
         reg.D0_L = mm.readInt(reg.a6 + Dw.TONE_PTR);
@@ -1431,7 +1431,7 @@ public class DevOpm {
         _opm_voice_ana_loop();
     }
 
-    public void _opm_voice_ana_loop() {
+    private void _opm_voice_ana_loop() {
         if (reg.getD1_B() - (mm.readByte(reg.a2 + 2) & 0xff) == 0) {
             if (reg.getD5_B() - (mm.readByte(reg.a2 + 3) & 0xff) == 0) {
                 _opm_voice_ana_set();
@@ -1446,7 +1446,7 @@ public class DevOpm {
         }
     }
 
-    public void _opm_voice_ana_set() {
+    private void _opm_voice_ana_set() {
         reg.D1_L = 0x78;
         reg.setD1_B(reg.getD1_B() + (int) (byte) reg.getD3_B());
         reg.D0_L = 0x7f;
@@ -1561,7 +1561,7 @@ public class DevOpm {
         mndrv._OPM_WRITE();
     }
 
-    public static final byte[] _opm_vol_con_pat = {
+    private static final byte[] _opm_vol_con_pat = {
             0x08, 0x08, 0x08, 0x08, 0x0c, 0x0e, 0x0e, 0x0f
     };
 
@@ -1596,7 +1596,7 @@ public class DevOpm {
         _OPM_F2_v();
     }
 
-    public void _OPM_F2_v() {
+    private void _OPM_F2_v() {
         mm.write(reg.a5 + W.vol, (byte) reg.getD4_B());
         _OPM_F2_softenv();
     }
@@ -1651,7 +1651,7 @@ public class DevOpm {
         } while (reg.getAndDecD2_W() != 0);
     }
 
-    public void _OPM_F2_init() {
+    private void _OPM_F2_init() {
         reg.D0_L = 0;
         mm.write(reg.a5 + W.vol2, (byte) reg.getD4_B());
         reg.D1_L = mm.readInt(reg.a5 + W.voiceptr);
@@ -1727,7 +1727,7 @@ public class DevOpm {
         _OPM_F2_v();
     }
 
-    public void _OPM_F5_normal() {
+    private void _OPM_F5_normal() {
         reg.setD4_B(mm.readByte(reg.a5 + W.vol) & 0xff);
         reg.setD4_B((byte) (/* signed */ (byte) reg.getD4_B() - /* signed */ mm.readByte(reg.a1++)));
         if ((byte) reg.getD4_B() < 0) {
@@ -1764,7 +1764,7 @@ public class DevOpm {
         _OPM_F2_v();
     }
 
-    public void _OPM_F6_normal() {
+    private void _OPM_F6_normal() {
         reg.setD4_B(mm.readByte(reg.a5 + W.vol) & 0xff);
         reg.setD4_B(reg.getD4_B() + (mm.readByte(reg.a1++) & 0xff));
         if ((byte) reg.getD4_B() < 0) {
@@ -1967,19 +1967,19 @@ public class DevOpm {
     }
 
     //;─────────────────────────────────────
-    public void _ch_opm_plfo_1() {
+    private void _ch_opm_plfo_1() {
         reg.a4 = reg.a5 + W.p_pattern1;
         reg.a3 = reg.a5 + W.wp_pattern1;
         _ch_opm_p_common();
     }
 
-    public void _ch_opm_plfo_2() {
+    private void _ch_opm_plfo_2() {
         reg.a4 = reg.a5 + W.p_pattern2;
         reg.a3 = reg.a5 + W.wp_pattern2;
         _ch_opm_p_common();
     }
 
-    public void _ch_opm_plfo_3() {
+    private void _ch_opm_plfo_3() {
         reg.a4 = reg.a5 + W.p_pattern1;
         reg.a3 = reg.a5 + W.wp_pattern1;
         _ch_opm_p_common();
@@ -1988,31 +1988,31 @@ public class DevOpm {
         _ch_opm_p_common();
     }
 
-    public void _ch_opm_plfo_4() {
+    private void _ch_opm_plfo_4() {
         reg.a4 = reg.a5 + W.p_pattern3;
         reg.a3 = reg.a5 + W.wp_pattern3;
         _ch_opm_p_common();
     }
 
-    public void _ch_opm_plfo_5() {
+    private void _ch_opm_plfo_5() {
         reg.a4 = reg.a5 + W.p_pattern1;
         reg.a3 = reg.a5 + W.wp_pattern1;
-        _ch_opm_p_common();
-        reg.a4 = reg.a5 + W.p_pattern3;
-        reg.a3 = reg.a5 + W.wp_pattern3;
-        _ch_opm_p_common();
-    }
-
-    public void _ch_opm_plfo_6() {
-        reg.a4 = reg.a5 + W.p_pattern2;
-        reg.a3 = reg.a5 + W.wp_pattern2;
         _ch_opm_p_common();
         reg.a4 = reg.a5 + W.p_pattern3;
         reg.a3 = reg.a5 + W.wp_pattern3;
         _ch_opm_p_common();
     }
 
-    public void _ch_opm_plfo_7() {
+    private void _ch_opm_plfo_6() {
+        reg.a4 = reg.a5 + W.p_pattern2;
+        reg.a3 = reg.a5 + W.wp_pattern2;
+        _ch_opm_p_common();
+        reg.a4 = reg.a5 + W.p_pattern3;
+        reg.a3 = reg.a5 + W.wp_pattern3;
+        _ch_opm_p_common();
+    }
+
+    private void _ch_opm_plfo_7() {
         reg.a4 = reg.a5 + W.p_pattern1;
         reg.a3 = reg.a5 + W.wp_pattern1;
         _ch_opm_p_common();
@@ -2113,14 +2113,14 @@ public class DevOpm {
         reg.setD0_W(reg.getD5_W());
     }
 
-    public void _ch_opm_h_keyon_only() {
+    private void _ch_opm_h_keyon_only() {
         if ((mm.readByte(reg.a5 + W.flag) & 0x20) != 0) {
             _ch_opm_HLFO_exec();
         }
         reg.setD0_W(reg.getD5_W());
     }
 
-    public void _ch_opm_HLFO_exec() {
+    private void _ch_opm_HLFO_exec() {
         mm.write(reg.a4 + W_L.delay_work, (byte) ((mm.readByte(reg.a4 + W_L.delay_work) - 1) & 0xff));
         if (mm.readByte(reg.a4 + W_L.delay_work) != 0) {
             reg.setD0_W(reg.getD5_W());
@@ -2140,7 +2140,7 @@ public class DevOpm {
         reg.setD0_W(reg.getD5_W());
     }
 
-    public void _ch_opm_HLFO_lw() {
+    private void _ch_opm_HLFO_lw() {
         reg.setD0_B(mm.readByte(reg.a4 + W_L.henka_work) & 0xff);
         reg.setD0_B(reg.getD0_B() + 0x11);
         if ((byte) reg.getD0_B() >= 0) {
@@ -2158,7 +2158,7 @@ public class DevOpm {
     }
 
     /** */
-    public void _ch_opm_a_common() {
+    private void _ch_opm_a_common() {
         reg.D0_L = 1;
         reg.setD1_B(mm.readByte(reg.a4 + W_L.pattern) & 0xff);
         if ((byte) reg.getD1_B() < 0) {
@@ -2184,13 +2184,13 @@ public class DevOpm {
         }
     }
 
-    public void _ch_opm_v_keyon_only() {
+    private void _ch_opm_v_keyon_only() {
         if ((mm.readByte(reg.a5 + W.flag) & 0x20) != 0) {
             _ch_opm_v_com_exec();
         }
     }
 
-    public void _ch_opm_v_com_exec() {
+    private void _ch_opm_v_com_exec() {
         reg.setD0_B(reg.getD0_B() + (int) (byte) reg.getD1_B());
         reg.setD0_W(reg.getD0_W() + (int) (short) reg.getD0_W());
         switch (reg.getD0_W() / 2) {
@@ -2208,7 +2208,7 @@ public class DevOpm {
     }
 
     /** */
-    public void _opm_v_calc() {
+    private void _opm_v_calc() {
         reg.setD3_B(mm.readByte(reg.a3 + W_W.slot) & 0xff);
         if ((byte) reg.getD3_B() < 0) {
             _opm_v_calc_slot();
@@ -2229,7 +2229,7 @@ public class DevOpm {
         _OPM_F2_lfo();
     }
 
-    public void _ch_opm_lfo_a_minus() {
+    private void _ch_opm_lfo_a_minus() {
         reg.D4_L = 0;
         reg.setD4_B(mm.readByte(reg.a5 + W.vol) & 0xff);
         reg.setD4_W(reg.getD4_W() + (int) (short) reg.getD0_W());
@@ -2240,7 +2240,7 @@ public class DevOpm {
     }
 
     /** */
-    public void _OPM_F2_lfo() {
+    private void _OPM_F2_lfo() {
         reg.setD4_B(reg.getD4_B() + (mm.readByte(reg.a6 + Dw.MASTER_VOL_FM) & 0xff));
         if ((byte) reg.getD4_B() < 0) {
             reg.D4_L = 0x7f;
@@ -2274,7 +2274,7 @@ public class DevOpm {
     }
 
     /** */
-    public void _opm_v_calc_slot() {
+    private void _opm_v_calc_slot() {
         reg.setD4_W(reg.getD0_W());
         reg.D0_L = mm.readInt(reg.a5 + W.voiceptr);
         if (reg.D0_L == 0) return;
@@ -2304,7 +2304,7 @@ public class DevOpm {
         } while (reg.getAndDecD2_W() != 0);
     }
 
-    public void _opm_v_slot_minus() {
+    private void _opm_v_slot_minus() {
         do {
             reg.setD0_B(mm.readByte(reg.a2++) & 0xff);
             int f = reg.getD3_B() & 1;
@@ -2321,7 +2321,7 @@ public class DevOpm {
     }
 
     /** */
-    public void _ch_opm_p_common() {
+    private void _ch_opm_p_common() {
         reg.D0_L = 1;
         reg.setD1_B(mm.readByte(reg.a4 + W_L.pattern) & 0xff);
         if ((byte) reg.getD1_B() < 0) {
@@ -2346,13 +2346,13 @@ public class DevOpm {
         }
     }
 
-    public void _ch_opm_p_keyon_only() {
+    private void _ch_opm_p_keyon_only() {
         if ((mm.readByte(reg.a5 + W.flag) & 0x20) != 0) {
             _ch_opm_p_com_exec();
         }
     }
 
-    public void _ch_opm_p_com_exec() {
+    private void _ch_opm_p_com_exec() {
         reg.setD0_B(reg.getD0_B() + (int) (byte) reg.getD1_B());
         reg.setD0_W(reg.getD0_W() + (int) (short) reg.getD0_W());
 
@@ -2428,7 +2428,7 @@ public class DevOpm {
     /**
      * pitch bend
      */
-    public void _ch_opm_bend() {
+    private void _ch_opm_bend() {
         reg.a4 = reg.a5 + W.p_pattern4;
 
         if ((mm.readByte(reg.a5 + W.flag3) & 0x04) != 0) {
@@ -2464,7 +2464,7 @@ public class DevOpm {
         _set_kckf();
     }
 
-    public void _ch_opm_bend_plus() {
+    private void _ch_opm_bend_plus() {
         mm.write(reg.a4 + W_L.bendwork, (short) ((mm.readShort(reg.a4 + W_L.bendwork) & 0xffff) + (short) reg.getD1_W()));
         reg.setD2_W(reg.getD2_W() + (int) (short) reg.getD1_W());
         if ((short) reg.getD2_W() < 0) {
@@ -2479,7 +2479,7 @@ public class DevOpm {
         _set_kckf();
     }
 
-    public void _ch_opm_bend_end() {
+    private void _ch_opm_bend_end() {
         mm.write(reg.a4 + W_L.bendwork, (short) 0);
         mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) & 0x7f));
 
@@ -2498,7 +2498,7 @@ public class DevOpm {
     }
 
     /** */
-    public void _ch_opm_mx_bend() {
+    private void _ch_opm_mx_bend() {
         mm.write(reg.a4 + W_L.count, (byte) (mm.readByte(reg.a4 + W_L.count) - 1));
         if (mm.readByte(reg.a4 + W_L.count) == 0) {
             _ch_opm_mx_bend_end();
@@ -2522,13 +2522,13 @@ public class DevOpm {
         _set_kckf();
     }
 
-    public void _ch_opm_mx_bend_end() {
+    private void _ch_opm_mx_bend_end() {
         mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) & 0x7f));
         mm.write(reg.a5 + W.flag3, (byte) (mm.readByte(reg.a5 + W.flag3) & 0xfb));
         mm.write(reg.a5 + W.key, 0xff);
     }
 
-    public void _ch_opm_mx_lw_port() {
+    private void _ch_opm_mx_lw_port() {
         reg.setD3_B(mm.readByte(reg.a4 + W_L.lfo_sp) & 0xff);
         reg.D0_L = mm.readInt(reg.a3 + W_W.loop_start);
         reg.D1_L = reg.D0_L;
@@ -2556,7 +2556,7 @@ public class DevOpm {
     /** */
     // portament
     //
-    public void _ch_opm_porta() {
+    private void _ch_opm_porta() {
         reg.a4 = reg.a5 + W.p_pattern4;
 
         if ((mm.readByte(reg.a5 + W.flag2) & 0x10) != 0) {
@@ -2582,19 +2582,19 @@ public class DevOpm {
         _ch_opm_porta_common();
     }
 
-    public void _ch_opm_porta_minus() {
+    private void _ch_opm_porta_minus() {
         mm.write(reg.a4 + W_L.henka_work, (short) ((mm.readShort(reg.a4 + W_L.henka_work) + 1) & 0xffff));
         mm.write(reg.a4 + W_L.bendwork, (short) ((mm.readShort(reg.a4 + W_L.bendwork) - 1) & 0xffff));
         reg.setD2_W((short) reg.getD2_W() - 1);
         _ch_opm_porta_common();
     }
 
-    public void _ch_opm_porta_common() {
+    private void _ch_opm_porta_common() {
         mm.write(reg.a5 + W.keycode3, (short) reg.getD2_W());
         _set_kckf();
     }
 
-    public void _ch_opm_lw_port() {
+    private void _ch_opm_lw_port() {
         reg.D0_L = 0;
         reg.D1_L = 0;
         reg.D2_L = 0;
@@ -2625,7 +2625,7 @@ public class DevOpm {
         _set_kckf();
     }
 
-    public void _ch_opm_lw_porta_end() {
+    private void _ch_opm_lw_porta_end() {
         mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) & 0x7f));
         mm.write(reg.a5 + W.flag2, (byte) (mm.readByte(reg.a5 + W.flag2) & 0xfd));
     }
@@ -2700,7 +2700,7 @@ public class DevOpm {
         mndrv._OPM_WRITE4();
     }
 
-    public static final byte[] _opm_effect_pan_table = {
+    private static final byte[] _opm_effect_pan_table = {
             0x00, 0x40, (byte) 0x80, (byte) 0xc0
     };
 }

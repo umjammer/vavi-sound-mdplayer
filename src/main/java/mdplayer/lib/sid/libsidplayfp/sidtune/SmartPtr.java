@@ -9,9 +9,9 @@ class SmartPtrBase<T> {
 
     public long ulint_smartpt;
 
-    public SmartPtrBase(byte[] buffer,
-                        long bufferLen,
-                        boolean bufOwner /* = false */) {
+    SmartPtrBase(byte[] buffer,
+                 long bufferLen,
+                 boolean bufOwner /* = false */) {
         bufBegin = null;
         bufEnd = null;
         pBufCurrent = null;
@@ -44,7 +44,7 @@ class SmartPtrBase<T> {
         return pBufCurrent.position() - bufBegin.position();
     }
 
-    public boolean checkIndex(long index) {
+    private boolean checkIndex(long index) {
         return (pBufCurrent.position() + (int) index) < bufEnd.position();
     }
 
@@ -62,7 +62,7 @@ class SmartPtrBase<T> {
         return pBufCurrent.position() < bufEnd.position();
     }
 
-    public boolean fail() {
+    private boolean fail() {
         return pBufCurrent == bufEnd;
     }
 
@@ -136,13 +136,13 @@ class SmartPtrBase<T> {
         return status;
     }
 
-    protected ByteBuffer bufBegin;
-    protected ByteBuffer bufEnd;
-    protected ByteBuffer pBufCurrent;
-    protected long bufLen;
-    protected boolean status;
-    protected final boolean doFree;
-    protected final ByteBuffer dummy;
+    ByteBuffer bufBegin;
+    ByteBuffer bufEnd;
+    ByteBuffer pBufCurrent;
+    long bufLen;
+    boolean status;
+    private final boolean doFree;
+    private final ByteBuffer dummy;
 
     public static class SmartPtr<T> extends SmartPtrBase {
         public SmartPtr(byte[] buffer,

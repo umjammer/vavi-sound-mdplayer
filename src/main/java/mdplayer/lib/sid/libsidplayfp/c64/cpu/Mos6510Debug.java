@@ -29,7 +29,7 @@ import java.lang.System.Logger.Level;
 import static java.lang.System.getLogger;
 
 
-public class Mos6510Debug {
+class Mos6510Debug {
 
     private static final Logger logger = getLogger(Mos6510Debug.class.getName());
 

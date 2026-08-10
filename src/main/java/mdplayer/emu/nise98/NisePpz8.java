@@ -6,6 +6,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
 
 import vavi.util.ByteUtil;
 import vavi.util.compat.TriConsumer;
@@ -41,7 +42,7 @@ public class NisePpz8 {
     private byte emuADPCM;
     private TriConsumer<Integer, Integer, byte[][]> setPPZ8PCMData;
     private TriConsumer<Integer, Integer, Integer> setPPZ8Data;
-    private java.util.function.BiConsumer<Integer, String> setPPZ8PCMFilename;
+    private BiConsumer<Integer, String> setPPZ8PCMFilename;
     private final byte[][] pcmData = new byte[2][];
 
     public NisePpz8(Nise98 nise98) {
@@ -90,12 +91,12 @@ public class NisePpz8 {
         regs[0].setSI(ppz8IDOfs); // 'PPZ8''s ofs
         regs[0].setDX(ppz8ReleaseOfs); // Far call when resident is released
         regs[0].setCL((byte) 0x00); // TASK_ASIN
-        nise98.callRunFunctionCall((byte) 0xd2, true, true, true, 10_000_000_000L, 0_000);
+        nise98.callRunFunctionCall((byte) 0xd2, false, true, true, 10_000_000_000L, 0);
 
         logger.log(Level.TRACE, "set the fake PPZ8 to the FMP task.");
     }
 
-    public void int7F() {
+    private void int7F() {
         switch (regs.getAH()) {
             case 0x00: // Initialization
                 // Work initialization
@@ -183,7 +184,7 @@ public class NisePpz8 {
         }
     }
 
-    public boolean hook() {
+    private boolean hook() {
         if (regs.getCS() != ppz8EntryAddressSeg) return false;
 
         boolean cancel = switch (regs.ip) {
@@ -212,7 +213,7 @@ public class NisePpz8 {
 
     public void setCallBack(TriConsumer<Integer, Integer, byte[][]> setPPZ8PCMData,
                             TriConsumer<Integer, Integer, Integer> setPPZ8Data,
-                            java.util.function.BiConsumer<Integer, String> setPPZ8PCMFilename) {
+                            BiConsumer<Integer, String> setPPZ8PCMFilename) {
         this.setPPZ8PCMData = setPPZ8PCMData;
         this.setPPZ8Data = setPPZ8Data;
         this.setPPZ8PCMFilename = setPPZ8PCMFilename;

@@ -19,9 +19,9 @@
 
 package mdplayer.lib.sid.libsidplayfp.builders.resid_builder.resid;
 
-public class Potentiometer {
+class Potentiometer {
 
-    public int readPOT() {
+    int readPOT() {
         // NB! Not modeled.
         return 0xff;
     }

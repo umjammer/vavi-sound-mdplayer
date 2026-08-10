@@ -213,7 +213,7 @@ public class Ym2203Chip extends BaseChip {
         }
     }
 
-    public void softReset(int chipId, EnmModel model) {
+    private void softReset(int chipId, EnmModel model) {
         // FM all channel key off
         write(chipId, 0, 0x28, 0x00, model);
         write(chipId, 0, 0x28, 0x01, model);

@@ -15,7 +15,7 @@ import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 @EnabledIf("localPropertiesExists")
 @PropsEntity(url = "file:local.properties")
-public class MndrvTest {
+class MndrvTest {
 
     static boolean localPropertiesExists() {
         return Files.exists(Paths.get("local.properties"));
@@ -38,13 +38,13 @@ public class MndrvTest {
 
     @Test
     @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
-    public void test1() throws Exception {
+    void test1() throws Exception {
         MndrvTestProgram.main(new String[]{mnd});
     }
 
     @Test
     @DisplayName("compare output wav quality")
-    public void test2() throws Exception {
+    void test2() throws Exception {
         MndrvWavTestProgram.main(new String[]{
                 "tmp/mnd/MND9827/eve98@27.mnd", // source
                 "tmp/mnd/orig/eve98@27.wav" // the original c# output

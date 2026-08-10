@@ -7677,7 +7677,7 @@ public class NiseM68 {
         return 20;
     }
 
-    public int ctrap(short n) {
+    private int ctrap(short n) {
         int t = n & 0xf;
 //#if DEBUG
         if (TRACE) logger.log(Level.TRACE, "TRAP #%02x".formatted(t));

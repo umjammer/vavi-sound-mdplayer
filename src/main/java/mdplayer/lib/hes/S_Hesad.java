@@ -4,7 +4,7 @@ import mdplayer.lib.hes.S_Deltat.Kmif_LogTable;
 import mdplayer.lib.hes.S_Deltat.YmDeltaTPcmSound_;
 
 
-public class S_Hesad extends KmifSoundDevice {
+class S_Hesad extends KmifSoundDevice {
 
     private static final int CPS_SHIFT = 16;
     private static final int PCE_VOLUME = 1;  // 1
@@ -12,31 +12,31 @@ public class S_Hesad extends KmifSoundDevice {
 
     static class HesAdpcm {
 
-        public KmifSoundDevice kmif;
-        public KmifSoundDevice deltaDev;
+        KmifSoundDevice kmif;
+        KmifSoundDevice deltaDev;
 
-        public static class Common {
-            public int masterVolume;
-            public int cps;
-            public int pt;
+        static class Common {
+            int masterVolume;
+            int cps;
+            int pt;
         }
 
-        public final Common common = new Common();
+        final Common common = new Common();
 
-        public byte[] pcmBuf = new byte[0x10000];
-        public byte[] port = new byte[0x10];
-        public final byte[] regs = new byte[0x18];
-        public int outFreq;
-        public int freq;
-        public int addr;
-        public int writePtr;
-        public int readPtr;
-        public int playFlag;
-        public int repeatFlag;
-        public int length;
-        public int volume;
-        public int fadeTimer;
-        public int fadeCount;
+        byte[] pcmBuf = new byte[0x10000];
+        byte[] port = new byte[0x10];
+        final byte[] regs = new byte[0x18];
+        int outFreq;
+        int freq;
+        int addr;
+        int writePtr;
+        int readPtr;
+        int playFlag;
+        int repeatFlag;
+        int length;
+        int volume;
+        int fadeTimer;
+        int fadeCount;
 
         private void reset() {
             this.addr = 0;

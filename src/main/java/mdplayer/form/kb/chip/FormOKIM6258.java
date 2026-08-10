@@ -25,11 +25,12 @@ import mdplayer.form.ScreenPanel;
 import mdplayer.form.View;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
+import mdsound.MDSound;
 
 
 public class FormOKIM6258 extends FormChipBase<FormOKIM6258.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormOKIM6258.class);
+    private static final Preferences prefs = Preferences.userNodeForPackage(FormOKIM6258.class);
 
     public FormOKIM6258(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -63,7 +64,7 @@ public class FormOKIM6258 extends FormChipBase<FormOKIM6258.Params> {
         }
     };
 
-    public void changeZoom() {
+    private void changeZoom() {
         this.setMaximumSize(new Dimension(frameSizeW + Common.getImage("planeMSM6258").getWidth() * zoom, frameSizeH + Common.getImage("planeMSM6258").getHeight() * zoom));
         this.setMinimumSize(new Dimension(frameSizeW + Common.getImage("planeMSM6258").getWidth() * zoom, frameSizeH + Common.getImage("planeMSM6258").getHeight() * zoom));
         this.setPreferredSize(new Dimension(frameSizeW + Common.getImage("planeMSM6258").getWidth() * zoom, frameSizeH + Common.getImage("planeMSM6258").getHeight() * zoom));
@@ -212,7 +213,7 @@ public class FormOKIM6258 extends FormChipBase<FormOKIM6258.Params> {
         this.addComponentListener(this.componentListener);
     }
 
-    BufferedImage image;
+    private BufferedImage image;
 
 //#region draw buffer
 
@@ -268,17 +269,17 @@ public class FormOKIM6258 extends FormChipBase<FormOKIM6258.Params> {
 //#endregion
 
     /** this panel's per-frame draw state, diffed new against old (see {@link FormChipBase}) */
-    public static class Params {
+    static class Params {
 
-        public int pan = -1;
-        public int pantp = -1;
-        public int masterFreq = -1;
-        public int divider = -1;
-        public int pbFreq = -1;
-        public int volumeL = -1;
-        public int volumeR = -1;
+        int pan = -1;
+        int pantp = -1;
+        int masterFreq = -1;
+        int divider = -1;
+        int pbFreq = -1;
+        int volumeL = -1;
+        int volumeR = -1;
         public boolean keyon = false;
-        public Boolean mask = false;
+        Boolean mask = false;
     }
 
     /** what this panel contributes to the GUI; see {@link ViewProvider} */
@@ -299,7 +300,7 @@ public class FormOKIM6258 extends FormChipBase<FormOKIM6258.Params> {
         }
 
         @Override public List<MixerSlot> mixerSlots() {
-            return List.of(new MixerSlot(37, mdsound.MDSound.Chip.MAIN_TAG, OkiM6258Chip.class, "okim6258", 200));
+            return List.of(new MixerSlot(37, MDSound.Chip.MAIN_TAG, OkiM6258Chip.class, "okim6258", 200));
         }
     }
 }

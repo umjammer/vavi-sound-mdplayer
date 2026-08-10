@@ -31,10 +31,10 @@ public class Ym2149Ex {
     // Constants
     //
     public static final long AMSTRAD_CLOCK   = 1000000L;
-    public static final long ATARI_CLOCK     = 2000000L;
+    private static final long ATARI_CLOCK     = 2000000L;
     public static final long SPECTRUM_CLOCK  = 1773400L;
     public static final long MFP_CLOCK       = 2457600L;
-    public static final int  DRUM_PREC       = 15;
+    private static final int  DRUM_PREC       = 15;
 
     //
     // Envelope shapes (static data)

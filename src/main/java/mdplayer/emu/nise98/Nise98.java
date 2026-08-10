@@ -49,28 +49,28 @@ public class Nise98 {
         PC9801_86B
     }
 
-    public static class FmStatus {
+    static class FmStatus {
 
         // bit76:11 int 5(IRQ12)(factory)
         // bit76:10 int 4(IRQ10)
         // bit76:01 int 6(IRQ13)
         // bit76:00 int 0(IRQ03)
-        public static final byte int_ = (byte) 0b1100_0000;
-        public byte p88lastAdr = 0;
-        public byte p8clastAdr = 0;
-        public boolean isBusy = false;
+        static final byte int_ = (byte) 0b1100_0000;
+        byte p88lastAdr = 0;
+        byte p8clastAdr = 0;
+        boolean isBusy = false;
         public boolean isTimerBOverFlow = true;
         public boolean isTimerAOverFlow = false;
-        public final byte[] regs;
-        public byte[] adpcmMem;
-        public byte adpcmPtr = 0;
-        public boolean adpcmReadMode = false;
-        public FMTimer timer = null;
+        final byte[] regs;
+        byte[] adpcmMem;
+        byte adpcmPtr = 0;
+        boolean adpcmReadMode = false;
+        FMTimer timer = null;
 
         // ongenBoardType
-        public OngenBoardType ongen = OngenBoardType.SpeakBoard;
+        OngenBoardType ongen = OngenBoardType.SpeakBoard;
 
-        public FmStatus(OngenBoardType ongen, int frequency) {
+        FmStatus(OngenBoardType ongen, int frequency) {
             this.ongen = ongen;
             if (ongen == OngenBoardType.PC9801_26K) {
                 regs = new byte[256 * 1];
@@ -148,7 +148,7 @@ public class Nise98 {
         return cpu;
     }
 
-    public void userINT(UserInt ui) {
+    private void userINT(UserInt ui) {
         cpu.addUserInt(ui);
     }
 
@@ -170,7 +170,7 @@ public class Nise98 {
                 (fmReg388.timer.readStatus() & 3)) != 0;
     }
 
-    public int stepExecute() {
+    private int stepExecute() {
         int08Timer.stepExecute();
 
         int waitClock = cpu.stepExecute();
@@ -480,14 +480,14 @@ logger.log(Level.TRACE, "fmReg188.ongen: " + fmReg188.ongen);
         return loadRun(filename, option, startSegment, false, false, false, 100_000_000, 0);
     }
 
-    public int loadRun(String filename,
-                       String option,
-                       int startSegment,
-                       boolean dispReg /* = false */,
-                       boolean useStepCounter /* = false */,
-                       boolean dispStepCounter /* = false */,
-                       long MaxStepCounter /* = 100_000_000 */,
-                       long StartStepCounterForDispStep /* = 0 */) {
+    private int loadRun(String filename,
+                        String option,
+                        int startSegment,
+                        boolean dispReg /* = false */,
+                        boolean useStepCounter /* = false */,
+                        boolean dispStepCounter /* = false */,
+                        long MaxStepCounter /* = 100_000_000 */,
+                        long StartStepCounterForDispStep /* = 0 */) {
         dos.loadAndExecuteFile(filename, option, startSegment);
         Register286 regs = getRegisters();
         if (dispReg) dispRegs(regs);

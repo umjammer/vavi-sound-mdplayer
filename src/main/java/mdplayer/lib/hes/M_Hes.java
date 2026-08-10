@@ -31,22 +31,22 @@ public class M_Hes {
         public static class SongInfo {
             public int songno;
             public int maxsongno;
-            public int startsongno;
-            public int extdevice;
-            public int initaddress;
-            public int playaddress;
-            public int channel;
+            int startsongno;
+            int extdevice;
+            int initaddress;
+            int playaddress;
+            int channel;
             public int initlimit;
         }
 
         public HESHES heshes;
         public final SongInfo song = new SongInfo();
 
-        public static class SongInfoData {
+        static class SongInfoData {
             public String title;
             public String artist;
             public String copyright;
-            public String detail;
+            String detail;
         }
 
         private final SongInfoData _songinfodata = new SongInfoData();
@@ -115,44 +115,44 @@ public class M_Hes {
             PARAMETER
         }
 
-        public Km6280 ctx;
+        Km6280 ctx;
         //public KMIF_SOUND_DEVICE hessnd;
-        public KmifSoundDevice hespcm;
-        public final Event kme = new Event();
-        public int vsync;
-        public int timer;
+        KmifSoundDevice hespcm;
+        final Event kme = new Event();
+        int vsync;
+        int timer;
 
         /** break point */
-        public int bp;
+        int bp;
         /** break point flag */
-        public int broken;
+        int broken;
 
         /** cycles per sample:fixed point */
-        public int cps;
+        int cps;
         /** cycle remain */
-        public int cpsRem;
+        int cpsRem;
         /** cycle gap */
-        public int cpsGap;
+        int cpsGap;
         /** total played cycles */
-        public int totalCycles;
+        int totalCycles;
 
-        public final byte[] mpr = new byte[0x8];
-        public final byte[] firstMpr = new byte[0x8];
-        public byte[][] memMap = new byte[0x100][];
-        public int initAddr;
+        final byte[] mpr = new byte[0x8];
+        final byte[] firstMpr = new byte[0x8];
+        byte[][] memMap = new byte[0x100][];
+        int initAddr;
 
-        public int playerRomAddr;
-        public final byte[] playerRom = new byte[0x10];
+        int playerRomAddr;
+        final byte[] playerRom = new byte[0x10];
 
         /** IO $C01 ($C00)*/
-        public int hesTimReload;
+        int hesTimReload;
         /** IO $C00 */
-        public int hesTimCounter;
+        int hesTimCounter;
         /** IO $C01 */
-        public int hesTimStart;
-        public int hesVdcStatus;
-        public int hesVdcCr;
-        public int hesVdcAdr;
+        int hesTimStart;
+        int hesVdcStatus;
+        int hesVdcCr;
+        int hesVdcAdr;
 
         private final KmEvent kmEvent = new KmEvent();
 
@@ -186,7 +186,7 @@ public class M_Hes {
             return ret;
         }
 
-        public void vsyncEvent(Event _event, int curid, HESHES _this) {
+        void vsyncEvent(Event _event, int curid, HESHES _this) {
             _this.setUpVsync();
             if ((_this.hesVdcCr & 8) != 0) {
                 _this.ctx.iRequest |= Km6280.IRQ.INT1.v;
@@ -322,7 +322,7 @@ public class M_Hes {
             }
         }
 
-        public void writeIO(int a, int v) {
+        void writeIO(int a, int v) {
             switch (a >> 10) {
             case 0: // VDC
                 write6270(a & 3, v);
@@ -380,7 +380,7 @@ public class M_Hes {
             }
         }
 
-        public int readEvent(int a) {
+        int readEvent(int a) {
             int page = this.mpr[a >> 13] & 0xff;
             if (this.memMap[page] != null)
                 return this.memMap[page][a & 0x1fff] & 0xff;
@@ -390,7 +390,7 @@ public class M_Hes {
                 return 0xff;
         }
 
-        public void writeEvent(int a, int v) {
+        void writeEvent(int a, int v) {
             int page = this.mpr[a >> 13] & 0xff;
             if (this.memMap[page] != null)
                 this.memMap[page][a & 0x1fff] = (byte) v;
@@ -398,19 +398,19 @@ public class M_Hes {
                 writeIO(a & 0x1fff, v);
         }
 
-        public int readMprEvent(int a) {
+        int readMprEvent(int a) {
             int i;
             for (i = 0; i < 8; i++) if ((a & (1 << i)) != 0) return this.mpr[i] & 0xff;
             return 0xff;
         }
 
-        public void writeMprEvent(int a, int v) {
+        void writeMprEvent(int a, int v) {
             int i;
             if (v < 0x80 && this.memMap[v] == null) return;
             for (i = 0; i < 8; i++) if ((a & (1 << i)) != 0) this.mpr[i] = (byte) v;
         }
 
-        public void write6270_event(int a, int v) {
+        void write6270_event(int a, int v) {
             write6270(a & 0x1fff, v);
         }
 
@@ -423,7 +423,7 @@ public class M_Hes {
                 }
         }
 
-        public int allocPhysicalAddress(int a, int l) {
+        int allocPhysicalAddress(int a, int l) {
             int page = a >> 13;
             int lastPage = (a + l - 1) >> 13;
             for (; page <= lastPage; page++) {
@@ -435,7 +435,7 @@ public class M_Hes {
             return 1;
         }
 
-        public void copy_physical_address(int a, int l, byte[] p, /* ref */ int[] pP) {
+        void copy_physical_address(int a, int l, byte[] p, /* ref */ int[] pP) {
             int page = a >> 13;
             int w;
             if ((a & 0x1fff) != 0) {

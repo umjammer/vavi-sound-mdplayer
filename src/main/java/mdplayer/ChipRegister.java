@@ -47,6 +47,23 @@ public class ChipRegister {
         return clazz.cast(plugins.getOrDefault(clazz, null));
     }
 
+    /**
+     * The one instance of a plugin, without going through a song's register.
+     * <p>
+     * Every {@link ChipRegister} holds the same plugin objects - they come from the service loader
+     * below, which hands out the instances it has already made - so this is the same object
+     * {@link #plugin} would answer with. It exists for the windows that can be opened before a
+     * song has ever been loaded, when there is no {@link BasePlugin} to ask.
+     *
+     * @return nullable
+     */
+    public static <T extends Plugin> T shared(Class<T> clazz) {
+        for (Plugin plugin : pluginServiceLoader) {
+            if (clazz.isInstance(plugin)) return clazz.cast(plugin);
+        }
+        return null;
+    }
+
     /** for reuse instances */
     private static final ServiceLoader<Chip> chipServiceLoader = ServiceLoader.load(Chip.class);
 

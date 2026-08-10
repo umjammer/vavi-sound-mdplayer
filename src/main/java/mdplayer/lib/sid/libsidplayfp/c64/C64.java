@@ -282,21 +282,21 @@ public class C64 extends C64Env {
         /**
          * Colorburst frequency : Herz
          */
-        public final double colorBurst;
+        final double colorBurst;
         /**
          * .Clock frequency divider
          */
-        public final double divider;
+        final double divider;
         /**
          * Power line frequency : Herz
          */
-        public final double powerFreq;
+        final double powerFreq;
         /**
          * Video chips model
          */
-        public final Mos656X.Model vicModel;
+        final Mos656X.Model vicModel;
 
-        public Model(double colorBurst, double divider, double powerFreq, Mos656X.Model vicModel) {
+        Model(double colorBurst, double divider, double powerFreq, Mos656X.Model vicModel) {
             this.colorBurst = colorBurst;
             this.divider = divider;
             this.powerFreq = powerFreq;
@@ -312,9 +312,9 @@ public class C64 extends C64Env {
      * PAL-M - 3.57561149 MHz
      * PAL-N - 3.58205625 MHz
      */
-    public final Model[] modelData;
+    private final Model[] modelData;
 
-    public double getCpuFreq(Clock model) {
+    private double getCpuFreq(Clock model) {
         // The crystal clock that drives the VIC II chips instanceof four times
         // the color burst frequency
         double crystalFreq = modelData[model.ordinal()].colorBurst * 4.0;
@@ -343,7 +343,7 @@ public class C64 extends C64Env {
         resetIoBank();
     }
 
-    public void resetIoBank() {
+    private void resetIoBank() {
         ioBank.setBank(0x0, vic);
         ioBank.setBank(0x1, vic);
         ioBank.setBank(0x2, vic);
@@ -362,7 +362,7 @@ public class C64 extends C64Env {
         ioBank.setBank(0xf, disconnectedBusBank);
     }
 
-    public void resetSID(ExtraSidBank e) {
+    private void resetSID(ExtraSidBank e) {
         e.reset();
     }
 

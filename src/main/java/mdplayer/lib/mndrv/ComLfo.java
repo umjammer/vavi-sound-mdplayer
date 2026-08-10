@@ -36,7 +36,7 @@ public class ComLfo {
         initLfo2Exit();
     }
 
-    public void initLfo2Exit() {
+    private void initLfo2Exit() {
         reg.D1_L = sp1;
     }
 
@@ -88,43 +88,43 @@ public class ComLfo {
 
     //
 
-    public void initLfo1() {
+    private void initLfo1() {
         reg.a4 = reg.a5 + W.p_pattern1;
         initLfoCommon();
     }
 
-    public void initLfo2() {
+    private void initLfo2() {
         reg.a4 = reg.a5 + W.p_pattern2;
         initLfoCommon();
     }
 
-    public void initLfo3() {
+    private void initLfo3() {
         reg.a4 = reg.a5 + W.p_pattern1;
         initLfoCommon();
         reg.a4 = reg.a5 + W.p_pattern2;
         initLfoCommon();
     }
 
-    public void initLfo4() {
+    private void initLfo4() {
         reg.a4 = reg.a5 + W.p_pattern3;
         initLfoCommon();
     }
 
-    public void initLfo5() {
+    private void initLfo5() {
         reg.a4 = reg.a5 + W.p_pattern1;
-        initLfoCommon();
-        reg.a4 = reg.a5 + W.p_pattern3;
-        initLfoCommon();
-    }
-
-    public void initLfo6() {
-        reg.a4 = reg.a5 + W.p_pattern2;
         initLfoCommon();
         reg.a4 = reg.a5 + W.p_pattern3;
         initLfoCommon();
     }
 
-    public void initLfo7() {
+    private void initLfo6() {
+        reg.a4 = reg.a5 + W.p_pattern2;
+        initLfoCommon();
+        reg.a4 = reg.a5 + W.p_pattern3;
+        initLfoCommon();
+    }
+
+    private void initLfo7() {
         reg.a4 = reg.a5 + W.p_pattern1;
         initLfoCommon();
         reg.a4 = reg.a5 + W.p_pattern2;
@@ -135,7 +135,7 @@ public class ComLfo {
 
     //
 
-    public void initLfoCommon() {
+    private void initLfoCommon() {
         if ((mm.readByte(reg.a4 + W_L.flag) & 0x40) != 0) {
             return;
         }
@@ -165,7 +165,7 @@ public class ComLfo {
         mm.write(reg.a4 + W_L.count_work, (byte) reg.getD0_B());
     }
 
-    public void initLfoTruetie() {
+    private void initLfoTruetie() {
         reg.setD0_B(mm.readByte(reg.a5 + W.flag) & 0xff);
         if ((reg.getD0_B() & 0x1) != 0) {
             reg.setD0_B(mm.readByte(reg.a4 + W_L.count) & 0xff);
@@ -177,7 +177,7 @@ public class ComLfo {
         initLfoFmptie();
     }
 
-    public void initLfoFmptie() {
+    private void initLfoFmptie() {
         reg.setD0_B(mm.readByte(reg.a4 + W_L.lfo_sp) & 0xff);
         mm.write(reg.a4 + W_L.henka_work, mm.readShort(reg.a4 + W_L.henka));
         reg.setD0_B(reg.getD0_B() + (mm.readByte(reg.a4 + W_L.keydelay) & 0xff));
@@ -215,7 +215,7 @@ public class ComLfo {
         mm.write(reg.a4 + W_L.count_work, mm.readByte(reg.a4 + W_L.count));
     }
 
-    public void _init_lfo_truetie_a() {
+    private void _init_lfo_truetie_a() {
         reg.setD0_B(mm.readByte(reg.a5 + W.flag) & 0xff);
         if ((reg.getD0_B() & 0x1) != 0) {
             mm.write(reg.a4 + W_L.count_work, mm.readByte(reg.a4 + W_L.count));
@@ -226,7 +226,7 @@ public class ComLfo {
         initLfoFmptieA();
     }
 
-    public void initLfoFmptieA() {
+    private void initLfoFmptieA() {
         reg.setD0_B(mm.readByte(reg.a4 + W_L.lfo_sp) & 0xff);
         mm.write(reg.a4 + W_L.henka_work, mm.readShort(reg.a4 + W_L.henka));
         reg.setD0_B(reg.getD0_B() + (mm.readByte(reg.a4 + W_L.keydelay) & 0xff));

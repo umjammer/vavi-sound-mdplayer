@@ -39,7 +39,7 @@ public class Nsf {
 
     private static final Logger logger = getLogger(Nsf.class.getName());
 
-    public static final int NsfClock = 1789773;
+    private static final int NsfClock = 1789773;
 
     public static final int FCC_NSF = 0x4d53454e; // "NESM"
 
@@ -49,7 +49,7 @@ public class Nsf {
 
     public NesBank bank = null;
     public NesMem mem = null;
-    public Km6502 cpu = null;
+    private Km6502 cpu = null;
 
     public NesApu apu = null;
     public NesDmc dmc = null;
@@ -100,7 +100,7 @@ public class Nsf {
     public int nsfePlstSize;
     private static final int NSFE_ENTRIES = 256;
 
-    public static class NsfeEntry {
+    private static class NsfeEntry {
 
         public int[] tlbl;
         public int time;
@@ -116,9 +116,9 @@ public class Nsf {
 
     private Device.Layer layer;
     /** DC filter applied to the final output stage */
-    private mdsound.np.DCFilter dcf;
+    private DCFilter dcf;
     /** Low-pass filter applied to the final output */
-    private mdsound.np.Filter lpf;
+    private Filter lpf;
 
     private LoopDetector.NESDetector ld = null;
 //    private NESDetectorEx ld = null;
@@ -389,7 +389,7 @@ public class Nsf {
         return Region.NTSC; // fallback for invalid Flags
     }
 
-int CC;
+private int CC;
     public int render(short[] b, int length) {
         return render(b, length, 0);
     }
@@ -599,11 +599,11 @@ int CC;
 if (CC++ % INTERVAL == 0) { logger.log(Level.TRACE, "NSF: %d, %d, pc: %04x".formatted(out[0], out[1], this.cpu.p)); }
         return length;
     }
-static final int INTERVAL = 1024;
+private static final int INTERVAL = 1024;
 
     private boolean playtime_detected = false;
 
-    public void detectLoop() {
+    private void detectLoop() {
         if (ld.isLooped(time_in_ms, 30000, 5000) && !playtime_detected) {
             playtime_detected = true;
             updateAtDetectLoop.accept(
@@ -613,7 +613,7 @@ static final int INTERVAL = 1024;
         }
     }
 
-    public void detectSilent() {
+    private void detectSilent() {
         if (silent_length > sampleRate * 3L && !playtime_detected) {
             playtime_detected = true;
             updateAtDetectSilent.accept((long) ld.getLoopEnd() * this.sampleRate / 1000);

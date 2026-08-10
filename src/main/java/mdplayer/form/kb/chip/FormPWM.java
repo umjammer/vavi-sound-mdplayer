@@ -3,10 +3,12 @@ package mdplayer.form.kb.chip;
 import java.awt.Dimension;
 import java.util.List;
 
+import mdplayer.chips.PwmChip;
 import mdplayer.form.FormBase;
 import mdplayer.form.View;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
+import mdsound.MDSound;
 
 
 public class FormPWM extends FormBase {
@@ -32,12 +34,12 @@ public class FormPWM extends FormBase {
     public static class Provider implements ViewProvider {
 
         @Override public String id() { return "PWM"; }
-        @Override public Class<? extends mdplayer.Chip> chip() { return mdplayer.chips.PwmChip.class; }
+        @Override public Class<? extends mdplayer.Chip> chip() { return PwmChip.class; }
         @Override public boolean hasMenuItem() { return false; }
         @Override public View create(FormMain frm, int chipId, int zoom) { return null; }
 
         @Override public List<MixerSlot> mixerSlots() {
-            return List.of(new MixerSlot(36, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.PwmChip.class, "pwm", 200));
+            return List.of(new MixerSlot(36, MDSound.Chip.MAIN_TAG, PwmChip.class, "pwm", 200));
         }
     }
 }

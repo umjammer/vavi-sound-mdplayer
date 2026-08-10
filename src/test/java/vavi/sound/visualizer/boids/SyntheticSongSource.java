@@ -29,7 +29,7 @@ import vavi.sound.visualizer.fmdsp.WorkStateSource;
 class SyntheticSongSource implements FmDspDataSource, TrackStatusSource, LevelDataSource, WorkStateSource {
 
     /** the rows that play */
-    static final TrackId[] TRACKS = {
+    private static final TrackId[] TRACKS = {
             TrackId.FM_1, TrackId.FM_2, TrackId.FM_3, TrackId.FM_4, TrackId.SSG_1, TrackId.ADPCM,
     };
 
@@ -116,7 +116,7 @@ class SyntheticSongSource implements FmDspDataSource, TrackStatusSource, LevelDa
         out.volume = (int) (envelope(Math.max(part, 0)) * 127);
         out.ticks = 48;
         out.ticksLeft = 24;
-        out.toneNum = part < 0 ? 0 : part;
+        out.toneNum = Math.max(part, 0);
         out.gate = 0;
         out.detune = 0;
         out.status = "";

@@ -102,7 +102,7 @@ public class PlayList implements Serializable, Cloneable {
     }
 
     @Element(sequence = 1)
-    int size;
+    private int size;
 
     @Element(sequence = 2, value = "$1")
     private List<Music> musics = new ArrayList<>();

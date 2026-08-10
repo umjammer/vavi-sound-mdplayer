@@ -4,7 +4,7 @@
  * Programmed by Naohide Sano
  */
 
-package mdplayer;
+package mdplayer.driver.ay;
 
 import java.io.BufferedInputStream;
 import java.nio.file.Files;
@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import mdplayer.PlayList.Music;
+import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.BasePlugin;
 import mdplayer.driver.FileFormat;
@@ -40,7 +42,7 @@ class AySweep {
                 try {
                     FileFormat format = FileFormat.getFileFormat(file);
                     format.load(Archives.getInputStream(new BufferedInputStream(Files.newInputStream(p))), null);
-                    List<PlayList.Music> musics = format.getMusic(file, format.getData(), null, null, null);
+                    List<Music> musics = format.getMusic(file, format.getData(), null, null, null);
                     if (musics.stream().allMatch(m -> m.title == null || m.title.isBlank())) count[3]++;
 
                     @SuppressWarnings("unchecked")

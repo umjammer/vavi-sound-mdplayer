@@ -52,7 +52,7 @@ import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
  * @version 0.00 2026-07-28 nsano initial version <br>
  */
 @PropsEntity(url = "file:local.properties")
-public final class MidiFmDspDemo {
+final class MidiFmDspDemo {
 
     static boolean localPropertiesExists() {
         return Files.exists(Paths.get("local.properties"));

@@ -8,6 +8,7 @@ package mdplayer.fmdsp;
 
 import mdplayer.chips.BaseChip;
 import mdplayer.chips.Es5503Chip;
+import vavi.sound.visualizer.fmdsp.LevelDataSource;
 
 
 /**
@@ -89,8 +90,8 @@ public class Es5503Reader extends PcmSlotReader {
         out.toneNum = intOf(osc, "output", 0);
         // even outputs go one way and odd ones the other, which is how a IIGS gets its stereo
         out.pan = (intOf(osc, "output", 0) & 1) == 0
-                ? vavi.sound.visualizer.fmdsp.LevelDataSource.Pan.LEFT
-                : vavi.sound.visualizer.fmdsp.LevelDataSource.Pan.RIGHT;
+                ? LevelDataSource.Pan.LEFT
+                : LevelDataSource.Pan.RIGHT;
         out.pitchOfRatio(freq > 0 ? freq / step(osc) : 0);
     }
 

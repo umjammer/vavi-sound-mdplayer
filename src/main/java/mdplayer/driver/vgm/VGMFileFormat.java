@@ -57,7 +57,7 @@ public class VGMFileFormat extends BaseFileFormat {
         return getMusicCommon(ms, buf, zipFile);
     }
 
-    static final int FCC_VGM = 0x206D6756; // "Vgm "
+    private static final int FCC_VGM = 0x206D6756; // "Vgm "
 
     @Override
     public String[] getPresetMixerBalance() {

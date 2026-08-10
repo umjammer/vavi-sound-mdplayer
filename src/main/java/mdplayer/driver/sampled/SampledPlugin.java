@@ -25,13 +25,13 @@ public class SampledPlugin extends BasePlugin {
 
     private static final Logger logger = getLogger(SampledPlugin.class.getName());
 
-    public AudioInputStream naudioFileReader = null;
-    public String naudioFileName = null;
+    public AudioInputStream fileReader = null;
+    public String fileName = null;
 
     @Override
     public void prepare() {
         try {
-            naudioFileReader = AudioSystem.getAudioInputStream(Path.of(this.naudioFileName).toFile());
+            fileReader = AudioSystem.getAudioInputStream(Path.of(this.fileName).toFile());
         } catch (UnsupportedAudioFileException | IOException e) {
             throw new IllegalArgumentException(e);
         }
@@ -43,7 +43,7 @@ public class SampledPlugin extends BasePlugin {
     protected void initChips() {
     }
 
-    protected byte[] naudioSrcbuffer = null;
+    private byte[] srcbuffer = null;
 
     private static byte[] ensure(byte[] buffer, int bytesRequired) {
         if (buffer == null || buffer.length < bytesRequired) {
@@ -60,7 +60,7 @@ public class SampledPlugin extends BasePlugin {
     }
 
     public int read(short[] buffer, int offset, int count) {
-        if (this.naudioFileReader != null) {
+        if (this.fileReader != null) {
             if (this.chipRegister.plugin(RealChipPlugin.class).isThreadClosed()) {
                 this.chipRegister.plugin(RealChipPlugin.class).setThreadStopped(true);
                 //this.fadeout = false;
@@ -74,8 +74,8 @@ public class SampledPlugin extends BasePlugin {
 
     private int readAudio(short[] buffer, int offset, int count) {
         try {
-            naudioSrcbuffer = ensure(naudioSrcbuffer, count * 2);
-            convert2ByteToShort(buffer, offset, naudioSrcbuffer, count);
+            srcbuffer = ensure(srcbuffer, count * 2);
+            convert2ByteToShort(buffer, offset, srcbuffer, count);
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
         }
@@ -85,8 +85,8 @@ public class SampledPlugin extends BasePlugin {
 
     public void stopAudio() {
         try {
-            AudioInputStream dmy = naudioFileReader;
-            naudioFileReader = null;
+            AudioInputStream dmy = fileReader;
+            fileReader = null;
             dmy.close();
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);

@@ -5,17 +5,7 @@ import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.IntSupplier;
-import java.util.function.LongConsumer;
-import java.util.function.LongSupplier;
-import java.util.function.Supplier;
 
-import mdplayer.ChipRegister;
-import mdplayer.Common.EnmModel;
-import mdplayer.DacControl;
-import mdplayer.chips.*;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
@@ -24,10 +14,6 @@ import static java.lang.System.getLogger;
 public class Vgm {
 
     private static final Logger logger = getLogger(Vgm.class.getName());
-
-    public Vgm() {
-        dacControl = new DacControl();
-    }
 
     public static final int FCC_VGM = 0x206D6756; // "Vgm "
     public static final int FCC_GD3 = 0x20336447; // "Gd3 "
@@ -91,7 +77,7 @@ public class Vgm {
      * Header "Volume Modifier" (0x7c), raw. The file asks the player to play it at
      * {@code 2^(volumeModifier / 0x20)}; 0 (the default) means 100%. See {@link #getVolumeGain()}.
      */
-    public int volumeModifier;
+    private int volumeModifier;
 
     /**
      * The gain the header's volume modifier asks for. 0x01..0xc0 are +1..+192 (up to x64),
@@ -142,7 +128,8 @@ public class Vgm {
     public boolean uPD7759DualChipFlag;
     public boolean pokeyDualChipFlag;
 
-    public final DacControl dacControl;
+    private IVgm ivgm;
+    private IDac dacControl;
     public boolean isPcmRAMWrite = false;
     public boolean useChipYM2612Ch6 = false;
     public int es5503Ch = 2;
@@ -165,19 +152,11 @@ public class Vgm {
     private final DacCtrlData[] dacCtrl = new DacCtrlData[0xff];
 
     public byte[] vgmBuf;
-    public EnmModel model; // TODO mdp class
-    public ChipRegister chipRegister; // TODO mdp class
-    public IntSupplier frameCounter;
-    public Consumer<Boolean> dataBlock;
-    public LongSupplier getTotalCounter;
-    public LongConsumer setTotalCounter;
-    public LongConsumer setLoopCounter;
-    public BiConsumer<byte[], Integer> updateMetaData;
-    public IntSupplier loop;
-    public Consumer<String> setUsedChips;
-    public Supplier<String> getUsedChips;
-    public Consumer<String> setVersion;
-    public Supplier<String> getVersion;
+
+    public void setIVgm(IVgm ivgm) {
+        this.ivgm = ivgm;
+        this.dacControl = new DacControl(ivgm);
+    }
 
     public void init() {
         if (!getInformationHeader()) throw new IllegalArgumentException("invalid vgm header");
@@ -447,93 +426,93 @@ public class Vgm {
     }
 
     private void vcGGPSGPort06() {
-        chipRegister.chip(Sn76489Chip.class).setPan(vgmBuf[vgmAdr] == 0x4f ? 0 : 1, vgmBuf[vgmAdr + 1] & 0xff, model);
+        ivgm.setPanSn76489(vgmBuf[vgmAdr] == 0x4f ? 0 : 1, vgmBuf[vgmAdr + 1] & 0xff);
         vgmAdr += 2;
     }
 
     private void vcPSG() {
-        chipRegister.chip(Sn76489Chip.class).write(vgmBuf[vgmAdr] == 0x50 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0xff, model);
+        ivgm.writeSn76489(vgmBuf[vgmAdr] == 0x50 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0xff);
         vgmAdr += 2;
     }
 
     private void vcAY8910() {
-        chipRegister.chip(Ay8910Chip.class).write((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
+        ivgm.writeAy8910((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff);
         vgmAdr += 3;
     }
 
     private void vcDMG() {
-        chipRegister.chip(DmgChip.class).write((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
+        ivgm.writeDmg((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff);
         vgmAdr += 3;
     }
 
     private void vcNES() {
-        chipRegister.chip(NesChip.class).write((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
+        ivgm.writeNes((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff);
         vgmAdr += 3;
     }
 
     private void vcMultiPCM() {
-        chipRegister.chip(MultiPcmChip.class).write((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
+        ivgm.writeMultiPcm((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff);
         vgmAdr += 3;
     }
 
     private void vcuPD7759() {
-        //if(model== EnmModel.VirtualModel) logger.log(Level.TRACE, "adr:%d data:%02x".formatted(dataBuf[vgmAdr + 1] & 0x7f, dataBuf[vgmAdr + 2]));
-        chipRegister.chip(Upd7759Chip.class).write((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
+        //if (ivgm.isVirtual()) logger.log(Level.TRACE, "adr:%d data:%02x".formatted(vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff));
+        ivgm.writeUpd7759((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff);
         vgmAdr += 3;
     }
 
     private void vcMultiPCMSetBank() {
-        chipRegister.chip(MultiPcmChip.class).setBank((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, (vgmBuf[vgmAdr + 2] & 0xff) + (vgmBuf[vgmAdr + 3] & 0xff) * 0x100, model);
+        ivgm.setBankMultiPcm((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, (vgmBuf[vgmAdr + 2] & 0xff) + (vgmBuf[vgmAdr + 3] & 0xff) * 0x100);
         vgmAdr += 4;
     }
 
     private void vcQSound() {
-        chipRegister.chip(QSoundChip.class).write(0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, vgmBuf[vgmAdr + 3] & 0xff, model);
+        ivgm.writeQSound(0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, vgmBuf[vgmAdr + 3] & 0xff);
         vgmAdr += 4;
     }
 
     private void vcX1_010() {
-        chipRegister.chip(X1_010Chip.class).write((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, vgmBuf[vgmAdr + 3] & 0xff, model);
+        ivgm.writeX1_010((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, vgmBuf[vgmAdr + 3] & 0xff);
         vgmAdr += 4;
     }
 
     private void vcYM2413() {
-        chipRegister.chip(Ym2413Chip.class).write((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
+        ivgm.writeYm2413((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff);
         vgmAdr += 3;
     }
 
     private void vcYM3812() {
-        chipRegister.chip(Ym3812Chip.class).write((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
+        ivgm.writeYm3812((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff);
         vgmAdr += 3;
     }
 
     private void vcHuC6280() {
-        chipRegister.chip(HuC6280Chip.class).write((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
+        ivgm.writeHuC6280((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff);
         vgmAdr += 3;
     }
 
     private void vcGA20() {
-        chipRegister.chip(Ga20Chip.class).write((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
+        ivgm.writeGa20((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff);
         vgmAdr += 3;
     }
 
     private void vcYM2612Port0() {
-        chipRegister.chip(Ym2612Chip.class).write((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model, frameCounter.getAsInt());
+        ivgm.writeYm2612((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, ivgm.frameCounter());
         vgmAdr += 3;
     }
 
     private void vcYM2612Port1() {
-        chipRegister.chip(Ym2612Chip.class).write((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 1, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model, frameCounter.getAsInt());
+        ivgm.writeYm2612((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 1, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, ivgm.frameCounter());
         vgmAdr += 3;
     }
 
     private void vcYM2203() {
-        chipRegister.chip(Ym2203Chip.class).write((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
+        ivgm.writeYm2203((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff);
         vgmAdr += 3;
     }
 
     private void vcYM2608Port0() {
-        chipRegister.chip(Ym2608Chip.class).write((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
+        ivgm.writeYm2608((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff);
         vgmAdr += 3;
     }
 
@@ -550,108 +529,106 @@ public class Vgm {
 //        if (adr == 0x00 && (dat & 0x20) != 0) {
 //            //dat &= 0xdf;
 //        }
-        chipRegister.chip(Ym2608Chip.class).write((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 1, adr, dat, model);
+        ivgm.writeYm2608((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 1, adr, dat);
         vgmAdr += 3;
     }
 
     private void vcYM2610Port0() {
-        chipRegister.chip(Ym2610Chip.class).write((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
+        ivgm.writeYm2610((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff);
         vgmAdr += 3;
     }
 
     private void vcYM2610Port1() {
         int adr = vgmBuf[vgmAdr + 1] & 0xff;
         int dat = vgmBuf[vgmAdr + 2] & 0xff;
-        chipRegister.chip(Ym2610Chip.class).write((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 1, adr, dat, model);
+        ivgm.writeYm2610((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 1, adr, dat);
         vgmAdr += 3;
     }
 
     private void vcYMF262Port0() {
-        chipRegister.chip(YmF262Chip.class).write((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
+        ivgm.writeYmF262((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff);
         vgmAdr += 3;
     }
 
     private void vcYMF262Port1() {
         int adr = vgmBuf[vgmAdr + 1] & 0xff;
         int dat = vgmBuf[vgmAdr + 2] & 0xff;
-        chipRegister.chip(YmF262Chip.class).write((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 1, adr, dat, model);
+        ivgm.writeYmF262((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 1, adr, dat);
         vgmAdr += 3;
     }
 
     private void vcYM3526() {
-        chipRegister.chip(Ym3526Chip.class).write((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
+        ivgm.writeYm3526((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff);
         vgmAdr += 3;
     }
 
     private void vcY8950() {
-        chipRegister.chip(Y8950Chip.class).write((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
+        ivgm.writeY8950((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff);
         vgmAdr += 3;
     }
 
     private void vcYMZ280B() {
-        chipRegister.chip(YmZ280BChip.class).write((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
+        ivgm.writeYmZ280B((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff);
         vgmAdr += 3;
     }
 
     private void vcYMF271() {
-        chipRegister.chip(YmF271Chip.class).write(
+        ivgm.writeYmF271(
                 (vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1,
                 vgmBuf[vgmAdr + 1] & 0x7f,
                 vgmBuf[vgmAdr + 2] & 0xff,
-                vgmBuf[vgmAdr + 3] & 0xff,
-                model);
+                vgmBuf[vgmAdr + 3] & 0xff);
         vgmAdr += 4;
     }
 
     private void vcYMF278B() {
-        chipRegister.chip(YmF278BChip.class).write(
+        ivgm.writeYmF278B(
                 (vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1,
                 vgmBuf[vgmAdr + 1] & 0x7f,
                 vgmBuf[vgmAdr + 2] & 0xff,
-                vgmBuf[vgmAdr + 3] & 0xff,
-                model);
+                vgmBuf[vgmAdr + 3] & 0xff);
 //logger.log(Level.TRACE, "fm:%02x:%02x:%02x:".formatted(dataBuf[vgmAdr + 1] & 0x7f, dataBuf[vgmAdr + 2], dataBuf[vgmAdr + 3]));
         vgmAdr += 4;
     }
 
     private void vcYM2151() {
-        chipRegister.chip(Ym2151Chip.class).write((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model, vgmBuf[vgmAdr] & 0x80, frameCounter.getAsInt());
+        ivgm.writeYm2151((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, vgmBuf[vgmAdr] & 0x80, ivgm.frameCounter());
         vgmAdr += 3;
     }
 
     private void vcOKIM6258() {
-        chipRegister.chip(OkiM6258Chip.class).write(0, vgmBuf[vgmAdr + 0x01] & 0x7f, vgmBuf[vgmAdr + 0x02] & 0xff, model);
+        ivgm.writeOkiM6258(0, vgmBuf[vgmAdr + 0x01] & 0x7f, vgmBuf[vgmAdr + 0x02] & 0xff);
         vgmAdr += 3;
     }
 
     private void vcOKIM6295() {
-        chipRegister.chip(OkiM6295Chip.class).write((vgmBuf[vgmAdr + 0x01] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 0x01] & 0x7f, vgmBuf[vgmAdr + 0x02] & 0xff, model);
+        ivgm.writeOkiM6295((vgmBuf[vgmAdr + 0x01] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 0x01] & 0x7f, vgmBuf[vgmAdr + 0x02] & 0xff);
         vgmAdr += 3;
     }
 
     private void vcSAA1099() {
-        chipRegister.chip(Saa1099Chip.class).write((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
+        ivgm.writeSaa1099((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff);
         vgmAdr += 3;
     }
 
     private void vcWSwan() {
-        chipRegister.chip(WSwanChip.class).write((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
+        ivgm.writeWSwan((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff);
         vgmAdr += 3;
     }
 
     private void vcWSwanMem() {
-        chipRegister.chip(WSwanChip.class).writeMemory(0, (vgmBuf[vgmAdr + 0x02] & 0xff) | ((vgmBuf[vgmAdr + 0x01] & 0xff) << 8), vgmBuf[vgmAdr + 0x03] & 0xff, model);
+        ivgm.writeMemWSwan(0, (vgmBuf[vgmAdr + 0x02] & 0xff) | ((vgmBuf[vgmAdr + 0x01] & 0xff) << 8), vgmBuf[vgmAdr + 0x03] & 0xff);
         vgmAdr += 4;
     }
 
     private void vcPOKEY() {
-        chipRegister.chip(PokeyChip.class).write((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
+        ivgm.writePokey((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff);
         vgmAdr += 3;
     }
 
     private void vcSEGAPCM() {
 //logger.log(Level.TRACE, "%4X %4X".formatted(dataBuf[vgmAdr + 0x01], dataBuf[vgmAdr + 0x02]));
-        chipRegister.chip(SegaPcmChip.class).write(0, (vgmBuf[vgmAdr + 0x01] & 0xff) | ((vgmBuf[vgmAdr + 0x02] & 0xff) << 8), vgmBuf[vgmAdr + 0x03] & 0xff, model);
+        ivgm.writeSegaPcm(0, (vgmBuf[vgmAdr + 0x01] & 0xff) | ((vgmBuf[vgmAdr + 0x02] & 0xff) << 8), vgmBuf[vgmAdr + 0x03] & 0xff);
         vgmAdr += 4;
     }
 
@@ -680,7 +657,7 @@ public class Vgm {
 
     private void vcDataBlock() {
 
-        dataBlock.accept(true);
+        ivgm.dataBlock(true);
 
         int bAdr = vgmAdr + 7;
         int bType = vgmBuf[vgmAdr + 2] & 0xff;
@@ -703,92 +680,92 @@ public class Vgm {
             switch (bType & 0xff) {
             case 0x80:
                  // SEGA PCM
-                chipRegister.chip(SegaPcmChip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                ivgm.writePcmSegaPcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15);
                 break;
             case 0x81:
                 // YM2608
-                chipRegister.chip(Ym2608Chip.class).writePcm(chipId, vgmBuf, vgmAdr, bLen,startAddress, model);
+                ivgm.writePcmYm2608(chipId, vgmBuf, vgmAdr, bLen, startAddress);
                 break;
             case 0x82:
-                chipRegister.chip(Ym2610Chip.class).writeAdpcmA(chipId, vgmBuf, vgmAdr, bLen, startAddress, romSize, model);
+                ivgm.writeAdpcmAYm2610(chipId, vgmBuf, vgmAdr, bLen, startAddress, romSize);
                 break;
             case 0x83:
-                chipRegister.chip(Ym2610Chip.class).writeAdpcmB(chipId, vgmBuf, vgmAdr, bLen, startAddress, romSize, model);
+                ivgm.writeAdpcmBYm2610(chipId, vgmBuf, vgmAdr, bLen, startAddress, romSize);
                 break;
 
             case 0x84:
                 // YMF278B
-                chipRegister.chip(YmF278BChip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                ivgm.writePcmYmF278B(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15);
                 break;
 
             case 0x85:
                 // YMF271
-                chipRegister.chip(YmF271Chip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                ivgm.writePcmYmF271(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15);
                 break;
 
             case 0x86:
                 // YMZ280B
-                chipRegister.chip(YmZ280BChip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                ivgm.writePcmYmZ280B(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15);
                 break;
 
             case 0x87:
                 // YMF278B
-                chipRegister.chip(YmF278BChip.class).writeRam(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                ivgm.writeRamYmF278B(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15);
                 break;
 
             case 0x88:
                 // Y8950
-                chipRegister.chip(Y8950Chip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                ivgm.writePcmY8950(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15);
                 break;
 
             case 0x89:
                 // MultiPCM
-                chipRegister.chip(MultiPcmChip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                ivgm.writePcmMultiPcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15);
                 break;
 
             case 0x8a:
                 // uPD7759
-                chipRegister.chip(Upd7759Chip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                ivgm.writePcmUpd7759(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15);
                 break;
 
                 case 0x8b:
                 // OKIM6295
-                chipRegister.chip(OkiM6295Chip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                ivgm.writePcmOkiM6295(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15);
                 break;
 
             case 0x8c:
                 // K054539
-                chipRegister.chip(K054539Chip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                ivgm.writePcmK054539(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15);
                 break;
 
             case 0x8d:
                 // C140
-                chipRegister.chip(C140Chip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                ivgm.writePcmC140(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15);
                 break;
 
             case 0x8e:
                 // K053260
-                chipRegister.chip(K053260Chip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                ivgm.writePcmK053260(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15);
                 break;
 
             case 0x8f:
                 // QSound
-                chipRegister.chip(QSoundChip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                ivgm.writePcmQSound(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15);
                 break;
 
             case 0x91:
                 // X1-010
-                chipRegister.chip(X1_010Chip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                ivgm.writePcmX1_010(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15);
                 break;
 
             case 0x92:
                 // C352
-                chipRegister.chip(C352Chip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                ivgm.writePcmC352(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15);
                 break;
 
             case 0x93:
                 // GA20
-                chipRegister.chip(Ga20Chip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                ivgm.writePcmGa20(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15);
                 break;
             }
             vgmAdr += bLen + 7;
@@ -806,13 +783,13 @@ public class Vgm {
             try {
                 switch (bType & 0xff) {
                 case 0xc0:
-                    chipRegister.chip(Rf5C68Chip.class).writePcm(chipId, stAdr, dataSize, vgmBuf, vgmAdr + 9, model);
+                    ivgm.writePcmRf5C68(chipId, stAdr, dataSize, vgmBuf, vgmAdr + 9);
                     break;
                 case 0xc1:
-                    chipRegister.chip(Rf5C164Chip.class).writePcm(chipId, stAdr, dataSize, vgmBuf, vgmAdr + 9, model);
+                    ivgm.writePcmRf5C164(chipId, stAdr, dataSize, vgmBuf, vgmAdr + 9);
                     break;
                 case 0xc2:
-                    chipRegister.chip(NesChip.class).writePcm(chipId, stAdr, dataSize, vgmBuf, vgmAdr + 9, model);
+                    ivgm.writePcmNes(chipId, stAdr, dataSize, vgmBuf, vgmAdr + 9);
                     break;
                 }
             } catch (Exception e) {
@@ -834,7 +811,7 @@ public class Vgm {
             try {
                 switch (bType) {
                     case 0xe1:
-                        chipRegister.chip(Es5503Chip.class).writePcm(chipId, stAdr_E, dataSize_E, vgmBuf, vgmAdr + 11, model);
+                        ivgm.writePcmEs5503(chipId, stAdr_E, dataSize_E, vgmBuf, vgmAdr + 11);
                         break;
                 }
             } catch (Exception e) {
@@ -848,7 +825,7 @@ public class Vgm {
             break;
         }
 
-        dataBlock.accept(false);
+        ivgm.dataBlock(false);
     }
 
     private void vcPCMRamWrite() {
@@ -856,7 +833,7 @@ public class Vgm {
         isPcmRAMWrite = true;
 
         int bType = vgmBuf[vgmAdr + 2] & 0x7f;
-        //CurrentChip = (dataBuf[vgmAdr + 2] & 0x80)>>7;
+        //currentChip = (dataBuf[vgmAdr + 2] & 0x80) >> 7;
         int bReadOffset = ByteUtil.readLe24(vgmBuf, vgmAdr + 3);
         int bWriteOffset = ByteUtil.readLe24(vgmBuf, vgmAdr + 6);
         int bSize = ByteUtil.readLe24(vgmBuf, vgmAdr + 9);
@@ -864,10 +841,10 @@ public class Vgm {
         Integer pcmAdr = getPCMAddressFromPCMBank(bType, bReadOffset);
         if (pcmAdr != null) {
             if (bType == 0x01) {
-                chipRegister.chip(Rf5C68Chip.class).writePcm(0, bWriteOffset, bSize, pcmBank[bType].data, pcmAdr, model);
+                ivgm.writePcmRf5C68(0, bWriteOffset, bSize, pcmBank[bType].data, pcmAdr);
             }
             if (bType == 0x02) {
-                chipRegister.chip(Rf5C164Chip.class).writePcm(0, bWriteOffset, bSize, pcmBank[bType].data, pcmAdr, model);
+                ivgm.writePcmRf5C164(0, bWriteOffset, bSize, pcmBank[bType].data, pcmAdr);
             }
         }
 
@@ -887,7 +864,7 @@ public class Vgm {
 
         vgmWait += (vgmBuf[vgmAdr] & 0xff) - 0x80;
 
-        chipRegister.chip(Ym2612Chip.class).write(0, 0, 0x2a, dat, model, frameCounter.getAsInt());
+        ivgm.writeYm2612(0, 0, 0x2a, dat, ivgm.frameCounter());
 
         vgmAdr++;
     }
@@ -904,8 +881,8 @@ public class Vgm {
             return;
         }
         if (!dacCtrl[si].enable) {
-            dacControl.device_start_daccontrol(si);
-            dacControl.device_reset_daccontrol(si);
+            dacControl.deviceStart(si);
+            dacControl.deviceReset(si);
             dacCtrl[si].enable = true;
             dacCtrlUsg[dacCtrlUsed] = (byte) si;
             dacCtrlUsed++;
@@ -953,7 +930,7 @@ public class Vgm {
         }
         int tempLng = ByteUtil.readLeInt(vgmBuf, vgmAdr + 2);
         //last95Freq = tempLng;
-        dacControl.set_frequency(si, tempLng);
+        dacControl.setFrequency(si, tempLng);
         vgmAdr += 6;
     }
 
@@ -1017,7 +994,7 @@ public class Vgm {
             TempSht = 0x00;
         VgmPcmData tempBnk = tempPCM.bank.get(TempSht);
 
-        int tempByt = DacControl.DacControl_.DCTRL_LMODE_BYTES |
+        int tempByt = IDac.DCTRL_LMODE_BYTES |
                 (vgmBuf[vgmAdr + 4] & 0x10) |         // Reverse Mode
                 ((vgmBuf[vgmAdr + 4] & 0x01) << 7);   // Looping
         dacControl.start(curChip, tempBnk.dataStart, tempByt, tempBnk.dataSize);
@@ -1032,33 +1009,33 @@ public class Vgm {
     private void vcRf5c68() {
         int id = (vgmBuf[vgmAdr + 1] & 0x80) != 0 ? 1 : 0;
         int cmd = vgmBuf[vgmAdr + 1] & 0x7f;
-        chipRegister.chip(Rf5C68Chip.class).write(id, cmd, vgmBuf[vgmAdr + 2] & 0xff, model);
+        ivgm.writeRf5C68(id, cmd, vgmBuf[vgmAdr + 2] & 0xff);
         vgmAdr += 3;
     }
 
     private void vcRf5c68MemoryWrite() {
         int offset = ByteUtil.readLeShort(vgmBuf, vgmAdr + 1) & 0xffff;
-        chipRegister.chip(Rf5C68Chip.class).writeMemory(0, offset, vgmBuf[vgmAdr + 3] & 0xff, model);
+        ivgm.writeMemoryRf5C68(0, offset, vgmBuf[vgmAdr + 3] & 0xff);
         vgmAdr += 4;
     }
 
     private void vcRf5c164() {
         int id = (vgmBuf[vgmAdr + 1] & 0x80) != 0 ? 1 : 0;
         int cmd = vgmBuf[vgmAdr + 1] & 0x7f;
-        chipRegister.chip(Rf5C164Chip.class).write(id, cmd, vgmBuf[vgmAdr + 2] & 0xff, model);
+        ivgm.writeRf5C164(id, cmd, vgmBuf[vgmAdr + 2] & 0xff);
         vgmAdr += 3;
     }
 
     private void vcRf5c164MemoryWrite() {
         int offset = ByteUtil.readLeShort(vgmBuf, vgmAdr + 1) & 0xffff;
-        chipRegister.chip(Rf5C164Chip.class).writeMemory(0, offset, vgmBuf[vgmAdr + 3] & 0xff, model);
+        ivgm.writeMemoryRf5C164(0, offset, vgmBuf[vgmAdr + 3] & 0xff);
         vgmAdr += 4;
     }
 
     private void vcPWM() {
         int cmd = (vgmBuf[vgmAdr + 1] & 0xf0) >> 4;
         int data = (vgmBuf[vgmAdr + 1] & 0xf) * 0x100 + (vgmBuf[vgmAdr + 2] & 0xff);
-        chipRegister.chip(PwmChip.class).write(0, cmd, data, model);
+        ivgm.writePwm(0, cmd, data);
         vgmAdr += 3;
     }
 
@@ -1068,15 +1045,15 @@ public class Vgm {
         int rDat = vgmBuf[vgmAdr + 3] & 0xff;
         int scc1_chipId = (vgmBuf[vgmAdr + 1] & 0x80) != 0 ? 1 : 0;
         vgmAdr += 4;
-        chipRegister.chip(K051649Chip.class).write(scc1_chipId, (scc1_port << 1) | 0x00, scc1_offset, model);
-        chipRegister.chip(K051649Chip.class).write(scc1_chipId, (scc1_port << 1) | 0x01, rDat, model);
+        ivgm.writeK051649(scc1_chipId, (scc1_port << 1) | 0x00, scc1_offset);
+        ivgm.writeK051649(scc1_chipId, (scc1_port << 1) | 0x01, rDat);
     }
 
     private void vcK053260() {
         int id = (vgmBuf[vgmAdr + 1] & 0x80) != 0 ? 1 : 0;
         int adr = vgmBuf[vgmAdr + 1] & 0x7f;
         int data = vgmBuf[vgmAdr + 2] & 0xff;
-        chipRegister.chip(K053260Chip.class).write(id, adr, data, model);
+        ivgm.writeK053260(id, adr, data);
         vgmAdr += 3;
     }
 
@@ -1084,7 +1061,7 @@ public class Vgm {
         int id = (vgmBuf[vgmAdr + 1] & 0x80) != 0 ? 1 : 0;
         int adr = (vgmBuf[vgmAdr + 1] & 0x7f) * 0x100 + (vgmBuf[vgmAdr + 2] & 0xff);
         int data = vgmBuf[vgmAdr + 3] & 0xff;
-        chipRegister.chip(K054539Chip.class).write(id, adr, data, model);
+        ivgm.writeK054539(id, adr, data);
         vgmAdr += 4;
     }
 
@@ -1092,15 +1069,15 @@ public class Vgm {
         int id = (vgmBuf[vgmAdr + 1] & 0x80) != 0 ? 1 : 0;
         int adr = (vgmBuf[vgmAdr + 1] & 0x7f) * 0x100 + (vgmBuf[vgmAdr + 2] & 0xff);
         int data = vgmBuf[vgmAdr + 3] & 0xff;
-        chipRegister.chip(C140Chip.class).write(id, adr, data, model);
+        ivgm.writeC140(id, adr, data);
         vgmAdr += 4;
     }
 
-    private void vcEs5503() { //0xD5 pp aa dd
+    private void vcEs5503() { // 0xD5 pp aa dd
         int id = (vgmBuf[vgmAdr + 1] & 0x80) != 0 ? 1 : 0;
         int adr = (vgmBuf[vgmAdr + 1] & 0x7f) * 0x100 + (vgmBuf[vgmAdr + 2] & 0xff);
         int data = vgmBuf[vgmAdr + 3] & 0xff;
-        chipRegister.chip(Es5503Chip.class).write(id, adr, data, model);
+        ivgm.writeEs5503(id, adr, data);
         vgmAdr += 4;
     }
 
@@ -1108,7 +1085,7 @@ public class Vgm {
         int id = (vgmBuf[vgmAdr + 1] & 0x80) != 0 ? 1 : 0;
         int adr = (vgmBuf[vgmAdr + 1] & 0x7f) * 0x100 + (vgmBuf[vgmAdr + 2] & 0xff);
         int data = (vgmBuf[vgmAdr + 3] & 0xff) * 0x100 + (vgmBuf[vgmAdr + 4] & 0xff);
-        chipRegister.chip(C352Chip.class).write(id, adr, data, model);
+        ivgm.writeC352(id, adr, data);
         vgmAdr += 5;
     }
 
@@ -1122,7 +1099,7 @@ public class Vgm {
         int curDAC;
 
         bnkType = Type & 0x3F;
-        if (bnkType >= PCM_BANK_COUNT || loop.getAsInt() > 0)
+        if (bnkType >= PCM_BANK_COUNT || ivgm.loop() > 0)
             return;
 
         if (Type == 0x7F) {
@@ -1173,7 +1150,7 @@ public class Vgm {
         // realloc may've moved the Bank block, so refresh all DAC Streams
         for (curDAC = 0x00; curDAC < dacCtrlUsed; curDAC++) {
             if (dacCtrl[dacCtrlUsg[curDAC] & 0xff].bank == bnkType)
-                dacControl.refresh_data(dacCtrlUsg[curDAC] & 0xff, tempPCM.data, tempPCM.dataSize);
+                dacControl.refreshData(dacCtrlUsg[curDAC] & 0xff, tempPCM.data, tempPCM.dataSize);
         }
     }
 
@@ -1454,7 +1431,7 @@ logger.log(Level.TRACE, "Bad PCM Table Length!");
 
     private boolean getInformationHeader() {
         List<String> chips = new ArrayList<>();
-        setUsedChips.accept("");
+        ivgm.setUsedChips("");
 
         sn76489ClockValue = 0; // defaultSN76489ClockValue;
         ym2612ClockValue = 0; // defaultYM2612ClockValue;
@@ -1495,10 +1472,10 @@ logger.log(Level.TRACE, "Bad PCM Table Length!");
         vgmEof = ByteUtil.readLeInt(vgmBuf, 0x04) + 4;
 
         int version = ByteUtil.readLeInt(vgmBuf, 0x08);
-        setVersion.accept("%d.%d%d".formatted((version & 0xf00) / 0x100, (version & 0xf0) / 0x10, (version & 0xf)));
+        ivgm.setVersion("%d.%d%d".formatted((version & 0xf00) / 0x100, (version & 0xf0) / 0x10, (version & 0xf)));
         // Version Check
         if (version < 0x0101) {
-            logger.log(Level.WARNING, "This file instanceof older version(%s).".formatted(getVersion.get()));
+            logger.log(Level.WARNING, "This file instanceof older version(%s).".formatted(ivgm.getVersion()));
             //return false;
         }
 
@@ -1558,12 +1535,12 @@ logger.log(Level.TRACE, "Bad PCM Table Length!");
             }
         }
 
-        setTotalCounter.accept(ByteUtil.readLeInt(vgmBuf, 0x18));
-        if (getTotalCounter.getAsLong() < 0) return false;
+        ivgm.setTotalCounter(ByteUtil.readLeInt(vgmBuf, 0x18));
+        if (ivgm.getTotalCounter() < 0) return false;
 
         vgmLoopOffset = ByteUtil.readLeInt(vgmBuf, 0x1c);
 
-        setLoopCounter.accept(ByteUtil.readLeInt(vgmBuf, 0x20));
+        ivgm.setLoopCounter(ByteUtil.readLeInt(vgmBuf, 0x20));
 
         if (version > 0x0101) {
 
@@ -1632,7 +1609,7 @@ logger.log(Level.TRACE, "Bad PCM Table Length!");
                         if (ym2608DualChipFlag) chips.add("YM2608x2");
                         else chips.add("YM2608");
 
-                        chipRegister.chip(Ym2608Chip.class).updateRamType(vgmBuf, vgmDataOffset);
+                        ivgm.updateRamTypeYm2608(vgmBuf, vgmDataOffset);
                     }
                 }
 
@@ -1972,45 +1949,149 @@ logger.log(Level.TRACE, "Bad PCM Table Length!");
             vgmDataOffset = 0x40;
         }
 
-        setUsedChips.accept(String.join(", ", chips));
-logger.log(Level.INFO, "usedChips: " + getUsedChips.get());
+        ivgm.setUsedChips(String.join(", ", chips));
+logger.log(Level.INFO, "usedChips: " + ivgm.getUsedChips());
 
         int vgmGd3 = ByteUtil.readLeInt(vgmBuf, 0x14);
         if (vgmGd3 != 0) {
             int vgmGd3Id = ByteUtil.readLeInt(vgmBuf, vgmGd3 + 0x14);
             if (vgmGd3Id != FCC_GD3) return false;
-            updateMetaData.accept(vgmBuf, vgmGd3);
+            ivgm.updateMetaData(vgmBuf, vgmGd3);
         }
 
         return true;
     }
 
     static class VgmPcmData {
-        public int dataSize;
-        public byte[] data;
-        public int dataStart;
+        int dataSize;
+        byte[] data;
+        int dataStart;
     }
 
     static class VgmPcmBank {
-        public int bankCount;
-        public final List<VgmPcmData> bank = new ArrayList<>();
-        public int dataSize;
-        public byte[] data;
-        public int dataPos;
-        public int bnkPos;
+        int bankCount;
+        final List<VgmPcmData> bank = new ArrayList<>();
+        int dataSize;
+        byte[] data;
+        int dataPos;
+        int bnkPos;
     }
 
     static class DacCtrlData {
-        public boolean enable;
-        public int bank;
+        boolean enable;
+        int bank;
     }
 
     static class PcmBankTbl {
-        public int comprType;
-        public int cmpSubType;
-        public int bitDec;
-        public int bitCmp;
-        public int entryCount;
-        public byte[] entries;
+        int comprType;
+        int cmpSubType;
+        int bitDec;
+        int bitCmp;
+        int entryCount;
+        byte[] entries;
+    }
+
+    public interface IVgm {
+        void setPanSn76489(int chipId, int data);
+        void writeSn76489(int chipId, int data);
+        void writeAy8910(int chipId, int addr, int data);
+        void writeDmg(int chipId, int addr, int data);
+        void writeNes(int chipId, int addr, int data);
+        void writeMultiPcm(int chipId, int addr, int data);
+        void writeUpd7759(int chipId, int addr, int data);
+        void setBankMultiPcm(int chipId, int ch, int addr);
+        void writeQSound(int chipId, int mm, int ll, int rr);
+        void writeX1_010(int chipId, int mm, int ll, int rr);
+        void writeYm2413(int chipId, int addr, int data);
+        void writeYm3812(int chipId, int addr, int data);
+        void writeHuC6280(int chipId, int addr, int data);
+        void writeGa20(int chipId, int addr, int data);
+        void writeYm2612(int chipId, int port, int addr, int data, int frameCounter);
+        void writeYm2203(int chipId, int addr, int data);
+        void writeYm2608(int chipId, int port, int addr, int data);
+        void updateRamTypeYm2608(byte[] vgmBuf, int vgmDataOffset);
+        void writeYm2610(int chipId, int port, int addr, int data);
+        void writeYmF262(int chipId, int port, int addr, int data);
+        void writeYm3526(int chipId, int addr, int data);
+        void writeY8950(int chipId, int addr, int data);
+        void writeYmZ280B(int chipId, int addr, int data);
+        void writeYmF271(int chipId, int port, int addr, int data);
+        void writeYmF278B(int chipId, int port, int addr, int data);
+        void writeYm2151(int chipId, int port, int addr, int data, int correction, int frameCounter);
+        void writeOkiM6258(int chipId, int port, int data);
+        void writeOkiM6295(int chipId, int port, int data);
+        void writeSaa1099(int chipId, int addr, int data);
+        void writeWSwan(int chipId, int port, int data);
+        void writeMemWSwan(int chipId, int port, int data);
+        void writePokey(int chipId, int port, int data);
+        void writeSegaPcm(int chipId, int offset, int data);
+        void writePcmSegaPcm(int chipId, int romSize, int dataStart, int dataLength, byte[] romData, int srcStartAdr);
+        void writePcmYm2608(int chipId, byte[] vgmBuf, int vgmAdr, int bLen, int startAddress);
+        void writeAdpcmAYm2610(int chipId, byte[] vgmBuf, int vgmAdr, int bLen, int startAddress, int romSize);
+        void writeAdpcmBYm2610(int chipId, byte[] vgmBuf, int vgmAdr, int bLen, int startAddress, int romSize);
+        void writePcmYmF278B(int chipId, int romSize, int dataStart, int dataLength, byte[] romData, int srcStartAdr);
+        void writeRamYmF278B(int chipId, int romSize, int dataStart, int dataLength, byte[] romData, int srcStartAdr);
+        void writePcmYmF271(int chipId, int romSize, int dataStart, int dataLength, byte[] romData, int srcStartAdr);
+        void writePcmYmZ280B(int chipId, int romSize, int dataStart, int dataLength, byte[] romData, int srcStartAdr);
+        void writePcmY8950(int chipId, int romSize, int dataStart, int dataLength, byte[] romData, int srcStartAdr);
+        void writePcmMultiPcm(int chipId, int romSize, int dataStart, int dataLength, byte[] romData, int srcStartAdr);
+        void writePcmUpd7759(int chipId, int romSize, int dataStart, int dataLength, byte[] romData, int srcStartAdr);
+        void writePcmOkiM6295(int chipId, int romSize, int dataStart, int dataLength, byte[] romData, int srcStartAdr);
+        void writePcmK054539(int chipId, int romSize, int dataStart, int dataLength, byte[] romData, int srcStartAdr);
+        void writePcmC140(int chipId, int romSize, int dataStart, int dataLength, byte[] romData, int srcStartAdr);
+        void writePcmK053260(int chipId, int romSize, int dataStart, int dataLength, byte[] romData, int srcStartAdr);
+        void writePcmQSound(int chipId, int romSize, int dataStart, int dataLength, byte[] romData, int srcStartAdr);
+        void writePcmX1_010(int chipId, int romSize, int dataStart, int dataLength, byte[] romData, int srcStartAdr);
+        void writePcmC352(int chipId, int romSize, int dataStart, int dataLength, byte[] romData, int srcStartAdr);
+        void writePcmGa20(int chipId, int romSize, int dataStart, int dataLength, byte[] romData, int srcStartAdr);
+        void writePcmRf5C68(int chipId, int offset, int length, byte[] buf, int srcOffset);
+        void writePcmRf5C164(int chipId, int offset, int length, byte[] buf, int srcOffset);
+        void writePcmNes(int chipId, int stAdr, int dataSize, byte[] vgmBuf, int vgmAdr);
+        void writePcmEs5503(int chipId, int offset, int length, byte[] buf, int srcOffset);
+        void writePCMRamRf5C68(int chipId, int offset, int length, byte[] buf, int srcOffset);
+        void writePCMRamRf5C164(int chipId, int offset, int length, byte[] buf, int srcOffset);
+        void writeRf5C68(int chipId, int addr, int data);
+        void writeMemoryRf5C68(int chipId, int offset, int data);
+        void writeRf5C164(int chipId, int addr, int data);
+        void writeMemoryRf5C164(int chipId, int offset, int data);
+        void writePwm(int chipId, int addr, int data);
+        void writeK051649(int chipId, int addr, int data);
+        void writeK053260(int chipId, int addr, int data);
+        void writeK054539(int chipId, int addr, int data);
+        void writeC140(int chipId, int addr, int data);
+        void writeEs5503(int chipId, int addr, int data);
+        void writeC352(int chipId, int addr, int data);
+        int readHuC6280(int chipId, int addr);
+        boolean isVirtual();
+        int frameCounter();
+        void dataBlock(boolean b);
+        long getTotalCounter();
+        void setTotalCounter(long v);
+        void setLoopCounter(long v);
+        int loop();
+        void setUsedChips(String s);
+        String getUsedChips();
+        void setVersion(String s);
+        String getVersion();
+        void updateMetaData(byte[] b, Object... o);
+    }
+
+    public interface IDac {
+        int DCTRL_LMODE_IGNORE = 0x00;
+        int DCTRL_LMODE_CMDS = 0x01;
+        int DCTRL_LMODE_MSEC = 0x02;
+        int DCTRL_LMODE_TOEND = 0x03;
+        int DCTRL_LMODE_BYTES = 0x0F;
+
+        void refresh();
+        int deviceStart(int chipId);
+        void deviceReset(int chipId);
+        void setupChip(int chipId, int chType, int chNum, int command);
+        void setData(int chipId, byte[] data, int dataLen, int stepSize, int stepBase);
+        void setFrequency(int chipId, int frequency);
+        void start(int chipId, int dataPos, int lenMode, int length);
+        void stop(int chipId);
+        void refreshData(int chipId, byte[] data, int dataLen);
+        void update(int chipId, int samples);
     }
 }

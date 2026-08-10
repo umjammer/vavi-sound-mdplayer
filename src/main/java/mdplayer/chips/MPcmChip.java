@@ -7,18 +7,10 @@
 package mdplayer.chips;
 
 import java.lang.System.Logger;
-import java.lang.System.Logger.Level;
 
 import mdplayer.Common.EnmModel;
-import mdplayer.emu.nise68.Memory68;
-import mdplayer.emu.nise68.Register68;
-import mdplayer.emu.nise68.XMemory;
-import mdplayer.lib.mndrv.Reg;
-import mdplayer.lib.zms.Zms;
 import mdsound.Instrument;
 import mdsound.Instrument.PcmEnabledInstrument;
-import mdsound.chips.MPcm;
-import mdsound.chips.MPcmPP.SETPCM;
 import mdsound.instrument.MPcmPPInst;
 import mdsound.instrument.X68kMPcmInst;
 
@@ -93,80 +85,21 @@ public class MPcmChip extends BaseChip {
         }
     }
 
-    /** TODO use common object type instead of Object */
-    public void writePcm(int chipId, int ch, Object pcm, Object mem, Object reg, int n) {
+    public float[] getBaseRate(int chipId) {
+        return switch (context.mds.inst(inst(chipId))) {
+            case X68kMPcmInst mpcm -> new float[] {mpcm.chips[chipId].rate, mpcm.chips[chipId].base};
+            case MPcmPPInst mpcmpp -> new float[] {mpcmpp.chips[chipId].rate, mpcmpp.chips[chipId].base};
+            default -> throw new IllegalStateException();
+        };
+    }
+
+    /** */
+    public void writePcm(int chipId, int ch, byte[] mem, byte type, byte orig, int adrsPtr, int size, int start, int end, int count, boolean isMnd, int frq, int n) {
         switch (context.mds.inst(inst(chipId))) {
-            case X68kMPcmInst mpcm -> {
-                if (pcm instanceof Zms.MPCMSt[] mpcmSt && mem instanceof Memory68 mem68 && reg instanceof Register68 reg68) {
-                    MPcm.PCM ptr = new MPcm.PCM();
-                    ptr.adrsBuf = mem68.mem;
-                    mpcmSt[ch].type = ptr.type = mem68.peekB(0x00 + reg68.getAl(1));
-                    mpcmSt[ch].orig = ptr.orig = mem68.peekB(0x01 + reg68.getAl(1));
-                    mpcmSt[ch].adrs_ptr = ptr.adrsPtr = mem68.peekL(0x04 + reg68.getAl(1));
-                    mpcmSt[ch].size = ptr.size = mem68.peekL(0x08 + reg68.getAl(1));
-                    mpcmSt[ch].start = ptr.start = mem68.peekL(0x0c + reg68.getAl(1));
-                    mpcmSt[ch].end = ptr.end = mem68.peekL(0x10 + reg68.getAl(1));
-                    mpcmSt[ch].count = ptr.count = mem68.peekL(0x14 + reg68.getAl(1));
-                    //mpcmSt[ch].frq = mpcmSt[ch].type == 0xff ? 4 : (mpcmSt[ch].type == 1 ? 8 : (mpcmSt[ch].type == 2 ? 0x10 : 0));
-                    mpcmSt[ch].rate = mpcm.chips[0].rate;
-                    mpcmSt[ch].base_ = mpcm.chips[0].base;
-
-                    //nise68.dumpMemory((int) ptr.adrs_ptr, (int) (ptr.adrs_ptr + ptr.size));
-                    mpcm.writePcm(0, ch, ptr);
-                } else if (pcm instanceof Zms.MPCMSt[] mpcmSt && mem instanceof XMemory mm && reg instanceof Reg reg68) {
-                    MPcm.PCM tbl = new MPcm.PCM();
-                    tbl.adrsBuf = mm.mm;
-                    mpcmSt[ch].type = tbl.type = mm.readByte(0x00 + reg68.a1);
-                    mpcmSt[ch].orig = tbl.orig = mm.readByte(0x01 + reg68.a1);
-                    mpcmSt[ch].adrs_ptr = tbl.adrsPtr = mm.readInt(0x04 + reg68.a1);
-                    mpcmSt[ch].size = tbl.size = mm.readInt(0x08 + reg68.a1);
-                    mpcmSt[ch].start = tbl.start = mm.readInt(0x0c + reg68.a1);
-                    mpcmSt[ch].end = tbl.end = mm.readInt(0x10 + reg68.a1);
-                    mpcmSt[ch].count = tbl.count = mm.readInt(0x14 + reg68.a1);
-                    mpcmSt[ch].frq = (mpcmSt[ch].type & 0xff) == 0xff ? 4 : (mpcmSt[ch].type == 1 ? 8 : (mpcmSt[ch].type == 2 ? 0x10 : 0));
-                    mpcmSt[n & 0xf].rate = mpcm.chips[0].rate;
-                    mpcmSt[n & 0xf].base_ = mpcm.chips[0].base;
-                    mpcm.writePcm(0, ch, tbl);
-                } else {
-logger.log(Level.WARNING, "unhandled type: {0}, {1}, {2}", pcm.getClass().getName(), mem.getClass().getName(), reg.getClass().getName());
-                }
-            }
+            case X68kMPcmInst mpcm -> mpcm.writePcm(chipId, ch, mem, type, orig, adrsPtr, size, start, end, count);
             case MPcmPPInst mpcmpp -> {
-                if (pcm instanceof Zms.MPCMSt[] mpcmSt && mem instanceof Memory68 mem68 && reg instanceof Register68 reg68) {
-                    SETPCM ptr = new SETPCM();
-                    ptr.adrs_buf = mem68.mem;
-                    mpcmSt[ch].type = ptr.type = mem68.peekB(0x00 + reg68.getAl(1));
-                    mpcmSt[ch].orig = ptr.orig = mem68.peekB(0x01 + reg68.getAl(1));
-                    mpcmSt[ch].adrs_ptr = ptr.adrs_ptr = mem68.peekL(0x04 + reg68.getAl(1));
-                    mpcmSt[ch].size = ptr.size = mem68.peekL(0x08 + reg68.getAl(1));
-                    mpcmSt[ch].start = ptr.start = mem68.peekL(0x0c + reg68.getAl(1));
-                    mpcmSt[ch].end = ptr.end = mem68.peekL(0x10 + reg68.getAl(1));
-                    mpcmSt[ch].count = ptr.count = mem68.peekL(0x14 + reg68.getAl(1));
-                    //mpcmSt[ch].frq = mpcmSt[ch].type == 0xff ? 4 : (mpcmSt[ch].type == 1 ? 8 : (mpcmSt[ch].type == 2 ? 0x10 : 0));
-                    mpcmSt[ch].rate = mpcmpp.chips[0].rate;
-                    mpcmSt[ch].base_ = mpcmpp.chips[0].base;
-
-                    //nise68.dumpMemory((int) ptr.adrs_ptr, (int) (ptr.adrs_ptr + ptr.size));
-                    mpcmpp.setPcm(0, ch, ptr);
-                } else if (pcm instanceof Zms.MPCMSt[] mpcmSt && mem instanceof XMemory mm && reg instanceof Reg reg68) {
-                    SETPCM ptr = new SETPCM();
-                    ptr.adrs_buf = mm.mm;
-                    mpcmSt[ch].type = ptr.type = mm.readByte(0x00 + reg68.a1);
-                    mpcmSt[ch].orig = ptr.orig = mm.readByte(0x01 + reg68.a1);
-                    mpcmSt[ch].adrs_ptr = ptr.adrs_ptr = mm.readInt(0x04 + reg68.a1);
-                    mpcmSt[ch].size = ptr.size = mm.readInt(0x08 + reg68.a1);
-                    mpcmSt[ch].start = ptr.start = mm.readInt(0x0c + reg68.a1);
-                    mpcmSt[ch].end = ptr.end = mm.readInt(0x10 + reg68.a1);
-                    mpcmSt[ch].count = ptr.count = mm.readInt(0x14 + reg68.a1);
-                    mpcmSt[ch].rate = mpcmpp.chips[0].rate;
-                    mpcmSt[ch].base_ = mpcmpp.chips[0].base;
-                    mpcmSt[ch].frq = (mpcmSt[ch].type & 0xff) == 0xff ? 4 : (mpcmSt[ch].type == 1 ? 8 : (mpcmSt[ch].type == 2 ? 0x10 : 0));
-                    //nise68.DumpMemory((uint)ptr.adrs_ptr, (uint)(ptr.adrs_ptr + ptr.size));
-                    mpcmpp.setFreq(0, ch, mpcmSt[ch].frq);
-                    mpcmpp.setPcm(0, ch, ptr);
-                } else {
-logger.log(Level.WARNING, "unhandled type: {0}, {1}, {2}", pcm.getClass().getName(), mem.getClass().getName(), reg.getClass().getName());
-                }
+                if (isMnd) mpcmpp.setFreq(0, ch, frq);
+                mpcmpp.setPcm(chipId, ch, mem, type, orig, adrsPtr, size, start, end, count);
             }
             default -> {assert false;}
         }

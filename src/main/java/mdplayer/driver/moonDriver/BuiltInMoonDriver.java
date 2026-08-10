@@ -193,7 +193,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
     private double ntscStep = 0.0;
     private double ntscCounter = 0.0;
     private boolean nextFlg = false;
-    public final Tuple<String, byte[]> extendFile = null;
+    private final Tuple<String, byte[]> extendFile = null;
     private final int[] pcmKeyon = {
             -1, -1, -1, -1, -1, -1,
             -1, -1, -1, -1, -1, -1,
@@ -201,7 +201,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
             -1, -1, -1, -1, -1, -1
     };
     private final int[] pcmKeyonB = new int[24];
-    public boolean isOPL3 = false;
+    private boolean isOPL3 = false;
 
     public int[] getPCMKeyOn() {
         for (int i = 0; i < pcmKeyonB.length; i++) {
@@ -289,49 +289,49 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         // Workarea for channels : the driver
         //
         // seq_work:
-        public static class Ch {
-            public int dsel = 0x00;
-            public int opsel = 0x00;
-            public int synth = 0x00;
-            public int efx1 = 0x00;
-            public int cnt = 0x00;
-            public int loop = 0x00;
-            public int loopCnt = 0x00;
-            public int bank = 0x00;
-            public int addr = 0x0000;
-            public int stBank = 0x00;
-            public int stAddr = 0x0000;
-            public boolean endFlg = false;
-            public int tadr = 0x0000;
-            public int tone = 0x0000;
-            public int key = 0x00;
-            public int damp = 0x00;
-            public int lfo = 0x00;
-            public int lfo_vib = 0x00;
-            public final byte[] ol = new byte[4];
+        static class Ch {
+            int dsel = 0x00;
+            int opsel = 0x00;
+            int synth = 0x00;
+            int efx1 = 0x00;
+            int cnt = 0x00;
+            int loop = 0x00;
+            int loopCnt = 0x00;
+            int bank = 0x00;
+            int addr = 0x0000;
+            int stBank = 0x00;
+            int stAddr = 0x0000;
+            boolean endFlg = false;
+            int tadr = 0x0000;
+            int tone = 0x0000;
+            int key = 0x00;
+            int damp = 0x00;
+            int lfo = 0x00;
+            int lfo_vib = 0x00;
+            final byte[] ol = new byte[4];
 //            public int ar_d1r = 0x00;
 //            public int dl_d2r = 0x00;
 //            public int rc_rr = 0x00;
 //            public int am = 0x00;
-            public int note = 0x00;
-            public int pitch = 0x0000;
-            public int p_ofs = 0x0000;
-            public int oct = 0x00;
-            public int fnum = 0x0000;
-            public int reverb = 0x00;
-            public int vol = 0x00;
-            public int pan = 0x00;
-            public int detune = 0x00;
-            public int venv = 0x00;
-            public int nenv = 0x00;
-            public int penv = 0x00;
-            public int nenv_adr = 0x0000;
-            public int penv_adr = 0x0000;
-            public int venv_adr = 0x0000;
+            int note = 0x00;
+            int pitch = 0x0000;
+            int p_ofs = 0x0000;
+            int oct = 0x00;
+            int fnum = 0x0000;
+            int reverb = 0x00;
+            int vol = 0x00;
+            int pan = 0x00;
+            int detune = 0x00;
+            int venv = 0x00;
+            int nenv = 0x00;
+            int penv = 0x00;
+            int nenv_adr = 0x0000;
+            int penv_adr = 0x0000;
+            int venv_adr = 0x0000;
         }
 
         // seq_work_end:
-        public Ch[] ch;
+        Ch[] ch;
 
 //        public int IDX_DSEL = 0;      // equ(seq_ch1_dsel    - seq_work); Device Select
 //        public int IDX_OPSEL = 1;     // equ(seq_ch1_opsel   - seq_work); Operator Select
@@ -697,7 +697,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
     //
     // Entry points
     //
-    public void entryPoints(int adr) {
+    private void entryPoints(int adr) {
         switch (adr) {
         //	; $4000 Initialize
         case 0x4000:

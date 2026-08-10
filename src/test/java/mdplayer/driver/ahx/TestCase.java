@@ -41,7 +41,7 @@ import static vavi.sound.SoundUtil.volume;
  */
 @PropsEntity(url = "file:local.properties")
 @EnabledIf("localPropertiesExists")
-public class TestCase {
+class TestCase {
 
     static boolean localPropertiesExists() {
         return Files.exists(Paths.get("local.properties"));

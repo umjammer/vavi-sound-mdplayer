@@ -28,7 +28,7 @@ import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  */
-public class NsfPeriodProbe {
+class NsfPeriodProbe {
 
     static final String file = System.getProperty("nsf",
             "../simplevgm/tmp/Thunder Force IV - Sand Hell [5-N163].nsf");

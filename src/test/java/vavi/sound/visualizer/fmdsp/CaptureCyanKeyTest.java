@@ -17,7 +17,7 @@ import mdplayer.driver.BasePlugin;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
-public class CaptureCyanKeyTest {
+class CaptureCyanKeyTest {
 
     @Test
     @EnabledIfSystemProperty(named = "vavi.test", matches = "ai")

@@ -140,8 +140,8 @@ public class NsfMdDriver2 extends BaseDriver implements NsfDriver {
     public void processOneFrame() {
     }
 
-int CC;
-static final int INTERVAL = 1024;
+private int CC;
+private static final int INTERVAL = 1024;
 
     @Override
     public int render(short[] buffer, int offset, int sampleCount) {

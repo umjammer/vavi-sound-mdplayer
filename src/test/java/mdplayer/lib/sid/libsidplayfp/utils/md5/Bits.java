@@ -6,7 +6,7 @@ package mdplayer.lib.sid.libsidplayfp.utils.md5;
  * @author christopherbare@cbare.org
  * @date 2006.03.26
  */
-public class Bits {
+class Bits {
 
     /**
      * Convert the given array of bytes to an int using the
@@ -14,7 +14,7 @@ public class Bits {
      * @param b byte array
      * @param offset offset into byte array
      */
-    public static int toInt(byte[] b, int offset) {
+    static int toInt(byte[] b, int offset) {
         return ((b[offset] & 0xff) << 24) |
                 ((b[offset + 1] & 0xff) << 16) |
                 ((b[offset + 2] & 0xff) << 8) |
@@ -94,7 +94,7 @@ public class Bits {
      * @param bytes byte array to receive the value
      * @param offset where to put the value in the byte array
      */
-    public static void toBytesBigEndian(int a, byte[] bytes, int offset) {
+    static void toBytesBigEndian(int a, byte[] bytes, int offset) {
         bytes[offset+3]   = (byte)((a >>> 24) & 0x000000FF);
         bytes[offset+2] = (byte)((a >>> 16) & 0x000000FF);
         bytes[offset+1] = (byte)((a >>> 8) & 0x000000FF);
@@ -108,7 +108,7 @@ public class Bits {
      * @param bytes destination of value
      * @param offset where to put the value in the byte array
      */
-    public static void toBytesBigEndian(long a, byte[] bytes, int offset) {
+    static void toBytesBigEndian(long a, byte[] bytes, int offset) {
         for (int i=0; i<8; i++) {
             bytes[offset+i] = (byte)(a & 0x000000FF);
             a = a >>> 8;
@@ -118,7 +118,7 @@ public class Bits {
     /**
      * Rotate the bits of the given int a by s positions.
      */
-    public static int leftRotate(int a, int s) {
+    static int leftRotate(int a, int s) {
         s %= 32;
         return (a << s) | (a >>> (32-s));
     }
@@ -127,10 +127,9 @@ public class Bits {
      * Reverses the order of the bytes in the given int.
      * Given 0x11223344 will return 0x44332211.
      */
-    public static int rev(int x) {
+    static int rev(int x) {
         return (x>>>24) | ((x>>>8) &0x0000FF00) | ((x<<8) & 0x00FF0000) | (x<<24);
     }
-
 
     public static byte[] hexStringToByteArray(String hex) {
         int len = hex.length() / 2;
@@ -193,5 +192,4 @@ public class Bits {
         sb.append("]");
         return sb.toString();
     }
-
 }

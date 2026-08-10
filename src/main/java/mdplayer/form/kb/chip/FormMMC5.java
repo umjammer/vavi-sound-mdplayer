@@ -16,22 +16,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
+import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.form.FrameBuffer;
 import mdplayer.form.ScreenPanel;
 import mdplayer.Tables;
 import mdplayer.chips.NpNesChip;
 import mdplayer.chips.NpNesChip.Mmc5Chip;
+import mdplayer.form.VisVolume;
 import mdplayer.form.kb.ChannelParams;
 import mdplayer.form.kb.Meters;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
 import mdplayer.form.View;
+import mdsound.MDSound;
 
 
 public class FormMMC5 extends FormChipBase<FormMMC5.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormMMC5.class);
+    private static final Preferences prefs = Preferences.userNodeForPackage(FormMMC5.class);
 
     public FormMMC5(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -65,7 +68,7 @@ public class FormMMC5 extends FormChipBase<FormMMC5.Params> {
         }
     };
 
-    public void changeZoom() {
+    private void changeZoom() {
         this.setMaximumSize(new Dimension(frameSizeW + Common.getImage("planeMMC5").getWidth() * zoom, frameSizeH + Common.getImage("planeMMC5").getHeight() * zoom));
         this.setMinimumSize(new Dimension(frameSizeW + Common.getImage("planeMMC5").getWidth() * zoom, frameSizeH + Common.getImage("planeMMC5").getHeight() * zoom));
         this.setPreferredSize(new Dimension(frameSizeW + Common.getImage("planeMMC5").getWidth() * zoom, frameSizeH + Common.getImage("planeMMC5").getHeight() * zoom));
@@ -87,7 +90,7 @@ public class FormMMC5 extends FormChipBase<FormMMC5.Params> {
     @Override
     public void changeScreenParams() {
         Map<String, Object> info = audio.plugin.chipRegister.chip(Mmc5Chip.class).getInfo(chipId);
-        if (info.isEmpty()) return;;
+        if (info.isEmpty()) return;
 
         byte[] reg = (byte[]) info.get("register");
         if (reg != null) {
@@ -235,7 +238,7 @@ public class FormMMC5 extends FormChipBase<FormMMC5.Params> {
         this.addComponentListener(this.componentListener);
     }
 
-    BufferedImage image;
+    private BufferedImage image;
 
 //#region draw buffer
 
@@ -322,18 +325,18 @@ public class FormMMC5 extends FormChipBase<FormMMC5.Params> {
 //#endregion
 
     /** this panel's channel row: the common core plus what only this chip displays */
-    public static class Channel extends ChannelParams {
+    static class Channel extends ChannelParams {
 
-        public boolean dda = false;
-        public int kf = -1;
-        public boolean noise = false;
+        boolean dda = false;
+        int kf = -1;
+        boolean noise = false;
     }
 
     /** this panel's per-frame draw state, diffed new against old (see {@link FormChipBase}) */
-    public static class Params {
+    static class Params {
 
-        public final Channel[] sqrChannels = {new Channel(), new Channel()};
-        public final Channel pcmChannel = new Channel();
+        final Channel[] sqrChannels = {new Channel(), new Channel()};
+        final Channel pcmChannel = new Channel();
     }
 
     /** what this panel contributes to the GUI; see {@link ViewProvider} */
@@ -341,30 +344,30 @@ public class FormMMC5 extends FormChipBase<FormMMC5.Params> {
 
         @Override public String id() { return "MMC5"; }
         @Override public String category() { return "nes"; }
-        @Override public Class<? extends mdplayer.Chip> chip() { return mdplayer.chips.NpNesChip.Mmc5Chip.class; }
+        @Override public Class<? extends mdplayer.Chip> chip() { return NpNesChip.Mmc5Chip.class; }
         @Override public View create(FormMain frm, int chipId, int zoom) { return new FormMMC5(frm, chipId, zoom); }
 
-        @Override public void setChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+        @Override public void setChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
             if (ch >= 0 && ch < 3) {
-                mdplayer.chips.NpNesChip.Mmc5Chip c = audio.plugin.chipRegister.chip(mdplayer.chips.NpNesChip.Mmc5Chip.class);
+                NpNesChip.Mmc5Chip c = audio.plugin.chipRegister.chip(NpNesChip.Mmc5Chip.class);
                 if (!c.getMask(chipId, ch)) c.setMask(chipId, ch); else c.resetMask(chipId, ch);
             }
         }
 
-        @Override public void resetChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
-            audio.plugin.chipRegister.chip(mdplayer.chips.NpNesChip.Mmc5Chip.class).resetMask(chipId, ch);
+        @Override public void resetChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+            audio.plugin.chipRegister.chip(NpNesChip.Mmc5Chip.class).resetMask(chipId, ch);
         }
 
-        @Override public void reapplyChannelMasks(mdplayer.Audio audio, int chipId) {
+        @Override public void reapplyChannelMasks(Audio audio, int chipId) {
             for (int ch = 0; ch < 3; ch++)
-                resetChannelMask(audio, mdplayer.chips.NpNesChip.Mmc5Chip.class, chipId, ch);
+                resetChannelMask(audio, NpNesChip.Mmc5Chip.class, chipId, ch);
         }
 
         @Override public List<MixerSlot> mixerSlots() {
-            return List.of(new MixerSlot(51, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.NpNesChip.Mmc5Chip.class, "MMC5", 50));
+            return List.of(new MixerSlot(51, MDSound.Chip.MAIN_TAG, NpNesChip.Mmc5Chip.class, "MMC5", 50));
         }
 
-        @Override public void updateMeters(mdplayer.Audio audio, mdplayer.form.VisVolume visVolume) {
+        @Override public void updateMeters(Audio audio, VisVolume visVolume) {
             int mmc5 = Meters.npNesVolume(audio, 5);
             if (mmc5 >= 0) visVolume.put("MMC5", mmc5 * 15);
         }

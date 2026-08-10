@@ -248,7 +248,7 @@ public class MuapDriver extends BaseDriver {
         private final TriConsumer<byte[], Integer, Integer> writePCMData;
         private final BiConsumer<Long, Integer> sendWait;
 
-        public MuapChipAction(Consumer<ChipDatum> write, TriConsumer<byte[], Integer, Integer> writePCMData, BiConsumer<Long, Integer> sendWait) {
+        MuapChipAction(Consumer<ChipDatum> write, TriConsumer<byte[], Integer, Integer> writePCMData, BiConsumer<Long, Integer> sendWait) {
             this.write = write;
             this.writePCMData = writePCMData;
             this.sendWait = sendWait;
@@ -275,12 +275,12 @@ public class MuapDriver extends BaseDriver {
         }
     }
 
-    void OPNAWriteP(ChipDatum dat) {
+    private void OPNAWriteP(ChipDatum dat) {
         //logger.log(Level.Trace, "Write OPNA : Prt:%02x Adr:%02x Dat:%02x".formatted(dat.port, dat.address, dat.data));
         OPNAWrite(0, dat);
     }
 
-    void OPN2WriteP(ChipDatum dat) {
+    private void OPN2WriteP(ChipDatum dat) {
         //if (dat.address > 0xff) {
         //    ;
         //}
@@ -291,7 +291,7 @@ public class MuapDriver extends BaseDriver {
         OPN2Write(0, dat);
     }
 
-    void OPNAWrite(int chipId, ChipDatum dat) {
+    private void OPNAWrite(int chipId, ChipDatum dat) {
         if (dat != null && dat.additionalData != null) {
             MmlDatum md = (MmlDatum) dat.additionalData;
             if (md.linePos != null) {
@@ -305,7 +305,7 @@ public class MuapDriver extends BaseDriver {
         plugin.chipRegister.chip(Ym2608Chip.class).write(chipId, dat.port, dat.address, dat.data, model /*, frameCounter */);
     }
 
-    void OPN2Write(int chipId, ChipDatum dat) {
+    private void OPN2Write(int chipId, ChipDatum dat) {
         if (dat != null && dat.additionalData != null) {
             MmlDatum md = (MmlDatum) dat.additionalData;
             if (md.linePos != null) {
@@ -319,7 +319,7 @@ public class MuapDriver extends BaseDriver {
         plugin.chipRegister.chip(Ym2612Chip.class).write(chipId, dat.port, dat.address, dat.data, model, frameCounter);
     }
 
-    void CS4231Write(ChipDatum dat) {
+    private void CS4231Write(ChipDatum dat) {
         if (dat != null && dat.additionalData != null) {
             MmlDatum md = (MmlDatum) dat.additionalData;
             if (md.linePos != null) {
@@ -333,31 +333,31 @@ public class MuapDriver extends BaseDriver {
         plugin.chipRegister.chip(Cs4231Chip.class).write(0, dat.port, dat.address, dat.data);
     }
 
-    byte CS4231Read(byte adr) {
+    private byte CS4231Read(byte adr) {
         return (byte) plugin.chipRegister.chip(Cs4231Chip.class).read(0, adr & 0xff);
     }
 
-    byte[] CS4231EMS_GetCurrentMapBuf() {
+    private byte[] CS4231EMS_GetCurrentMapBuf() {
         return plugin.chipRegister.chip(Cs4231Chip.class).EMS_GetCurrentMapBuf(0, 0);
     }
 
-    void CS4231EMS_Map(int al, byte[] ah, int bx, int dx) {
+    private void CS4231EMS_Map(int al, byte[] ah, int bx, int dx) {
         plugin.chipRegister.chip(Cs4231Chip.class).EMS_Map(0, 0, al, ah, bx, dx);
     }
 
-    int CS4231EMS_GetPageMap() {
+    private int CS4231EMS_GetPageMap() {
         return plugin.chipRegister.chip(Cs4231Chip.class).EMS_GetPageMap(0, 0);
     }
 
-    void CS4231EMS_GetHandleName(byte[] ah, int dx, String[] buf) {
+    private void CS4231EMS_GetHandleName(byte[] ah, int dx, String[] buf) {
         plugin.chipRegister.chip(Cs4231Chip.class).EMS_GetHandleName(0, ah, dx, buf);
     }
 
-    void CS4231EMS_SetHandleName(byte[] ah, int dx, String emsName2) {
+    private void CS4231EMS_SetHandleName(byte[] ah, int dx, String emsName2) {
         plugin.chipRegister.chip(Cs4231Chip.class).EMS_SetHandleName(0, ah, dx, emsName2);
     }
 
-    void CS4231EMS_AllocMemory(byte[] ah, int[] dx, int bx) {
+    private void CS4231EMS_AllocMemory(byte[] ah, int[] dx, int bx) {
         plugin.chipRegister.chip(Cs4231Chip.class).EMS_AllocMemory(0, ah, dx, bx);
     }
 

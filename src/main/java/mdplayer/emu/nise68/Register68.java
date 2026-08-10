@@ -1,7 +1,7 @@
 package mdplayer.emu.nise68;
 
 
-public class Register68 {
+public class Register68 implements IRegister {
 
     private int[] d = new int[8];
 
@@ -236,6 +236,7 @@ public class Register68 {
         return (short) a.get(n);
     }
 
+    @Override
     public int getAl(int n) {
         return a.get(n);
     }
@@ -369,10 +370,10 @@ public class Register68 {
 
         /** field for Items property */
         private final int[] items = new int[8];
-        public int usp;
-        public int ssp;
-        public short sr;
-        public short srBk;
+        int usp;
+        int ssp;
+        short sr;
+        short srBk;
 
         public int get(int index) { // indexer
             if (index == 7) {

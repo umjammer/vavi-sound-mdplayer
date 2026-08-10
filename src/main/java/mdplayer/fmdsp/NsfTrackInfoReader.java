@@ -39,6 +39,7 @@ public abstract class NsfTrackInfoReader extends ChipReader {
 
     protected abstract int channelCount();
 
+    @Override
     protected abstract BaseChip chip();
 
     protected abstract boolean muted(int ch);

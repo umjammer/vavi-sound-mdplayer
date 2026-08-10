@@ -9,6 +9,7 @@ package mdplayer;
 import java.io.BufferedInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.IntStream;
 
@@ -91,7 +92,7 @@ class ChipCacheCheck {
         }
     }
 
-    private void one(String file) throws Exception {
+    private static void one(String file) throws Exception {
         System.err.println("file: " + file);
 
         FileFormat format = FileFormat.getFileFormat(file);
@@ -134,7 +135,7 @@ class ChipCacheCheck {
             System.err.println("pans=" + IntStream.range(0, 19).mapToObj(source::pan).toList());
             TrackId[] disp = source.displayTracks();
             System.err.println("auto view=" + (disp == null ? null
-                    : java.util.Arrays.stream(disp)
+                    : Arrays.stream(disp)
                             .map(t -> source.trackTypeName(t) + source.trackNumber(t))
                             .toList()));
             System.err.println("meter labels=" + IntStream.range(0, 19).mapToObj(source::label).toList());

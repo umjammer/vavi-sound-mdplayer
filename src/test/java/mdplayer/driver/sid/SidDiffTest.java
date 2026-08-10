@@ -21,10 +21,10 @@ import static org.mockito.Mockito.when;
 
 
 @EnabledIfSystemProperty(named = "vavi.test", matches = "ai")
-public class SidDiffTest {
+class SidDiffTest {
 
     @Test
-    public void testDriver() throws Exception {
+    void testDriver() throws Exception {
         byte[] fileBuffer = Files.readAllBytes(Paths.get("../JSIDPlay2/tmp/Formula_1_Simulator.sid"));
         
         // 1. Setup SidMdDriver

@@ -10,17 +10,17 @@ import vavi.util.ByteUtil;
 
 public abstract class ZgmChip extends Chip {
 
-    protected ChipRegister chipRegister;
+    ChipRegister chipRegister;
 
-    protected Setting setting;
+    Setting setting;
 
-    protected byte[] vgmBuf;
+    byte[] vgmBuf;
 
     public String name;
 
-    public ZgmDriver.DefineInfo defineInfo;
+    ZgmDriver.DefineInfo defineInfo;
 
-    public ZgmChip(int ch) {
+    ZgmChip(int ch) {
         super(ch);
 
     }

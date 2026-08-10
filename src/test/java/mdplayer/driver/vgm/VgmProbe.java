@@ -1,11 +1,13 @@
-package mdplayer.driver;
+package mdplayer.driver.vgm;
 
 import java.io.BufferedInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 
-import mdplayer.driver.vgm.VgmDriver;
+import mdplayer.driver.BaseDriver;
+import mdplayer.driver.BasePlugin;
+import mdplayer.driver.FileFormat;
 import vavi.util.archive.Archives;
 
 import org.junit.jupiter.api.Test;
@@ -13,7 +15,7 @@ import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 
 /** temporary probe */
-public class VgmProbe {
+class VgmProbe {
 
     @Test
     @EnabledIfSystemProperty(named = "vavi.test", matches = "ai")

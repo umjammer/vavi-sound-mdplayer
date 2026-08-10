@@ -1,5 +1,6 @@
 package mdplayer.driver.zgm;
 
+
 public enum EnmZGMDevice {
     None(0x0000_0000),
     // VGM Chips (Emulation chip definition used by VGM)
@@ -67,7 +68,7 @@ public enum EnmZGMDevice {
     Wave(0x0007_0000),
     RawWave(0x0007_0000);
 
-    final int v;
+    public final int v;
 
     EnmZGMDevice(int v) {
         this.v = v;

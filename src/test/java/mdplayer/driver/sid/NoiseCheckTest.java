@@ -29,7 +29,7 @@ import static org.mockito.Mockito.when;
  * NoiseCheckTest.
  * Checks if the audio output is consistent and doesn't drop to silence.
  */
-public class NoiseCheckTest {
+class NoiseCheckTest {
 
     private static final int SamplingRate = 44100;
     private playSidFp engine;
@@ -37,7 +37,7 @@ public class NoiseCheckTest {
 
     @Test
     @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
-    public void testNoise() throws Exception {
+    void testNoise() throws Exception {
         String sidFile = System.getProperty("sid");
         if (sidFile == null) {
             Debug.println("No sid file specified via -Dsid=...");
@@ -46,7 +46,7 @@ public class NoiseCheckTest {
         playAndCheck(sidFile, 1);
     }
 
-    public void playAndCheck(String filename, int song) throws Exception {
+    private void playAndCheck(String filename, int song) throws Exception {
         byte[] fileBuffer = Files.readAllBytes(Paths.get(filename));
 
         init(fileBuffer, song);

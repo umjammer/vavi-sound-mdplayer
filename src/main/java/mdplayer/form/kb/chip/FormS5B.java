@@ -16,12 +16,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
+import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.Tables;
+import mdplayer.chips.NpNesChip;
 import mdplayer.chips.NpNesChip.Fme7Chip;
 import mdplayer.form.FrameBuffer;
 import mdplayer.form.ScreenPanel;
 import mdplayer.form.View;
+import mdplayer.form.VisVolume;
 import mdplayer.form.kb.ChannelParams;
 import mdplayer.form.kb.Meters;
 import mdplayer.form.kb.ViewProvider;
@@ -32,7 +35,7 @@ import static mdplayer.Common.searchSSGNote;
 
 public class FormS5B extends FormChipBase<FormS5B.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormS5B.class);
+    private static final Preferences prefs = Preferences.userNodeForPackage(FormS5B.class);
 
     public FormS5B(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -64,7 +67,7 @@ public class FormS5B extends FormChipBase<FormS5B.Params> {
         }
     };
 
-    public void changeZoom() {
+    private void changeZoom() {
         this.setMaximumSize(new Dimension(frameSizeW + Common.getImage("planeS5B").getWidth() * zoom, frameSizeH + Common.getImage("planeS5B").getHeight() * zoom));
         this.setMinimumSize(new Dimension(frameSizeW + Common.getImage("planeS5B").getWidth() * zoom, frameSizeH + Common.getImage("planeS5B").getHeight() * zoom));
         this.setPreferredSize(new Dimension(frameSizeW + Common.getImage("planeS5B").getWidth() * zoom, frameSizeH + Common.getImage("planeS5B").getHeight() * zoom));
@@ -221,7 +224,7 @@ public class FormS5B extends FormChipBase<FormS5B.Params> {
         this.addComponentListener(this.componentListener);
     }
 
-    BufferedImage image;
+    private BufferedImage image;
 
 //#region draw buffer
 
@@ -263,19 +266,19 @@ public class FormS5B extends FormChipBase<FormS5B.Params> {
 //#endregion
 
     /** this panel's channel row: the common core plus what only this chip displays */
-    public static class Channel extends ChannelParams {
+    static class Channel extends ChannelParams {
 
-        public int tn = 0;
-        public int tntp = -1;
+        int tn = 0;
+        int tntp = -1;
     }
 
     /** this panel's per-frame draw state, diffed new against old (see {@link FormChipBase}) */
-    public static class Params {
+    static class Params {
 
-        public int nfrq = -1;
-        public int efrq = -1;
-        public int etype = -1;
-        public final Channel[] channels = {new Channel(), new Channel(), new Channel()};
+        int nfrq = -1;
+        int efrq = -1;
+        int etype = -1;
+        final Channel[] channels = {new Channel(), new Channel(), new Channel()};
     }
 
 
@@ -283,16 +286,16 @@ public class FormS5B extends FormChipBase<FormS5B.Params> {
     public static class Provider implements ViewProvider {
 
         @Override public String id() { return "S5B"; }
-        @Override public Class<? extends mdplayer.Chip> chip() { return mdplayer.chips.NpNesChip.Fme7Chip.class; }
+        @Override public Class<? extends mdplayer.Chip> chip() { return NpNesChip.Fme7Chip.class; }
         @Override public String menuText() { return "S5B(FME7)"; }
         @Override public String category() { return "nes"; }
         @Override public View create(FormMain frm, int chipId, int zoom) { return new FormS5B(frm, chipId, zoom); }
 
         @Override public List<MixerSlot> mixerSlots() {
-            return List.of(new MixerSlot(55, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.NpNesChip.Fme7Chip.class, "FME7", 50));
+            return List.of(new MixerSlot(55, mdsound.MDSound.Chip.MAIN_TAG, NpNesChip.Fme7Chip.class, "FME7", 50));
         }
 
-        @Override public void updateMeters(mdplayer.Audio audio, mdplayer.form.VisVolume visVolume) {
+        @Override public void updateMeters(Audio audio, VisVolume visVolume) {
             int fme7 = Meters.npNesVolume(audio, 6);
             if (fme7 >= 0) visVolume.put("FME7", fme7 * 15);
         }

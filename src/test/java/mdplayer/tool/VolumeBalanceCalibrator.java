@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -13,6 +14,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
@@ -52,8 +54,9 @@ import mdsound.MDSound;
  * {@code v = 40*log10(gain)}, clamped to {@code [-192, 20]}.
  * <p>
  * Limitations (minimal first pass): balances at chip-class granularity — a chip's computed
- * gain is written to all of its mixer tags equally, sub-tag (FM/SSG/&hellip;) ratios keep
- * their defaults. NES-family chips ignore the volume field (mdsound forces it to 0 for
+ * gain is written to its {@code MAIN} tag only, which scales the whole chip; the sub-tags
+ * (FM/SSG/&hellip;) are independent multipliers on top of it and keep their neutral 0, so
+ * they stay free as part trim. NES-family chips ignore the volume field (mdsound forces it to 0 for
  * {@code NesInst}), so NSF gets {@code MasterVolume} leveling only. Only {@code inst(0)}
  * of a multi-instance chip is muted during isolation.
  *
@@ -62,47 +65,47 @@ import mdsound.MDSound;
  *   java -cp <cp> mdplayer.tool.VolumeBalanceCalibrator [--dry-run] [--seconds N]
  * }</pre>
  */
-public final class VolumeBalanceCalibrator {
+final class VolumeBalanceCalibrator {
 
     /** resources dir the presets are read from / written to (source tree, so edits persist) */
-    static final Path RESOURCES = Path.of("src/main/resources/mdplayer/resources");
+    private static final Path RESOURCES = Path.of("src/main/resources/mdplayer/resources");
 
     /** seconds of audio to render per measurement */
     static int seconds = 5;
 
     /** at most this many samples measured per driver (default: no cap, measure everything) */
-    static int maxSamplesPerDriver = Integer.MAX_VALUE;
+    private static int maxSamplesPerDriver = Integer.MAX_VALUE;
 
     /** every chip class actually measured across the whole run (for the coverage report) */
-    static final Set<Class<? extends mdplayer.Chip>> covered = new LinkedHashSet<>();
+    private static final Set<Class<? extends mdplayer.Chip>> covered = new LinkedHashSet<>();
 
     /** fallback leveling target if no driver produced a usable full-mix measurement */
-    static final double TARGET_MIX_RMS = 4000.0;
+    private static final double TARGET_MIX_RMS = 4000.0;
 
     /** what {@code Audio.render} multiplies the mix by at {@code MasterVolume} 0: it computes
      *  {@code (sample * (int) (16384 * 10^(v/40))) >> 13}, so a "neutral" master is really x2 */
-    static final double MASTER_BASE_GAIN = 2.0;
+    private static final double MASTER_BASE_GAIN = 2.0;
 
     /** leave this much peak headroom (~1 dB) so leveling never pushes a driver into the clamp */
-    static final double PEAK_CEILING = 32767 * 0.9;
+    private static final double PEAK_CEILING = 32767 * 0.9;
 
     /** a driver full-mix RMS below this is treated as a broken/near-silent measurement and
      *  excluded when picking the global leveling target (so one dud can't crush every driver) */
-    static final double MIN_MEAS_FLOOR = 80.0;
+    private static final double MIN_MEAS_FLOOR = 80.0;
 
     /** |sample| below this is treated as silence and excluded from a chip's "active RMS" */
-    static final double NOISE_FLOOR = 64.0;
+    private static final double NOISE_FLOOR = 64.0;
 
     /** chips whose active RMS is below this are treated as "not sounding" and left neutral */
-    static final double SILENCE_RMS = 20.0;
+    private static final double SILENCE_RMS = 20.0;
 
-    static boolean dryRun = false;
+    private static boolean dryRun = false;
 
     /** when non-empty, only these driver tokens are calibrated */
-    static Set<String> only = Set.of();
+    private static Set<String> only = Set.of();
 
     /** explicit extra sample files (pathSep-separated) added on top of the local.properties scan */
-    static String[] extraFiles = new String[0];
+    private static String[] extraFiles = new String[0];
 
     public static void main(String[] args) throws Exception {
         System.setProperty("java.awt.headless", "true");
@@ -195,19 +198,19 @@ public final class VolumeBalanceCalibrator {
      * (see {@link #peakLimit}): peaky content can't be both loud and unclipped, and one such
      * driver used to cost the other 23 about 8 dB.
      */
-    static double levelingTarget(List<DriverResult> usable) {
+    private static double levelingTarget(List<DriverResult> usable) {
         return usable.stream()
                 .mapToDouble(r -> r.mixRms() * Math.pow(10.0, 20 / 40.0)).min().orElse(TARGET_MIX_RMS);
     }
 
     /** the highest {@code MasterVolume} that keeps this driver's loudest sample's peak under
      *  {@link #PEAK_CEILING}; a driver too peaky to reach the target lands here instead */
-    static int peakLimit(DriverResult r) {
+    private static int peakLimit(DriverResult r) {
         if (r.mixPeak() <= 0) return 20;
         return (int) Math.floor(40.0 * Math.log10(PEAK_CEILING / (MASTER_BASE_GAIN * r.mixPeak())));
     }
 
-    static double dbfs(double amplitude) {
+    private static double dbfs(double amplitude) {
         return amplitude <= 0 ? Double.NEGATIVE_INFINITY : 20.0 * Math.log10(amplitude / 32767.0);
     }
 
@@ -215,10 +218,10 @@ public final class VolumeBalanceCalibrator {
      *  Matched by simple name, not by class: {@code Balance}'s keys are simple names too, so
      *  e.g. {@code NesChip.FdsChip} (what VGM plays) and {@code NpNesChip.FdsChip} (what
      *  {@code VOL_TABLE} lists) are one and the same balance slot. */
-    static void reportChipCoverage() {
+    private static void reportChipCoverage() {
         var known = Setting.Balance.knownChipClasses();
         Set<String> coveredNames = covered.stream().map(Class::getSimpleName)
-                .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+                .collect(Collectors.toCollection(LinkedHashSet::new));
         List<String> hit = new ArrayList<>();
         List<String> miss = new ArrayList<>();
         for (var c : known) (coveredNames.contains(c.getSimpleName()) ? hit : miss).add(c.getSimpleName());
@@ -229,7 +232,7 @@ public final class VolumeBalanceCalibrator {
 
     /** measure every chip of every sample of one driver and build its per-chip balance;
      *  the MasterVolume is left unset here and assigned globally in phase 2 (downward leveling) */
-    static DriverResult measureDriver(String driver, List<Path> samples) throws Exception {
+    private static DriverResult measureDriver(String driver, List<Path> samples) throws Exception {
         if (samples.size() > maxSamplesPerDriver) samples = samples.subList(0, maxSamplesPerDriver);
         System.out.printf("%n==== driver %s (%d sample(s)) ====%n", driver, samples.size());
 
@@ -294,10 +297,12 @@ public final class VolumeBalanceCalibrator {
             int gain = (rms == null || rms <= 0 || tRef <= 0)
                     ? 0 // unmeasured / silent -> neutral
                     : clampVol((int) Math.round(40.0 * Math.log10(tRef / rms)));
-            for (String tag : chipTags.get(chip)) {
-                balance.setVolume(tag, chip, gain);
-            }
-            System.out.printf("      %-12s gain=%4d  tags=%s%n", chip.getSimpleName(), gain, chipTags.get(chip));
+            // MAIN only: the sub-tags (FM/SSG/...) are *separate* multipliers on top of MAIN, so
+            // writing the same gain to every tag would attenuate a multi-part chip twice (a YM2608
+            // at -18 came out -18 dB instead of the -9 dB meant). Sub-tags stay 0 = part trim.
+            balance.setVolume(MDSound.Chip.MAIN_TAG, chip, gain);
+            System.out.printf("      %-12s gain=%4d  tags=%s (written to %s)%n",
+                    chip.getSimpleName(), gain, chipTags.get(chip), MDSound.Chip.MAIN_TAG);
         }
 
         // measure the real full mix (all chips at computed gains); master leveling is global (phase 2)
@@ -330,7 +335,7 @@ public final class VolumeBalanceCalibrator {
     }
 
     /** honor --dry-run / missing-file and otherwise save + pretty-print the preset */
-    static void writeXml(String driver, Setting.Balance balance, Path xml) throws Exception {
+    private static void writeXml(String driver, Setting.Balance balance, Path xml) throws Exception {
         if (dryRun) {
             System.out.printf("  [dry-run] would write %s%n", xml);
         } else if (!Files.exists(xml)) {
@@ -416,7 +421,7 @@ public final class VolumeBalanceCalibrator {
     }
 
     /** render the full mix with the balance's per-chip gains applied and measure it */
-    static Meas measureMix(Path sample, Setting.Balance balance) throws Exception {
+    private static Meas measureMix(Path sample, Setting.Balance balance) throws Exception {
         BasePlugin<? extends BaseDriver> plugin = build(sample);
         try {
             for (var e : plugin.getChipInstances().entrySet()) {
@@ -487,12 +492,12 @@ public final class VolumeBalanceCalibrator {
 
     // ----- helpers -----
 
-    static int clampVol(int v) {
-        return Math.max(-192, Math.min(20, v));
+    private static int clampVol(int v) {
+        return Math.clamp(v, -192, 20);
     }
 
     /** median of positive values (ignores zeros/unmeasured); 0 when none */
-    static double median(java.util.Collection<Double> values) {
+    private static double median(Collection<Double> values) {
         double[] a = values.stream().mapToDouble(Double::doubleValue).filter(v -> v > 0).sorted().toArray();
         if (a.length == 0) return 0;
         int m = a.length / 2;
@@ -500,7 +505,7 @@ public final class VolumeBalanceCalibrator {
     }
 
     /** re-indent the single-line XML that {@code Balance.save} emits, for readable diffs */
-    static void prettyPrintInPlace(Path xml) throws Exception {
+    private static void prettyPrintInPlace(Path xml) throws Exception {
         byte[] raw = Files.readAllBytes(xml);
         var dbf = javax.xml.parsers.DocumentBuilderFactory.newInstance();
         var doc = dbf.newDocumentBuilder().parse(new ByteArrayInputStream(raw));
@@ -556,7 +561,7 @@ public final class VolumeBalanceCalibrator {
     }
 
     /** decode {@code \\uXXXX} escapes (local.properties stores non-ASCII paths .properties-escaped) */
-    static String unescapeUnicode(String s) {
+    private static String unescapeUnicode(String s) {
         if (!s.contains("\\u")) return s;
         StringBuilder sb = new StringBuilder(s.length());
         for (int i = 0; i < s.length(); ) {

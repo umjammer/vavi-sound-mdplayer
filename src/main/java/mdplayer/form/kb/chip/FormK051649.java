@@ -17,14 +17,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
+import mdplayer.Audio;
 import mdplayer.Common;
+import mdplayer.Common.EnmInstFormat;
+import mdplayer.Setting;
 import mdplayer.form.FrameBuffer;
 import mdplayer.form.ScreenPanel;
 import mdplayer.Tables;
 import mdplayer.chips.K051649Chip;
+import mdplayer.form.inst.MgscInstWriter;
+import mdplayer.form.inst.MgscSccPlainInstWriter;
 import mdplayer.form.kb.ChannelParams;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
+import mdsound.MDSound;
 import mdsound.instrument.K051649Inst;
 
 import static mdplayer.Common.searchSSGNote;
@@ -56,9 +62,9 @@ public class FormK051649 extends FormChipBase<FormK051649.Params> {
         this.addComponentListener(this.componentListener);
     }
 
-    BufferedImage image;
+    private BufferedImage image;
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormK051649.class);
+    private static final Preferences prefs = Preferences.userNodeForPackage(FormK051649.class);
 
     public FormK051649(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -92,7 +98,7 @@ public class FormK051649 extends FormChipBase<FormK051649.Params> {
         }
     };
 
-    public void changeZoom() {
+    private void changeZoom() {
         this.setMaximumSize(new Dimension(frameSizeW + Common.getImage("planeK051649").getWidth() * zoom, frameSizeH + Common.getImage("planeK051649").getHeight() * zoom));
         this.setMinimumSize(new Dimension(frameSizeW + Common.getImage("planeK051649").getWidth() * zoom, frameSizeH + Common.getImage("planeK051649").getHeight() * zoom));
         this.setPreferredSize(new Dimension(frameSizeW + Common.getImage("planeK051649").getWidth() * zoom, frameSizeH + Common.getImage("planeK051649").getHeight() * zoom));
@@ -273,15 +279,15 @@ public class FormK051649 extends FormChipBase<FormK051649.Params> {
 //#endregion
 
     /** this panel's channel row: the common core plus what only this chip displays */
-    public static class Channel extends ChannelParams {
+    static class Channel extends ChannelParams {
 
-        public boolean dda = false;
+        boolean dda = false;
     }
 
     /** this panel's per-frame draw state, diffed new against old (see {@link FormChipBase}) */
-    public static class Params {
+    static class Params {
 
-        public final Channel[] channels = {
+        final Channel[] channels = {
                 new Channel(), new Channel(), new Channel(), new Channel(), new Channel()
         };
     }
@@ -291,30 +297,30 @@ public class FormK051649 extends FormChipBase<FormK051649.Params> {
 
         @Override public String id() { return "K051649"; }
         @Override public String category() { return "wf"; }
-        @Override public Class<? extends mdplayer.Chip> chip() { return mdplayer.chips.K051649Chip.class; }
+        @Override public Class<? extends mdplayer.Chip> chip() { return K051649Chip.class; }
         @Override public String title(int chipId) { return "K051649Inst (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"); }
         @Override public View create(FormMain frm, int chipId, int zoom) { return new FormK051649(frm, chipId, zoom); }
 
-        @Override public void setChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+        @Override public void setChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
             if (ch >= 0 && ch < 5) {
-                mdplayer.chips.K051649Chip c = audio.plugin.chipRegister.chip(mdplayer.chips.K051649Chip.class);
+                K051649Chip c = audio.plugin.chipRegister.chip(K051649Chip.class);
                 if (!c.getMask(chipId, ch)) c.setMask(chipId, ch); else c.resetMask(chipId, ch);
             }
         }
 
-        @Override public void resetChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
-            audio.plugin.chipRegister.chip(mdplayer.chips.K051649Chip.class).resetMask(chipId, ch);
+        @Override public void resetChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+            audio.plugin.chipRegister.chip(K051649Chip.class).resetMask(chipId, ch);
         }
 
         @Override public List<MixerSlot> mixerSlots() {
-            return List.of(new MixerSlot(43, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.K051649Chip.class, "k051649", 200));
+            return List.of(new MixerSlot(43, MDSound.Chip.MAIN_TAG, K051649Chip.class, "k051649", 200));
         }
 
-        @Override public void getInstCh(Component parent, mdplayer.Audio audio, mdplayer.Setting setting, int ch, int chipId) {
-            if (setting.getOther().getInstFormat() == mdplayer.Common.EnmInstFormat.MGSCSCC_PLAIN) {
-                new mdplayer.form.inst.MgscSccPlainInstWriter().write(parent, audio, chip(), ch, chipId);
+        @Override public void getInstCh(Component parent, Audio audio, Setting setting, int ch, int chipId) {
+            if (setting.getOther().getInstFormat() == EnmInstFormat.MGSCSCC_PLAIN) {
+                new MgscSccPlainInstWriter().write(parent, audio, chip(), ch, chipId);
             } else {
-                new mdplayer.form.inst.MgscInstWriter().write(parent, audio, chip(), ch, chipId);
+                new MgscInstWriter().write(parent, audio, chip(), ch, chipId);
             }
         }
     }

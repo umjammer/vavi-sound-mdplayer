@@ -47,9 +47,9 @@ public class YmMusic {
         public String pSongAuthor;
         public String pSongComment;
         public String pSongType;
-        public String pSongPlayer;
+        String pSongPlayer;
         public int musicTimeInSec;
-        public int musicTimeInMs;
+        int musicTimeInMs;
     }
 
     public interface Ym2149Ex {
@@ -80,10 +80,10 @@ public class YmMusic {
     //
     // Constants from YmMusic.h / YmTypes.h
     //
-    public static final int YMTPREC = 16;
-    public static final int MAX_VOICE = 8;
-    public static final int PC_DAC_FREQ = 44100;
-    public static final int YMTNBSRATE = PC_DAC_FREQ / 50;
+    private static final int YMTPREC = 16;
+    private static final int MAX_VOICE = 8;
+    private static final int PC_DAC_FREQ = 44100;
+    private static final int YMTNBSRATE = PC_DAC_FREQ / 50;
 
     public enum YmFileType {
         YM_V2(0), YM_V3(1), YM_V4(2), YM_V5(3), YM_V6(4), YM_VMAX(5),
@@ -96,11 +96,11 @@ public class YmMusic {
         }
     }
 
-    public static final int A_STREAMINTERLEAVED = 1;
-    public static final int A_DRUMSIGNED = 2;
-    public static final int A_DRUM4BITS = 4;
-    public static final int A_TIMECONTROL = 8;
-    public static final int A_LOOPMODE = 16;
+    private static final int A_STREAMINTERLEAVED = 1;
+    private static final int A_DRUMSIGNED = 2;
+    private static final int A_DRUM4BITS = 4;
+    private static final int A_TIMECONTROL = 8;
+    private static final int A_LOOPMODE = 16;
 
     private static final int[] MFP_PREDIV = {0, 4, 10, 16, 50, 64, 100, 200};
 
@@ -115,22 +115,22 @@ public class YmMusic {
     //
     // Nested structs (previously C structs)
     //
-    public static class MixBlock {
+    static class MixBlock {
 
-        public int sampleStart;
-        public int sampleLength;
-        public int nbRepeat;
-        public int replayFreq;
+        int sampleStart;
+        int sampleLength;
+        int nbRepeat;
+        int replayFreq;
     }
 
-    public static class DigiDrum {
+    static class DigiDrum {
 
-        public int size;
-        public byte[] pData;
-        public int repLen;
+        int size;
+        byte[] pData;
+        int repLen;
     }
 
-    public static class YmTrackerLine {
+    private static class YmTrackerLine {
 
         public int noteOn;
         public int volume;
@@ -138,16 +138,16 @@ public class YmMusic {
         public int freqLow;
     }
 
-    public static class YmTrackerVoice {
+    static class YmTrackerVoice {
 
-        public byte[] pSample;
-        public int sampleSize;
-        public int samplePos;
-        public int repLen;
-        public int sampleVolume;
-        public int sampleFreq;
-        public boolean bLoop;
-        public boolean bRunning;
+        byte[] pSample;
+        int sampleSize;
+        int samplePos;
+        int repLen;
+        int sampleVolume;
+        int sampleFreq;
+        boolean bLoop;
+        boolean bRunning;
     }
 
     //
@@ -289,7 +289,7 @@ public class YmMusic {
     //
     private static class ParseContext {
 
-        byte[] data;
+        final byte[] data;
         int offset;
         int remaining;
 
@@ -410,7 +410,7 @@ public class YmMusic {
             throw new IllegalArgumentException("LHARC Header must be 0 !");
         }
 
-        // lzhHeader_t: size(0) sum(1) id[5](2) packed(7) original(11) reserved[5](15) level(20) name_lenght(21)
+        // lzhHeader_t: size(0) sum(1) id[5](2) packed(7) original(11) reserved[5](15) level(20) name_length(21)
         int packedSize = readLittleEndian32(bigMalloc, 7);
         int originalSize = readLittleEndian32(bigMalloc, 11);
 
@@ -770,7 +770,7 @@ public class YmMusic {
     // Playback control
     //
 
-    public void setTimeControl(boolean bTime) {
+    private void setTimeControl(boolean bTime) {
         if (bTime) attrib |= A_TIMECONTROL;
         else attrib &= ~A_TIMECONTROL;
     }
@@ -779,7 +779,7 @@ public class YmMusic {
         loop = bLoopMode;
     }
 
-    public void setPlayerRate(int rate) {
+    private void setPlayerRate(int rate) {
         playerRate = rate;
     }
 
@@ -791,7 +791,7 @@ public class YmMusic {
         return 0;
     }
 
-    public int getMusicTime() {
+    private int getMusicTime() {
         if (nbFrame > 0 && playerRate > 0) {
             return (nbFrame * 1000) / playerRate;
         }
@@ -823,7 +823,7 @@ public class YmMusic {
         }
     }
 
-    public void setAttrib(int _attrib) {
+    private void setAttrib(int _attrib) {
         attrib = _attrib;
     }
 
@@ -831,7 +831,7 @@ public class YmMusic {
         return attrib;
     }
 
-    public boolean isSeekable() {
+    private boolean isSeekable() {
         return (getAttrib() & A_TIMECONTROL) != 0;
     }
 

@@ -10,19 +10,19 @@ public class Memory {
 
     private static final Logger logger = System.getLogger(Memory.class.getName());
 
-    public byte[][] cartROM;
+    private final byte[][] cartROM;
     private final List<byte[]> vRAM;
     private final List<byte[]> exRAM;
     private final List<byte[]> wkRAM;
     private final byte[] spriteAtrTbl;
     private final byte[] hiRAM;
-    public int cartROMBank;
-    public int vRAMBank;
-    public int exRAMBank;
-    public int wkRAMBank;
-    public byte ier;
+    private int cartROMBank;
+    private final int vRAMBank;
+    private final int exRAMBank;
+    private final int wkRAMBank;
+    private byte ier;
 
-    public IO io;
+    private final IO io;
 
     public static Memory Empty = new Memory(new byte[1][], null);
 

@@ -6,6 +6,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 
+import mdplayer.Common;
 import mdplayer.lib.xgm.Xgm.XGMSampleID;
 import vavi.util.ByteUtil;
 import vavi.util.compat.TriConsumer;
@@ -20,7 +21,7 @@ public class Xgm2 {
 
     private static final Logger logger = getLogger(Xgm2.class.getName());
 
-    public static final int FCC_XGM2 = 0x324d4758; // "XGM2"
+    private static final int FCC_XGM2 = 0x324d4758; // "XGM2"
     public static final int FCC_GD3 = 0x20336447;  // "Gd3 "
 
     private double musicStep = 1; // setting.outputDevice.SampleRate / 60.0;
@@ -49,7 +50,7 @@ public class Xgm2 {
     private int[] psgID = null;
     private int[] gd3ID = null;
 
-    public Xgm2Pcm[] xgm2pcm = null;
+    private Xgm2Pcm[] xgm2pcm = null;
     private double pcmSpeedCounter;
 
     private int fmWaitCnt = 0;
@@ -89,17 +90,17 @@ public class Xgm2 {
     private byte ch3KeyOn = 0;
     private boolean vi = true;
 
-    public static class Xgm2Pcm {
+    static class Xgm2Pcm {
 
-        public int priority = 0;
-        public int speed = 0;
-        public int speedWait = 0;
-        public int startAddr = 0;
-        public int endAddr = 0;
-        public int addr = 0;
-        public int inst = 0;
-        public boolean isPlaying = false;
-        public byte data = 0;
+        int priority = 0;
+        int speed = 0;
+        int speedWait = 0;
+        int startAddr = 0;
+        int endAddr = 0;
+        int addr = 0;
+        int inst = 0;
+        boolean isPlaying = false;
+        byte data = 0;
     }
 
     public static boolean checkXGM2(byte[] buf) {
@@ -107,7 +108,7 @@ public class Xgm2 {
     }
 
     public Xgm2() {
-        musicStep = mdplayer.Common.VGMProcSampleRate / 60.0; // setting.outputDevice.SampleRate / 60.0;
+        musicStep = Common.VGMProcSampleRate / 60.0; // setting.outputDevice.SampleRate / 60.0;
     }
 
     public byte[] xgmBuf;
@@ -229,7 +230,7 @@ public class Xgm2 {
         try {
             //if (model == EnmModel.RealModel) return;
 
-            musicStep = mdplayer.Common.VGMProcSampleRate / (isNTSC ? 60.0 : 50.0);
+            musicStep = Common.VGMProcSampleRate / (isNTSC ? 60.0 : 50.0);
 
             if (musicDownCounter <= 0.0) {
                 // process xgm

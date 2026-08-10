@@ -12,6 +12,7 @@ import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.Map;
 
+import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.form.FrameBuffer;
 import mdplayer.form.ScreenPanel;
@@ -20,6 +21,7 @@ import mdplayer.chips.Ay8910Chip;
 import mdplayer.form.kb.ChannelParams;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
+import mdsound.MDSound;
 import mdsound.instrument.Ay8910Inst;
 
 import static mdplayer.Common.searchSSGNote;
@@ -28,7 +30,7 @@ import mdplayer.form.View;
 
 public class FormAY8910 extends FormChipBase<FormAY8910.Params> {
 
-    BufferedImage image;
+    private BufferedImage image;
 
     private void initializeComponent() {
         this.pbScreen = new ScreenPanel();
@@ -90,7 +92,7 @@ public class FormAY8910 extends FormChipBase<FormAY8910.Params> {
         }
     };
 
-    public void changeZoom() {
+    private void changeZoom() {
         this.setMaximumSize(new Dimension(frameSizeW + Common.getImage("planeAY8910").getWidth() * zoom,
                 frameSizeH + Common.getImage("planeAY8910").getHeight() * zoom));
         this.setMinimumSize(new Dimension(frameSizeW + Common.getImage("planeAY8910").getWidth() * zoom,
@@ -143,7 +145,7 @@ public class FormAY8910 extends FormChipBase<FormAY8910.Params> {
             newParam.channels[mch].mask = audio.plugin.chipRegister.chip(Ay8910Chip.class).getMask(chipId, mch);
     }
 
-    public static void screenInitAY8910(FrameBuffer screen, int tp) {
+    private static void screenInitAY8910(FrameBuffer screen, int tp) {
         for (int ch = 0; ch < 3; ch++) {
             for (int ot = 0; ot < 12 * 8; ot++) {
                 int kx = Tables.kbl[(ot % 12) * 2] + ot / 12 * 28;
@@ -285,19 +287,19 @@ public class FormAY8910 extends FormChipBase<FormAY8910.Params> {
 //#endregion
 
     /** this panel's channel row: the common core plus what only this chip displays */
-    public static class Channel extends ChannelParams {
+    static class Channel extends ChannelParams {
 
-        public int tn = 0;
-        public int tntp = -1;
+        int tn = 0;
+        int tntp = -1;
     }
 
     /** this panel's per-frame draw state, diffed new against old (see {@link FormChipBase}) */
-    public static class Params {
+    static class Params {
 
-        public int nfrq = -1;
-        public int efrq = -1;
-        public int etype = -1;
-        public final Channel[] channels = {new Channel(), new Channel(), new Channel()};
+        int nfrq = -1;
+        int efrq = -1;
+        int etype = -1;
+        final Channel[] channels = {new Channel(), new Channel(), new Channel()};
     }
 
 
@@ -306,34 +308,34 @@ public class FormAY8910 extends FormChipBase<FormAY8910.Params> {
 
         @Override public String id() { return "AY8910"; }
         @Override public String category() { return "psg"; }
-        @Override public Class<? extends mdplayer.Chip> chip() { return mdplayer.chips.Ay8910Chip.class; }
+        @Override public Class<? extends mdplayer.Chip> chip() { return Ay8910Chip.class; }
         @Override public boolean hasRegisterDump() { return true; }
         @Override public View create(FormMain frm, int chipId, int zoom) { return new FormAY8910(frm, chipId, zoom); }
 
-        @Override public void setChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
-            mdplayer.chips.Ay8910Chip c = audio.plugin.chipRegister.chip(mdplayer.chips.Ay8910Chip.class);
+        @Override public void setChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+            Ay8910Chip c = audio.plugin.chipRegister.chip(Ay8910Chip.class);
             if (!c.getMask(chipId, ch)) c.setMask(chipId, ch); else c.resetMask(chipId, ch);
         }
 
-        @Override public void resetChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
-            audio.plugin.chipRegister.chip(mdplayer.chips.Ay8910Chip.class).resetMask(chipId, ch);
+        @Override public void resetChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+            audio.plugin.chipRegister.chip(Ay8910Chip.class).resetMask(chipId, ch);
         }
 
-        @Override public void forceChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
+        @Override public void forceChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
             if (mask)
-                audio.plugin.chipRegister.chip(mdplayer.chips.Ay8910Chip.class).setMask(chipId, ch);
+                audio.plugin.chipRegister.chip(Ay8910Chip.class).setMask(chipId, ch);
             else
-                audio.plugin.chipRegister.chip(mdplayer.chips.Ay8910Chip.class).resetMask(chipId, ch);
+                audio.plugin.chipRegister.chip(Ay8910Chip.class).resetMask(chipId, ch);
         }
 
-        @Override public void reapplyChannelMasks(mdplayer.Audio audio, int chipId) {
+        @Override public void reapplyChannelMasks(Audio audio, int chipId) {
             for (int ch = 0; ch < 3; ch++)
-                forceChannelMask(audio, mdplayer.chips.Ay8910Chip.class, chipId, ch,
-                        audio.plugin.chipRegister.chip(mdplayer.chips.Ay8910Chip.class).getMask(chipId, ch));
+                forceChannelMask(audio, Ay8910Chip.class, chipId, ch,
+                        audio.plugin.chipRegister.chip(Ay8910Chip.class).getMask(chipId, ch));
         }
 
         @Override public List<MixerSlot> mixerSlots() {
-            return List.of(new MixerSlot(25, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Ay8910Chip.class, "ay8910", 120));
+            return List.of(new MixerSlot(25, MDSound.Chip.MAIN_TAG, Ay8910Chip.class, "ay8910", 120));
         }
     }
 }

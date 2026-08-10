@@ -25,7 +25,7 @@ import sidplay.player.State;
  * Reference: render same SID file via JSIDPlay2 with voice 1 and 2 muted,
  * capturing voice 0 only. Compare with our Java port output to find the bug.
  */
-public class JsidplayDiagTest {
+class JsidplayDiagTest {
 
     static void main(String[] args) throws Exception {
         if (args.length < 2) {

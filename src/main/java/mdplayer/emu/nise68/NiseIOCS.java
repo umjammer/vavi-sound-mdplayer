@@ -6,7 +6,7 @@ import java.lang.System.Logger.Level;
 import static java.lang.System.getLogger;
 
 
-public class NiseIOCS {
+class NiseIOCS {
 
     private static final Logger logger = getLogger(NiseIOCS.class.getName());
 

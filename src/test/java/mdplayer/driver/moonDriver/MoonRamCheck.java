@@ -3,6 +3,7 @@ package mdplayer.driver.moonDriver;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HexFormat;
 import java.util.Map;
 
 import mdplayer.Common;
@@ -28,7 +29,7 @@ import mdsound.instrument.YmF278BInst;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-08-01 nsano initial version <br>
  */
-public class MoonRamCheck {
+class MoonRamCheck {
 
     public static void main(String[] args) throws Exception {
         String in = args[0];
@@ -71,9 +72,9 @@ public class MoonRamCheck {
             int romSame = 0;
             for (int i = 0; i < ref.length && i < rom.length; i++) if (rom[i] == ref[i]) romSame++;
             System.err.printf("rom vs reference matching %d (%.4f), rom[0:16]=%s%n",
-                    romSame, romSame / (double) ref.length, java.util.HexFormat.of().formatHex(rom, 0, 16));
+                    romSame, romSame / (double) ref.length, HexFormat.of().formatHex(rom, 0, 16));
         }
-        System.err.printf("ram[0:16]=%s%n", java.util.HexFormat.of().formatHex(ram, 0, 16));
+        System.err.printf("ram[0:16]=%s%n", HexFormat.of().formatHex(ram, 0, 16));
         System.exit(0);
     }
 }

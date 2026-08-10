@@ -60,7 +60,7 @@ public class SidEndian {
     }
 
     /** Swap word endian. */
-    public static short to16swap8(short word) {
+    private static short to16swap8(short word) {
         byte lo = to16lo8(word);
         byte hi = to16hi8(word);
         word = to16lo8(word, hi);
@@ -150,50 +150,50 @@ public class SidEndian {
     // INT32 FUNCTIONS
 
     /** Set the lo word (16bit) : a dword (32 bit) */
-    public static int to32lo16(int dword, short word) {
+    private static int to32lo16(int dword, short word) {
         dword &= 0xffff0000;
         dword |= (word & 0xffff);
         return dword;
     }
 
     /** Get the lo word (16bit) : a dword (32 bit) */
-    public static short to32lo16(int dword) {
+    private static short to32lo16(int dword) {
         return (short) (dword & 0xffff);
     }
 
     /** Set the hi word (16bit) : a dword (32 bit) */
-    public static int to32hi16(int dword, short word) {
+    private static int to32hi16(int dword, short word) {
         dword &= 0x0000ffff;
         dword |= word << 16;
         return dword;
     }
 
     /** Get the hi word (16bit) : a dword (32 bit) */
-    public static short to32hi16(int dword) {
+    private static short to32hi16(int dword) {
         return (short) (dword >> 16);
     }
 
     /** Set the lo byte (8 bit) : a dword (32 bit) */
-    public static int to32lo8(int dword, byte _byte) {
+    private static int to32lo8(int dword, byte _byte) {
         dword &= 0xffffff00;
         dword |= (_byte & 0xff);
         return dword;
     }
 
     /** Get the lo byte (8 bit) : a dword (32 bit) */
-    public static byte to32lo8(int dword) {
+    private static byte to32lo8(int dword) {
         return (byte) dword;
     }
 
     /** Set the hi byte (8 bit) : a dword (32 bit) */
-    public static int to32hi8(int dword, byte _byte) {
+    private static int to32hi8(int dword, byte _byte) {
         dword &= 0xffff00ff;
         dword |= (_byte & 0xff) << 8;
         return dword;
     }
 
     /** Get the hi byte (8 bit) : a dword (32 bit) */
-    public static byte to32hi8(int dword) {
+    private static byte to32hi8(int dword) {
         return (byte) (dword >> 8);
     }
 
@@ -219,7 +219,7 @@ public class SidEndian {
     }
 
     /** Convert high-byte and low-byte to 32-bit word. */
-    public static int to32(byte hihi, byte hilo, byte hi, byte lo) {
+    private static int to32(byte hihi, byte hilo, byte hi, byte lo) {
         int dword = 0;
         short word = 0;
         dword = to32lo8(dword, lo);

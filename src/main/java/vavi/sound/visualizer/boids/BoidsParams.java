@@ -167,7 +167,7 @@ public class BoidsParams {
         }
 
         /** the key this parameter is saved under */
-        public String key() {
+        String key() {
             return "boids." + name().toLowerCase().replace('_', '.');
         }
 

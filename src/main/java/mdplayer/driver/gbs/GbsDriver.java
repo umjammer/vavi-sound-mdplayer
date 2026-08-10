@@ -11,6 +11,7 @@ import mdplayer.lib.gbs.GbsInfo;
 import mdplayer.lib.gbs.IO;
 import mdplayer.lib.gbs.Memory;
 import mdplayer.driver.BasePlugin;
+import mdsound.np.LoopDetector;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 
@@ -19,8 +20,8 @@ public class GbsDriver extends BaseDriver {
 
     private static final Logger logger = System.getLogger(GbsDriver.class.getName());
 
-    public byte song;
-    public byte songs;
+    private byte song;
+    private byte songs;
     private IO io;
     private Memory memory;
     private Cpu cpu;
@@ -32,7 +33,7 @@ public class GbsDriver extends BaseDriver {
     private int breakSp;
     private boolean initFlg = false;
 
-    private final mdsound.np.LoopDetector.BasicDetector ld = new mdsound.np.LoopDetector.BasicDetector(20);
+    private final LoopDetector.BasicDetector ld = new LoopDetector.BasicDetector(20);
     private boolean playtimeDetected = false;
     private double timeInMs = 0;
 

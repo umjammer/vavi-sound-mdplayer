@@ -27,7 +27,7 @@ package mdplayer.lib.sid.libsidplayfp.c64.vic_ii;
  * Light pen emulation.
  * Does not reflect model differences.
  */
-public class LightPen {
+class LightPen {
 
     /** Last VIC raster line */
     private int lastLine;
@@ -50,7 +50,7 @@ public class LightPen {
      * @param height number of raster lines
      * @param width number of cycles per line
      */
-    public void setScreenSize(int height, int width) {
+    void setScreenSize(int height, int width) {
         lastLine = height - 1;
         cyclesPerLine = width;
     }
@@ -85,7 +85,7 @@ public class LightPen {
      * @param rasterY current y raster position
      * @return true if an IRQ should be triggered
      */
-    public boolean retrigger(int lineCycle, int rasterY) {
+    boolean retrigger(int lineCycle, int rasterY) {
         boolean triggered = trigger(lineCycle, rasterY);
         switch (cyclesPerLine) {
         case 63:
@@ -126,7 +126,7 @@ public class LightPen {
     /**
      * Untrigger light-pen from CIA.
      */
-    public void untrigger() {
+    void untrigger() {
         isTriggered = false;
     }
 }

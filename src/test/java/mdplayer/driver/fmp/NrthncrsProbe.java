@@ -13,7 +13,7 @@ import mdplayer.driver.BasePlugin;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
-public class NrthncrsProbe {
+class NrthncrsProbe {
 
     @Test
     @EnabledIfSystemProperty(named = "vavi.test", matches = "ai")
@@ -31,7 +31,7 @@ public class NrthncrsProbe {
         plugin.prepare();
 
         BaseDriver driver = plugin.getDriver();
-        final FmpWork[] workHolder = new FmpWork[1];
+        FmpWork[] workHolder = new FmpWork[1];
         driver.addViewListener(ev -> {
             if ("fmp".equals(ev.getName())) {
                 workHolder[0] = (FmpWork) ev.getArguments()[0];

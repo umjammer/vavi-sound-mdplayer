@@ -180,7 +180,7 @@ public class MXDRV {
         int Length = 171;
     }
 
-    public interface MXWORK_KEY {
+    interface MXWORK_KEY {
         int OPT1 = 0;
         int OPT2 = 1;
         int SHIFT = 2;
@@ -191,7 +191,7 @@ public class MXDRV {
         int Length = 7;
     }
 
-    public interface MXWORK_OPM {
+    interface MXWORK_OPM {
         int Length = 256;
     }
 
@@ -215,7 +215,7 @@ public class MXDRV {
         }
     }
 
-    public void MXDRV_Call(int a) {
+    private void MXDRV_Call(int a) {
         X68Reg reg = new X68Reg();
 
         reg.d0 = a;
@@ -223,7 +223,7 @@ public class MXDRV {
         MXDRV_(reg);
     }
 
-    public void MXDRV_Call_2(int a, int b) {
+    private void MXDRV_Call_2(int a, int b) {
         X68Reg reg = new X68Reg();
 
         reg.d0 = a;
@@ -235,7 +235,7 @@ public class MXDRV {
         MXDRV_Call(0x0f);
     }
 
-    public void MXDRV_Stop() {
+    private void MXDRV_Stop() {
         MXDRV_Call(0x05);
     }
 
@@ -247,7 +247,7 @@ public class MXDRV {
         MXDRV_Call(0x07);
     }
 
-    public void MXDRV_Fadeout() {
+    private void MXDRV_Fadeout() {
         MXDRV_Call_2(0x0c, 19);
     }
 
@@ -289,7 +289,7 @@ public class MXDRV {
     private int KEY = 0;
 
     //static MXWORK_OPM MXWORK_OPMBUF;
-    public int OPMBUF = 0;
+    private int OPMBUF = 0;
 
     //static byte MXWORK_PCM8;
     //private MXWORK_PCM8 PCM8 = null;
@@ -690,6 +690,29 @@ public class MXDRV {
     private boolean reqFadeout;
 
     /**
+     * Whether a repeat that spans a whole part counts as a loop of the song (MXDRV call {@code $15}).
+     * <p>
+     * A part is expected to end in {@code $f1} with a jump back over itself, which is what
+     * {@link #L0013e6} counts loops on. Plenty of MDXs write the loop as a repeat instead - a
+     * {@code [} with a count of 255 around the whole part, followed by an {@code $f1 $00} that is
+     * never reached - and the driver then has nothing to count: {@link #loopCount} stays 0, the
+     * player never reaches its loop limit and the song plays on until its 255th repeat, while
+     * {@link #MXDRV_MeasurePlayTime} runs into its 20 minute limit instead of measuring a loop.
+     * MXDRV reads a repeat whose continuation is followed by an unreachable {@code $f1 $00} as
+     * exactly that loop, but only with this on - see {@link #L001376}.
+     *
+     * @param on true to count such a repeat as a loop
+     * @return what it was set to before
+     */
+    public boolean MXDRV_RepeatIsLoop(boolean on) {
+        X68Reg reg = new X68Reg();
+        reg.d0 = 0x15;
+        reg.d1 = on ? Depend.SET : Depend.CLR;
+        MXDRV_(reg);
+        return reg.d0 != 0;
+    }
+
+    /**
      * Arms the end of song / loop detection for playback.
      * <p>
      * {@link #MXDRV_MeasurePlayTime} leaves its own loop and fadeout state behind and detaches
@@ -709,7 +732,7 @@ public class MXDRV {
         MXCALLBACK_OPMINT = this::MXDRV_MeasurePlayTime_OPMINT;
     }
 
-    public void MXDRV_MeasurePlayTime_OPMINT() {
+    private void MXDRV_MeasurePlayTime_OPMINT() {
         if ((mm.readInt(G + MXWORK_GLOBAL.PLAYTIME) & 0xffff_ffffL) >= (mm.readInt(G + MXWORK_GLOBAL.MEASURETIMELIMIT) & 0xffff_ffffL)) {
             terminatePlay = true;
         }
@@ -2918,7 +2941,7 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
         }
     }
 
-    short L001190 = 0x1234;
+    private short L001190 = 0x1234;
 
     //
     private void L00117a() {
@@ -3291,13 +3314,36 @@ exit:   {
         mm.write(A6 + MXWORK_CH.S001f, mm.readByte(A4++));
     }
 
-    // 
+    /**
+     * {@code $ef}: raises the sync flag the part named by the operand waits on.
+     * <pre>
+     *  moveq.l #$00,d0
+     *  move.b  (a4)+,d0
+     *  lea.l   L001df6(pc),a0
+     *  st.b    $00(a0,d0.w)
+     *  cmp.w   #$0009,d0
+     *  bcc     L0014ae
+     *  st.b    $27(a5,d0.w)
+     * </pre>
+     * Both operands read the flag array by the number the command carries. MDPlayer's C#, which
+     * this was ported from, has {@code lea} as a byte load in this one place - it is an address in
+     * the three others, {@link #L001192}, {@link #L0014b0} and where they are all cleared at the
+     * start of a song - so the flag went into the head of the global work area and the part
+     * waiting on it waited for good: it never played a note, never reached the end of its data,
+     * and so never let a loop be counted. Youkai Douchuuki's {@code YD_ALP.MDX} played on for ever
+     * on the strength of three PCM parts stuck on their first command.
+     * <p>
+     * The status byte the same command sets for MXDRV's own display goes by that number too, not
+     * by the part sending it. Neither player reads it, but a part above the eighth signalling one
+     * below it wrote past the nine bytes it has and into {@link MXWORK_GLOBAL#L00223c}, which
+     * carries the key on masks - the count is guarded against the operand, which is the tell.
+     */
     private void L001498() {
         D0 = mm.readByte(A4++) & 0xff;
-        A0 = mm.readByte(G + MXWORK_GLOBAL.L001df6 + 0) & 0xff;
+        A0 = G + MXWORK_GLOBAL.L001df6 + 0;
         mm.write(A0 + D0, (byte) Depend.SET);
         if (D0 < 0x0009) {
-            mm.write(G + MXWORK_GLOBAL.L002233 + D7, (byte) Depend.SET);
+            mm.write(G + MXWORK_GLOBAL.L002233 + D0, (byte) Depend.SET);
         }
     }
 

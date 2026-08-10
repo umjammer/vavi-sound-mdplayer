@@ -47,7 +47,7 @@ import vavi.sound.visualizer.boids.BoidsParams.Param;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-08-03 nsano initial version <br>
  */
-public class BoidsControlPanel extends JPanel {
+class BoidsControlPanel extends JPanel {
 
     /** the resolution a slider carries a fractional value at */
     private static final int STEPS = 1000;

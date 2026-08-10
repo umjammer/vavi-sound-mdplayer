@@ -9,7 +9,7 @@ import mdplayer.lib.mndrv.MnWork.W;
 //
 // part of INTERRUPT MAIN
 //
-public class Interrupt {
+class Interrupt {
     public Reg reg;
     public XMemory mm;
     public MnDrv mndrv;
@@ -22,11 +22,11 @@ public class Interrupt {
     public FMTimer timerOPN;
 
     /** */
-    public static final byte[] _opn_irq = {
+    private static final byte[] _opn_irq = {
             0x30, 0x1F, 0x2F, 0x3F
     };
 
-    public static final short[] _opn_intmask = {
+    private static final short[] _opn_intmask = {
             0x200, 0x200, 0x200, 0x300, 0x400, 0x500, 0x600, 0x700
     };
 
@@ -164,11 +164,11 @@ _opn_recall:
 
     //
 
-    public static final short[] _intmask = {
+    private static final short[] _intmask = {
             0x200, 0x200, 0x200, 0x300, 0x400, 0x500, 0x600, 0x700
     };
 
-    public static final byte[] _dev_irq = {
+    private static final byte[] _dev_irq = {
             0x30, 0x1F, 0x2F, 0x3F
     };
 

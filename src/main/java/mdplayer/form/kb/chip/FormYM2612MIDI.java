@@ -54,9 +54,9 @@ public class FormYM2612MIDI extends FormBase implements View {
 
     private static final Logger logger = getLogger(FormYM2612MIDI.class.getName());
 
-    public boolean isClosed = false;
-    public int x = -1;
-    public int y = -1;
+    private boolean isClosed = false;
+    private int x = -1;
+    private int y = -1;
 
     @Override
     public boolean isClosed() {
@@ -77,7 +77,7 @@ public class FormYM2612MIDI extends FormBase implements View {
     private final FrameBuffer frameBuffer = new FrameBuffer();
     private boolean hasError = false;
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormYM2612MIDI.class);
+    private static final Preferences prefs = Preferences.userNodeForPackage(FormYM2612MIDI.class);
 
     public FormYM2612MIDI(FormMain frm, int zoom, YM2612MIDI.Params newParam) {
         super(frm);
@@ -130,7 +130,7 @@ public class FormYM2612MIDI extends FormBase implements View {
         }
     };
 
-    public void changeZoom() {
+    private void changeZoom() {
         this.setMaximumSize(new Dimension(frameSizeW + Common.getImage("planeYM2612MIDI").getWidth() * zoom, frameSizeH + Common.getImage("planeYM2612MIDI").getHeight() * zoom));
         this.setMinimumSize(new Dimension(frameSizeW + Common.getImage("planeYM2612MIDI").getWidth() * zoom, frameSizeH + Common.getImage("planeYM2612MIDI").getHeight() * zoom));
         this.setPreferredSize(new Dimension(frameSizeW + Common.getImage("planeYM2612MIDI").getWidth() * zoom, frameSizeH + Common.getImage("planeYM2612MIDI").getHeight() * zoom));
@@ -438,7 +438,8 @@ public class FormYM2612MIDI extends FormBase implements View {
     private boolean isInitialOpenFolder = true;
 
     private static class MyFileFilter extends FileFilter {
-        String ext, desc;
+        final String ext;
+        final String desc;
         MyFileFilter(String ext, String desc) {
             this.ext = ext; this.desc = desc;
         }
@@ -633,8 +634,8 @@ public class FormYM2612MIDI extends FormBase implements View {
         this.addKeyListener(this.frmYM2612MIDI_KeyDown);
     }
 
-    BufferedImage image;
-    public ScreenPanel pbScreen;
+    private BufferedImage image;
+    private ScreenPanel pbScreen;
     private JMenu cmsMIDIKBD;
     private JMenuItem ctsmiCopy;
     private JMenuItem ctsmiPaste;

@@ -44,18 +44,18 @@ public class PSid extends SidTuneBase {
 
     private final byte[] md5 = new byte[SidTune.MD5_LENGTH + 1];
 
-    PSid() {
+    private PSid() {
     }
 
     // prevent copying
-    PSid(PSid p) {
+    private PSid(PSid p) {
     }
 
     private static PSid opeEquel(PSid p) {
         return null;
     }
 
-    public static final int PSID_MAXSTRLEN = 32;
+    private static final int PSID_MAXSTRLEN = 32;
 
     // Header has been extended for 'RSID' format
     // The following changes are present:
@@ -67,43 +67,43 @@ public class PSid extends SidTuneBase {
     //     load address cannot be less than $07E8
     //     info Strings may be 32 characters long without trailing zero
     // all values are big-endian
-    public static class psidHeader {
+    static class psidHeader {
         // 'PSid' or 'RSID' (ASCII)
-        public int id;
+        int id;
         // 1, 2, 3 or 4
-        public short version;
+        short version;
         // 16-bit offset to binary data : file
-        public short data;
+        short data;
         // 16-bit C64 address to load file to
-        public short load;
+        short load;
         // 16-bit C64 address of init subroutine
-        public short init;
+        short init;
         // 16-bit C64 address of play subroutine
-        public short play;
+        short play;
         // number of songs
-        public short songs;
+        short songs;
         // start song  of [1..256]
-        public short start;
+        short start;
         // 32-bit speed info
-        public int speed;
+        int speed;
         // bit: 0=50 Hz, 1=CIA 1 Timer a (default: 60 Hz)
         // ASCII Strings, 31 characters long and
-        public final byte[] name = new byte[PSID_MAXSTRLEN];
+        final byte[] name = new byte[PSID_MAXSTRLEN];
         // terminated by a trailing zero
-        public final byte[] author = new byte[PSID_MAXSTRLEN];
+        final byte[] author = new byte[PSID_MAXSTRLEN];
         //
-        public final byte[] released = new byte[PSID_MAXSTRLEN];
+        final byte[] released = new byte[PSID_MAXSTRLEN];
 
         // only version >= 2
-        public short flags;
+        short flags;
         // only version >= 2ng
-        public byte relocStartPage;
+        byte relocStartPage;
         // only version >= 2ng
-        public byte relocPages;
+        byte relocPages;
         // only version >= 3
-        public byte sidChipBase2;
+        byte sidChipBase2;
         // only version >= 4
-        public byte sidChipBase3;
+        byte sidChipBase3;
     }
 
     public enum Kind {
@@ -140,22 +140,22 @@ public class PSid extends SidTuneBase {
     }
 
     // FileFormat Strings
-    public static final String TXT_FORMAT_PSID = "PlaySID one-file format (PSid)";
-    public static final String TXT_FORMAT_RSID = "Real C64 one-file format (RSID)";
-    public static final String TXT_UNKNOWN_PSID = "Unsupported PSid version";
-    public static final String TXT_UNKNOWN_RSID = "Unsupported RSID version";
+    private static final String TXT_FORMAT_PSID = "PlaySID one-file format (PSid)";
+    private static final String TXT_FORMAT_RSID = "Real C64 one-file format (RSID)";
+    private static final String TXT_UNKNOWN_PSID = "Unsupported PSid version";
+    private static final String TXT_UNKNOWN_RSID = "Unsupported RSID version";
 
-    public static final int psid_headerSize = 118;
-    public static final int psidv2_headerSize = psid_headerSize + 6;
+    private static final int psid_headerSize = 118;
+    private static final int psidv2_headerSize = psid_headerSize + 6;
 
     // Magic fields
-    public static final int PSID_ID = 0x50534944;
-    public static final int RSID_ID = 0x52534944;
+    private static final int PSID_ID = 0x50534944;
+    private static final int RSID_ID = 0x52534944;
 
     /**
      * Decode Sid model Flags.
      */
-    public SidTuneInfo.Model getSidModel(short modelFlag) {
+    private SidTuneInfo.Model getSidModel(short modelFlag) {
         if ((modelFlag & (short) SidModel.SID_ANY.ordinal()) == (short) SidModel.SID_ANY.ordinal())
             return SidTuneInfo.Model.SID_ANY;
 

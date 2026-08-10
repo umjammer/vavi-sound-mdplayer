@@ -9,6 +9,7 @@ package mdplayer.fmdsp;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -263,7 +264,7 @@ public class Ym2610Reader extends OpnFmReader {
         return chip().getMask(chipId, 6 + s);
     }
     /** the chip's channel state, read back once a frame */
-    private java.util.Map<String, Object> info;
+    private Map<String, Object> info;
 
     private int intOf(String key) {
         Object value = info.isEmpty() ? null : info.get(key);

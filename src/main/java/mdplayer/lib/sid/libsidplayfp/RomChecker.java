@@ -32,7 +32,7 @@ import static java.lang.System.getLogger;
 /**
  * Utility class to identify known ROM images through their md5 checksum.
  */
-public class RomChecker {
+class RomChecker {
 
     private static final Logger logger = getLogger(RomChecker.class.getName());
 
@@ -80,12 +80,12 @@ public class RomChecker {
      * @param rom pointer to the ROM buffer
      * @param size size of the ROM buffer
      */
-    protected RomChecker(byte[] rom, int size) {
+    RomChecker(byte[] rom, int size) {
         this.rom = rom;
         this.size = size;
     }
 
-    protected void add(String md5, String desc) {
+    void add(String md5, String desc) {
         checksums.put(md5, desc);
     }
 

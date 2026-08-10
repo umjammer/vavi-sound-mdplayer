@@ -83,7 +83,7 @@ public class FormSetting extends JDialog {
         init();
     }
 
-    public void init() {
+    private void init() {
 
         for (SettingTab tab : settingTabs) {
             tab.load(setting);
@@ -172,7 +172,7 @@ public class FormSetting extends JDialog {
         this.clmFileName = new JTextArea();
         this.JListTextBoxColumn2 = new JTextArea();
         this.clmType = new JComboBox<>();
-        this.ClmBeforeSend = new JComboBox<>();
+        this.clmBeforeSend = new JComboBox<>();
         this.JListTextBoxColumn3 = new JTextArea();
         this.JListTextBoxColumn4 = new JTextArea();
         this.clmID = new JTextArea();
@@ -246,15 +246,15 @@ public class FormSetting extends JDialog {
                 "GS(SC-55_2)"}));
         this.clmType.setName("clmType");
         //
-        // ClmBeforeSend
+        // clmBeforeSend
         //
-        this.ClmBeforeSend.setModel(new DefaultComboBoxModel<>(new String[] {
+        this.clmBeforeSend.setModel(new DefaultComboBoxModel<>(new String[] {
                 "None",
                 "GM Reset",
                 "XG Reset",
                 "GS Reset",
                 "Custom"}));
-        this.ClmBeforeSend.setName("ClmBeforeSend");
+        this.clmBeforeSend.setName("clmBeforeSend");
         //
         // JListTextBoxColumn3
         //
@@ -311,14 +311,14 @@ public class FormSetting extends JDialog {
     private JTextArea clmFileName;
     private JTextArea JListTextBoxColumn2;
     private JComboBox<String> clmType;
-    private JComboBox<String> ClmBeforeSend;
+    private JComboBox<String> clmBeforeSend;
     private JTextArea JListTextBoxColumn3;
     private JTextArea JListTextBoxColumn4;
     //private ucSettingInstruments ucSettingInstruments1;
 
     static class BindData implements PropertyChangeListener {
 
-        public PropertyChangeListener propertyChanged;
+        PropertyChangeListener propertyChanged;
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
@@ -343,7 +343,7 @@ public class FormSetting extends JDialog {
 
     public static class Manufacturers {
 
-        public static final Properties props = new Properties();
+        static final Properties props = new Properties();
 
         static {
             try {

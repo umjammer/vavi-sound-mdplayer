@@ -6,6 +6,7 @@ import java.util.Map;
 import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common;
+import mdplayer.Common.EnmInstFormat;
 import mdplayer.chips.HuC6280Chip;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.chips.Ym2203Chip;
@@ -23,8 +24,8 @@ public class Mml2vgmInstWriter implements InstWriter {
     private static final int[] slot2Tbl = {3, 4, 5, 9, 10, 11, 15, 16, 17};
 
     @Override
-    public mdplayer.Common.EnmInstFormat format() {
-        return mdplayer.Common.EnmInstFormat.MML2VGM;
+    public EnmInstFormat format() {
+        return EnmInstFormat.MML2VGM;
     }
 
     @Override

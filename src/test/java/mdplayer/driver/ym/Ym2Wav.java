@@ -34,7 +34,7 @@ import mdplayer.lib.ym.YmMusic.YmMusicInfo;
 /**
  *This is a sample program: it's an YM to WAV converter.
  */
-public class Ym2Wav {
+class Ym2Wav {
 
     private static final int NBSAMPLEPERBUFFER = 1024;
     private static final short[] convertBuffer = new short[NBSAMPLEPERBUFFER];

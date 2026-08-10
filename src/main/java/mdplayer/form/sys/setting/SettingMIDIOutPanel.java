@@ -4,6 +4,8 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -15,18 +17,22 @@ import javax.sound.midi.MidiUnavailableException;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
-import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
+import mdplayer.ChipRegister;
 import mdplayer.MidiOutInfo;
 import mdplayer.Setting;
+import mdplayer.chips.VstPlugin;
 import mdplayer.form.SettingTab;
 import mdplayer.form.sys.FormSetting;
+import mdplayer.vst.VstFileChooser;
+import mdplayer.vst.VstInfo;
 
 import static java.lang.System.getLogger;
 
@@ -88,7 +94,7 @@ public class SettingMIDIOutPanel extends SettingTab {
     private final JTable dgvMIDIoutListI;
     private final JTable dgvMIDIoutListJ;
 
-    final JTable[] dgv;
+    private final JTable[] dgv;
 
     public SettingMIDIOutPanel() {
         this.btnAddVST = new JButton();
@@ -582,53 +588,54 @@ public class SettingMIDIOutPanel extends SettingTab {
         }
     }
 
+    /**
+     * Adds a VST instrument to the MIDI outs of the tab being edited.
+     * <p>
+     * The plug-in is loaded once here, only to be asked what it is called and who made it, so the
+     * row reads like the rows for the real ports beside it. It is loaded again for real, and kept,
+     * the first time a song is actually played through it.
+     */
     private void btnAddVST_Click(ActionEvent ev) {
         JFileChooser ofd = new JFileChooser();
-        ofd.setFileFilter(new FileFilter() {
-            @Override
-            public boolean accept(File f) {
-                return f.getName().toLowerCase().endsWith(".dll");
-            }
+        ofd.setFileFilter(VstFileChooser.filter());
+        ofd.setDialogTitle("Select a VST instrument");
+        // a plug-in is a bundle - that is, a directory - on macOS, so one has to be selectable
+        ofd.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        ofd.setMultiSelectionEnabled(false);
 
-            @Override
-            public String getDescription() {
-                return "VST Plugin file(*.dll)";
-            }
-        });
-        ofd.setDialogTitle("Select a file");
-        int filterIndex = setting.getOther().getFilterIndex();
-        FileFilter[] filters = ofd.getChoosableFileFilters();
-        if (filterIndex >= 0 && filterIndex < filters.length) {
-            ofd.setFileFilter(filters[filterIndex]);
+        String defaultPath = setting.getVst().getDefaultPath();
+        if (defaultPath != null && !defaultPath.isEmpty() && Files.exists(Path.of(defaultPath))) {
+            ofd.setCurrentDirectory(new File(defaultPath));
+        } else {
+            File known = VstFileChooser.defaultDirectory();
+            if (known != null) ofd.setCurrentDirectory(known);
         }
 
-//        if (!setting.getVst().getDefaultPath().isEmpty() && Directory.exists(setting.getVst().getDefaultPath()) && IsInitialOpenFolder) {
-//            ofd.setCurrentDirectory(new File(setting.getVst().getDefaultPath()));
-////        } else {
-////            ofd.RestoreDirectory = true;
-//        }
-////        ofd.CheckPathExists = true;
-//        ofd.setMultiSelectionEnabled(false);
-//
-//        if (ofd.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
-//            return;
-//        }
-//
-//        VstInfo s = audio.getVSTInfo(ofd.getSelectedFile().getName());
-//        if (s == null) return;
-//
-//        setting.getVst().setDefaultPath(Path.getDirectoryName(ofd.getSelectedFile().getName()));
-//
-//        int p = tbcMIDIoutList.getSelectedIndex();
-//        ((DefaultTableModel) dgv[p].getModel()).addRow(new Object[] {
-//                -999
-//                , true
-//                , s.fileName
-//                , s.effectName
-//                , "GM"
-//                , "None"
-//                , s.vendorName
-//        });
+        if (ofd.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+
+        File selected = ofd.getSelectedFile();
+        VstInfo s = ChipRegister.shared(VstPlugin.class).getInfo(selected.getAbsolutePath());
+        if (s == null) {
+            JOptionPane.showMessageDialog(this, selected.getName() + " could not be loaded as a VST plugin.",
+                    "VST", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        File directory = selected.getParentFile();
+        if (directory != null) setting.getVst().setDefaultPath(directory.getAbsolutePath());
+
+        int p = tbcMIDIoutList.getSelectedIndex();
+        ((DefaultTableModel) dgv[p].getModel()).addRow(new Object[] {
+                -999
+                , true
+                , s.fileName
+                , s.effectName
+                , "GM"
+                , "None"
+                , s.vendorName
+        });
     }
 
     private void btnDOWN_Click(ActionEvent ev) {

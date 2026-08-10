@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import mdplayer.Chip;
+import mdplayer.Common.EnmModel;
 import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.BasePlugin;
@@ -31,14 +32,14 @@ public abstract class BaseChip implements Chip {
 
     private static final Logger logger = System.getLogger(BaseChip.class.getName());
 
-    protected BasePlugin<? extends BaseDriver> context;
+    BasePlugin<? extends BaseDriver> context;
 
-    protected int dumpCounter = 0;
+    int dumpCounter = 0;
 
-    protected Setting setting = Setting.getInstance();
+    final Setting setting = Setting.getInstance();
 
     // for ym chips TODO
-    protected byte[] algM = {0x08, 0x08, 0x08, 0x08, 0x0c, 0x0e, 0x0e, 0x0f};
+    static final byte[] algM = {0x08, 0x08, 0x08, 0x08, 0x0c, 0x0e, 0x0e, 0x0f};
 
     @Override
     public void init(BasePlugin<? extends BaseDriver> context) {
@@ -71,12 +72,12 @@ public abstract class BaseChip implements Chip {
         return infos == null ? 0 : infos.size();
     }
 
-    protected void fireEventHappened(String name, Object... args) {
+    void fireEventHappened(String name, Object... args) {
         if (context.getDriver() != null) context.getDriver().fireEventHappened(this, name, args);
     }
 
-    protected void dumpData(mdplayer.Common.EnmModel model, String name, int adr, byte[] rom, int len) {
-        if (model == mdplayer.Common.EnmModel.RealModel) return;
+    void dumpData(EnmModel model, String name, int adr, byte[] rom, int len) {
+        if (model == EnmModel.RealModel) return;
         if (!setting.getOther().getDumpSwitch()) return;
 
         try {
@@ -90,7 +91,7 @@ public abstract class BaseChip implements Chip {
         }
     }
 
-    protected void setMask(int chipId, int ch, boolean mask, Object... args) {}
+    void setMask(int chipId, int ch, boolean mask, Object... args) {}
 
     public final void setMask(int chipId, int ch) {
         setMask(chipId, ch, true);

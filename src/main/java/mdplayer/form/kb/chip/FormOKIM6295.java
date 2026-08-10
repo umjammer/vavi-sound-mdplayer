@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
+import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.form.FrameBuffer;
 import mdplayer.form.ScreenPanel;
@@ -25,11 +26,12 @@ import mdplayer.form.kb.PcmChannelParams;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
 import mdplayer.form.View;
+import mdsound.MDSound;
 
 
 public class FormOKIM6295 extends FormChipBase<FormOKIM6295.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormOKIM6295.class);
+    private static final Preferences prefs = Preferences.userNodeForPackage(FormOKIM6295.class);
 
     public FormOKIM6295(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -63,7 +65,7 @@ public class FormOKIM6295 extends FormChipBase<FormOKIM6295.Params> {
         }
     };
 
-    public void changeZoom() {
+    private void changeZoom() {
         this.setMaximumSize(new Dimension(frameSizeW + Common.getImage("planeMSM6295").getWidth() * zoom, frameSizeH + Common.getImage("planeMSM6295").getHeight() * zoom));
         this.setMinimumSize(new Dimension(frameSizeW + Common.getImage("planeMSM6295").getWidth() * zoom, frameSizeH + Common.getImage("planeMSM6295").getHeight() * zoom));
         this.setPreferredSize(new Dimension(frameSizeW + Common.getImage("planeMSM6295").getWidth() * zoom, frameSizeH + Common.getImage("planeMSM6295").getHeight() * zoom));
@@ -195,7 +197,7 @@ public class FormOKIM6295 extends FormChipBase<FormOKIM6295.Params> {
         this.addComponentListener(this.componentListener);
     }
 
-    BufferedImage image;
+    private BufferedImage image;
 
 //#region draw buffer
 
@@ -306,13 +308,13 @@ public class FormOKIM6295 extends FormChipBase<FormOKIM6295.Params> {
 //#endregion
 
     /** this panel's per-frame draw state, diffed new against old (see {@link FormChipBase}) */
-    public static class Params {
+    static class Params {
 
-        public final PcmChannelParams[] channels = {new PcmChannelParams(), new PcmChannelParams(), new PcmChannelParams(), new PcmChannelParams()};
+        final PcmChannelParams[] channels = {new PcmChannelParams(), new PcmChannelParams(), new PcmChannelParams(), new PcmChannelParams()};
 
-        public int masterClock = 0;
-        public int pin7State = 0;
-        public final int[] nmkBank = new int[4];
+        int masterClock = 0;
+        int pin7State = 0;
+        final int[] nmkBank = new int[4];
     }
 
     /** what this panel contributes to the GUI; see {@link ViewProvider} */
@@ -320,33 +322,33 @@ public class FormOKIM6295 extends FormChipBase<FormOKIM6295.Params> {
 
         @Override public String id() { return "OKIM6295"; }
         @Override public String category() { return "pcm"; }
-        @Override public Class<? extends mdplayer.Chip> chip() { return mdplayer.chips.OkiM6295Chip.class; }
+        @Override public Class<? extends mdplayer.Chip> chip() { return OkiM6295Chip.class; }
         @Override public View create(FormMain frm, int chipId, int zoom) { return new FormOKIM6295(frm, chipId, zoom); }
 
-        @Override public void setChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
-            mdplayer.chips.OkiM6295Chip c = audio.plugin.chipRegister.chip(mdplayer.chips.OkiM6295Chip.class);
+        @Override public void setChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+            OkiM6295Chip c = audio.plugin.chipRegister.chip(OkiM6295Chip.class);
             if (!c.getMask(chipId, ch)) c.setMask(chipId, ch); else c.resetMask(chipId, ch);
         }
 
-        @Override public void resetChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
-            audio.plugin.chipRegister.chip(mdplayer.chips.OkiM6295Chip.class).resetMask(chipId, ch);
+        @Override public void resetChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+            audio.plugin.chipRegister.chip(OkiM6295Chip.class).resetMask(chipId, ch);
         }
 
-        @Override public void forceChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
+        @Override public void forceChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
             if (mask)
-                audio.plugin.chipRegister.chip(mdplayer.chips.OkiM6295Chip.class).setMask(chipId, ch);
+                audio.plugin.chipRegister.chip(OkiM6295Chip.class).setMask(chipId, ch);
             else
-                audio.plugin.chipRegister.chip(mdplayer.chips.OkiM6295Chip.class).resetMask(chipId, ch);
+                audio.plugin.chipRegister.chip(OkiM6295Chip.class).resetMask(chipId, ch);
         }
 
-        @Override public void reapplyChannelMasks(mdplayer.Audio audio, int chipId) {
+        @Override public void reapplyChannelMasks(Audio audio, int chipId) {
             for (int ch = 0; ch < 4; ch++)
-                forceChannelMask(audio, mdplayer.chips.OkiM6295Chip.class, chipId, ch,
-                        audio.plugin.chipRegister.chip(mdplayer.chips.OkiM6295Chip.class).getMask(chipId, ch));
+                forceChannelMask(audio, OkiM6295Chip.class, chipId, ch,
+                        audio.plugin.chipRegister.chip(OkiM6295Chip.class).getMask(chipId, ch));
         }
 
         @Override public List<MixerSlot> mixerSlots() {
-            return List.of(new MixerSlot(38, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.OkiM6295Chip.class, "okim6295", 200));
+            return List.of(new MixerSlot(38, MDSound.Chip.MAIN_TAG, OkiM6295Chip.class, "okim6295", 200));
         }
     }
 }

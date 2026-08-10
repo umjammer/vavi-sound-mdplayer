@@ -4,7 +4,7 @@
  * Programmed by Naohide Sano
  */
 
-package mdplayer;
+package mdplayer.driver.hvl;
 
 import java.io.BufferedInputStream;
 import java.nio.file.Files;
@@ -13,7 +13,6 @@ import java.util.Map;
 
 import mdplayer.driver.BaseDriver;
 import mdplayer.lib.hvl.HVL;
-import mdplayer.driver.hvl.HvlDriver;
 import mdplayer.driver.FileFormat;
 import mdplayer.driver.BasePlugin;
 import vavi.util.archive.Archives;

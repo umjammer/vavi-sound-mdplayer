@@ -37,7 +37,7 @@ import static vavi.sound.SoundUtil.volume;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-01-25 nsano initial version <br>
  */
-public class SidTestProgram {
+class SidTestProgram {
 
     private static final int SamplingRate = 44100;
 
@@ -62,7 +62,7 @@ public class SidTestProgram {
         new SidTestProgram().play(args[0], song);
     }
 
-    public void play(String filename, int song) throws Exception {
+    private void play(String filename, int song) throws Exception {
         byte[] fileBuffer = Files.readAllBytes(Paths.get(filename));
 
         init(fileBuffer, song);

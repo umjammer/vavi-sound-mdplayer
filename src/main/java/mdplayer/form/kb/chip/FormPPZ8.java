@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
+import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.form.FrameBuffer;
 import mdplayer.form.ScreenPanel;
@@ -26,11 +27,12 @@ import mdplayer.form.kb.PcmChannelParams;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
 import mdplayer.form.View;
+import mdsound.MDSound;
 
 
 public class FormPPZ8 extends FormChipBase<FormPPZ8.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormPPZ8.class);
+    private static final Preferences prefs = Preferences.userNodeForPackage(FormPPZ8.class);
 
     public FormPPZ8(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -62,7 +64,7 @@ public class FormPPZ8 extends FormChipBase<FormPPZ8.Params> {
         }
     };
 
-    public void changeZoom() {
+    private void changeZoom() {
         this.setMaximumSize(new Dimension(frameSizeW + Common.getImage("planePPZ8").getWidth() * zoom, frameSizeH + Common.getImage("planePPZ8").getHeight() * zoom));
         this.setMinimumSize(new Dimension(frameSizeW + Common.getImage("planePPZ8").getWidth() * zoom, frameSizeH + Common.getImage("planePPZ8").getHeight() * zoom));
         this.setPreferredSize(new Dimension(frameSizeW + Common.getImage("planePPZ8").getWidth() * zoom, frameSizeH + Common.getImage("planePPZ8").getHeight() * zoom));
@@ -258,7 +260,7 @@ public class FormPPZ8 extends FormChipBase<FormPPZ8.Params> {
         this.addComponentListener(this.componentListener);
     }
 
-    BufferedImage image;
+    private BufferedImage image;
 
 //#region draw buffer
 
@@ -350,17 +352,17 @@ public class FormPPZ8 extends FormChipBase<FormPPZ8.Params> {
 //#endregion
 
     /** this panel's channel row: the common core plus what only this chip displays */
-    public static class Channel extends PcmChannelParams {
+    static class Channel extends PcmChannelParams {
 
-        public boolean dda = false;
-        public int volumeRL = -1;
-        public int volumeRR = -1;
+        boolean dda = false;
+        int volumeRL = -1;
+        int volumeRR = -1;
     }
 
     /** this panel's per-frame draw state, diffed new against old (see {@link FormChipBase}) */
-    public static class Params {
+    static class Params {
 
-        public final Channel[] channels = {
+        final Channel[] channels = {
                 new Channel(), new Channel(), new Channel(), new Channel(),
                 new Channel(), new Channel(), new Channel(), new Channel()
         };
@@ -372,23 +374,23 @@ public class FormPPZ8 extends FormChipBase<FormPPZ8.Params> {
 
         @Override public String id() { return "PPZ8"; }
         @Override public String category() { return "driver"; }
-        @Override public Class<? extends mdplayer.Chip> chip() { return mdplayer.chips.Ppz8Chip.class; }
+        @Override public Class<? extends mdplayer.Chip> chip() { return Ppz8Chip.class; }
         @Override public String title(int chipId) { return "Ppz8Inst (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"); }
         @Override public View create(FormMain frm, int chipId, int zoom) { return new FormPPZ8(frm, chipId, zoom); }
 
-        @Override public void setChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
-            mdplayer.chips.Ppz8Chip c = audio.plugin.chipRegister.chip(mdplayer.chips.Ppz8Chip.class);
+        @Override public void setChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+            Ppz8Chip c = audio.plugin.chipRegister.chip(Ppz8Chip.class);
             if (!c.getMask(chipId, ch)) c.setMask(chipId, ch); else c.resetMask(chipId, ch);
         }
 
-        @Override public void resetChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+        @Override public void resetChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
             if (ch >= 0 && ch < 8) {
-                audio.plugin.chipRegister.chip(mdplayer.chips.Ppz8Chip.class).resetMask(chipId, ch);
+                audio.plugin.chipRegister.chip(Ppz8Chip.class).resetMask(chipId, ch);
             }
         }
 
         @Override public List<MixerSlot> mixerSlots() {
-            return List.of(new MixerSlot(61, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Ppz8Chip.class, "ppz8", 200));
+            return List.of(new MixerSlot(61, MDSound.Chip.MAIN_TAG, Ppz8Chip.class, "ppz8", 200));
         }
     }
 }

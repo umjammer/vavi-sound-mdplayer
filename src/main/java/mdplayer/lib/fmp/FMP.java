@@ -10,6 +10,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import mdplayer.emu.common.EncodingUtils;
@@ -34,7 +35,7 @@ public class FMP {
 
     public TriConsumer<Integer, Integer, byte[][]> setPPZ8PCMData;
     public TriConsumer<Integer, Integer, Integer> setPPZ8Data;
-    public java.util.function.BiConsumer<Integer, String> setPPZ8PCMFilename;
+    public BiConsumer<Integer, String> setPPZ8PCMFilename;
     public TriConsumer<Integer, Integer, Integer> opnaWrite;
     public Consumer<Boolean> blockWrite;
 
@@ -158,7 +159,7 @@ logger.log(Level.ERROR, e.getMessage());
         regs.setDX((short) 0x0000);
         regs.setSS((short) 0xe000);
         regs.setSP((short) 0x0000);
-        nise98.callRunFunctionCall((byte) 0xd2, true, true, true, 10_000_000_000L, 0_000);
+        nise98.callRunFunctionCall((byte) 0xd2, false, true, true, 10_000_000_000L, 0);
 
         if (pcmDataSendCount != 0) {
             blockWrite.accept(true);

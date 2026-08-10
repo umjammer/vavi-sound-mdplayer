@@ -33,9 +33,9 @@ import mdplayer.lib.sid.libsidplayfp.sidplayfp.SidInfo;
  */
 public class SidInfoImpl extends SidInfo {
 
-    public String name;
+    private String name;
 
-    public String version;
+    private String version;
 
     public final List<String> credits = new ArrayList<>();
 
@@ -47,7 +47,7 @@ public class SidInfoImpl extends SidInfo {
 
     public String chargenDesc;
 
-    public int maxSids;
+    private int maxSids;
 
     public int channels;
 

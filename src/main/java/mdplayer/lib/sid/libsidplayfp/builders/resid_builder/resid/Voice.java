@@ -26,7 +26,7 @@ public class Voice {
     public final EnvelopeGenerator envelope = new EnvelopeGenerator();
 
     // Waveform D/a zero level.
-    protected short waveZero;
+    private short waveZero;
 
     // Inline functions.
     // The following function instanceof defined inline because it instanceof called every

@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * to write WAV file instead of playing to speakers.
  * Uses the built-in waveWriter via settings.
  */
-public class GbsWavTestProgram {
+class GbsWavTestProgram {
 
     @BeforeAll
     static void setupAll() {
@@ -46,7 +46,7 @@ public class GbsWavTestProgram {
 
     @Test
     @Disabled("it works, but not passed")
-    public void test() throws Exception {
+    void test() throws Exception {
         new GbsWavTestProgram().play(
                 "../vavi-sound-emu/tmp/CGB-B2XE-USA.gbs",
                 "../vavi-sound-emu/tmp/waveout.wav",
@@ -62,7 +62,7 @@ public class GbsWavTestProgram {
         new GbsWavTestProgram().play(args[0], args.length > 1 ? args[1] : null, 1);
     }
 
-    public void play(String filename, String refWavFile, int songNo) throws Exception {
+    private void play(String filename, String refWavFile, int songNo) throws Exception {
         System.err.println("filename: " + filename);
         System.err.println("refWavFile: " + refWavFile);
         Setting setting = Setting.getInstance();

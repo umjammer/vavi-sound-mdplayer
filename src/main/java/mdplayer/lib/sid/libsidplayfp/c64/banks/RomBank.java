@@ -35,25 +35,25 @@ public class RomBank implements IBank {
     /** template<int N> */
     private int N = 0x10000; // dummy
 
-    public RomBank(int N) {
+    RomBank(int N) {
         this.N = N;
         rom = ByteBuffer.allocate(N);
     }
 
     /** The ROM array */
-    protected ByteBuffer rom;
+    private ByteBuffer rom;
 
     /**
      * Set value at memory address.
      */
-    protected void setVal(short address, byte val) {
+    void setVal(short address, byte val) {
         rom.put(address & (N - 1), val);
     }
 
     /**
      * Return value from memory address.
      */
-    protected byte getVal(short address) {
+    byte getVal(short address) {
         return rom.get(address & (N - 1));
     }
 

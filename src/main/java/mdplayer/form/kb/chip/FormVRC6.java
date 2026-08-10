@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
+import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.Tables;
 import mdplayer.chips.NpNesChip;
@@ -23,16 +24,18 @@ import mdplayer.chips.NpNesChip.Vrc6Chip;
 import mdplayer.form.FrameBuffer;
 import mdplayer.form.ScreenPanel;
 import mdplayer.form.View;
+import mdplayer.form.VisVolume;
 import mdplayer.form.kb.ChannelParams;
 import mdplayer.form.kb.Meters;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
+import mdsound.MDSound;
 import mdsound.np.chip.DeviceInfo.BasicTrackInfo;
 
 
 public class FormVRC6 extends FormChipBase<FormVRC6.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormVRC6.class);
+    private static final Preferences prefs = Preferences.userNodeForPackage(FormVRC6.class);
 
     public FormVRC6(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -64,7 +67,7 @@ public class FormVRC6 extends FormChipBase<FormVRC6.Params> {
         }
     };
 
-    public void changeZoom() {
+    private void changeZoom() {
         this.setMaximumSize(new Dimension(frameSizeW + Common.getImage("planeVRC6").getWidth() * zoom, frameSizeH + Common.getImage("planeVRC6").getHeight() * zoom));
         this.setMinimumSize(new Dimension(frameSizeW + Common.getImage("planeVRC6").getWidth() * zoom, frameSizeH + Common.getImage("planeVRC6").getHeight() * zoom));
         this.setPreferredSize(new Dimension(frameSizeW + Common.getImage("planeVRC6").getWidth() * zoom, frameSizeH + Common.getImage("planeVRC6").getHeight() * zoom));
@@ -217,7 +220,7 @@ public class FormVRC6 extends FormChipBase<FormVRC6.Params> {
         this.addComponentListener(this.componentListener);
     }
 
-    BufferedImage image;
+    private BufferedImage image;
 
 //#region draw buffer
 
@@ -253,16 +256,16 @@ public class FormVRC6 extends FormChipBase<FormVRC6.Params> {
 //#endregion
 
     /** this panel's channel row: the common core plus what only this chip displays */
-    public static class Channel extends ChannelParams {
+    static class Channel extends ChannelParams {
 
-        public int kf = -1;
-        public int sadr = -1;
+        int kf = -1;
+        int sadr = -1;
     }
 
     /** this panel's per-frame draw state, diffed new against old (see {@link FormChipBase}) */
-    public static class Params {
+    static class Params {
 
-        public final Channel[] channels = {
+        final Channel[] channels = {
                 new Channel(), new Channel(), new Channel()
         };
     }
@@ -273,39 +276,39 @@ public class FormVRC6 extends FormChipBase<FormVRC6.Params> {
 
         @Override public String id() { return "VRC6"; }
         @Override public String category() { return "nes"; }
-        @Override public Class<? extends mdplayer.Chip> chip() { return mdplayer.chips.NpNesChip.Vrc6Chip.class; }
+        @Override public Class<? extends mdplayer.Chip> chip() { return NpNesChip.Vrc6Chip.class; }
         @Override public String title(int chipId) { return "Vrc6Inst (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"); }
         @Override public View create(FormMain frm, int chipId, int zoom) { return new FormVRC6(frm, chipId, zoom); }
 
-        @Override public void setChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+        @Override public void setChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
             if (ch >= 0 && ch < 3) {
-                mdplayer.chips.NpNesChip.Vrc6Chip c = audio.plugin.chipRegister.chip(mdplayer.chips.NpNesChip.Vrc6Chip.class);
+                NpNesChip.Vrc6Chip c = audio.plugin.chipRegister.chip(NpNesChip.Vrc6Chip.class);
                 if (!c.getMask(chipId, ch)) c.setMask(chipId, ch); else c.resetMask(chipId, ch);
             }
         }
 
-        @Override public void resetChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
-            audio.plugin.chipRegister.chip(mdplayer.chips.NpNesChip.Vrc6Chip.class).resetMask(chipId, ch);
+        @Override public void resetChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+            audio.plugin.chipRegister.chip(NpNesChip.Vrc6Chip.class).resetMask(chipId, ch);
         }
 
-        @Override public void forceChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
+        @Override public void forceChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
             if (mask)
-                audio.plugin.chipRegister.chip(mdplayer.chips.NpNesChip.Vrc6Chip.class).setMask(chipId, ch);
+                audio.plugin.chipRegister.chip(NpNesChip.Vrc6Chip.class).setMask(chipId, ch);
             else
-                audio.plugin.chipRegister.chip(mdplayer.chips.NpNesChip.Vrc6Chip.class).resetMask(chipId, ch);
+                audio.plugin.chipRegister.chip(NpNesChip.Vrc6Chip.class).resetMask(chipId, ch);
         }
 
-        @Override public void reapplyChannelMasks(mdplayer.Audio audio, int chipId) {
+        @Override public void reapplyChannelMasks(Audio audio, int chipId) {
             for (int ch = 0; ch < 3; ch++)
-                forceChannelMask(audio, mdplayer.chips.NpNesChip.Vrc6Chip.class, chipId, ch,
-                        audio.plugin.chipRegister.chip(mdplayer.chips.NpNesChip.Vrc6Chip.class).getMask(chipId, ch));
+                forceChannelMask(audio, NpNesChip.Vrc6Chip.class, chipId, ch,
+                        audio.plugin.chipRegister.chip(NpNesChip.Vrc6Chip.class).getMask(chipId, ch));
         }
 
         @Override public List<MixerSlot> mixerSlots() {
-            return List.of(new MixerSlot(53, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.NpNesChip.Vrc6Chip.class, "VRC6", 50));
+            return List.of(new MixerSlot(53, MDSound.Chip.MAIN_TAG, NpNesChip.Vrc6Chip.class, "VRC6", 50));
         }
 
-        @Override public void updateMeters(mdplayer.Audio audio, mdplayer.form.VisVolume visVolume) {
+        @Override public void updateMeters(Audio audio, VisVolume visVolume) {
             int vrc6 = Meters.npNesVolume(audio, 4);
             if (vrc6 >= 0) visVolume.put("VRC6", vrc6 * 15);
         }

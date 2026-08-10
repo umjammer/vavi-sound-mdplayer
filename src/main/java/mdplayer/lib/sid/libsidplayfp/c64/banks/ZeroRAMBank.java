@@ -74,7 +74,7 @@ public class ZeroRAMBank implements IBank {
     private static class dataBit {
         private final int bit;
 
-        public dataBit(int bit) {
+        dataBit(int bit) {
             this.bit = bit;
         }
 
@@ -111,12 +111,12 @@ public class ZeroRAMBank implements IBank {
         // Value of the bit.
         private byte dataSet;
 
-        public void reset() {
+        void reset() {
             isFallingOff = false;
             dataSet = 0;
         }
 
-        public byte readBit(long phi2time) {
+        byte readBit(long phi2time) {
             if (isFallingOff && dataSetClk < phi2time) {
                 // discharge the "capacitor"
                 reset();
@@ -124,7 +124,7 @@ public class ZeroRAMBank implements IBank {
             return dataSet;
         }
 
-        public void writeBit(long phi2time, byte value) {
+        void writeBit(long phi2time, byte value) {
             dataSetClk = phi2time + C64_CPU6510_DATA_PORT_FALL_OFF_CYCLES;
             dataSet = (byte) (value & (1 << bit));
             isFallingOff = true;
@@ -134,7 +134,7 @@ public class ZeroRAMBank implements IBank {
     // not emulated
     private static final boolean tapeSense = false;
 
-    public final IPLA pla;
+    private final IPLA pla;
 
     // C64 RAM area
     private final SystemRAMBank ramBank;

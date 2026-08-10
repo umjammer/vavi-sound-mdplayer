@@ -6,7 +6,7 @@ import real.nscci.NScci;
 import real.nscci.NScci.NSoundChip;
 
 
-public class SoundChip {
+class SoundChip {
     public static final RealChip.RSoundChip[] scYM2612 = new RealChip.RSoundChip[] {null, null};
     public static final RealChip.RSoundChip[] scSN76489 = new RealChip.RSoundChip[] {null, null};
     public static final RealChip.RSoundChip[] scYM2151 = new RealChip.RSoundChip[] {null, null};

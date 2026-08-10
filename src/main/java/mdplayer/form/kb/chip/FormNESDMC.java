@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
+import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.form.FrameBuffer;
 import mdplayer.form.ScreenPanel;
@@ -24,17 +25,19 @@ import mdplayer.chips.NesChip;
 import mdplayer.chips.NesChip.DmcChip;
 import mdplayer.chips.NpNesChip;
 import mdplayer.form.SettingTab;
+import mdplayer.form.VisVolume;
 import mdplayer.form.kb.ChannelParams;
 import mdplayer.form.kb.Meters;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
 import mdplayer.form.View;
 import mdplayer.form.sys.setting.SettingNSFPanel;
+import mdsound.MDSound;
 
 
 public class FormNESDMC extends FormChipBase<FormNESDMC.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormNESDMC.class);
+    private static final Preferences prefs = Preferences.userNodeForPackage(FormNESDMC.class);
 
     public FormNESDMC(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -68,7 +71,7 @@ public class FormNESDMC extends FormChipBase<FormNESDMC.Params> {
         }
     };
 
-    public void changeZoom() {
+    private void changeZoom() {
         this.setMaximumSize(new Dimension(frameSizeW + Common.getImage("planeNESDMC").getWidth() * zoom, frameSizeH + Common.getImage("planeNESDMC").getHeight() * zoom));
         this.setMinimumSize(new Dimension(frameSizeW + Common.getImage("planeNESDMC").getWidth() * zoom, frameSizeH + Common.getImage("planeNESDMC").getHeight() * zoom));
         this.setPreferredSize(new Dimension(frameSizeW + Common.getImage("planeNESDMC").getWidth() * zoom, frameSizeH + Common.getImage("planeNESDMC").getHeight() * zoom));
@@ -335,7 +338,7 @@ public class FormNESDMC extends FormChipBase<FormNESDMC.Params> {
         this.addComponentListener(this.componentListener);
     }
 
-    BufferedImage image;
+    private BufferedImage image;
 
 //#region draw buffer
 
@@ -393,21 +396,21 @@ public class FormNESDMC extends FormChipBase<FormNESDMC.Params> {
 //#endregion
 
     /** this panel's channel row: the common core plus what only this chip displays */
-    public static class Channel extends ChannelParams {
+    static class Channel extends ChannelParams {
 
-        public boolean dda = false;
-        public int kf = -1;
-        public int nfrq = -1;
-        public boolean noise = false;
+        boolean dda = false;
+        int kf = -1;
+        int nfrq = -1;
+        boolean noise = false;
     }
 
     /** this panel's per-frame draw state, diffed new against old (see {@link FormChipBase}) */
-    public static class Params {
+    static class Params {
 
-        public final Channel[] sqrChannels = {new Channel(), new Channel()};
-        public final Channel triChannel = new Channel();
-        public final Channel noiseChannel = new Channel();
-        public final Channel dmcChannel = new Channel();
+        final Channel[] sqrChannels = {new Channel(), new Channel()};
+        final Channel triChannel = new Channel();
+        final Channel noiseChannel = new Channel();
+        final Channel dmcChannel = new Channel();
     }
 
     /** what this panel contributes to the GUI; see {@link ViewProvider} */
@@ -416,18 +419,18 @@ public class FormNESDMC extends FormChipBase<FormNESDMC.Params> {
         @Override public String id() { return "NESDMC"; }
         @Override public String menuText() { return "NES&DMC"; }
         @Override public String category() { return "nes"; }
-        @Override public Class<? extends mdplayer.Chip> chip() { return mdplayer.chips.NesChip.class; }
+        @Override public Class<? extends mdplayer.Chip> chip() { return NesChip.class; }
         @Override public String title(int chipId) { return "NES&DMC (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"); }
         @Override public View create(FormMain frm, int chipId, int zoom) { return new FormNESDMC(frm, chipId, zoom); }
         @Override public List<SettingTab> settingTabs() { return List.of(new SettingNSFPanel()); }
 
         @Override public List<Class<? extends mdplayer.Chip>> maskChips() {
-            return List.of(mdplayer.chips.NesChip.class, mdplayer.chips.NesChip.DmcChip.class);
+            return List.of(NesChip.class, NesChip.DmcChip.class);
         }
 
-        @Override public void setChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
-            if (chip.equals(mdplayer.chips.NesChip.class)) {
-                mdplayer.chips.NesChip c = audio.plugin.chipRegister.chip(mdplayer.chips.NesChip.class);
+        @Override public void setChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+            if (chip.equals(NesChip.class)) {
+                NesChip c = audio.plugin.chipRegister.chip(NesChip.class);
                 if (!c.getMask(chipId, ch)) c.setMask(chipId, ch); else c.resetMask(chipId, ch);
                 return;
             }
@@ -435,78 +438,78 @@ public class FormNESDMC extends FormChipBase<FormNESDMC.Params> {
                 case 0: {
                     // the triangle channel goes through the vgm-side chip, the rest through the
                     // nsf-side one — kept as the original had it
-                    mdplayer.chips.NesChip.DmcChip c = audio.plugin.chipRegister.chip(mdplayer.chips.NesChip.DmcChip.class);
+                    NesChip.DmcChip c = audio.plugin.chipRegister.chip(NesChip.DmcChip.class);
                     if (!c.getMask(chipId, ch)) c.setMask(chipId, ch); else c.resetMask(chipId, ch);
                     break;
                 }
                 case 1:
                 case 2: {
-                    mdplayer.chips.NpNesChip.DmcChip c = audio.plugin.chipRegister.chip(mdplayer.chips.NpNesChip.DmcChip.class);
+                    NpNesChip.DmcChip c = audio.plugin.chipRegister.chip(NpNesChip.DmcChip.class);
                     if (!c.getMask(chipId, ch)) c.setMask(chipId, ch); else c.resetMask(chipId, ch);
                     break;
                 }
             }
         }
 
-        @Override public void resetChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
-            if (chip.equals(mdplayer.chips.NesChip.class)) {
+        @Override public void resetChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+            if (chip.equals(NesChip.class)) {
                 switch (ch) {
                     case 0:
                     case 1:
-                        audio.plugin.chipRegister.chip(mdplayer.chips.NesChip.class).resetMask(chipId, ch);
+                        audio.plugin.chipRegister.chip(NesChip.class).resetMask(chipId, ch);
                         break;
                     case 2:
-                        audio.plugin.chipRegister.chip(mdplayer.chips.NesChip.DmcChip.class).resetMask(chipId, 0);
+                        audio.plugin.chipRegister.chip(NesChip.DmcChip.class).resetMask(chipId, 0);
                         break;
                     case 3:
-                        audio.plugin.chipRegister.chip(mdplayer.chips.NesChip.DmcChip.class).resetMask(chipId, 1);
+                        audio.plugin.chipRegister.chip(NesChip.DmcChip.class).resetMask(chipId, 1);
                         break;
                     case 4:
-                        audio.plugin.chipRegister.chip(mdplayer.chips.NesChip.DmcChip.class).resetMask(chipId, 2);
+                        audio.plugin.chipRegister.chip(NesChip.DmcChip.class).resetMask(chipId, 2);
                         break;
                 }
                 return;
             }
             if (ch >= 0 && ch < 3) {
-                audio.plugin.chipRegister.chip(mdplayer.chips.NesChip.DmcChip.class).resetMask(chipId, ch);
+                audio.plugin.chipRegister.chip(NesChip.DmcChip.class).resetMask(chipId, ch);
             }
         }
 
-        @Override public void forceChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
+        @Override public void forceChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
             if (ch == 0 || ch == 1) {
-                if (audio.plugin.chipRegister.chip(mdplayer.chips.NesChip.class).getMask(chipId, ch)) {
-                    audio.plugin.chipRegister.chip(mdplayer.chips.NesChip.class).setMask(chipId, ch);
+                if (audio.plugin.chipRegister.chip(NesChip.class).getMask(chipId, ch)) {
+                    audio.plugin.chipRegister.chip(NesChip.class).setMask(chipId, ch);
                 } else {
-                    audio.plugin.chipRegister.chip(mdplayer.chips.NesChip.class).resetMask(chipId, ch);
+                    audio.plugin.chipRegister.chip(NesChip.class).resetMask(chipId, ch);
                 }
             } else if (ch == 2) {
                 // the triangle channel's mute lives on the vgm-side chip, the rest on the nsf-side
                 // one — matching where setChannelMask toggles them
-                if (audio.plugin.chipRegister.chip(mdplayer.chips.NesChip.DmcChip.class).getMask(chipId, 0)) {
-                    audio.plugin.chipRegister.chip(mdplayer.chips.NesChip.DmcChip.class).setMask(chipId, 0);
+                if (audio.plugin.chipRegister.chip(NesChip.DmcChip.class).getMask(chipId, 0)) {
+                    audio.plugin.chipRegister.chip(NesChip.DmcChip.class).setMask(chipId, 0);
                 } else {
-                    audio.plugin.chipRegister.chip(mdplayer.chips.NesChip.DmcChip.class).resetMask(chipId, 0);
+                    audio.plugin.chipRegister.chip(NesChip.DmcChip.class).resetMask(chipId, 0);
                 }
             } else if (ch == 3 || ch == 4) {
-                if (audio.plugin.chipRegister.chip(mdplayer.chips.NpNesChip.DmcChip.class).getMask(chipId, ch - 2)) {
-                    audio.plugin.chipRegister.chip(mdplayer.chips.NesChip.DmcChip.class).setMask(chipId, ch - 2);
+                if (audio.plugin.chipRegister.chip(NpNesChip.DmcChip.class).getMask(chipId, ch - 2)) {
+                    audio.plugin.chipRegister.chip(NesChip.DmcChip.class).setMask(chipId, ch - 2);
                 } else {
-                    audio.plugin.chipRegister.chip(mdplayer.chips.NesChip.DmcChip.class).resetMask(chipId, ch - 2);
+                    audio.plugin.chipRegister.chip(NesChip.DmcChip.class).resetMask(chipId, ch - 2);
                 }
             }
         }
 
-        @Override public void reapplyChannelMasks(mdplayer.Audio audio, int chipId) {
+        @Override public void reapplyChannelMasks(Audio audio, int chipId) {
             for (int ch = 0; ch < 5; ch++)
-                forceChannelMask(audio, mdplayer.chips.NesChip.class, chipId, ch, false /* state is read per channel */);
+                forceChannelMask(audio, NesChip.class, chipId, ch, false /* state is read per channel */);
         }
 
         @Override public List<MixerSlot> mixerSlots() {
-            return List.of(new MixerSlot(48, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.NesChip.class, "APU", 200),
-                    new MixerSlot(49, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.NesChip.DmcChip.class, "DMC", 350));
+            return List.of(new MixerSlot(48, MDSound.Chip.MAIN_TAG, NesChip.class, "APU", 200),
+                    new MixerSlot(49, MDSound.Chip.MAIN_TAG, NesChip.DmcChip.class, "DMC", 350));
         }
 
-        @Override public void updateMeters(mdplayer.Audio audio, mdplayer.form.VisVolume visVolume) {
+        @Override public void updateMeters(Audio audio, VisVolume visVolume) {
             int apu = Meters.npNesVolume(audio, 0);
             if (apu >= 0) visVolume.put("APU", apu * 15);
             int dmc = Meters.npNesVolume(audio, 1);

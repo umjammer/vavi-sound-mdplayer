@@ -1,8 +1,10 @@
 package mdplayer;
 
+import java.awt.AWTEvent;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Frame;
+import java.awt.Toolkit;
 import java.awt.Window;
 import java.io.File;
 import java.lang.reflect.Field;
@@ -30,7 +32,7 @@ import vavi.util.properties.annotation.PropsEntity;
 
 @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
 @PropsEntity(url = "file:local.properties")
-public class RefactoringTest {
+class RefactoringTest {
 
     static boolean localPropertiesExists() {
         return Files.exists(Paths.get("local.properties"));
@@ -49,11 +51,11 @@ public class RefactoringTest {
     private static void hideWindowsOffScreen() {
         if (Boolean.getBoolean("mdplayer.test.gui.visible")) return;
         System.setProperty("apple.awt.UIElement", "true"); // no dock icon, no focus stealing
-        java.awt.Toolkit.getDefaultToolkit().addAWTEventListener(event -> {
+        Toolkit.getDefaultToolkit().addAWTEventListener(event -> {
             if (event.getSource() instanceof Window w && w.getX() > -30000) {
                 w.setLocation(-32000, -32000);
             }
-        }, java.awt.AWTEvent.WINDOW_EVENT_MASK | java.awt.AWTEvent.COMPONENT_EVENT_MASK);
+        }, AWTEvent.WINDOW_EVENT_MASK | AWTEvent.COMPONENT_EVENT_MASK);
     }
 
     @BeforeEach

@@ -9,7 +9,7 @@ import java.util.Stack;
 import mdplayer.lib.rcp.MIDIEvent.MIDIRhythm;
 
 
-public class MIDITrack implements Serializable {
+class MIDITrack implements Serializable {
 
     private Integer beforeIndex = null;
     private Integer afterIndex = null;

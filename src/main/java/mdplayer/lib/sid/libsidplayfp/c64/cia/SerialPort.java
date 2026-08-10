@@ -26,7 +26,7 @@ package mdplayer.lib.sid.libsidplayfp.c64.cia;
 import mdplayer.lib.sid.libsidplayfp.c64.cia.InterruptSource.Interrupt;
 
 
-public class SerialPort {
+class SerialPort {
 
     private final InterruptSource interruptSource;
     private int count;

@@ -12,7 +12,7 @@ import static java.lang.System.getLogger;
 /**
  * @see "Outside X68000"
  */
-public class SccA {
+class SccA {
 
     private static final Logger logger = getLogger(SccA.class.getName());
 
@@ -41,7 +41,7 @@ public class SccA {
         setClock(renderingFreq);
     }
 
-    public void setClock(int renderingFreq) {
+    private void setClock(int renderingFreq) {
         this.renderingFreq = renderingFreq;
         stepM = clkM / (double) renderingFreq;
     }
@@ -109,8 +109,8 @@ public class SccA {
         return false;
     }
 
-    int currentMIDI = 0;
-    boolean changeMIDI = false;
+    private int currentMIDI = 0;
+    private boolean changeMIDI = false;
 
     private void divSendSCC(byte dat) {
         switch (dat & 0xff) {

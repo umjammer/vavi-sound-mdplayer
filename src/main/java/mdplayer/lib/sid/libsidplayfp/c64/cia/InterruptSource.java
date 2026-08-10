@@ -47,10 +47,10 @@ public class InterruptSource extends Event {
     }
 
     /** Pointer to the Mos6526 which this Interrupt belongs to. */
-    protected final Mos6526 parent;
+    final Mos6526 parent;
 
     /** Event scheduler. */
-    protected final EventScheduler eventScheduler;
+    final EventScheduler eventScheduler;
 
     /** Interrupt control register */
     private byte icr;
@@ -58,15 +58,15 @@ public class InterruptSource extends Event {
     /** Interrupt data register */
     private byte idr;
 
-    protected boolean interruptMasked() {
+    boolean interruptMasked() {
         return (icr & idr) != 0;
     }
 
-    protected boolean interruptTriggered() {
+    boolean interruptTriggered() {
         return (idr & (byte) Interrupt.REQUEST.v) == 0;
     }
 
-    protected void triggerInterrupt() {
+    void triggerInterrupt() {
         idr |= (byte) Interrupt.REQUEST.v;
     }
 
@@ -76,7 +76,7 @@ public class InterruptSource extends Event {
      * param scheduler event scheduler
      * param parent the Mos6526 which this Interrupt belongs to
      */
-    protected InterruptSource(EventScheduler scheduler, Mos6526 parent) {
+    InterruptSource(EventScheduler scheduler, Mos6526 parent) {
         super("CIA Interrupt");
 
         this.parent = parent;

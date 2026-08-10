@@ -4,12 +4,16 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import mdplayer.emu.nise68.IMemory;
+import mdplayer.emu.nise68.IRegister;
 import mdplayer.lib.mndrv.MnWork.Dw;
 import mdplayer.lib.mndrv.MnWork.W;
+import mdplayer.lib.zms.Zms.MPCMSt;
 
 
 /**
@@ -35,7 +39,7 @@ public class MndV1Analyzer {
     private static final int SAMPLE_RATE = 44100;
 
     /** where one track's data lives, and the offset of the {@code $FF} that terminates it */
-    public record Region(int track, int channel, int start, int end) {
+    record Region(int track, int channel, int start, int end) {
 
         boolean contains(int p) {
             return p >= start && p < end;
@@ -74,7 +78,7 @@ public class MndV1Analyzer {
     }
 
     /** no such offset was seen */
-    public static final int NONE = Integer.MIN_VALUE;
+    private static final int NONE = Integer.MIN_VALUE;
 
     /**
      * What the analyzer saw for one file.
@@ -98,7 +102,7 @@ public class MndV1Analyzer {
      * Splits the sequence data into per-track regions. Tracks are stored back to back in offset
      * order, so each one runs to the start of the next and the last one runs to the end of file.
      */
-    public static List<Region> regionsOf(byte[] data) {
+    private static List<Region> regionsOf(byte[] data) {
         int seq = readInt(data, 0x10);
         int count = readShort(data, seq);
         record Entry(int track, int channel, int start) {}
@@ -108,14 +112,14 @@ public class MndV1Analyzer {
             entries.add(new Entry(i, data[e + 4] & 0xff, seq + readInt(data, e)));
         }
         List<Entry> byOffset = new ArrayList<>(entries);
-        byOffset.sort((a, b) -> Integer.compare(a.start, b.start));
+        byOffset.sort(Comparator.comparingInt(a -> a.start));
         List<Region> regions = new ArrayList<>();
         for (int i = 0; i < byOffset.size(); i++) {
             Entry e = byOffset.get(i);
             int end = i + 1 < byOffset.size() ? byOffset.get(i + 1).start : data.length;
             regions.add(new Region(e.track, e.channel, e.start, end));
         }
-        regions.sort((a, b) -> Integer.compare(a.track, b.track));
+        regions.sort(Comparator.comparingInt(a -> a.track));
         return regions;
     }
 
@@ -204,7 +208,7 @@ public class MndV1Analyzer {
     private static class NullMPcm implements mdplayer.lib.zms.Zms.MPcmInterface {
         @Override public void keyOn(int ch) {}
         @Override public void keyOff(int ch) {}
-        @Override public void writePcm(int ch, Object pcm, Object mem, Object reg, int n) {}
+        @Override public void writePcm(int ch, MPCMSt[] pcm, IMemory mem, IRegister reg, int n) {}
         @Override public void setFreq(int ch, int value) {}
         @Override public void setPitch(int ch, int value) {}
         @Override public void setVol(int ch, int value) {}

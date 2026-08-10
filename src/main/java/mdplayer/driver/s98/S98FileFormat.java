@@ -121,6 +121,6 @@ public class S98FileFormat extends BaseFileFormat {
     @Override
     public boolean isSupported(InputStream is) {
         if (isCompressedStream(is)) return false;
-        return Arrays.stream(getExtensions()).anyMatch(e -> java.nio.file.Path.of(SoundUtil.getSource(is)).toString().toLowerCase().endsWith(e));
+        return Arrays.stream(getExtensions()).anyMatch(e -> Path.of(SoundUtil.getSource(is)).toString().toLowerCase().endsWith(e));
     }
 }

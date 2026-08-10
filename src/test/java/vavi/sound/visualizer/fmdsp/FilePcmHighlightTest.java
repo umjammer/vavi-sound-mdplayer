@@ -12,8 +12,8 @@ import java.awt.image.BufferedImage;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 /**
@@ -74,7 +74,7 @@ class FilePcmHighlightTest {
                 }
             }
         }
-        assertEquals(true, letterMHighlighted, "'M' of 'PCM' section (X=477..481) should be highlighted when PCM files exist");
+        assertTrue(letterMHighlighted, "'M' of 'PCM' section (X=477..481) should be highlighted when PCM files exist");
 
         // Slot 0 ('1') section (X=484..486, Y=87..93) should be highlighted
         boolean slot0Highlighted = false;
@@ -86,7 +86,7 @@ class FilePcmHighlightTest {
                 }
             }
         }
-        assertEquals(true, slot0Highlighted, "Slot 0 ('1') should be highlighted when slot 0 is loaded");
+        assertTrue(slot0Highlighted, "Slot 0 ('1') should be highlighted when slot 0 is loaded");
 
         // Slot 3 ('4') section (X=501..505, Y=87..93) should NOT differ between noPcm and slots01
         boolean slot3Highlighted = false;
@@ -98,7 +98,7 @@ class FilePcmHighlightTest {
                 }
             }
         }
-        assertEquals(false, slot3Highlighted, "Slot 3 ('4') should NOT be highlighted when slot 3 is empty");
+        assertFalse(slot3Highlighted, "Slot 3 ('4') should NOT be highlighted when slot 3 is empty");
     }
 
     @Test
@@ -117,6 +117,6 @@ class FilePcmHighlightTest {
                 }
             }
         }
-        assertEquals(true, errorColorDiffers, "Slot 0 ('1') color should differ on error");
+        assertTrue(errorColorDiffers, "Slot 0 ('1') color should differ on error");
     }
 }

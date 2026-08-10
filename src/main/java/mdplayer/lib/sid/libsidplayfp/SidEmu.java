@@ -52,7 +52,7 @@ public class SidEmu extends C64Sid {
     protected int bufferPos;
 
     protected boolean status;
-    protected boolean isLocked;
+    private boolean isLocked;
 
     protected String error;
 

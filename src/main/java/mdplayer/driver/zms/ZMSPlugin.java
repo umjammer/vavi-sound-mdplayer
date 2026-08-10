@@ -270,7 +270,7 @@ logger.log(Level.INFO, "compilePriority: " + compilePriority);
 //        }
     }
 
-    static boolean isExt(String filename, String ext) {
+    private static boolean isExt(String filename, String ext) {
         return getExtension(filename).toUpperCase().equals(ext);
     }
 }

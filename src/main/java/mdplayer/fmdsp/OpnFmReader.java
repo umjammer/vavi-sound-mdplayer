@@ -25,7 +25,7 @@ import vavi.sound.visualizer.fmdsp.TrackInfo;
  */
 public abstract class OpnFmReader extends ChipReader {
 
-    /** carrier mask per algorithm, {@link mdplayer.chips.BaseChip#algM} */
+    /** carrier mask per algorithm, {@code mdplayer.chips.BaseChip#algM} */
     private static final byte[] algM = {0x08, 0x08, 0x08, 0x08, 0x0c, 0x0e, 0x0e, 0x0f};
 
     /** ch3 extended slots 1-3: F-number registers and the reg 0x28 key bit of each */
@@ -49,30 +49,30 @@ public abstract class OpnFmReader extends ChipReader {
     protected abstract int[] keyOns();
 
     /** FM channels the chip actually has, 3 or 6 */
-    protected int fmCount() {
+    int fmCount() {
         return 6;
     }
 
-    protected boolean hasSsg() {
+    boolean hasSsg() {
         return false;
     }
 
     /** the mono members of the family have no register 0xb4 */
-    protected boolean hasPan() {
+    boolean hasPan() {
         return true;
     }
 
     /** F-number coefficient [Hz]: {@code freq = fnum * 2^(block-1) * fnumK / 2^20} */
-    protected double fnumK() {
+    double fnumK() {
         return 7987200.0 / 144;
     }
 
     /** FM channel mute in the chip's own numbering, {@code ch} 0-8 with the ch3 slots at 6-8 */
-    protected boolean fmMasked(int ch) {
+    boolean fmMasked(int ch) {
         return false;
     }
 
-    protected boolean ssgMasked(int s) {
+    boolean ssgMasked(int s) {
         return false;
     }
 
@@ -237,7 +237,7 @@ public abstract class OpnFmReader extends ChipReader {
      * {@link #toneRegs the registers as written}, which every member of the family has whether or
      * not its core keeps a register file of its own.
      */
-    protected int slotTotalLevel(int ch, int slot) {
+    int slotTotalLevel(int ch, int slot) {
         int[][] regs = toneRegs();
         return regs == null ? 127 : regs[ch / 3][0x40 + ch % 3 + slot * 4] & 0x7f;
     }
@@ -247,17 +247,17 @@ public abstract class OpnFmReader extends ChipReader {
      * from a core that keeps its envelope generators to itself - then the bar is drawn from the
      * total level alone and animated by the source, see {@link TrackDetail#modelled}.
      */
-    protected int slotEnvelope(int ch, int slot) {
+    int slotEnvelope(int ch, int slot) {
         return -1;
     }
 
     /** which part of its envelope an operator is in, as {@code Fmgen} names it, or null */
-    protected String slotPhase(int ch, int slot) {
+    String slotPhase(int ch, int slot) {
         return null;
     }
 
     /** whether an operator is heard directly rather than only modulating another */
-    protected boolean slotCarrier(int ch, int slot) {
+    boolean slotCarrier(int ch, int slot) {
         int[][] regs = toneRegs();
         return regs != null && FmDetail.carrier(regs[ch / 3][0xb0 + ch % 3] & 0x07, slot);
     }
@@ -307,11 +307,11 @@ public abstract class OpnFmReader extends ChipReader {
             out.toneNum = fmTone(ch);
             if (ch == 2 && ch3ex) {
                 out.info = TrackInfo.FM3EX;
-                java.util.Arrays.fill(out.fmSlotMask, true);
+                Arrays.fill(out.fmSlotMask, true);
                 out.fmSlotMask[3] = false;
             } else {
                 out.info = TrackInfo.NORMAL;
-                java.util.Arrays.fill(out.fmSlotMask, false);
+                Arrays.fill(out.fmSlotMask, false);
             }
             int tl = fmTotalLevel(ch);
             out.volume = 127 - tl;
@@ -323,12 +323,12 @@ public abstract class OpnFmReader extends ChipReader {
             if (!ch3ex) {
                 prevExOns[x] = false;
                 out.info = TrackInfo.NORMAL;
-                java.util.Arrays.fill(out.fmSlotMask, false);
+                Arrays.fill(out.fmSlotMask, false);
                 return;
             }
             boolean on = (keyOns()[2] & exKeyBit[x]) != 0;
             out.info = TrackInfo.FM3EX;
-            java.util.Arrays.fill(out.fmSlotMask, true);
+            Arrays.fill(out.fmSlotMask, true);
             if (x >= 0 && x < 3) {
                 out.fmSlotMask[x] = false;
             }
@@ -344,52 +344,52 @@ public abstract class OpnFmReader extends ChipReader {
     }
 
     /** the value of register 0x26, which paces the display's clock */
-    protected int timerBRegister() {
+    int timerBRegister() {
         return ports()[0][0x26] & 0xff;
     }
 
     // ----- what a channel is doing; register backed chips answer from their bank -----
 
     /** the ch3 special mode: {@code 0x40} in register 0x27, CSM keying the chip as normal */
-    protected boolean ch3Extended() {
+    boolean ch3Extended() {
         return (ports()[0][0x27] & 0xc0) == 0x40;
     }
 
-    protected int fmFnum(int ch) {
+    int fmFnum(int ch) {
         int[] regs = ports()[ch / 3];
         int r = ch % 3;
         return ((regs[0xa4 + r] & 0x07) << 8) | (regs[0xa0 + r] & 0xff);
     }
 
-    protected int fmBlock(int ch) {
+    int fmBlock(int ch) {
         return (ports()[ch / 3][0xa4 + ch % 3] >> 3) & 0x07;
     }
 
-    protected int fmTotalLevel(int ch) {
+    int fmTotalLevel(int ch) {
         return carrierTl(ports()[ch / 3], 0xb0 + ch % 3, 0x40 + ch % 3);
     }
 
-    protected Pan fmPan(int ch) {
+    Pan fmPan(int ch) {
         return opnPan(ports()[ch / 3][0xb4 + ch % 3]);
     }
 
-    protected int exFnum(int x) {
+    int exFnum(int x) {
         int[] regs = ports()[0];
         return ((regs[exFnumHi[x]] & 0x07) << 8) | (regs[exFnumLo[x]] & 0xff);
     }
 
-    protected int exBlock(int x) {
+    int exBlock(int x) {
         return (ports()[0][exFnumHi[x]] >> 3) & 0x07;
     }
 
     /** semitones above C0 of an OPN F-number and block, -1 when no note was set */
-    protected final int fmNote(int fnum, int block) {
+    private int fmNote(int fnum, int block) {
         if (fnum == 0) return -1;
         return Notes.noteOf(fmFreq(fnum, block));
     }
 
     /** cents an OPN F-number and block sit off the note {@link #fmNote} rounds them to */
-    protected final int fmDetune(int fnum, int block) {
+    private int fmDetune(int fnum, int block) {
         return fnum == 0 ? 0 : Notes.centsOf(fmFreq(fnum, block));
     }
 
@@ -406,7 +406,7 @@ public abstract class OpnFmReader extends ChipReader {
      * sensitive to it, through the PMS and AMS fields of its register 0xb4. AMS also needs an
      * operator switched to follow it, which the four 0x60 registers say.
      */
-    protected final void fmLfo(int ch, FmDspChannel out) {
+    private void fmLfo(int ch, FmDspChannel out) {
         if ((lfoRegister() & 0x08) == 0) return;
         int sens = fmSensitivity(ch);
         out.lfoPitch = (sens & 0x07) != 0;
@@ -442,22 +442,22 @@ public abstract class OpnFmReader extends ChipReader {
      * them away. Defaults to {@link #ports()}, which the register backed members of the family
      * already answer from.
      */
-    protected int[][] toneRegs() {
+    int[][] toneRegs() {
         return ports();
     }
 
     /** register 0x22; the plain OPN has no LFO and so no register to answer with */
-    protected int lfoRegister() {
+    int lfoRegister() {
         return ports()[0][0x22];
     }
 
     /** register 0xb4 of a channel: PMS in bits 0-2, AMS in bits 4-5 */
-    protected int fmSensitivity(int ch) {
+    int fmSensitivity(int ch) {
         return ports()[ch / 3][0xb4 + ch % 3];
     }
 
     /** whether any of the channel's operators follows the amplitude modulation, register 0x60 */
-    protected boolean fmAmOn(int ch) {
+    boolean fmAmOn(int ch) {
         int[] regs = ports()[ch / 3];
         for (int slot = 0; slot < 4; slot++) {
             if ((regs[0x60 + ch % 3 + slot * 4] & 0x80) != 0) return true;
@@ -482,7 +482,7 @@ public abstract class OpnFmReader extends ChipReader {
     }
 
     /** the OPN register 0xb4 pan bits */
-    protected static Pan opnPan(int reg) {
+    static Pan opnPan(int reg) {
         boolean left = (reg & 0x80) != 0;
         boolean right = (reg & 0x40) != 0;
         if (left && right) return Pan.CENTER;
@@ -494,7 +494,7 @@ public abstract class OpnFmReader extends ChipReader {
     // ----- SSG -----
 
     /** the SSG section's registers; the OPN family keeps them in its PSG */
-    protected int[] ssgRegs() {
+    int[] ssgRegs() {
         return ports()[0];
     }
 

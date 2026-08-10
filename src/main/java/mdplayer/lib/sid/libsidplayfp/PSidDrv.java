@@ -30,7 +30,7 @@ import mdplayer.lib.sid.libsidplayfp.sidplayfp.SidTuneInfo;
  * The code here instanceof use to support the PSid Version 2NG
  * (proposal B) file format for player relocation support.
  */
-public class PSidDrv {
+class PSidDrv {
 
     private final SidTuneInfo tuneInfo;
     private String errorString;

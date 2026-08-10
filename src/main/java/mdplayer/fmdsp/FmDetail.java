@@ -23,7 +23,7 @@ final class FmDetail {
     private FmDetail() {
     }
 
-    /** carrier mask per algorithm, {@link mdplayer.chips.BaseChip#algM} */
+    /** carrier mask per algorithm, {@code mdplayer.chips.BaseChip#algM} */
     private static final byte[] algM = {0x08, 0x08, 0x08, 0x08, 0x0c, 0x0e, 0x0e, 0x0f};
 
     /**
@@ -32,7 +32,7 @@ final class FmDetail {
      *
      * @param op operator, in register order
      */
-    static int slotOf(int op) {
+    private static int slotOf(int op) {
         return op == 1 ? 2 : op == 2 ? 1 : op;
     }
 

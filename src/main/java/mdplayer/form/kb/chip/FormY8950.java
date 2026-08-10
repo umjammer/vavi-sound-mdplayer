@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
+import mdplayer.Audio;
 import mdplayer.Chip.ChipKeyInfo;
 import mdplayer.Common;
 import mdplayer.Tables;
@@ -27,12 +28,13 @@ import mdplayer.form.View;
 import mdplayer.form.kb.ChannelParams;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
+import mdsound.MDSound;
 import mdsound.instrument.Y8950Inst;
 
 
 public class FormY8950 extends FormChipBase<FormY8950.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormY8950.class);
+    private static final Preferences prefs = Preferences.userNodeForPackage(FormY8950.class);
 
     public FormY8950(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -124,7 +126,7 @@ public class FormY8950 extends FormChipBase<FormY8950.Params> {
         }
     };
 
-    public void changeZoom() {
+    private void changeZoom() {
         this.setMaximumSize(new Dimension(frameSizeW + Common.getImage("planeY8950").getWidth() * zoom, frameSizeH + Common.getImage("planeY8950").getHeight() * zoom));
         this.setMinimumSize(new Dimension(frameSizeW + Common.getImage("planeY8950").getWidth() * zoom, frameSizeH + Common.getImage("planeY8950").getHeight() * zoom));
         this.setPreferredSize(new Dimension(frameSizeW + Common.getImage("planeY8950").getWidth() * zoom, frameSizeH + Common.getImage("planeY8950").getHeight() * zoom));
@@ -149,7 +151,7 @@ public class FormY8950 extends FormChipBase<FormY8950.Params> {
 
         int[] register = (int[]) info.get("register");
         ChipKeyInfo ki = (ChipKeyInfo) info.get("keyInfo");
-        mdsound.MDSound.Chip chipInfo = audio.plugin.mds.getChipInfo(Y8950Inst.class);
+        MDSound.Chip chipInfo = audio.plugin.mds.getChipInfo(Y8950Inst.class);
         int masterClock = chipInfo == null ? 3579545 : chipInfo.clock;
 
         // FM
@@ -350,7 +352,7 @@ public class FormY8950 extends FormChipBase<FormY8950.Params> {
         this.addComponentListener(this.componentListener);
     }
 
-    BufferedImage image;
+    private BufferedImage image;
 
 //#region draw buffer
 
@@ -420,15 +422,15 @@ public class FormY8950 extends FormChipBase<FormY8950.Params> {
 //#endregion
 
     /** this panel's channel row: the common core plus what only this chip displays */
-    public static class Channel extends ChannelParams {
+    static class Channel extends ChannelParams {
 
-        public boolean dda = false;
+        boolean dda = false;
     }
 
     /** this panel's per-frame draw state, diffed new against old (see {@link FormChipBase}) */
-    public static class Params {
+    static class Params {
 
-        public final Channel[] channels = {
+        final Channel[] channels = {
                 new Channel(), new Channel(), new Channel(), new Channel(), new Channel(),
                 new Channel(), new Channel(), new Channel(), new Channel(), // FM 9
                 new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), // Rhythm 5
@@ -441,32 +443,32 @@ public class FormY8950 extends FormChipBase<FormY8950.Params> {
 
         @Override public String id() { return "Y8950"; }
         @Override public String category() { return "opl"; }
-        @Override public Class<? extends mdplayer.Chip> chip() { return mdplayer.chips.Y8950Chip.class; }
+        @Override public Class<? extends mdplayer.Chip> chip() { return Y8950Chip.class; }
         @Override public String title(int chipId) { return "Y8950Inst (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"); }
         @Override public View create(FormMain frm, int chipId, int zoom) { return new FormY8950(frm, chipId, zoom); }
 
-        @Override public void setChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+        @Override public void setChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
             if (ch >= 0 && ch < 15) {
-                mdplayer.chips.Y8950Chip c = audio.plugin.chipRegister.chip(mdplayer.chips.Y8950Chip.class);
+                Y8950Chip c = audio.plugin.chipRegister.chip(Y8950Chip.class);
                 if (!c.getMask(chipId, ch)) c.setMask(chipId, ch); else c.resetMask(chipId, ch);
             }
         }
 
-        @Override public void resetChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
-            audio.plugin.chipRegister.chip(mdplayer.chips.Y8950Chip.class).resetMask(chipId, ch);
+        @Override public void resetChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+            audio.plugin.chipRegister.chip(Y8950Chip.class).resetMask(chipId, ch);
         }
 
-        @Override public void forceChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
+        @Override public void forceChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
             if (ch >= 0 && ch < 15) {
                 if (mask)
-                    audio.plugin.chipRegister.chip(mdplayer.chips.Y8950Chip.class).setMask(chipId, ch);
+                    audio.plugin.chipRegister.chip(Y8950Chip.class).setMask(chipId, ch);
                 else
-                    audio.plugin.chipRegister.chip(mdplayer.chips.Y8950Chip.class).resetMask(chipId, ch);
+                    audio.plugin.chipRegister.chip(Y8950Chip.class).resetMask(chipId, ch);
             }
         }
 
         @Override public List<MixerSlot> mixerSlots() {
-            return List.of(new MixerSlot(18, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Y8950Chip.class, "y8950", 200));
+            return List.of(new MixerSlot(18, MDSound.Chip.MAIN_TAG, Y8950Chip.class, "y8950", 200));
         }
     }
 }

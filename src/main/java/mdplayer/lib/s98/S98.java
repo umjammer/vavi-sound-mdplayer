@@ -156,22 +156,22 @@ public class S98 {
     }
 
     public static class S98Info {
-        public int formatVersion = 0;
-        public int syncNumerator = 0;
-        public int syncDNumerator = 0;
-        public int compressing = 0;
-        public int tagAddress = 0;
-        public int dumpAddress = 0;
-        public int loopAddress = 0;
-        public int deviceCount = 0;
+        int formatVersion = 0;
+        int syncNumerator = 0;
+        int syncDNumerator = 0;
+        int compressing = 0;
+        int tagAddress = 0;
+        int dumpAddress = 0;
+        int loopAddress = 0;
+        int deviceCount = 0;
         public List<S98DevInfo> deviceInfos = null;
     }
 
     public static class S98DevInfo {
-        public int chipId = 0;
+        int chipId = 0;
         public int deviceType = 0;
         public int clock = 0;
-        public int pan = 0;
+        int pan = 0;
     }
 
     public void oneFrameMain(byte[] data) {

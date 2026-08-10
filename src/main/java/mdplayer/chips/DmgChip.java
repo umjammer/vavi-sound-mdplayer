@@ -22,7 +22,7 @@ import mdsound.instrument.DmgInst;
  */
 public class DmgChip extends BaseChip {
 
-    public final boolean[][] mask = {
+    private final boolean[][] mask = {
             {false, false, false, false},
             {false, false, false, false}
     };

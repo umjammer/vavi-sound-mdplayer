@@ -38,10 +38,10 @@ public class Mixer {
      */
     public static final int MAX_SIDS = 3;
 
-    public static final int SCALE_FACTOR = 1 << 16;
-    public final static double SQRT_0_5 = 0.70710678118654746;
-    public static final int C1 = (int) (1.0 / (1.0 + SQRT_0_5) * SCALE_FACTOR);
-    public static final int C2 = (int) (SQRT_0_5 / (1.0 + SQRT_0_5) * SCALE_FACTOR);
+    private static final int SCALE_FACTOR = 1 << 16;
+    private final static double SQRT_0_5 = 0.70710678118654746;
+    private static final int C1 = (int) (1.0 / (1.0 + SQRT_0_5) * SCALE_FACTOR);
+    private static final int C2 = (int) (SQRT_0_5 / (1.0 + SQRT_0_5) * SCALE_FACTOR);
 
     private interface MixerFunction extends Supplier<Integer> {
     }
@@ -58,7 +58,7 @@ public class Mixer {
 
     private MixerFunction[] mix = new MixerFunction[1];
 
-    final Random random = new Random(System.currentTimeMillis());
+    private final Random random = new Random(System.currentTimeMillis());
 
     private int oldRandomValue;
 
@@ -164,7 +164,7 @@ public class Mixer {
         s.clock();
     }
 
-    public static class BufferPos {
+    static class BufferPos {
         public BufferPos(int i) {
             pos = i;
         }
@@ -176,7 +176,7 @@ public class Mixer {
         private final int pos;
     }
 
-    public static class BufferMove {
+    static class BufferMove {
         public BufferMove(int p, int s) {
             pos = p;
             samples = s;

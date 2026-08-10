@@ -9,6 +9,7 @@ package mdplayer.driver.mdsdrv;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.HexFormat;
 import java.util.List;
 
 import mdplayer.PlayList;
@@ -119,7 +120,7 @@ class MdsMetaDataTest {
             if (id.equals(chunkId)) {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 baos.write(mds, p + 8, size);
-                return java.util.HexFormat.of().formatHex(baos.toByteArray());
+                return HexFormat.of().formatHex(baos.toByteArray());
             }
             p += 8 + size + (size & 1);
         }

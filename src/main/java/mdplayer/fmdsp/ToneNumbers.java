@@ -26,7 +26,7 @@ import java.util.Map;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-07-25 nsano initial version <br>
  */
-public final class ToneNumbers {
+final class ToneNumbers {
 
     /** as many as the three digit column can show */
     private static final int limit = 1000;

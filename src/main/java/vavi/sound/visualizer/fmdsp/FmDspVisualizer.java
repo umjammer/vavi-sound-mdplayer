@@ -18,6 +18,7 @@ import java.awt.image.DataBufferInt;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -367,7 +368,7 @@ public class FmDspVisualizer extends JComponent {
     private static final Charset MS932 = Charset.forName("MS932");
 
     /** Size of a PC-98 font ROM dump. */
-    public static final int FONT_ROM_SIZE = 0x46800;
+    private static final int FONT_ROM_SIZE = 0x46800;
 
     /** The ANK glyphs start here, 16 bytes each. */
     private static final int ROM_ANK = 0x800;
@@ -1010,7 +1011,7 @@ public class FmDspVisualizer extends JComponent {
 
     private void vramInit() {
         WorkStateSource w = source != null ? source.work() : null;
-        java.util.Arrays.fill(vram, (byte) 0);
+        Arrays.fill(vram, (byte) 0);
 
         vramblit(PLAYING_X, PLAYING_Y, s_playing, 0, PLAYING_W, PLAYING_H);
         vramblit(FILEBAR_X, PLAYING_Y, s_filebar, 0, FILEBAR_W, FILEBAR_H);
@@ -1529,7 +1530,7 @@ public class FmDspVisualizer extends JComponent {
         s.gate = 0;
         s.detune = 0;
         s.status = "";
-        java.util.Arrays.fill(s.fmSlotMask, false);
+        Arrays.fill(s.fmSlotMask, false);
         s.ppz8Ch = 0;
         s.ssgTone = false;
         s.ssgNoise = false;
@@ -1624,7 +1625,7 @@ public class FmDspVisualizer extends JComponent {
         if (loopLen > 0) {
             pos = (int) ((loopPos % loopLen) * (72 + 1 - 4) / loopLen);
         }
-        pos = Math.max(0, Math.min(69, pos));
+        pos = Math.clamp(pos, 0, 69);
 
         boolean wplaying = w != null && w.playing() && !w.paused();
         for (int x = 0; x < 72; x++) {
@@ -1678,7 +1679,7 @@ public class FmDspVisualizer extends JComponent {
 
     private void renderFft() {
         FftDataSource fftSrc = source != null ? source.fft() : null;
-        java.util.Arrays.fill(fftScratch, 0);
+        Arrays.fill(fftScratch, 0);
         if (fftSrc != null) {
             fftSrc.readFft(fftScratch);
         }

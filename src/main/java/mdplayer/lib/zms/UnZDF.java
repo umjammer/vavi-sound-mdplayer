@@ -11,7 +11,7 @@ import mdplayer.emu.nise68.Nise68;
 import vavi.util.compat.Tuple;
 
 
-public class UnZDF {
+class UnZDF {
 
     /** lzz.r location */
     String dir;

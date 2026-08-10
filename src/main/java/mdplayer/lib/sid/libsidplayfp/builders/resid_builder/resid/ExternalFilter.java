@@ -33,18 +33,18 @@ package mdplayer.lib.sid.libsidplayfp.builders.resid_builder.resid;
  * of kHz. This calls for a sampling frequency of several MHz, which instanceof far
  * too high for practical use.
  */
-public class ExternalFilter {
+class ExternalFilter {
 
     // Filter enabled.
-    protected boolean enabled;
+    private boolean enabled;
 
     // State of filters (27 bits).
-    protected int vlp; // lowpass
-    protected int vhp; // highpass
+    private int vlp; // lowpass
+    private int vhp; // highpass
 
     // Cutoff frequencies.
-    protected final int w0Lp1S7;
-    protected final int w0Hp1S17;
+    private final int w0Lp1S7;
+    private final int w0Hp1S17;
 
     //
     // Inline functions.
@@ -115,7 +115,7 @@ public class ExternalFilter {
     /**
      * Audio Output (16 bits).
      */
-    static final int half = 1 << 15;
+    private static final int half = 1 << 15;
 
     public short output() {
         // Saturated arithmetics to guard against 16 bit sample overflow.

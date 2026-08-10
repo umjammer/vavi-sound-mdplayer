@@ -84,11 +84,11 @@ public class FormPlayList extends JFrame {
     public int y = -1;
     public Setting setting;
 
-    public String playFilename = "";
-    public String playArcFilename = "";
+    private String playFilename = "";
+    private String playArcFilename = "";
     public FileFormat playFormat = FileFormat.unknown;
     public EnmArcType playArcType = EnmArcType.unknown;
-    public int playSongNum = -1;
+    private int playSongNum = -1;
 
     private PlayList playList;
     private final FormMain frmMain;
@@ -103,7 +103,7 @@ public class FormPlayList extends JFrame {
     private final Random rand = new Random();
     private boolean IsInitialOpenFolder = true;
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormPlayList.class);
+    private static final Preferences prefs = Preferences.userNodeForPackage(FormPlayList.class);
 
     private static final String[] sext = ".vgm;.vgz;.zip;.lzh;.nrd;.xgm;.zgm;.s98;.nsf;.hes;.sid;.mnd;.mgs;.mdr;.mdx;.mub;.muc;.m;.m2;.mz;.mml;.mid;.rcp;.wav;.mp3;.aiff;.m3u".split(";");
 
@@ -170,7 +170,7 @@ public class FormPlayList extends JFrame {
         return true;
     }
 
-    public final List<Tuple<String, String>> randomStack = new ArrayList<>();
+    private final List<Tuple<String, String>> randomStack = new ArrayList<>();
 
     private final WindowListener windowListener = new WindowAdapter() {
         @Override
@@ -209,7 +209,7 @@ public class FormPlayList extends JFrame {
         }
     }
 
-    public void updatePlayingIndex(int newPlayingIndex) {
+    private void updatePlayingIndex(int newPlayingIndex) {
         logger.log(Level.INFO, "updatePlayingIndex: newPlayingIndex=" + newPlayingIndex +
                 ", dgvList.getRowCount()=" + dgvList.getRowCount() +
                 ", playList.getMusics().size()=" + playList.getMusics().size());
@@ -568,7 +568,7 @@ loopEx:
         });
         ofd.setDialogTitle("Select a playlist file");
         if (!frmMain.setting.getOther().getDefaultDataPath().isEmpty() && Files.exists(Path.of(frmMain.setting.getOther().getDefaultDataPath())) && IsInitialOpenFolder) {
-            ofd.setCurrentDirectory(new java.io.File(frmMain.setting.getOther().getDefaultDataPath()));
+            ofd.setCurrentDirectory(new File(frmMain.setting.getOther().getDefaultDataPath()));
 //        } else {
 //            ofd.RestoreDirectory = true;
         }
@@ -644,7 +644,7 @@ loopEx:
         sfd.setFileFilter(m3u ? m3uFilter : xmlFilter);
         sfd.setDialogTitle("Save the playlist file");
         if (!frmMain.setting.getOther().getDefaultDataPath().isEmpty() && Files.exists(Path.of(frmMain.setting.getOther().getDefaultDataPath())) && IsInitialOpenFolder) {
-            sfd.setCurrentDirectory(new java.io.File(frmMain.setting.getOther().getDefaultDataPath()));
+            sfd.setCurrentDirectory(new File(frmMain.setting.getOther().getDefaultDataPath()));
 //        } else {
 //            sfd.RestoreDirectory = true;
         }
@@ -710,7 +710,7 @@ loopEx:
         }
 
         if (!frmMain.setting.getOther().getDefaultDataPath().isEmpty() && Files.exists(Path.of(frmMain.setting.getOther().getDefaultDataPath())) && IsInitialOpenFolder) {
-            ofd.setCurrentDirectory(new java.io.File(frmMain.setting.getOther().getDefaultDataPath()));
+            ofd.setCurrentDirectory(new File(frmMain.setting.getOther().getDefaultDataPath()));
 //        } else {
 //            ofd.RestoreDirectory = true;
         }
@@ -727,7 +727,7 @@ loopEx:
         stop();
 
         try {
-            for (java.io.File fn : ofd.getSelectedFiles()) {
+            for (File fn : ofd.getSelectedFiles()) {
                 playList.addFile(fn.getPath());
             }
         } catch (Exception ex) {
@@ -737,7 +737,7 @@ loopEx:
         //play();
     }
 
-    static final String[] _exts = {
+    private static final String[] _exts = {
             ".vgm", ".vgz", ".zip", ".nrd",
             ".xgm", ".s98", ".nsf", ".hes",
             ".sid", ".mid", ".rcp", ".m3u",
@@ -749,7 +749,7 @@ loopEx:
         fbd.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         fbd.setDialogTitle("Please specify the folder.");
         if (!frmMain.setting.getOther().getDefaultDataPath().isEmpty() && Files.exists(Path.of(frmMain.setting.getOther().getDefaultDataPath()))) {
-            fbd.setSelectedFile(new java.io.File(frmMain.setting.getOther().getDefaultDataPath()));
+            fbd.setSelectedFile(new File(frmMain.setting.getOther().getDefaultDataPath()));
         }
 
         if (fbd.showOpenDialog(null) != JFileChooser.APPROVE_OPTION) {
@@ -980,7 +980,7 @@ loopEx:
         for (String f : files) {
             if (Files.isDirectory(Path.of(f))) {
                 try (var s = Files.list(Paths.get(f))) {
-                    List<String> fs = s.map(java.nio.file.Path::toString).collect(Collectors.toList());
+                    List<String> fs = s.map(Path::toString).collect(Collectors.toList());
                     getTrueFileNameList(res, fs);
                 } catch (IOException ev) {
                     throw new UncheckedIOException(ev);
@@ -1004,12 +1004,12 @@ loopEx:
         }
     }
 
-    String ofn = "";
-    String oafn = "";
-    final String[][] exts = new String[3][];
-    String text = "";
-    String mml = "";
-    String img = "";
+    private String ofn = "";
+    private String oafn = "";
+    private final String[][] exts = new String[3][];
+    private String text = "";
+    private String mml = "";
+    private String img = "";
 
     private void timer1_Tick(ActionEvent ev) {
         if (!playing) return;

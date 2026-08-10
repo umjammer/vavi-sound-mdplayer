@@ -1,5 +1,6 @@
 package mdplayer.driver.sid;
 
+import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -17,17 +18,17 @@ import static org.mockito.Mockito.when;
 
 
 @EnabledIfSystemProperty(named = "vavi.test", matches = "ai")
-public class SidMdDriverTest {
+class SidMdDriverTest {
 
     @Test
-    public void testDriver() throws Exception {
+    void testDriver() throws Exception {
         byte[] fileBuffer = Files.readAllBytes(Paths.get("../JSIDPlay2/tmp/Formula_1_Simulator.sid"));
-        
+
         BasePlugin plugin = mock(BasePlugin.class, Mockito.RETURNS_DEEP_STUBS);
-        java.lang.reflect.Field field = BasePlugin.class.getDeclaredField("chipRegister");
+        Field field = BasePlugin.class.getDeclaredField("chipRegister");
         field.setAccessible(true);
         field.set(plugin, mock(mdplayer.ChipRegister.class));
-        
+
         Setting.SID sidSetting = new Setting.SID();
         sidSetting.outputBufferSize = 5000;
         sidSetting.quality = 0;
@@ -35,7 +36,7 @@ public class SidMdDriverTest {
         sidSetting.sidModel = 0;
         sidSetting.c64modelForce = false;
         sidSetting.sidmodelForce = false;
-        
+
         Setting.getInstance().setSid(sidSetting);
         Setting.getInstance().getOutputDevice().setSampleRate(44100);
 

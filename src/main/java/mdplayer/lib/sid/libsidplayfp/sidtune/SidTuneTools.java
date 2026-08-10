@@ -20,7 +20,7 @@
 
 package mdplayer.lib.sid.libsidplayfp.sidtune;
 
-public class SidTuneTools {
+class SidTuneTools {
 
     /**
      * Return pointer to file name position : complete path.

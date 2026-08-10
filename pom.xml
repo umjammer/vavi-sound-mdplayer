@@ -3,7 +3,7 @@
 
   <groupId>vavi</groupId>
   <artifactId>vavi-apps-mdplayer</artifactId>
-  <version>0.0.22</version>
+  <version>0.0.23</version>
 
   <profiles>
     <profile>
@@ -150,9 +150,9 @@
                     <path refid="maven.compile.classpath"/>
                     <path refid="maven.test.classpath"/>
                   </classpath>
-                  <argument>--add-opens=java.base/java.io=ALL-UNNAMED</argument>
-                  <argument>--add-opens=java.base/sun.nio.ch=ALL-UNNAMED</argument>
-                  <argument>--add-exports=java.desktop/com.sun.media.sound=ALL-UNNAMED</argument>
+                  <jvmarg value="--add-opens=java.base/java.io=ALL-UNNAMED" />
+                  <jvmarg value="--add-opens=java.base/sun.nio.ch=ALL-UNNAMED" />
+                  <jvmarg value="--add-exports=java.desktop/com.sun.media.sound=ALL-UNNAMED" />
                   <jvmarg value="-Djava.util.logging.config.file=${project.build.testOutputDirectory}/logging.properties" />
                   <!-- jvmarg value="-Dswing.defaultlaf=com.formdev.flatlaf.FlatLightLaf" / -->
                   <jvmarg value="-Dapple.laf.useScreenMenuBar=true" />
@@ -241,6 +241,116 @@
         </plugins>
       </build>
     </profile>
+    <profile>
+      <!-- nested (jar in jar, NOT uber) runnable jar, `java -jar` ready:
+           mvn -P nested package -> target/${project.artifactId}-${project.version}-app.jar
+           the loader is org.eclipse.jdt.internal.jarinjarloader (eclipse's "package required libraries
+           into generated jar"), so each nested jar keeps its own META-INF/services as is -->
+      <id>nested</id>
+      <properties>
+        <nested.dir>${project.build.directory}/nested</nested.dir>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <version>3.8.1</version>
+            <executions>
+              <execution>
+                <!-- the nested jars themselves, they become resources of the outer jar -->
+                <id>nested-jars</id>
+                <phase>prepare-package</phase>
+                <goals>
+                  <goal>copy-dependencies</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${nested.dir}/lib</outputDirectory>
+                  <includeScope>runtime</includeScope>
+                </configuration>
+              </execution>
+              <execution>
+                <!-- the same list, in the same (maven resolution) order, for Rsrc-Class-Path below -->
+                <id>rsrc-class-path</id>
+                <phase>prepare-package</phase>
+                <goals>
+                  <goal>build-classpath</goal>
+                </goals>
+                <configuration>
+                  <outputProperty>nested.class.path</outputProperty>
+                  <includeScope>runtime</includeScope>
+                  <prefix>lib</prefix>
+                  <fileSeparator>/</fileSeparator>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <version>3.1.0</version>
+            <executions>
+              <execution>
+                <id>nested-classes</id>
+                <phase>prepare-package</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <configuration>
+                  <exportAntProperties>true</exportAntProperties>
+                  <target>
+                    <!-- our own classes, at the root of the outer jar (the "./" of Rsrc-Class-Path) -->
+                    <copy todir="${nested.dir}">
+                      <fileset dir="${project.build.outputDirectory}"/>
+                    </copy>
+                    <!-- Rsrc-Class-Path is space separated, and maven trims a lone space out of
+                         build-classpath's pathSeparator, so translate the default ':' here -->
+                    <loadresource property="rsrc.class.path">
+                      <string value="${nested.class.path}"/>
+                      <filterchain>
+                        <tokenfilter>
+                          <replaceregex pattern=":" replace=" " flags="g"/>
+                        </tokenfilter>
+                      </filterchain>
+                    </loadresource>
+                  </target>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <version>3.4.2</version>
+            <executions>
+              <execution>
+                <id>nested-jar</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+                <configuration>
+                  <classifier>app</classifier>
+                  <classesDirectory>${nested.dir}</classesDirectory>
+                  <archive>
+                    <manifest>
+                      <mainClass>org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader</mainClass>
+                    </manifest>
+                    <manifestEntries>
+                      <Rsrc-Main-Class>mdplayer.Program</Rsrc-Main-Class>
+                      <Rsrc-Class-Path>./ ${rsrc.class.path}</Rsrc-Class-Path>
+                      <!-- what the run profile passes on the command line -->
+                      <Add-Opens>java.base/java.io java.base/sun.nio.ch</Add-Opens>
+                      <Add-Exports>java.desktop/com.sun.media.sound</Add-Exports>
+                    </manifestEntries>
+                  </archive>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
 
   <build>
@@ -324,13 +434,13 @@
     <dependency>
       <groupId>com.github.umjammer</groupId>
       <artifactId>vavi-awt</artifactId>
-      <version>1.0.10</version>
+      <version>1.0.11</version>
     </dependency>
 
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
       <artifactId>vavi-sound-mdsound</artifactId>
-      <version>0.0.24</version>
+      <version>0.0.26</version>
     </dependency>
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
@@ -340,27 +450,27 @@
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
       <artifactId>vavi-sound-mucom88</artifactId>
-      <version>0.0.12</version>
+      <version>0.0.13</version>
     </dependency>
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
       <artifactId>vavi-sound-pmd</artifactId>
-      <version>0.0.11</version>
+      <version>0.0.12</version>
     </dependency>
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
       <artifactId>vavi-sound-moon</artifactId>
-      <version>0.0.11</version>
+      <version>0.0.12</version>
     </dependency>
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
       <artifactId>vavi-sound-muap</artifactId>
-      <version>0.0.8</version>
+      <version>0.0.9</version>
     </dependency>
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
       <artifactId>vavi-sound-mdsdrv</artifactId>
-      <version>0.4.9</version>
+      <version>0.4.10</version>
     </dependency>
 
     <dependency>
@@ -379,6 +489,15 @@
       <groupId>com.github.umjammer.vavi-sound-nsfplayer</groupId>
       <artifactId>nsfplayer</artifactId>
       <version>0.2.11</version>
+    </dependency>
+
+    <!-- how org.urish.jnavst calls into a VST plugin. it also turns up transitively from three
+         unrelated places at three versions (jna 5.14.0, jna-platform 5.17.0, jna-jpms 5.10.0),
+         so the one the host is written against is named here rather than left to resolution -->
+    <dependency>
+      <groupId>net.java.dev.jna</groupId>
+      <artifactId>jna</artifactId>
+      <version>5.19.1</version>
     </dependency>
 
     <dependency>

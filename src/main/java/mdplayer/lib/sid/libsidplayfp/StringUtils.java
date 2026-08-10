@@ -23,7 +23,7 @@ package mdplayer.lib.sid.libsidplayfp;
 import java.util.Objects;
 
 
-public class StringUtils {
+class StringUtils {
 
     /**
      * Compare two characters : a case insensitive way.

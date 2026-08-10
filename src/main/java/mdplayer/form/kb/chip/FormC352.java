@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
+import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.form.FrameBuffer;
 import mdplayer.form.ScreenPanel;
@@ -24,6 +25,7 @@ import mdplayer.chips.C352Chip;
 import mdplayer.form.kb.PcmChannelParams;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
+import mdsound.MDSound;
 import mdsound.instrument.C352Inst;
 
 import static mdplayer.form.FrameBuffer.rType;
@@ -33,7 +35,7 @@ import mdplayer.form.View;
 
 public class FormC352 extends FormChipBase<FormC352.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormC352.class);
+    private static final Preferences prefs = Preferences.userNodeForPackage(FormC352.class);
 
     public FormC352(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -65,7 +67,7 @@ public class FormC352 extends FormChipBase<FormC352.Params> {
         }
     };
 
-    public void changeZoom() {
+    private void changeZoom() {
         this.setMaximumSize(new Dimension(frameSizeW + Common.getImage("planeC352").getWidth() * zoom, frameSizeH + Common.getImage("planeC352").getHeight() * zoom));
         this.setMinimumSize(new Dimension(frameSizeW + Common.getImage("planeC352").getWidth() * zoom, frameSizeH + Common.getImage("planeC352").getHeight() * zoom));
         this.setPreferredSize(new Dimension(frameSizeW + Common.getImage("planeC352").getWidth() * zoom, frameSizeH + Common.getImage("planeC352").getHeight() * zoom));
@@ -278,7 +280,7 @@ public class FormC352 extends FormChipBase<FormC352.Params> {
         this.addComponentListener(this.componentListener);
     }
 
-    BufferedImage image;
+    private BufferedImage image;
 
 //#region draw buffer
 
@@ -336,16 +338,16 @@ public class FormC352 extends FormChipBase<FormC352.Params> {
 //#endregion
 
     /** this panel's channel row: the common core plus what only this chip displays */
-    public static class Channel extends PcmChannelParams {
+    static class Channel extends PcmChannelParams {
 
-        public int volumeRL = -1;
-        public int volumeRR = -1;
+        int volumeRL = -1;
+        int volumeRR = -1;
     }
 
     /** this panel's per-frame draw state, diffed new against old (see {@link FormChipBase}) */
-    public static class Params {
+    static class Params {
 
-        public final Channel[] channels = {
+        final Channel[] channels = {
                 new Channel(), new Channel(), new Channel(), new Channel(),
                 new Channel(), new Channel(), new Channel(), new Channel(),
                 new Channel(), new Channel(), new Channel(), new Channel(),
@@ -363,37 +365,37 @@ public class FormC352 extends FormChipBase<FormC352.Params> {
 
         @Override public String id() { return "C352"; }
         @Override public String category() { return "pcm"; }
-        @Override public Class<? extends mdplayer.Chip> chip() { return mdplayer.chips.C352Chip.class; }
+        @Override public Class<? extends mdplayer.Chip> chip() { return C352Chip.class; }
         @Override public boolean hasRegisterDump() { return true; }
         @Override public String title(int chipId) { return "C352Inst (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"); }
         @Override public View create(FormMain frm, int chipId, int zoom) { return new FormC352(frm, chipId, zoom); }
 
         @Override public void setChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
-            mdplayer.chips.C352Chip c = audio.plugin.chipRegister.chip(mdplayer.chips.C352Chip.class);
+            C352Chip c = audio.plugin.chipRegister.chip(C352Chip.class);
             if (!c.getMask(chipId, ch)) c.setMask(chipId, ch); else c.resetMask(chipId, ch);
         }
 
         @Override public void resetChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
             if (ch >= 0 && ch < 32) {
-                audio.plugin.chipRegister.chip(mdplayer.chips.C352Chip.class).resetMask(chipId, ch);
+                audio.plugin.chipRegister.chip(C352Chip.class).resetMask(chipId, ch);
             }
         }
 
         @Override public void forceChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
             if (mask)
-                audio.plugin.chipRegister.chip(mdplayer.chips.C352Chip.class).setMask(chipId, ch);
+                audio.plugin.chipRegister.chip(C352Chip.class).setMask(chipId, ch);
             else
-                audio.plugin.chipRegister.chip(mdplayer.chips.C352Chip.class).resetMask(chipId, ch);
+                audio.plugin.chipRegister.chip(C352Chip.class).resetMask(chipId, ch);
         }
 
-        @Override public void reapplyChannelMasks(mdplayer.Audio audio, int chipId) {
+        @Override public void reapplyChannelMasks(Audio audio, int chipId) {
             for (int ch = 0; ch < 32; ch++)
-                forceChannelMask(audio, mdplayer.chips.C352Chip.class, chipId, ch,
-                        audio.plugin.chipRegister.chip(mdplayer.chips.C352Chip.class).getMask(chipId, ch));
+                forceChannelMask(audio, C352Chip.class, chipId, ch,
+                        audio.plugin.chipRegister.chip(C352Chip.class).getMask(chipId, ch));
         }
 
         @Override public List<MixerSlot> mixerSlots() {
-            return List.of(new MixerSlot(40, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.C352Chip.class, "c352", 200));
+            return List.of(new MixerSlot(40, MDSound.Chip.MAIN_TAG, C352Chip.class, "c352", 200));
         }
     }
 }

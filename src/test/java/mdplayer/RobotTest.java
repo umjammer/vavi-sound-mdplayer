@@ -1,10 +1,14 @@
 package mdplayer;
 
 import java.awt.Frame;
+import java.awt.event.WindowEvent;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,7 +21,7 @@ import vavi.util.properties.annotation.PropsEntity;
 
 @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
 @PropsEntity(url = "file:local.properties")
-public class RobotTest {
+class RobotTest {
 
     static boolean localPropertiesExists() {
             return Files.exists(Paths.get("local.properties"));
@@ -119,7 +123,7 @@ public class RobotTest {
         FormMain finalMain = mainFrame;
         javax.swing.SwingUtilities.invokeAndWait(() -> {
             finalMain.setDefaultCloseOperation(javax.swing.JFrame.DISPOSE_ON_CLOSE);
-            finalMain.dispatchEvent(new java.awt.event.WindowEvent(finalMain, java.awt.event.WindowEvent.WINDOW_CLOSING));
+            finalMain.dispatchEvent(new WindowEvent(finalMain, WindowEvent.WINDOW_CLOSING));
         });
 
         // Sleep to verify thread closes cleanly without locking the GUI/AWT queue
@@ -170,7 +174,7 @@ public class RobotTest {
         assertEquals(0, robotExit, "Robot controller failed to execute click.");
 
         // Wait for player process to terminate
-        boolean exitedCleanly = playerProcess.waitFor(15, java.util.concurrent.TimeUnit.SECONDS);
+        boolean exitedCleanly = playerProcess.waitFor(15, TimeUnit.SECONDS);
         
         if (!exitedCleanly) {
             System.err.println("DEADLOCK DETECTED! Printing thread dump using jstack for PID: " + pid);
@@ -178,7 +182,7 @@ public class RobotTest {
                 ProcessBuilder jstackBuilder = new ProcessBuilder("jstack", String.valueOf(pid));
                 jstackBuilder.redirectErrorStream(true);
                 Process jstackProcess = jstackBuilder.start();
-                java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(jstackProcess.getInputStream()));
+                BufferedReader reader = new BufferedReader(new InputStreamReader(jstackProcess.getInputStream()));
                 String line;
                 while ((line = reader.readLine()) != null) {
                     System.err.println("  [jstack] " + line);

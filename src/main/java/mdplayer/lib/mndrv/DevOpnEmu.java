@@ -6,7 +6,7 @@ import mdplayer.lib.mndrv.MnWork.W;
 import mdplayer.lib.mndrv.MnWork.W_L;
 
 
-public class DevOpnEmu {
+class DevOpnEmu {
 
     public Reg reg;
     public XMemory mm;
@@ -52,7 +52,7 @@ public class DevOpnEmu {
     /**
      * SET F-Number
      */
-    public void _emu_set_fnum() {
+    private void _emu_set_fnum() {
         reg.setD2_W(reg.getD2_W() + (mm.readShort(reg.a5 + W.detune) & 0xffff));
         if ((short) reg.getD2_W() < 0) {
             reg.D2_L = 0;
@@ -66,13 +66,13 @@ public class DevOpnEmu {
     /**
      * SET F-Number
      */
-    public void _emu_set_fnum2() {
+    private void _emu_set_fnum2() {
         mm.write(reg.a5 + W.keycode, (short) reg.getD2_W());
         _get_kckf();
     }
 
     /** */
-    public void _get_kckf() {
+    private void _get_kckf() {
         reg.setD1_W(reg.getD2_W());
         reg.setD1_W(reg.getD1_W() & 0x3800);
         reg.setD1_W(reg.getD1_W() >> 7);
@@ -495,7 +495,7 @@ public class DevOpnEmu {
     }
 
     /** */
-    public void _FME_NOP() {
+    private void _FME_NOP() {
         mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) & 0x7f));
         devopm._opm_keyoff();
     }
@@ -506,7 +506,7 @@ public class DevOpnEmu {
         _ch_fme_lfo();
     }
 
-    public void _ch_fme_lfo() {
+    private void _ch_fme_lfo() {
         if ((mm.readByte(reg.a5 + W.effect) & 0x20) != 0) {
             reg.a4 = reg.a5 + W.ww_pattern1;
             devopm._ch_opm_ww();
@@ -587,19 +587,19 @@ public class DevOpnEmu {
     }
 
     /** */
-    public void _ch_fme_plfo_1() {
+    private void _ch_fme_plfo_1() {
         reg.a4 = reg.a5 + W.p_pattern1;
         reg.a3 = reg.a5 + W.wp_pattern1;
         _ch_fme_p_common();
     }
 
-    public void _ch_fme_plfo_2() {
+    private void _ch_fme_plfo_2() {
         reg.a4 = reg.a5 + W.p_pattern2;
         reg.a3 = reg.a5 + W.wp_pattern2;
         _ch_fme_p_common();
     }
 
-    public void _ch_fme_plfo_3() {
+    private void _ch_fme_plfo_3() {
         reg.a4 = reg.a5 + W.p_pattern1;
         reg.a3 = reg.a5 + W.wp_pattern1;
         _ch_fme_p_common();
@@ -608,31 +608,31 @@ public class DevOpnEmu {
         _ch_fme_p_common();
     }
 
-    public void _ch_fme_plfo_4() {
+    private void _ch_fme_plfo_4() {
         reg.a4 = reg.a5 + W.p_pattern3;
         reg.a3 = reg.a5 + W.wp_pattern3;
         _ch_fme_p_common();
     }
 
-    public void _ch_fme_plfo_5() {
+    private void _ch_fme_plfo_5() {
         reg.a4 = reg.a5 + W.p_pattern1;
         reg.a3 = reg.a5 + W.wp_pattern1;
-        _ch_fme_p_common();
-        reg.a4 = reg.a5 + W.p_pattern3;
-        reg.a3 = reg.a5 + W.wp_pattern3;
-        _ch_fme_p_common();
-    }
-
-    public void _ch_fme_plfo_6() {
-        reg.a4 = reg.a5 + W.p_pattern2;
-        reg.a3 = reg.a5 + W.wp_pattern2;
         _ch_fme_p_common();
         reg.a4 = reg.a5 + W.p_pattern3;
         reg.a3 = reg.a5 + W.wp_pattern3;
         _ch_fme_p_common();
     }
 
-    public void _ch_fme_plfo_7() {
+    private void _ch_fme_plfo_6() {
+        reg.a4 = reg.a5 + W.p_pattern2;
+        reg.a3 = reg.a5 + W.wp_pattern2;
+        _ch_fme_p_common();
+        reg.a4 = reg.a5 + W.p_pattern3;
+        reg.a3 = reg.a5 + W.wp_pattern3;
+        _ch_fme_p_common();
+    }
+
+    private void _ch_fme_plfo_7() {
         reg.a4 = reg.a5 + W.p_pattern1;
         reg.a3 = reg.a5 + W.wp_pattern1;
         _ch_fme_p_common();
@@ -645,7 +645,7 @@ public class DevOpnEmu {
     }
 
     /** */
-    public void _ch_fme_p_common() {
+    private void _ch_fme_p_common() {
         reg.D0_L = 1;
         reg.setD1_B(mm.readByte(reg.a4 + W_L.pattern) & 0xff);
         if ((byte) reg.getD1_B() < 0) {
@@ -670,13 +670,13 @@ public class DevOpnEmu {
         }
     }
 
-    public void _ch_fme_p_keyon_only() {
+    private void _ch_fme_p_keyon_only() {
         if ((mm.readByte(reg.a5 + W.flag) & 0x20) != 0) {
             _ch_fme_p_com_exec();
         }
     }
 
-    public void _ch_fme_p_com_exec() {
+    private void _ch_fme_p_com_exec() {
         reg.setD0_B(reg.getD0_B() + (int) (byte) reg.getD1_B());
         reg.setD0_W(reg.getD0_W() + (int) (short) reg.getD0_W());
 //_pe_pattern:
@@ -711,7 +711,7 @@ public class DevOpnEmu {
     /**
      * extended LFO
      */
-    public void _ch_fme_lfo_extend() {
+    private void _ch_fme_lfo_extend() {
         reg.D1_L = 7;
         reg.setD1_B(reg.getD1_B() & reg.getD0_B());
         if (reg.getD1_B() != 0) {
@@ -782,7 +782,7 @@ public class DevOpnEmu {
         _ch_fme_bend_job();
     }
 
-    public void _ch_fme_bend_job() {
+    private void _ch_fme_bend_job() {
         reg.setD0_B(mm.readByte(reg.a5 + W.lfo) & 0xff);
         if ((byte) reg.getD0_B() >= 0) return;
         if ((mm.readByte(reg.a5 + W.flag2) & 0x02) != 0) {
@@ -795,7 +795,7 @@ public class DevOpnEmu {
     /**
      * pitch bend
      */
-    public void _ch_fme_bend() {
+    private void _ch_fme_bend() {
         reg.a4 = reg.a5 + W.p_pattern4;
         mm.write(reg.a4 + W_L.delay_work, (byte) (mm.readByte(reg.a4 + W_L.delay_work) - 1));
         if (mm.readByte(reg.a4 + W_L.delay_work) != 0) {
@@ -825,7 +825,7 @@ public class DevOpnEmu {
         _emu_set_fnum2();
     }
 
-    public void _ch_fme_bend_end() {
+    private void _ch_fme_bend_end() {
         mm.write(reg.a4 + W_L.bendwork, (short) 0);
         mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) & 0x7f));
 
@@ -851,7 +851,7 @@ public class DevOpnEmu {
     /**
      * portament
      */
-    public void _ch_fme_porta() {
+    private void _ch_fme_porta() {
         reg.a4 = reg.a5 + W.p_pattern4;
 
         reg.setD1_W(mm.readShort(reg.a4 + W_L.henka) & 0xffff);
@@ -888,7 +888,7 @@ public class DevOpnEmu {
     /**
      * pitch LFO Sawtooth
      */
-    public void _ch_fme_p_0() {
+    private void _ch_fme_p_0() {
         comlfo.comLfoSaw();
         mm.write(reg.a5 + W.addkeycode, (short) ((mm.readShort(reg.a5 + W.addkeycode) & 0xffff) + (short) reg.getD1_W()));
         _ch_fme_p_calc3();
@@ -897,7 +897,7 @@ public class DevOpnEmu {
     /**
      * pitch LFO portamento
      */
-    public void _ch_fme_p_1() {
+    private void _ch_fme_p_1() {
         comlfo.comLfoPortament();
         mm.write(reg.a5 + W.addkeycode, (short) ((mm.readShort(reg.a5 + W.addkeycode) & 0xffff) + (short) reg.getD1_W()));
         _ch_fme_p_calc3();
@@ -906,7 +906,7 @@ public class DevOpnEmu {
     /**
      * pitch LFO delta
      */
-    public void _ch_fme_p_2() {
+    private void _ch_fme_p_2() {
         comlfo.comLfoTriangle();
         mm.write(reg.a5 + W.addkeycode, (short) ((mm.readShort(reg.a5 + W.addkeycode) & 0xffff) + (short) reg.getD1_W()));
         _ch_fme_p_calc3();
@@ -915,7 +915,7 @@ public class DevOpnEmu {
     /**
      * pitch LFO portamento2
      */
-    public void _ch_fme_p_3() {
+    private void _ch_fme_p_3() {
         comlfo.comLfoPortament();
         mm.write(reg.a5 + W.addkeycode, (short) ((mm.readShort(reg.a5 + W.addkeycode) & 0xffff) + (short) reg.getD1_W()));
         _ch_fme_p_calc2();
@@ -924,7 +924,7 @@ public class DevOpnEmu {
     /**
      * pitch LFO delta2
      */
-    public void _ch_fme_p_4() {
+    private void _ch_fme_p_4() {
         comlfo.comLfoTriangle();
         mm.write(reg.a5 + W.addkeycode, (short) ((mm.readShort(reg.a5 + W.addkeycode) & 0xffff) + (short) reg.getD1_W()));
         _ch_fme_p_calc2();
@@ -933,7 +933,7 @@ public class DevOpnEmu {
     /**
      * pitch LFO delta 3
      */
-    public void _ch_fme_p_5() {
+    private void _ch_fme_p_5() {
         mm.write(reg.a4 + W_L.delay_work, (byte) ((mm.readByte(reg.a4 + W_L.delay_work) & 0xff) - 1));
         if (mm.readByte(reg.a4 + W_L.delay_work) != 0) {
             //_ch_fme_p_5_end();
@@ -955,7 +955,7 @@ public class DevOpnEmu {
         _ch_fme_p_5_common();
     }
 
-    public void _ch_fme_p_5_plus() {
+    private void _ch_fme_p_5_plus() {
         mm.write(reg.a4 + W_L.bendwork, (short) ((mm.readShort(reg.a4 + W_L.bendwork) & 0xffff) + (short) reg.getD1_W()));
         reg.setD2_W(reg.getD2_W() + (int) (short) reg.getD1_W());
         if ((short) reg.getD2_W() < 0) {
@@ -964,7 +964,7 @@ public class DevOpnEmu {
         _ch_fme_p_5_common();
     }
 
-    public void _ch_fme_p_5_common() {
+    private void _ch_fme_p_5_common() {
         if (mm.readByte(reg.a5 + W.ch3) != 0) {
             mm.write(reg.a5 + W.keycode_s2, (short) ((mm.readShort(reg.a5 + W.keycode_s2) & 0xffff) + (short) reg.getD1_W()));
             mm.write(reg.a5 + W.keycode_s3, (short) ((mm.readShort(reg.a5 + W.keycode_s3) & 0xffff) + (short) reg.getD1_W()));
@@ -981,7 +981,7 @@ public class DevOpnEmu {
     /**
      * pitch LFO 1shot
      */
-    public void _ch_fme_p_6() {
+    private void _ch_fme_p_6() {
         comlfo.comLfoOneshot();
         mm.write(reg.a5 + W.addkeycode, (short) ((mm.readShort(reg.a5 + W.addkeycode) & 0xffff) + (short) reg.getD1_W()));
         _ch_fme_p_calc3();
@@ -990,7 +990,7 @@ public class DevOpnEmu {
     /**
      * pitch LFO 1shot 2
      */
-    public void _ch_fme_p_7() {
+    private void _ch_fme_p_7() {
         comlfo.comLfoOneshot();
         mm.write(reg.a5 + W.addkeycode, (short) ((mm.readShort(reg.a5 + W.addkeycode) & 0xffff) + (short) reg.getD1_W()));
         _ch_fme_p_calc2();
@@ -999,7 +999,7 @@ public class DevOpnEmu {
     /**
      * wavememory pitch
      */
-    public void _ch_fme_p_wavememory() {
+    private void _ch_fme_p_wavememory() {
         reg.setD4_W(mm.readShort(reg.a4 + W_L.flag) & 0xffff);
         if ((short) reg.getD4_W() >= 0) {
             _fm_pe_wave_exec();
@@ -1017,21 +1017,21 @@ public class DevOpnEmu {
         }
     }
 
-    public void _fm_pe_wave_exec() {
+    private void _fm_pe_wave_exec() {
         comwave._com_wave_exec();
         mm.write(reg.a5 + W.addkeycode, (short) ((mm.readShort(reg.a5 + W.addkeycode) & 0xffff) + reg.getD0_W()));
         _ch_fme_p_calc();
     }
 
     /** */
-    public void _ch_fme_p_calc() {
+    private void _ch_fme_p_calc() {
         // pea _emu_set_fnum2(pc)
         reg.setD2_W(mm.readShort(reg.a5 + W.keycode3) & 0xffff);
         devopn._ex_slot_calc();
         _emu_set_fnum2();
     }
 
-    public void _ch_fme_p_calc2() {
+    private void _ch_fme_p_calc2() {
         // pea _emu_set_fnum2(pc)
         reg.setD2_W(mm.readShort(reg.a5 + W.keycode3) & 0xffff);
         devopn._ex_slot_calc2();
@@ -1039,7 +1039,7 @@ public class DevOpnEmu {
     }
 
     /** */
-    public void _ch_fme_p_calc3() {
+    private void _ch_fme_p_calc3() {
         reg.setD2_W(mm.readShort(reg.a5 + W.keycode3) & 0xffff);
         reg.setD2_W(reg.getD2_W() + (mm.readShort(reg.a5 + W.addkeycode) & 0xffff));
         _emu_set_fnum2();

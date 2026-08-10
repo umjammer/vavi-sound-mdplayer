@@ -9,6 +9,7 @@ package mdplayer.driver.moonDriver;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Map;
 
 import mdplayer.ChipFmDspSource;
@@ -83,7 +84,7 @@ class MoonPcmLoadTest {
         plugin.close();
 
         // the bank goes to the head of the RAM, which is where the wave headers over 383 point
-        assertArrayEquals(pcm, java.util.Arrays.copyOf(ram, pcm.length),
+        assertArrayEquals(pcm, Arrays.copyOf(ram, pcm.length),
                 "the sample RAM must hold the companion .PCM");
 
         // the fmdsp file bar labels the slot with the type and shows the name without it

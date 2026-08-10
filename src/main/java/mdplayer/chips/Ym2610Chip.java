@@ -204,48 +204,48 @@ public class Ym2610Chip extends BaseChip {
         }
     }
 
-    public void write(int chipId, int dPort, int dAddr, int dData, EnmModel model) {
-        if (dAddr < 0 || dData < 0) return;
+    public void write(int chipId, int port, int addr, int data, EnmModel model) {
+        if (addr < 0 || data < 0) return;
 
         fireEventHappened("led.on", chipId);
 
         if ((model == EnmModel.VirtualModel && (chipTypes[chipId] == null || !chipTypes[chipId].getUseReal()[0]))
                 || (model == EnmModel.RealModel && (realChips != null && realChips[chipId] != null))
         ) {
-            if (dPort == 0 && (dAddr == 0x2d || dAddr == 0x2e || dAddr == 0x2f)) {
-                register[chipId][0][0x2d] = dAddr - 0x2d;
+            if (port == 0 && (addr == 0x2d || addr == 0x2e || addr == 0x2f)) {
+                register[chipId][0][0x2d] = addr - 0x2d;
             } else {
-                register[chipId][dPort][dAddr] = dData;
+                register[chipId][port][addr] = data;
             }
         }
 
-//logger.log(Level.TRACE, "OPNB p:%02X a:%02X D:%02X".formatted(dPort, dAddr, dData));
+//logger.log(Level.TRACE, "OPNB p:%02X a:%02X D:%02X".formatted(port, addr, data));
 
         if ((model == EnmModel.RealModel && chipTypes[chipId].getUseReal()[0]) || (model == EnmModel.VirtualModel && !chipTypes[chipId].getUseReal()[0])) {
-            //register[dPort][dAddr] = dData;
-            if (dPort == 0 && dAddr == 0x28) {
-                int ch = (dData & 0x3) + ((dData & 0x4) > 0 ? 3 : 0);
-                if (ch >= 0 && ch < 6 /* && (dData & 0xf0) > 0 */) {
+            //register[port][addr] = data;
+            if (port == 0 && addr == 0x28) {
+                int ch = (data & 0x3) + ((data & 0x4) > 0 ? 3 : 0);
+                if (ch >= 0 && ch < 6 /* && (data & 0xf0) > 0 */) {
                     if (ch != 2 || (register[chipId][0][0x27] & 0xc0) != 0x40) {
-                        if ((dData & 0xf0) != 0) {
-                            keyOn[chipId][ch] = (dData & 0xf0) | 1;
+                        if ((data & 0xf0) != 0) {
+                            keyOn[chipId][ch] = (data & 0xf0) | 1;
                             volume[chipId][ch] = 256 * 6;
                         } else {
                             keyOn[chipId][ch] &= 0xfe;
                         }
                     } else {
-                        keyOn[chipId][2] = dData & 0xf0;
-                        if ((dData & 0x10) > 0) ch3SlotVolume[chipId][0] = 256 * 6;
-                        if ((dData & 0x20) > 0) ch3SlotVolume[chipId][1] = 256 * 6;
-                        if ((dData & 0x40) > 0) ch3SlotVolume[chipId][2] = 256 * 6;
-                        if ((dData & 0x80) > 0) ch3SlotVolume[chipId][3] = 256 * 6;
+                        keyOn[chipId][2] = data & 0xf0;
+                        if ((data & 0x10) > 0) ch3SlotVolume[chipId][0] = 256 * 6;
+                        if ((data & 0x20) > 0) ch3SlotVolume[chipId][1] = 256 * 6;
+                        if ((data & 0x40) > 0) ch3SlotVolume[chipId][2] = 256 * 6;
+                        if ((data & 0x80) > 0) ch3SlotVolume[chipId][3] = 256 * 6;
                     }
                 }
             }
 
             // ADPCM B KEYON
-            if (dPort == 0 && dAddr == 0x10) {
-                if ((dData & 0x80) != 0) {
+            if (port == 0 && addr == 0x10) {
+                if ((data & 0x80) != 0) {
                     int p = (register[chipId][0][0x11] & 0xc0) >> 6;
                     p = p == 0 ? 3 : p;
                     if (adpcmPan[chipId] != p)
@@ -260,22 +260,22 @@ public class Ym2610Chip extends BaseChip {
             }
 
             // ADPCM a KEYON
-            if (dPort == 1 && dAddr == 0x00) {
+            if (port == 1 && addr == 0x00) {
                 for (int i = 0; i < adpcmAKeys[chipId].length; i++) {
-                    if ((dData & (1 << i)) == 0) continue;
-                    if ((dData & 0x80) != 0) {
+                    if ((data & (1 << i)) == 0) continue;
+                    if ((data & 0x80) != 0) {
                         adpcmAKeys[chipId][i] = false; // the dump bit is this section's key off
                     } else {
                         adpcmAKeys[chipId][i] = true;
                         adpcmAHits[chipId][i]++;
                     }
                 }
-                if ((dData & 0x80) == 0) {
+                if ((data & 0x80) == 0) {
                     int tl = register[chipId][1][0x01] & 0x3f;
                     for (int i = 0; i < 6; i++) {
-                        if ((dData & (0x1 << i)) != 0) {
+                        if ((data & (0x1 << i)) != 0) {
                             //int il = register[chipId][1][0x08 + i] & 0x1f;
-                            int pan = ((register[chipId][1][0x08 + i] & 0xc0) >> 6) * (((dData & 0x80) == 0) ? 1 : 0);
+                            int pan = ((register[chipId][1][0x08 + i] & 0xc0) >> 6) * (((data & 0x80) == 0) ? 1 : 0);
                             //rhythmVolume[chipId][i][0] = (int)(256 * 6 * ((tl * il) >> 4) / 127.0) * ((pan & 2) > 0 ? 1 : 0);
                             //rhythmVolume[chipId][i][1] = (int)(256 * 6 * ((tl * il) >> 4) / 127.0) * ((pan & 1) > 0 ? 1 : 0);
                             rhythmVolume[chipId][i][0] = ((pan & 2) > 0 ? 1 : 0);
@@ -289,76 +289,76 @@ public class Ym2610Chip extends BaseChip {
             }
         }
 
-        if ((dAddr & 0xf0) == 0x40) { // TL
-            int ch = (dAddr & 0x3);
-            int slot = (dAddr & 0xc) >> 2;
-            int al = register[chipId][dPort][0xb0 + ch] & 0x07; // AL
-            dData &= 0x7f;
+        if ((addr & 0xf0) == 0x40) { // TL
+            int ch = (addr & 0x3);
+            int slot = (addr & 0xc) >> 2;
+            int al = register[chipId][port][0xb0 + ch] & 0x07; // AL
+            data &= 0x7f;
 
             if (ch != 3) {
                 if ((algM[al] & (1 << slot)) > 0) {
-                    dData = Math.min(dData + nowFadeoutVol[chipId], 127);
-                    dData = mask[chipId][dPort * 3 + ch] ? 127 : dData;
+                    data = Math.min(data + nowFadeoutVol[chipId], 127);
+                    data = mask[chipId][port * 3 + ch] ? 127 : data;
                 }
             }
         }
 
-        if ((dAddr & 0xf0) == 0xb0) { // AL
-            int ch = (dAddr & 0x3);
-            int al = dData & 0x07; // AL
+        if ((addr & 0xf0) == 0xb0) { // AL
+            int ch = (addr & 0x3);
+            int al = data & 0x07; // AL
 
             if (ch != 3 && mask[chipId][ch]) {
                 for (int slot = 0; slot < 4; slot++) {
                     if ((algM[al] & (1 << slot)) != 0) {
                         int tslot = (slot == 1 ? 2 : (slot == 2 ? 1 : slot)) * 4;
-                        write(chipId, dPort, 0x40 + ch + tslot,
-                                register[chipId][dPort][0x40 + ch + tslot], model);
+                        write(chipId, port, 0x40 + ch + tslot,
+                                register[chipId][port][0x40 + ch + tslot], model);
                     }
                 }
             }
         }
 
         // ssg mixer
-        if (dPort == 0 && dAddr == 0x07) {
+        if (port == 0 && addr == 0x07) {
             int maskData = 0;
             if (mask[chipId][6]) maskData |= 0x9 << 0;
             if (mask[chipId][7]) maskData |= 0x9 << 1;
             if (mask[chipId][8]) maskData |= 0x9 << 2;
-            dData |= maskData;
+            data |= maskData;
         }
 
         // ssg level
-        if (dPort == 0 && (dAddr == 0x08 || dAddr == 0x09 || dAddr == 0x0a)) {
+        if (port == 0 && (addr == 0x08 || addr == 0x09 || addr == 0x0a)) {
             int d = nowFadeoutVol[chipId] >> 3;
-            dData = Math.max(dData - d, 0);
-            dData = mask[chipId][dAddr - 0x08 + 6] ? 0 : dData;
+            data = Math.max(data - d, 0);
+            data = mask[chipId][addr - 0x08 + 6] ? 0 : data;
         }
 
         // rhythm level
-        if (dPort == 1 && dAddr == 0x01) {
+        if (port == 1 && addr == 0x01) {
             int d = nowFadeoutVol[chipId] >> 1;
-            dData = Math.max(dData - d, 0);
-            //dData = mask[chipId][12] ? 0 : dData;
+            data = Math.max(data - d, 0);
+            //data = mask[chipId][12] ? 0 : data;
         }
 
         // Rhythm
-        if (dPort == 1 && dAddr == 0x00) {
+        if (port == 1 && addr == 0x00) {
             if (mask[chipId][12]) {
-                dData = 0xbf;
+                data = 0xbf;
             }
         }
 
         // adpcm level
-        if (dPort == 0 && dAddr == 0x1b) {
+        if (port == 0 && addr == 0x1b) {
             int d = nowFadeoutVol[chipId] * 2;
-            dData = Math.max(dData - d, 0);
-            dData = mask[chipId][13] ? 0 : dData;
+            data = Math.max(data - d, 0);
+            data = mask[chipId][13] ? 0 : data;
         }
 
         // adpcm start
-        if (dPort == 0 && dAddr == 0x10) {
-            if ((dData & 0x80) != 0 && mask[chipId][13]) {
-                dData &= 0x7f;
+        if (port == 0 && addr == 0x10) {
+            if ((data & 0x80) != 0 && mask[chipId][13]) {
+                data &= 0x7f;
             }
         }
 
@@ -366,12 +366,12 @@ public class Ym2610Chip extends BaseChip {
             if ((chipTypes[chipId].getUseReal().length > 0 && !chipTypes[chipId].getUseReal()[0])
                     && (chipTypes[chipId].getUseReal().length < 2 || (chipTypes[chipId].getUseReal().length > 1 && !chipTypes[chipId].getUseReal()[1]))
             ) {
-                context.mds.write(_inst(chipId), chipId, dPort, dAddr, dData);
+                context.mds.write(_inst(chipId), chipId, port, addr, data);
             }
         } else {
-            if (realChips[chipId] != null) realChips[chipId].setRegister(dPort * 0x100 + dAddr, dData);
+            if (realChips[chipId] != null) realChips[chipId].setRegister(port * 0x100 + addr, data);
             if (realChipsEA[chipId] != null) {
-                int dReg = (dPort << 8) | dAddr;
+                int dReg = (port << 8) | addr;
                 boolean bSend = true;
                 // Mask the register and send
                 if (dReg >= 0x100 && dReg <= 0x12d) {
@@ -382,11 +382,11 @@ public class Ym2610Chip extends BaseChip {
                     bSend = false;
                 }
                 if (bSend) {
-                    realChipsEA[chipId].setRegister((dPort << 8) | dAddr, dData);
+                    realChipsEA[chipId].setRegister((port << 8) | addr, data);
                 }
             }
             if (realChipsEB[chipId] != null) {
-                realChipsEB[chipId].setRegister((dPort << 8) | dAddr | 0x10000, dData);
+                realChipsEB[chipId].setRegister((port << 8) | addr | 0x10000, data);
             }
         }
     }
@@ -432,7 +432,7 @@ public class Ym2610Chip extends BaseChip {
         }
     }
 
-    public void writeAdpcmA(int chipId, EnmModel model, int startAddr, int length, byte[] buf, int srcStartAddr) {
+    private void writeAdpcmA(int chipId, EnmModel model, int startAddr, int length, byte[] buf, int srcStartAddr) {
         if (model == EnmModel.VirtualModel) {
         } else {
             if (realChips[chipId] != null) {
@@ -511,7 +511,7 @@ public class Ym2610Chip extends BaseChip {
         }
     }
 
-    public void writeAdpcmB(int chipId, EnmModel model, int startAddr, int length, byte[] buf, int srcStartAddr) {
+    private void writeAdpcmB(int chipId, EnmModel model, int startAddr, int length, byte[] buf, int srcStartAddr) {
         if (model == EnmModel.VirtualModel) {
         } else {
             if (realChips[chipId] != null) {
@@ -649,7 +649,7 @@ public class Ym2610Chip extends BaseChip {
             for (int cnt = 0; cnt < bLen - 8; cnt++) {
                 ym2610AdpcmA[chipId][startAddress + cnt] = vgmBuf[vgmAdr + 15 + cnt];
             }
-            if (model == mdplayer.Common.EnmModel.VirtualModel)
+            if (model == EnmModel.VirtualModel)
                 writeAdpcmA(chipId, ym2610AdpcmA[chipId], model);
             else
                 writeAdpcmA(chipId, model, startAddress, bLen - 8, vgmBuf, vgmAdr + 15);
@@ -665,7 +665,7 @@ public class Ym2610Chip extends BaseChip {
             for (int cnt = 0; cnt < bLen - 8; cnt++) {
                 ym2610AdpcmB[chipId][startAddress + cnt] = vgmBuf[vgmAdr + 15 + cnt];
             }
-            if (model == mdplayer.Common.EnmModel.VirtualModel)
+            if (model == EnmModel.VirtualModel)
                 writeAdpcmB(chipId, ym2610AdpcmB[chipId], model);
             else
                 writeAdpcmB(chipId, model, startAddress, bLen - 8, vgmBuf, vgmAdr + 15);

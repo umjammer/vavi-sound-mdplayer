@@ -65,8 +65,8 @@ public class Nsf2 {
     private final byte[] extra = new byte[4];
     private byte[] body;
     private int bodySize;
-    NsfAudioFactory factory;
-    NsfAudio nsf;
+    private NsfAudioFactory factory;
+    private NsfAudio nsf;
     public NsfRenderer renderer;
     public Charset charset;
 

@@ -5,14 +5,14 @@ import java.util.List;
 import java.util.function.Supplier;
 
 
-public class Inst {
+class Inst {
 
-    public Supplier<Integer> meth;
-    public int length;
-    public String flags;
-    public int[] cycle;
+    final Supplier<Integer> meth;
+    public final int length;
+    private final String flags;
+    public final int[] cycle;
 
-    public Inst(Supplier<Integer> meth, int length, String cycle, String flags) {
+    Inst(Supplier<Integer> meth, int length, String cycle, String flags) {
         this.meth = meth;
         this.length = length;
         String sCycle = cycle;

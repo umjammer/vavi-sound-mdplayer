@@ -17,23 +17,28 @@ import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
+import mdplayer.Audio;
 import mdplayer.Common;
+import mdplayer.Setting;
 import mdplayer.form.FrameBuffer;
 import mdplayer.form.ScreenPanel;
 import mdplayer.Tables;
 import mdplayer.chips.NpNesChip;
 import mdplayer.chips.NpNesChip.N163Chip;
+import mdplayer.form.VisVolume;
+import mdplayer.form.inst.MckInstWriter;
 import mdplayer.form.kb.ChannelParams;
 import mdplayer.form.kb.Meters;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
+import mdsound.MDSound;
 import mdsound.np.chip.NesN106;
 import mdplayer.form.View;
 
 
 public class FormN106 extends FormChipBase<FormN106.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormN106.class);
+    private static final Preferences prefs = Preferences.userNodeForPackage(FormN106.class);
 
     public FormN106(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -65,7 +70,7 @@ public class FormN106 extends FormChipBase<FormN106.Params> {
         }
     };
 
-    public void changeZoom() {
+    private void changeZoom() {
         this.setMaximumSize(new Dimension(frameSizeW + Common.getImage("planeN106").getWidth() * zoom, frameSizeH + Common.getImage("planeN106").getHeight() * zoom));
         this.setMinimumSize(new Dimension(frameSizeW + Common.getImage("planeN106").getWidth() * zoom, frameSizeH + Common.getImage("planeN106").getHeight() * zoom));
         this.setPreferredSize(new Dimension(frameSizeW + Common.getImage("planeN106").getWidth() * zoom, frameSizeH + Common.getImage("planeN106").getHeight() * zoom));
@@ -238,7 +243,7 @@ public class FormN106 extends FormChipBase<FormN106.Params> {
         this.addComponentListener(this.componentListener);
     }
 
-    BufferedImage image;
+    private BufferedImage image;
 
 //#region draw buffer
 
@@ -276,16 +281,16 @@ public class FormN106 extends FormChipBase<FormN106.Params> {
 //#endregion
 
     /** this panel's channel row: the common core plus what only this chip displays */
-    public static class Channel extends ChannelParams {
+    static class Channel extends ChannelParams {
 
-        public int bank = -1;
-        public short[] aryWave16bit;
+        int bank = -1;
+        short[] aryWave16bit;
     }
 
     /** this panel's per-frame draw state, diffed new against old (see {@link FormChipBase}) */
-    public static class Params {
+    static class Params {
 
-        public final Channel[] channels = {
+        final Channel[] channels = {
                 new Channel(), new Channel(), new Channel(), new Channel(),
                 new Channel(), new Channel(), new Channel(), new Channel()
         };
@@ -297,45 +302,45 @@ public class FormN106 extends FormChipBase<FormN106.Params> {
         @Override public String id() { return "N106"; }
         @Override public String menuText() { return "N163(N106)"; }
         @Override public String category() { return "nes"; }
-        @Override public Class<? extends mdplayer.Chip> chip() { return mdplayer.chips.NpNesChip.N163Chip.class; }
+        @Override public Class<? extends mdplayer.Chip> chip() { return NpNesChip.N163Chip.class; }
         @Override public String title(int chipId) { return "N163(N106) (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"); }
         @Override public View create(FormMain frm, int chipId, int zoom) { return new FormN106(frm, chipId, zoom); }
 
-        @Override public void setChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+        @Override public void setChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
             if (ch >= 0 && ch < 8) {
-                mdplayer.chips.NpNesChip.N163Chip c = audio.plugin.chipRegister.chip(mdplayer.chips.NpNesChip.N163Chip.class);
+                NpNesChip.N163Chip c = audio.plugin.chipRegister.chip(NpNesChip.N163Chip.class);
                 if (!c.getMask(chipId, ch)) c.setMask(chipId, ch); else c.resetMask(chipId, ch);
             }
         }
 
-        @Override public void resetChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
-            audio.plugin.chipRegister.chip(mdplayer.chips.NpNesChip.N163Chip.class).resetMask(chipId, ch);
+        @Override public void resetChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+            audio.plugin.chipRegister.chip(NpNesChip.N163Chip.class).resetMask(chipId, ch);
         }
 
-        @Override public void forceChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
+        @Override public void forceChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
             if (mask)
-                audio.plugin.chipRegister.chip(mdplayer.chips.NpNesChip.N163Chip.class).setMask(chipId, ch);
+                audio.plugin.chipRegister.chip(NpNesChip.N163Chip.class).setMask(chipId, ch);
             else
-                audio.plugin.chipRegister.chip(mdplayer.chips.NpNesChip.N163Chip.class).resetMask(chipId, ch);
+                audio.plugin.chipRegister.chip(NpNesChip.N163Chip.class).resetMask(chipId, ch);
         }
 
-        @Override public void reapplyChannelMasks(mdplayer.Audio audio, int chipId) {
+        @Override public void reapplyChannelMasks(Audio audio, int chipId) {
             for (int ch = 0; ch < 8; ch++)
-                forceChannelMask(audio, mdplayer.chips.NpNesChip.N163Chip.class, chipId, ch,
-                        audio.plugin.chipRegister.chip(mdplayer.chips.NpNesChip.N163Chip.class).getMask(chipId, ch));
+                forceChannelMask(audio, NpNesChip.N163Chip.class, chipId, ch,
+                        audio.plugin.chipRegister.chip(NpNesChip.N163Chip.class).getMask(chipId, ch));
         }
 
         @Override public List<MixerSlot> mixerSlots() {
-            return List.of(new MixerSlot(52, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.NpNesChip.N163Chip.class, "N160", 50));
+            return List.of(new MixerSlot(52, MDSound.Chip.MAIN_TAG, NpNesChip.N163Chip.class, "N160", 50));
         }
 
-        @Override public void updateMeters(mdplayer.Audio audio, mdplayer.form.VisVolume visVolume) {
+        @Override public void updateMeters(Audio audio, VisVolume visVolume) {
             int n160 = Meters.npNesVolume(audio, 3);
             if (n160 >= 0) visVolume.put("N160", n160 * 15);
         }
 
-        @Override public void getInstCh(Component parent, mdplayer.Audio audio, mdplayer.Setting setting, int ch, int chipId) {
-            new mdplayer.form.inst.MckInstWriter().write(parent, audio, chip(), ch, chipId);
+        @Override public void getInstCh(Component parent, Audio audio, Setting setting, int ch, int chipId) {
+            new MckInstWriter().write(parent, audio, chip(), ch, chipId);
         }
     }
 }

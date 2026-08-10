@@ -23,7 +23,7 @@ import vavi.util.event.GenericEvent;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-05-04 nsano initial version <br>
  */
-public class Visualizer extends JPanel {
+class Visualizer extends JPanel {
 
     private Map<String, Integer>[] fmChannels;
     private Map<String, Integer>[] pcmChannels;

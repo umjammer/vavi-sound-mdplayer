@@ -241,7 +241,7 @@ public class Ym2151Chip extends BaseChip {
         }
     }
 
-    public void softReset(int chipId, EnmModel model) {
+    private void softReset(int chipId, EnmModel model) {
 
         // FM all channel keys off
         for (int i = 0; i < 8; i++) {
@@ -323,7 +323,7 @@ public class Ym2151Chip extends BaseChip {
         }
     }
 
-    public int getClock(int chipId) {
+    private int getClock(int chipId) {
         if (realChips[chipId] == null)
             return -1;
 

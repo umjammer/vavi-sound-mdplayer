@@ -5,6 +5,7 @@ import java.awt.Component;
 import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common;
+import mdplayer.Common.EnmInstFormat;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.chips.Ym2203Chip;
 import mdplayer.chips.Ym2608Chip;
@@ -16,8 +17,8 @@ import mdplayer.chips.Ym2612Chip;
 public class MdxInstWriter implements InstWriter {
 
     @Override
-    public mdplayer.Common.EnmInstFormat format() {
-        return mdplayer.Common.EnmInstFormat.MDX;
+    public EnmInstFormat format() {
+        return EnmInstFormat.MDX;
     }
 
     @Override

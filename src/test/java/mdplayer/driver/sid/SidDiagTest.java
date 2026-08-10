@@ -31,7 +31,7 @@ import static org.mockito.Mockito.when;
  * per-voice FREQ writes and accumulator snapshots for voice 0/1/2 so we can
  * see whether voice 0's pitch path is misbehaving.
  */
-public class SidDiagTest {
+class SidDiagTest {
 
     private static final int SamplingRate = 44100;
 
@@ -95,7 +95,7 @@ public class SidDiagTest {
             wav = new java.io.DataOutputStream(new java.io.BufferedOutputStream(new java.io.FileOutputStream(args[4])));
         }
 
-        Integer[] reg = sid.GetRegister();
+        Integer[] reg = sid.getRegister();
         for (int b = 0; b < buffersToPlay; b++) {
             int produced = engine.play(sampleBuffer, bufferSize * 2);
             long sumSq = 0;

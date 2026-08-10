@@ -20,7 +20,14 @@ public class KeyboardHook {
 
     private static final Logger logger = getLogger(KeyboardHook.class.getName());
 
-    static class GlobalKeyListener implements NativeKeyListener {
+    static {
+        // jnativehook's default locator wants its own code source as a file, which a nested jar cannot give
+        if (System.getProperty("jnativehook.lib.locator") == null) {
+            System.setProperty("jnativehook.lib.locator", NativeHookLibraryLocator.class.getName());
+        }
+    }
+
+    private static class GlobalKeyListener implements NativeKeyListener {
         @Override
         public void nativeKeyPressed(NativeKeyEvent e) {
             logger.log(Level.TRACE, "Key Pressed: " + NativeKeyEvent.getKeyText(e.getKeyCode()));
@@ -52,7 +59,7 @@ public class KeyboardHook {
         GlobalScreen.addNativeKeyListener(handler);
     }
 
-    void removeKeyboardHooked(NativeKeyListener handler) {
+    public void removeKeyboardHooked(NativeKeyListener handler) {
         GlobalScreen.addNativeKeyListener(handler);
     }
 

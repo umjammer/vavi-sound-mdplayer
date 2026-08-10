@@ -4,7 +4,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 
-public class MemHook {
+class MemHook {
 
     public final int startAdr;
     public final int endAdr;

@@ -20,6 +20,7 @@ import musicDriverInterface.MetaData.Tag;
 import vavi.util.ByteUtil;
 
 import static mdplayer.Common.charset;
+import static mdplayer.lib.mid.MID.deltaLength;
 import static mdplayer.lib.mid.MID.getDelta;
 
 
@@ -74,15 +75,16 @@ public class MidiDriver extends BaseDriver {
                 int trkEndadr = adr + len;
 
                 while (adr < trkEndadr && adr < buf.length) {
-                    int delta = getDelta(adr, buf);
+                    adr += deltaLength(adr, buf); // the metadata scan only has to step over the delta
                     byte cmd = buf[adr++];
                     if ((cmd & 0xff) == 0xf0 || (cmd & 0xff) == 0xf7) {
-                        int bAdr = adr - 1;
                         int datalen = getDelta(adr, buf);
+                        adr += deltaLength(adr, buf);
                         adr = adr + datalen;
                     } else if ((cmd & 0xff) == 0xff) {
                         byte eventType = buf[adr++];
                         int eventLen = getDelta(adr, buf);
+                        adr += deltaLength(adr, buf);
                         List<Byte> eventData = new ArrayList<>();
                         for (int j = 0; j < eventLen; j++) {
                             if (buf[adr + j] == 0) break;

@@ -17,23 +17,28 @@ import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
+import mdplayer.Audio;
 import mdplayer.Chip.ChipKeyInfo;
 import mdplayer.Common;
+import mdplayer.Setting;
 import mdplayer.form.FrameBuffer;
 import mdplayer.form.ScreenPanel;
 import mdplayer.Tables;
 import mdplayer.chips.SegaPcmChip;
 import mdplayer.chips.Ym3812Chip;
+import mdplayer.form.inst.OpliInstWriter;
+import mdplayer.form.inst.SendMml2vgmInstWriter;
 import mdplayer.form.kb.ChannelParams;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
+import mdsound.MDSound;
 import mdsound.instrument.Ym3812Inst;
 import mdplayer.form.View;
 
 
 public class FormYM3812 extends FormChipBase<FormYM3812.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormYM3812.class);
+    private static final Preferences prefs = Preferences.userNodeForPackage(FormYM3812.class);
 
     public FormYM3812(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -75,7 +80,7 @@ public class FormYM3812 extends FormChipBase<FormYM3812.Params> {
         }
     };
 
-    public void changeZoom() {
+    private void changeZoom() {
         this.setMaximumSize(new Dimension(frameSizeW + Common.getImage("planeYM3812").getWidth() * zoom, frameSizeH + Common.getImage("planeYM3812").getHeight() * zoom));
         this.setMinimumSize(new Dimension(frameSizeW + Common.getImage("planeYM3812").getWidth() * zoom, frameSizeH + Common.getImage("planeYM3812").getHeight() * zoom));
         this.setPreferredSize(new Dimension(frameSizeW + Common.getImage("planeYM3812").getWidth() * zoom, frameSizeH + Common.getImage("planeYM3812").getHeight() * zoom));
@@ -337,7 +342,7 @@ public class FormYM3812 extends FormChipBase<FormYM3812.Params> {
         this.addComponentListener(this.componentListener);
     }
 
-    BufferedImage image;
+    private BufferedImage image;
 
 //#region draw buffer
 
@@ -403,15 +408,15 @@ public class FormYM3812 extends FormChipBase<FormYM3812.Params> {
 //#endregion
 
     /** this panel's channel row: the common core plus what only this chip displays */
-    public static class Channel extends ChannelParams {
+    static class Channel extends ChannelParams {
 
-        public boolean dda = false;
+        boolean dda = false;
     }
 
     /** this panel's per-frame draw state, diffed new against old (see {@link FormChipBase}) */
-    public static class Params {
+    static class Params {
 
-        public final Channel[] channels = {
+        final Channel[] channels = {
                 new Channel(), new Channel(), new Channel(), new Channel(), new Channel(),
                 new Channel(), new Channel(), new Channel(), new Channel(), // FM 9
                 new Channel(), new Channel(), new Channel(), new Channel(), new Channel() // Rhythm 5
@@ -425,39 +430,39 @@ public class FormYM3812 extends FormChipBase<FormYM3812.Params> {
         @Override public String id() { return "YM3812"; }
         @Override public String menuText() { return "OPL2"; }
         @Override public String category() { return "opl"; }
-        @Override public Class<? extends mdplayer.Chip> chip() { return mdplayer.chips.Ym3812Chip.class; }
+        @Override public Class<? extends mdplayer.Chip> chip() { return Ym3812Chip.class; }
         @Override public boolean hasRegisterDump() { return true; }
         @Override public View create(FormMain frm, int chipId, int zoom) { return new FormYM3812(frm, chipId, zoom); }
 
-        @Override public void setChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+        @Override public void setChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
             if (ch >= 0 && ch < 14) {
-                mdplayer.chips.Ym3812Chip c = audio.plugin.chipRegister.chip(mdplayer.chips.Ym3812Chip.class);
+                Ym3812Chip c = audio.plugin.chipRegister.chip(Ym3812Chip.class);
                 if (!c.getMask(chipId, ch)) c.setMask(chipId, ch); else c.resetMask(chipId, ch);
             }
         }
 
-        @Override public void resetChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
-            audio.plugin.chipRegister.chip(mdplayer.chips.Ym3812Chip.class).resetMask(chipId, ch);
+        @Override public void resetChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+            audio.plugin.chipRegister.chip(Ym3812Chip.class).resetMask(chipId, ch);
         }
 
-        @Override public void forceChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
+        @Override public void forceChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
             if (ch >= 0 && ch < 14) {
                 if (mask)
-                    audio.plugin.chipRegister.chip(mdplayer.chips.Ym3812Chip.class).setMask(chipId, ch);
+                    audio.plugin.chipRegister.chip(Ym3812Chip.class).setMask(chipId, ch);
                 else
-                    audio.plugin.chipRegister.chip(mdplayer.chips.Ym3812Chip.class).resetMask(chipId, ch);
+                    audio.plugin.chipRegister.chip(Ym3812Chip.class).resetMask(chipId, ch);
             }
         }
 
         @Override public List<MixerSlot> mixerSlots() {
-            return List.of(new MixerSlot(19, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Ym3812Chip.class, "ym3812", 200));
+            return List.of(new MixerSlot(19, MDSound.Chip.MAIN_TAG, Ym3812Chip.class, "ym3812", 200));
         }
 
-        @Override public void getInstCh(Component parent, mdplayer.Audio audio, mdplayer.Setting setting, int ch, int chipId) {
+        @Override public void getInstCh(Component parent, Audio audio, Setting setting, int ch, int chipId) {
             if (setting.getOther().getInstFormat() == mdplayer.Common.EnmInstFormat.OPLI) {
-                new mdplayer.form.inst.OpliInstWriter().write(parent, audio, chip(), ch, chipId);
+                new OpliInstWriter().write(parent, audio, chip(), ch, chipId);
             } else {
-                new mdplayer.form.inst.SendMml2vgmInstWriter().write(parent, audio, chip(), ch, chipId);
+                new SendMml2vgmInstWriter().write(parent, audio, chip(), ch, chipId);
             }
         }
     }

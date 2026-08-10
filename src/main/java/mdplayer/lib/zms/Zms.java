@@ -14,6 +14,9 @@ import java.util.function.BiConsumer;
 import java.util.function.IntConsumer;
 import java.util.function.IntSupplier;
 
+import mdplayer.emu.nise68.IMemory;
+import mdplayer.emu.nise68.IRegister;
+import mdplayer.lib.mndrv.Reg;
 import mdplayer.lib.mxdrv.MXDRV.Pcm8Interface;
 import mdplayer.lib.mxdrv.MXDRV.Pcm8St;
 import mdplayer.emu.common.FMTimer;
@@ -51,7 +54,7 @@ public class Zms {
     public interface MPcmInterface {
         void keyOn(int ch);
         void keyOff(int ch);
-        void writePcm(int ch, Object pcm, Object mem, Object reg, int n);
+        void writePcm(int ch, Zms.MPCMSt[] pcm, IMemory mem, IRegister reg, int n);
         void setFreq(int ch, int value);
         void setPitch(int ch, int value);
         void setVol(int ch, int value);
@@ -65,11 +68,11 @@ public class Zms {
     private List<String> dirZPDs = new ArrayList<>();
     public int version = 0;
     private FMTimer timerOPM;
-    public final Pcm8St[] pcm8St = {
+    private final Pcm8St[] pcm8St = {
             new Pcm8St(), new Pcm8St(), new Pcm8St(), new Pcm8St(),
             new Pcm8St(), new Pcm8St(), new Pcm8St(), new Pcm8St()
     };
-    public final MPCMSt[] mpcmSt = {
+    private final MPCMSt[] mpcmSt = {
             new MPCMSt(), new MPCMSt(), new MPCMSt(), new MPCMSt(),
             new MPCMSt(), new MPCMSt(), new MPCMSt(), new MPCMSt(),
             new MPCMSt(), new MPCMSt(), new MPCMSt(), new MPCMSt(),
@@ -91,8 +94,25 @@ public class Zms {
         public int pitch = 0;
         public int volume = 0;
         public int pan = 0;
-        public float rate = 0;
-        public float base_ = 0;
+        float rate = 0;
+        float base = 0;
+
+        public void fill(IMemory mem, IRegister reg) {
+            this.type = mem.readByte(0x00 + reg.getAl(1));
+            this.orig = mem.readByte(0x01 + reg.getAl(1));
+            this.adrs_ptr = mem.readInt(0x04 + reg.getAl(1));
+            this.size = mem.readInt(0x08 + reg.getAl(1));
+            this.start = mem.readInt(0x0c + reg.getAl(1));
+            this.end = mem.readInt(0x10 + reg.getAl(1));
+            this.count = mem.readInt(0x14 + reg.getAl(1));
+            if (reg instanceof Reg)
+                this.frq = (this.type & 0xff) == 0xff ? 4 : (this.type == 1 ? 8 : (this.type == 2 ? 0x10 : 0));
+        }
+
+        public void fill(float[] rateBase) {
+            this.rate = rateBase[0];
+            this.base = rateBase[1];
+        }
     }
 
     public String playingFileName;
@@ -511,7 +531,7 @@ if (!Arrays.equals(compiledData, 1, 7, magic, 0, 6) || compiledData.length <= 80
                 break;
             case 0x0200:
                 //logger.log(Level.TRACE, "MPCM #M_SET_PCM($%04x)".formatted(n));
-                mpcm.writePcm(ch, mpcmSt[ch], nise68.mem, nise68.reg, n);
+                mpcm.writePcm(ch, mpcmSt, nise68.mem, nise68.reg, n);
                 break;
             case 0x0300:
                 //logger.log(Level.TRACE, "MPCM #M_SET_FRQ($%04x) D1$%08x".formatted(n, nise68.reg.GetDl(1)));

@@ -24,6 +24,7 @@ import mdplayer.chips.Ga20Chip;
 import mdplayer.form.kb.PcmChannelParams;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
+import mdsound.MDSound;
 import mdsound.instrument.Ga20Inst;
 
 import static mdplayer.form.kb.chip.FormC140.drawChC140_P;
@@ -33,7 +34,7 @@ import mdplayer.form.View;
 
 public class FormGA20 extends FormChipBase<FormGA20.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormGA20.class);
+    private static final Preferences prefs = Preferences.userNodeForPackage(FormGA20.class);
 
     public FormGA20(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -65,7 +66,7 @@ public class FormGA20 extends FormChipBase<FormGA20.Params> {
         }
     };
 
-    public void changeZoom() {
+    private void changeZoom() {
         this.setMaximumSize(new Dimension(frameSizeW + Common.getImage("planeGA20").getWidth() * zoom, frameSizeH + Common.getImage("planeGA20").getHeight() * zoom));
         this.setMinimumSize(new Dimension(frameSizeW + Common.getImage("planeGA20").getWidth() * zoom, frameSizeH + Common.getImage("planeGA20").getHeight() * zoom));
         this.setPreferredSize(new Dimension(frameSizeW + Common.getImage("planeGA20").getWidth() * zoom, frameSizeH + Common.getImage("planeGA20").getHeight() * zoom));
@@ -209,7 +210,7 @@ public class FormGA20 extends FormChipBase<FormGA20.Params> {
         this.addComponentListener(this.componentListener);
     }
 
-    BufferedImage image;
+    private BufferedImage image;
 
 //#region draw buffer
 
@@ -250,9 +251,9 @@ public class FormGA20 extends FormChipBase<FormGA20.Params> {
 //#endregion
 
     /** this panel's per-frame draw state, diffed new against old (see {@link FormChipBase}) */
-    public static class Params {
+    static class Params {
 
-        public final PcmChannelParams[] channels = {
+        final PcmChannelParams[] channels = {
                 new PcmChannelParams(), new PcmChannelParams(), new PcmChannelParams(), new PcmChannelParams()
         };
     }
@@ -262,11 +263,11 @@ public class FormGA20 extends FormChipBase<FormGA20.Params> {
 
         @Override public String id() { return "GA20"; }
         @Override public String category() { return "pcm"; }
-        @Override public Class<? extends mdplayer.Chip> chip() { return mdplayer.chips.Ga20Chip.class; }
+        @Override public Class<? extends mdplayer.Chip> chip() { return Ga20Chip.class; }
         @Override public View create(FormMain frm, int chipId, int zoom) { return new FormGA20(frm, chipId, zoom); }
 
         @Override public List<MixerSlot> mixerSlots() {
-            return List.of(new MixerSlot(47, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Ga20Chip.class, "ga20", 200));
+            return List.of(new MixerSlot(47, MDSound.Chip.MAIN_TAG, Ga20Chip.class, "ga20", 200));
         }
     }
 }

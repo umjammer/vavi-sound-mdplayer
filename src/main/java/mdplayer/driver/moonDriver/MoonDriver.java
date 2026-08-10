@@ -392,11 +392,11 @@ logger.log(Level.INFO, "no such extend file: " + arg);
         }
     }
 
-    public static class MoonDriverChipAction implements ChipAction {
+    static class MoonDriverChipAction implements ChipAction {
         private final Consumer<ChipDatum> opl4Write;
         private final BiConsumer<Long, Integer> opl4WaitSend;
 
-        public MoonDriverChipAction(Consumer<ChipDatum> opl4Write, BiConsumer<Long, Integer> opl4WaitSend) {
+        MoonDriverChipAction(Consumer<ChipDatum> opl4Write, BiConsumer<Long, Integer> opl4WaitSend) {
             this.opl4Write = opl4Write;
             this.opl4WaitSend = opl4WaitSend;
         }

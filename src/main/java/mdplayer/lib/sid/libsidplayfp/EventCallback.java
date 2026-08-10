@@ -28,7 +28,7 @@ public class EventCallback<This> extends Event {
 
     private final This _this;
 
-    public final Callback callback;
+    private final Callback callback;
 
     @Override
     public void event() {

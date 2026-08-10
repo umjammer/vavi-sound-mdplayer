@@ -115,14 +115,14 @@ import java.nio.DoubleBuffer;
  *
  *   ki = kj = dy/dx;
  */
-public class Spline {
+class Spline {
 
     /**
      * Calculation of coefficients.
      */
-    public static void cubicCoefficients(double x1, double y1, double x2, double y2,
-                                  double k1, double k2,
-                                  /* ref */ double[] a, /* ref */ double[] b, /* ref */ double[] c, /* ref */ double[] d) {
+    private static void cubicCoefficients(double x1, double y1, double x2, double y2,
+                                          double k1, double k2,
+            /* ref */ double[] a, /* ref */ double[] b, /* ref */ double[] c, /* ref */ double[] d) {
         double dx = x2 - x1, dy = y2 - y1;
 
         a[0] = ((k1 + k2) - 2 * dy / dx) / (dx * dx);
@@ -134,7 +134,7 @@ public class Spline {
     /**
      * Evaluation of cubic polynomial by forward differencing.
      */
-    public static void interpolateForwardDifference(double x1, double y1, double x2, double y2, double k1, double k2, int[] plot, double res) {
+    private static void interpolateForwardDifference(double x1, double y1, double x2, double y2, double k1, double k2, int[] plot, double res) {
         double[] a = new double[1], b = new double[1], c = new double[1], d = new double[1];
         cubicCoefficients(x1, y1, x2, y2, k1, k2, a, b, c, d);
 

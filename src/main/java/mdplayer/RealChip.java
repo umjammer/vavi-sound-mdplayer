@@ -39,7 +39,7 @@ public class RealChip implements Closeable {
 
 //#endregion
 
-    public RealChip(boolean sw) {
+    private RealChip(boolean sw) {
         logger.log(Level.ERROR, "RealChip:Ctr:STEP 00(Start)");
         if (!sw) {
             logger.log(Level.ERROR, "RealChip:Not Initialize(user)");
@@ -86,7 +86,7 @@ public class RealChip implements Closeable {
         logger.log(Level.ERROR, "RealChip:Ctr:STEP 02(Success)");
     }
 
-    public void close_() {
+    private void close_() {
 //        if (nScci != null) {
 //            try {
 //                nScci.Dispose();
@@ -427,13 +427,13 @@ public class RealChip implements Closeable {
     }
 
     public static abstract class RSoundChip {
-        protected final int soundLocation;
-        protected final int busID;
-        protected final int soundChip;
+        final int soundLocation;
+        final int busID;
+        final int soundChip;
 
         public int dClock = 3579545;
 
-        public RSoundChip(int soundLocation, int busID, int soundChip) {
+        RSoundChip(int soundLocation, int busID, int soundChip) {
             this.soundLocation = soundLocation;
             this.busID = busID;
             this.soundChip = soundChip;

@@ -11,6 +11,7 @@ import java.util.ResourceBundle;
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
+import mdplayer.Common;
 import mdplayer.PlayList;
 import mdplayer.driver.BaseFileFormat;
 import mdplayer.driver.Plugin;
@@ -81,7 +82,7 @@ public class MNDFileFormat extends BaseFileFormat {
             int pcmnum = ((srcBuf[pcmptr[0]] & 0xff) << 8) + (srcBuf[pcmptr[0] + 1] & 0xff);
             pcmptr[0] += 2;
             for (int i = 0; i < pcmnum; i++) {
-                String mndPcmFn = mdplayer.Common.getNRDString(srcBuf, pcmptr);
+                String mndPcmFn = Common.getNRDString(srcBuf, pcmptr);
                 buf = getExtendFileAllBytes(filename, mndPcmFn, archive, entry);
                 if (buf != null) ret.add(new Tuple<>(".PND", buf));
             }
@@ -121,6 +122,6 @@ public class MNDFileFormat extends BaseFileFormat {
     @Override
     public boolean isSupported(InputStream is) throws IOException {
         if (isCompressedStream(is)) return false;
-        return Arrays.stream(getExtensions()).anyMatch(e -> java.nio.file.Path.of(SoundUtil.getSource(is)).toString().toLowerCase().endsWith(e));
+        return Arrays.stream(getExtensions()).anyMatch(e -> Path.of(SoundUtil.getSource(is)).toString().toLowerCase().endsWith(e));
     }
 }

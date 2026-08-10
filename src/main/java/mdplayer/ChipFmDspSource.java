@@ -765,7 +765,7 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
                 noteLengths[row] = (int) Math.min(measured, maxNoteLength);
                 // a note the key never came up on was played legato, so its gate is its length
                 long held = keyOffTicks[row] < 0 ? measured : keyOffTicks[row] - keyOnTicks[row];
-                gates[row] = (int) Math.clamp(held, 0, maxNoteLength);
+                gates[row] = Math.clamp(held, 0, maxNoteLength);
             }
             keyOnTicks[row] = noteTicks;
             keyOffTicks[row] = -1;
@@ -838,7 +838,7 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
     private static final int maxNoteLength = (int) (noteTickHz * 60);
 
     /** MML key: high nibble octave, low nibble note, 0xff while the part rests */
-    static int keyOf(int note) {
+    private static int keyOf(int note) {
         return note < 0 ? 0xff : (note / 12) << 4 | note % 12;
     }
 
@@ -976,14 +976,16 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
             tb = reader.timerB();
             if (tb > 0) break;
         }
-        if (tb <= 0) tb = defaultTimerB;
+        // 256 is what fmgen works its register back out to when nothing has written one, and it
+        // would leave the tick below no period at all to count - an endless loop on the mixer's
+        // thread. Anything outside a register's range is no tempo, so it gets the fallback
+        if (tb <= 0 || tb >= 256) tb = defaultTimerB;
         timerB = tb;
 
         long counter = d.counter;
-        // MXDRV never advances its sample counter - it is clocked by the PCM8 chip, which does not
-        // report back - so a note clock hung off the counter alone would stand still and every MDX
-        // row would show an empty bar. Fall back to counting snapshots, which arrive at a known
-        // rate in the player.
+        // a note clock hung off the sample counter alone stands still for a driver that does not
+        // advance one, and every row would show an empty bar. Fall back to counting snapshots,
+        // which arrive at a known rate in the player.
         noteTickStep += counter > lastCounter
                 ? (counter - lastCounter) * (noteTickHz / Common.VGMProcSampleRate)
                 : noteTickHz / snapshotRate;
@@ -1240,8 +1242,17 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
         // Fall back to the total song length when there is no loop point.
         long samples = d.loopCounter > 0 ? d.loopCounter : d.totalCounter;
         if (samples <= 0) return 0;
-        // Convert samples → timerB ticks (the same unit as timerBCount())
-        int tb = this.timerB > 0 ? this.timerB : defaultTimerB;
+        // Convert samples → timerB ticks (the same unit as timerBCount()) at the rate the ticks
+        // have actually been counted at so far. Reading the tempo off the chip instead made the
+        // slider wander: a song whose tempo falls between two TimerB values writes both by turns
+        // - dq4_10.mdx flips between 239 and 240 ten times a second - and each flip moved the
+        // length this is divided by by 6%, so the slider jumped back and forth a few pixels the
+        // whole song. The average also stands up to a song that changes tempo for real.
+        if (lastCounter > 0 && timerBCount > 0) {
+            return Math.max(1, Math.round((double) samples * timerBCount / lastCounter));
+        }
+        // nothing counted yet (the first snapshots of a song): the tempo is all there is to go on
+        int tb = this.timerB > 0 && this.timerB < 256 ? this.timerB : defaultTimerB;
         double overflow = (256 - tb) * 16.0;
         return Math.round(samples * (timerBStepHz / Common.VGMProcSampleRate) / overflow);
     }

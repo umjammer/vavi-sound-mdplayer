@@ -108,6 +108,6 @@ public class ZMSFileFormat extends BaseFileFormat {
     @Override
     public boolean isSupported(InputStream is) throws IOException {
         if (isCompressedStream(is)) return false;
-        return Arrays.stream(getExtensions()).anyMatch(e -> java.nio.file.Path.of(SoundUtil.getSource(is)).toString().toLowerCase().endsWith(e));
+        return Arrays.stream(getExtensions()).anyMatch(e -> Path.of(SoundUtil.getSource(is)).toString().toLowerCase().endsWith(e));
     }
 }

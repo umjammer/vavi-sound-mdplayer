@@ -12,7 +12,7 @@ import mdplayer.lib.sid.libsidplayfp.builders.resid_builder.resid.Voice;
  * Verify that writing each SID register hits the expected voice's field
  * and only that voice.
  */
-public class RegisterDispatchTest {
+class RegisterDispatchTest {
 
     static void main(String[] args) throws Exception {
         Sid sid = new Sid(44100);

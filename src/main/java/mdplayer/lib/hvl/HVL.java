@@ -31,30 +31,30 @@ import java.util.Arrays;
 
 public class HVL {
 
-    public static final int MAX_CHANNELS = 16;
-    public static final int WHITENOISELEN = 0x280 * 3;
+    private static final int MAX_CHANNELS = 16;
+    private static final int WHITENOISELEN = 0x280 * 3;
 
-    public static final int WO_LOWPASSES = 0;
-    public static final int WO_TRIANGLE_04 = WO_LOWPASSES + ((0xfc + 0xfc + 0x80 * 0x1f + 0x80 + 3 * 0x280) * 31);
-    public static final int WO_TRIANGLE_08 = WO_TRIANGLE_04 + 0x04;
-    public static final int WO_TRIANGLE_10 = WO_TRIANGLE_08 + 0x08;
-    public static final int WO_TRIANGLE_20 = WO_TRIANGLE_10 + 0x10;
-    public static final int WO_TRIANGLE_40 = WO_TRIANGLE_20 + 0x20;
-    public static final int WO_TRIANGLE_80 = WO_TRIANGLE_40 + 0x40;
-    public static final int WO_SAWTOOTH_04 = WO_TRIANGLE_80 + 0x80;
-    public static final int WO_SAWTOOTH_08 = WO_SAWTOOTH_04 + 0x04;
-    public static final int WO_SAWTOOTH_10 = WO_SAWTOOTH_08 + 0x08;
-    public static final int WO_SAWTOOTH_20 = WO_SAWTOOTH_10 + 0x10;
-    public static final int WO_SAWTOOTH_40 = WO_SAWTOOTH_20 + 0x20;
-    public static final int WO_SAWTOOTH_80 = WO_SAWTOOTH_40 + 0x40;
-    public static final int WO_SQUARES = WO_SAWTOOTH_80 + 0x80;
-    public static final int WO_WHITENOISE = WO_SQUARES + (0x80 * 0x20);
-    public static final int WO_HIGHPASSES = WO_WHITENOISE + WHITENOISELEN;
-    public static final int WAVES_SIZE = WO_HIGHPASSES + ((0xfc + 0xfc + 0x80 * 0x1f + 0x80 + 3 * 0x280) * 31);
+    private static final int WO_LOWPASSES = 0;
+    private static final int WO_TRIANGLE_04 = WO_LOWPASSES + ((0xfc + 0xfc + 0x80 * 0x1f + 0x80 + 3 * 0x280) * 31);
+    private static final int WO_TRIANGLE_08 = WO_TRIANGLE_04 + 0x04;
+    private static final int WO_TRIANGLE_10 = WO_TRIANGLE_08 + 0x08;
+    private static final int WO_TRIANGLE_20 = WO_TRIANGLE_10 + 0x10;
+    private static final int WO_TRIANGLE_40 = WO_TRIANGLE_20 + 0x20;
+    private static final int WO_TRIANGLE_80 = WO_TRIANGLE_40 + 0x40;
+    private static final int WO_SAWTOOTH_04 = WO_TRIANGLE_80 + 0x80;
+    private static final int WO_SAWTOOTH_08 = WO_SAWTOOTH_04 + 0x04;
+    private static final int WO_SAWTOOTH_10 = WO_SAWTOOTH_08 + 0x08;
+    private static final int WO_SAWTOOTH_20 = WO_SAWTOOTH_10 + 0x10;
+    private static final int WO_SAWTOOTH_40 = WO_SAWTOOTH_20 + 0x20;
+    private static final int WO_SAWTOOTH_80 = WO_SAWTOOTH_40 + 0x40;
+    private static final int WO_SQUARES = WO_SAWTOOTH_80 + 0x80;
+    private static final int WO_WHITENOISE = WO_SQUARES + (0x80 * 0x20);
+    private static final int WO_HIGHPASSES = WO_WHITENOISE + WHITENOISELEN;
+    private static final int WAVES_SIZE = WO_HIGHPASSES + ((0xfc + 0xfc + 0x80 * 0x1f + 0x80 + 3 * 0x280) * 31);
 
-    public static final byte[] waves = new byte[WAVES_SIZE];
+    private static final byte[] waves = new byte[WAVES_SIZE];
 
-    public static final short[] VIB_TAB = {
+    private static final short[] VIB_TAB = {
             0, 24, 49, 74, 97, 120, 141, 161, 180, 197, 212, 224, 235, 244, 250, 253, 255,
             253, 250, 244, 235, 224, 212, 197, 180, 161, 141, 120, 97, 74, 49, 24,
             0, -24, -49, -74, -97, -120, -141, -161, -180, -197, -212, -224, -235, -244, -250, -253, -255,
@@ -72,184 +72,187 @@ public class HVL {
             0x008F, 0x0087, 0x007F, 0x0078, 0x0071
     };
 
-    public static final int[] stereopan_left = {128, 96, 64, 32, 0};
-    public static final int[] stereopan_right = {128, 160, 193, 225, 255};
+    private static final int[] stereopan_left = {128, 96, 64, 32, 0};
+    private static final int[] stereopan_right = {128, 160, 193, 225, 255};
 
-    public static final int[] panning_left = new int[256];
-    public static final int[] panning_right = new int[256];
+    private static final int[] panning_left = new int[256];
+    private static final int[] panning_right = new int[256];
 
-    public static final int[] OFFSETS = {0, 4, 12, 28, 60, 124};
+    private static final int[] OFFSETS = {0, 4, 12, 28, 60, 124};
 
     // --- Struct definitions ---
 
-    public static class Envelope {
+    static class Envelope {
 
-        public short aFrames, aVolume;
-        public short dFrames, dVolume;
-        public short sFrames;
-        public short rFrames, rVolume;
-        public short pad;
+        short aFrames;
+        short aVolume;
+        short dFrames;
+        short dVolume;
+        short sFrames;
+        short rFrames;
+        short rVolume;
+        short pad;
     }
 
-    public static class PlsEntry {
+    static class PlsEntry {
 
-        public byte ple_Note;
-        public byte ple_Waveform;
-        public short ple_Fixed;
-        public byte[] ple_FX = new byte[2];
-        public byte[] ple_FXParam = new byte[2];
+        byte ple_Note;
+        byte ple_Waveform;
+        short ple_Fixed;
+        final byte[] ple_FX = new byte[2];
+        final byte[] ple_FXParam = new byte[2];
     }
 
-    public static class PList {
+    static class PList {
 
-        public short pls_Speed;
-        public short pls_Length;
-        public PlsEntry[] pls_Entries;
+        short pls_Speed;
+        short pls_Length;
+        PlsEntry[] pls_Entries;
     }
 
-    public static class Instrument {
+    static class Instrument {
 
-        public String ins_Name = "";
-        public int ins_Volume;
-        public int ins_WaveLength;
-        public int ins_FilterLowerLimit;
-        public int ins_FilterUpperLimit;
-        public int ins_FilterSpeed;
-        public int ins_SquareLowerLimit;
-        public int ins_SquareUpperLimit;
-        public int ins_SquareSpeed;
-        public int ins_VibratoDelay;
-        public int ins_VibratoSpeed;
-        public int ins_VibratoDepth;
-        public int ins_HardCutRelease;
-        public int ins_HardCutReleaseFrames;
-        public Envelope ins_Envelope = new Envelope();
-        public PList ins_PList = new PList();
+        String ins_Name = "";
+        int ins_Volume;
+        int ins_WaveLength;
+        int ins_FilterLowerLimit;
+        int ins_FilterUpperLimit;
+        int ins_FilterSpeed;
+        int ins_SquareLowerLimit;
+        int ins_SquareUpperLimit;
+        int ins_SquareSpeed;
+        int ins_VibratoDelay;
+        int ins_VibratoSpeed;
+        int ins_VibratoDepth;
+        int ins_HardCutRelease;
+        int ins_HardCutReleaseFrames;
+        final Envelope ins_Envelope = new Envelope();
+        final PList ins_PList = new PList();
     }
 
-    public static class Position {
+    static class Position {
 
-        public int[] pos_Track = new int[MAX_CHANNELS];
-        public byte[] pos_Transpose = new byte[MAX_CHANNELS];
+        final int[] pos_Track = new int[MAX_CHANNELS];
+        final byte[] pos_Transpose = new byte[MAX_CHANNELS];
     }
 
-    public static class Step {
+    static class Step {
 
-        public int stp_Note;
-        public int stp_Instrument;
-        public int stp_FX;
-        public int stp_FXParam;
-        public int stp_FXb;
-        public int stp_FXbParam;
+        int stp_Note;
+        int stp_Instrument;
+        int stp_FX;
+        int stp_FXParam;
+        int stp_FXb;
+        int stp_FXbParam;
     }
 
     public static class Voice {
 
-        public short vc_Track;
-        public short vc_NextTrack;
-        public short vc_Transpose;
-        public short vc_NextTranspose;
-        public short vc_OverrideTranspose;
+        short vc_Track;
+        short vc_NextTrack;
+        short vc_Transpose;
+        short vc_NextTranspose;
+        short vc_OverrideTranspose;
         public int vc_ADSRVolume;
-        public Envelope vc_ADSR = new Envelope();
-        public Instrument vc_Instrument;
-        public int vc_SamplePos;
-        public int vc_Delta;
+        final Envelope vc_ADSR = new Envelope();
+        Instrument vc_Instrument;
+        int vc_SamplePos;
+        int vc_Delta;
         public int vc_InstrPeriod;
         public int vc_TrackPeriod;
-        public int vc_VibratoPeriod;
-        public int vc_WaveLength;
+        int vc_VibratoPeriod;
+        int vc_WaveLength;
         public short vc_NoteMaxVolume;
-        public int vc_PerfSubVolume;
-        public int vc_NewWaveform;
-        public int vc_Waveform;
-        public int vc_PlantPeriod;
+        int vc_PerfSubVolume;
+        int vc_NewWaveform;
+        int vc_Waveform;
+        int vc_PlantPeriod;
         public int vc_VoiceVolume;
-        public int vc_PlantSquare;
-        public int vc_IgnoreSquare;
-        public int vc_FixedNote;
-        public short vc_VolumeSlideUp;
-        public short vc_VolumeSlideDown;
-        public short vc_HardCut;
-        public int vc_HardCutRelease;
-        public short vc_HardCutReleaseF;
-        public int vc_PeriodSlideOn;
-        public short vc_PeriodSlideSpeed;
-        public short vc_PeriodSlidePeriod;
-        public short vc_PeriodSlideLimit;
-        public short vc_PeriodSlideWithLimit;
-        public short vc_PeriodPerfSlideSpeed;
-        public short vc_PeriodPerfSlidePeriod;
-        public int vc_PeriodPerfSlideOn;
-        public short vc_VibratoDelay;
-        public short vc_VibratoSpeed;
-        public short vc_VibratoCurrent;
-        public short vc_VibratoDepth;
-        public short vc_SquareOn;
-        public short vc_SquareInit;
-        public short vc_SquareWait;
-        public short vc_SquareLowerLimit;
-        public short vc_SquareUpperLimit;
-        public short vc_SquarePos;
-        public short vc_SquareSign;
-        public short vc_SquareSlidingIn;
-        public short vc_SquareReverse;
-        public int vc_FilterOn;
-        public int vc_FilterInit;
-        public short vc_FilterWait;
-        public short vc_FilterSpeed;
-        public short vc_FilterUpperLimit;
-        public short vc_FilterLowerLimit;
-        public short vc_FilterPos;
-        public short vc_FilterSign;
-        public short vc_FilterSlidingIn;
-        public short vc_IgnoreFilter;
-        public short vc_PerfCurrent;
-        public short vc_PerfSpeed;
-        public short vc_PerfWait;
-        public PList vc_PerfList;
+        int vc_PlantSquare;
+        int vc_IgnoreSquare;
+        int vc_FixedNote;
+        short vc_VolumeSlideUp;
+        short vc_VolumeSlideDown;
+        short vc_HardCut;
+        int vc_HardCutRelease;
+        short vc_HardCutReleaseF;
+        int vc_PeriodSlideOn;
+        short vc_PeriodSlideSpeed;
+        short vc_PeriodSlidePeriod;
+        short vc_PeriodSlideLimit;
+        short vc_PeriodSlideWithLimit;
+        short vc_PeriodPerfSlideSpeed;
+        short vc_PeriodPerfSlidePeriod;
+        int vc_PeriodPerfSlideOn;
+        short vc_VibratoDelay;
+        short vc_VibratoSpeed;
+        short vc_VibratoCurrent;
+        short vc_VibratoDepth;
+        short vc_SquareOn;
+        short vc_SquareInit;
+        short vc_SquareWait;
+        short vc_SquareLowerLimit;
+        short vc_SquareUpperLimit;
+        short vc_SquarePos;
+        short vc_SquareSign;
+        short vc_SquareSlidingIn;
+        short vc_SquareReverse;
+        int vc_FilterOn;
+        int vc_FilterInit;
+        short vc_FilterWait;
+        short vc_FilterSpeed;
+        short vc_FilterUpperLimit;
+        short vc_FilterLowerLimit;
+        short vc_FilterPos;
+        short vc_FilterSign;
+        short vc_FilterSlidingIn;
+        short vc_IgnoreFilter;
+        short vc_PerfCurrent;
+        short vc_PerfSpeed;
+        short vc_PerfWait;
+        PList vc_PerfList;
 
-        public byte[] vc_AudioSource_array;
-        public int vc_AudioSource_offset;
+        byte[] vc_AudioSource_array;
+        int vc_AudioSource_offset;
 
-        public int vc_NoteDelayOn;
-        public int vc_NoteCutOn;
-        public short vc_NoteDelayWait;
-        public short vc_NoteCutWait;
+        int vc_NoteDelayOn;
+        int vc_NoteCutOn;
+        short vc_NoteDelayWait;
+        short vc_NoteCutWait;
         public short vc_AudioPeriod;
-        public short vc_AudioVolume;
-        public int vc_WNRandom;
+        short vc_AudioVolume;
+        int vc_WNRandom;
 
-        public byte[] vc_MixSource;
-        public byte[] vc_SquareTempBuffer = new byte[0x80];
-        public byte[] vc_VoiceBuffer = new byte[0x282 * 4];
-        public int vc_VoiceNum;
-        public int vc_TrackMasterVolume;
+        byte[] vc_MixSource;
+        final byte[] vc_SquareTempBuffer = new byte[0x80];
+        final byte[] vc_VoiceBuffer = new byte[0x282 * 4];
+        int vc_VoiceNum;
+        int vc_TrackMasterVolume;
         public int vc_TrackOn;
-        public short vc_VoicePeriod;
+        short vc_VoicePeriod;
         public int vc_Pan;
-        public int vc_SetPan;
-        public int vc_PanMultLeft;
-        public int vc_PanMultRight;
-        public int vc_RingSamplePos;
-        public int vc_RingDelta;
+        int vc_SetPan;
+        int vc_PanMultLeft;
+        int vc_PanMultRight;
+        int vc_RingSamplePos;
+        int vc_RingDelta;
 
-        public byte[] vc_RingMixSource;
-        public int vc_RingPlantPeriod;
+        byte[] vc_RingMixSource;
+        int vc_RingPlantPeriod;
         public short vc_RingInstrPeriod;
-        public short vc_RingBasePeriod;
-        public short vc_RingAudioPeriod;
+        short vc_RingBasePeriod;
+        short vc_RingAudioPeriod;
 
-        public byte[] vc_RingAudioSource_array;
-        public int vc_RingAudioSource_offset;
+        byte[] vc_RingAudioSource_array;
+        int vc_RingAudioSource_offset;
 
-        public int vc_RingNewWaveform;
-        public int vc_RingWaveform;
-        public int vc_RingFixedPeriod;
-        public byte[] vc_RingVoiceBuffer = new byte[0x282 * 4];
-        public int vc_VUMeter;
+        int vc_RingNewWaveform;
+        int vc_RingWaveform;
+        int vc_RingFixedPeriod;
+        final byte[] vc_RingVoiceBuffer = new byte[0x282 * 4];
+        int vc_VUMeter;
 
-        public void hvl_set_audio(double freqf) {
+        void hvl_set_audio(double freqf) {
             if (vc_TrackOn == 0) {
                 vc_VoiceVolume = 0;
                 return;
@@ -325,41 +328,41 @@ public class HVL {
     public static class Tune {
 
         public String ht_Name = "";
-        public int ht_SongNum;
+        int ht_SongNum;
         public int ht_Frequency;
-        public double ht_FreqF;
+        double ht_FreqF;
 
-        public int ht_Restart;
-        public int ht_PositionNr;
+        int ht_Restart;
+        int ht_PositionNr;
         public int ht_SpeedMultiplier;
-        public int ht_TrackLength;
-        public int ht_TrackNr;
-        public int ht_InstrumentNr;
+        int ht_TrackLength;
+        int ht_TrackNr;
+        int ht_InstrumentNr;
         public int ht_SubsongNr;
-        public int ht_PosJump;
-        public int ht_PlayingTime;
+        int ht_PosJump;
+        int ht_PlayingTime;
         public short ht_Tempo;
-        public short ht_PosNr;
-        public short ht_StepWaitFrames;
-        public short ht_NoteNr;
-        public int ht_PosJumpNote;
-        public int ht_GetNewPosition;
-        public int ht_PatternBreak;
+        short ht_PosNr;
+        short ht_StepWaitFrames;
+        short ht_NoteNr;
+        int ht_PosJumpNote;
+        int ht_GetNewPosition;
+        int ht_PatternBreak;
         public int ht_SongEndReached;
         public int ht_Stereo;
-        public int[] ht_Subsongs;
+        int[] ht_Subsongs;
         public int ht_Channels;
-        public Position[] ht_Positions;
-        public Step[][] ht_Tracks = new Step[256][64];
-        public Instrument[] ht_Instruments;
-        public Voice[] ht_Voices = new Voice[MAX_CHANNELS];
-        public int ht_defstereo;
-        public int ht_defpanleft;
-        public int ht_defpanright;
-        public int ht_mixgain;
-        public int ht_Version;
+        Position[] ht_Positions;
+        final Step[][] ht_Tracks = new Step[256][64];
+        Instrument[] ht_Instruments;
+        public final Voice[] ht_Voices = new Voice[MAX_CHANNELS];
+        int ht_defstereo;
+        int ht_defpanleft;
+        int ht_defpanright;
+        int ht_mixgain;
+        int ht_Version;
 
-        public Tune() {
+        Tune() {
             for (int i = 0; i < MAX_CHANNELS; i++) {
                 ht_Voices[i] = new Voice();
             }
@@ -384,7 +387,7 @@ public class HVL {
             } while (loops > 0);
         }
 
-        public void hvl_process_stepfx_3(Voice voice, int FX, int FXParam) {
+        void hvl_process_stepfx_3(Voice voice, int FX, int FXParam) {
             switch (FX) {
                 case 0x01: // Portamento up (period slide down)
                     voice.vc_PeriodSlideSpeed = (short) (-FXParam);
@@ -483,7 +486,7 @@ public class HVL {
             }
         }
 
-        public void hvl_process_stepfx_2(Voice voice, int FX, int FXParam, int[] Note) {
+        void hvl_process_stepfx_2(Voice voice, int FX, int FXParam, int[] Note) {
             switch (FX) {
                 case 0x9: // Set squarewave offset
                     voice.vc_SquarePos = (short) (FXParam >> (5 - voice.vc_WaveLength));
@@ -513,7 +516,7 @@ public class HVL {
             }
         }
 
-        public void hvl_reset_some_stuff() {
+        void hvl_reset_some_stuff() {
             for (int i = 0; i < MAX_CHANNELS; i++) {
                 Voice v = ht_Voices[i];
                 v.vc_Delta = 1;
@@ -626,7 +629,7 @@ public class HVL {
             }
         }
 
-        public void hvl_plist_command_parse(Voice voice, int FX, int FXParam) {
+        void hvl_plist_command_parse(Voice voice, int FX, int FXParam) {
             switch (FX) {
                 case 0:
                     if (FXParam > 0 && FXParam < 0x40) {
@@ -773,7 +776,7 @@ public class HVL {
             }
         }
 
-        public void hvl_play_irq() {
+        void hvl_play_irq() {
             if (ht_StepWaitFrames <= 0) {
                 if (ht_GetNewPosition != 0) {
                     int nextpos = (ht_PosNr + 1 == ht_PositionNr) ? 0 : (ht_PosNr + 1);
@@ -829,7 +832,7 @@ public class HVL {
             }
         }
 
-        public void hvl_mixchunk(int samples, short[] buf1, int offset1, short[] buf2, int offset2, int shortStride) {
+        void hvl_mixchunk(int samples, short[] buf1, int offset1, short[] buf2, int offset2, int shortStride) {
             byte[][] src = new byte[MAX_CHANNELS][];
             byte[][] rsrc = new byte[MAX_CHANNELS][];
             int[] delta = new int[MAX_CHANNELS];
@@ -930,7 +933,7 @@ public class HVL {
             }
         }
 
-        public void hvl_process_step(Voice voice) {
+        void hvl_process_step(Voice voice) {
             if (voice.vc_TrackOn == 0) {
                 return;
             }
@@ -1082,7 +1085,7 @@ public class HVL {
             this.hvl_process_stepfx_3(voice, step.stp_FXb & 0xf, step.stp_FXbParam);
         }
 
-        public void hvl_process_stepfx_1(Voice voice, int FX, int FXParam) {
+        void hvl_process_stepfx_1(Voice voice, int FX, int FXParam) {
             switch (FX) {
                 case 0x0:  // Position Jump HI
                     if (((FXParam & 0x0f) > 0) && ((FXParam & 0x0f) <= 9)) {
@@ -1146,7 +1149,7 @@ public class HVL {
             }
         }
 
-        public void hvl_process_frame(Voice voice) {
+        void hvl_process_frame(Voice voice) {
             if (voice.vc_TrackOn == 0) {
                 return;
             }
@@ -1597,11 +1600,11 @@ public class HVL {
 
     // --- Replayer static functions ---
 
-    public static double Period2Freq(double period) {
+    private static double Period2Freq(double period) {
         return (3546897.0 * 65536.0) / period;
     }
 
-    public static void hvl_GenPanningTables() {
+    private static void hvl_GenPanningTables() {
         double aa = (Math.PI * 2.0) / 4.0;
         double ab = 0.0;
         for (int i = 0; i < 256; i++) {
@@ -1614,7 +1617,7 @@ public class HVL {
         panning_right[0] = 0;
     }
 
-    public static void hvl_GenSawtooth(byte[] buf, int offset, int len) {
+    private static void hvl_GenSawtooth(byte[] buf, int offset, int len) {
         int val = -128;
         int add = 256 / (len - 1);
         for (int i = 0; i < len; i++, val += add) {
@@ -1622,7 +1625,7 @@ public class HVL {
         }
     }
 
-    public static void hvl_GenTriangle(byte[] buf, int offset, int len) {
+    private static void hvl_GenTriangle(byte[] buf, int offset, int len) {
         int d2 = len;
         int d5 = len >> 2;
         int d1 = 128 / d5;
@@ -1656,7 +1659,7 @@ public class HVL {
         }
     }
 
-    public static void hvl_GenSquare(byte[] buf, int offset) {
+    private static void hvl_GenSquare(byte[] buf, int offset) {
         int bufIdx = offset;
         for (int i = 1; i <= 0x20; i++) {
             for (int j = 0; j < (0x40 - i) * 2; j++) {
@@ -1677,7 +1680,7 @@ public class HVL {
         return x;
     }
 
-    public static void hvl_GenFilterWaves(byte[] buf, int bufOff, byte[] lowbuf, int lowbufOff, byte[] highbuf, int highbufOff) {
+    private static void hvl_GenFilterWaves(byte[] buf, int bufOff, byte[] lowbuf, int lowbufOff, byte[] highbuf, int highbufOff) {
         int[] lengthTable = {
                 3, 7, 0xf, 0x1f, 0x3f, 0x7f, 3, 7, 0xf, 0x1f, 0x3f, 0x7f,
                 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f,
@@ -1729,7 +1732,7 @@ public class HVL {
         }
     }
 
-    public static void hvl_GenWhiteNoise(byte[] buf, int offset, int len) {
+    private static void hvl_GenWhiteNoise(byte[] buf, int offset, int len) {
         int bufIdx = offset;
         int ays = 0x41595321;
         do {
@@ -1785,7 +1788,7 @@ public class HVL {
         return sb.toString();
     }
 
-    public static Tune hvl_load_ahx(byte[] buf, int buflen, int defstereo, int freq) {
+    private static Tune hvl_load_ahx(byte[] buf, int buflen, int defstereo, int freq) {
         int i, j, k, l, posn, insn, ssn, trkn, trkl;
         Tune ht = new Tune();
 

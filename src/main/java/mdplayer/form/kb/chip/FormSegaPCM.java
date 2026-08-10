@@ -16,21 +16,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
+import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.form.FrameBuffer;
 import mdplayer.form.ScreenPanel;
 import mdplayer.Tables;
 import mdplayer.chips.SegaPcmChip;
+import mdplayer.form.VisVolume;
 import mdplayer.form.kb.ChannelParams;
 import mdplayer.form.kb.Meters;
 import mdplayer.form.kb.ViewProvider;
 import mdplayer.form.sys.FormMain;
 import mdplayer.form.View;
+import mdsound.MDSound;
 
 
 public class FormSegaPCM extends FormChipBase<FormSegaPCM.Params> {
 
-    static final Preferences prefs = Preferences.userNodeForPackage(FormSegaPCM.class);
+    private static final Preferences prefs = Preferences.userNodeForPackage(FormSegaPCM.class);
 
     public FormSegaPCM(FormMain frm, int chipId, int zoom) {
         super(frm, chipId, zoom, new Params(), new Params());
@@ -62,7 +65,7 @@ public class FormSegaPCM extends FormChipBase<FormSegaPCM.Params> {
         }
     };
 
-    public void changeZoom() {
+    private void changeZoom() {
         this.setMaximumSize(new Dimension(frameSizeW + Common.getImage("planeSEGAPCM").getWidth() * zoom, frameSizeH + Common.getImage("planeSEGAPCM").getHeight() * zoom));
         this.setMinimumSize(new Dimension(frameSizeW + Common.getImage("planeSEGAPCM").getWidth() * zoom, frameSizeH + Common.getImage("planeSEGAPCM").getHeight() * zoom));
         this.setPreferredSize(new Dimension(frameSizeW + Common.getImage("planeSEGAPCM").getWidth() * zoom, frameSizeH + Common.getImage("planeSEGAPCM").getHeight() * zoom));
@@ -214,7 +217,7 @@ public class FormSegaPCM extends FormChipBase<FormSegaPCM.Params> {
         this.addComponentListener(this.componentListener);
     }
 
-    BufferedImage image;
+    private BufferedImage image;
 
 //#region draw buffer
 
@@ -241,9 +244,9 @@ public class FormSegaPCM extends FormChipBase<FormSegaPCM.Params> {
 //#endregion
 
     /** this panel's per-frame draw state, diffed new against old (see {@link FormChipBase}) */
-    public static class Params {
+    static class Params {
 
-        public final ChannelParams[] channels = {
+        final ChannelParams[] channels = {
                 new ChannelParams(), new ChannelParams(), new ChannelParams(), new ChannelParams(),
                 new ChannelParams(), new ChannelParams(), new ChannelParams(), new ChannelParams(),
                 new ChannelParams(), new ChannelParams(), new ChannelParams(), new ChannelParams(),
@@ -257,42 +260,42 @@ public class FormSegaPCM extends FormChipBase<FormSegaPCM.Params> {
         @Override public String id() { return "SegaPCM"; }
         @Override public String menuText() { return "SEGA PCM"; }
         @Override public String category() { return "pcm"; }
-        @Override public Class<? extends mdplayer.Chip> chip() { return mdplayer.chips.SegaPcmChip.class; }
+        @Override public Class<? extends mdplayer.Chip> chip() { return SegaPcmChip.class; }
         @Override public boolean hasRegisterDump() { return true; }
         @Override public View create(FormMain frm, int chipId, int zoom) { return new FormSegaPCM(frm, chipId, zoom); }
 
-        @Override public void setChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
-            mdplayer.chips.SegaPcmChip c = audio.plugin.chipRegister.chip(mdplayer.chips.SegaPcmChip.class);
+        @Override public void setChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+            SegaPcmChip c = audio.plugin.chipRegister.chip(SegaPcmChip.class);
             if (!c.getMask(chipId, ch)) c.setMask(chipId, ch); else c.resetMask(chipId, ch);
         }
 
-        @Override public void resetChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
+        @Override public void resetChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch) {
             if (ch >= 0 && ch < 16) {
-                audio.plugin.chipRegister.chip(mdplayer.chips.SegaPcmChip.class).resetMask(chipId, ch);
+                audio.plugin.chipRegister.chip(SegaPcmChip.class).resetMask(chipId, ch);
             }
         }
 
-        @Override public void forceChannelMask(mdplayer.Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
+        @Override public void forceChannelMask(Audio audio, Class<? extends mdplayer.Chip> chip, int chipId, int ch, boolean mask) {
             if (mask)
-                audio.plugin.chipRegister.chip(mdplayer.chips.SegaPcmChip.class).setMask(chipId, ch);
+                audio.plugin.chipRegister.chip(SegaPcmChip.class).setMask(chipId, ch);
             else
-                audio.plugin.chipRegister.chip(mdplayer.chips.SegaPcmChip.class).resetMask(chipId, ch);
+                audio.plugin.chipRegister.chip(SegaPcmChip.class).resetMask(chipId, ch);
         }
 
-        @Override public void reapplyChannelMasks(mdplayer.Audio audio, int chipId) {
+        @Override public void reapplyChannelMasks(Audio audio, int chipId) {
             for (int ch = 0; ch < 16; ch++)
-                forceChannelMask(audio, mdplayer.chips.SegaPcmChip.class, chipId, ch,
-                        audio.plugin.chipRegister.chip(mdplayer.chips.SegaPcmChip.class).getMask(chipId, ch));
+                forceChannelMask(audio, SegaPcmChip.class, chipId, ch,
+                        audio.plugin.chipRegister.chip(SegaPcmChip.class).getMask(chipId, ch));
         }
 
         @Override public List<MixerSlot> mixerSlots() {
-            return List.of(new MixerSlot(41, mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.SegaPcmChip.class, "segaPCM", 200));
+            return List.of(new MixerSlot(41, MDSound.Chip.MAIN_TAG, SegaPcmChip.class, "segaPCM", 200));
         }
 
-        @Override public void updateMeters(mdplayer.Audio audio, mdplayer.form.VisVolume visVolume) {
+        @Override public void updateMeters(Audio audio, VisVolume visVolume) {
             int val = 0;
             try {
-                byte[] reg = (byte[]) Meters.chipInfo(audio, mdplayer.chips.SegaPcmChip.class, "register");
+                byte[] reg = (byte[]) Meters.chipInfo(audio, SegaPcmChip.class, "register");
                 if (reg != null) {
                     for (int ch = 0; ch < 16; ch++) {
                         int v = 0;
@@ -304,7 +307,7 @@ public class FormSegaPCM extends FormChipBase<FormSegaPCM.Params> {
                         if (v > val) val = v;
                     }
                 }
-            } catch (Exception e) {
+            } catch (Exception _) {
             }
             visVolume.put("segaPCM", val * 3);
         }

@@ -649,54 +649,54 @@ public class NRTDRV {
     }
 
     public class Work {
-        public int ctcFlg = 0;
-        public int ctc3io = 0;
-        public byte ctc0 = 0;
-        public byte ctc1 = 0;
-        public byte ctc2 = 0;
-        public byte ctc3 = 0;
-        public byte ctc0TimeConstant = 0;
-        public byte ctc1TimeConstant = 0;
-        public byte ctc3TimeConstant = 0;
-        public int bgmAdr = 0x4000; // Default Address
-        public byte opmFlg = 0;
-        public int opmIo = 0x701;
-        public byte plyFlg = 0;
-        public byte count = 0;
-        public byte zCount = 0;
+        int ctcFlg = 0;
+        int ctc3io = 0;
+        byte ctc0 = 0;
+        byte ctc1 = 0;
+        byte ctc2 = 0;
+        byte ctc3 = 0;
+        byte ctc0TimeConstant = 0;
+        byte ctc1TimeConstant = 0;
+        byte ctc3TimeConstant = 0;
+        int bgmAdr = 0x4000; // Default Address
+        byte opmFlg = 0;
+        int opmIo = 0x701;
+        byte plyFlg = 0;
+        byte count = 0;
+        byte zCount = 0;
         public short totalCount = 0;
-        public byte ffFlg = 0;
-        public byte pFlg = 0x38;
-        public byte mVol = 0;
-        public byte fCount = 0;
-        public byte fSpeed = 5;
+        byte ffFlg = 0;
+        byte pFlg = 0x38;
+        byte mVol = 0;
+        byte fCount = 0;
+        byte fSpeed = 5;
         public byte ver = 2;
 
-        public final Ch[] opm1Chs = {new Ch(), new Ch(), new Ch(), new Ch(), new Ch(), new Ch(), new Ch(), new Ch()};
-        public final Ch[] opm2Chs = {new Ch(), new Ch(), new Ch(), new Ch(), new Ch(), new Ch(), new Ch(), new Ch()};
-        public final Ch[] psgChs = {new Ch(), new Ch(), new Ch()};
+        final Ch[] opm1Chs = {new Ch(), new Ch(), new Ch(), new Ch(), new Ch(), new Ch(), new Ch(), new Ch()};
+        final Ch[] opm2Chs = {new Ch(), new Ch(), new Ch(), new Ch(), new Ch(), new Ch(), new Ch(), new Ch()};
+        final Ch[] psgChs = {new Ch(), new Ch(), new Ch()};
 
-        public final byte[] opm1VReg = new byte[256];
-        public final byte[] opm2VReg = new byte[256];
+        final byte[] opm1VReg = new byte[256];
+        final byte[] opm2VReg = new byte[256];
 
-        public byte amd1 = 0;
-        public byte pmd1 = 0;
-        public byte amd2 = 0;
-        public byte pmd2 = 0;
+        byte amd1 = 0;
+        byte pmd1 = 0;
+        byte amd2 = 0;
+        byte pmd2 = 0;
 
         // Flag for countermeasures against direct instruction rewrite processing
 
-        public byte keyOnFOpmMask = 0x78;
-        public boolean PENVF_VOL0 = false;
-        public boolean KEYON_LightMode = false;
-        public boolean PKEYON_LightMode = false;
-        public boolean opmT02_LightMode = true;
-        public boolean opmT14_MVMode = false;
-        public boolean opmKeyONEnable = true;
-        public boolean opmRestEnable = true;
-        public boolean opmT19Enable = true;
-        public boolean psgKeyONEnable = true;
-        public boolean psgRestEnable = true;
+        byte keyOnFOpmMask = 0x78;
+        boolean PENVF_VOL0 = false;
+        boolean KEYON_LightMode = false;
+        boolean PKEYON_LightMode = false;
+        boolean opmT02_LightMode = true;
+        boolean opmT14_MVMode = false;
+        boolean opmKeyONEnable = true;
+        boolean opmRestEnable = true;
+        boolean opmT19Enable = true;
+        boolean psgKeyONEnable = true;
+        boolean psgRestEnable = true;
 
         private void imain() {
             if ((this.plyFlg & 0x40) != 0) {
@@ -779,71 +779,71 @@ public class NRTDRV {
         }
     }
 
-    public class Ch {
-        public static class RepBuf {
-            public byte count = 0;
-            public int startAdr = 0;
-            public int endAdr = 0;
+    class Ch {
+        static class RepBuf {
+            byte count = 0;
+            int startAdr = 0;
+            int endAdr = 0;
         }
 
-        public int ptrData = 0; // (IX,IX+1)
-        public byte loopCounter = 0; // IX+2
-        public byte counter = 0; // IX+3
-        public byte detune = 0; // IX+4
-        public int macroReturnAdr = 0; // IX+5,IX+6
-        public byte panAlgFb = (byte) 0xc0; // (IX+7)
-        public byte op1Tl = 0; // IX+8
-        public byte op2Tl = 0; // IX+9
-        public byte op3Tl = 0; // IX+10
-        public byte op4Tl = 0; // IX+11
-        public int psgToneStartAdr = 0; // IX+8,IX+9
-        public int psgToneAdr = 0; // IX+10,IX+11
-        public byte legartFlg = 0; // IX+12
-        public byte volume = 127; // IX+13
-        public byte nestCount = 0; // IX+14
-        public byte q = 8; // q IX+15
-        public byte Q = 0; // Q IX+16
-        public byte gatetime = 1; // IX+17
-        public byte isCountNext = 0; // IX+18
-        public byte lfoFlags = 0; // IX+19
-        public byte transpose = 0; // IX+20
-        public byte kf = 0; // Key Fraction (IX+21)
-        public byte noteNumber = 0; // Note Number (IX+22)
-        public int psgTone = 0; // PSG intervals IX+21, IX+22
-        public byte portaFlg = 9; // Portamento Flag IX+23
-        public int portaTone = 0; // Portamento reaching pitch IX+24, IX+25
-        public byte softPMDelay = 0; // Soft PM delay setting value IX+26
-        public byte softPMPitch = 0; // Soft PM pitch setting value IX+27
-        public byte softPMStep = 0; // Soft PM step setting value IX+28
-        public byte softPMDelayCount = 0; // Soft PM Delay Counter IX+29
-        public byte softPMStepCount = 0; // Soft PM step counter IX+30
-        public byte softPMProcCount = 0; // Soft PM process counter IX+31
-        public byte softPMType = 0; // Soft PM step counter IX+32
-        public byte softAMFlagAndDelay = 0; // Soft AM flag and delay setting value (0=off) (IX+33)
-        public byte psgHardEnvelopeType = 16; // PSG hard envelope shape (16=soft envelope) (IX+33)
-        public byte softAMDepth = 0; // Soft AM depth setting value IX+34
-        public byte softAMStep = 0; // Soft AM step setting value IX+35
-        public byte softAMSelOP = 0; // Soft AM selection OP IX+36
-        public byte softAMDelayCount = 0; // Soft AM Delay Counter IX+37
-        public byte softAMStepCount = 0; // Soft AM step counter IX+38
-        public byte softAMProcCount = 0; // Soft AM process counter IX+39
-        public byte op1Tls = (byte) 255; // IX+40
-        public byte op2Tls = (byte) 255; // IX+41
-        public byte op3Tls = (byte) 255; // IX+42
-        public byte op4Tls = (byte) 255; // IX+43
-        public byte portaStartFlg = 0; // Portamento operation flag IX+44
-        public byte legartDelayFlg = 0; // Legato Delay Flag IX+45
-        public byte keyOffFlg = 0; // Key-off flag IX+46
-        public byte trackStopFlg = 0; // Truck Stop Flag IX+47
-        public byte glideFlg = 0; // Glide Flag IX+48
-        public int glide = 0; // Glide value IX+49, IX+50
-        public byte workForPlayer = 0; // Player work (note number before processing) IX+51
-        public byte psgRr = 0; // IX+52
-        public byte psgRrLevel = 15; // IX+53
-        public byte psgRrCounter = 0; // IX+54
-        public byte psgRrVolOffset = 0; // IX+55
+        int ptrData = 0; // (IX,IX+1)
+        byte loopCounter = 0; // IX+2
+        byte counter = 0; // IX+3
+        byte detune = 0; // IX+4
+        int macroReturnAdr = 0; // IX+5,IX+6
+        byte panAlgFb = (byte) 0xc0; // (IX+7)
+        byte op1Tl = 0; // IX+8
+        byte op2Tl = 0; // IX+9
+        byte op3Tl = 0; // IX+10
+        byte op4Tl = 0; // IX+11
+        int psgToneStartAdr = 0; // IX+8,IX+9
+        int psgToneAdr = 0; // IX+10,IX+11
+        byte legartFlg = 0; // IX+12
+        byte volume = 127; // IX+13
+        byte nestCount = 0; // IX+14
+        byte q = 8; // q IX+15
+        byte Q = 0; // Q IX+16
+        byte gatetime = 1; // IX+17
+        byte isCountNext = 0; // IX+18
+        byte lfoFlags = 0; // IX+19
+        byte transpose = 0; // IX+20
+        byte kf = 0; // Key Fraction (IX+21)
+        byte noteNumber = 0; // Note Number (IX+22)
+        int psgTone = 0; // PSG intervals IX+21, IX+22
+        byte portaFlg = 9; // Portamento Flag IX+23
+        int portaTone = 0; // Portamento reaching pitch IX+24, IX+25
+        byte softPMDelay = 0; // Soft PM delay setting value IX+26
+        byte softPMPitch = 0; // Soft PM pitch setting value IX+27
+        byte softPMStep = 0; // Soft PM step setting value IX+28
+        byte softPMDelayCount = 0; // Soft PM Delay Counter IX+29
+        byte softPMStepCount = 0; // Soft PM step counter IX+30
+        byte softPMProcCount = 0; // Soft PM process counter IX+31
+        byte softPMType = 0; // Soft PM step counter IX+32
+        byte softAMFlagAndDelay = 0; // Soft AM flag and delay setting value (0=off) (IX+33)
+        byte psgHardEnvelopeType = 16; // PSG hard envelope shape (16=soft envelope) (IX+33)
+        byte softAMDepth = 0; // Soft AM depth setting value IX+34
+        byte softAMStep = 0; // Soft AM step setting value IX+35
+        byte softAMSelOP = 0; // Soft AM selection OP IX+36
+        byte softAMDelayCount = 0; // Soft AM Delay Counter IX+37
+        byte softAMStepCount = 0; // Soft AM step counter IX+38
+        byte softAMProcCount = 0; // Soft AM process counter IX+39
+        byte op1Tls = (byte) 255; // IX+40
+        byte op2Tls = (byte) 255; // IX+41
+        byte op3Tls = (byte) 255; // IX+42
+        byte op4Tls = (byte) 255; // IX+43
+        byte portaStartFlg = 0; // Portamento operation flag IX+44
+        byte legartDelayFlg = 0; // Legato Delay Flag IX+45
+        byte keyOffFlg = 0; // Key-off flag IX+46
+        byte trackStopFlg = 0; // Truck Stop Flag IX+47
+        byte glideFlg = 0; // Glide Flag IX+48
+        int glide = 0; // Glide value IX+49, IX+50
+        byte workForPlayer = 0; // Player work (note number before processing) IX+51
+        byte psgRr = 0; // IX+52
+        byte psgRrLevel = 15; // IX+53
+        byte psgRrCounter = 0; // IX+54
+        byte psgRrVolOffset = 0; // IX+55
 
-        public final RepBuf[] repBuf = {
+        final RepBuf[] repBuf = {
                 new RepBuf(), new RepBuf(), new RepBuf(), new RepBuf(), new RepBuf(), new RepBuf()
         };
 
@@ -2913,7 +2913,7 @@ if (!PKONE) {
             wpsg((byte) ((e & 0xff) * 2 + 1), h);
         }
 
-        public void efx(byte e) {
+        void efx(byte e) {
             if (this.portaFlg != 0) this.EPOR(e);
 
             if (this.softPMStep != 0) this.EPM(e);
@@ -2921,13 +2921,13 @@ if (!PKONE) {
             if (this.softAMStep != 0) this.EAM(e);
         }
 
-        public void efpx(byte e) {
+        void efpx(byte e) {
             if (this.portaFlg != 0) this.EPOP(e);
 
             if (this.softPMStep != 0) this.PEPM(e);
         }
 
-        public void mmain(byte e) {
+        void mmain(byte e) {
 MAINL:
             if (this.trackStopFlg == 0) {
                 if (this.keyOffFlg != 0) {
@@ -2967,7 +2967,7 @@ MAINL:
             }
         }
 
-        public void pmain(byte e) {
+        void pmain(byte e) {
             if (this.keyOffFlg == 2) {
                 this.PSGRR();
             } else if (this.keyOffFlg != 0) {

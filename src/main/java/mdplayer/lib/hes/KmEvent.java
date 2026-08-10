@@ -10,7 +10,7 @@ import vavi.util.compat.TriConsumer;
  */
 public class KmEvent {
 
-    public static final int KMEVENT_ITEM_MAX = 31; /**  MAX 255 */
+    private static final int KMEVENT_ITEM_MAX = 31; /**  MAX 255 */
 
     public interface dlgProc extends TriConsumer<Event, Integer, M_Hes.HESHES> {
     }
@@ -18,16 +18,16 @@ public class KmEvent {
     public static class Item {
         // Direct access to members prohibited
         //public Object user;
-        public M_Hes.HESHES user;
-        public dlgProc proc;
+        M_Hes.HESHES user;
+        dlgProc proc;
         /** Event occurrence time */
         public int count;
         /** Bidirectional Linked List */
-        public int prev;
+        int prev;
         /** Bidirectional Linked List */
         public int next;
         /** Internal State Flags */
-        public int sysFlag;
+        int sysFlag;
         /** Unused */
         public int flag2;
     }

@@ -1,7 +1,7 @@
 package mdplayer.emu.msx;
 
 
-public interface Cartridge {
+interface Cartridge {
 
     byte get(int address);
     void set(int address, byte value);

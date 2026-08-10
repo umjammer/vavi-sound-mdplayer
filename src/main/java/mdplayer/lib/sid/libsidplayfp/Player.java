@@ -101,33 +101,33 @@ public class Player {
     }
 
     // Speed Strings
-    static final String TXT_PAL_VBI = "50 Hz VBI (PAL)";
-    static final String TXT_PAL_VBI_FIXED = "60 Hz VBI (PAL FIXED)";
-    static final String TXT_PAL_CIA = "CIA (PAL)";
+    private static final String TXT_PAL_VBI = "50 Hz VBI (PAL)";
+    private static final String TXT_PAL_VBI_FIXED = "60 Hz VBI (PAL FIXED)";
+    private static final String TXT_PAL_CIA = "CIA (PAL)";
     //static final String TXT_PAL_UNKNOWN = "UNKNOWN (PAL)";
-    static final String TXT_NTSC_VBI = "60 Hz VBI (NTSC)";
-    static final String TXT_NTSC_VBI_FIXED = "50 Hz VBI (NTSC FIXED)";
-    static final String TXT_NTSC_CIA = "CIA (NTSC)";
+    private static final String TXT_NTSC_VBI = "60 Hz VBI (NTSC)";
+    private static final String TXT_NTSC_VBI_FIXED = "50 Hz VBI (NTSC FIXED)";
+    private static final String TXT_NTSC_CIA = "CIA (NTSC)";
     //static final String TXT_NTSC_UNKNOWN = "UNKNOWN (NTSC)";
 
     // Error Strings
-    static final String ERR_NA = "NA";
-    static final String ERR_UNSUPPORTED_FREQ = "SIDPLAYER ERROR: Unsupported sampling frequency.";
-    static final String ERR_UNSUPPORTED_SID_ADDR = "SIDPLAYER ERROR: Unsupported Sid address.";
-    static final String ERR_UNSUPPORTED_SIZE = "SIDPLAYER ERROR: size of Music data exceeds C64 memory.";
-    static final String ERR_INVALID_PERCENTAGE = "SIDPLAYER ERROR: Percentage value  of range.";
+    private static final String ERR_NA = "NA";
+    private static final String ERR_UNSUPPORTED_FREQ = "SIDPLAYER ERROR: Unsupported sampling frequency.";
+    private static final String ERR_UNSUPPORTED_SID_ADDR = "SIDPLAYER ERROR: Unsupported Sid address.";
+    private static final String ERR_UNSUPPORTED_SIZE = "SIDPLAYER ERROR: size of Music data exceeds C64 memory.";
+    private static final String ERR_INVALID_PERCENTAGE = "SIDPLAYER ERROR: Percentage value  of range.";
 
     /**
      * Configuration error exception.
      */
-    public static class ConfigError extends RuntimeException {
+    static class ConfigError extends RuntimeException {
         private final String message;
 
-        public ConfigError(String message) {
+        ConfigError(String message) {
             this.message = message;
         }
 
-        public String message() {
+        String message() {
             return message;
         }
     }
@@ -158,7 +158,7 @@ public class Player {
     }
 
     /** @return rom info */
-    public String checkRomByKernalChecker(byte[] rom) {
+    private String checkRomByKernalChecker(byte[] rom) {
         if (rom != null) {
             KernalChecker romChecker = new KernalChecker(rom);
             return romChecker.info();
@@ -167,7 +167,7 @@ public class Player {
     }
 
     /** @return rom info */
-    public String checkRomByBasicChecker(byte[] rom) {
+    private String checkRomByBasicChecker(byte[] rom) {
         if (rom != null) {
             BasicChecker romChecker = new BasicChecker(rom);
             return romChecker.info();
@@ -176,7 +176,7 @@ public class Player {
     }
 
     /** @return rom info */
-    public String checkRomByChargenChecker(byte[] rom) {
+    private String checkRomByChargenChecker(byte[] rom) {
         if (rom != null) {
             ChargenChecker romChecker = new ChargenChecker(rom);
             return romChecker.info();
@@ -485,7 +485,7 @@ public class Player {
      * @param defaultModel the default model
      * @param forced true if the default model should be forced : spite of tune model
      */
-    public SidConfig.SidModel getSidModel(SidTuneInfo.Model sidModel, SidConfig.SidModel defaultModel, boolean forced) {
+    private SidConfig.SidModel getSidModel(SidTuneInfo.Model sidModel, SidConfig.SidModel defaultModel, boolean forced) {
         SidTuneInfo.Model tuneModel = sidModel;
 
         // Use preferred speed if forced or if song speed instanceof unknown

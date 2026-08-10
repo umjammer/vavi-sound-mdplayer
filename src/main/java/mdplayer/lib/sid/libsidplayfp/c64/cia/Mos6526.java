@@ -75,7 +75,7 @@ public class Mos6526 {
      * <p>
      * @author Ken Händel
      */
-    public static class TimerA extends Timer {
+    protected static class TimerA extends Timer {
         /**
          * Signal underflows of Timer a to Timer B.
          */
@@ -92,7 +92,7 @@ public class Mos6526 {
         /**
          * Create timer A.
          */
-        public TimerA(EventScheduler scheduler, Mos6526 parent) {
+        TimerA(EventScheduler scheduler, Mos6526 parent) {
             super("CIA Timer A", scheduler, parent);
         }
     }
@@ -111,14 +111,14 @@ public class Mos6526 {
         /**
          * Create timer B.
          */
-        public TimerB(EventScheduler scheduler, Mos6526 parent) {
+        TimerB(EventScheduler scheduler, Mos6526 parent) {
             super("CIA Timer B", scheduler, parent);
         }
 
         /**
          * Receive an underflow from Timer a.
          */
-        public void cascade() {
+        void cascade() {
             // we pretend that we are CPU doing a write to ctrl register
             syncWithCpu();
             state |= CIAT_STEP;
@@ -130,7 +130,7 @@ public class Mos6526 {
          * <p>
          * @return true if start flag instanceof set, false otherwise
          */
-        public boolean started() {
+        boolean started() {
             return (state & CIAT_CR_START) != 0;
         }
     }
@@ -185,7 +185,7 @@ public class Mos6526 {
             }
         }
 
-        public InterruptSource6526(EventScheduler scheduler, Mos6526 parent) {
+        InterruptSource6526(EventScheduler scheduler, Mos6526 parent) {
             super(scheduler, parent);
         }
 
@@ -232,35 +232,35 @@ public class Mos6526 {
     }
 
     /** Event context. */
-    protected final EventScheduler eventScheduler;
+    private final EventScheduler eventScheduler;
 
     // Ports
-    protected final byte pra;
+    private final byte pra;
     protected final byte prb;
-    protected final byte ddra;
+    private final byte ddra;
     protected final byte ddrb;
 
     /** These are all CIA registers. */
-    protected final byte[] regs = new byte[0x10];
+    private final byte[] regs = new byte[0x10];
 
     // Timers a and B.
     protected final TimerA timerA;
-    protected final TimerB timerB;
+    private final TimerB timerB;
 
     /** Interrupt Source */
-    protected final InterruptSource interruptSource;
+    private final InterruptSource interruptSource;
 
     /** TOD */
-    protected final Tod tod;
+    private final Tod tod;
 
     /** Serial data Registers */
-    protected final SerialPort serialPort;
+    private final SerialPort serialPort;
 
     /** Have we already scheduled CIA->CPU Interrupt transition? */
-    protected boolean triggerScheduled;
+    private boolean triggerScheduled;
 
     /** Events */
-    protected final EventCallback<Mos6526> bTickEvent;
+    private final EventCallback<Mos6526> bTickEvent;
 
     /**
      * Trigger an Interrupt from TOD.
@@ -288,7 +288,7 @@ public class Mos6526 {
     /**
      * Timer A underflow.
      */
-    public void underflowA() {
+    private void underflowA() {
         interruptSource.trigger((byte) Interrupt.UNDERFLOW_A.v);
 
         if ((regs[Reg.CRB.ordinal()] & 0x41) == 0x41) {
@@ -301,14 +301,14 @@ public class Mos6526 {
     /**
      * Timer B underflow.
      */
-    public void underflowB() {
+    private void underflowB() {
         interruptSource.trigger((byte) Interrupt.UNDERFLOW_B.v);
     }
 
     /**
      * Handle the serial port.
      */
-    public void handleSerialPort() {
+    private void handleSerialPort() {
         if ((regs[Reg.CRA.ordinal()] & 0x40) != 0) {
             serialPort.handle(regs[Reg.SDR.ordinal()]);
         }
@@ -340,10 +340,10 @@ public class Mos6526 {
      * <p>
      * @param state Interrupt state
      */
-    public void interrupt(boolean state) {
+    protected void interrupt(boolean state) {
     }
 
-    protected void portA() {
+    private void portA() {
     }
 
     protected void portB() {

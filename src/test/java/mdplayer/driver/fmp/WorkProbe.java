@@ -8,7 +8,10 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import mdplayer.Setting;
 import mdplayer.emu.nise98.FileTemp;
@@ -23,7 +26,7 @@ import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
  * Runs FMP headless and correlates memory changes with the OPNA writes the driver makes,
  * to recover the layout of FMP's part work.
  */
-public class WorkProbe {
+class WorkProbe {
 
     static final int SEGMENT = 0x2000 << 4;
     static final int SIZE = 0x10000;
@@ -63,7 +66,7 @@ public class WorkProbe {
     final List<List<Integer>> ssgNoteTicks = new ArrayList<>();
     final List<Integer> adpcmTicks = new ArrayList<>();
 
-    final java.util.Map<String, Integer> regHist = new java.util.TreeMap<>();
+    final Map<String, Integer> regHist = new TreeMap<>();
 
     void write(int p, int a, int d) {
         int port = (p & 0xff) == 0x8a ? 0 : 1;
@@ -146,7 +149,7 @@ public class WorkProbe {
         for (int i = 0; i < 44100 * 40; i++) {
             fmp.nise98.runTimer();
             if (!fmp.nise98.intTimer()) continue;
-            java.util.Arrays.fill(patchWrites, 0);
+            Arrays.fill(patchWrites, 0);
             fmp.processOneFrame(() -> {});
             tick++;
 
@@ -222,7 +225,7 @@ public class WorkProbe {
         for (int r = -0x30; r < 0x40; r++) {
             int hit = 0, tot = 0, miss = 0;
             int[] last = new int[6];
-            java.util.Arrays.fill(last, -1);
+            Arrays.fill(last, -1);
             for (Snap s : snaps) {
                 int v = s.mem[FM1KEY + STRIDE * s.ch + r] & 0xff;
                 boolean changed = last[s.ch] >= 0 && v != last[s.ch];

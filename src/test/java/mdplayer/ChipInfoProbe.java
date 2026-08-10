@@ -9,6 +9,7 @@ package mdplayer;
 import java.io.BufferedInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -74,10 +75,10 @@ class ChipInfoProbe {
             new TreeMap<>(info).forEach((k, v) -> {
                 // the wave tables and the like are noise here
                 if (k.contains(".inst. ")) return;
-                if (v instanceof int[] a) v = java.util.Arrays.toString(a);
-                else if (v instanceof boolean[] a) v = java.util.Arrays.toString(a);
-                else if (v instanceof byte[] a) v = java.util.Arrays.toString(a);
-                else if (v instanceof int[][] a) v = java.util.Arrays.deepToString(a);
+                if (v instanceof int[] a) v = Arrays.toString(a);
+                else if (v instanceof boolean[] a) v = Arrays.toString(a);
+                else if (v instanceof byte[] a) v = Arrays.toString(a);
+                else if (v instanceof int[][] a) v = Arrays.deepToString(a);
                 System.err.println("  " + k + " = " + v);
             });
         }

@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 
-public class MgsMetaDataTest {
+class MgsMetaDataTest {
 
     @Test
     void testMgsHeaderMetadataParsing() throws Exception {

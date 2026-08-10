@@ -1,9 +1,15 @@
 package mdplayer.driver.fmp;
 
+import java.io.ByteArrayInputStream;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
+import vavi.util.ByteUtil;
+import vavi.util.StringUtil;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
@@ -60,7 +66,7 @@ public class FmpMetaDataTest {
     void testFmpFormatGetMetaData() throws Exception {
         String mml = "#TITLE \"Format Test Title\"\n#COMPOSER \"Format Test Composer\"\n";
         FMPFormat format = new FMPFormat();
-        format.load(new java.io.ByteArrayInputStream(mml.getBytes(Charset.forName("MS932"))), "test.mpi");
+        format.load(new ByteArrayInputStream(mml.getBytes(Charset.forName("MS932"))), "test.mpi");
 
         MetaData md = format.getMetaData();
         assertNotNull(md);
@@ -126,10 +132,10 @@ public class FmpMetaDataTest {
     @Test
     @EnabledIfSystemProperty(named = "vavi.test", matches = "ai")
     void testSpecificFile() throws Exception {
-        java.nio.file.Path p = java.nio.file.Path.of("/Users/nsano/Public/np2/FMPPMD/_未整理_FMP-CDROM001/ARCHIVE/いりぽん/GR2-19/GR2-19.OVI");
-        if (!java.nio.file.Files.exists(p)) return;
+        Path p = Path.of("/Users/nsano/Public/np2/FMPPMD/_未整理_FMP-CDROM001/ARCHIVE/いりぽん/GR2-19/GR2-19.OVI");
+        if (!Files.exists(p)) return;
 
-        byte[] buf = java.nio.file.Files.readAllBytes(p);
+        byte[] buf = Files.readAllBytes(p);
         FmpDriver driver = new FmpDriver();
         MetaData md = driver.getMetaData(buf);
 
@@ -192,11 +198,11 @@ public class FmpMetaDataTest {
     @Test
     @EnabledIfSystemProperty(named = "vavi.test", matches = "ai")
     void testMakenaidFile() throws Exception {
-        java.nio.file.Path p = java.nio.file.Path.of("/Users/nsano/Public/np2/FMPPMD/Pops/MAKENAID.OPI");
-        if (!java.nio.file.Files.exists(p)) return;
+        Path p = Path.of("/Users/nsano/Public/np2/FMPPMD/Pops/MAKENAID.OPI");
+        if (!Files.exists(p)) return;
 
-        byte[] buf = java.nio.file.Files.readAllBytes(p);
-        int memoPtr = (vavi.util.ByteUtil.readLeShort(buf, 0) & 0xffff);
+        byte[] buf = Files.readAllBytes(p);
+        int memoPtr = (ByteUtil.readLeShort(buf, 0) & 0xffff);
         int end = Math.min(memoPtr + 400, buf.length);
 
         String decoded = decodePc98ShiftJis(buf, memoPtr + 4, end);
@@ -212,11 +218,11 @@ public class FmpMetaDataTest {
     @Test
     @EnabledIfSystemProperty(named = "vavi.test", matches = "ai")
     void testNrthncrsFile() throws Exception {
-        java.nio.file.Path p = java.nio.file.Path.of("/Users/nsano/Public/np2/FMPData/MusicData/NRTHNCRS.OZI");
-        if (!java.nio.file.Files.exists(p)) return;
+        Path p = Path.of("/Users/nsano/Public/np2/FMPData/MusicData/NRTHNCRS.OZI");
+        if (!Files.exists(p)) return;
 
-        byte[] buf = java.nio.file.Files.readAllBytes(p);
-        int memoPtr = (vavi.util.ByteUtil.readLeShort(buf, 0) & 0xffff);
+        byte[] buf = Files.readAllBytes(p);
+        int memoPtr = (ByteUtil.readLeShort(buf, 0) & 0xffff);
         int end = Math.min(memoPtr + 300, buf.length);
 
         String decoded = decodePc98ShiftJis(buf, memoPtr + 4, end);
@@ -241,8 +247,8 @@ public class FmpMetaDataTest {
 
         FmpDriver driver = new FmpDriver();
         for (char c : chars) {
-            byte[] sjis = String.valueOf(c).getBytes(java.nio.charset.Charset.forName("MS932"));
-            System.out.printf("Char '%c' (U+%04X): MS932=%s\n", c, (int)c, vavi.util.StringUtil.getDump(sjis));
+            byte[] sjis = String.valueOf(c).getBytes(Charset.forName("MS932"));
+            System.out.printf("Char '%c' (U+%04X): MS932=%s\n", c, (int)c, StringUtil.getDump(sjis));
         }
     }
 }

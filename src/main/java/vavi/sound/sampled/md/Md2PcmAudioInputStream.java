@@ -57,7 +57,7 @@ class Md2PcmAudioInputStream extends AudioInputStream {
         final Plugin plugin;
 
         /** */
-        public MdOutputEngine(Plugin plugin, Map<String, Object> props) {
+        MdOutputEngine(Plugin plugin, Map<String, Object> props) {
 logger.log(Level.DEBUG,"plugin: " + plugin.getClass().getSimpleName());
             this.plugin = plugin;
             if (plugin instanceof HasSongNo hasSongNo)

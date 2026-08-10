@@ -108,11 +108,11 @@ public class SettingKeyBoardPanel extends SettingTab {
     private final JButton btSlowClr;
     private final JLabel lblKeyBoardHookNotice;
 
-    public static JLabel lblKey = null;
-    public static JLabel lblNotice = null;
-    public static JButton btSet = null;
-    public static JButton btClr = null;
-    public static JButton btOK = null;
+    private static JLabel lblKey = null;
+    private static JLabel lblNotice = null;
+    private static JButton btSet = null;
+    private static JButton btClr = null;
+    private static JButton btOK = null;
 
     private final JButton btnOK;
 

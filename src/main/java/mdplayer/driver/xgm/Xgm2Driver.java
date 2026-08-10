@@ -3,6 +3,7 @@ package mdplayer.driver.xgm;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
+import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.Sn76489Chip;
 import mdplayer.chips.Ym2612Chip;
@@ -46,7 +47,7 @@ public class Xgm2Driver extends XgmDriver {
     private void tag(boolean existGD3, int gd3DataBlockAddr) {
         if (!existGD3) metaData = new MetaData();
         else {
-            metaData = mdplayer.Common.getMetaData(dataBuf, gd3DataBlockAddr + 12);
+            metaData = Common.getMetaData(dataBuf, gd3DataBlockAddr + 12);
             metaData.set(Tag.Chip, usedChips);
         }
     }
@@ -90,7 +91,7 @@ public class Xgm2Driver extends XgmDriver {
         try {
             xgm2.clockVi();
 
-            speedCounter += (double) mdplayer.Common.VGMProcSampleRate / BaseDriver.setting.getOutputDevice().getSampleRate() * speed;
+            speedCounter += (double) Common.VGMProcSampleRate / BaseDriver.setting.getOutputDevice().getSampleRate() * speed;
             while (speedCounter >= 1.0 && !stopped) {
                 speedCounter -= 1.0;
                 if (frameCounter > -1) {

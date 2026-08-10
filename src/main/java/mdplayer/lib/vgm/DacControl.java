@@ -1,49 +1,29 @@
-package mdplayer;
+package mdplayer.lib.vgm;
 
-import mdplayer.Common.EnmModel;
-import mdplayer.chips.Ay8910Chip;
-import mdplayer.chips.DmgChip;
-import mdplayer.chips.HuC6280Chip;
-import mdplayer.chips.NesChip;
-import mdplayer.chips.OkiM6258Chip;
-import mdplayer.chips.PwmChip;
-import mdplayer.chips.Rf5C164Chip;
-import mdplayer.chips.Sn76489Chip;
-import mdplayer.chips.Upd7759Chip;
-import mdplayer.chips.Y8950Chip;
-import mdplayer.chips.Ym2151Chip;
-import mdplayer.chips.Ym2203Chip;
-import mdplayer.chips.Ym2413Chip;
-import mdplayer.chips.Ym2608Chip;
-import mdplayer.chips.Ym2610Chip;
-import mdplayer.chips.Ym2612Chip;
-import mdplayer.chips.Ym3526Chip;
-import mdplayer.chips.Ym3812Chip;
-import mdplayer.chips.YmF262Chip;
-import mdplayer.chips.YmF271Chip;
-import mdplayer.chips.YmF278BChip;
-import mdplayer.chips.YmZ280BChip;
+import mdplayer.lib.vgm.Vgm.IVgm;
 
 
-public class DacControl {
+class DacControl implements Vgm.IDac {
 
     private static final int MAX_CHIPS = 0xff;
     private final DacControl_[] DACData = new DacControl_[MAX_CHIPS];
-    public EnmModel model = EnmModel.VirtualModel;
-    public ChipRegister chipRegister = null;
+    private final IVgm ivgm;
 
-    public DacControl() {
+    DacControl(IVgm ivgm) {
+        this.ivgm = ivgm;
     }
 
+    @Override
     public void update(int chipId, int samples) {
 //#if DEBUG
-        if (model != EnmModel.VirtualModel) return;
+        if (!ivgm.isVirtual()) return;
 //#endif
         DacControl_ chip = DACData[chipId];
         chip.update(samples);
     }
 
-    public int device_start_daccontrol(int chipId) {
+    @Override
+    public int deviceStart(int chipId) {
         if ((chipId & 0xff) >= MAX_CHIPS)
             return 0;
 
@@ -53,48 +33,56 @@ public class DacControl {
         return 1;
     }
 
-    public void device_stop_daccontrol(int chipId) {
+    public void deviceStop(int chipId) {
         DacControl_ chip = DACData[chipId];
         chip.stopDacControl();
     }
 
-    public void device_reset_daccontrol(int chipId) {
+    @Override
+    public void deviceReset(int chipId) {
         DacControl_ chip = DACData[chipId];
         chip.reset();
     }
 
+    @Override
     public void setupChip(int chipId, int chType, int chNum, int command) {
         DacControl_ chip = DACData[chipId];
         chip.setup(chType, chNum, command);
     }
 
+    @Override
     public void setData(int chipId, byte[] data, int dataLen, int stepSize, int stepBase) {
         DacControl_ chip = DACData[chipId];
         chip.setData(data, dataLen, stepSize, stepBase);
     }
 
-    public void refresh_data(int chipId, byte[] data, int dataLen) {
+    @Override
+    public void refreshData(int chipId, byte[] data, int dataLen) {
         // Should be called to fix the data pointer. (e.g. after a realloc)
         DacControl_ chip = DACData[chipId];
         chip.refreshData(data, dataLen);
     }
 
-    public void set_frequency(int chipId, int frequency) {
+    @Override
+    public void setFrequency(int chipId, int frequency) {
         //logger.log(Level.TRACE, "chipId%d frequency%d".formatted(chipId, frequency));
         DacControl_ chip = DACData[chipId];
         chip.setFrequency(chipId, frequency);
     }
 
+    @Override
     public void start(int chipId, int dataPos, int lenMode, int length) {
         DacControl_ chip = DACData[chipId];
         chip.start(dataPos, lenMode, length);
     }
 
+    @Override
     public void stop(int chipId) {
         DacControl_ chip = DACData[chipId];
         chip.stop();
     }
 
+    @Override
     public void refresh() {
         for (int i = 0; i < MAX_CHIPS; i++) DACData[i] = new DacControl_();
     }
@@ -102,82 +90,77 @@ public class DacControl {
     private void writeChipReg(int chipType2, int chipId, int port, int offset, int data) {
         switch (chipType2) {
         case 0x00: // SN76489
-            chipRegister.chip(Sn76489Chip.class).write(chipId, data, model);
+            ivgm.writeSn76489(chipId, data);
             break;
         case 0x01: // YM2413+
-            chipRegister.chip(Ym2413Chip.class).write(chipId, offset, data, model);
+            ivgm.writeYm2413(chipId, offset, data);
             break;
         case 0x02: // Ym2612
-            chipRegister.chip(Ym2612Chip.class).write(chipId, port, offset, data, model, -1);
+            ivgm.writeYm2612(chipId, port, offset, data, -1);
             break;
         case 0x03: // YM2151+
-            chipRegister.chip(Ym2151Chip.class).write(chipId, port, offset, data, model, 0, 0);
+            ivgm.writeYm2151(chipId, port, offset, data, 0, 0);
             break;
         case 0x06: // YM2203+
-            chipRegister.chip(Ym2203Chip.class).write(chipId, offset, data, model);
+            ivgm.writeYm2203(chipId, offset, data);
             break;
         case 0x07: // YM2608+
-            chipRegister.chip(Ym2608Chip.class).write(chipId, port, offset, data, model);
+            ivgm.writeYm2608(chipId, port, offset, data);
             break;
         case 0x08: // YM2610+
-            chipRegister.chip(Ym2610Chip.class).write(chipId, port, offset, data, model);
+            ivgm.writeYm2610(chipId, port, offset, data);
             break;
         case 0x09: // YM3812+
-            chipRegister.chip(Ym3812Chip.class).write(chipId, offset, data, model);
+            ivgm.writeYm3812(chipId, offset, data);
             break;
         case 0x0A: // YM3526+
-            chipRegister.chip(Ym3526Chip.class).write(chipId, offset, data, model);
+            ivgm.writeYm3526(chipId, offset, data);
             break;
         case 0x0B: // Y8950+
-            chipRegister.chip(Y8950Chip.class).write(chipId, offset, data, model);
+            ivgm.writeY8950(chipId, offset, data);
             break;
         case 0x0C: // YMF262+
-            chipRegister.chip(YmF262Chip.class).write(chipId, port, offset, data, model);
+            ivgm.writeYmF262(chipId, port, offset, data);
             break;
         case 0x0D: // YMF278B+
-            chipRegister.chip(YmF278BChip.class).write(chipId, port, offset, data, model);
+            ivgm.writeYmF278B(chipId, port, offset, data);
             break;
         case 0x0E: // YMF271+
-            chipRegister.chip(YmF271Chip.class).write(chipId, port, offset, data, model);
+            ivgm.writeYmF271(chipId, port, offset, data);
             break;
         case 0x0F: // YMZ280B+
-            chipRegister.chip(YmZ280BChip.class).write(chipId, offset, data, model);
+            ivgm.writeYmZ280B(chipId, offset, data);
             break;
         case 0x10:
-            chipRegister.chip(Rf5C164Chip.class).write(chipId, offset, data, model);
+            ivgm.writeRf5C164(chipId, offset, data);
             break;
         case 0x11: // PWM
-            chipRegister.chip(PwmChip.class).write(chipId, port, (offset << 8) | (data << 0), model);
+            ivgm.writePwm(chipId, port, (offset << 8) | (data << 0));
             break;
         case 0x12: // AY8910+
-            chipRegister.chip(Ay8910Chip.class).write(chipId, offset, data, model);
+            ivgm.writeAy8910(chipId, offset, data);
             break;
         case 0x13: // DMG+
-            chipRegister.chip(DmgChip.class).write(chipId, offset, data, model);
+            ivgm.writeDmg(chipId, offset, data);
             break;
         case 0x14: // NES+
-            chipRegister.chip(NesChip.class).write(chipId, offset, data, model);
+            ivgm.writeNes(chipId, offset, data);
             break;
         case 0x16: // UPD7759
-            chipRegister.chip(Upd7759Chip.class).write(chipId, offset, data, model);
+            ivgm.writeUpd7759(chipId, offset, data);
             break;
         case 0x17: // OKIM6258
-            if (model == EnmModel.VirtualModel)  // logger.log(Level.TRACE, "[DAC]");
-                chipRegister.chip(OkiM6258Chip.class).write(chipId, offset, data, model);
+            if (ivgm.isVirtual()) // logger.log(Level.TRACE, "[DAC]");
+                ivgm.writeOkiM6258(chipId, offset, data);
             break;
         case 0x1b: // OotakeHuC6280
-            chipRegister.chip(HuC6280Chip.class).write(chipId, offset, data, model);
+            ivgm.writeHuC6280(chipId, offset, data);
             break;
         }
     }
 
-    public class DacControl_ {
+    class DacControl_ {
 
-        private static final int DCTRL_LMODE_IGNORE = 0x00;
-        private static final int DCTRL_LMODE_CMDS = 0x01;
-        private static final int DCTRL_LMODE_MSEC = 0x02;
-        private static final int DCTRL_LMODE_TOEND = 0x03;
-        public static final int DCTRL_LMODE_BYTES = 0x0F;
         private static final int DAC_SMPL_RATE = 44100; // DAC control's own sample rate (Fixed)
 
         private static int mulDiv64Round(int multiplicand, int multiplier, int divisor) {
@@ -186,41 +169,41 @@ public class DacControl {
         }
 
         // Commands sent to dest-chips
-        public int dstChipType2;
-        public int dstChipID;
-        public int dstCommand;
-        public int cmdSize;
+        int dstChipType2;
+        int dstChipID;
+        int dstCommand;
+        int cmdSize;
 
         // Frequency (Hz) at which the commands are sent
-        public int frequency;
+        int frequency;
         // to protect from reading beyond End Of data
-        public int dataLen;
-        public byte[] data;
+        int dataLen;
+        byte[] data;
         // Position where to start
-        public int dataStart;
+        int dataStart;
         // usually 1, set to 2 for L/R interleaved data
-        public int stepSize;
+        int stepSize;
         // usually 0, set to 0/1 for L/R interleaved data
-        public int stepBase;
-        public int cmdsToSend;
+        int stepBase;
+        int cmdsToSend;
 
         // Running Bits:	0 (01) - instanceof playing
         //					2 (04) - loop sample (simple loop from start to end)
         //					4 (10) - already sent this command
         //					7 (80) - disabled
-        public int running;
-        public int reverse;
+        int running;
+        int reverse;
         // Position : Player SampleRate
-        public int step;
+        int step;
         // Position : data SampleRate
-        public int pos;
-        public int remainCmds;
+        int pos;
+        int remainCmds;
         // true Position : data (== Pos, if Reverse instanceof off)
-        public int realPos;
+        int realPos;
         // always stepSize * cmdSize
-        public int dataStep;
+        int dataStep;
 
-        public void sendCommand() {
+        void sendCommand() {
             int port;
             int command;
             int data;
@@ -339,7 +322,7 @@ public class DacControl {
                     else if (dstChipType2 == 0x05) {
                     } // TODO
                     else if (dstChipType2 == 0x1B)
-                        prevChn = chipRegister.chip(HuC6280Chip.class).read(dstChipID, 0x00, model);
+                        prevChn = ivgm.readHuC6280(dstChipID, 0x00);
 
                     // Send Channel Select
                     writeChipReg(dstChipType2, dstChipID, 0x00, command >> 4, port);
@@ -362,7 +345,7 @@ public class DacControl {
             running |= 0x10;
         }
 
-        public void update(int samples) {
+        void update(int samples) {
             int newPos;
             int realDataStp;
 
@@ -418,7 +401,7 @@ public class DacControl {
                 this.running &= 0xfe; // stop
         }
 
-        public void startDacControl() {
+        void startDacControl() {
             this.dstChipType2 = 0xff;
             this.dstChipID = 0x00;
             this.dstCommand = 0x0000;
@@ -426,11 +409,11 @@ public class DacControl {
             this.running = 0xff; // disable all actions (except setup_chip)
         }
 
-        public void stopDacControl() {
+        void stopDacControl() {
             this.running = 0xff;
         }
 
-        public void reset() {
+        void reset() {
             this.dstChipType2 = 0x00;
             this.dstChipID = 0x00;
             this.dstCommand = 0x00;
@@ -452,7 +435,7 @@ public class DacControl {
             this.dataStep = 0x00;
         }
 
-        public void setup(int chType, int chNum, int command) {
+        void setup(int chType, int chNum, int command) {
             this.dstChipType2 = chType; // TypeID (e.g. 0x02 for Ym2612)
             this.dstChipID = chNum; // chips number (to send commands to 1st or 2nd chips)
             this.dstCommand = command; // Port and command (would be 0x02A for Ym2612)
@@ -478,7 +461,7 @@ public class DacControl {
             this.dataStep = this.cmdSize * this.stepSize;
         }
 
-        public void setData(byte[] data, int dataLen, int stepSize, int stepBase) {
+        void setData(byte[] data, int dataLen, int stepSize, int stepBase) {
             if ((this.running & 0x80) > 0)
                 return;
 
@@ -494,7 +477,7 @@ public class DacControl {
             this.dataStep = this.cmdSize * this.stepSize;
         }
 
-        public void refreshData(byte[] data, int dataLen) {
+        void refreshData(byte[] data, int dataLen) {
             if ((this.running & 0x80) != 0)
                 return;
 
@@ -507,7 +490,7 @@ public class DacControl {
             }
         }
 
-        public void setFrequency(int chipId, int frequency) {
+        void setFrequency(int chipId, int frequency) {
             if ((this.running & 0x80) != 0)
                 return;
 
@@ -516,7 +499,7 @@ public class DacControl {
             this.frequency = frequency;
         }
 
-        public void start(int dataPos, int lenMode, int length) {
+        void start(int dataPos, int lenMode, int length) {
             int cmdStepBase;
 
             if ((this.running & 0x80) != 0)
@@ -565,7 +548,7 @@ public class DacControl {
             this.running &= 0xef; // command isn't yet sent
         }
 
-        public void stop() {
+        void stop() {
             if ((this.running & 0x80) != 0)
                 return;
 

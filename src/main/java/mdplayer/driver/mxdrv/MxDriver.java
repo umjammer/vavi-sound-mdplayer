@@ -236,6 +236,43 @@ public class MxDriver extends BaseDriver {
         mdx[0][7] = 0x08;
     }
 
+    /** how many part offsets follow the voice data offset at the head of an MDX body */
+    private static final int MDX_PARTS = 9;
+
+    /**
+     * Rejects a file whose body is not MDX sequence data at all.
+     * <p>
+     * The body opens with the offset of the voice data and one offset per part, all counted from
+     * the body itself, and nothing in the driver ever questions one. A file carrying something
+     * else there sends it reading wherever those bytes happen to point, which is where the endless
+     * {@code index is out of bounds} such a file used to play as comes from.
+     * <p>
+     * Files like that are not rare: an MDX compressed by LZX keeps its title and its PDX name,
+     * both of which still read back fine, and has a 68000 stub where the sequence should be
+     * (Gradius III's {@code G3_ST7.MDX} is one of over a thousand). A song that cannot play should
+     * say so rather than sound like a broken driver.
+     * <p>
+     * Only what cannot be sequence data at all is refused. The offsets themselves are deliberately
+     * not checked against the length of the body: plenty of MDXs that play perfectly well point a
+     * part or their voice data just past their own data - an empty part is written that way, and
+     * an unused one as an offset with the top bit set - and the driver reads the zeroes that
+     * follow as rests. Refusing those would lose songs to a stricter reading than MXDRV's own.
+     *
+     * @param mdx the buffer {@link #makeMdxBuf} built, its body offset in bytes 4 and 5
+     * @param size how much of it {@code makeMdxBuf} filled
+     * @throws IllegalStateException if the body cannot be sequence data
+     */
+    private static void checkMdx(byte[] mdx, int size) {
+        int body = ByteUtil.readBeShort(mdx, 4) & 0xffff;
+        int length = size - body;
+        if (length < (1 + MDX_PARTS) * 2) {
+            throw new IllegalArgumentException("Not MDX data: the body is only %d bytes.".formatted(length));
+        }
+        if (mdx[body + 4] == 'L' && mdx[body + 5] == 'Z' && mdx[body + 6] == 'X' && mdx[body + 7] == ' ') {
+            throw new IllegalArgumentException("The MDX data is LZX compressed.");
+        }
+    }
+
     /**
      * @param pdx OUT
      * @param pdxSize OUT
@@ -302,6 +339,7 @@ public class MxDriver extends BaseDriver {
         int[] pdxSize = new int[1];
         String[] pdxFileName = new String[1];
         makeMdxBuf(dataBuf, mdx, mdxSize, pdxFileName);
+        checkMdx(mdx[0], mdxSize[0]);
         makePdxBuf(pdxFileName[0], pdx, pdxSize);
         if ((pdxFileName[0] != null && !pdxFileName[0].isEmpty()) && pdx[0] == null) {
             logger.log(Level.WARNING, "pdxFileName: %s, pdx: %s".formatted(pdxFileName[0], pdx[0]));
@@ -322,29 +360,44 @@ public class MxDriver extends BaseDriver {
         if (setting.getMxDrv().pcm8Type == 1)
             plugin.chipRegister.chip(Pcm8Chip.class).writePcm(0, 0, 0, mxdrv.getMemory().mm, model);
 
+        // a song that loops with a repeat around the whole part instead of a jump at its end has
+        // no loop to count without this, and neither the measurement below nor the player's loop
+        // limit would ever come round
+        mxdrv.MXDRV_RepeatIsLoop(true);
+
         int playtime = mxdrv.MXDRV_MeasurePlayTime(mdx[0], mdxSize[0], mdxPtr[0], pdx[0], pdxSize[0], pdxPtr[0], 1, Depend.TRUE);
 //logger.log(Level.TRACE, "(%d:%02d) %d".formatted(playtime / 1000 / 60, playtime / 1000 % 60, ""));
-        totalCounter = (long) playtime * setting.getOutputDevice().getSampleRate() / 1000;
+        // the sample counter this is compared against ({@link #counter}) runs at the player's own
+        // rate, not the device's - counting it at the device rate made the total time and both
+        // progress bars run long by whatever the device is tuned away from 44100
+        totalCounter = (long) playtime * Common.VGMProcSampleRate / 1000;
         // the player decides how many loops to play (Setting.Other#loopTimes), the driver only reports them
         mxdrv.MXDRV_PlaySetup(Integer.MAX_VALUE, false);
         mxdrv.MXDRV_Play(mdx[0], mdxSize[0], mdxPtr[0], pdx[0], pdxSize[0], pdxPtr[0]);
 logger.log(Level.TRACE, "MXDRV_Start: " + ret);
     }
 
+    /** ticks {@link #clock} runs the OPM timer on, scaled by {@link #speed} */
+    private double opmCounter;
+
+    /**
+     * Runs the OPM timer the sequencer is driven by, held off until the player has mixed the
+     * latency it starts out with.
+     * <p>
+     * X68Sound calls this back only while it renders at the output rate; the chip here runs at
+     * its own 62500 Hz and takes the path that ticks the timer itself, so this is dead for most
+     * songs. The sample counter must not be counted here for that reason - see
+     * {@link #processOneFrame()}.
+     *
+     * @param firstFlg true on the first OPM tick of an output sample (unused, kept for the callback)
+     */
     public void clock(Runnable timer, boolean firstFlg) {
         try {
-            speedCounter += speed;
-            while (speedCounter >= 1.0) {
-                speedCounter -= 1.0;
+            opmCounter += speed;
+            while (opmCounter >= 1.0) {
+                opmCounter -= 1.0;
                 if (frameCounter > -1) {
                     timer.run();
-                    if (firstFlg) {
-                        counter++;
-                        frameCounter++;
-                    }
-                } else {
-                    if (firstFlg)
-                        frameCounter++;
                 }
             }
         } catch (Exception ex) {
@@ -363,6 +416,17 @@ logger.log(Level.TRACE, "MXDRV_Start: " + ret);
         //logger.log(Level.TRACE, "5:%d".formatted(mm.readint(MXWORK_CHBUF_PCM[4] + MXWORK_CH.S0004)));
         //logger.log(Level.TRACE, "6:%d".formatted(mm.readint(MXWORK_CHBUF_PCM[5] + MXWORK_CH.S0004)));
         //logger.log(Level.TRACE, "7:%d".formatted(mm.readint(MXWORK_CHBUF_PCM[6] + MXWORK_CH.S0004)));
+
+        // the mixer calls this once per rendered sample, which is the only tick this driver is
+        // sure to get: the PCM8 chip clocks it back (#clock) only on the X68Sound path that
+        // renders at the output rate, and the chip runs at 62500 Hz, which takes the other one.
+        // Left uncounted, the elapsed time on the display stands still a fifth of a second in.
+        speedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * speed;
+        while (speedCounter >= 1.0) {
+            speedCounter -= 1.0;
+            counter++;
+            frameCounter++;
+        }
 
         curLoop = mxdrv.loopCount;
         if (mxdrv.terminatePlay) {

@@ -4,12 +4,15 @@
  * Programmed by Naohide Sano
  */
 
-package mdplayer;
+package mdplayer.driver.ay;
 
+import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import mdplayer.lib.ay.AY;
 
@@ -42,10 +45,10 @@ class AyLoopProbe {
                 (r, d) -> { int f = (int) Math.min(ay.frames, frames); perFrame.get(f).add((r << 8) | d); },
                 () -> { int f = (int) Math.min(ay.frames, frames); beeps[f]++; });
 
-        java.lang.reflect.Field f = AY.class.getDeclaredField("z80");
+        Field f = AY.class.getDeclaredField("z80");
         f.setAccessible(true);
         konamiman.z80.Z80Processor z80 = (konamiman.z80.Z80Processor) f.get(ay);
-        java.util.Map<Integer, Integer> pcs = new java.util.TreeMap<>();
+        Map<Integer, Integer> pcs = new TreeMap<>();
         long next = 0;
         while (ay.frames < frames) {
             ay.oneFrame();

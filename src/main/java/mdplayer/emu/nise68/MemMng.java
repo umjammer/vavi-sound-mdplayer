@@ -6,7 +6,7 @@ import java.util.Map;
 
 public class MemMng {
 
-    public final Map<Integer, Integer> dicMng = new HashMap<>();
+    private final Map<Integer, Integer> dicMng = new HashMap<>();
     private int startPtr = 0;
     int address = 0x2000;
 
@@ -24,7 +24,7 @@ public class MemMng {
         address = 0x2000;
     }
 
-    static final int bl = 4;
+    private static final int bl = 4;
 
     public boolean set(int memPtr, int size) {
         if (dicMng.containsKey(memPtr)) return false;

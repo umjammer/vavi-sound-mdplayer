@@ -8,6 +8,7 @@ package mdplayer.driver.ym;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -107,6 +108,6 @@ public class YmFormat extends BaseFileFormat {
     @Override
     public boolean isSupported(InputStream is) throws IOException {
         if (isCompressedStream(is)) return false;
-        return Arrays.stream(getExtensions()).anyMatch(e -> java.nio.file.Path.of(SoundUtil.getSource(is)).toString().toLowerCase().endsWith(e));
+        return Arrays.stream(getExtensions()).anyMatch(e -> Path.of(SoundUtil.getSource(is)).toString().toLowerCase().endsWith(e));
     }
 }

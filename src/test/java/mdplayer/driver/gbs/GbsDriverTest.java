@@ -16,7 +16,7 @@ import vavi.util.event.GenericEvent;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class GbsDriverTest {
+class GbsDriverTest {
 
     @BeforeAll
     static void setupAll() {

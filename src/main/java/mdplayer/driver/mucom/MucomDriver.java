@@ -482,7 +482,7 @@ public class MucomDriver extends BaseDriver {
         private final TriConsumer<byte[], Integer, Integer> writePCMData;
         private final BiConsumer<Long, Integer> sendWait;
 
-        public MucomChipAction(Consumer<ChipDatum> write, TriConsumer<byte[], Integer, Integer> writePCMData, BiConsumer<Long, Integer> sendWait) {
+        MucomChipAction(Consumer<ChipDatum> write, TriConsumer<byte[], Integer, Integer> writePCMData, BiConsumer<Long, Integer> sendWait) {
             this.write = write;
             this.writePCMData = writePCMData;
             this.sendWait = sendWait;

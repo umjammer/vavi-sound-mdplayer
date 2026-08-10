@@ -30,7 +30,7 @@ public class MusicaK4Driver extends BaseDriver {
 
     private final MuSICA_K4 musicaK4;
 
-    public MusicaK4Driver(BasePlugin<? extends BaseDriver> plugin) {
+    MusicaK4Driver(BasePlugin<? extends BaseDriver> plugin) {
         super(plugin);
 
         this.musicaK4 = new MuSICA_K4();
@@ -40,11 +40,11 @@ public class MusicaK4Driver extends BaseDriver {
         musicaK4.dir = System.getProperty("mdplayer.musica.dir", System.getProperty("user.dir"));
     }
 
-    public MusicaK4Driver() {
+    MusicaK4Driver() {
         this(null); // gross
     }
 
-    public byte[] getBgmBin() {
+    byte[] getBgmBin() {
         return musicaK4.getBgmBin();
     }
 

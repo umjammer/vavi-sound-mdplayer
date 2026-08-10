@@ -193,9 +193,9 @@ public class STIL {
     private final String[] resultBug = {null};
 
     // final ios_base::openmode STILopenFlags = ios::in | ios::binary;
-    public static final String STILopenFlags = "r"; // | ios::binary;
+    private static final String STILopenFlags = "r"; // | ios::binary;
 
-    public static final float VERSION_NO = 3.0f;
+    private static final float VERSION_NO = 3.0f;
 
     private static final Logger logger = Logger.getLogger(STIL.class.getName());
 
@@ -251,7 +251,7 @@ public class STIL {
      * @param stilPath relative path to STIL file
      * @param bugsPath relative path to BUG file
      */
-    public STIL(String stilPath /*= StilDefs.DEFAULT_PATH_TO_STIL*/, String bugsPath/* = StilDefs.DEFAULT_PATH_TO_BUGLIST*/) {
+    public STIL(String stilPath /* = StilDefs.DEFAULT_PATH_TO_STIL */, String bugsPath/* = StilDefs.DEFAULT_PATH_TO_BUGLIST */) {
         pathToStil = stilPath;
         pathToBugList = bugsPath;
         version = 0.0f;
@@ -531,7 +531,7 @@ public class STIL {
      * to an private structure, but I trust you. :)
      * - NULL if there's absolutely no STIL entry for the tune
      */
-    public String getEntry(String relPathToEntry, int tuneNo/* = 0*/, Field field /*= Field.All*/) throws IOException {
+    private String getEntry(String relPathToEntry, int tuneNo/* = 0*/, Field field /*= Field.All*/) throws IOException {
         lastError = Error.NO_STIL_ERROR;
 
         logger.fine("getEntry() called, relPath=" + relPathToEntry + ", rest=" + tuneNo + "," + field + "\n");
@@ -656,7 +656,7 @@ public class STIL {
      * to an private structure, but I trust you. :)
      * - NULL if there's absolutely no BUG entry for the tune
      */
-    public String getBug(String relPathToEntry, int tuneNo/* = 0*/) throws IOException {
+    private String getBug(String relPathToEntry, int tuneNo/* = 0*/) throws IOException {
         lastError = Error.NO_STIL_ERROR;
 
         logger.fine("getBug() called, relPath=" + relPathToEntry + ", rest=" + tuneNo + "\n");
@@ -768,7 +768,7 @@ public class STIL {
      * - NULL if there's absolutely no section-global comment
      * for the tune
      */
-    public String getGlobalComment(String relPathToEntry) throws IOException {
+    private String getGlobalComment(String relPathToEntry) throws IOException {
         lastError = Error.NO_STIL_ERROR;
 
         logger.fine("getGC() called, relPath=" + relPathToEntry + "\n");

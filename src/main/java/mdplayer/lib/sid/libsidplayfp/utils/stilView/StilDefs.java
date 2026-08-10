@@ -27,7 +27,7 @@ import java.io.File;
 //
 // STIL - Common defines
 //
-public class StilDefs {
+class StilDefs {
 
     //
     // Here you should define:

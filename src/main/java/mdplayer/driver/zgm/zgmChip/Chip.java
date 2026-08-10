@@ -4,14 +4,14 @@ import mdplayer.Common.EnmModel;
 import mdplayer.driver.zgm.EnmZGMDevice;
 
 
-public class Chip {
-    public boolean use;
-    public long delay;
-    public EnmModel model;
-    public EnmZGMDevice device;
-    public int index;
-    public int number;
-    public int hosei;
+class Chip {
+    boolean use;
+    private long delay;
+    EnmModel model;
+    EnmZGMDevice device;
+    int index;
+    int number;
+    int hosei;
     private final Object lockObj = new Object();
     private boolean[] _chMasks = null;
 
@@ -27,13 +27,13 @@ public class Chip {
         }
     }
 
-    int currentCh;
+    private int currentCh;
 
     public int getCurrentCh() {
         return currentCh;
     }
 
-    public Chip(int ch) {
+    Chip(int ch) {
         _chMasks = new boolean[ch];
     }
 

@@ -64,7 +64,7 @@ public class SidConfig {
         RESAMPLE_INTERPOLATE
     }
 
-    public int DEFAULT_SAMPLING_FREQ = 1;
+    private int DEFAULT_SAMPLING_FREQ = 1;
 
     /**
      * Intended C64 model when unknown or forced.

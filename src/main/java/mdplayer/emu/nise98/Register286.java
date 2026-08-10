@@ -267,7 +267,7 @@ public class Register286 {
     }
 
     // PF bit2
-    public boolean isPF() {
+    private boolean isPF() {
         return (flag & (1 << 2)) != 0;
     }
 
@@ -277,7 +277,7 @@ public class Register286 {
     }
 
     // AF bit4
-    public boolean isAF() {
+    private boolean isAF() {
         return (flag & (1 << 4)) != 0;
     }
 
@@ -307,7 +307,7 @@ public class Register286 {
     }
 
     // TF bit8
-    public boolean isTF() {
+    private boolean isTF() {
         return (flag & (1 << 8)) != 0;
     }
 
@@ -346,8 +346,13 @@ public class Register286 {
         flag |= (short) (value ? (1 << 11) : 0);
     }
 
-    public int auxVal, overVal, signVal, zeroVal, carryVal, dirVal; // 0 or non-0 valued flags
-    public byte parityVal;
+    private int auxVal;
+    private int overVal;
+    private int signVal;
+    private int zeroVal;
+    private int carryVal;
+    public int dirVal; // 0 or non-0 valued flags
+    private byte parityVal;
 
     public void setSZPFb(byte ans) {
         signVal = ans;

@@ -17,7 +17,7 @@ public class Xgm {
 
     private static final Logger logger = getLogger(Xgm.class.getName());
 
-    public static final int FCC_XGM = 0x204d4758; // "XGM "
+    private static final int FCC_XGM = 0x204d4758; // "XGM "
     public static final int FCC_GD3 = 0x20336447; // "Gd3 "
 
     public static class XGMSampleID {
@@ -219,10 +219,10 @@ public class Xgm {
     }
 
     public static class XgmPcm {
-        public int priority = 0;
-        public int startAddr = 0;
-        public int endAddr = 0;
-        public int addr = 0;
+        int priority = 0;
+        int startAddr = 0;
+        int endAddr = 0;
+        int addr = 0;
         public int inst = 0;
         public boolean isPlaying = false;
         public int data = 0;
