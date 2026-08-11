@@ -59,9 +59,3 @@ A psf says how long it is in its `length` tag, and most rips carry one; the ones
 (the whole PlayOnline Viewer set, `BATTLE1.psf2`) would play for ever, so `Setting.Psf` stands in
 with a default length and fade — three minutes and ten seconds, which is what the other psf
 players use. Set the length to 0 there to let such a song run on.
-
-Two other things a real rip will find, both covered by tests: a branch in a branch's delay slot
-leaves the "a branch is pending" marker in `delayr`, which the C then writes one past the end of
-its register file (`R3000Test`), and the IOP printf's integer conversions have to be written by
-hand because java's `Formatter` has no `%u` and rejects a precision on `%d` and `%x` - Square's
-IOP driver asks for its wave bank as `wave%4.4u.wd` (`PsxHwTest`).

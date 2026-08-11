@@ -38,3 +38,4 @@ mdplayer.driver.hvl.HvlFormat
 mdplayer.driver.ym.YmFormat
 mdplayer.driver.psf.PsfFileFormat
 mdplayer.driver.psf2.Psf2FileFormat
+mdplayer.driver.smaf.SmafFileFormat

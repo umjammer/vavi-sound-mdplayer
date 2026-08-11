@@ -3,7 +3,7 @@
 
   <groupId>vavi</groupId>
   <artifactId>vavi-apps-mdplayer</artifactId>
-  <version>0.0.23</version>
+  <version>0.0.24</version>
 
   <profiles>
     <profile>
@@ -157,6 +157,11 @@
                   <!-- jvmarg value="-Dswing.defaultlaf=com.formdev.flatlaf.FlatLightLaf" / -->
                   <jvmarg value="-Dapple.laf.useScreenMenuBar=true" />
                   <jvmarg value="-Dapple.awt.application.name=MDPlayer" />
+                  <!-- the smaf driver runs an emulated PC on one thread that has to synthesize
+                       audio faster than it is heard, and g1's write barriers cost that thread
+                       about 5% of itself for a collector whose concurrency it never needs.
+                       Measured on the heaviest MA-5 song: g1 0.96x real time, parallel 1.00x. -->
+                  <jvmarg value="-XX:+UseParallelGC" />
                   <arg value="${file}" />
                 </java>
               </target>
@@ -491,13 +496,21 @@
       <version>0.2.11</version>
     </dependency>
 
-    <!-- how org.urish.jnavst calls into a VST plugin. it also turns up transitively from three
-         unrelated places at three versions (jna 5.14.0, jna-platform 5.17.0, jna-jpms 5.10.0),
-         so the one the host is written against is named here rather than left to resolution -->
     <dependency>
       <groupId>net.java.dev.jna</groupId>
       <artifactId>jna</artifactId>
       <version>5.19.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.github.umjammer.vavi-apps-dosbox</groupId> <!-- com.acclash.jdosbox / com.github.umjammer.vavi-apps-dosbox -->
+      <artifactId>jdosbox</artifactId>
+      <version>0.74.34v</version>
+    </dependency>
+    <dependency>
+      <groupId>com.github.umjammer.vavi-apps-dosbox</groupId> <!-- com.acclash.jdosbox / com.github.umjammer.vavi-apps-dosbox -->
+      <artifactId>jdosbox-win</artifactId>
+      <version>0.74.34v</version>
     </dependency>
 
     <dependency>
