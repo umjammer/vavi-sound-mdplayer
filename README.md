@@ -57,6 +57,7 @@ this is a fork of [MDPlayer](https://github.com/kuma4649/MDPlayer)
 | M4A/AAC                         |                  |       →        |    -     | spi                   | [vavi-sound-aac](https://github.com/umjammer/vavi-sound-aac)         |                                                                                   |
 | WMA                             |                  |       →        |    -     | spi                   | [vavi-sound-sandbox](https://github.com/umjammer/vavi-sound-sandbox) |                                                                                   |
 | FLAC                            |                  |       →        |    -     | spi                   | [vavi-sound-flac](https://github.com/umjammer/vavi-sound-flac)       |                                                                                   |
+| SMAF                            | YAMAHA           |       ✅️       |    -     | built-in              | [jDOSBox](https://github.com/umjammer/jDOSBox), [mmftool](https://github.com/umjammer/mmftool) | adapt fmdsp visualizer ... difficult                                              |
 
 <sub>* at type: driver uses emulator</sub>
 
@@ -167,6 +168,10 @@ when using this project with vgm, gbs spi, apply the settings below to avoid con
 - `muap.dir.pcm` ... `.pcm` file location
 - `muap.dir.udp` ... `.udp` file location
 - `muap.dir.sud` ... `.sud` file location
+
+#### smaf
+
+- [smaf settings](src/main/java/mdplayer/driver/smaf/readme.md)
 
 #### ROMs
 

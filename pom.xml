@@ -5,11 +5,6 @@
   <artifactId>vavi-apps-mdplayer</artifactId>
   <version>0.0.23</version>
 
-  <properties>
-    <!-- built from ../../jDOSBox by `./gradlew publishToMavenLocal`, not published anywhere -->
-    <jdosbox.version>0.74.33v</jdosbox.version>
-  </properties>
-
   <profiles>
     <profile>
       <id>local</id>
@@ -162,6 +157,11 @@
                   <!-- jvmarg value="-Dswing.defaultlaf=com.formdev.flatlaf.FlatLightLaf" / -->
                   <jvmarg value="-Dapple.laf.useScreenMenuBar=true" />
                   <jvmarg value="-Dapple.awt.application.name=MDPlayer" />
+                  <!-- the smaf driver runs an emulated PC on one thread that has to synthesize
+                       audio faster than it is heard, and g1's write barriers cost that thread
+                       about 5% of itself for a collector whose concurrency it never needs.
+                       Measured on the heaviest MA-5 song: g1 0.96x real time, parallel 1.00x. -->
+                  <jvmarg value="-XX:+UseParallelGC" />
                   <arg value="${file}" />
                 </java>
               </target>
@@ -505,18 +505,15 @@
       <version>5.19.1</version>
     </dependency>
 
-    <!-- the emulated PC the smaf driver plays mmftoolc.exe on; the launcher module is the
-         same classes shaded into one jar, which duplicates what is already on this classpath -->
     <dependency>
-      <groupId>com.acclash.jdosbox</groupId>
+      <groupId>com.github.umjammer.vavi-apps-dosbox</groupId> <!-- com.acclash.jdosbox / com.github.umjammer.vavi-apps-dosbox -->
       <artifactId>jdosbox</artifactId>
-      <version>${jdosbox.version}</version>
+      <version>0.74.33v</version>
     </dependency>
-
     <dependency>
-      <groupId>com.acclash.jdosbox</groupId>
+      <groupId>com.github.umjammer.vavi-apps-dosbox</groupId> <!-- com.acclash.jdosbox / com.github.umjammer.vavi-apps-dosbox -->
       <artifactId>jdosbox-win</artifactId>
-      <version>${jdosbox.version}</version>
+      <version>0.74.33v</version>
     </dependency>
 
     <dependency>

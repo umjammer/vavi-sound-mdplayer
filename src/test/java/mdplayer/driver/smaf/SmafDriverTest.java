@@ -122,6 +122,8 @@ class SmafDriverTest {
         long songFrames = 0;
         int cushionSamples = 0;
         StringBuilder cushion = new StringBuilder();
+        StringBuilder busy = new StringBuilder();
+        long lastCpu = 0, lastWall = 0;
         while (rendered < sampleRate * seconds && !driver.stopped) {
             // the render loop has to run at the speed a sound card would take it at: the
             // emulated player keeps its own time against the rate its samples are taken
@@ -156,6 +158,16 @@ class SmafDriverTest {
                 cushionSamples++;
                 MmfToolPlayer p = ((SmafDriver) driver).getPlayer();
                 cushion.append(" %.1f".formatted(p == null ? 0 : p.getCushionSeconds()));
+                // and what the emulator thread is getting out of the host while that happens.
+                // A thread that is short of cushion but not using a whole core is being held up
+                // by something, not out of cpu - which is a different problem with a different fix
+                long nowCpu = emulatorCpuNanos();
+                long nowWall = System.nanoTime();
+                if (lastCpu != 0) {
+                    busy.append(" %.2f".formatted((nowCpu - lastCpu) / (double) (nowWall - lastWall)));
+                }
+                lastCpu = nowCpu;
+                lastWall = nowWall;
             }
             ByteBuffer bytes = ByteBuffer.allocate(buffer.length * 2).order(ByteOrder.LITTLE_ENDIAN);
             for (short s : buffer) {
@@ -188,6 +200,7 @@ System.err.printf("silence before the music: %.1fs (booting the machine and buil
 System.err.printf("late deliveries: %d, %.2fs behind in total, worst %dms at %.1fs into the song%n",
         late, lateMillis / 1000.0, worstLate, worstLateAt);
 System.err.println("cushion per half second:" + cushion);
+System.err.println("emulator thread, cores used:" + busy);
 
         assertTrue(peak > 1000, filename + " rendered near silence, peak " + peak);
         assertTrue(driver.counter > 0, "the driver clock should have advanced");
@@ -280,4 +293,17 @@ System.err.println("cushion per half second:" + cushion);
             plugin.close();
         }
     }
+
+    /** cpu time burned by the thread jdosbox runs its machine on, or 0 if it is not there */
+    private static long emulatorCpuNanos() {
+        java.lang.management.ThreadMXBean mx = java.lang.management.ManagementFactory.getThreadMXBean();
+        for (long id : mx.getAllThreadIds()) {
+            java.lang.management.ThreadInfo info = mx.getThreadInfo(id);
+            if (info != null && "jdosbox".equals(info.getThreadName())) {
+                return mx.getThreadCpuTime(id);
+            }
+        }
+        return 0;
+    }
+
 }

@@ -51,58 +51,47 @@ public class MmfToolPlayer {
     /** where mmftoolc.exe and its M5_Emu*.dll live */
     public static final String MMFTOOL_PATH_KEY = "mdplayer.smaf.mmftool";
 
-    /** how much audio the queue holds - the cushion the emulator keeps ahead of the listener */
-    private static final double QUEUE_SECONDS =
-            Double.parseDouble(System.getProperty("mdplayer.smaf.queue", "20"));
+    /** how much audio the queue can hold, which only has to be more than the cushion wants */
+    private static final double QUEUE_SECONDS = 20;
 
     /** how long the emulated player is given to produce a sound before we give up on it */
     private static final long SILENCE_LIMIT_SECONDS = 120;
 
     /**
-     * How much of the cushion has to be there before the first sample is handed over.
+     * How much audio has to be in hand before the first sample is handed over.
      * <p>
      * A song is not evenly hard to synthesize - a heavy passage half way through will drain a
-     * cushion that the opening bars said was plenty - and whatever the emulated PC cannot make
-     * up as it goes it has to have in hand before it starts. So the cushion is not a fixed size:
-     * while the player is loading, the rate it produces audio at is measured, and what it would
-     * be short by over a song's length is what gets built up. A machine that keeps up - which is
-     * the normal case since jdosbox's dispatch loop was cleaned out, an MA-5 song running at
-     * about 1.14 of real time on openjdk - waits only this floor; one that does not waits in
-     * silence rather than stuttering its way through the song. Both wait about the same length
-     * of time in total, since the emulator is what everything is waiting for - the difference is
-     * only whether that time is spent before the music or during it.
+     * cushion that the opening bars said was plenty - so the player starts a few seconds behind
+     * the emulator rather than level with it. This costs nothing in total, because the emulator
+     * is what everything is waiting for either way; it only decides whether the waiting is
+     * silence before the music or stuttering during it.
      * <p>
-     * Set {@code mdplayer.smaf.prime} to a number of seconds to fix it instead.
+     * Three seconds is enough for every song measured here, at the rates below. It is not enough
+     * for a heavy song asked for at a higher rate - see {@link #DEEP_CUSHION_SECONDS}.
      */
-    private static final double MIN_PRIME_SECONDS = 2;
-
-    /** the length of song the cushion is built to cover, when the emulator is running short */
-    private static final double ASSUMED_SONG_SECONDS =
-            Double.parseDouble(System.getProperty("mdplayer.smaf.song", "60"));
-
-    /** a fixed cushion in seconds, or 0 to work it out from how the emulator is doing */
-    private static final double FIXED_PRIME_SECONDS =
-            Double.parseDouble(System.getProperty("mdplayer.smaf.prime", "0"));
-
-    /** how long to watch the emulator before believing what it says about its own speed */
-    private static final long RATE_WINDOW_MILLIS = 1500;
+    private static final double CUSHION_SECONDS =
+            Double.parseDouble(System.getProperty("mdplayer.smaf.prime", "3"));
 
     /**
-     * How far ahead of real time the player has to be running before its cushion is allowed to
-     * be a small one. A song is not evenly hard to synthesize - a heavy passage half way through
-     * will drain a cushion that the opening bars said was plenty - so merely keeping up is not
-     * enough to start on. The margin is small because a machine that is ahead at all recovers
-     * whatever a heavy passage takes out of it; the measured worst case is a fifth of a second
-     * lost per ten seconds of hard synthesis.
+     * What a heavy song needs instead when it is synthesized above {@link #COMFORTABLE_RATE},
+     * where the emulated PC runs it at about 0.95 of real time and it is therefore behind for
+     * its whole length: the entire shortfall has to be in hand before it starts. Measured on the
+     * longest one here - seven seconds was enough on a quiet host and not on a loaded one.
+     * <p>
+     * This is not a setting because it is not a choice: it is the price of {@code rate.ma5}, and
+     * it follows it automatically.
      */
-    private static final double COMFORTABLE_RATE = 1.02;
+    private static final double DEEP_CUSHION_SECONDS = 10;
+
+    /** the fastest a heavy song can be synthesized and still be comfortably ahead of real time */
+    private static final int COMFORTABLE_RATE = 32000;
 
     /**
      * How fast the emulated PC is. The emulated player has to synthesize its audio faster than
      * it is heard or the cushion never fills, and "max" is what DOSBox calls giving it as much
      * of the host as it will take.
      */
-    private static final String CYCLES = System.getProperty("mdplayer.smaf.cycles", "max");
+    private static final String CYCLES = "max";
 
     /**
      * The emulated player's own master volume, 0 to 127, which it reads from its environment.
@@ -110,19 +99,37 @@ public class MmfToolPlayer {
      */
     private static final String VOLUME = System.getProperty("mdplayer.smaf.volume", "100");
 
+    /**
+     * The rate the emulated player synthesizes at, which it also reads from its environment.
+     * <p>
+     * This is the one thing that changes how much work the emulated PC has to do, because the
+     * cost is proportional: an MA-5 song that is synthesized at 0.95 of real time at 48000 is
+     * synthesized at 1.43 of it at 32000. Only 22050, 32000, 44100 and 48000 do anything -
+     * mmftool refuses the rest and says so rather than playing silence - and the driver
+     * resamples whatever comes out to the output device's rate anyway.
+     * <p>
+     * MA-1/2/3 are left at full rate because they are comfortable there and there is nothing to
+     * buy. MA-5 and MA-7 are not, and 32000 is what makes them comfortable; it costs them
+     * everything above 16kHz. Set {@code mdplayer.smaf.rate.ma5} to 48000 to have that back and
+     * pay for it in cushion (see {@link #DEEP_CUSHION_SECONDS}).
+     */
+    private static final String RATE = "48000";
+
+    /** the same for MA-5 and MA-7, the ones the emulated PC has to work hardest at */
+    private static final String RATE_HEAVY = System.getProperty("mdplayer.smaf.rate.ma5", "32000");
+
+
+
     private final byte[] mmf;
+
+    /** which chip the song is for, worked out once when the cushion is first sized */
+    private SmafFile.Format format;
 
     private Path work;
 
     private JDosBox dosbox;
 
     private PcmQueue queue;
-
-    /** when the emulated player first made a sound, from which its rate is measured */
-    private long soundingAtMillis;
-
-    /** frames it had produced by then */
-    private long soundingAtFrames;
 
     private volatile int sampleRate = 44100;
     private volatile int channels = 2;
@@ -177,37 +184,50 @@ public class MmfToolPlayer {
         return sounding;
     }
 
+
     /**
-     * The rate the emulated player is producing audio at, against real time. Below 1 it is not
-     * keeping up, and the difference has to come out of the cushion.
-     *
-     * @return 1 until there has been long enough to tell
+     * Whether this song is for one of the chips the emulated PC struggles to keep up with. A
+     * file that will not decode counts as one, since being careful about a light song costs
+     * only a little and being careless about a heavy one is what stutters.
      */
-    private double producedRate() {
-        if (soundingAtMillis == 0) {
-            return 1;
+    private boolean isHeavy() {
+        if (format == null) {
+            try {
+                format = SmafFile.decode(mmf).getFormat();
+            } catch (Exception e) {
+                logger.log(Level.DEBUG, "smaf: cannot tell which chip this is, assuming MA-5", e);
+                format = SmafFile.Format.UNKNOWN;
+            }
         }
-        long elapsed = System.currentTimeMillis() - soundingAtMillis;
-        if (elapsed < RATE_WINDOW_MILLIS) {
-            return 1;
-        }
-        double seconds = (producedFrames - soundingAtFrames) / (double) sampleRate;
-        return seconds / (elapsed / 1000.0);
+        return switch (format) {
+            case MA1, MA2, MA3, UTA2, UTA3 -> false;
+            case MA5, MA7, UNKNOWN -> true;
+        };
     }
 
-    /** how much audio has to be in hand before the song starts */
+    /**
+     * How much audio has to be in hand before the song starts.
+     * <p>
+     * This used to be worked out from the rate the emulator was seen to produce at while the
+     * player loaded. It does not work and the measurement is kept nowhere: taken before anything
+     * is consuming, so the emulator has the host to itself, it reported 1.52 for a song that
+     * then ran at 1.05 and 1.28 for one that then ran at 0.95 - it did not even rank them.
+     */
     private int primeBytes() {
-        int frameSize = channels * (sampleSizeInBits / 8);
-        double seconds;
-        if (FIXED_PRIME_SECONDS > 0) {
-            seconds = FIXED_PRIME_SECONDS;
-        } else {
-            // what the player will fall behind by over a song, plus a little to be going on with
-            seconds = MIN_PRIME_SECONDS
-                    + Math.max(0, COMFORTABLE_RATE - producedRate()) * ASSUMED_SONG_SECONDS;
+        double seconds = Math.min(cushionSeconds(), QUEUE_SECONDS * 0.9);
+        return (int) (seconds * sampleRate * channels * (sampleSizeInBits / 8));
+    }
+
+    /** the cushion this song needs, which is a question about its chip and its rate */
+    private double cushionSeconds() {
+        int rate;
+        try {
+            rate = Integer.parseInt((isHeavy() ? RATE_HEAVY : RATE).trim());
+        } catch (NumberFormatException e) {
+            // mmftool will refuse it and use its own default, which is the full rate
+            rate = 48000;
         }
-        seconds = Math.min(seconds, QUEUE_SECONDS * 0.9);
-        return (int) (seconds * sampleRate * frameSize);
+        return isHeavy() && rate > COMFORTABLE_RATE ? DEEP_CUSHION_SECONDS : CUSHION_SECONDS;
     }
 
     /** how much audio is queued ahead of the listener - the cushion, in seconds */
@@ -248,6 +268,7 @@ public class MmfToolPlayer {
                 .mount('c', work.toFile())
                 .command("c:")
                 .command("set MMFTOOL_MASTER_VOLUME=" + VOLUME)
+                .command("set MMFTOOL_SAMPLE_RATE=" + (isHeavy() ? RATE_HEAVY : RATE))
                 .command("mmftoolc.exe song.mmf")
                 // nothing on the machine's own mixer is wanted, and not opening a line for it
                 // keeps it from fighting the player for the host's audio device
@@ -260,8 +281,13 @@ public class MmfToolPlayer {
                 .set("speaker", "tandy", "off")
                 .set("speaker", "disney", "false")
                 .set("joystick", "joysticktype", "none")
-                .set("compiler", "threshold", System.getProperty("mdplayer.smaf.threshold", "1000"))
                 .set("cpu", "cycles", CYCLES)
+                // dosbox's "max" holds the emulated cpu to about 90% of what the host will give
+                // it, and sleeps a millisecond whenever it finds itself ahead - the right thing
+                // for a game, a 10% brake on a machine whose only job is to synthesize audio
+                // faster than it is heard. Turbo takes that off. It does not make the machine
+                // run away: `PcmQueue.write` blocking is what paces it, and that still holds.
+                .turbo(true)
                 // there is no screen to draw, so this is emulation nobody is going to look at
                 .set("render", "frameskip", "10")
                 .exitWhenProgramFinishes(true)
@@ -303,8 +329,6 @@ logger.log(Level.WARNING, "smaf: nothing but silence after " + SILENCE_LIMIT_SEC
                 int frame = channels * (sampleSizeInBits / 8);
                 start -= (start - offset) % frame;
                 sounding = true;
-                soundingAtMillis = System.currentTimeMillis();
-                soundingAtFrames = producedFrames;
 logger.log(Level.DEBUG, "smaf: sound starts, " + droppedBytes + " bytes of silence dropped");
                 length -= start - offset;
                 offset = start;
@@ -352,8 +376,7 @@ logger.log(Level.DEBUG, "smaf: waveOut closed");
                 return 0;
             }
             primed = true;
-logger.log(Level.DEBUG, "smaf: primed with %.1fs, the player is running at %.2f of real time"
-        .formatted(getCushionSeconds(), producedRate()));
+logger.log(Level.DEBUG, "smaf: primed with %.1fs".formatted(getCushionSeconds()));
         }
         int n = queue.read(b, offset, length, timeoutMillis);
         if (n == 0 && dosbox != null && !dosbox.isRunning()) {
