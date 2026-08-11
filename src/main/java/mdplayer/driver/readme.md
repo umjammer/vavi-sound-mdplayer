@@ -60,8 +60,32 @@ A psf says how long it is in its `length` tag, and most rips carry one; the ones
 with a default length and fade — three minutes and ten seconds, which is what the other psf
 players use. Set the length to 0 there to let such a song run on.
 
-Two other things a real rip will find, both covered by tests: a branch in a branch's delay slot
-leaves the "a branch is pending" marker in `delayr`, which the C then writes one past the end of
-its register file (`R3000Test`), and the IOP printf's integer conversions have to be written by
-hand because java's `Formatter` has no `%u` and rejects a precision on `%d` and `%x` - Square's
-IOP driver asks for its wave bank as `wave%4.4u.wd` (`PsxHwTest`).
+#### ♪ smaf (.mmf)
+
+There is no MA-2/MA-3/MA-5 emulator to write chip registers to, so this format is played by the
+real thing: `mmftoolc.exe` (a Windows build of murachue's mmftool driving Yamaha's `M5_Emu*.dll`)
+running on an emulated PC. jdosbox is the emulator, embedded through its `jdos.api.JDosBox`
+facade; `mdplayer.lib.smaf.MmfToolPlayer` boots a headless machine with the tool's directory
+copied onto drive C, and takes what the guest writes to its `waveOut` device through a
+`jdos.api.AudioSink`. Point `-Dmdplayer.smaf.mmftool=<dir>` at the directory holding
+`mmftoolc.exe`, `M5_EmuHw.dll`, `M5_EmuSmw5.dll` and `DefMA3_16.vm3`.
+
+**Settings.** All of it is system properties; only the first one has to be set, and then only if
+the tool is not where it is looked for.
+
+| property                  | default                  | what it is                                                                                                          |
+|---------------------------|--------------------------|---------------------------------------------------------------------------------------------------------------------|
+| `mdplayer.smaf.mmftool`   | `/usr/local/src/mmftool` | directory holding `mmftoolc.exe` and its dlls                                                                       |
+| `mdplayer.smaf.volume`    | `100`                    | the player's own master volume, 0-127, handed to it as `MMFTOOL_MASTER_VOLUME`. Its top setting clips on loud songs |
+| `mdplayer.smaf.prime`     | `0`                      | fixed cushion in seconds; 0 works it out from how the emulator is doing                                             |
+| `mdplayer.smaf.song`      | `60`                     | the song length the cushion is built to cover, when the emulator is running short                                   |
+| `mdplayer.smaf.queue`     | `20`                     | how many seconds of audio the queue holds - the cushion's ceiling                                                   |
+| `mdplayer.smaf.cycles`    | `max`                    | how much of the host the emulated cpu may take                                                                      |
+| `mdplayer.smaf.threshold` | `1000`                   | how often a block runs before jdosbox compiles it                                                                   |
+
+Raise `mdplayer.smaf.prime` if a song still stutters (it trades silence at the start for it);
+lower it, or set it to something small like `1`, to start sooner on a fast machine. The rest are
+there to be measured against, not to be turned.
+
+`SmafDriverTest` takes `mdplayer.smaf.test.mmf` (which song) and `mdplayer.smaf.test.seconds`
+(how long to let it play), and needs `-Dvavi.test=ai`.

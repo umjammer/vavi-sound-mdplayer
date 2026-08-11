@@ -143,8 +143,16 @@ public abstract class BaseDriver {
 
     private final GenericSupport viewSupport = new GenericSupport();
 
+    /**
+     * Whether anything is watching. "wave.buffer" is fired for every frame rendered, and the
+     * event, its varargs array and the two boxed samples are three allocations per frame -
+     * 44100 times a second, for nobody, in every driver that renders its own audio.
+     */
+    private volatile boolean watched;
+
     public void addViewListener(GenericListener listener) {
         viewSupport.addGenericListener(listener);
+        watched = true;
     }
 
     /**
@@ -157,6 +165,9 @@ public abstract class BaseDriver {
      *        "wave.buffer" ... args 0: left value, 1: right value
      */
     public void fireEventHappened(Object src, String name, Object... args) {
+        if (!watched) {
+            return;
+        }
         viewSupport.fireEventHappened(new GenericEvent(src, name, args));
     }
 

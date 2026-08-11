@@ -252,6 +252,78 @@ logger.log(Level.DEBUG, "midi volume: gain=%.3f (master=%d, midi=%d)".formatted(
         }
     }
 
+    /**
+     * The software synthesizer, opened when a note is finally played on it.
+     * <p>
+     * It is the fallback for every song, but most drivers never send it a note - they render
+     * their own audio, or write to emulated chips. Opening it anyway leaves a thread rendering
+     * an idle OPL3 for the length of the song: 12% of the player's cpu, measured while a smaf
+     * song was failing to keep up with its own emulator. So nothing is opened until a note
+     * arrives, and what came before it - the volumes, the programs - is kept and sent on first.
+     */
+    private final class LazySynthReceiver implements Receiver {
+
+        private Receiver delegate;
+
+        /** the settings sent before the first note, to be replayed once there is a synth */
+        private final List<MidiMessage> pending = new ArrayList<>();
+
+        /** enough for a song's worth of setup; past that something unusual is going on */
+        private static final int PENDING_LIMIT = 1024;
+
+        @Override
+        public synchronized void send(MidiMessage message, long timeStamp) {
+            if (delegate == null) {
+                if (!isNoteOn(message) && pending.size() < PENDING_LIMIT) {
+                    pending.add(message);
+                    return;
+                }
+                if (!open()) {
+                    return;
+                }
+                for (MidiMessage held : pending) {
+                    delegate.send(held, -1);
+                }
+                pending.clear();
+            }
+            delegate.send(message, timeStamp);
+        }
+
+        private static boolean isNoteOn(MidiMessage message) {
+            if (!(message instanceof ShortMessage sm)) {
+                return false;
+            }
+            return sm.getCommand() == ShortMessage.NOTE_ON && sm.getData2() > 0;
+        }
+
+        private boolean open() {
+            try {
+                if (fallbackSynth == null) {
+                    fallbackSynth = MidiSystem.getSynthesizer();
+                }
+                if (!fallbackSynth.isOpen()) {
+                    fallbackSynth.open();
+                }
+                delegate = fallbackSynth.getReceiver();
+                logger.log(Level.INFO, "MIDI out fallback to the software synthesizer: "
+                        + fallbackSynth.getDeviceInfo().getName());
+                return true;
+            } catch (MidiUnavailableException e) {
+                logger.log(Level.ERROR, e.getMessage(), e);
+                return false;
+            }
+        }
+
+        @Override
+        public synchronized void close() {
+            if (delegate != null) {
+                delegate.close();
+                delegate = null;
+            }
+            pending.clear();
+        }
+    }
+
     /** the sixteen MIDI channels, as the last note on left them */
     private static final int MIDI_CHANNELS = 16;
 
@@ -619,20 +691,8 @@ logger.log(Level.DEBUG, "midi volume: gain=%.3f (master=%d, midi=%d)".formatted(
             // (Gervill) so drivers that emit MIDI can still be heard. Note: MidiSystem.getReceiver()
             // returns the platform default MIDI out (often a silent hardware port), so open the
             // Synthesizer explicitly to render audio.
-            try {
-                if (fallbackSynth == null) {
-                    fallbackSynth = MidiSystem.getSynthesizer();
-                }
-                if (!fallbackSynth.isOpen()) {
-                    fallbackSynth.open();
-                }
-                Receiver r = fallbackSynth.getReceiver();
-                outs.add(r);
-                outsType.add(0);
-                logger.log(Level.INFO, "MIDI out fallback to the software synthesizer: " + fallbackSynth.getDeviceInfo().getName());
-            } catch (MidiUnavailableException e) {
-                logger.log(Level.ERROR, e.getMessage(), e);
-            }
+            outs.add(new LazySynthReceiver());
+            outsType.add(0);
             applyVolume();
             return;
         }
