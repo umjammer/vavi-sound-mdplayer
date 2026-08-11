@@ -58,6 +58,7 @@ this is a fork of [MDPlayer](https://github.com/kuma4649/MDPlayer)
 | WMA                             |                  |       →        |    -     | spi                   | [vavi-sound-sandbox](https://github.com/umjammer/vavi-sound-sandbox) |                                                                                   |
 | FLAC                            |                  |       →        |    -     | spi                   | [vavi-sound-flac](https://github.com/umjammer/vavi-sound-flac)       |                                                                                   |
 | SMAF                            | YAMAHA           |       ✅️       |    -     | built-in              | [jDOSBox](https://github.com/umjammer/jDOSBox), [mmftool](https://github.com/umjammer/mmftool) | adapt fmdsp visualizer ... difficult                                              |
+| SMAF                            | YAMAHA           |       ✅️       |    -     | built-in              | [jDOSBox](https://github.com/umjammer/jDOSBox), [mmftool](https://github.com/umjammer/mmftool) | ~~adapt fmdsp visualizer ... difficult~~                                          |
 
 <sub>* at type: driver uses emulator</sub>
 

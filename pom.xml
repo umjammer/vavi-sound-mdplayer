@@ -508,12 +508,12 @@
     <dependency>
       <groupId>com.github.umjammer.vavi-apps-dosbox</groupId> <!-- com.acclash.jdosbox / com.github.umjammer.vavi-apps-dosbox -->
       <artifactId>jdosbox</artifactId>
-      <version>0.74.33v</version>
+      <version>0.74.34v</version>
     </dependency>
     <dependency>
       <groupId>com.github.umjammer.vavi-apps-dosbox</groupId> <!-- com.acclash.jdosbox / com.github.umjammer.vavi-apps-dosbox -->
       <artifactId>jdosbox-win</artifactId>
-      <version>0.74.33v</version>
+      <version>0.74.34v</version>
     </dependency>
 
     <dependency>

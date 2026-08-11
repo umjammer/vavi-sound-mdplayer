@@ -150,6 +150,12 @@ public class MmfToolPlayer {
     /** how much digital silence has been dropped waiting for {@link #sounding} */
     private long droppedBytes;
 
+    /** what the emulated player says it is playing, and where it has got to */
+    private final SmafTelemetry telemetry = new SmafTelemetry();
+
+    /** frames handed to the caller, which is the clock the display is shown against */
+    private volatile long consumedFrames;
+
     public MmfToolPlayer(byte[] mmf) {
         this.mmf = mmf;
     }
@@ -269,6 +275,8 @@ public class MmfToolPlayer {
                 .command("c:")
                 .command("set MMFTOOL_MASTER_VOLUME=" + VOLUME)
                 .command("set MMFTOOL_SAMPLE_RATE=" + (isHeavy() ? RATE_HEAVY : RATE))
+                // have it say what it is playing, for the visualizer - see SmafTelemetry
+                .command("set MMFTOOL_TELEMETRY=1")
                 .command("mmftoolc.exe song.mmf")
                 // nothing on the machine's own mixer is wanted, and not opening a line for it
                 // keeps it from fighting the player for the host's audio device
@@ -291,7 +299,8 @@ public class MmfToolPlayer {
                 // there is no screen to draw, so this is emulation nobody is going to look at
                 .set("render", "frameskip", "10")
                 .exitWhenProgramFinishes(true)
-                .waveOutSink(new Sink());
+                .waveOutSink(new Sink())
+                .stdioSink(telemetry);
         dosbox.start();
     }
 
@@ -303,6 +312,7 @@ public class MmfToolPlayer {
             MmfToolPlayer.this.sampleRate = sampleRate;
             MmfToolPlayer.this.sampleSizeInBits = sampleSizeInBits;
             MmfToolPlayer.this.channels = channels;
+            telemetry.setSampleRate(sampleRate);
 logger.log(Level.DEBUG, "smaf: waveOut " + sampleRate + "Hz " + sampleSizeInBits + "bit " + channels + "ch");
         }
 
@@ -318,6 +328,9 @@ logger.log(Level.DEBUG, "smaf: waveOut " + sampleRate + "Hz " + sampleSizeInBits
                     // so little reaches here - but a sink is not promised trimmed audio, and
                     // this is also what notices a player that never sounds at all
                     droppedBytes += length;
+                    // the guest stamps what it prints with what it has produced, which is a
+                    // count these never entered; see SmafTelemetry#setDroppedFrames
+                    telemetry.setDroppedFrames(droppedBytes / (channels * (sampleSizeInBits / 8)));
                     if (droppedBytes > (long) sampleRate * channels * (sampleSizeInBits / 8) * SILENCE_LIMIT_SECONDS) {
 logger.log(Level.WARNING, "smaf: nothing but silence after " + SILENCE_LIMIT_SECONDS + "s, giving up");
                         gaveUp = true;
@@ -379,10 +392,30 @@ logger.log(Level.DEBUG, "smaf: waveOut closed");
 logger.log(Level.DEBUG, "smaf: primed with %.1fs".formatted(getCushionSeconds()));
         }
         int n = queue.read(b, offset, length, timeoutMillis);
+        consumedFrames += n / (channels * (sampleSizeInBits / 8));
         if (n == 0 && dosbox != null && !dosbox.isRunning()) {
             queue.finish();
         }
         return n;
+    }
+
+    /** what the emulated player has said about the song, for the visualizer */
+    public SmafTelemetry getTelemetry() {
+        return telemetry;
+    }
+
+    /** frames handed over so far, which is what the listener has heard bar the output buffer */
+    public long getConsumedFrames() {
+        return consumedFrames;
+    }
+
+    /**
+     * Where in the song the frame {@code framesBack} behind the last one handed over falls [ms],
+     * or {@code NaN} while the player has not said enough to tell. The step back is for a caller
+     * that has taken more than it has used.
+     */
+    public double getSongMillis(long framesBack) {
+        return telemetry.songMillis(consumedFrames - framesBack);
     }
 
     /** is the song over - the machine gone and the queue dry, or never a sound out of it? */

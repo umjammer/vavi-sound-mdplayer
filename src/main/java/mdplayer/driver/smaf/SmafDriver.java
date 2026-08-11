@@ -163,6 +163,22 @@ logger.log(Level.DEBUG, "not a smaf: " + e.getMessage());
         return player;
     }
 
+    /**
+     * Where in the song the frame about to be rendered falls [ms], or {@code NaN} while the
+     * emulated player has not said enough for that to be known. This is what the visualizer is
+     * shown against - see {@link mdplayer.fmdsp.SmafReader}.
+     * <p>
+     * Measured from what has been rendered rather than from what has been taken: this reads the
+     * player a buffer at a time, and the tail of that buffer is sound nobody has heard yet.
+     */
+    public double getSongMillis() {
+        if (player == null) {
+            return Double.NaN;
+        }
+        int pending = frameSize > 0 ? (sourceLen - sourcePos) / frameSize : 0;
+        return player.getSongMillis(pending);
+    }
+
     /** shuts the emulated machine down, which is also what frees the one machine slot in the JVM */
     public void stopPlayer() {
         if (player != null) {
