@@ -496,9 +496,6 @@
       <version>0.2.11</version>
     </dependency>
 
-    <!-- how org.urish.jnavst calls into a VST plugin. it also turns up transitively from three
-         unrelated places at three versions (jna 5.14.0, jna-platform 5.17.0, jna-jpms 5.10.0),
-         so the one the host is written against is named here rather than left to resolution -->
     <dependency>
       <groupId>net.java.dev.jna</groupId>
       <artifactId>jna</artifactId>
