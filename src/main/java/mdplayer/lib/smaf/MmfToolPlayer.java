@@ -118,8 +118,6 @@ public class MmfToolPlayer {
     /** the same for MA-5 and MA-7, the ones the emulated PC has to work hardest at */
     private static final String RATE_HEAVY = System.getProperty("mdplayer.smaf.rate.ma5", "32000");
 
-
-
     private final byte[] mmf;
 
     /** which chip the song is for, worked out once when the cushion is first sized */
