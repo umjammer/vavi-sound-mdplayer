@@ -17,6 +17,7 @@ import java.util.stream.Stream;
 
 import jdos.api.AudioSink;
 import jdos.api.JDosBox;
+import mdplayer.lib.PcmQueue;
 
 import static java.lang.System.getLogger;
 

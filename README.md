@@ -58,6 +58,7 @@ this is a fork of [MDPlayer](https://github.com/kuma4649/MDPlayer)
 | WMA                             |                  |       →        |    -     | spi                   | [vavi-sound-sandbox](https://github.com/umjammer/vavi-sound-sandbox)                           |                                                                                   |
 | FLAC                            |                  |       →        |    -     | spi                   | [vavi-sound-flac](https://github.com/umjammer/vavi-sound-flac)                                 |                                                                                   |
 | SMAF                            | YAMAHA           |       ✅️       |    -     | built-in              | [jDOSBox](https://github.com/umjammer/jDOSBox), [mmftool](https://github.com/umjammer/mmftool) | ~~adapt fmdsp visualizer ... difficult~~                                          |
+| FMP7                            | Windows          |       ✅️       |    -     | built-in*             | [jDOSBox](https://github.com/umjammer/jDOSBox), [FMP7](http://fmpdoc.fmp.jp/fmp7/)             | `.owi` only; needs `-m 64` or it plays without publishing its work                |
 
 <sub>* at type: driver uses emulator</sub>
 
@@ -172,6 +173,10 @@ when using this project with vgm, gbs spi, apply the settings below to avoid con
 #### smaf
 
 - [smaf settings](src/main/java/mdplayer/driver/smaf/readme.md)
+
+#### fmp7
+
+- [fmp7 settings](src/main/java/mdplayer/driver/fmp7/readme.md)
 
 #### ROMs
 
