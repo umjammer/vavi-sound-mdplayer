@@ -218,7 +218,12 @@ logger.log(Level.DEBUG, "fmp7: stopping, " + underruns + " underruns");
                 // of the buffer would turn one render into minutes of them
                 return false;
             }
-            sourceLen = player.read(source, 0, source.length - source.length % frameSize, READ_TIMEOUT_MILLIS);
+            // once the song is over nothing more is coming, and waiting the timeout out for it
+            // would hang the player: it renders two frames at a time, so a fade-out of a hundred
+            // thousand samples would take twenty five thousand of these waits - hours of them.
+            // That is what "the song freezes at its end" was.
+            long timeout = stopped ? 0 : READ_TIMEOUT_MILLIS;
+            sourceLen = player.read(source, 0, source.length - source.length % frameSize, timeout);
             sourcePos = 0;
             if (sourceLen < frameSize) {
                 sourceLen = 0;

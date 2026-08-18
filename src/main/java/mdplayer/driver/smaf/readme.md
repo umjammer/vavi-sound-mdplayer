@@ -56,3 +56,12 @@ The player must run with `-XX:+UseParallelGC` (the `run` profile does): the emul
 guest cpu on one host thread, pinned at 100% of a core for the whole song, and g1's write
 barriers cost that thread about 5% for concurrency it never needs. No other core can help — x86
 emulation of one guest cpu is serial, which is why a 24 core host shows 12% and still struggles.
+
+## The end of a song
+
+`render` waits up to `READ_TIMEOUT_MILLIS` for the emulated player to come up with samples, and
+waiting - rather than filling silence in - is what holds a file render to the emulator's pace.
+Once the song is over that wait is pure loss, and an expensive one: `Audio.play` renders two
+frames at a time and its fade-out is a hundred thousand samples, so the player would pay half a
+second twenty five thousand times before the song could end. That is the freeze the fmp7 driver's
+readme describes; this driver is built the same way and has the same fix - no wait once `stopped`.

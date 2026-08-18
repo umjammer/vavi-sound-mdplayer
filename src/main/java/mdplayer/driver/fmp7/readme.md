@@ -133,42 +133,6 @@ of the song is handed over, whatever FMP7 says it has already played is exactly 
 Measured against the audio, the two then agree to within about a tenth of a second, and hold
 there for as long as the song runs.
 
-## When a song stops in the middle
-
-The emulated PC sometimes goes while the song is still playing — FMP7 takes its own orderly exit
-path, saying nothing — and the driver logs a warning naming the second it happened at. Four causes
-have been found and fixed so far, all of them in jdosbox:
-
-- `CloseHandle` named the object types it would close and panicked on the rest, which ends the
-  program. FMP7 keeps three mutexes, so closing any of them ended the song.
-- The DirectSound sink was refused to the buffer that replaced it — FMP7 makes a second streaming
-  buffer a second in — so the rest of the song went to the host's speakers, and the old thread
-  then closed the sink under the new one.
-- `StaticData.objects` and `namedObjects` were HashMaps, and reading a named shared memory from
-  the host looks a mapping up in one of them while the guest is making and closing objects. A
-  HashMap read that lands in a resize does not come back, and the thread taking the machine's
-  sound stopped taking it.
-- The play cursor was reported from what the sink had taken rather than from a clock, so it stood
-  still whenever the consumer was not ready for more. A program watching a stopped cursor decides
-  its sound card has failed.
-
-**What it was.** `WinTimer.addTimer` filed a window timer under `id + 1` while every lookup used
-`id`, so `KillTimer` could never find one: it answered FALSE and left the timer running. FMP7 sets
-a one-shot timer for its display, and on every tick asked jdosbox to kill it, failed, and passed a
-message it did not want to `DefWindowProc` - for the whole song. The flood of stale WM_TIMERs is
-what eventually took it down, and it is why the death was random and load-dependent: it is a race
-between that flood and everything else the machine has to do. Reading the trail of api calls is
-what showed it - a `KillTimer` on every tick is not something a program does on purpose.
-
-Two things went with it: the api dispatch boxed every argument (`args[i] = CPU.CPU_Pop32()`
-allocates an Integer per argument per call, thousands of calls a second, addresses never small
-enough for the cache), which the int builtins now take as a direct `MethodHandle`; and both
-emulator-backed drivers fired a per-sample event whose varargs allocated an array and two boxes
-forty thousand times a second whether anything was listening or not.
-
-Sixty seconds of five songs, eight runs, no deaths - including the three that used to stop at 14s,
-17s and 19s. The configurations that had been fatal every single time are clean too.
-
 ## When a song ends
 
 A song with an end - `yonao_hasai.owi` is 242 seconds of one - used to hang there: the last bar
@@ -228,8 +192,30 @@ had gone (that one stopped a second FMP7 song dead), and the emulated sound devi
 threads outlived their machine. Whatever this one is, it is neither of those; it happens between
 FMP7 finishing with DirectSound and asking for its addon driver.
 
-## Not this driver
+## The end of a song, and why it used to freeze there
 
-`.mwi` is MML source, not a song: `FMC7.exe` compiles it into the `.owi` this plays. The other
-FMP7 addon drivers (exFMP4, exPMD, exMXDRV, exS98P) play formats mdplayer already has drivers of
-its own for, so only `.owi` is claimed here.
+Two separate things had to be right before a song that ends could end.
+
+The first is knowing it is over. FMP7 does not say so: the file has no length, and a song that
+does not loop simply stops writing to its sound buffer. `Fmp7Player.isSongOver` therefore asks
+the published work, but only once everything already handed over has been heard - the queue holds
+seconds of sound the listener has not reached yet, and a song is not over while any of it is
+left. The work says either that nothing is playing at all, or that the play position has not
+moved for two seconds; either way the driver marks itself stopped, which is what every one of the
+player's three ends-of-song is watching (`Audio.play`, `FormMain`'s screen loop, and the sampled
+SPI all test `driver.stopped`).
+
+The second is not blocking after that. `render` waits up to `READ_TIMEOUT_MILLIS` for the
+emulator to come up with samples, and waiting - rather than filling silence in - is deliberate:
+rendering to a file, that wait is the only thing holding the loop to the emulator's pace. But
+`Audio.play` renders **two frames at a time**, and its fade-out is a hundred thousand samples
+long. With nothing left to come, every one of those two-frame renders paid the full half second:
+twenty five thousand of them, hours, with no sound and no end. The song *had* ended - the driver
+said so on time, `Fmp7DriverTest#playsThroughTheDriver` had always shown it ending at 191.5s of
+tritone's 191s - and the player still sat there. That is what "some songs freeze at the end" was,
+and it is why it could not be found from the driver: rendered a buffer at a time, one wait covers
+thousands of samples and costs nothing to notice.
+
+So the wait is now skipped once the driver is stopped. `Fmp7DriverTest#endsThroughThePlayersOwnLoop`
+is the test for it, and it is the player's own loop rather than the driver's - the only place the
+failure exists. The smaf driver is built the same way and had the same freeze; it has the same fix.

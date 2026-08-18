@@ -14,11 +14,16 @@ import java.nio.ByteOrder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 
+import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
@@ -202,6 +207,57 @@ System.err.println("cushion per half second:" + cushion);
     }
 
     /**
+     * A song played to its own end, and then another - which is what a play list does when
+     * nobody touches it.
+     * <p>
+     * It is a different case from being stopped part way through: a song that ends leaves FMP7
+     * sitting there with its threads parked, and the machine has to be taken down from that
+     * state before the next one can have one. `tritone.owi` runs for three and a half minutes,
+     * so this is a slow test, but it is the case a play list spends its time in.
+     */
+    @Test
+    void aSongThatEndsDoesNotSpoilTheNext() throws Exception {
+        assumeTrue(Fmp7Player.isAvailable(),
+                "no FMP7.exe, set -D" + Fmp7Player.FMP7_PATH_KEY + "=<dir>");
+        Path ends = Path.of(System.getProperty("mdplayer.fmp7.test.ending", "tmp/fmp7/tritone.owi"));
+        assumeTrue(Files.exists(ends), ends + " is missing");
+
+        Setting.getInstance().getOutputDevice().setDeviceType(Common.DEV_Null);
+
+        for (int song = 0; song < 2; song++) {
+            Path file = song == 0 ? ends : owi;
+            FileFormat format = FileFormat.getFileFormat(file.toString());
+            format.load(new BufferedInputStream(Files.newInputStream(file)), null);
+
+            @SuppressWarnings("unchecked")
+            BasePlugin<? extends BaseDriver> plugin = (BasePlugin<? extends BaseDriver>) format.getPlugin();
+            plugin.setParams(format, Map.of("fileName", file.toString()));
+            plugin.prepare();
+
+            BaseDriver driver = plugin.getDriver();
+            short[] buffer = new short[2048];
+            int peak = 0;
+            // the first song is left to end on its own; the second only has to be heard
+            long deadline = System.currentTimeMillis() + (song == 0 ? 400_000 : 120_000);
+            while (System.currentTimeMillis() < deadline && !driver.stopped
+                    && (song == 0 || peak <= 1000)) {
+                driver.render(buffer, 0, buffer.length);
+                for (short s : buffer) {
+                    peak = Math.max(peak, Math.abs(s));
+                }
+            }
+System.err.printf("song %d (%s): peak %d, driver stopped=%b%n", song, file.getFileName(), peak, driver.stopped);
+            assertTrue(peak > 1000, "song " + song + " (" + file + ") never made a sound");
+            if (song == 0) {
+                assertTrue(driver.stopped, "the song never ended by itself");
+            }
+
+            plugin.stop();
+            plugin.close();
+        }
+    }
+
+    /**
      * And again, which is what a play list does every time somebody presses next.
      * <p>
      * The emulated machine is a JVM-wide singleton and the win32 layer around it is a whole
@@ -247,5 +303,54 @@ System.err.printf("song %d: peak %d, %s%n", song, peak, p == null ? "no player" 
             plugin.stop();
             plugin.close();
         }
+    }
+
+    /**
+     * Plays it the way the player itself does - through {@link Audio#play()}, which is the loop
+     * the application runs, fade-out and all - and asks only that it comes back. A song that
+     * "freezes at its end" is that call never returning: the driver can stop the song perfectly
+     * and the player still sit there, because ending it is the loop's job, not the driver's.
+     */
+    @Test
+    void endsThroughThePlayersOwnLoop() throws Exception {
+        assumeTrue(Fmp7Player.isAvailable(),
+                "no FMP7.exe, set -D" + Fmp7Player.FMP7_PATH_KEY + "=<dir>");
+        // it has to be a song that ends: one that loops would run until the loop count is up,
+        // which is a different test and a much longer one
+        Path ending = Path.of(System.getProperty("mdplayer.fmp7.test.ending", "tmp/fmp7/tritone.owi"));
+        assumeTrue(Files.exists(ending), ending + " is missing, set -Dmdplayer.fmp7.test.ending");
+
+        Setting.getInstance().getOutputDevice().setDeviceType(Common.DEV_Null);
+
+        FileFormat format = FileFormat.getFileFormat(ending.toString());
+        format.load(new BufferedInputStream(Files.newInputStream(ending)), null);
+        @SuppressWarnings("unchecked")
+        BasePlugin<? extends BaseDriver> plugin = (BasePlugin<? extends BaseDriver>) format.getPlugin();
+        plugin.setParams(format, Map.of("fileName", ending.toString()));
+
+        Audio audio = Audio.getInstance();
+        audio.init(plugin);
+
+        CountDownLatch done = new CountDownLatch(1);
+        ExecutorService es = Executors.newSingleThreadExecutor();
+        long start = System.currentTimeMillis();
+        es.submit(() -> {
+            try {
+                audio.play();
+            } finally {
+                done.countDown();
+            }
+        });
+
+        // long enough for the song plus its fade; it is the not-returning that is the failure
+        int seconds = Integer.getInteger("mdplayer.fmp7.test.ending.timeout", 420);
+        boolean returned = done.await(seconds, TimeUnit.SECONDS);
+        double took = (System.currentTimeMillis() - start) / 1000d;
+System.err.printf("play() returned=%b after %.1fs, plugin stopped=%b%n", returned, took, plugin.isStopped());
+        es.shutdownNow();
+        audio.stop();
+        audio.close();
+
+        assertTrue(returned, "play() never came back: the song froze at its end");
     }
 }
