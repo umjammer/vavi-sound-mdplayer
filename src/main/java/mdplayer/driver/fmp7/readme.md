@@ -169,6 +169,18 @@ forty thousand times a second whether anything was listening or not.
 Sixty seconds of five songs, eight runs, no deaths - including the three that used to stop at 14s,
 17s and 19s. The configurations that had been fatal every single time are clean too.
 
+## When a song ends
+
+A song with an end - `yonao_hasai.owi` is 242 seconds of one - used to hang there: the last bar
+played and the player sat on it for ever. The readings the driver watches are taken as the samples
+are handed over, so when FMP7 stops making sound there are no more readings, and the last one says
+"playing" for the rest of time. Asked that, the driver waits.
+
+So `Fmp7Player#isSongOver` reads the work itself once the queue has run dry, rather than looking at
+a reading that has stopped coming - a tenth of a second apart at most, because a starved render
+asks it for every frame of silence it puts out. FMP7 usually says plainly that it has stopped; if
+it claims to be playing while making no sound and going nowhere for two seconds, that counts too.
+
 ## When a song does not start at all
 
 The second and later machines in one JVM sometimes fail while loading, and FMP7 says so itself:

@@ -211,6 +211,19 @@ public class Fmp7Player {
     /** when the machine now running was started, for the first-sound timeout */
     private volatile long bootedAt;
 
+    /** how often the work may be read to ask whether the song is over [ms] */
+    private static final long ASK_INTERVAL_MILLIS = 100;
+
+    /** how long FMP7 may claim to be playing while making no sound and going nowhere [ms] */
+    private static final long STOPPED_MILLIS = 2000;
+
+    /** what {@link #isSongOver} reads the work into, and what it last made of it */
+    private final Fmp7Work asked = new Fmp7Work(Fmp7Work.GLOBAL_SIZE, Fmp7Work.PART_SIZE);
+    private long askedAt;
+    private boolean over;
+    private double lastPlayMillis = -1;
+    private long wentNowhereSince;
+
     /** FMP7 has said it was playing at least once, and whether the newest reading still says so */
     private volatile boolean everPlayed;
     private volatile boolean playingNow;
@@ -289,6 +302,10 @@ logger.log(Level.WARNING, "fmp7: the machine went without making a sound; going 
         droppedBytes = 0;
         everPlayed = false;
         playingNow = false;
+        over = false;
+        askedAt = 0;
+        lastPlayMillis = -1;
+        wentNowhereSince = 0;
         try {
             boot();
         } catch (IOException e) {
@@ -715,7 +732,37 @@ logger.log(Level.DEBUG, "fmp7: primed with %.1fs".formatted(getCushionSeconds())
      * render silence for ever and never let the play list move on.
      */
     public boolean isSongOver() {
-        return everPlayed && !playingNow && (queue == null || queue.available() == 0);
+        if (!everPlayed || (queue != null && queue.available() > 0)) {
+            return false;
+        }
+        // The readings are taken as the samples are handed over, so when the song stops there
+        // are no more of them and the last one says "playing" for ever. Asked that, a driver
+        // waits at the end of every song that does not loop, which is a player that hangs on
+        // the last bar. So the work itself is read, here, now - not often, because this is
+        // called for every frame of silence a starved render puts out.
+        long now = System.currentTimeMillis();
+        if (now - askedAt < ASK_INTERVAL_MILLIS) {
+            return over;
+        }
+        askedAt = now;
+        if (SharedMemory.read(Fmp7Work.KEY_MAP, 0, asked.buffer(), 0, asked.size()) == 0) {
+            return over;
+        }
+        if (!asked.playing()) {
+            // it says so itself, which is how a song with an end ends
+            over = true;
+            return true;
+        }
+        // and if it still claims to be playing while making no sound and going nowhere, it has
+        // stopped in a way it does not have a word for
+        double at = asked.playMillis();
+        if (at != lastPlayMillis) {
+            lastPlayMillis = at;
+            wentNowhereSince = now;
+        } else if (wentNowhereSince != 0 && now - wentNowhereSince > STOPPED_MILLIS) {
+            over = true;
+        }
+        return over;
     }
 
     /** is the song over - the machine gone and the queue dry, or never a sound out of it? */
