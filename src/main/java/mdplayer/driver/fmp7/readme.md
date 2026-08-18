@@ -10,10 +10,13 @@ on an emulated PC (jdosbox, embedded through `jdos.api.JDosBox`). Point
 `-Dmdplayer.fmp7.path=<dir>` at the directory holding `FMP7.exe`, `common_resrc.dll` and
 `addon/exFMP7.dll` — the FMP7 distribution as it comes.
 
-| property                | default               | what it is                                     |
-|-------------------------|-----------------------|------------------------------------------------|
-| `mdplayer.fmp7.path`    | `/usr/local/src/FMP7` | where FMP7.exe and its dlls are                |
-| `mdplayer.fmp7.memory`  | `64`                  | megabytes the emulated PC gets — see below     |
+| property               | default               | what it is                                             |
+|------------------------|-----------------------|--------------------------------------------------------|
+| `mdplayer.fmp7.path`   | `/usr/local/src/FMP7` | where FMP7.exe and its dlls are                        |
+| `mdplayer.fmp7.memory` | `64`                  | megabytes the emulated PC gets — see below             |
+| `mdplayer.fmp7.prime`  | `3`                   | seconds of audio in hand before the song starts        |
+| `mdplayer.fmp7.queue`  | `6`                   | seconds the queue between the emulator and here holds  |
+| `jdos.novideo`         | `true` unless set     | jdosbox's own: draw nothing — see below                |
 
 **The machine needs 64MB.** On DOSBox's default 16 FMP7 starts, loads the song and plays it
 perfectly well, and quietly never publishes its public work: the allocation in front of it fails
@@ -21,10 +24,66 @@ and FMP7 carries on without one. Nothing says so and the only symptom is a visua
 empty, so this is worth knowing before hunting it again.
 
 A `jdosbox.reg` beside `FMP7.exe` is copied along with it and read by the win32 layer before the
-program starts; without one, `Fmp7Player` writes its own. Every line of it buys emulated time at
-the price of some quality — no oversampling, cheapest resampler, output at the rate everything
-else runs at — and it is the difference between FMP7 needing nearly all of the machine and
-needing about three quarters of it.
+program starts; without one, `Fmp7Player` writes its own. What is in it is FMP7's oversampling,
+turned off for each of its three sound sources, which is the one setting of its own that costs
+real time — see below for the ones that turn out not to.
+
+## What it costs, and the two things that decide whether it keeps up
+
+FMP7 synthesizes a whole OPNA (or OPM) in software, and how hard that is depends entirely on the
+song. Measured here as the processor time one second of audio costs the machine's thread:
+
+| song           | parts                 | cost |
+|----------------|-----------------------|------|
+| `829.owi`      | 6 FM, 3 SSG           | 0.25 |
+| `overdose.owi` | 9 FM, 7 SSG, and PCM  | 0.70 |
+
+A cost of 1.0 is a machine that can only just synthesize the song as fast as it is heard, with
+nothing left for a heavy passage — which is what a song breaking up sounds like. Two things
+matter, and both of them are worth more than every FMP7 setting put together:
+
+**Draw nothing.** `-Djdos.novideo=true`, which `Fmp7Player` sets unless it has already been set,
+is worth about half of everything the machine does. FMP7 is a gui program and will otherwise
+spend its time drawing level meters and a keyboard for a window nobody is looking at — mdplayer
+draws its own display from the work FMP7 publishes. On `overdose.owi` this is the difference
+between a cushion that holds above three seconds for the whole song and one that reaches 0.9s
+and then sits at nothing.
+
+**Start behind.** A song is not evenly hard, so the player starts `mdplayer.fmp7.prime` seconds
+behind the emulator rather than level with it. It costs less than it sounds: nothing is being
+taken while the cushion builds, so the emulator has its whole margin to build with, and three
+seconds of cushion take about two of waiting.
+
+### what does not help
+
+There is **no frequency to turn down**. FMP7 generates at 48kHz and there is no setting for it:
+`ReSampleRate` and `ReSamplePower` only apply when its own resampler is enabled, which by default
+it is not ("ダイレクト出力"), and sweeping `ReSampleRate` through all six of its values leaves the
+sound buffer at 48000Hz and the cost unchanged. Nor does anything else it reads —
+`BufferNum`, `DispFlags`, `MonitorInterval`, `LevelMeterSensitivity`, `PlayFlags` — move the cost
+at all. The `OverSampling` values are the exception and are already off in the registry `Fmp7Player`
+writes: turned on for all three sound sources they take `overdose.owi` from 0.70 to 0.85.
+
+On the emulator's side, a profile of the machine's thread says why: 61% of it is in compiled
+guest code, 17% in the dynamic core's own dispatch, 10% in blocks the compiler has not taken,
+and everything else — memory, the scheduler, the win32 layer, reflection — under 3% each. The
+10% looks like the obvious win and is not: only 742 of the 3622 blocks the song touches ever
+reach the compiler, but pulling `compiler.threshold` down from 1000 to 1 compiles 1260 of them
+and makes the whole thing *slower* (0.93 to 0.95), the compiling costing more than the
+interpreting saved. Nothing else is left to remove; it is the synthesis itself.
+
+**The jvm matters more than any of it.** The same song, the same everything else:
+
+| jvm                                          | cost |
+|----------------------------------------------|------|
+| GraalVM 25                                   | 0.80 |
+| OpenJDK 25                                   | 0.93 |
+| OpenJDK 25, `-XX:-DontCompileHugeMethods`    | 0.88 |
+
+jdosbox compiles the guest's code into java methods, and a hot one can be bigger than the 8000
+bytecodes hotspot will jit; left at the default those run in hotspot's own interpreter. The
+`run` profile passes that flag and `-XX:+UseParallelGC`. If a song still breaks up, GraalVM is
+worth more than both.
 
 ## What paces it
 
@@ -73,6 +132,73 @@ of the song is handed over, whatever FMP7 says it has already played is exactly 
 
 Measured against the audio, the two then agree to within about a tenth of a second, and hold
 there for as long as the song runs.
+
+## When a song stops in the middle
+
+The emulated PC sometimes goes while the song is still playing — FMP7 takes its own orderly exit
+path, saying nothing — and the driver logs a warning naming the second it happened at. Four causes
+have been found and fixed so far, all of them in jdosbox:
+
+- `CloseHandle` named the object types it would close and panicked on the rest, which ends the
+  program. FMP7 keeps three mutexes, so closing any of them ended the song.
+- The DirectSound sink was refused to the buffer that replaced it — FMP7 makes a second streaming
+  buffer a second in — so the rest of the song went to the host's speakers, and the old thread
+  then closed the sink under the new one.
+- `StaticData.objects` and `namedObjects` were HashMaps, and reading a named shared memory from
+  the host looks a mapping up in one of them while the guest is making and closing objects. A
+  HashMap read that lands in a resize does not come back, and the thread taking the machine's
+  sound stopped taking it.
+- The play cursor was reported from what the sink had taken rather than from a clock, so it stood
+  still whenever the consumer was not ready for more. A program watching a stopped cursor decides
+  its sound card has failed.
+
+**What it was.** `WinTimer.addTimer` filed a window timer under `id + 1` while every lookup used
+`id`, so `KillTimer` could never find one: it answered FALSE and left the timer running. FMP7 sets
+a one-shot timer for its display, and on every tick asked jdosbox to kill it, failed, and passed a
+message it did not want to `DefWindowProc` - for the whole song. The flood of stale WM_TIMERs is
+what eventually took it down, and it is why the death was random and load-dependent: it is a race
+between that flood and everything else the machine has to do. Reading the trail of api calls is
+what showed it - a `KillTimer` on every tick is not something a program does on purpose.
+
+Two things went with it: the api dispatch boxed every argument (`args[i] = CPU.CPU_Pop32()`
+allocates an Integer per argument per call, thousands of calls a second, addresses never small
+enough for the cache), which the int builtins now take as a direct `MethodHandle`; and both
+emulator-backed drivers fired a per-sample event whose varargs allocated an array and two boxes
+forty thousand times a second whether anything was listening or not.
+
+Sixty seconds of five songs, eight runs, no deaths - including the three that used to stop at 14s,
+17s and 19s. The configurations that had been fatal every single time are clean too.
+
+## When a song does not start at all
+
+The second and later machines in one JVM sometimes fail while loading, and FMP7 says so itself:
+`exFMP7.dll: 未対応のエラーが発生しました [-1]` - "an unsupported error occurred" - in a MessageBox
+that a machine with nothing drawn cannot show, which is why nobody had ever seen it. jdosbox logs
+those now (`the guest says: ...`), and getting FMP7 to name its own error took reading the api
+trail to find the `MessageBoxA` and then reading the literals out of `FMP7.exe` to see it was
+scanning `addon\` for `exfmp7.dll`. It fails in two ways: the program throws and the machine goes,
+or the machine stays up having published nothing.
+
+What is left over from the machine before to cause it is still unknown. It is not the number of
+previous machines (six short ones fail more often than six long ones) and it is not a settling
+race (a second between machines makes it worse). So the driver does the one thing that is certain
+to be right for a play list: a song that has made no sound gets **another machine**, up to
+`mdplayer.fmp7.attempts` of them. A machine that has failed this way has never made a sound, so a
+retry cannot cut a song short, and `Fmp7Player#isFinished` will not call a song finished while an
+attempt is still owed - which is what used to drop it on the driver's first starved read.
+
+Eight suite runs green, the retry firing in three of them; sixty seconds each of five songs, no
+failures.
+
+**The way to work on any of it** is
+`Fmp7WorkProbe.queueSoak` in jDOSBox, which is this driver's arrangement in miniature - a bounded
+queue the sink blocks on, a consumer taking a buffer at a time, a prime - and which found three of
+the four above. At `-Dqueue=6 -Dprime=3` before the cursor fix it killed the machine at exactly
+7.7s, four times out of four: a question that costs forty seconds instead of ten minutes, and the
+only way any of this was separable from the noise. `-Djdos.trail=true` keeps a trail of the
+guest's last api calls and dumps it whenever the program ends, which is how the timer flood was
+found; it costs time per call, and FMP7 is sensitive enough to that to have died 6/6 with it on
+before the timer fix.
 
 ## What does not work yet
 

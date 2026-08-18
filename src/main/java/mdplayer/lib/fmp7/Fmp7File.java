@@ -37,6 +37,17 @@ public class Fmp7File {
     /** the text chunks inside "TEXT" have no checksum, only a name and a length */
     private static final int TEXT_HEADER_SIZE = 8;
 
+    /**
+     * A wave bank the song plays its PCM parts out of: the name it is kept under, without the
+     * ".pwi", and where that name sits in the file so it can be written over - see
+     * {@link Fmp7Player} on why a name sometimes has to be.
+     */
+    public record WaveBank(String name, int offset, int bytes) {
+    }
+
+    /** the wave banks the song names, in the order it names them */
+    private final java.util.List<WaveBank> waveBanks = new java.util.ArrayList<>();
+
     private String title;
     private String creator;
     private String composer;
@@ -68,7 +79,25 @@ public class Fmp7File {
             }
             if (is(b, p, "TEXT")) {
                 file.readText(b, p + CHUNK_HEADER_SIZE, p + CHUNK_HEADER_SIZE + size);
-                break; // everything this cares about is in there
+            } else if (is(b, p, "TWNM")) {
+                // the wave banks, one nul terminated name after another, no extension. The
+                // advance is measured off the nul rather than off the name, which has been
+                // trimmed by the time it is a string
+                int at = p + CHUNK_HEADER_SIZE;
+                int end = at + size;
+                while (at + 1 < end) {
+                    int nul = at;
+                    while (nul + 1 < end && (b[nul] != 0 || b[nul + 1] != 0)) {
+                        nul += 2;
+                    }
+                    String name = string(b, at, nul - at);
+                    if (!name.isEmpty()) {
+                        file.waveBanks.add(new WaveBank(name, at, nul - at));
+                    }
+                    at = nul + 2;
+                }
+            } else if (is(b, p, "TERM")) {
+                break;
             }
             p += CHUNK_HEADER_SIZE + size;
         }
@@ -136,5 +165,14 @@ public class Fmp7File {
 
     public String getComment() {
         return comment;
+    }
+
+    /**
+     * The wave banks this song plays its PCM parts out of, named without the ".pwi" they are
+     * kept in. A song that names one and cannot find it does not play at all - FMP7 gives up
+     * during loading - so this is what {@link Fmp7Player} goes looking for.
+     */
+    public java.util.List<WaveBank> getWaveBanks() {
+        return waveBanks;
     }
 }

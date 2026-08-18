@@ -13,7 +13,9 @@ import java.lang.System.Logger.Level;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Stream;
 
 import jdos.api.AudioSink;
@@ -59,14 +61,51 @@ public class Fmp7Player {
     /** where FMP7.exe and its dlls live */
     public static final String FMP7_PATH_KEY = "mdplayer.fmp7.path";
 
+    /**
+     * Where else to look for a song's wave bank, as a list of directories separated the way
+     * {@code mdplayer.fmp.pvi} separates its own.
+     */
+    public static final String PWI_PATH_KEY = "mdplayer.fmp7.pwi";
+
     /** how much memory the emulated PC gets, in megabytes - see the class comment */
     private static final String MEMORY = System.getProperty("mdplayer.fmp7.memory", "64");
 
-    /** how much audio the queue can hold, which is the cushion the emulator gets to build */
-    private static final double QUEUE_SECONDS = 3;
+    /**
+     * How much audio the queue can hold.
+     * <p>
+     * Deep, and deliberately so: the queue filling up is not something FMP7 survives. A full
+     * queue means the emulated sound card has stopped taking samples, and a card that stops
+     * taking samples is a card that has failed - FMP7 watches for exactly that and shuts itself
+     * down cleanly when it sees it, at whatever point in the song it happens, which is a song
+     * that stops in the middle for no reason anyone can see. Held to real time by the play
+     * cursor instead (see jdosbox's {@code IDirectSoundBuffer.moveCursor}), the emulator does not
+     * run far enough ahead to fill this, and thirty seconds of headroom is six megabytes.
+     */
+    private static final double QUEUE_SECONDS =
+            Double.parseDouble(System.getProperty("mdplayer.fmp7.queue", "6"));
+
+    /**
+     * How much audio has to be in hand before the first sample is handed over [s].
+     * <p>
+     * A song is not evenly hard to synthesize - a heavy passage half way through will drain a
+     * cushion that the opening bars said was plenty - so the player starts a few seconds behind
+     * the emulator rather than level with it. It costs less than it sounds: nothing is being
+     * taken while it builds, so the emulator has its whole margin to build with, and three
+     * seconds of cushion take about two of waiting.
+     */
+    private static final double PRIME_SECONDS =
+            Double.parseDouble(System.getProperty("mdplayer.fmp7.prime", "3"));
 
     /** how long FMP7 is given to produce a sound before we give up on it */
     private static final long SILENCE_LIMIT_SECONDS = 60;
+
+    /**
+     * How often the work is read, in frames of what FMP7 has produced. Twenty milliseconds is
+     * finer than the display is redrawn at and coarser than the pieces the emulated sound card
+     * is handed, which is the right way round: a reading per piece would cost twice as much and
+     * be kept twice as long for nothing.
+     */
+    private static final int SNAPSHOT_FRAMES = 48000 / 50;
 
     /**
      * How many readings of the work are kept.
@@ -75,11 +114,9 @@ public class Fmp7Player {
      * the listener has got to, and the listener is a whole queue behind what the emulator has
      * made. Too few and the oldest one still held is newer than the one wanted, which is a
      * display running ahead of its own music by however much is missing.
-     * <p>
-     * One is taken per piece the emulated sound card is given, which is 2048 bytes - 512 frames,
-     * or about 11ms.
      */
-    private static final int SNAPSHOTS = (int) ((QUEUE_SECONDS + 1.5) * 48000 / 512);
+    private static final int SNAPSHOTS =
+            (int) (Math.min(QUEUE_SECONDS + 1.5, 10) * 48000 / SNAPSHOT_FRAMES);
 
     /**
      * How far ahead of the sound FMP7's work runs, at most [ms].
@@ -121,6 +158,9 @@ public class Fmp7Player {
 
     private final byte[] song;
 
+    /** where the song came from, whose other files may be part of it; null when it came from a jar */
+    private final Path songDirectory;
+
     private Path work;
 
     private JDosBox dosbox;
@@ -152,11 +192,32 @@ public class Fmp7Player {
     /** how many readings have been taken; the newest is at {@code (taken - 1) % SNAPSHOTS} */
     private volatile long taken;
 
+    /** how much had been produced when the last reading was taken */
+    private long snapshotAt;
+
+    /** the longest the emulated card was kept waiting for room, and how often it waited long */
+    private volatile long longestBlockMillis;
+    private volatile int blocksOver100;
+
     /** how far ahead of the sound the work was when the song started to sound [ms]; -1 until then */
     private volatile double leadMillis = -1;
 
-    public Fmp7Player(byte[] song) {
+    /** set once the cushion has been built and the song may start */
+    private volatile boolean primed;
+
+    /** how many machines have been booted for this song, the retries included */
+    private int attempts;
+
+    /** when the machine now running was started, for the first-sound timeout */
+    private volatile long bootedAt;
+
+    /** FMP7 has said it was playing at least once, and whether the newest reading still says so */
+    private volatile boolean everPlayed;
+    private volatile boolean playingNow;
+
+    public Fmp7Player(byte[] song, Path songDirectory) {
         this.song = song;
+        this.songDirectory = songDirectory;
     }
 
     /** where FMP7 is, as the system property says */
@@ -182,6 +243,59 @@ public class Fmp7Player {
         return sounding;
     }
 
+    /**
+     * How many times a song is given to FMP7 before giving up on it.
+     * <p>
+     * The second and later machines in one jvm sometimes fail while loading - FMP7's addon driver
+     * answers "an unsupported error occurred" and it exits, having made no sound at all - and
+     * whatever is left over from the machine before is not yet known. It is not the song's fault
+     * and the next machine usually works, so the song gets another go rather than being dropped
+     * from the play list. See the driver's readme.
+     */
+    private static final int ATTEMPTS = Integer.getInteger("mdplayer.fmp7.attempts", 3);
+
+    /**
+     * How long a machine is given to make its first sound before it is taken to have failed [ms].
+     * <p>
+     * The other way the second and later machines fail is by not going at all: FMP7 is up, its
+     * work is never published and nothing is ever written to the sound card. Ten seconds is
+     * several times what a machine needs to boot and load a song here.
+     */
+    private static final long START_MILLIS =
+            Long.getLong("mdplayer.fmp7.start.timeout", 10_000);
+
+    /**
+     * Boots another machine for a song that never made a sound on the last one.
+     * <p>
+     * Only ever for a machine that has already gone: FMP7 fails during loading or not at all, so
+     * once a song has been heard this cannot happen to it.
+     */
+    private void restart() {
+        attempts++;
+logger.log(Level.WARNING, "fmp7: the machine went without making a sound; going round again ("
+        + attempts + " of " + ATTEMPTS + ")");
+        if (dosbox != null) {
+            dosbox.stop();
+            dosbox = null;
+        }
+        if (queue != null) {
+            queue.close();
+        }
+        producedFrames = 0;
+        consumedFrames = 0;
+        snapshotAt = 0;
+        taken = 0;
+        leadMillis = -1;
+        droppedBytes = 0;
+        everPlayed = false;
+        playingNow = false;
+        try {
+            boot();
+        } catch (IOException e) {
+logger.log(Level.WARNING, "fmp7: and the next machine would not start either: " + e.getMessage());
+        }
+    }
+
     /** Boots the machine and returns; the audio turns up at {@link #read} in its own time. */
     public void start() throws IOException {
         if (!isAvailable()) {
@@ -192,6 +306,14 @@ public class Fmp7Player {
         // the win32 layer only ever knows one drive (see Win#run, which mounts C and nothing
         // else), so FMP7 and the song have to sit on it together; its own directory is copied
         // rather than mounted so that nothing this writes lands in it
+        // FMP7 is wanted for its sound, and drawing its window is about half of everything the
+        // machine does - measured on this song, the difference between a cushion that holds and
+        // one that drains to nothing part way through. Nobody is looking at it: mdplayer draws
+        // its own display from the work FMP7 publishes.
+        if (System.getProperty("jdos.novideo") == null) {
+            System.setProperty("jdos.novideo", "true");
+        }
+
         work = Files.createTempDirectory("mdplayer-fmp7");
         Files.createDirectories(work.resolve("addon"));
         copy(playerDirectory().toPath(), work);
@@ -203,7 +325,19 @@ public class Fmp7Player {
             Files.writeString(work.resolve("jdosbox.reg"), REGISTRY, StandardCharsets.UTF_8);
         }
         Files.write(work.resolve("song.owi"), song);
+        copySongData();
+        copyWaveBanks();
 
+        attempts = 1;
+        boot();
+    }
+
+    /** the machine itself, which a song may need more than one of - see {@link #restart} */
+    private void boot() throws IOException {
+        primed = false;
+        sounding = false;
+        gaveUp = false;
+        bootedAt = System.currentTimeMillis();
         queue = new PcmQueue((int) (48000 * 2 * 2 * QUEUE_SECONDS));
         for (int i = 0; i < snapshots.length; i++) {
             snapshots[i] = new Fmp7Work(Fmp7Work.GLOBAL_SIZE, Fmp7Work.PART_SIZE);
@@ -236,6 +370,124 @@ public class Fmp7Player {
                 .exitWhenProgramFinishes(true)
                 .directSoundSink(new Sink());
         dosbox.start();
+    }
+
+    /**
+     * The files that came with the song, which for some songs are part of it.
+     * <p>
+     * A song that uses PCM names its sample bank - a ".pwi" - inside itself, and FMP7 opens it by
+     * that name out of the directory it is playing from. Copied on its own, such a song plays
+     * with its PCM parts silent and nothing anywhere says why. So everything beside it that is
+     * not itself a song comes along under its own name, and the emulated drive looks like the
+     * directory the song was written in.
+     */
+    private void copySongData() throws IOException {
+        if (songDirectory == null || !Files.isDirectory(songDirectory)) {
+            return;
+        }
+        for (Path f : Files.newDirectoryStream(songDirectory)) {
+            String name = f.getFileName().toString();
+            String lower = name.toLowerCase();
+            // wave banks are not copied here: they are named inside the song and sometimes have
+            // to be renamed on the way over, which is copyWaveBanks' business
+            if (!Files.isRegularFile(f) || lower.endsWith(".owi") || lower.endsWith(".mwi")
+                    || lower.endsWith(".pwi") || name.startsWith(".") || Files.exists(work.resolve(name))) {
+                continue;
+            }
+            try {
+                Files.copy(f, work.resolve(name));
+            } catch (IOException e) {
+logger.log(Level.DEBUG, "fmp7: leaving " + name + " behind: " + e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Finds the wave banks the song names and puts them beside it.
+     * <p>
+     * A song that uses PCM names its bank inside itself, without the ".pwi" it is kept in, and
+     * FMP7 opens it out of the directory it is playing from. A song whose bank is not there does
+     * not play at all - FMP7 gives up part way through loading and exits without a word, which
+     * from outside looks like a song that is simply silent - so it is worth looking further than
+     * the one directory: the song's own, then wherever {@link #PWI_PATH_KEY} says, then the
+     * directories beside the song's own, which is how a collection of these is usually laid out.
+     */
+    private void copyWaveBanks() {
+        List<Fmp7File.WaveBank> banks;
+        try {
+            banks = Fmp7File.decode(song).getWaveBanks();
+        } catch (IOException e) {
+            return;
+        }
+        for (Fmp7File.WaveBank bank : banks) {
+            String name = bank.name() + ".pwi";
+            if (Files.exists(work.resolve(name))) {
+                continue;
+            }
+            Path found = findWaveBank(name);
+            if (found == null) {
+logger.log(Level.WARNING, "fmp7: " + name + " is nowhere to be found, and the song will not play"
+        + " without it; -D" + PWI_PATH_KEY + "=<dir> says where to look");
+                continue;
+            }
+            if (!isAscii(bank.name())) {
+                // it will go over under its own name and FMP7 will ask for it by that name, and
+                // the dos filesystem under the emulated drive does not carry those. Renaming it
+                // would mean writing over the name inside the song, which carries a checksum
+                // per chunk that there is no published way to recompute.
+logger.log(Level.WARNING, "fmp7: " + name + " is not named in ascii, and the emulated drive"
+        + " cannot carry that name; the song will not play");
+            }
+            try {
+                Files.copy(found, work.resolve(name));
+logger.log(Level.DEBUG, "fmp7: " + name + " came from " + found.getParent());
+            } catch (IOException e) {
+logger.log(Level.WARNING, "fmp7: cannot take " + found + ": " + e.getMessage());
+            }
+        }
+    }
+
+    /** a name the dos filesystem under the emulated drive can carry */
+    private static boolean isAscii(String name) {
+        for (int i = 0; i < name.length(); i++) {
+            if (name.charAt(i) > 0x7e || name.charAt(i) < 0x20) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** the song's own directory, then the search path, then the directories beside the song's */
+    private Path findWaveBank(String name) {
+        List<Path> places = new ArrayList<>();
+        if (songDirectory != null) {
+            places.add(songDirectory);
+        }
+        String path = System.getProperty(PWI_PATH_KEY, "");
+        for (String each : path.split(File.pathSeparator + "|;")) {
+            if (!each.isBlank()) {
+                places.add(Path.of(each.trim()));
+            }
+        }
+        // the directories under the song's own and under the one above it, which is how a
+        // collection of these is laid out: one folder to a song, and the odd loose file at the top
+        for (Path dir : new Path[] {songDirectory, songDirectory == null ? null : songDirectory.getParent()}) {
+            if (dir == null) {
+                continue;
+            }
+            try (Stream<Path> under = Files.list(dir)) {
+                under.filter(Files::isDirectory).forEach(places::add);
+            } catch (IOException e) {
+logger.log(Level.DEBUG, "fmp7: cannot look under " + dir + ": " + e.getMessage());
+            }
+        }
+        for (Path place : places) {
+            Path file = place.resolve(name);
+            if (Files.isRegularFile(file)) {
+                return file;
+            }
+        }
+        return null;
     }
 
     /** FMP7's own files: the program, its dlls, its addon drivers and its settings */
@@ -291,11 +543,22 @@ logger.log(Level.DEBUG, "fmp7: sound starts, " + droppedBytes + " bytes of silen
             // in front of the song never reaches the caller, so counting it here would file
             // every reading that much too late.
             producedFrames += length / frame;
-            snapshot();
+            if (producedFrames - snapshotAt >= SNAPSHOT_FRAMES) {
+                snapshotAt = producedFrames;
+                snapshot();
+            }
 
             // blocking here is the point: it is the emulated sound card taking its samples at
             // the rate they are heard, which is what holds FMP7 to the song's own tempo
+            long before = System.nanoTime();
             queue.write(data, offset, length);
+            long blocked = (System.nanoTime() - before) / 1000000L;
+            if (blocked > longestBlockMillis) {
+                longestBlockMillis = blocked;
+            }
+            if (blocked > 100) {
+                blocksOver100++;
+            }
         }
 
         @Override
@@ -312,6 +575,17 @@ logger.log(Level.DEBUG, "fmp7: dsound closed");
         }
         next.atFrame = producedFrames;
         taken++;
+
+        // whether FMP7 is playing *now*, which is the only reading that can say a song is over.
+        // The one the driver is shown is chosen by where the listener has got to and may have
+        // fallen off the back of the ring, in which case it is the oldest one still held - from
+        // before the song started, saying "not playing" about a song that has not begun.
+        if (next.playing()) {
+            everPlayed = true;
+            playingNow = true;
+        } else {
+            playingNow = false;
+        }
 
         if (leadMillis < 0 && next.playing()) {
             // whatever FMP7 had already made and the card had not played is how far ahead of the
@@ -341,6 +615,24 @@ logger.log(Level.DEBUG, "fmp7: the work runs %.0fms ahead of the sound".formatte
     public int read(byte[] b, int offset, int length, long timeoutMillis) {
         if (queue == null) {
             return 0;
+        }
+        // a machine that is never going to make a sound, either because it has gone or because
+        // it is sitting there having failed to load - see ATTEMPTS
+        if (!sounding && attempts < ATTEMPTS && dosbox != null
+                && (!dosbox.isRunning() || System.currentTimeMillis() - bootedAt > START_MILLIS)) {
+            restart();
+            return 0;
+        }
+        if (!primed) {
+            // nothing is handed over until the cushion is built, or until it becomes clear that
+            // there will never be that much - a song shorter than the cushion, or a player that
+            // has finished or failed
+            if (!queue.awaitAtLeast(primeBytes(), timeoutMillis)
+                    && !queue.isDrained() && (dosbox == null || dosbox.isRunning() || !sounding)) {
+                return 0;
+            }
+            primed = true;
+logger.log(Level.DEBUG, "fmp7: primed with %.1fs".formatted(getCushionSeconds()));
         }
         int n = queue.read(b, offset, length, timeoutMillis);
         consumedFrames += n / (channels * (sampleSizeInBits / 8));
@@ -388,12 +680,19 @@ logger.log(Level.DEBUG, "fmp7: the work runs %.0fms ahead of the sound".formatte
         return true;
     }
 
+    /** how much has to be in the queue before the song starts */
+    private int primeBytes() {
+        double seconds = Math.min(PRIME_SECONDS, QUEUE_SECONDS * 0.9);
+        return (int) (seconds * sampleRate * channels * (sampleSizeInBits / 8));
+    }
+
     /** what FMP7 has been up to, for a log line or a test */
     public String getStatistics() {
         int frameSize = channels * (sampleSizeInBits / 8);
-        return "%.1fs produced, %.1fs of it the silence it starts with, %d readings".formatted(
+        return "%.1fs produced, %.1fs of it the silence it starts with, %d readings, kept waiting %dms at worst (%d times over 100ms)".formatted(
                 producedFrames / (double) sampleRate,
-                droppedBytes / (double) (sampleRate * frameSize), taken);
+                droppedBytes / (double) (sampleRate * frameSize), taken,
+                longestBlockMillis, blocksOver100);
     }
 
     /** how much audio is queued ahead of the listener - the cushion, in seconds */
@@ -409,9 +708,28 @@ logger.log(Level.DEBUG, "fmp7: the work runs %.0fms ahead of the sound".formatte
         return dosbox == null ? null : dosbox.getFailure();
     }
 
+    /**
+     * Is the song over on its own terms - FMP7 has stopped playing and everything it made has
+     * been handed over? A song that does not loop ends this way and no other: the machine stays
+     * up with the program sitting there, and a driver watching only for the machine to go would
+     * render silence for ever and never let the play list move on.
+     */
+    public boolean isSongOver() {
+        return everPlayed && !playingNow && (queue == null || queue.available() == 0);
+    }
+
     /** is the song over - the machine gone and the queue dry, or never a sound out of it? */
     public boolean isFinished() {
-        return dosbox == null || gaveUp || (!dosbox.isRunning() && (queue == null || queue.available() == 0));
+        if (dosbox == null || gaveUp) {
+            return true;
+        }
+        if (!sounding && attempts < ATTEMPTS) {
+            // not finished, not started: a song that has made no sound yet still has another
+            // machine owed to it, and saying "finished" here is what used to drop it from the
+            // play list on the driver's very first starved read
+            return false;
+        }
+        return !dosbox.isRunning() && (queue == null || queue.available() == 0);
     }
 
     /** Shuts the machine down and takes the song's scratch directory with it. */

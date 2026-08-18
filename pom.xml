@@ -162,6 +162,13 @@
                        about 5% of itself for a collector whose concurrency it never needs.
                        Measured on the heaviest MA-5 song: g1 0.96x real time, parallel 1.00x. -->
                   <jvmarg value="-XX:+UseParallelGC" />
+                  <!-- the emulated PC compiles the guest's code into java methods, and a hot one
+                       can be bigger than the 8000 bytecodes hotspot will jit. Left at the
+                       default those blocks run in hotspot's own interpreter, which for the
+                       block a music player spends its time in is the difference between a song
+                       that keeps up and one that does not. Measured on FMP7's overdose.owi
+                       under openjdk 25: 0.93 of a core per second of audio, 0.88 with this. -->
+                  <jvmarg value="-XX:-DontCompileHugeMethods" />
                   <arg value="${file}" />
                 </java>
               </target>

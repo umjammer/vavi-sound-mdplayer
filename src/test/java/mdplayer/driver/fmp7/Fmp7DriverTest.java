@@ -116,6 +116,8 @@ System.err.printf("%s: \"%s\" by %s (data: %s)%n", owi, file.getTitle(), file.ge
         int notes = 0;
         int sounded = 0;
         StringBuilder parts = new StringBuilder();
+        StringBuilder cushion = new StringBuilder();
+        int cushionSamples = 0;
         while (rendered < sampleRate * seconds && !driver.stopped) {
             // the render loop has to run at the speed a sound card would take it at: FMP7 keeps
             // its own time against the rate its samples are taken
@@ -165,6 +167,14 @@ System.err.printf("%6.1fs %s%n", work.playMillis() / 1000, parts);
             }
             pcm.write(bytes.array());
             rendered += buffer.length / 2;
+
+            // the cushion draining as the song plays is what "it gets slow and then chops" looks
+            // like from here: the emulator is not keeping up, and this is by how much
+            if (songStart != 0 && songFrames / (sampleRate / 2) > cushionSamples) {
+                cushionSamples++;
+                Fmp7Player p = fmp7.getPlayer();
+                cushion.append(" %.1f".formatted(p == null ? 0 : p.getCushionSeconds()));
+            }
         }
 
         Fmp7Player player = fmp7.getPlayer();
@@ -183,6 +193,7 @@ System.err.println("player: " + player.getStatistics());
 System.err.printf("%s: %.1fs of audio, peak %d -> %s%n", owi, rendered / (double) sampleRate, peak, out);
 System.err.printf("silence before the music: %.1fs (booting the machine and loading FMP7)%n",
         (songStart - opened) / 1000.0);
+System.err.println("cushion per half second:" + cushion);
 
         assertTrue(peak > 1000, owi + " rendered near silence, peak " + peak);
         assertTrue(driver.counter > 0, "the driver clock should have advanced");

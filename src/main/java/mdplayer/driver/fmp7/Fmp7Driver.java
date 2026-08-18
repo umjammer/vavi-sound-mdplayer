@@ -148,7 +148,9 @@ logger.log(Level.DEBUG, "not an fmp7 song: " + e.getMessage());
         metaData = getMetaData(dataBuf);
 
         stopPlayer();
-        player = new Fmp7Player(dataBuf);
+        // the song's own directory comes with it: a song that uses PCM names its sample bank
+        // there, and without it the PCM parts play silent - see Fmp7Player#copySongData
+        player = new Fmp7Player(dataBuf, plugin != null ? plugin.playingFilePath : null);
         try {
             player.start();
         } catch (IOException e) {
@@ -239,7 +241,20 @@ logger.log(Level.DEBUG, "fmp7: stopping, " + underruns + " underruns");
         if (!nextSourceSample()) {
             curL = 0;
             curR = 0;
-            if (player.isFinished()) {
+            if (player.isFinished() || player.isSongOver()) {
+                // the machine has gone, or FMP7 has stopped playing and everything it made has
+                // been heard - which is how a song that does not loop ends
+                if (!stopped) {
+                    if (player.isFinished() && !player.isSongOver()) {
+                        // the machine went while the song was still going, which is not the song
+                        // ending - it is the emulated PC dying under it, and saying so is better
+                        // than a track that quietly stops early and looks like a short song
+logger.log(Level.WARNING, "fmp7: the emulated PC went while the song was still playing, %.1fs in"
+        .formatted(getSongMillis() / 1000), player.getFailure());
+                    } else {
+logger.log(Level.DEBUG, "fmp7: the song ended after %.1fs".formatted(getSongMillis() / 1000));
+                    }
+                }
                 stopped = true;
             } else if (player.isSounding()) {
                 underruns++;
@@ -276,7 +291,11 @@ logger.log(Level.DEBUG, "fmp7: stopping, " + underruns + " underruns");
             b[offset + i + 1] = (short) r;
 
             processOneFrame();
-            fireEventHappened(this, "wave.buffer", (short) l, (short) r);
+            if (isWatched()) {
+                // the call boxes both samples and allocates an array for them, forty thousand
+                // times a second, whether anything is listening or not
+                fireEventHappened(this, "wave.buffer", (short) l, (short) r);
+            }
         }
 
         readWork();
@@ -294,10 +313,11 @@ logger.log(Level.DEBUG, "fmp7: stopping, " + underruns + " underruns");
      */
     private void readWork() {
         int pending = frameSize > 0 ? (sourceLen - sourcePos) / frameSize : 0;
-        if (player.workAt(pending, work)) {
-            hasWork = true;
-            curLoop = work.loop();
+        if (!player.workAt(pending, work)) {
+            return;
         }
+        hasWork = true;
+        curLoop = work.loop();
     }
 
     /**

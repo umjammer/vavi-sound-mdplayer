@@ -276,7 +276,11 @@ logger.log(Level.DEBUG, "smaf: stopping, " + underruns + " underruns");
             b[offset + i + 1] = (short) r;
 
             processOneFrame();
-            fireEventHappened(this, "wave.buffer", (short) l, (short) r);
+            if (isWatched()) {
+                // the call boxes both samples and allocates an array for them, forty thousand
+                // times a second, whether anything is listening or not
+                fireEventHappened(this, "wave.buffer", (short) l, (short) r);
+            }
         }
 
         return length;
