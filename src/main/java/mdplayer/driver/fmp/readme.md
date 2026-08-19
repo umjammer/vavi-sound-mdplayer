@@ -19,8 +19,9 @@
 
  - https://www.aosoft.jp/pdzfz8x/
  - https://github.com/yuuqilin/RetroJapSound
+ - https://github.com/myon98/98fmplayer/blob/master/fmdriver/fmdriver_fmp.c (c, reverse engineered)
 
 ## TODO
 
- - fmp7
-   - dosbox? 
+ - ~~fmp7~~
+   - ~~dosbox?~~ 

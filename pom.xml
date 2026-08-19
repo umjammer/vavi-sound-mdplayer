@@ -399,7 +399,6 @@
           <trimStackTrace>false</trimStackTrace>
         </configuration>
       </plugin>
-      <!-- use `mvn -P run antrun:run -Dfile='foo.vgz'` instead-->
     </plugins>
   </build>
 
@@ -441,7 +440,7 @@
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
       <artifactId>vavi-sound</artifactId>
-      <version>1.0.27</version>
+      <version>1.0.28</version>
     </dependency>
     <dependency>
       <groupId>com.github.umjammer</groupId>
@@ -512,12 +511,12 @@
     <dependency>
       <groupId>com.github.umjammer.vavi-apps-dosbox</groupId> <!-- com.acclash.jdosbox / com.github.umjammer.vavi-apps-dosbox -->
       <artifactId>jdosbox</artifactId>
-      <version>0.74.34v</version>
+      <version>0.74.35v</version>
     </dependency>
     <dependency>
       <groupId>com.github.umjammer.vavi-apps-dosbox</groupId> <!-- com.acclash.jdosbox / com.github.umjammer.vavi-apps-dosbox -->
       <artifactId>jdosbox-win</artifactId>
-      <version>0.74.34v</version>
+      <version>0.74.35v</version>
     </dependency>
 
     <dependency>
