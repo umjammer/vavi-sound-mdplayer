@@ -53,3 +53,4 @@ mdplayer.fmdsp.MidiReader
 mdplayer.fmdsp.SmafReader
 mdplayer.fmdsp.MdxPcmReader
 mdplayer.fmdsp.SpuReader
+mdplayer.fmdsp.Fmp7Reader

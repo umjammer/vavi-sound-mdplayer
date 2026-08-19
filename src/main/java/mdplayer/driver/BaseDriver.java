@@ -164,6 +164,17 @@ public abstract class BaseDriver {
      *        "led.on" ... args 0: chip id, {@code src} is indicated the led target
      *        "wave.buffer" ... args 0: left value, 1: right value
      */
+    /**
+     * Whether anything is listening at all, for a caller that would otherwise pay to ask.
+     * <p>
+     * {@link #fireEventHappened} takes varargs, so calling it boxes every argument and allocates
+     * an array for them before it can decide there is nobody to tell. A driver that fires per
+     * sample - the ones that render their own audio do - should ask this first.
+     */
+    protected boolean isWatched() {
+        return watched;
+    }
+
     public void fireEventHappened(Object src, String name, Object... args) {
         if (!watched) {
             return;

@@ -3,7 +3,7 @@
 
   <groupId>vavi</groupId>
   <artifactId>vavi-apps-mdplayer</artifactId>
-  <version>0.0.24</version>
+  <version>0.0.25</version>
 
   <profiles>
     <profile>
@@ -162,6 +162,13 @@
                        about 5% of itself for a collector whose concurrency it never needs.
                        Measured on the heaviest MA-5 song: g1 0.96x real time, parallel 1.00x. -->
                   <jvmarg value="-XX:+UseParallelGC" />
+                  <!-- the emulated PC compiles the guest's code into java methods, and a hot one
+                       can be bigger than the 8000 bytecodes hotspot will jit. Left at the
+                       default those blocks run in hotspot's own interpreter, which for the
+                       block a music player spends its time in is the difference between a song
+                       that keeps up and one that does not. Measured on FMP7's overdose.owi
+                       under openjdk 25: 0.93 of a core per second of audio, 0.88 with this. -->
+                  <jvmarg value="-XX:-DontCompileHugeMethods" />
                   <arg value="${file}" />
                 </java>
               </target>
@@ -392,7 +399,6 @@
           <trimStackTrace>false</trimStackTrace>
         </configuration>
       </plugin>
-      <!-- use `mvn -P run antrun:run -Dfile='foo.vgz'` instead-->
     </plugins>
   </build>
 
@@ -434,7 +440,7 @@
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
       <artifactId>vavi-sound</artifactId>
-      <version>1.0.27</version>
+      <version>1.0.28</version>
     </dependency>
     <dependency>
       <groupId>com.github.umjammer</groupId>
@@ -505,12 +511,12 @@
     <dependency>
       <groupId>com.github.umjammer.vavi-apps-dosbox</groupId> <!-- com.acclash.jdosbox / com.github.umjammer.vavi-apps-dosbox -->
       <artifactId>jdosbox</artifactId>
-      <version>0.74.34v</version>
+      <version>0.74.35v</version>
     </dependency>
     <dependency>
       <groupId>com.github.umjammer.vavi-apps-dosbox</groupId> <!-- com.acclash.jdosbox / com.github.umjammer.vavi-apps-dosbox -->
       <artifactId>jdosbox-win</artifactId>
-      <version>0.74.34v</version>
+      <version>0.74.35v</version>
     </dependency>
 
     <dependency>

@@ -4,7 +4,7 @@
  * Programmed by Naohide Sano
  */
 
-package mdplayer.lib.smaf;
+package mdplayer.lib;
 
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;

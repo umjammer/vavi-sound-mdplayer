@@ -57,7 +57,8 @@ this is a fork of [MDPlayer](https://github.com/kuma4649/MDPlayer)
 | M4A/AAC                         |                  |       →        |    -     | spi                   | [vavi-sound-aac](https://github.com/umjammer/vavi-sound-aac)                                   |                                                                                   |
 | WMA                             |                  |       →        |    -     | spi                   | [vavi-sound-sandbox](https://github.com/umjammer/vavi-sound-sandbox)                           |                                                                                   |
 | FLAC                            |                  |       →        |    -     | spi                   | [vavi-sound-flac](https://github.com/umjammer/vavi-sound-flac)                                 |                                                                                   |
-| SMAF                            | YAMAHA           |       ✅️       |    -     | built-in              | [jDOSBox](https://github.com/umjammer/jDOSBox), [mmftool](https://github.com/umjammer/mmftool) | ~~adapt fmdsp visualizer ... difficult~~                                          |
+| SMAF                            | YAMAHA           |       ✅️       |    -     | built-in*             | [jDOSBox](https://github.com/umjammer/jDOSBox), [mmftool](https://github.com/umjammer/mmftool) | ~~adapt fmdsp visualizer ... difficult~~                                          |
+| FMP7                            | Windows          |       ✅️       |    -     | built-in*             | [jDOSBox](https://github.com/umjammer/jDOSBox), [FMP7](http://fmpdoc.fmp.jp/fmp7/)             | `.owi` only; needs `-m 64` or it plays without publishing its work                |
 
 <sub>* at type: driver uses emulator</sub>
 
@@ -173,6 +174,10 @@ when using this project with vgm, gbs spi, apply the settings below to avoid con
 
 - [smaf settings](src/main/java/mdplayer/driver/smaf/readme.md)
 
+#### fmp7
+
+- [fmp7 settings](src/main/java/mdplayer/driver/fmp7/readme.md)
+
 #### ROMs
 
 `mdsound.pcm.path` ... location for YM2608 drums `ym2608_adpcm_rom.bin` and YMF278B `yrw801.rom`
@@ -218,6 +223,7 @@ you can select a chip implementation variant by number.
 * https://github.com/jimshawx/ahxcs (ahx)
 * https://github.com/nmlgc/aosdk (psf, psf2)
 * https://nfggames.com/X68000/index.php/Mirrors/Groundzero%20Organization/x68tools/music/lzz/ (zms:lzz)
+* https://github.com/vgmtrans/vgmtrans (sequenced video game music)
 * s98
   * https://www.zophar.net/music/s98.html (s98)
   * https://github.com/niara3/s98txt/blob/master/src/com/niara3/s98txt/Main.java (s98)
@@ -312,6 +318,9 @@ you can select a chip implementation variant by number.
    * \[pmd] ... add special tag in datasource to display music_title/composer/arranger
  * settings ...  demolish each driver and chips
  * midi + dls/sf2 (should not be supported, it's normal midi responsibility)
+ * visualizer for spi
+ * android emulator: app + server ↔ mlplayer
+ * wine + custom audio dev ... capture from that
 
 ---
 

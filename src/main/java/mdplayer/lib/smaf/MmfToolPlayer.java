@@ -17,6 +17,7 @@ import java.util.stream.Stream;
 
 import jdos.api.AudioSink;
 import jdos.api.JDosBox;
+import mdplayer.lib.PcmQueue;
 
 import static java.lang.System.getLogger;
 
@@ -117,8 +118,6 @@ public class MmfToolPlayer {
 
     /** the same for MA-5 and MA-7, the ones the emulated PC has to work hardest at */
     private static final String RATE_HEAVY = System.getProperty("mdplayer.smaf.rate.ma5", "32000");
-
-
 
     private final byte[] mmf;
 
