@@ -20,6 +20,7 @@ import vavi.sound.visualizer.fmdsp.LevelDataSource.Pan;
 import vavi.sound.visualizer.fmdsp.TrackId;
 import vavi.sound.visualizer.fmdsp.TrackInfo;
 import vavi.sound.visualizer.fmdsp.TrackStatus;
+import vavi.sound.visualizer.fmdsp.WorkStateSource;
 import vavi.util.properties.annotation.PropsEntity;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -161,6 +162,40 @@ class ChipFmDspSourceTest {
         source.snapshot();
         source.readStatus(TrackId.FM_1, status);
         assertEquals(0, status.pitchDeviation);
+    }
+
+    @Test
+    @DisplayName("the VOLUME DOWN counter reads the calibrated balance of the chip playing the part")
+    void testVolumeDown() {
+        mdplayer.Setting.Balance balance = mdplayer.Setting.getInstance().getBalance();
+        int mainWas = balance.getVolume(mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Ym2608Chip.class);
+        int fmWas = balance.getVolume("FM", mdplayer.chips.Ym2608Chip.class);
+        try {
+            balance.setVolume(mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Ym2608Chip.class, -18);
+            balance.setVolume("FM", mdplayer.chips.Ym2608Chip.class, -4);
+
+            // nothing has claimed a row yet, so there is no chip to read a correction off
+            assertEquals(0, source.volumeDown(WorkStateSource.VolumePart.FM));
+
+            opnaKeyOnFm1();
+            source.snapshot();
+
+            // the chip's own correction plus the part's trim, both of which the mixer applies
+            assertEquals(-22, source.volumeDown(WorkStateSource.VolumePart.FM));
+            // a part nothing is playing has no chip to read one off yet
+            assertEquals(0, source.volumeDown(WorkStateSource.VolumePart.SSG));
+
+            // the same chip's SSG part, once it sounds: its own correction, trimmed by nothing
+            opna.write(0, 0, 0x00, 284 & 0xff, EnmModel.VirtualModel);
+            opna.write(0, 0, 0x01, 284 >> 8, EnmModel.VirtualModel);
+            opna.write(0, 0, 0x08, 15, EnmModel.VirtualModel);
+            opna.write(0, 0, 0x07, 0x3e, EnmModel.VirtualModel);
+            source.snapshot();
+            assertEquals(-18, source.volumeDown(WorkStateSource.VolumePart.SSG));
+        } finally {
+            balance.setVolume(mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Ym2608Chip.class, mainWas);
+            balance.setVolume("FM", mdplayer.chips.Ym2608Chip.class, fmWas);
+        }
     }
 
     @Test

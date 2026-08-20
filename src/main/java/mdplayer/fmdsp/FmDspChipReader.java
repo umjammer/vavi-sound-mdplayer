@@ -53,6 +53,15 @@ public interface FmDspChipReader {
         return null;
     }
 
+    /**
+     * The chip class this reader shows, which is what the mixer keys its volumes by - see
+     * {@code ChipFmDspSource#volumeDown}. Null - the default - from a reader whose state lives on
+     * a driver rather than on a chip; {@link ChipReader} answers for its subclasses.
+     */
+    default Class<? extends mdplayer.Chip> chipClass() {
+        return null;
+    }
+
     /** points this reader at the playing plugin's chips */
     void bind(ChipRegister chipRegister);
 

@@ -20,6 +20,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import mdplayer.driver.BaseDriver;
+import mdsound.MDSound;
 import mdplayer.fmdsp.FmDspChannel;
 import mdplayer.fmdsp.FmDspChipReader;
 import mdplayer.fmdsp.FmDspChipReader.Group;
@@ -1283,6 +1284,51 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
     public String driverName() {
         BaseDriver d = work;
         return d != null ? d.getName() : null;
+    }
+
+    /**
+     * The tags a group's part may be trimmed with behind its chip's {@code MAIN} volume. They are
+     * per chip rather than a convention - the OPNA spells its SSG {@code SSG} and the OPN
+     * {@code PSG}, the OPNA's PCM part is {@code ADPCM} and the OPNA-B's two are {@code ADPCMA}
+     * and {@code ADPCMB} - so each is tried in turn and the first the chip actually trims wins.
+     */
+    private static final Map<Group, String[]> volumeTags = new EnumMap<>(Map.of(
+            Group.FM, new String[] {"FM"},
+            Group.SSG, new String[] {"SSG", "PSG"},
+            Group.RHYTHM, new String[] {"RHYTHM"},
+            Group.PCM, new String[] {"ADPCM", "ADPCMA", "ADPCMB", "PCM"}));
+
+    /**
+     * What the fmdsp {@code VOLUME DOWN} counter shows: how far mdplayer's mixer is turning the
+     * part down, in its own 2&times;dB unit, which for a played song is the calibrated balance of
+     * the chip that claimed the part's rows - see {@code DefaultVolumeBalance_*.xml}.
+     * <p>
+     * A chip's {@code MAIN} volume and its part tags are independent multipliers, so the two are
+     * added: what the part is turned down by is the chip's own correction plus the part's trim.
+     * A part no chip claimed, or one whose reader is not a chip's, has no correction to show.
+     */
+    @Override
+    public int volumeDown(VolumePart part) {
+        Group g = switch (part) {
+            case FM -> Group.FM;
+            case SSG -> Group.SSG;
+            case RHY -> Group.RHYTHM;
+            case PCM -> Group.PCM;
+        };
+        List<FmDspChipReader> claimed = claims.get(g);
+        if (claimed == null || claimed.isEmpty()) return 0;
+        Class<? extends mdplayer.Chip> c = claimed.getFirst().chipClass();
+        if (c == null) return 0;
+        Setting.Balance balance = Setting.getInstance().getBalance();
+        int v = balance.getVolume(MDSound.Chip.MAIN_TAG, c);
+        for (String tag : volumeTags.get(g)) {
+            int trim = balance.getVolume(tag, c);
+            if (trim != 0) {
+                v += trim;
+                break;
+            }
+        }
+        return v;
     }
 
     @Override

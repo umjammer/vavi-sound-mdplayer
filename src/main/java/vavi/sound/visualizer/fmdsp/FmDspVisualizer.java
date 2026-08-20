@@ -182,6 +182,23 @@ public class FmDspVisualizer extends JComponent {
     private static final int LOOPCNT_Y = TIMERB_Y + 19;
     private static final int VOLDOWN_Y = LOOPCNT_Y + 19;
     private static final int PGMNUM_Y = VOLDOWN_Y + 19;
+    /**
+     * The {@code VOLUME DOWN} counter, which shows one part's correction at a time: three digits
+     * on the counter lattice like every other counter, a sign place left of them and the part's
+     * name left of that. Measured off the PC-98 capture, whose whole row is offset four pixels
+     * from this layout's counters - the digits go where our counters are, the rest keeps the
+     * capture's spacing against them.
+     */
+    private static final int VOLDOWN_DIGITS = 3;
+    private static final int VOLDOWN_NUM_X = TIME_X + NUM_W * (8 - VOLDOWN_DIGITS);
+    /** the place the sign moves out to when the number itself fills the three digits */
+    private static final int VOLDOWN_SIGN_X = VOLDOWN_NUM_X - NUM_W;
+    private static final int VOLDOWN_PART_X = VOLDOWN_NUM_X - 27;
+    private static final int VOLDOWN_PART_Y = VOLDOWN_Y + 5;
+    /** the middle segment of a digit, which is the counter's minus: row 5, two pixels wide */
+    private static final int VOLDOWN_BAR_X = 3;
+    private static final int VOLDOWN_BAR_W = 2;
+    private static final int VOLDOWN_BAR_Y = 5;
     private static final int LOGO_Y = 1;
     private static final int LOGO_FM_W = 31;
     private static final int LOGO_DS_W = 32;
@@ -437,6 +454,10 @@ public class FmDspVisualizer extends JComponent {
     private final int[] levelCnt = new int[FMDSP_LEVEL_COUNT];
     private final int[] levelDropDiv = new int[FMDSP_LEVEL_COUNT];
 
+    /** the VOLUME DOWN counter's last reading of each part, and the part it is showing */
+    private final int[] volDown = new int[WorkStateSource.VolumePart.values().length];
+    private WorkStateSource.VolumePart volDownPart;
+
     /** where each row's frequency fluctuation wave has flowed to, and how far it swings */
     private final double[] freqPhase = new double[TrackId.COUNT];
     private final double[] freqAmp = new double[TrackId.COUNT];
@@ -478,6 +499,9 @@ public class FmDspVisualizer extends JComponent {
     /** Set the data source. May be replaced at any time. */
     public void setDataSource(FmDspDataSource source) {
         this.source = source;
+        // the next song's corrections are not this one's changing, so the counter picks its part
+        // afresh rather than jumping to whichever one happens to differ
+        volDownPart = null;
     }
 
     /**
@@ -1735,6 +1759,8 @@ public class FmDspVisualizer extends JComponent {
             lp /= 10;
         }
 
+        renderVolumeDown(w);
+
         // loop / duration progress bar
         long loopLen = w != null ? w.loopTimerBCount() : 0L;
         long loopPos = w != null ? w.timerBCountLoop() : 0L;
@@ -1783,6 +1809,77 @@ public class FmDspVisualizer extends JComponent {
         for (int i = 0; i < 3; i++) {
             blitNum(FPS_NUM_X + NUM_W * (2 - i), CPU_NUM_Y, fp % 10);
             fp /= 10;
+        }
+    }
+
+    /**
+     * The {@code VOLUME DOWN} counter of FMDSP.DOC's {@code ▽各種ステータス表示}: how far the player
+     * is turning a part down, for one part at a time - "表示は変更があったパートに自動的に切り替わり
+     * ます", so the counter follows whichever of FM, SSG, RHY and PCM moved last.
+     * <p>
+     * The row is drawn but never filled by 98fmplayer's fmdsp, which has no such number to show;
+     * here it comes through {@link WorkStateSource#volumeDown}, where mdplayer's generic source
+     * answers with the calibrated mixer balance of the chip playing that part and a driver-specific
+     * one with the driver's own correction. Laid out as the PC-98 capture has it: the part's name
+     * in the small font, then three counter digits with no leading zeros, the minus sitting in the
+     * blank place in front of the number.
+     */
+    private void renderVolumeDown(WorkStateSource w) {
+        WorkStateSource.VolumePart[] parts = WorkStateSource.VolumePart.values();
+        WorkStateSource.VolumePart changed = null;
+        for (int i = 0; i < parts.length; i++) {
+            int v = w != null ? w.volumeDown(parts[i]) : 0;
+            // several parts move together when a song starts; the one worth showing is a part that
+            // is actually turned down, not whichever of them is last in the enum
+            if (volDownPart != null && v != volDown[i] && (changed == null || v != 0)) {
+                changed = parts[i];
+            }
+            volDown[i] = v;
+        }
+        if (changed != null) {
+            volDownPart = changed;
+        } else if (volDownPart == null) {
+            // the first reading is not a change: open on a part that has a correction
+            volDownPart = parts[0];
+            for (int i = 0; i < parts.length; i++) {
+                if (volDown[i] != 0) {
+                    volDownPart = parts[i];
+                    break;
+                }
+            }
+        }
+
+        int v = volDown[volDownPart.ordinal()];
+        putSmall((volDownPart.name() + "   ").substring(0, 3), VOLDOWN_PART_X, VOLDOWN_PART_Y, 2, true);
+
+        int abs = Math.min(999, Math.abs(v));
+        int digits = abs >= 100 ? 3 : abs >= 10 ? 2 : 1;
+        boolean minus = v < 0;
+        // the sign is a digit place of its own, lit as the middle segment alone - the counter has
+        // no minus glyph, and the leading blank is exactly the shape one would be drawn on. Only a
+        // number that fills all three digits pushes it out to the place beside the field, which
+        // otherwise shows the bare segment unlit
+        blitMidBar(VOLDOWN_SIGN_X, VOLDOWN_Y, minus && digits == VOLDOWN_DIGITS ? 2 : 3);
+        for (int i = 0; i < VOLDOWN_DIGITS; i++) {
+            int x = VOLDOWN_NUM_X + NUM_W * i;
+            int place = VOLDOWN_DIGITS - 1 - i;
+            if (place < digits) {
+                int p = 1;
+                for (int d = 0; d < place; d++) p *= 10;
+                blitNum(x, VOLDOWN_Y, (abs / p) % 10);
+            } else {
+                // no leading zeros: the places the number does not reach are blank glyphs, and the
+                // first of them carries the sign
+                blitNum(x, VOLDOWN_Y, 10);
+                if (minus && place == digits) blitMidBar(x, VOLDOWN_Y, 2);
+            }
+        }
+    }
+
+    /** the middle segment of a digit cell on its own, which is what the counter's minus is */
+    private void blitMidBar(int x, int y, int color) {
+        for (int i = 0; i < VOLDOWN_BAR_W; i++) {
+            vram[(y + VOLDOWN_BAR_Y) * PC98_W + x + VOLDOWN_BAR_X + i] = (byte) color;
         }
     }
 
