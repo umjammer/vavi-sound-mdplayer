@@ -198,6 +198,14 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
     /** the base note of the currently sounding note before pitch bends */
     private final int[] baseNotes = new int[TrackId.COUNT];
 
+    /**
+     * The pitch each row was struck at, in cents, {@code -1} while it rests. The frequency
+     * fluctuation display wants the movement since the key went down rather than the pitch itself,
+     * so that a voice which simply sits off the note - a sample played at a rate between two of
+     * them - reads as steady, which is what it is.
+     */
+    private final int[] baseCents = new int[TrackId.COUNT];
+
     /** tick count of each row's last key off, {@code -1} while the key is still down */
     private final long[] keyOffTicks = new long[TrackId.COUNT];
 
@@ -386,6 +394,7 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
         Arrays.fill(noteLengths, 0);
         Arrays.fill(lastNotes, -1);
         Arrays.fill(baseNotes, -1);
+        Arrays.fill(baseCents, -1);
         Arrays.fill(keyOffTicks, -1);
         Arrays.fill(gates, 0);
         Arrays.fill(lastPitches, 0);
@@ -616,14 +625,21 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
                 System.arraycopy(channel.fmSlotMask, 0, status.fmSlotMask, 0, 4);
                 if (!channel.sounding) {
                     baseNotes[row] = -1;
+                    baseCents[row] = -1;
                     status.key = 0xff;
                     status.actualKey = 0xff;
+                    status.pitchDeviation = 0;
                 } else {
                     if (channel.keyOn || baseNotes[row] < 0) {
                         baseNotes[row] = channel.note;
+                        baseCents[row] = channel.note * 100 + channel.detune;
                     }
                     status.key = keyOf(baseNotes[row]);
                     status.actualKey = keyOf(channel.note);
+                    // what the frequency fluctuation display swings on: a sample whose rate is not
+                    // a note has nothing to say here, its pitch drifting every snapshot by nature
+                    status.pitchDeviation = channel.sampled || channel.note < 0 ? 0
+                            : channel.note * 100 + channel.detune - baseCents[row];
                 }
                 status.volume = channel.volume;
                 status.toneNum = channel.toneNum;
@@ -916,6 +932,7 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
         status.volume = 0;
         status.gate = 0;
         status.detune = 0;
+        status.pitchDeviation = 0;
         status.status = CHIP_STATUS[0];
         status.ppz8Ch = 0;
         status.ssgTone = false;
@@ -1123,6 +1140,7 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
         out.volume = status.volume;
         out.gate = status.gate;
         out.detune = status.detune;
+        out.pitchDeviation = status.pitchDeviation;
         out.status = status.status;
         out.ppz8Ch = status.ppz8Ch;
         out.ssgTone = status.ssgTone;

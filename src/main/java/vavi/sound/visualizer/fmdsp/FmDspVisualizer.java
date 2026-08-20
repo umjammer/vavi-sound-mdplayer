@@ -48,6 +48,11 @@ import static vavi.sound.visualizer.fmdsp.FmDspSprites.*;
  * {@link TrackDetailSource} instead, so that they are neither OPNA specific nor
  * the renderer's business to fetch.
  *
+ * <h2>Beyond the C source</h2>
+ * One section is drawn here that 98fmplayer's fmdsp never had: the frequency fluctuation display
+ * of the original PC-98 FMDSP, section 9 of its FMDSP.DOC, which lives in {@code FMDSP.COM} alone.
+ * See {@link #freqWave}.
+ *
  * <h2>Threading</h2>
  * VRAM is rebuilt on the EDT each repaint; guard cross-thread data-source
  * mutation on your side.
@@ -98,6 +103,28 @@ public class FmDspVisualizer extends JComponent {
     private static final int BAR_W = 2;
     private static final int BAR_H = 4;
     private static final int BAR_CNT = 64;
+    /**
+     * The frequency fluctuation display of FMDSP.DOC's "9", which shares the note bar's row and
+     * sits over the "M:" LFO field of the line below it, see {@link #freqWave}. Its strokes are
+     * the note bar's own: one pixel every {@link #BAR_W}, in the same two colours.
+     */
+    private static final int FREQ_X = TDETAIL_M_V_X;
+    /** slots the wave itself flows through */
+    private static final int FREQ_CNT = 8;
+    /** slots of the whole field, which runs out to the end of the LFO field below */
+    private static final int FREQ_FIELD = 20;
+    /** rows the wave swings above and below its centre line */
+    private static final int FREQ_AMP = 2;
+    /** the row the wave rests on, a full swing from the top of the note bar's band */
+    private static final int FREQ_MID_Y = BAR_Y + FREQ_AMP;
+    /**
+     * Pitch movement, in cents, that swings the wave to {@link #FREQ_AMP}. A third of a semitone:
+     * the depth a vibrato is usually written at, measured off a real PMD song, so that an ordinary
+     * one fills the display and a deeper one only pins it.
+     */
+    private static final int FREQ_FULL_CENTS = 30;
+    /** how far the wave travels each frame, one slot every other frame */
+    private static final double FREQ_SPEED = Math.PI / FREQ_CNT;
     private static final int COMMENT_Y = 340;
     private static final int COMMENT_H = 19;
     private static final int PLAYING_X = 0;
@@ -409,6 +436,10 @@ public class FmDspVisualizer extends JComponent {
     private final int[] levelData = new int[FMDSP_LEVEL_COUNT];
     private final int[] levelCnt = new int[FMDSP_LEVEL_COUNT];
     private final int[] levelDropDiv = new int[FMDSP_LEVEL_COUNT];
+
+    /** where each row's frequency fluctuation wave has flowed to, and how far it swings */
+    private final double[] freqPhase = new double[TrackId.COUNT];
+    private final double[] freqAmp = new double[TrackId.COUNT];
 
     private long framecnt;
     private int cpuusage;
@@ -1121,6 +1152,7 @@ public class FmDspVisualizer extends JComponent {
             for (int j = 0; j < BAR_CNT; j++) {
                 vramblitColor(BAR_X + BAR_W * j, TRACK_H * i + BAR_Y, s_bar, 0, BAR_W, BAR_H, 3);
             }
+            freqField(TRACK_H * i);
         }
 
         // a short display list ({@link LeftMode#AUTO}) leaves rows over: draw their keyboard and
@@ -1135,6 +1167,7 @@ public class FmDspVisualizer extends JComponent {
             for (int j = 0; j < BAR_CNT; j++) {
                 vramblitColor(BAR_X + BAR_W * j, TRACK_H * i + BAR_Y, s_bar, 0, BAR_W, BAR_H, 3);
             }
+            freqField(TRACK_H * i);
         }
 
         if (rightMode == RightMode.DEFAULT) initDefault();
@@ -1404,6 +1437,99 @@ public class FmDspVisualizer extends JComponent {
             vramblitColor(BAR_X + BAR_W * i, y + BAR_Y, s_bar, 0, BAR_W, BAR_H, c);
         }
         vramblitColor(BAR_X + BAR_W * (track.ticks >> 2), y + BAR_Y, s_bar, 0, BAR_W, BAR_H, 7);
+
+        freqWave(t, track, masked, y);
+    }
+
+    /**
+     * The dim strokes the frequency fluctuation display rests on, drawn with the rest of the row's
+     * chrome so that a row nothing is playing on shows the field rather than a hole.
+     */
+    private void freqField(int y) {
+        for (int i = 0; i < FREQ_FIELD; i++) {
+            vramblitColor(FREQ_X + BAR_W * i, y + BAR_Y, s_bar, 0, BAR_W, BAR_H, 3);
+        }
+    }
+
+    /**
+     * FMDSP.DOC's "9", the frequency fluctuation display: a wave flows through the left of the
+     * field whenever an LFO or a pitch bend is moving the note off the pitch it was struck at, and
+     * the field lies flat while it is not.
+     * <p>
+     * The original is in FMDSP.COM alone - 98fmplayer's fmdsp never had it - so what is reproduced
+     * here is what the FMDSP screen does: eight strokes of the note bar's own kind over the "M:"
+     * LFO field, each drawn from the centre line out to the wave, so that no fluctuation is a flat
+     * line of single pixels and a deep one a row of tall strokes. Like the original it is an
+     * indicator and not a measurement - the doc says as much - the movement being a wave of a fixed
+     * shape and speed whose depth follows the pitch, rather than the pitch curve itself.
+     */
+    private void freqWave(TrackId t, TrackStatus track, boolean masked, int y) {
+        int row = t.ordinal();
+        double target = fluctuation(track);
+        // rises with the note and falls back slowly, so that a vibrato turning through zero twice
+        // a cycle does not blink the display off and on again
+        freqAmp[row] += (target - freqAmp[row]) * (target > freqAmp[row] ? 0.5 : 0.12);
+        if (!track.playing) {
+            freqAmp[row] = 0;
+            freqPhase[row] = 0;
+            return;
+        }
+        freqPhase[row] = (freqPhase[row] + FREQ_SPEED) % (2 * Math.PI);
+
+        // the note bar's colours, so the two read as the one row: 7 for a keyless or masked row
+        int color = (track.key == 0xff || masked) ? 7 : 2;
+        for (int i = 0; i < FREQ_CNT; i++) {
+            int x = FREQ_X + BAR_W * i;
+            // the wave takes the slot over from the field's dim stroke rather than sitting in it
+            for (int yi = 0; yi < BAR_H; yi++) {
+                vram[(y + BAR_Y + yi) * PC98_W + x] = 0;
+            }
+            // one period of the wave spans the slots, and every other frame moves it one along
+            double v = freqAmp[row] * FREQ_AMP
+                    * Math.sin(freqPhase[row] - i * (2 * Math.PI / FREQ_CNT));
+            int d = (int) Math.round(v);
+            for (int yi = Math.min(0, d); yi <= Math.max(0, d); yi++) {
+                vram[(y + FREQ_MID_Y + yi) * PC98_W + x] = (byte) color;
+            }
+        }
+    }
+
+    /**
+     * How far off the pitch it was struck at a row is sounding, 0 (steady) to 1
+     * ({@link #FREQ_FULL_CENTS} or more). A source that measures it says so in
+     * {@link TrackStatus#pitchDeviation}; one that does not leaves the semitone the keyboard
+     * already shows - {@link TrackStatus#actualKey} against {@link TrackStatus#key} - and its
+     * driver's own LFO flags, which is all the original had to go on for the FM drivers it was
+     * written for.
+     */
+    private static double fluctuation(TrackStatus track) {
+        if (!track.playing || track.key == 0xff || (track.key & 0xf) == 0xf) return 0;
+        int cents = Math.abs(track.pitchDeviation);
+        if (cents == 0 && track.actualKey != 0xff && (track.actualKey & 0xf) != 0xf) {
+            cents = Math.abs(noteOf(track.actualKey) - noteOf(track.key)) * 100;
+        }
+        double a = Math.min(1.0, cents / (double) FREQ_FULL_CENTS);
+        if (a == 0 && pitchFlagged(track.status)) a = 0.5;
+        return a;
+    }
+
+    /**
+     * Whether the "M:" field says something is moving this row's pitch. Every driver spells a
+     * pitch LFO or a portamento with P, and FMP its second and third with Q and R; A (volume), S
+     * (sync) and e (envelope) move the level instead, and H is the chip's own hardware LFO, which
+     * the original leaves out of this display and so does this.
+     */
+    private static boolean pitchFlagged(String status) {
+        for (int i = 0; i < status.length(); i++) {
+            char c = status.charAt(i);
+            if (c == 'P' || c == 'Q' || c == 'R') return true;
+        }
+        return false;
+    }
+
+    /** semitones above C0 of a packed {@code octave << 4 | note} key */
+    private static int noteOf(int key) {
+        return (key >> 4) * 12 + (key & 0xf);
     }
 
     // ==================================================================
@@ -1529,6 +1655,7 @@ public class FmDspVisualizer extends JComponent {
         s.volume = 0;
         s.gate = 0;
         s.detune = 0;
+        s.pitchDeviation = 0;
         s.status = "";
         Arrays.fill(s.fmSlotMask, false);
         s.ppz8Ch = 0;

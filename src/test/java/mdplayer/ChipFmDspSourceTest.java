@@ -139,6 +139,31 @@ class ChipFmDspSourceTest {
     }
 
     @Test
+    @DisplayName("the frequency fluctuation display gets the cents a held note has been bent by")
+    void testPitchDeviation() {
+        opnaKeyOnFm1();
+        source.snapshot();
+        source.readStatus(TrackId.FM_1, status);
+        assertEquals(0, status.pitchDeviation, "a note sitting still has not moved");
+
+        // the same note bent up a sixth of a tone, which is a vibrato and not a new note: the
+        // f-number times 2^(30/1200)
+        opna.write(0, 0, 0xa4, (4 << 3) | (0x275 >> 8), EnmModel.VirtualModel);
+        opna.write(0, 0, 0xa0, 0x275 & 0xff, EnmModel.VirtualModel);
+        source.snapshot();
+        source.readStatus(TrackId.FM_1, status);
+        assertEquals(0x40, status.key, "still the note it was struck at");
+        assertTrue(Math.abs(status.pitchDeviation - 30) <= 6,
+                "about 30 cents up, was " + status.pitchDeviation);
+
+        // and it goes out with the key, rather than following the row to the next note
+        opna.write(0, 0, 0x28, 0x00, EnmModel.VirtualModel);
+        source.snapshot();
+        source.readStatus(TrackId.FM_1, status);
+        assertEquals(0, status.pitchDeviation);
+    }
+
+    @Test
     @DisplayName("fm key off releases the key and the meter")
     void testFmKeyOff() {
         opnaKeyOnFm1();

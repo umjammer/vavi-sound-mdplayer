@@ -551,6 +551,7 @@ public class PmdFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
         status.volume = 0;
         status.gate = 0;
         status.detune = 0;
+        status.pitchDeviation = 0;
         status.status = "";
         status.ppz8Ch = 0;
         status.ssgTone = false;

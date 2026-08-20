@@ -587,6 +587,9 @@ public class MidiFmDspSource implements Receiver, FmDspDataSource, FftDataSource
         out.toneNum = programs[ch] + 1; // GM numbers its programs from 1
         out.volume = volumes[ch];
         out.detune = (bends[ch] - 8192) * BEND_RANGE / 8192;
+        // the bend is the whole of the deviation here: a MIDI note is played at the pitch it
+        // names, and what moves it off is the wheel
+        out.pitchDeviation = out.detune;
         out.status = statusOf(ch);
         noteLength(ch, out);
     }
@@ -673,6 +676,7 @@ public class MidiFmDspSource implements Receiver, FmDspDataSource, FftDataSource
         out.volume = 0;
         out.gate = 0;
         out.detune = 0;
+        out.pitchDeviation = 0;
         out.status = "--------";
         out.ppz8Ch = 0;
         out.ssgTone = false;
