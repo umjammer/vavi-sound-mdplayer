@@ -1417,8 +1417,8 @@ public class FormMain extends JFrame {
 
             if (frmPlayList != null && frmPlayList.isPlaying()) {
                 if (!songStarting) {
-                    if ((setting.getOther().getUseLoopTimes() && audio.plugin.getVgmCurLoopCounter() > setting.getOther().getLoopTimes() - 1)
-                            || audio.plugin.getVGMStopped()) {
+                    if ((setting.getOther().getUseLoopTimes() && audio.plugin.getCurLoopCounter() > setting.getOther().getLoopTimes() - 1)
+                            || audio.plugin.getStopped()) {
                         fadeout();
                     }
                     if (audio.plugin.isStopped()) {

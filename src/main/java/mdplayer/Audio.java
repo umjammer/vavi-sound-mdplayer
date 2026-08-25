@@ -167,7 +167,7 @@ logger.log(Level.DEBUG, "line: " + e.getType());
                         plugin.chipRegister.plugin(MidiPlugin.class).keyboard(buffer, 0, buffer.length);
                     }
 
-                    if (!plugin.getVGMStopped()) {
+                    if (!plugin.getStopped()) {
                         started = true;
                     }
                     if (started) {
@@ -179,8 +179,8 @@ logger.log(Level.DEBUG, "line: " + e.getType());
                     // start fading out. (The GUI drives this from its screen loop;
                     // headless callers such as tests have no such loop, so play()
                     // would otherwise render silence forever and never return.)
-                    if (started && playRenders > 22050 && ((setting.getOther().getUseLoopTimes() && plugin.getVgmCurLoopCounter() > setting.getOther().getLoopTimes() - 1)
-                            || plugin.getVGMStopped())) {
+                    if (started && playRenders > 22050 && ((setting.getOther().getUseLoopTimes() && plugin.getCurLoopCounter() > setting.getOther().getLoopTimes() - 1)
+                            || plugin.getStopped())) {
                         plugin.fadeout = true;
                     }
                 }

@@ -44,12 +44,6 @@ public class MNDPlugin extends BasePlugin<MnDriver> {
         initChips();
     }
 
-    /** MNDRV has its own section; {@link mdplayer.chips.MPcmChip} reads it back through here */
-    @Override
-    public int mpcmType() {
-        return setting.getMnDrv().mpcmType;
-    }
-
     @Override
     protected void initChips() {
         int hiyorimiDeviceFlag = 3;

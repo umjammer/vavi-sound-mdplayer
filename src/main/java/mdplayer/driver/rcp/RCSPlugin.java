@@ -42,20 +42,9 @@ public class RCSPlugin extends BasePlugin<RcsDriver> {
 
     private final String[] supportFile = null; // TODO
 
-    /** RCS has its own section; {@link mdplayer.chips.Pcm8Chip} reads it back through here */
-    @Override
-    public int pcm8Type() {
-        return setting.getRcs().pcm8type;
-    }
-
-    @Override
-    public int pcm8ppsOption() {
-        return setting.getRcs().pcm8ppsOption;
-    }
-
     @Override
     protected void initChips() {
-        if (pcm8Type() == 0) {
+        if (setting.pcm8Type(this) == 0) {
             X68kYm2151Inst opmPCM = Instrument.getInstrument(X68kYm2151Inst.class);
             opmPCM.soundIocs[0] = new SoundIocs(opmPCM.chips[0]);
             MDSound.Chip chip = new MDSound.Chip();
@@ -74,7 +63,7 @@ public class RCSPlugin extends BasePlugin<RcsDriver> {
             chip.volume = 0;
             chip.clock = 4_000_000;
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
-            chip.option = new Object[] {pcm8ppsOption()};
+            chip.option = new Object[] {setting.pcm8ppsOption(this)};
             put(OkiM6258Chip.class, chip); // not use mds, via driver direct
         }
 

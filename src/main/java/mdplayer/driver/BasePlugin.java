@@ -101,35 +101,6 @@ public abstract class BasePlugin<T extends BaseDriver> implements Plugin {
         return chips;
     }
 
-    /**
-     * Which of the two X68000 PCM back ends the song being played uses: {@code 0} is X68Sound's own
-     * PCM8, {@code 1} is PCM8PP.
-     * <p>
-     * The chips are shared singletons - one {@link mdplayer.chips.Pcm8Chip} serves ZMS, MDX and RCS
-     * alike - while the setting is per driver, so the chip cannot read a section of its own. It asks
-     * the plugin that registered it instead, and the plugin that answers is the one whose
-     * {@code initChips} chose which instrument to put there: the two can no longer disagree, which
-     * they silently did while the chip read ZMUSIC's section for every driver.
-     *
-     * @see mdplayer.chips.Pcm8Chip#activeIndex
-     */
-    public int pcm8Type() {
-        return setting.getZMusic().pcm8Type;
-    }
-
-    /** the PCM8PP option {@link #pcm8Type} {@code 1} is started with; {@code -1} is its default */
-    public int pcm8ppsOption() {
-        return setting.getZMusic().pcm8ppsOption;
-    }
-
-    /**
-     * Which of the two MPCM back ends the song being played uses: {@code 0} is X68Sound's own MPCM,
-     * {@code 1} is MPCMPP. The same sharing as {@link #pcm8Type}, for {@link mdplayer.chips.MPcmChip}.
-     */
-    public int mpcmType() {
-        return setting.getZMusic().mpcmType;
-    }
-
     /** put used chips */
     protected void put(Class<? extends mdplayer.Chip> chip, Chip info) {
         if (chips.containsKey(chip)) {
@@ -402,7 +373,7 @@ logger.log(Level.INFO, "close enter");
         chipRegister.updateVol();
     }
 
-    public int getVgmCurLoopCounter() {
+    public int getCurLoopCounter() {
         int cnt = 0;
 
         if (driverVirtual != null) {
@@ -415,7 +386,7 @@ logger.log(Level.INFO, "close enter");
         return cnt;
     }
 
-    public boolean getVGMStopped() {
+    public boolean getStopped() {
         boolean v;
         boolean r;
 

@@ -43,11 +43,11 @@ public class Pcm8Chip extends BaseChip {
      * shared by ZMS, MDX and RCS, each of which keeps its own setting and registers the instrument
      * to match in its {@code initChips}. Asking the plugin back is what keeps the two agreeing.
      *
-     * @see mdplayer.driver.BasePlugin#pcm8Type()
+     * @see mdplayer.Setting#pcm8Type
      */
     @Override
     public int activeIndex(int chipId) {
-        return context.pcm8Type();
+        return setting.pcm8Type(context);
     }
 
     // not view
@@ -76,7 +76,7 @@ public class Pcm8Chip extends BaseChip {
 
         fireEventHappened("led.on", chipId);
 
-        switch (context.pcm8Type()) {
+        switch (setting.pcm8Type(context)) {
             case 0 -> context.mds.inst(X68kYm2151Inst.class).writePcm(chipId, pcmData, 0, pcmData.length);
             case 1 -> { try { Objects.requireNonNull(context.mds.inst(Pcm8PPInst.class)).writePcm(chipId, pcmData, 0, pcmData.length); } catch (NullPointerException _) {}}
             default -> { assert false; }
@@ -108,7 +108,7 @@ public class Pcm8Chip extends BaseChip {
     //
 
     public void keyOn(int chipId, int ch, int addr, int mode, int len) {
-        switch (context.pcm8Type()) {
+        switch (setting.pcm8Type(context)) {
             case 0 -> context.mds.inst(X68kYm2151Inst.class).pcm8Out(chipId, ch, addr, mode, len);
             case 1 -> { try { Objects.requireNonNull(context.mds.inst(Pcm8PPInst.class)).keyOn(chipId, ch, addr, mode + 0x0800, len); } catch (NullPointerException _) {}}
             default -> { assert false; }
@@ -116,7 +116,7 @@ public class Pcm8Chip extends BaseChip {
     }
 
     public void keyOff(int chipId, int ch) {
-        switch (context.pcm8Type()) {
+        switch (setting.pcm8Type(context)) {
             case 0 -> context.mds.inst(X68kYm2151Inst.class).pcm8Out(chipId, ch, 0, 0, 0);
             case 1 -> { try { Objects.requireNonNull(context.mds.inst(Pcm8PPInst.class)).keyOff(chipId, ch); } catch (NullPointerException _) {}}
             default -> { assert false; }
@@ -124,7 +124,7 @@ public class Pcm8Chip extends BaseChip {
     }
 
     public void abort(int chipId) {
-        switch (context.pcm8Type()) {
+        switch (setting.pcm8Type(context)) {
             case 0 -> context.mds.inst(X68kYm2151Inst.class).abort(chipId);
             case 1 -> {}
             default -> { assert false; }
@@ -162,7 +162,7 @@ public class Pcm8Chip extends BaseChip {
     }
 
     public void keyOnAdpcm(int chipId, int addr, int mode, int len) {
-        switch (context.pcm8Type()) {
+        switch (setting.pcm8Type(context)) {
             case 0 -> context.mds.inst(X68kYm2151Inst.class).keyOnAdpcm(chipId, addr, mode, len);
             case 1 -> context.mds.inst(Pcm8PPInst.class).keyOn(chipId, 0, addr, mode + 0x0c00, len);
             default -> {assert false;}
@@ -170,7 +170,7 @@ public class Pcm8Chip extends BaseChip {
     }
 
     public void adpcmMod(int chipId, int mode) {
-        switch (context.pcm8Type()) {
+        switch (setting.pcm8Type(context)) {
             case 0 -> context.mds.inst(X68kYm2151Inst.class).adpcmMod(chipId, mode);
             case 1 -> context.mds.inst(Pcm8PPInst.class).keyOff(chipId, 0);
             default -> {assert false;}
