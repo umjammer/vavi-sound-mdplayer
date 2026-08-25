@@ -35,7 +35,7 @@ class MgsMetaDataTest {
         assertEquals("Test MGS Title", md.getFirst(Tag.Title));
         assertEquals("Test MGS Composer", md.getFirst(Tag.Composer));
         assertEquals("Test MGS Note", md.getFirst(Tag.Note));
-        assertArrayEquals(new String[] {"Test MGS Title", "Test MGS Composer", "Test MGS Note"}, driver.comments());
+        assertArrayEquals(new String[] {"Test MGS Title", "Test MGS Composer", "Test MGS Note"}, md.getAll(Tag.Comments).toArray(String[]::new));
     }
 
     @Test
@@ -51,6 +51,6 @@ class MgsMetaDataTest {
         assertNotNull(md);
         assertEquals("SQUARESOFT   FINAL FANTASY V   - MAIN THEME -", md.getFirst(Tag.Title));
         assertEquals("BY UNISKIE", md.getFirst(Tag.Composer));
-        assertArrayEquals(new String[] {"SQUARESOFT   FINAL FANTASY V   - MAIN THEME -", "   BY UNISKIE"}, driver.comments());
+        assertArrayEquals(new String[] {"SQUARESOFT   FINAL FANTASY V   - MAIN THEME -", "   BY UNISKIE"}, md.getAll(Tag.Comments).toArray(String[]::new));
     }
 }

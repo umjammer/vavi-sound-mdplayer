@@ -191,8 +191,8 @@ public class FmpDriver extends BaseDriver {
 
             // the memo as the PC-98 screen had it: the credits FMC puts at the top, indented to
             // wherever the author placed them, which is what the fmdsp comment lines want
-            comments = isBinaryFmc && !plainComments.isEmpty()
-                    ? plainComments.subList(0, Math.min(3, plainComments.size())).toArray(String[]::new) : null;
+            if (isBinaryFmc && !plainComments.isEmpty())
+                md.setAll(Tag.Comments, plainComments.subList(0, Math.min(3, plainComments.size())));
 
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);

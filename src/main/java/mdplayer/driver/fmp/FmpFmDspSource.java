@@ -119,7 +119,6 @@ public class FmpFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
         Arrays.fill(ticks, 0);
         Arrays.fill(envelopes, 0);
         Arrays.fill(ppz8KeyOns, false);
-        Arrays.fill(comments, null);
         commented = false;
         work = null;
         paused = false;
@@ -156,8 +155,8 @@ public class FmpFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
 
                     // an FMC memo is a screen image, so it is displayed as it was laid out -
                     // the tags are the same text with the indent stripped, so they would lose it
-                    if (driver.comments() != null) {
-                        list.addAll(List.of(driver.comments()));
+                    if (!driver.getMetaData().getFirst(Tag.Comments).isEmpty()) {
+                        list.addAll(driver.getMetaData().getAll(Tag.Comments));
                     }
 
                     if (list.isEmpty()) {

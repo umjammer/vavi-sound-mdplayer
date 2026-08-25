@@ -24,6 +24,7 @@ public abstract class BaseDriver {
     public boolean stopped = false;
     public int frameCounter;
 
+    /** after {@link #init} */
     public MetaData metaData = new MetaData();
 
     protected String version = "";
@@ -54,14 +55,9 @@ public abstract class BaseDriver {
     /** retrieve a metadata from buf, doesn't update {@link #metaData}, it will be done at {@link #init} */
     public abstract MetaData retrieveMetaData(byte[] buf, Object... args);
 
-    /**
-     * The lines the fmdsp comment area is to show, laid out the way the file has them - a memo
-     * that is a screen image places its text with spaces, which the metadata is stripped of.
-     *
-     * @return null when the file has no such memo, leaving the caller to use the metadata
-     */
-    public String[] comments() {
-        return null;
+    /** gets the metadata */
+    public MetaData getMetaData() {
+        return metaData;
     }
 
     /**
@@ -141,14 +137,25 @@ public abstract class BaseDriver {
         return setting.getOther().getNonRenderingForPause();
     }
 
-    private final GenericSupport viewSupport = new GenericSupport();
-
     /**
      * Whether anything is watching. "wave.buffer" is fired for every frame rendered, and the
      * event, its varargs array and the two boxed samples are three allocations per frame -
      * 44100 times a second, for nobody, in every driver that renders its own audio.
      */
     private volatile boolean watched;
+
+    /**
+     * Whether anything is listening at all, for a caller that would otherwise pay to ask.
+     * <p>
+     * {@link #fireEventHappened} takes varargs, so calling it boxes every argument and allocates
+     * an array for them before it can decide there is nobody to tell. A driver that fires per
+     * sample - the ones that render their own audio do - should ask this first.
+     */
+    protected boolean isWatched() {
+        return watched;
+    }
+
+    private final GenericSupport viewSupport = new GenericSupport();
 
     public void addViewListener(GenericListener listener) {
         viewSupport.addGenericListener(listener);
@@ -164,17 +171,6 @@ public abstract class BaseDriver {
      *        "led.on" ... args 0: chip id, {@code src} is indicated the led target
      *        "wave.buffer" ... args 0: left value, 1: right value
      */
-    /**
-     * Whether anything is listening at all, for a caller that would otherwise pay to ask.
-     * <p>
-     * {@link #fireEventHappened} takes varargs, so calling it boxes every argument and allocates
-     * an array for them before it can decide there is nobody to tell. A driver that fires per
-     * sample - the ones that render their own audio do - should ask this first.
-     */
-    protected boolean isWatched() {
-        return watched;
-    }
-
     public void fireEventHappened(Object src, String name, Object... args) {
         if (!watched) {
             return;
@@ -182,6 +178,7 @@ public abstract class BaseDriver {
         viewSupport.fireEventHappened(new GenericEvent(src, name, args));
     }
 
+    /** for view */
     public String getName() {
         return getClass().getSimpleName().replace("Driver", "").toUpperCase();
     }
