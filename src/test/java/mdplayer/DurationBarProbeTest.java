@@ -37,12 +37,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class DurationBarProbeTest {
 
-    static {
-        // X68Sound's PCM8, as local.properties runs the player with: the other one leaves the OPM
-        // registers - the TimerB the MDX case below is about - unwritten, hence unreadable
-        System.setProperty("mdplayer.variant.pcm8", "0");
-    }
-
     /**
      * Load a file through the standard plugin pipeline, render 5 seconds of audio,
      * check that timerBCount advances and the rendered duration bar moves.

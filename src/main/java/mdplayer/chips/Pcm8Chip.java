@@ -76,6 +76,13 @@ public class Pcm8Chip extends BaseChip {
         }
     }
 
+    /**
+     * IOCS {@code _OPMSET}: an OPM register write, which is what MXDRV drives its own timer with.
+     * It is not one of the PCM8 calls below and must not follow {@link #activeIndex}: PCM8PP is a
+     * PCM emulator whose {@code write} is a no-op, so routing this there would drop every register
+     * the driver writes - including TimerB, whose overflow is the interrupt that makes the song
+     * play at all. The OPM is X68Sound's either way, the same one {@link #getPcm} renders.
+     */
     public void write(int chipId, int port, int addr, int data, EnmModel model) {
         if (model != EnmModel.VirtualModel)
             return;
@@ -84,7 +91,7 @@ public class Pcm8Chip extends BaseChip {
 
         if (port == -1 && addr == -1 && data == -1)
             return;
-        context.mds.inst(inst(chipId)).write(chipId, port, addr, data);
+        context.mds.inst(X68kYm2151Inst.class).write(chipId, port, addr, data);
     }
 
     public void setMask(int chipId, int ch, boolean mask) {
