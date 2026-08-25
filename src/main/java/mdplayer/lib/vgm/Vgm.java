@@ -95,6 +95,7 @@ public class Vgm {
     public boolean ym2203DualChipFlag;
     public boolean ym2608DualChipFlag;
     public boolean ym2610DualChipFlag;
+    public boolean ym2610BFlag;
     public boolean ym3812DualChipFlag;
     public boolean ym3526DualChipFlag;
     public boolean y8950DualChipFlag;
@@ -1479,6 +1480,8 @@ logger.log(Level.TRACE, "Bad PCM Table Length!");
             //return false;
         }
 
+        // in a clock word, bit 30 (0x4000_0000) is the dual chip flag and bit 31 (0x8000_0000)
+        // selects a chip variant (T6W28, VRC7, YM2610B, ...), per vgmspec171 "Dual Chip Support".
         int SN76489clock = ByteUtil.readLeInt(vgmBuf, 0x0c);
         if (SN76489clock != 0) {
             sn76489ClockValue = SN76489clock & 0x3fff_ffff;
@@ -1618,8 +1621,9 @@ logger.log(Level.TRACE, "Bad PCM Table Length!");
                     if (YM2610Bclock != 0) {
                         ym2610ClockValue = YM2610Bclock & 0x3fff_ffff;
                         ym2610DualChipFlag = (YM2610Bclock & 0x4000_0000) != 0;
-                        if (ym2610DualChipFlag) chips.add("YM2610/Bx2");
-                        else chips.add("YM2610/B");
+                        ym2610BFlag = (YM2610Bclock & 0x8000_0000) != 0;
+                        String ym2610Name = ym2610BFlag ? "YM2610B" : "YM2610";
+                        chips.add(ym2610DualChipFlag ? ym2610Name + "x2" : ym2610Name);
                     }
                 }
 
