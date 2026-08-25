@@ -68,7 +68,7 @@ public class Psf2Driver extends BaseDriver {
     }
 
     @Override
-    public MetaData getMetaData(byte[] buf, Object... args) {
+    public MetaData retrieveMetaData(byte[] buf, Object... args) {
         PsfFile psf;
         try {
             psf = PsfFile.decode(buf);
@@ -134,7 +134,7 @@ logger.log(Level.DEBUG, "not a psf2: " + e.getMessage());
         speed = 1;
         speedCounter = 0;
 
-        metaData = getMetaData(dataBuf);
+        metaData = retrieveMetaData(dataBuf);
 
         PsfFile[] files;
         try {

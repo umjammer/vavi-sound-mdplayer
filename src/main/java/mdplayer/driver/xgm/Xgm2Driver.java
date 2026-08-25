@@ -53,7 +53,7 @@ public class Xgm2Driver extends XgmDriver {
     }
 
     @Override
-    public MetaData getMetaData(byte[] buf, Object... args) {
+    public MetaData retrieveMetaData(byte[] buf, Object... args) {
         xgm2.getXGM2Info(buf);
         return metaData;
     }

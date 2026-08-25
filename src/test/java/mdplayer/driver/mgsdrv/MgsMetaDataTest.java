@@ -29,7 +29,7 @@ class MgsMetaDataTest {
         System.arraycopy(metaBytes, 0, buf, magicBytes.length, metaBytes.length);
 
         MgsDriver driver = new MgsDriver();
-        MetaData md = driver.getMetaData(buf, 8);
+        MetaData md = driver.retrieveMetaData(buf, 8);
 
         assertNotNull(md);
         assertEquals("Test MGS Title", md.getFirst(Tag.Title));
@@ -46,7 +46,7 @@ class MgsMetaDataTest {
 
         byte[] buf = Files.readAllBytes(sample);
         MgsDriver driver = new MgsDriver();
-        MetaData md = driver.getMetaData(buf, 8);
+        MetaData md = driver.retrieveMetaData(buf, 8);
 
         assertNotNull(md);
         assertEquals("SQUARESOFT   FINAL FANTASY V   - MAIN THEME -", md.getFirst(Tag.Title));

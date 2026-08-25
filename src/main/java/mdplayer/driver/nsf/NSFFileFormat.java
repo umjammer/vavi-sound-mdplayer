@@ -41,7 +41,7 @@ public class NSFFileFormat extends BaseFileFormat {
 
     @Override
     public MetaData getMetaData() {
-        return new NsfMdDriver().getMetaData(this.srcBuf);
+        return new NsfMdDriver().retrieveMetaData(this.srcBuf);
     }
 
     @Override

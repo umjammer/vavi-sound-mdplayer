@@ -39,7 +39,7 @@ public class MUCFileFormat extends BaseFileFormat {
 
     @Override
     public MetaData getMetaData() {
-        return new MucomDriver().getMetaData(this.srcBuf);
+        return new MucomDriver().retrieveMetaData(this.srcBuf);
     }
 
     @Override

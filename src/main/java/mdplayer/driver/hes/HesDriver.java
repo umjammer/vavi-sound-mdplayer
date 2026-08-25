@@ -36,7 +36,7 @@ public class HesDriver extends BaseDriver {
     }
 
     @Override
-    public MetaData getMetaData(byte[] buf, Object... args) {
+    public MetaData retrieveMetaData(byte[] buf, Object... args) {
         if (ByteUtil.readLeInt(buf, 0) != Hes.FCC_HES) {
             return null;
         }
@@ -82,7 +82,7 @@ public class HesDriver extends BaseDriver {
         speed = 1;
         speedCounter = 0;
 
-        metaData = getMetaData(dataBuf);
+        metaData = retrieveMetaData(dataBuf);
 
         if (hes.nezPlay.HESLoad(dataBuf, dataBuf.length) != 0)
             throw new IllegalArgumentException("invalid hes data");

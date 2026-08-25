@@ -43,7 +43,7 @@ public class MDRFileFormat extends BaseFileFormat {
 
     @Override
     public MetaData getMetaData() {
-        return new MoonDriver().getMetaData(this.srcBuf);
+        return new MoonDriver().retrieveMetaData(this.srcBuf);
     }
 
     @Override

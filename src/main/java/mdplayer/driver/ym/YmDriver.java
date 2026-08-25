@@ -111,7 +111,7 @@ public class YmDriver extends BaseDriver {
     }
 
     @Override
-    public MetaData getMetaData(byte[] buf, Object... args) {
+    public MetaData retrieveMetaData(byte[] buf, Object... args) {
         if (buf == null || buf.length < 4) return null;
 
         YmMusic m = createYmMusic(setting.getOutputDevice().getSampleRate());
@@ -155,7 +155,7 @@ public class YmDriver extends BaseDriver {
         speed = 1;
         speedCounter = 0;
 
-        metaData = getMetaData(dataBuf);
+        metaData = retrieveMetaData(dataBuf);
 
         music = createYmMusic(setting.getOutputDevice().getSampleRate());
         try {

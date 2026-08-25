@@ -39,7 +39,7 @@ public class S98FileFormat extends BaseFileFormat {
 
     @Override
     public MetaData getMetaData() {
-        return new S98Driver().getMetaData(this.srcBuf);
+        return new S98Driver().retrieveMetaData(this.srcBuf);
     }
 
     @Override

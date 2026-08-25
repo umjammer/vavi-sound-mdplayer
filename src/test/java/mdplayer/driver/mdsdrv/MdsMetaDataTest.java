@@ -59,7 +59,7 @@ class MdsMetaDataTest {
     @Test
     @DisplayName("the driver reads the metadata chunk of a .mds")
     void testMetaData() {
-        MetaData metaData = new MdsDriver().getMetaData(mds(MML));
+        MetaData metaData = new MdsDriver().retrieveMetaData(mds(MML));
 
         assertEquals("Test Song", metaData.getFirst(Tag.Title));
         assertEquals("Test Song", metaData.getFirst(Tag.TitleJ));
@@ -71,7 +71,7 @@ class MdsMetaDataTest {
     @Test
     @DisplayName("a .mds without the chunk reads as no metadata at all")
     void testNoMetaData() {
-        MetaData metaData = new MdsDriver().getMetaData(untaggedMds(MML));
+        MetaData metaData = new MdsDriver().retrieveMetaData(untaggedMds(MML));
 
         assertTrue(metaData.getFirst(Tag.Title).isEmpty());
         assertTrue(metaData.getFirst(Tag.Composer).isEmpty());

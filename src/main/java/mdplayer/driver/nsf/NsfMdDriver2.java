@@ -47,7 +47,7 @@ public class NsfMdDriver2 extends BaseDriver implements NsfDriver {
     }
 
     @Override
-    public MetaData getMetaData(byte[] buf, Object... args) {
+    public MetaData retrieveMetaData(byte[] buf, Object... args) {
         if (ByteUtil.readLeInt(buf, 0) != Nsf2.FCC_NSF) {
             // NSFe is not supported for now
             logger.log(Level.WARNING, "NSFe not supported.");
@@ -96,7 +96,7 @@ public class NsfMdDriver2 extends BaseDriver implements NsfDriver {
         speed = 1;
         speedCounter = 0;
 
-        metaData = getMetaData(dataBuf);
+        metaData = retrieveMetaData(dataBuf);
 
         nsf.init(dataBuf);
     }

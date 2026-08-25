@@ -61,7 +61,7 @@ public class RcsDriver extends BaseDriver {
     }
 
     @Override
-    public MetaData getMetaData(byte[] buf, Object... args) {
+    public MetaData retrieveMetaData(byte[] buf, Object... args) {
         String[] rcpFilename = new String[1];
         byte[][] rcpBuf = new byte[1][];
         if (rcs.extendFiles != null) {
@@ -133,7 +133,7 @@ public class RcsDriver extends BaseDriver {
         speed = 1;
         speedCounter = 0;
 
-        metaData = getMetaData(dataBuf, 0);
+        metaData = retrieveMetaData(dataBuf, 0);
         //if (GD3 == null) return false;
 
         if (!rcs.getInformationHeader()) throw new IllegalArgumentException("Invalid header");

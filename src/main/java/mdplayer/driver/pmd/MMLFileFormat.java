@@ -35,7 +35,7 @@ public class MMLFileFormat extends BaseFileFormat {
 
     @Override
     public MetaData getMetaData() {
-        return new PmdDriver().getMetaData(this.srcBuf);
+        return new PmdDriver().retrieveMetaData(this.srcBuf);
     }
 
     @Override

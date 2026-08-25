@@ -40,7 +40,7 @@ public class RCPFileFormat extends BaseFileFormat {
 
     @Override
     public MetaData getMetaData() {
-        return new RcpDriver().getMetaData(this.srcBuf);
+        return new RcpDriver().retrieveMetaData(this.srcBuf);
     }
 
     @Override

@@ -492,7 +492,7 @@ class ChipFmDspSourceTest {
         BaseDriver driver = new BaseDriver(null) {
             @Override public void init(Common.EnmModel model, int latency, int waitTime, Object... args) {}
             @Override public void processOneFrame() {}
-            @Override public MetaData getMetaData(byte[] buf, Object... args) { return null; }
+            @Override public MetaData retrieveMetaData(byte[] buf, Object... args) { return null; }
         };
         source.bind(chipRegister, () -> driver); // the note clock only runs off a driver's counter
 
@@ -528,7 +528,7 @@ class ChipFmDspSourceTest {
         BaseDriver driver = new BaseDriver(null) {
             @Override public void init(Common.EnmModel model, int latency, int waitTime, Object... args) {}
             @Override public void processOneFrame() {}
-            @Override public MetaData getMetaData(byte[] buf, Object... args) { return null; }
+            @Override public MetaData retrieveMetaData(byte[] buf, Object... args) { return null; }
         };
         source.bind(chipRegister, () -> driver);
 
@@ -546,7 +546,7 @@ class ChipFmDspSourceTest {
         BaseDriver driver = new BaseDriver(null) {
             @Override public void init(Common.EnmModel model, int latency, int waitTime, Object... args) {}
             @Override public void processOneFrame() {}
-            @Override public MetaData getMetaData(byte[] buf, Object... args) { return null; }
+            @Override public MetaData retrieveMetaData(byte[] buf, Object... args) { return null; }
         };
         // what a .mds carrying a metadata chunk hands over
         driver.metaData.set(MetaData.Tag.Title, "JAZZY NYC'91");
@@ -568,7 +568,7 @@ class ChipFmDspSourceTest {
         BaseDriver driver = new BaseDriver(null) {
             @Override public void init(Common.EnmModel model, int latency, int waitTime, Object... args) {}
             @Override public void processOneFrame() {}
-            @Override public MetaData getMetaData(byte[] buf, Object... args) { return null; }
+            @Override public MetaData retrieveMetaData(byte[] buf, Object... args) { return null; }
         };
         driver.metaData.set(MetaData.Tag.Title, "JAZZY NYC'91");
         driver.metaData.set(MetaData.Tag.Artist, "ctr"); // #author, with no #composer anywhere

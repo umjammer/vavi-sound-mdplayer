@@ -46,7 +46,7 @@ public class GbsDriver extends BaseDriver {
     }
 
     @Override
-    public MetaData getMetaData(byte[] buf, Object... args) {
+    public MetaData retrieveMetaData(byte[] buf, Object... args) {
         GbsInfo gbsInfo = GbsInfo.factory(buf);
 
         songs = gbsInfo.nums;
@@ -71,7 +71,7 @@ public class GbsDriver extends BaseDriver {
      */
     @Override
     public void init(EnmModel model, int latency, int waitTime, Object... args) {
-        getMetaData(dataBuf, 0);
+        retrieveMetaData(dataBuf, 0);
 
         info = GbsInfo.factory(dataBuf);
         this.model = model;

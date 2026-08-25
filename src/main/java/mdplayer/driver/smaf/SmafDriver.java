@@ -83,7 +83,7 @@ public class SmafDriver extends BaseDriver {
     }
 
     @Override
-    public MetaData getMetaData(byte[] buf, Object... args) {
+    public MetaData retrieveMetaData(byte[] buf, Object... args) {
         SmafFile smaf;
         try {
             smaf = SmafFile.decode(buf);
@@ -138,7 +138,7 @@ logger.log(Level.DEBUG, "not a smaf: " + e.getMessage());
         speedCounter = 0;
         underruns = 0;
 
-        metaData = getMetaData(dataBuf);
+        metaData = retrieveMetaData(dataBuf);
 
         stopPlayer();
         player = new MmfToolPlayer(dataBuf);

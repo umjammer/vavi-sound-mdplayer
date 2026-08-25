@@ -41,7 +41,7 @@ public class Fmp7FileFormat extends BaseFileFormat {
 
     @Override
     public MetaData getMetaData() {
-        return new Fmp7Driver().getMetaData(this.srcBuf);
+        return new Fmp7Driver().retrieveMetaData(this.srcBuf);
     }
 
     @Override

@@ -45,7 +45,7 @@ public class AyFileFormat extends BaseFileFormat implements SampledFileFormat {
 
     @Override
     public MetaData getMetaData() {
-        return new AyDriver().getMetaData(this.srcBuf);
+        return new AyDriver().retrieveMetaData(this.srcBuf);
     }
 
     @Override
@@ -55,7 +55,7 @@ public class AyFileFormat extends BaseFileFormat implements SampledFileFormat {
         AyDriver driver = new AyDriver();
         int songs;
         try {
-            songs = Integer.parseInt(driver.getMetaData(buf).getFirst(Tag.NumberOfSongs));
+            songs = Integer.parseInt(driver.retrieveMetaData(buf).getFirst(Tag.NumberOfSongs));
         } catch (Exception e) {
             // a file this header reader cannot make sense of still belongs in the play list, under
             // its file name, the way it did before there was anything to read out of it
@@ -69,7 +69,7 @@ public class AyFileFormat extends BaseFileFormat implements SampledFileFormat {
         }
 
         for (int s = 0; s < songs; s++) {
-            MetaData md = driver.getMetaData(buf, s);
+            MetaData md = driver.retrieveMetaData(buf, s);
 
             PlayList.Music music = new PlayList.Music();
             music.format = this;

@@ -63,7 +63,7 @@ class Fmp7DriverTest {
         assertNotNull(file.getTitle());
         assertNotNull(file.getComposer());
 
-        MetaData md = new Fmp7Driver().getMetaData(Files.readAllBytes(owi));
+        MetaData md = new Fmp7Driver().retrieveMetaData(Files.readAllBytes(owi));
         assertNotNull(md);
         assertEquals(file.getTitle(), md.getFirst(Tag.Title));
         assertEquals(file.getComposer(), md.getFirst(Tag.Composer));

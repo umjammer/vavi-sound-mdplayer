@@ -40,7 +40,7 @@ public class GbsFileFormat extends BaseFileFormat {
 
     @Override
     public MetaData getMetaData() {
-        return new GbsDriver().getMetaData(this.srcBuf);
+        return new GbsDriver().retrieveMetaData(this.srcBuf);
     }
 
     @Override

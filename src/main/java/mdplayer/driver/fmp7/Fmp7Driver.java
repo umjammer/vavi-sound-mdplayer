@@ -89,7 +89,7 @@ public class Fmp7Driver extends BaseDriver {
     }
 
     @Override
-    public MetaData getMetaData(byte[] buf, Object... args) {
+    public MetaData retrieveMetaData(byte[] buf, Object... args) {
         Fmp7File fmp7;
         try {
             fmp7 = Fmp7File.decode(buf);
@@ -145,7 +145,7 @@ logger.log(Level.DEBUG, "not an fmp7 song: " + e.getMessage());
         underruns = 0;
         hasWork = false;
 
-        metaData = getMetaData(dataBuf);
+        metaData = retrieveMetaData(dataBuf);
 
         stopPlayer();
         // the song's own directory comes with it: a song that uses PCM names its sample bank

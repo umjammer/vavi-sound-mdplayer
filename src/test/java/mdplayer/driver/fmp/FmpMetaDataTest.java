@@ -34,7 +34,7 @@ public class FmpMetaDataTest {
         byte[] buf = mml.getBytes(Charset.forName("MS932"));
 
         FmpDriver driver = new FmpDriver();
-        MetaData md = driver.getMetaData(buf);
+        MetaData md = driver.retrieveMetaData(buf);
 
         assertNotNull(md);
         assertEquals("Test Song Title", md.getFirst(Tag.Title));
@@ -54,7 +54,7 @@ public class FmpMetaDataTest {
         byte[] buf = mml.getBytes(Charset.forName("MS932"));
 
         FmpDriver driver = new FmpDriver();
-        MetaData md = driver.getMetaData(buf);
+        MetaData md = driver.retrieveMetaData(buf);
 
         assertNotNull(md);
         assertEquals("Semicolon Song Title", md.getFirst(Tag.Title));
@@ -91,7 +91,7 @@ public class FmpMetaDataTest {
         System.arraycopy(memoBytes, 0, buf, memoPtr + 4, memoBytes.length);
 
         FmpDriver driver = new FmpDriver();
-        MetaData md = driver.getMetaData(buf);
+        MetaData md = driver.retrieveMetaData(buf);
 
         assertNotNull(md);
         assertEquals("Binary Title", md.getFirst(Tag.Title));
@@ -120,7 +120,7 @@ public class FmpMetaDataTest {
         System.arraycopy(memoBytes, 0, buf, memoPtr + 4, memoBytes.length);
 
         FmpDriver driver = new FmpDriver();
-        MetaData md = driver.getMetaData(buf);
+        MetaData md = driver.retrieveMetaData(buf);
 
         assertEquals("Title", md.getFirst(Tag.Title));
         assertEquals("Words by  Someone", md.getFirst(Tag.Composer));
@@ -137,7 +137,7 @@ public class FmpMetaDataTest {
 
         byte[] buf = Files.readAllBytes(p);
         FmpDriver driver = new FmpDriver();
-        MetaData md = driver.getMetaData(buf);
+        MetaData md = driver.retrieveMetaData(buf);
 
         assertNotNull(md);
         String title = md.getFirst(Tag.Title);
@@ -166,7 +166,7 @@ public class FmpMetaDataTest {
         System.arraycopy(memoBytes, 0, buf, memoPtr + 4, memoBytes.length);
 
         FmpDriver driver = new FmpDriver();
-        MetaData md = driver.getMetaData(buf);
+        MetaData md = driver.retrieveMetaData(buf);
 
         assertEquals("Title", md.getFirst(Tag.Title));
         assertEquals("Words by  Someone", md.getFirst(Tag.Composer));

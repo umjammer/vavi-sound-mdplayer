@@ -74,16 +74,8 @@ public class FmpDriver extends BaseDriver {
         fmp.compile();
     }
 
-    /** the memo lines as laid out, filled in by {@link #getMetaData} */
-    private String[] comments;
-
     @Override
-    public String[] comments() {
-        return comments;
-    }
-
-    @Override
-    public MetaData getMetaData(byte[] buf, Object... args) {
+    public MetaData retrieveMetaData(byte[] buf, Object... args) {
         MetaData md = new MetaData();
 
         if (buf == null || buf.length < 2) {
@@ -259,7 +251,7 @@ public class FmpDriver extends BaseDriver {
     @Override
     public void init(EnmModel model, int latency, int waitTime, Object... args) {
 
-        metaData = getMetaData(dataBuf, 0);
+        metaData = retrieveMetaData(dataBuf, 0);
 
         loopCounter = 0;
         curLoop = 0;

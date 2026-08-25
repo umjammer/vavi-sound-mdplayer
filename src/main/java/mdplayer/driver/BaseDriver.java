@@ -51,8 +51,8 @@ public abstract class BaseDriver {
     /** advances the clock */
     public abstract void processOneFrame();
 
-    /** gets the metadata */
-    public abstract MetaData getMetaData(byte[] buf, Object... args);
+    /** retrieve a metadata from buf, doesn't update {@link #metaData}, it will be done at {@link #init} */
+    public abstract MetaData retrieveMetaData(byte[] buf, Object... args);
 
     /**
      * The lines the fmdsp comment area is to show, laid out the way the file has them - a memo

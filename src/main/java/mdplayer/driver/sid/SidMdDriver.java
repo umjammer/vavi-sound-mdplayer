@@ -43,7 +43,7 @@ public class SidMdDriver extends BaseDriver implements SidDriver {
     }
 
     @Override
-    public MetaData getMetaData(byte[] buf, Object... args) {
+    public MetaData retrieveMetaData(byte[] buf, Object... args) {
         if (buf == null) return null;
 
         if (ByteUtil.readLeInt(buf, 0) != Sid.FCC_PSID && ByteUtil.readLeInt(buf, 0) != Sid.FCC_RSID) {
@@ -125,7 +125,7 @@ public class SidMdDriver extends BaseDriver implements SidDriver {
         lastWrites = 0;
         lastWriteMs = 0;
 
-        metaData = getMetaData(dataBuf);
+        metaData = retrieveMetaData(dataBuf);
 
         setSong((int) args[0]);
 

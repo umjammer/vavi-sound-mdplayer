@@ -215,7 +215,7 @@ logger.log(Level.INFO, "compilePriority: " + compilePriority);
                         break;
                 }
             } else {
-                driverVirtual.getMetaData(dataBuf, 0);
+                driverVirtual.retrieveMetaData(dataBuf, 0);
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);

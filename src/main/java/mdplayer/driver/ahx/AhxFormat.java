@@ -44,7 +44,7 @@ public class AhxFormat extends BaseFileFormat {
 
     @Override
     public MetaData getMetaData() {
-        return new AhxDriver().getMetaData(this.srcBuf);
+        return new AhxDriver().retrieveMetaData(this.srcBuf);
     }
 
     @Override

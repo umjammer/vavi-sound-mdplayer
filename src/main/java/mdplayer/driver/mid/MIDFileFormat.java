@@ -31,7 +31,7 @@ public class MIDFileFormat extends BaseFileFormat {
 
     @Override
     public MetaData getMetaData() {
-        return new MidiDriver().getMetaData(this.srcBuf);
+        return new MidiDriver().retrieveMetaData(this.srcBuf);
     }
 
     @Override

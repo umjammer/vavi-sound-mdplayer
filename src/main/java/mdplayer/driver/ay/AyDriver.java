@@ -87,7 +87,7 @@ public class AyDriver extends BaseDriver {
             throw new IllegalStateException("Driver initialization failed.", e);
         }
 
-        metaData = getMetaData(dataBuf, songNo);
+        metaData = retrieveMetaData(dataBuf, songNo);
 
         // where the header states how long the song plays for, that settles it and the watching
         // in processOneFrame() has nothing left to work out
@@ -163,7 +163,7 @@ logger.log(Level.DEBUG, "end: gave up after %ds".formatted(maxPlayTimeMs / 1000)
 
     /** @param args 0: songNo, defaults to the file's first song */
     @Override
-    public MetaData getMetaData(byte[] buf, Object... args) {
+    public MetaData retrieveMetaData(byte[] buf, Object... args) {
         // the metadata is read straight out of the file, so a driver that is playing nothing (the
         // one the play list reads a file with) answers this as well as one that is
         AY read = new AY();

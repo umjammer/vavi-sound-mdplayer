@@ -44,7 +44,7 @@ public class HvlFormat extends BaseFileFormat {
 
     @Override
     public MetaData getMetaData() {
-        return new HvlDriver().getMetaData(this.srcBuf);
+        return new HvlDriver().retrieveMetaData(this.srcBuf);
     }
 
     @Override

@@ -53,7 +53,7 @@ public class MgsDriver extends BaseDriver {
      * @param args 0: index
      */
     @Override
-    public MetaData getMetaData(byte[] buf, Object... args) {
+    public MetaData retrieveMetaData(byte[] buf, Object... args) {
         MetaData md = new MetaData();
         comments = null;
         if (buf != null && buf.length > 8) {
@@ -106,7 +106,7 @@ public class MgsDriver extends BaseDriver {
 
         mgs.playingFileName = plugin.playingFileName;
 
-        metaData = getMetaData(dataBuf, 8);
+        metaData = retrieveMetaData(dataBuf, 8);
 
         try {
             mgs.run(dataBuf);

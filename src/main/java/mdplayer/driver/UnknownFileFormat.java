@@ -108,7 +108,7 @@ public class UnknownFileFormat extends BaseFileFormat {
                 musics.add(music);
                 return musics;
             }
-            metaData = (new VgmDriver()).getMetaData(buf, vgmGd3);
+            metaData = (new VgmDriver()).retrieveMetaData(buf, vgmGd3);
         }
 
         int TotalCounter = ByteUtil.readLeInt(buf, 0x18);

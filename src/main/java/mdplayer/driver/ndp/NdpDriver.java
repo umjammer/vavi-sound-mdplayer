@@ -46,7 +46,7 @@ public class NdpDriver extends BaseDriver {
     }
 
     @Override
-    public MetaData getMetaData(byte[] buf, Object... args) {
+    public MetaData retrieveMetaData(byte[] buf, Object... args) {
         MetaData md = new MetaData();
         if (buf != null && buf.length > 8) {
             if (buf.length > 7 + 0x0b && (buf[7 + 0x0b] & 2) != 0) {

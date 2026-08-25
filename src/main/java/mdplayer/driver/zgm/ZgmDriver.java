@@ -52,7 +52,7 @@ public class ZgmDriver extends BaseDriver {
     }
 
     @Override
-    public MetaData getMetaData(byte[] buf, Object... args) {
+    public MetaData retrieveMetaData(byte[] buf, Object... args) {
         getZGMGD3Info(buf);
         return metaData;
     }

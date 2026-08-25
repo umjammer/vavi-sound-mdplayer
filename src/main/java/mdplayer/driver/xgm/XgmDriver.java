@@ -36,7 +36,7 @@ public class XgmDriver extends BaseDriver {
         xgm.pcmStep = setting.getOutputDevice().getSampleRate() / 14000.0;
         xgm.stop = () -> stopped = true;
         xgm.loop = () -> curLoop++;
-        xgm.updateMetaData = () -> metaData = getMetaData(dataBuf);
+        xgm.updateMetaData = () -> metaData = retrieveMetaData(dataBuf);
         xgm.ym2612Write = (p, a, d) -> plugin.chipRegister.chip(Ym2612Chip.class).write(0, p, a, d, model, frameCounter);
         xgm.sn76489Write = v -> plugin.chipRegister.chip(Sn76489Chip.class).write(0, v, model);
     }
@@ -101,12 +101,12 @@ public class XgmDriver extends BaseDriver {
     }
 
     @Override
-    public MetaData getMetaData(byte[] buf, Object... args) {
+    public MetaData retrieveMetaData(byte[] buf, Object... args) {
         xgm.getXGMInfo(buf); // #getMetaData below is called inside
         return metaData;
     }
 
-    private MetaData getMetaData(byte[] dataBuf) {
+    private MetaData retrieveMetaData(byte[] dataBuf) {
 
         if (!xgm.existGD3) return new MetaData();
 

@@ -35,7 +35,7 @@ public class ZGMFileFormat extends BaseFileFormat {
 
     @Override
     public MetaData getMetaData() {
-        return new ZgmDriver().getMetaData(this.srcBuf);
+        return new ZgmDriver().retrieveMetaData(this.srcBuf);
     }
 
     @Override
@@ -43,7 +43,7 @@ public class ZGMFileFormat extends BaseFileFormat {
         PlayList.Music music = new PlayList.Music();
 
         music.format = this;
-        MetaData metaData = new ZgmDriver().getMetaData(buf);
+        MetaData metaData = new ZgmDriver().retrieveMetaData(buf);
         music.title = metaData.getFirst(Tag.Title);
         music.titleJ = metaData.getFirst(Tag.TitleJ);
         music.game = metaData.getFirst(Tag.GameTitle);

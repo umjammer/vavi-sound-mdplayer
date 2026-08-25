@@ -169,7 +169,7 @@ class TestCase {
         assertTrue(on > 0, "no notes were played");
         assertEquals(on, off, "every note that started has to stop");
 
-        MetaData md = new MidiDriver().getMetaData(buf);
+        MetaData md = new MidiDriver().retrieveMetaData(buf);
         assertFalse(md.getFirst(Tag.Title).isEmpty(), "no title");
     }
 }

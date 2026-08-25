@@ -41,7 +41,7 @@ public class SIDFileFormat extends BaseFileFormat {
 
     @Override
     public MetaData getMetaData() {
-        return new SidMdDriver2().getMetaData(this.srcBuf);
+        return new SidMdDriver2().retrieveMetaData(this.srcBuf);
     }
 
     @Override

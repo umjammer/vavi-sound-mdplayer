@@ -23,7 +23,7 @@ public interface SidDriver {
 
     Map<String, Object> getInfo();
 
-    MetaData getMetaData(byte[] buf, Object... args);
+    MetaData retrieveMetaData(byte[] buf, Object... args);
 
     int getSongs();
 }
