@@ -27,9 +27,6 @@ public abstract class BaseDriver {
     /** after {@link #init} */
     public MetaData metaData = new MetaData();
 
-    protected String version = "";
-    protected String usedChips = "";
-
     public boolean isDataBlock = false;
 
     protected byte[] dataBuf;

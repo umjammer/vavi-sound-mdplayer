@@ -38,6 +38,9 @@ public class ZgmDriver extends BaseDriver {
     private int chipCommandSize = 1;
     private long vgmDataOffset = 0;
 
+    private String version = "";
+    private String usedChips = "";
+
     public interface RefRunnable<T1, T2> extends BiConsumer<T1, T2> {
     }
 

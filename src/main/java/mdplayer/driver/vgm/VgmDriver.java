@@ -26,6 +26,9 @@ public class VgmDriver extends BaseDriver {
 
     public final Vgm vgm;
 
+    private String version = "";
+    private String usedChips = "";
+
     public VgmDriver(BasePlugin<? extends BaseDriver> plugin) {
         super(plugin);
 

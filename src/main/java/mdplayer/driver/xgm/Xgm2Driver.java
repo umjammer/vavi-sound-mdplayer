@@ -27,6 +27,9 @@ public class Xgm2Driver extends XgmDriver {
 
     private final Xgm2 xgm2;
 
+    private String version = "";
+    private String usedChips = "";
+
     public Xgm2Driver(BasePlugin<? extends BaseDriver> plugin) {
         super(plugin);
 

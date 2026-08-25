@@ -46,6 +46,8 @@ public class ZmsDriver extends BaseDriver {
 
     private final Zms zms;
 
+    private String version = "";
+
     public ZmsDriver(BasePlugin<? extends BaseDriver> plugin) {
         super(plugin);
 

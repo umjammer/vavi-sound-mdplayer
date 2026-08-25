@@ -28,6 +28,8 @@ public class XgmDriver extends BaseDriver {
 
     private final Xgm xgm;
 
+    private String usedChips = "";
+
     public XgmDriver(BasePlugin<? extends BaseDriver> plugin) {
         super(plugin);
 
