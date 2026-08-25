@@ -356,9 +356,9 @@ public class MxDriver extends BaseDriver {
         int[] mdxPtr = new int[1], pdxPtr = new int[1];
         mxdrv.initializeMemory(mdxSize[0], pdxSize[0], mdx[0], pdx[0], mdxPtr, pdxPtr);
 
+        // one call, whichever back end is behind it: writePcm already dispatches on the setting,
+        // so the second call this used to make when it was 1 only mounted PCM8PP's memory twice
         plugin.chipRegister.chip(Pcm8Chip.class).writePcm(0, 0, 0, mxdrv.getMemory().mm, model);
-        if (setting.getMxDrv().pcm8Type == 1)
-            plugin.chipRegister.chip(Pcm8Chip.class).writePcm(0, 0, 0, mxdrv.getMemory().mm, model);
 
         // a song that loops with a repeat around the whole part instead of a jump at its end has
         // no loop to count without this, and neither the measurement below nor the player's loop

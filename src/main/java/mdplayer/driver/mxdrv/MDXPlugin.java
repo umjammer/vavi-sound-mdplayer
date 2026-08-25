@@ -47,6 +47,17 @@ public class MDXPlugin extends BasePlugin<MxDriver> {
         initChips();
     }
 
+    /** MXDRV has its own section; {@link mdplayer.chips.Pcm8Chip} reads it back through here */
+    @Override
+    public int pcm8Type() {
+        return setting.getMxDrv().pcm8Type;
+    }
+
+    @Override
+    public int pcm8ppsOption() {
+        return setting.getMxDrv().pcm8ppsOption;
+    }
+
     @Override
     protected void initChips() {
         if (setting.getOutputDevice().getSampleRate() != 44100) {
@@ -81,7 +92,7 @@ public class MDXPlugin extends BasePlugin<MxDriver> {
 //        X68kYm2151Inst mdxPCM_R = Instrument.getInstrument(X68kYm2151Inst.class); // real
 //        X68kYm2151Inst mdxPCM_P = Instrument.getInstrument(X68kYm2151Inst.class); // piano roll
 
-        if (setting.getMxDrv().pcm8Type == 0) {
+        if (pcm8Type() == 0) {
             // mxdrv is special and requires PCM8
         } else {
             chip = new MDSound.Chip();
@@ -90,10 +101,10 @@ public class MDXPlugin extends BasePlugin<MxDriver> {
             chip.volume = 0;
             chip.clock = 4_000_000;
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
-            chip.option = new Object[] {setting.getMxDrv().pcm8ppsOption};
+            chip.option = new Object[] {pcm8ppsOption()};
             put(Pcm8Chip.class, chip);
         }
-logger.log(Level.INFO, "pcm8Type: " + setting.getMxDrv().pcm8Type + ", " + chip.instrument.getClass().getName());
+logger.log(Level.INFO, "pcm8Type: " + pcm8Type() + ", " + chip.instrument.getClass().getName());
 
         chipRegister.plugin(RealChipPlugin.class).initChip(hiyorimiDeviceFlag);
 

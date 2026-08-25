@@ -457,7 +457,7 @@ public class Setting implements Serializable, Cloneable {
     public static class ZMusic implements Serializable, Cloneable {
         public int compilePriority = 0;
         public int pcm8Type = Integer.getInteger("mdplayer.variant.pcm8", 1);
-        int mpcmType = Integer.getInteger("mdplayer.variant.mpcm", 1);
+        public int mpcmType = Integer.getInteger("mdplayer.variant.mpcm", 1);
         public int waitNextPlay = 1000;
         public int pcm8ppsOption = -1;
 
@@ -526,11 +526,14 @@ public class Setting implements Serializable, Cloneable {
 
     public static class Rcs implements Serializable, Cloneable {
         public int pcm8type = Integer.getInteger("mdplayer.variant.pcm8", 1); // PCM8PP is the default
+        /** RCS used to take this from {@link ZMusic}, which left it unsettable per driver */
+        public int pcm8ppsOption = -1;
 
         @Override
         public Rcs clone() {
             Rcs p = new Rcs();
             p.pcm8type = this.pcm8type;
+            p.pcm8ppsOption = this.pcm8ppsOption;
 
             return p;
         }

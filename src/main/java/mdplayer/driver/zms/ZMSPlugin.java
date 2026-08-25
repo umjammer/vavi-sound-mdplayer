@@ -92,7 +92,7 @@ public class ZMSPlugin extends BasePlugin<ZmsDriver> implements Compilable {
             chip.option = new Object[] { 0, 1, 0 };
         } else {
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
-            chip.option = new Object[] {setting.getZMusic().pcm8ppsOption};
+            chip.option = new Object[] {pcm8ppsOption()};
         }
         put(Pcm8Chip.class, chip);
 
