@@ -305,5 +305,4 @@ System.err.println("emulator thread, cores used:" + busy);
         }
         return 0;
     }
-
 }
