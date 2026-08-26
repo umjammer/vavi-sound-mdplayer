@@ -35,6 +35,22 @@ class Nise286Test {
         assertEquals(0, r);
     }
 
+    /** the 8253 counter #0 at $71 - FMP seeds its random number generator with it */
+    @Test
+    void test2() throws Exception {
+        Nise98 nise98 = new Nise98();
+        nise98.init(null, this::nop, null, OngenBoardType.SpeakBoard, Common.VGMProcSampleRate);
+
+        // counter #0, LSB then MSB, mode 3: what FMP writes
+        nise98.outpB((short) 0x77, (byte) 0x36);
+        nise98.outpB((short) 0x71, (byte) 0x34);
+        nise98.outpB((short) 0x71, (byte) 0x12);
+
+        // the counter has not been clocked yet, so it still holds the count it was given
+        assertEquals(0x34, nise98.inpB((short) 0x71) & 0xff);
+        assertEquals(0x12, nise98.inpB((short) 0x71) & 0xff);
+    }
+
     private void nop(int p, int a, int d) {
     }
 }
