@@ -16,6 +16,7 @@ mdplayer.driver.mucom.MUCFileFormat
 mdplayer.driver.nrtdrv.NRTFileFormat
 mdplayer.driver.nsf.NSFFileFormat
 mdplayer.driver.rcp.RCPFileFormat
+mdplayer.driver.rcp.RCSFileFormat
 mdplayer.driver.s98.S98FileFormat
 mdplayer.driver.sid.SIDFileFormat
 mdplayer.driver.vgm.VGMFileFormat

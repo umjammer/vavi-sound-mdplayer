@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import mdplayer.lib.rcp.RCS;
+import mdsound.instrument.Pcm8PPInst;
+import mdsound.instrument.X68kYm2151Inst;
 import vavi.util.compat.Tuple;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
@@ -40,7 +42,6 @@ public class RcsDriver extends BaseDriver {
         rcs.charset = Common.charset;
         rcs.sampleRate = Common.VGMProcSampleRate;
         rcs.musicStep = Common.VGMProcSampleRate / 60.0;
-        rcs.isVirtualModel = model == EnmModel.VirtualModel;
         rcs.midiSend = (l, d) -> plugin.chipRegister.plugin(MidiPlugin.class).send(model, l, d, plugin.chipRegister.plugin(VstPlugin.class).vstDelta);
         rcs.lyric = l -> plugin.chipRegister.plugin(MidiPlugin.class).params[0].lyric = l;
         rcs.counter = () -> frameCounter = -latency - waitTime;
@@ -58,6 +59,21 @@ public class RcsDriver extends BaseDriver {
 
     public void setSupportFileName(String supportFileName) {
         this.rcs.supportFileName = supportFileName;
+    }
+
+    /** for the metadata-only path, where there is no plugin to take {@code playingFileName} from */
+    public void setFilename(String filename) {
+        this.rcs.filename = filename;
+    }
+
+    /**
+     * Hands the driver the PCM8 back end the plugin registered with mdsound. Which one is live
+     * follows {@code setting.pcm8Type}: {@code 0} is X68Sound's own PCM8, {@code 1} is PCM8PP.
+     */
+    public void setPcm8(int pcm8type, X68kYm2151Inst opmPCM, Pcm8PPInst pcm8pp) {
+        this.rcs.pcm8type = pcm8type;
+        this.rcs.opmPCM = opmPCM;
+        this.rcs.pcm8pp = pcm8pp;
     }
 
     @Override
@@ -122,6 +138,13 @@ public class RcsDriver extends BaseDriver {
         this.latency = latency;
         this.waitTime = waitTime;
 
+        // the compiling plugins fill dataBuf after the driver was constructed, so re-read it here
+        this.dataBuf = plugin.getData();
+        rcs.vgmBuf = dataBuf;
+        rcs.filename = plugin.playingFileName;
+        // model is only known now, and getInformationHeader() reads it to decide whether to mount the PCM
+        rcs.isVirtualModel = model == EnmModel.VirtualModel;
+
         counter = 0;
         totalCounter = 0;
         loopCounter = 0;
@@ -136,7 +159,11 @@ public class RcsDriver extends BaseDriver {
         metaData = retrieveMetaData(dataBuf, 0);
         //if (GD3 == null) return false;
 
-        if (!rcs.getInformationHeader()) throw new IllegalArgumentException("Invalid header");
+        if (!rcs.getInformationHeader()) {
+            // a .RCS carries only the PCM bank; without the .RCP it names there is no sequence to play
+            throw new IllegalArgumentException(rcs.rcpFilename.isEmpty()
+                    ? "Invalid header" : "no such .RCP beside the .RCS: " + rcs.rcpFilename);
+        }
 
         // Create a command to send in advance for each port
         if (!makeBeforeSendCommand()) throw new IllegalArgumentException("Invalid command");
@@ -145,8 +172,6 @@ public class RcsDriver extends BaseDriver {
             plugin.chipRegister.chip(Ym2612Chip.class).setSyncWait(0, 1);
             plugin.chipRegister.chip(Ym2612Chip.class).setSyncWait(1, 1);
         }
-
-        rcs.vgmBuf = dataBuf;
     }
 
     private boolean makeBeforeSendCommand() {

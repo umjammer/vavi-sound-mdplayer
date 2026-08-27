@@ -114,20 +114,25 @@ public class RCS {
         }
     }
 
-    static class PcmInfo {
+    /** one entry of the .RCS sample bank; part of {@link #getRCSInfo}'s output */
+    public static class PcmInfo {
 
-        int freq = 4;
-        int ptr = 0;
-        int length = 0;
+        public int freq = 4;
+        /** byte offset into the pcm data, which itself starts at {@code 0xc0} of the .RCS */
+        public int ptr = 0;
+        public int length = 0;
         public int volume = 8;
-        int pan = 3;
+        public int pan = 3;
     }
 
     public final PcmInfo[][] pcmInfos = new PcmInfo[1][127];
     public final byte[][] pcmData = new byte[1][];
-    private X68kYm2151Inst opmPCM;
-    private Pcm8PPInst pcm8pp;
-    private int pcm8type = 1;
+    /** PCM8 back end {@code 0}: X68Sound's own, set by the driver from {@code setting.pcm8Type} */
+    public X68kYm2151Inst opmPCM;
+    /** PCM8 back end {@code 1}: PCM8PP, set by the driver from {@code setting.pcm8Type} */
+    public Pcm8PPInst pcm8pp;
+    /** which of the two above is live; {@code 0} is {@link #opmPCM}, {@code 1} is {@link #pcm8pp} */
+    public int pcm8type = 1;
     private int rcsTrackNumber = 17; // default Track18
     private int rcsControlNoteNumber = 0;
     private int rcsControlMode = 0;
@@ -153,7 +158,7 @@ public class RCS {
         if (buf == null) return false;
         if (buf.length < 0x4c0) return false;
 
-        // Check RCS header
+        // Check RCS header "RCSform1"
         if (buf[0] != 0x52 || buf[1] != 0x43 || buf[2] != 0x53 || buf[3] != 0x66
                 || buf[4] != 0x6F || buf[5] != 0x72 || buf[6] != 0x6D || buf[7] != 0x31
                 || buf[8] != 0x1A) {
@@ -182,13 +187,11 @@ public class RCS {
 
         // Get PCM Information
         pcmInfos[0] = new PcmInfo[127];
-        for (int i = 0; i < pcmInfos.length; i++) {
+        for (int i = 0; i < pcmInfos[0].length; i++) {
             pcmInfos[0][i] = new PcmInfo();
-            pcmInfos[0][i].freq = buf[0x40 + i];
-            pcmInfos[0][i].ptr = buf[0xc0 + i * 8] * 0x1000000 + buf[0xc1 + i * 8] * 0x10000
-                    + buf[0xc2 + i * 8] * 0x100 + buf[0xc3 + i * 8];
-            pcmInfos[0][i].length = buf[0xc4 + i * 8] * 0x1000000 + buf[0xc5 + i * 8] * 0x10000
-                    + buf[0xc6 + i * 8] * 0x100 + buf[0xc7 + i * 8];
+            pcmInfos[0][i].freq = buf[0x40 + i] & 0xff;
+            pcmInfos[0][i].ptr = ByteUtil.readBeInt(buf, 0xc0 + i * 8);
+            pcmInfos[0][i].length = ByteUtil.readBeInt(buf, 0xc4 + i * 8);
         }
         pcmData[0] = new byte[buf.length - 0xc0];
         System.arraycopy(buf, 0xc0, pcmData[0], 0, buf.length - 0xc0);
@@ -285,15 +288,18 @@ public class RCS {
                             (((eve.getMIDIMessage()[2] & 0xff) / 8) << 16) |
                                     (pcmInfos[0][key].freq << 8) |
                                     (pcmInfos[0][key].pan);
-                    int length = pcmInfos[key].length;
+                    int length = pcmInfos[0][key].length;
                     if (rcsPolyphonicMode == 0) length = (int) (length * Math.min(eve.getGate(), 100) * 0.01);
-                    if (pcm8type == 0) if (opmPCM != null)
-                        opmPCM.chips[0].pcm8Out(ch, null, pcmInfos[0][key].ptr, mode, length); // Start of specified channel sound
-                    else if (pcm8pp != null)
-                        pcm8pp.keyOn(0, ch, pcmInfos[0][key].ptr, mode, length); // Start of specified channel sound
+                    if (pcm8type == 0) {
+                        if (opmPCM != null)
+                            opmPCM.pcm8Out(0, ch, pcmInfos[0][key].ptr, mode, length); // Start of specified channel sound
+                    } else {
+                        if (pcm8pp != null)
+                            pcm8pp.keyOn(0, ch, pcmInfos[0][key].ptr, mode, length); // Start of specified channel sound
+                    }
                     pcm8St[ch].tablePtr = pcmInfos[0][key].ptr;
                     pcm8St[ch].mode = mode;
-                    pcm8St[ch].length = pcmInfos[key].length;
+                    pcm8St[ch].length = pcmInfos[0][key].length;
                     pcm8St[ch].keyOn = true;
                 }
             }
@@ -396,18 +402,35 @@ public class RCS {
 
     /** @return ternary */
     public static Boolean checkHeadString(byte[] buf) {
-        if (buf == null || buf.length < 32) return null;
+        if (buf == null || buf.length < 32) {
+logger.log(Level.INFO, "buf is empty");
+            return null;
+        }
 
         String str = new String(buf, 0, 32);
         if (!str.equals("RCM-PC98V2.0(C)COME ON MUSIC\r\n\0\0")) {
-            if (!str.equals("COME ON MUSIC RECOMPOSER RCP3.0\0")) return null;
-            else return true;
+            if (!str.equals("COME ON MUSIC RECOMPOSER RCP3.0\0")) {
+logger.log(Level.INFO, "invalid magic");
+                return null;
+            } else
+                return true;
         }
 
         return false;
     }
 
+    /**
+     * The .RCP this .RCS names, as written in its header. Only useful for telling the user which
+     * file is missing when it could not be found beside the .RCS.
+     */
+    public String rcpFilename = "";
+
     public boolean getInformationHeader() {
+        // read before the buffer is swapped below, while it is still the .RCS
+        if (vgmBuf != null && vgmBuf.length >= 64) {
+            rcpFilename = new String(vgmBuf, 9, 55, charset).trim().replace("\0", "");
+        }
+
         byte[] rcpBuf = null;
         if (extendFiles != null) {
             for (Tuple<String, byte[]> n : extendFiles) {
@@ -428,9 +451,12 @@ public class RCS {
             }
         }
 
-        if (isVirtualModel) {
-            if (pcm8type == 0) if (opmPCM != null) opmPCM.chips[0].mountMemory(pcmData[0]);
-            else if (pcm8pp != null) pcm8pp.writePcm(0, pcmData[0], 0,pcmData[0].length);
+        if (isVirtualModel && pcmData[0] != null) {
+            if (pcm8type == 0) {
+                if (opmPCM != null) opmPCM.writePcm(0, pcmData[0], 0, pcmData[0].length);
+            } else {
+                if (pcm8pp != null) pcm8pp.writePcm(0, pcmData[0], 0, pcmData[0].length);
+            }
         }
         initPCM8ch();
 
@@ -1344,12 +1370,9 @@ public class RCS {
      * Event transmission
      */
     private void sendEvent(MIDITrack trk, MIDIEvent eve) {
-        //if (trk.outDeviceNumber == null) return;
-        //if (trk.outUserDeviceNumber == null) return;
+        // no `getOutDeviceNumber() == null` bail-out as in RCP: the track the .RCS plays its PCM8
+        // part from has no MIDI out of its own, and dropping it here would silence that half
         //if (!config.MIDIOutDeviceList[(int) trk.outUserDeviceNumber].DevAlive) return;
-        if (trk.getNumber() == rcsTrackNumber) {
-            //logger.log(Level.DEBUG, model + ":" + eve.EventType);
-        }
         if (eve.getEventType() == MIDIEventType.NoteON && trk.getMute()) return;
 
         eventFunc[eve.getEventType().v].accept(trk, eve);
@@ -1493,7 +1516,7 @@ public class RCS {
     }
 
     private void efMetaSequencerSpecific(MIDITrack trk, MIDIEvent eve) {
-        specialEventFunc[eve.getMIDIMessage()[0]].accept(trk, eve);
+        specialEventFunc[eve.getMIDIMessage()[0] & 0xff].accept(trk, eve);
     }
 
     private void sefUserExclusive1(MIDITrack trk, MIDIEvent eve) {
@@ -1568,11 +1591,11 @@ public class RCS {
     }
 
     private void sefBankProgram(MIDITrack trk, MIDIEvent eve) {
-        msgBuf[0] = (byte) (eve.getMIDIMessages()[1][0] + (trk.getOutChannel() % 16));
+        msgBuf[0] = (byte) ((eve.getMIDIMessages()[1][0] & 0xff) + (trk.getOutChannel() % 16));
         msgBuf[1] = eve.getMIDIMessages()[1][1];
         msgBuf[2] = eve.getMIDIMessages()[1][2];
         putMIDIMessage(trk.getOutDeviceNumber(), msgBuf, 3);
-        msgBuf[0] = (byte) (eve.getMIDIMessages()[0][0] + (trk.getOutChannel() % 16));
+        msgBuf[0] = (byte) ((eve.getMIDIMessages()[0][0] & 0xff) + (trk.getOutChannel() % 16));
         msgBuf[1] = eve.getMIDIMessages()[0][1];
         putMIDIMessage(trk.getOutDeviceNumber(), msgBuf, 2);
     }
@@ -1582,7 +1605,7 @@ public class RCS {
     }
 
     private void sefMIDIChChange(MIDITrack trk, MIDIEvent eve) {
-        int ch = eve.getMIDIMessages()[0][0];
+        int ch = eve.getMIDIMessages()[0][0] & 0xff;
         if (ch == 0) {
             trk.setMute(true);
             return;
@@ -1703,7 +1726,7 @@ public class RCS {
     private void sefLoopEnd(MIDITrack trk, MIDIEvent eve) {
         if (trk.getLoopTargetEvents().isEmpty()) return;
         MIDIEvent evt = trk.getLoopTargetEvents().pop();
-        if (evt.getMIDIMessages()[0][0] < eve.getMIDIMessages()[0][0] - 1) {
+        if ((evt.getMIDIMessages()[0][0] & 0xff) < (eve.getMIDIMessages()[0][0] & 0xff) - 1) {
             evt.getMIDIMessages()[0][0]++;
             trk.getLoopTargetEvents().push(evt);
             trk.setLoopOrSameTargetEventIndex(trk.getNowPart().getNextEvent(evt).getNumber());
@@ -1817,7 +1840,7 @@ public class RCS {
                 i++;
             }
             j++;
-            if (n == 0xf7) break;
+            if (n != null && n == (byte) 0xf7) break;
             if (i >= msgBuf.length) {
                 logger.log(Level.DEBUG, "sefUserExclusiveN: Detects and skips exclusives that exceed the buffer.");
                 return; // Do not send exclusive when buffer is over
@@ -1896,13 +1919,13 @@ public class RCS {
         for (int ch = 0; ch < 16; ch++) {
             DBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x65, 0x00})); // RPN Master fine tuning
             DBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x64, 0x01}));
-            DBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x06, (byte) ((buf[0xa6f] * 0x100 + buf[0xa6e]) >>> 7)}));
-            DBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x26, (byte) ((buf[0xa6f] * 0x100 + buf[0xa6e]) & 0x7f)}));
+            DBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x06, (byte) (((buf[0xa6f] & 0xff) * 0x100 + (buf[0xa6e] & 0xff)) >>> 7)}));
+            DBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x26, (byte) (((buf[0xa6f] & 0xff) * 0x100 + (buf[0xa6e] & 0xff)) & 0x7f)}));
         }
 
         // Master Volume
         DBuf.add(new CtlSysex(1, getSysEx((byte) 0x41, (byte) 0x10, (byte) 0x42, (byte) 0x12, (byte) 0x83, (byte) 0x40, (byte) 0x00, (byte) 0x04, buf[0x24], (byte) 0x84)));
-        DBuf.add(new CtlSysex(4, getSysEx((byte) 0x7F, (byte) 0x7F, (byte) 0x04, (byte) 0x01, (byte) ((buf[0x24] * 0x81) & 0x7F), (byte) (((buf[0x24] * 0x81) >>> 7) & 0x7f))));
+        DBuf.add(new CtlSysex(4, getSysEx((byte) 0x7F, (byte) 0x7F, (byte) 0x04, (byte) 0x01, (byte) (((buf[0x24] & 0xff) * 0x81) & 0x7F), (byte) ((((buf[0x24] & 0xff) * 0x81) >>> 7) & 0x7f))));
 
         for (int ch = 0; ch < 16; ch++) {
             DBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x65, 0x00})); // RPN Master Coarse tuning
@@ -1913,7 +1936,7 @@ public class RCS {
         // Master Pan
         DBuf.add(new CtlSysex(1, getSysEx((byte) 0x41, (byte) 0x10, (byte) 0x42, (byte) 0x12, (byte) 0x83, (byte) 0x40, (byte) 0x00, (byte) 0x06, buf[0x26], (byte) 0x84)));
         // Master Balance
-        DBuf.add(new CtlSysex(1, getSysEx((byte) 0x7f, (byte) 0x7f, (byte) 0x04, (byte) 0x02, (byte) ((buf[0x26] * 0x80) & 0x7F), (byte) (((buf[0x26] * 0x80) >>> 7) & 0x7f))));
+        DBuf.add(new CtlSysex(1, getSysEx((byte) 0x7f, (byte) 0x7f, (byte) 0x04, (byte) 0x02, (byte) (((buf[0x26] & 0xff) * 0x80) & 0x7F), (byte) ((((buf[0x26] & 0xff) * 0x80) >>> 7) & 0x7f))));
 
         // Voice Reserve Loc:Ch partdata - 1 Len:1
         DBuf.add(new CtlSysex(1, getSysEx((byte) 0x41, (byte) 0x10, (byte) 0x42, (byte) 0x12, (byte) 0x83,
