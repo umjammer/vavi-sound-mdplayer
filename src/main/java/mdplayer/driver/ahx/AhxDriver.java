@@ -51,7 +51,7 @@ public class AhxDriver extends BaseDriver {
     }
 
     @Override
-    public MetaData getMetaData(byte[] buf, Object... args) {
+    public MetaData retrieveMetaData(byte[] buf, Object... args) {
         if (buf == null || buf.length < 14) return null;
         if (buf[0] != 'T' || buf[1] != 'H' || buf[2] != 'X') return null;
 
@@ -94,7 +94,7 @@ public class AhxDriver extends BaseDriver {
         speed = 1;
         speedCounter = 0;
 
-        metaData = getMetaData(dataBuf);
+        metaData = retrieveMetaData(dataBuf);
 
         int songNo = args.length > 0 ? (int) args[0] : 0;
 

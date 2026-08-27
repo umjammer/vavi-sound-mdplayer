@@ -27,6 +27,9 @@ public class Xgm2Driver extends XgmDriver {
 
     private final Xgm2 xgm2;
 
+    private String version = "";
+    private String usedChips = "";
+
     public Xgm2Driver(BasePlugin<? extends BaseDriver> plugin) {
         super(plugin);
 
@@ -53,7 +56,7 @@ public class Xgm2Driver extends XgmDriver {
     }
 
     @Override
-    public MetaData getMetaData(byte[] buf, Object... args) {
+    public MetaData retrieveMetaData(byte[] buf, Object... args) {
         xgm2.getXGM2Info(buf);
         return metaData;
     }

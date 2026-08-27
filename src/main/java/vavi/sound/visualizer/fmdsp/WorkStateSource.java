@@ -41,6 +41,27 @@ public interface WorkStateSource {
         return 0;
     }
 
+    /**
+     * The parts the {@code VOLUME DOWN} counter shows one of at a time, the four of the original:
+     * FM, SSG, the rhythm part and PCM.
+     */
+    enum VolumePart {
+        FM, SSG, RHY, PCM
+    }
+
+    /**
+     * How far the player is turning {@code part} down, in whatever unit it counts corrections in,
+     * negative being quieter - what the {@code VOLUME DOWN} counter shows. The counter follows
+     * whichever part moved last, so a source that has one number for the whole song may report it
+     * for every part.
+     * <p>
+     * 0, the default, is no correction, and a source that has no such number at all leaves the
+     * counter at zero.
+     */
+    default int volumeDown(VolumePart part) {
+        return 0;
+    }
+
     /** True if a song is loaded and currently advancing. */
     boolean playing();
 

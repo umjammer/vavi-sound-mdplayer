@@ -78,6 +78,14 @@ class TestCase {
     @Property(name = "vavi.test.volume")
     double volume = 0.2;
 
+    /**
+     * how many times a song loops before it fades out and {@link Audio#play()} returns.
+     * 0 or less means loop forever (no fade out, stop it by hand).
+     * overridable by {@code -Dvavi.test.loopTimes=...}
+     */
+    @Property(name = "vavi.test.loopTimes", useSystem = true)
+    int loopTimes = 2;
+
     @Property
     String file;
 
@@ -190,6 +198,13 @@ Debug.println("settings\n" +
         "mdplayer.variant.ym2413: " + System.getProperty("mdplayer.variant.ym2413") + "\n" +
         "mdplayer.variant.ymf262: " + System.getProperty("mdplayer.variant.ymf262") + "\n" +
         "mdplayer.variant.ym2151: " + System.getProperty("mdplayer.variant.ym2151"));
+
+        // the end-of-song detection in Audio#play() reads these: loop this many times, then fade out
+        Setting.getInstance().getOther().setUseLoopTimes(loopTimes > 0);
+        if (loopTimes > 0) {
+            Setting.getInstance().getOther().setLoopTimes(loopTimes);
+        }
+Debug.println("loopTimes: " + (loopTimes > 0 ? String.valueOf(loopTimes) : "∞"));
 
         audio = Audio.getInstance(); // ⚠️ caution settings and system properties race condition
     }

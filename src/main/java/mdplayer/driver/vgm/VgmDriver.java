@@ -26,6 +26,9 @@ public class VgmDriver extends BaseDriver {
 
     public final Vgm vgm;
 
+    private String version = "";
+    private String usedChips = "";
+
     public VgmDriver(BasePlugin<? extends BaseDriver> plugin) {
         super(plugin);
 
@@ -302,7 +305,7 @@ public class VgmDriver extends BaseDriver {
             @Override public String getUsedChips() { return usedChips; }
             @Override public void setVersion(String s) { version = s; }
             @Override public String getVersion() { return version; }
-            @Override public void updateMetaData(byte[] b, Object... o) { metaData = getMetaData(b, o); }
+            @Override public void updateMetaData(byte[] b, Object... o) { metaData = retrieveMetaData(b, o); }
         });
     }
 
@@ -448,7 +451,7 @@ public class VgmDriver extends BaseDriver {
      * @param args 0: vgmGd3
      */
     @Override
-    public MetaData getMetaData(byte[] buf, Object... args) {
+    public MetaData retrieveMetaData(byte[] buf, Object... args) {
         int vgmGd3 = (int) args[0];
 
         int adr = vgmGd3 + 12 + 0x14;

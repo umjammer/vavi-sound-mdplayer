@@ -10,6 +10,7 @@ mdplayer.driver.nrtdrv.NRTPlugin
 mdplayer.driver.nsf.NSFPlugin
 mdplayer.driver.pmd.PMDPlugin
 mdplayer.driver.rcp.RCPPlugin
+mdplayer.driver.rcp.RCSPlugin
 mdplayer.driver.s98.S98Plugin
 mdplayer.driver.sampled.SampledPlugin
 mdplayer.driver.sid.SIDPlugin

@@ -42,7 +42,7 @@ public class BgmFormat extends BaseFileFormat implements SampledFileFormat {
 
     @Override
     public MetaData getMetaData() {
-        return new MusicaDriver().getMetaData(this.srcBuf);
+        return new MusicaDriver().retrieveMetaData(this.srcBuf);
     }
 
     @Override

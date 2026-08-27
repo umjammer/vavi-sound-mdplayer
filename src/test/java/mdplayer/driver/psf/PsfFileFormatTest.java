@@ -61,7 +61,7 @@ class PsfFileFormatTest {
     @Test
     void metaData() throws Exception {
         needSamples();
-        MetaData md = new PsfDriver().getMetaData(Files.readAllBytes(psf));
+        MetaData md = new PsfDriver().retrieveMetaData(Files.readAllBytes(psf));
         assertNotNull(md);
         assertEquals("110 Main Theme (Piano Solo)", md.getFirst(Tag.Title));
         assertEquals("Parasite Eve", md.getFirst(Tag.GameTitle));

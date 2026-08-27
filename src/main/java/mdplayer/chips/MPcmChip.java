@@ -39,9 +39,10 @@ public class MPcmChip extends BaseChip {
         return new Class[] {X68kMPcmInst.class, MPcmPPInst.class};
     }
 
+    /** shared by ZMS and MNDRV, each with its own setting - see {@link mdplayer.chips.Pcm8Chip#activeIndex} */
     @Override
     public int activeIndex(int chipId) {
-        return setting.getMnDrv().mpcmType;
+        return setting.mpcmType(context);
     }
 
     public void writePcm(int chipId, int bank, int mode, byte[] pcmData, EnmModel model) {

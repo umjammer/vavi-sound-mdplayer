@@ -31,7 +31,7 @@ interface NsfDriver {
 
     boolean useVrc7();
 
-    MetaData getMetaData(byte[] buf, Object... args);
+    MetaData retrieveMetaData(byte[] buf, Object... args);
 
     int getSongs();
 }

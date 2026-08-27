@@ -40,7 +40,7 @@ public class HESFileFormat extends BaseFileFormat {
 
     @Override
     public MetaData getMetaData() {
-        return new HesDriver().getMetaData(this.srcBuf);
+        return new HesDriver().retrieveMetaData(this.srcBuf);
     }
 
     @Override

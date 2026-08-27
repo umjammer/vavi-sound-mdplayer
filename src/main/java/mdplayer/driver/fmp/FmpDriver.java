@@ -74,16 +74,8 @@ public class FmpDriver extends BaseDriver {
         fmp.compile();
     }
 
-    /** the memo lines as laid out, filled in by {@link #getMetaData} */
-    private String[] comments;
-
     @Override
-    public String[] comments() {
-        return comments;
-    }
-
-    @Override
-    public MetaData getMetaData(byte[] buf, Object... args) {
+    public MetaData retrieveMetaData(byte[] buf, Object... args) {
         MetaData md = new MetaData();
 
         if (buf == null || buf.length < 2) {
@@ -199,8 +191,8 @@ public class FmpDriver extends BaseDriver {
 
             // the memo as the PC-98 screen had it: the credits FMC puts at the top, indented to
             // wherever the author placed them, which is what the fmdsp comment lines want
-            comments = isBinaryFmc && !plainComments.isEmpty()
-                    ? plainComments.subList(0, Math.min(3, plainComments.size())).toArray(String[]::new) : null;
+            if (isBinaryFmc && !plainComments.isEmpty())
+                md.setAll(Tag.Comments, plainComments.subList(0, Math.min(3, plainComments.size())));
 
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
@@ -259,7 +251,7 @@ public class FmpDriver extends BaseDriver {
     @Override
     public void init(EnmModel model, int latency, int waitTime, Object... args) {
 
-        metaData = getMetaData(dataBuf, 0);
+        metaData = retrieveMetaData(dataBuf, 0);
 
         loopCounter = 0;
         curLoop = 0;

@@ -46,6 +46,8 @@ public class ZmsDriver extends BaseDriver {
 
     private final Zms zms;
 
+    private String version = "";
+
     public ZmsDriver(BasePlugin<? extends BaseDriver> plugin) {
         super(plugin);
 
@@ -173,7 +175,7 @@ public class ZmsDriver extends BaseDriver {
      * @param args 0: offset, 1: filename
      */
     @Override
-    public MetaData getMetaData(byte[] buf, Object... args) {
+    public MetaData retrieveMetaData(byte[] buf, Object... args) {
         String filename = args.length > 1 ? (String) args[1] : (plugin != null ? plugin.playingFileName : null);
         if (filename != null && filename.toUpperCase().endsWith(".ZMS")) {
             return getMetaDataZMS(buf);
@@ -260,7 +262,7 @@ public class ZmsDriver extends BaseDriver {
 
     @Override
     public void init(EnmModel model, int latency, int waitTime, Object... args) {
-        metaData = getMetaData(dataBuf, 0);
+        metaData = retrieveMetaData(dataBuf, 0);
         loopCounter = 0;
         curLoop = 0;
         this.model = model;

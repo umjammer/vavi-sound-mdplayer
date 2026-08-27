@@ -96,7 +96,7 @@ Debug.println("filename: " + zms);
         if (Files.exists(p)) {
             byte[] buf = Files.readAllBytes(p);
             ZmsDriver driver = new ZmsDriver();
-            MetaData md = driver.getMetaData(buf, 0, p.toString());
+            MetaData md = driver.retrieveMetaData(buf, 0, p.toString());
             Debug.println("ZMD v2 title: " + md.getFirst(musicDriverInterface.MetaData.Tag.Title));
             org.junit.jupiter.api.Assertions.assertFalse(md.getFirst(musicDriverInterface.MetaData.Tag.Title).isEmpty());
         }

@@ -58,7 +58,7 @@ class SmafDriverTest {
         assertEquals(SmafFile.Format.MA2, file.getFormat());
         assertEquals("Love Motion", file.getTitle());
 
-        MetaData md = new SmafDriver().getMetaData(Files.readAllBytes(mmf));
+        MetaData md = new SmafDriver().retrieveMetaData(Files.readAllBytes(mmf));
         assertNotNull(md);
         assertEquals("Love Motion", md.getFirst(Tag.Title));
         assertEquals("MA-2", md.getFirst(Tag.Chip));
@@ -305,5 +305,4 @@ System.err.println("emulator thread, cores used:" + busy);
         }
         return 0;
     }
-
 }

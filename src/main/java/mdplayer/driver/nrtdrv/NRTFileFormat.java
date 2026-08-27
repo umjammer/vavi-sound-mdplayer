@@ -39,7 +39,7 @@ public class NRTFileFormat extends BaseFileFormat {
 
     @Override
     public MetaData getMetaData() {
-        return new NrtDriver().getMetaData(this.srcBuf, 42);
+        return new NrtDriver().retrieveMetaData(this.srcBuf, 42);
     }
 
     @Override

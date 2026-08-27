@@ -53,7 +53,7 @@ public class HvlDriver extends BaseDriver {
     }
 
     @Override
-    public MetaData getMetaData(byte[] buf, Object... args) {
+    public MetaData retrieveMetaData(byte[] buf, Object... args) {
         if (!isSupportedMagic(buf)) return null;
 
         HVL.hvl_InitReplayer();
@@ -97,7 +97,7 @@ public class HvlDriver extends BaseDriver {
         speed = 1;
         speedCounter = 0;
 
-        metaData = getMetaData(dataBuf);
+        metaData = retrieveMetaData(dataBuf);
 
         int songNo = args.length > 0 ? (int) args[0] : 0;
 

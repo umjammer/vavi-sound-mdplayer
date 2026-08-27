@@ -49,7 +49,7 @@ public class PsfFileFormat extends BaseFileFormat {
 
     @Override
     public MetaData getMetaData() {
-        return new PsfDriver().getMetaData(this.srcBuf);
+        return new PsfDriver().retrieveMetaData(this.srcBuf);
     }
 
     @Override

@@ -53,7 +53,7 @@ public class MoonDriver extends BaseDriver {
     }
 
     @Override
-    public MetaData getMetaData(byte[] buf, Object... args) {
+    public MetaData retrieveMetaData(byte[] buf, Object... args) {
         mtype = checkFileType(buf);
 logger.log(Level.DEBUG, "type: " + mtype);
         MetaData metaData;
@@ -77,7 +77,7 @@ logger.log(Level.DEBUG, "type: " + mtype);
         // otherwise getMetaData() sees the MDL header and init routes to the dead initMDL().
         if (plugin != null) dataBuf = plugin.getData();
 
-        metaData = getMetaData(dataBuf, 0);
+        metaData = retrieveMetaData(dataBuf, 0);
 
         this.model = model;
         this.latency = latency;

@@ -53,7 +53,7 @@ public class MdsDriver extends BaseDriver {
     }
 
     @Override
-    public MetaData getMetaData(byte[] buf, Object... args) {
+    public MetaData retrieveMetaData(byte[] buf, Object... args) {
         MetaData metaData;
 
         mdsDriver = IDriver.factory("vavi.sound.mdsdrv.driver.MdsDriver");
@@ -64,7 +64,7 @@ public class MdsDriver extends BaseDriver {
 
     @Override
     public void init(EnmModel model, int latency, int waitTime, Object... args) {
-        metaData = getMetaData(dataBuf);
+        metaData = retrieveMetaData(dataBuf);
 
         this.model = model;
         this.latency = latency;

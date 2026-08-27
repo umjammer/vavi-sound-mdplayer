@@ -80,7 +80,7 @@ public class PmdDriver extends BaseDriver {
     }
 
     @Override
-    public MetaData getMetaData(byte[] buf, Object... args) {
+    public MetaData retrieveMetaData(byte[] buf, Object... args) {
         PMDFileType mType;
         if (args == null || args.length == 0) {
             mType = checkFileType(buf);
@@ -114,7 +114,7 @@ public class PmdDriver extends BaseDriver {
 
         FileFormat fileFormat = (FileFormat) args[0];
         PMDFileType mType = fileFormat instanceof MMLFileFormat ? PMDFileType.MML : PMDFileType.M;
-        metaData = getMetaData(dataBuf, mType);
+        metaData = retrieveMetaData(dataBuf, mType);
 
         this.model = model;
         this.latency = latency;

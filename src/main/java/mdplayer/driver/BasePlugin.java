@@ -373,7 +373,7 @@ logger.log(Level.INFO, "close enter");
         chipRegister.updateVol();
     }
 
-    public int getVgmCurLoopCounter() {
+    public int getCurLoopCounter() {
         int cnt = 0;
 
         if (driverVirtual != null) {
@@ -386,7 +386,7 @@ logger.log(Level.INFO, "close enter");
         return cnt;
     }
 
-    public boolean getVGMStopped() {
+    public boolean getStopped() {
         boolean v;
         boolean r;
 

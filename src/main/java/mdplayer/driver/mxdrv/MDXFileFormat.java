@@ -45,7 +45,7 @@ public class MDXFileFormat extends BaseFileFormat {
 
     @Override
     public MetaData getMetaData() {
-        return new MxDriver().getMetaData(this.srcBuf);
+        return new MxDriver().retrieveMetaData(this.srcBuf);
     }
 
     @Override

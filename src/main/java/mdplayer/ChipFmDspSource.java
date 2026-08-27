@@ -20,6 +20,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import mdplayer.driver.BaseDriver;
+import mdsound.MDSound;
 import mdplayer.fmdsp.FmDspChannel;
 import mdplayer.fmdsp.FmDspChipReader;
 import mdplayer.fmdsp.FmDspChipReader.Group;
@@ -197,6 +198,14 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
 
     /** the base note of the currently sounding note before pitch bends */
     private final int[] baseNotes = new int[TrackId.COUNT];
+
+    /**
+     * The pitch each row was struck at, in cents, {@code -1} while it rests. The frequency
+     * fluctuation display wants the movement since the key went down rather than the pitch itself,
+     * so that a voice which simply sits off the note - a sample played at a rate between two of
+     * them - reads as steady, which is what it is.
+     */
+    private final int[] baseCents = new int[TrackId.COUNT];
 
     /** tick count of each row's last key off, {@code -1} while the key is still down */
     private final long[] keyOffTicks = new long[TrackId.COUNT];
@@ -386,6 +395,7 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
         Arrays.fill(noteLengths, 0);
         Arrays.fill(lastNotes, -1);
         Arrays.fill(baseNotes, -1);
+        Arrays.fill(baseCents, -1);
         Arrays.fill(keyOffTicks, -1);
         Arrays.fill(gates, 0);
         Arrays.fill(lastPitches, 0);
@@ -616,14 +626,21 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
                 System.arraycopy(channel.fmSlotMask, 0, status.fmSlotMask, 0, 4);
                 if (!channel.sounding) {
                     baseNotes[row] = -1;
+                    baseCents[row] = -1;
                     status.key = 0xff;
                     status.actualKey = 0xff;
+                    status.pitchDeviation = 0;
                 } else {
                     if (channel.keyOn || baseNotes[row] < 0) {
                         baseNotes[row] = channel.note;
+                        baseCents[row] = channel.note * 100 + channel.detune;
                     }
                     status.key = keyOf(baseNotes[row]);
                     status.actualKey = keyOf(channel.note);
+                    // what the frequency fluctuation display swings on: a sample whose rate is not
+                    // a note has nothing to say here, its pitch drifting every snapshot by nature
+                    status.pitchDeviation = channel.sampled || channel.note < 0 ? 0
+                            : channel.note * 100 + channel.detune - baseCents[row];
                 }
                 status.volume = channel.volume;
                 status.toneNum = channel.toneNum;
@@ -916,6 +933,7 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
         status.volume = 0;
         status.gate = 0;
         status.detune = 0;
+        status.pitchDeviation = 0;
         status.status = CHIP_STATUS[0];
         status.ppz8Ch = 0;
         status.ssgTone = false;
@@ -954,8 +972,8 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
         if (d == null) return;
 
         // a memo that is a screen image is shown as it was laid out, the tags having lost the indent
-        String[] laidOut = d.comments();
-        if (laidOut != null) {
+        String[] laidOut = d.getMetaData().getAll(Tag.Comments).toArray(String[]::new);
+        if (laidOut.length > 0) {
             for (int i = 0; i < comments.length; i++) {
                 if (comments[i] == null && i < laidOut.length) comments[i] = laidOut[i];
             }
@@ -1123,6 +1141,7 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
         out.volume = status.volume;
         out.gate = status.gate;
         out.detune = status.detune;
+        out.pitchDeviation = status.pitchDeviation;
         out.status = status.status;
         out.ppz8Ch = status.ppz8Ch;
         out.ssgTone = status.ssgTone;
@@ -1265,6 +1284,51 @@ public class ChipFmDspSource implements FmDspDataSource, FftDataSource, LevelDat
     public String driverName() {
         BaseDriver d = work;
         return d != null ? d.getName() : null;
+    }
+
+    /**
+     * The tags a group's part may be trimmed with behind its chip's {@code MAIN} volume. They are
+     * per chip rather than a convention - the OPNA spells its SSG {@code SSG} and the OPN
+     * {@code PSG}, the OPNA's PCM part is {@code ADPCM} and the OPNA-B's two are {@code ADPCMA}
+     * and {@code ADPCMB} - so each is tried in turn and the first the chip actually trims wins.
+     */
+    private static final Map<Group, String[]> volumeTags = new EnumMap<>(Map.of(
+            Group.FM, new String[] {"FM"},
+            Group.SSG, new String[] {"SSG", "PSG"},
+            Group.RHYTHM, new String[] {"RHYTHM"},
+            Group.PCM, new String[] {"ADPCM", "ADPCMA", "ADPCMB", "PCM"}));
+
+    /**
+     * What the fmdsp {@code VOLUME DOWN} counter shows: how far mdplayer's mixer is turning the
+     * part down, in its own 2&times;dB unit, which for a played song is the calibrated balance of
+     * the chip that claimed the part's rows - see {@code DefaultVolumeBalance_*.xml}.
+     * <p>
+     * A chip's {@code MAIN} volume and its part tags are independent multipliers, so the two are
+     * added: what the part is turned down by is the chip's own correction plus the part's trim.
+     * A part no chip claimed, or one whose reader is not a chip's, has no correction to show.
+     */
+    @Override
+    public int volumeDown(VolumePart part) {
+        Group g = switch (part) {
+            case FM -> Group.FM;
+            case SSG -> Group.SSG;
+            case RHY -> Group.RHYTHM;
+            case PCM -> Group.PCM;
+        };
+        List<FmDspChipReader> claimed = claims.get(g);
+        if (claimed == null || claimed.isEmpty()) return 0;
+        Class<? extends mdplayer.Chip> c = claimed.getFirst().chipClass();
+        if (c == null) return 0;
+        Setting.Balance balance = Setting.getInstance().getBalance();
+        int v = balance.getVolume(MDSound.Chip.MAIN_TAG, c);
+        for (String tag : volumeTags.get(g)) {
+            int trim = balance.getVolume(tag, c);
+            if (trim != 0) {
+                v += trim;
+                break;
+            }
+        }
+        return v;
     }
 
     @Override

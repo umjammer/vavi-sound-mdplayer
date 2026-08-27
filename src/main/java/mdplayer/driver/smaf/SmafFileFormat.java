@@ -41,7 +41,7 @@ public class SmafFileFormat extends BaseFileFormat {
 
     @Override
     public MetaData getMetaData() {
-        return new SmafDriver().getMetaData(this.srcBuf);
+        return new SmafDriver().retrieveMetaData(this.srcBuf);
     }
 
     @Override

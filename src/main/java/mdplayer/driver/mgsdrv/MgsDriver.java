@@ -33,7 +33,6 @@ public class MgsDriver extends BaseDriver {
     private static final Logger logger = getLogger(MgsDriver.class.getName());
 
     private final MgsDrv mgs;
-    private String[] comments;
 
     public MgsDriver(BasePlugin<? extends BaseDriver> plugin) {
         super(plugin);
@@ -53,9 +52,8 @@ public class MgsDriver extends BaseDriver {
      * @param args 0: index
      */
     @Override
-    public MetaData getMetaData(byte[] buf, Object... args) {
+    public MetaData retrieveMetaData(byte[] buf, Object... args) {
         MetaData md = new MetaData();
-        comments = null;
         if (buf != null && buf.length > 8) {
             int start = (args != null && args.length > 0 && args[0] instanceof Integer) ? (int) args[0] : 8;
             for (int i = 0; i < Math.min(buf.length - 1, 16); i++) {
@@ -85,16 +83,11 @@ public class MgsDriver extends BaseDriver {
                 if (validLines.size() > 2) {
                     md.set(Tag.Note, validLines.get(2).strip());
                 }
-                comments = validLines.subList(0, Math.min(3, validLines.size())).toArray(String[]::new);
+                md.setAll(Tag.Comments, validLines.subList(0, Math.min(3, validLines.size())));
             }
         }
 
         return md;
-    }
-
-    @Override
-    public String[] comments() {
-        return comments;
     }
 
     @Override
@@ -106,7 +99,7 @@ public class MgsDriver extends BaseDriver {
 
         mgs.playingFileName = plugin.playingFileName;
 
-        metaData = getMetaData(dataBuf, 8);
+        metaData = retrieveMetaData(dataBuf, 8);
 
         try {
             mgs.run(dataBuf);

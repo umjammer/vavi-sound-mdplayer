@@ -115,7 +115,7 @@ public class MnDriver extends BaseDriver {
         this.latency = latency;
         this.waitTime = waitTime;
 
-        metaData = getMetaData(dataBuf);
+        metaData = retrieveMetaData(dataBuf);
         counter = 0;
         totalCounter = 0;
         loopCounter = 0;
@@ -158,7 +158,7 @@ public class MnDriver extends BaseDriver {
     }
 
     @Override
-    public MetaData getMetaData(byte[] buf, Object... args) {
+    public MetaData retrieveMetaData(byte[] buf, Object... args) {
         MetaData md = new MetaData();
 
         // the title lives wherever the pointer at $0c says, which is only coincidentally the

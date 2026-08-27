@@ -57,7 +57,7 @@ public class RcpDriver extends BaseDriver {
     }
 
     @Override
-    public MetaData getMetaData(byte[] buf, Object... args) {
+    public MetaData retrieveMetaData(byte[] buf, Object... args) {
         if (buf == null) return null;
         Boolean ret = RCP.checkHeadString(buf, Common.charset);
         if (ret == null) return null;
@@ -108,7 +108,7 @@ public class RcpDriver extends BaseDriver {
         speed = 1;
         speedCounter = 0;
 
-        metaData = getMetaData(dataBuf);
+        metaData = retrieveMetaData(dataBuf);
         //if (Gd3 == null) return false;
 
         rcp.data = dataBuf;

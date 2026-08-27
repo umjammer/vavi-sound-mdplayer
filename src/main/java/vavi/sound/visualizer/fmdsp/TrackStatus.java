@@ -31,6 +31,12 @@ public final class TrackStatus {
     public int gate;
     /** signed detune. */
     public int detune;
+    /**
+     * How far the sounding pitch has moved since the note was keyed on, in cents, which is what
+     * the frequency fluctuation display shows. 0 from a source that cannot measure it, which then
+     * falls back to {@link #actualKey} against {@link #key} and the LFO flags in {@link #status}.
+     */
+    public int pitchDeviation;
     /** short status mnemonic. up to 8 chars + NUL in C. */
     public String status = "";
     /** per-FM-slot mute mask (FM3 EX). */

@@ -38,6 +38,9 @@ public class ZgmDriver extends BaseDriver {
     private int chipCommandSize = 1;
     private long vgmDataOffset = 0;
 
+    private String version = "";
+    private String usedChips = "";
+
     public interface RefRunnable<T1, T2> extends BiConsumer<T1, T2> {
     }
 
@@ -52,7 +55,7 @@ public class ZgmDriver extends BaseDriver {
     }
 
     @Override
-    public MetaData getMetaData(byte[] buf, Object... args) {
+    public MetaData retrieveMetaData(byte[] buf, Object... args) {
         getZGMGD3Info(buf);
         return metaData;
     }

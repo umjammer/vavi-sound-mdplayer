@@ -36,7 +36,7 @@ public class MGSFileFormat extends BaseFileFormat {
 
     @Override
     public MetaData getMetaData() {
-        return new MgsDriver().getMetaData(this.srcBuf, 8);
+        return new MgsDriver().retrieveMetaData(this.srcBuf, 8);
     }
 
     @Override

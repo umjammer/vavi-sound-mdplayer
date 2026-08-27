@@ -45,7 +45,7 @@ public class MdsFileFormat extends BaseFileFormat {
 
     @Override
     public MetaData getMetaData() {
-        return new MdsDriver().getMetaData(this.srcBuf);
+        return new MdsDriver().retrieveMetaData(this.srcBuf);
     }
 
     @Override

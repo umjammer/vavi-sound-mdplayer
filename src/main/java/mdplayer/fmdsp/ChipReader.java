@@ -36,6 +36,12 @@ public abstract class ChipReader implements FmDspChipReader {
     protected abstract BaseChip chip();
 
     @Override
+    public Class<? extends mdplayer.Chip> chipClass() {
+        BaseChip chip = chipRegister != null ? chip() : null;
+        return chip != null ? chip.getClass() : null;
+    }
+
+    @Override
     public void bind(ChipRegister chipRegister) {
         this.chipRegister = chipRegister;
     }

@@ -76,7 +76,7 @@ public class S98Driver extends BaseDriver {
     }
 
     @Override
-    public MetaData getMetaData(byte[] buf, Object... args) {
+    public MetaData retrieveMetaData(byte[] buf, Object... args) {
         if (buf == null) return null;
 
         MetaData md = new MetaData();
@@ -206,7 +206,7 @@ public class S98Driver extends BaseDriver {
         speed = 1;
         speedCounter = 0;
 
-        metaData = getMetaData(dataBuf);
+        metaData = retrieveMetaData(dataBuf);
         //if (Gd3 == null) return false;
 
         if (!s98.getInformationHeader(dataBuf)) throw new IllegalArgumentException("not valid header");

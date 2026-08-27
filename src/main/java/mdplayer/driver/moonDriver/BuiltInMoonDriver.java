@@ -23,7 +23,7 @@ public class BuiltInMoonDriver extends BaseDriver {
     private static final Logger logger = getLogger(BuiltInMoonDriver.class.getName());
 
     @Override
-    public MetaData getMetaData(byte[] buf, Object... args) {
+    public MetaData retrieveMetaData(byte[] buf, Object... args) {
 
         MetaData md = new MetaData();
 
@@ -54,7 +54,7 @@ public class BuiltInMoonDriver extends BaseDriver {
         this.latency = latency;
         this.waitTime = waitTime;
 
-        metaData = getMetaData(dataBuf);
+        metaData = retrieveMetaData(dataBuf);
         counter = 0;
         totalCounter = 0;
         loopCounter = 0;

@@ -60,7 +60,7 @@ public class MuapDriver extends BaseDriver {
     }
 
     @Override
-    public MetaData getMetaData(byte[] buf, Object... args) {
+    public MetaData retrieveMetaData(byte[] buf, Object... args) {
         // muap basically has no tag information
         // (There is data that uses the lyrics function to display the title.)
         MetaData md = new MetaData();
@@ -69,7 +69,7 @@ public class MuapDriver extends BaseDriver {
 
     @Override
     public void init(EnmModel model, int latency, int waitTime, Object... args) {
-        metaData = getMetaData(dataBuf);
+        metaData = retrieveMetaData(dataBuf);
 
         this.model = model;
         this.latency = latency;

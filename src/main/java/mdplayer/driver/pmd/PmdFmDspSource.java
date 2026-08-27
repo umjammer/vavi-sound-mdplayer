@@ -551,6 +551,7 @@ public class PmdFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
         status.volume = 0;
         status.gate = 0;
         status.detune = 0;
+        status.pitchDeviation = 0;
         status.status = "";
         status.ppz8Ch = 0;
         status.ssgTone = false;
@@ -701,6 +702,25 @@ public class PmdFmDspSource implements FmDspDataSource, LevelDataSource, TrackSt
     @Override public boolean playing() { PW pw = work; return pw != null && pw.getStatus() > 0; }
 
     @Override public boolean paused() { return paused; }
+
+    /**
+     * PMD's own volume correction of the part, which is what the fmdsp {@code VOLUME DOWN} counter
+     * was written to show ("音源ドライバの音量補正値"). PMD counts a correction as how much to take
+     * off, so it is negated here: what the counter shows is the direction the volume moved.
+     */
+    @Override
+    public int volumeDown(VolumePart part) {
+        PW pw = work;
+        if (pw == null) return 0;
+        return -(switch (part) {
+            case FM -> pw.fm_voldown;
+            case SSG -> pw.ssg_voldown;
+            case RHY -> pw.rhythm_voldown;
+            // the PPZ8 parts have a correction of their own, which is the one to show when the
+            // song has PPZ8 at all: the ADPCM row's own is pcm_voldown
+            case PCM -> pw.ppz != 0 && pw.ppz_voldown != 0 ? pw.ppz_voldown : pw.pcm_voldown;
+        } & 0xff);
+    }
 
     @Override public String driverName() { return "PMD"; }
 

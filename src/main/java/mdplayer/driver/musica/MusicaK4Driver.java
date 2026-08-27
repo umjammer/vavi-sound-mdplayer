@@ -49,11 +49,11 @@ public class MusicaK4Driver extends BaseDriver {
     }
 
     @Override
-    public MetaData getMetaData(byte[] buf, Object... args) {
+    public MetaData retrieveMetaData(byte[] buf, Object... args) {
         throw new UnsupportedOperationException();
     }
 
-    public MetaData getMetaData(byte[] buf, byte[] vcdBuf) {
+    public MetaData retrieveMetaData(byte[] buf, byte[] vcdBuf) {
         MetaData ret = new MetaData();
         if (buf != null && buf.length > 8) {
             try {
@@ -63,7 +63,7 @@ public class MusicaK4Driver extends BaseDriver {
                 return null;
             }
             if (musicaK4.getBgmBin() == null) return null;
-            MetaData md = new MusicaDriver().getMetaData(musicaK4.getBgmBin());
+            MetaData md = new MusicaDriver().retrieveMetaData(musicaK4.getBgmBin());
             ret.set(Tag.Title, md.getFirst(Tag.Title));
             ret.set(Tag.TitleJ, md.getFirst(Tag.TitleJ));
             ret.set(Tag.Note, md.getFirst(Tag.Note));

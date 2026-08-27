@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
-public class FmpMetaDataTest {
+class FmpMetaDataTest {
 
     @Test
     void testMmlMetadataWithTags() throws Exception {
@@ -34,7 +34,7 @@ public class FmpMetaDataTest {
         byte[] buf = mml.getBytes(Charset.forName("MS932"));
 
         FmpDriver driver = new FmpDriver();
-        MetaData md = driver.getMetaData(buf);
+        MetaData md = driver.retrieveMetaData(buf);
 
         assertNotNull(md);
         assertEquals("Test Song Title", md.getFirst(Tag.Title));
@@ -54,7 +54,7 @@ public class FmpMetaDataTest {
         byte[] buf = mml.getBytes(Charset.forName("MS932"));
 
         FmpDriver driver = new FmpDriver();
-        MetaData md = driver.getMetaData(buf);
+        MetaData md = driver.retrieveMetaData(buf);
 
         assertNotNull(md);
         assertEquals("Semicolon Song Title", md.getFirst(Tag.Title));
@@ -91,7 +91,7 @@ public class FmpMetaDataTest {
         System.arraycopy(memoBytes, 0, buf, memoPtr + 4, memoBytes.length);
 
         FmpDriver driver = new FmpDriver();
-        MetaData md = driver.getMetaData(buf);
+        MetaData md = driver.retrieveMetaData(buf);
 
         assertNotNull(md);
         assertEquals("Binary Title", md.getFirst(Tag.Title));
@@ -120,13 +120,13 @@ public class FmpMetaDataTest {
         System.arraycopy(memoBytes, 0, buf, memoPtr + 4, memoBytes.length);
 
         FmpDriver driver = new FmpDriver();
-        MetaData md = driver.getMetaData(buf);
+        MetaData md = driver.retrieveMetaData(buf);
 
         assertEquals("Title", md.getFirst(Tag.Title));
         assertEquals("Words by  Someone", md.getFirst(Tag.Composer));
         assertEquals("Music by  Another", md.getFirst(Tag.Note));
         assertArrayEquals(new String[] {"  Title", "        Words by  Someone", "   Music by  Another"},
-                driver.comments());
+                md.getAll(Tag.Comments).toArray(String[]::new));
     }
 
     @Test
@@ -137,7 +137,7 @@ public class FmpMetaDataTest {
 
         byte[] buf = Files.readAllBytes(p);
         FmpDriver driver = new FmpDriver();
-        MetaData md = driver.getMetaData(buf);
+        MetaData md = driver.retrieveMetaData(buf);
 
         assertNotNull(md);
         String title = md.getFirst(Tag.Title);
@@ -166,11 +166,11 @@ public class FmpMetaDataTest {
         System.arraycopy(memoBytes, 0, buf, memoPtr + 4, memoBytes.length);
 
         FmpDriver driver = new FmpDriver();
-        MetaData md = driver.getMetaData(buf);
+        MetaData md = driver.retrieveMetaData(buf);
 
         assertEquals("Title", md.getFirst(Tag.Title));
         assertEquals("Words by  Someone", md.getFirst(Tag.Composer));
-        assertArrayEquals(new String[] {"  Title", "Words by  Someone"}, driver.comments());
+        assertArrayEquals(new String[] {"  Title", "Words by  Someone"}, md.getAll(Tag.Comments).toArray(String[]::new));
     }
 
     /** FMP writes half width ASCII with the double byte lead 0x85, JIS X 0208 row 9. */

@@ -188,6 +188,9 @@ public class Nise98 {
                 return 0;
             case 0x000a: // Interrupt controller slave
                 return cpu.w_smsk;
+            case 0x0071: // TIMER: Counter#0 R/W - FMP seeds its random numbers with this
+                return int08Timer.read();
+
             case 0x00a0: // graphics GDC status read
                  // bit5:vSync
                 vSyncCnt--;
@@ -294,11 +297,13 @@ logger.log(Level.TRACE, "fmReg188.ongen: " + fmReg188.ongen);
                 break;
             case 0x71: // TIMER: Counter#0 R/W
                 if (tracing) logger.log(Level.TRACE, "<Nise98>OUT Port:$%02x".formatted(port & 0xff));
+                int08Timer.write(data);
                 cpu.interruptTrigger[8] = true;
                 int08Timer.start();
                 break;
             case 0x77: // TIMER: Set Mode
                 if (tracing) logger.log(Level.TRACE, "<Nise98>OUT Port:$%02x".formatted(port & 0xff));
+                int08Timer.setMode(data);
                 break;
             case 0xa1: // Second byte of character code
                 mojiCode = (short) ((mojiCode & 0x00ff) | ((data & 0xff) << 8));

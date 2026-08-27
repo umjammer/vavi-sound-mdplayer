@@ -1,6 +1,6 @@
 # mdplayer.driver.fmp7
 
-FMP7 (.owi) driver
+FMP7 (.owi) driver, and its compiler (.mwi)
 
 ## Usage
 
@@ -133,89 +133,89 @@ of the song is handed over, whatever FMP7 says it has already played is exactly 
 Measured against the audio, the two then agree to within about a tenth of a second, and hold
 there for as long as the song runs.
 
-## When a song ends
+## The compiler
 
-A song with an end - `yonao_hasai.owi` is 242 seconds of one - used to hang there: the last bar
-played and the player sat on it for ever. The readings the driver watches are taken as the samples
-are handed over, so when FMP7 stops making sound there are no more readings, and the last one says
-"playing" for the rest of time. Asked that, the driver waits.
+An `.mwi` is the MML an `.owi` is compiled from, and opening one plays it: the plugin compiles it
+first (`Fmp7Compiler`) and hands the driver the object. It takes about half a second and needs
+nothing the player does not already need — `fmc.dll` and `common_resrc.dll` out of the same FMP7
+directory.
 
-So `Fmp7Player#isSongOver` reads the work itself once the queue has run dry, rather than looking at
-a reading that has stopped coming - a tenth of a second apart at most, because a starved render
-asks it for every frame of silence it puts out. FMP7 usually says plainly that it has stopped; if
-it claims to be playing while making no sound and going nowhere for two seconds, that counts too.
+It costs one machine, though, and that machine is spent before the player asks for its own — so an
+`.mwi` meets the "second and later machines sometimes fail to start" problem one song sooner than
+an `.owi` does. `mdplayer.fmp7.attempts` covers it the same way.
 
-## When a song does not start at all
+| property                          | default  | what it is                                     |
+|-----------------------------------|----------|------------------------------------------------|
+| `mdplayer.fmp7.compiler.memory`   | `32`     | megabytes the compiler's machine gets          |
+| `mdplayer.fmp7.compiler.timeout`  | `120000` | how long a compile is given [ms]               |
 
-The second and later machines in one JVM sometimes fail while loading, and FMP7 says so itself:
-`exFMP7.dll: 未対応のエラーが発生しました [-1]` - "an unsupported error occurred" - in a MessageBox
-that a machine with nothing drawn cannot show, which is why nobody had ever seen it. jdosbox logs
-those now (`the guest says: ...`), and getting FMP7 to name its own error took reading the api
-trail to find the `MessageBoxA` and then reading the literals out of `FMP7.exe` to see it was
-scanning `addon\` for `exfmp7.dll`. It fails in two ways: the program throws and the machine goes,
-or the machine stays up having published nothing.
+**Not FMC7.exe.** The compiler FMP7 ships with is a gui program and it ignores its command line
+entirely — its startup takes `__argc` and `__wargv` and nothing ever reads them again, which is
+why `wine FMC7.exe song.mwi` sits there doing nothing. It compiles from its own file dialog, from
+a file dropped on its window, or from one it has been told to watch, and none of those can be
+driven from outside. What can is `fmc.dll`, the compile core underneath it, whose `Compile()` is
+published for exactly this — [the api page](http://fmpdoc.fmp.jp/fmc-api/). So what runs on the
+emulated PC is `fmc7c.exe`: a hundred lines of C that load that dll, call it, and print what it
+said. Its source is `mdplayer/lib/fmp7/fmc7c.c`, beside the built copy in the jar, and the one
+line that builds it is at the top of the file.
 
-What is left over from the machine before to cause it is still unknown. It is not the number of
-previous machines (six short ones fail more often than six long ones) and it is not a settling
-race (a second between machines makes it worse). So the driver does the one thing that is certain
-to be right for a play list: a song that has made no sound gets **another machine**, up to
-`mdplayer.fmp7.attempts` of them. A machine that has failed this way has never made a sound, so a
-retry cannot cut a song short, and `Fmp7Player#isFinished` will not call a song finished while an
-attempt is still owed - which is what used to drop it on the driver's first starved read.
+It is built with no C runtime at all — kernel32 and nothing else. A modern mingw links against the
+ucrt (`api-ms-win-crt-*`), which the emulated PC does not have, so the six kernel32 calls it does
+make are the whole of its dependencies. It also does its own utf-8 encoding and its own command
+line splitting, for the same reason each time: the emulated PC has no code page 65001, no
+`CommandLineToArgvW`, and a `GetCommandLineW` that hands back an ansi string.
 
-Eight suite runs green, the retry firing in three of them; sixty seconds each of five songs, no
-failures.
+`fmc32_control.h` is not published, so the shape of what `GetInfo` returns was read back out of a
+compile — a type, and for a log entry the message, the line and column, and the part. It is
+packed, which is why the offsets in `fmc7c.c` are not aligned.
 
-**The way to work on any of it** is
-`Fmp7WorkProbe.queueSoak` in jDOSBox, which is this driver's arrangement in miniature - a bounded
-queue the sink blocks on, a consumer taking a buffer at a time, a prime - and which found three of
-the four above. At `-Dqueue=6 -Dprime=3` before the cursor fix it killed the machine at exactly
-7.7s, four times out of four: a question that costs forty seconds instead of ten minutes, and the
-only way any of this was separable from the noise. `-Djdos.trail=true` keeps a trail of the
-guest's last api calls and dumps it whenever the program ends, which is how the timer flood was
-found; it costs time per call, and FMP7 is sensitive enough to that to have died 6/6 with it on
-before the timer fix.
+### What it cannot do
 
-## What does not work yet
+**Say which line was wrong.** fmc.dll reports every error by throwing it — one C++ throw each,
+caught a frame or two up — and jdosbox has no C++ exception handling, so the program dies at the
+first one and takes the reason with it. A song that compiles never throws and does not care;
+warnings do not throw either and come through in full. A song that does not compile is a song that
+would not have compiled on Windows either — FMC7 has moved on since most of these were written and
+is stricter than the version they were made with, and an envelope on a PCM part is an error now
+where it was not in 2010 — but here all that can be said is that it was rejected.
 
-One FMP7 song after another is fine, however the first one ended — stopped part way through or
-left to play out; `Fmp7DriverTest#aSecondSongPlaysAfterTheFirst` is that case and it passes. What
-does not work is an FMP7 song after a **SMAF** song: FMP7 loads, sets up its DirectSound buffers,
-and then throws an error code of its own (`_CxxThrowException type=.H`, which is an int) and dies
-before it makes a sound.
+**Carry a Japanese name into the object.** The text an `.owi` holds is UTF-16, converted from the
+source by the emulated PC's ansi code page, which is a western one; a name written in kanji comes
+back out of the object as the bytes it was, one character each. It costs nothing here because the
+object is never written to disk and the source says the same thing in its own encoding — see
+`Fmp7Plugin#getSourceMetaData`, which is what a song compiled here is shown from. It would matter
+to anything that kept the object.
 
-It is the hazard the smaf driver's readme describes seen from the other side — the win32 layer is
-a whole system in statics, written for a process that runs one program and exits — and it is a
-jdosbox one rather than this driver's. Two of the things a machine used to leave behind are now
-thrown away between machines: the COM interface tables, which held addresses into a machine that
-had gone (that one stopped a second FMP7 song dead), and the emulated sound devices, whose
-threads outlived their machine. Whatever this one is, it is neither of those; it happens between
-FMP7 finishing with DirectSound and asking for its addon driver.
+### What it took to run at all
 
-## The end of a song, and why it used to freeze there
+`fmc.dll` is the first program here to lean on the C runtime, and jdosbox's `msvcr90` was missing
+twelve of the functions it imports. An import jdosbox does not have is stubbed to return 0 rather
+than refused, so this does not look like a missing function: `tolower` answered 0, every keyword
+in the file compared equal to `""`, and the compiler rejected every song it was handed with an
+error about the first line of the information block. Four more things had to be right before it
+would compile anything:
 
-Two separate things had to be right before a song that ends could end.
+- **`GetLastError` always answered 0.** Every api call clears the last error before it runs, and
+  `GetLastError` is a call, so it cleared the thing it was there to read. fmc.dll deletes its
+  output before writing it, sees the delete fail, asks why, is told "no error", and gives up.
+- **`DeleteFile` on a missing file said `ERROR_PATH_NOT_FOUND`.** Windows says `FILE_NOT_FOUND`
+  when only the file is missing, and that is the one fmc.dll carries on from.
+- **`MultiByteToWideChar` read nothing when handed -1**, which is how nearly every caller says
+  "the string ends at its nul". The title, the composer and the comment all came out empty.
+- **An ansi string written back into guest memory went out as UTF-8.** `String.getBytes()` with no
+  charset, against a `getString` that reads a byte to a character — so anything above 0x7f grew a
+  byte on the way back and the two no longer agreed.
 
-The first is knowing it is over. FMP7 does not say so: the file has no length, and a song that
-does not loop simply stops writing to its sound buffer. `Fmp7Player.isSongOver` therefore asks
-the published work, but only once everything already handed over has been heard - the queue holds
-seconds of sound the listener has not reached yet, and a song is not over while any of it is
-left. The work says either that nothing is playing at all, or that the play position has not
-moved for two seconds; either way the driver marks itself stopped, which is what every one of the
-player's three ends-of-song is watching (`Audio.play`, `FormMain`'s screen loop, and the sampled
-SPI all test `driver.stopped`).
+`std::string`'s `substr`, `erase`, `operator[]`, `operator=` and `npos` were missing from
+`msvcp90` too. All of it is in jdosbox 0.74.36v.
 
-The second is not blocking after that. `render` waits up to `READ_TIMEOUT_MILLIS` for the
-emulator to come up with samples, and waiting - rather than filling silence in - is deliberate:
-rendering to a file, that wait is the only thing holding the loop to the emulator's pace. But
-`Audio.play` renders **two frames at a time**, and its fade-out is a hundred thousand samples
-long. With nothing left to come, every one of those two-frame renders paid the full half second:
-twenty five thousand of them, hours, with no sound and no end. The song *had* ended - the driver
-said so on time, `Fmp7DriverTest#playsThroughTheDriver` had always shown it ending at 191.5s of
-tritone's 191s - and the player still sat there. That is what "some songs freeze at the end" was,
-and it is why it could not be found from the driver: rendered a buffer at a time, one wait covers
-thousands of samples and costs nothing to notice.
+### Which songs compile
 
-So the wait is now skipped once the driver is stopped. `Fmp7DriverTest#endsThroughThePlayersOwnLoop`
-is the test for it, and it is the player's own loop rather than the driver's - the only place the
-failure exists. The smaf driver is built the same way and had the same freeze; it has the same fix.
+Of the nine `.mwi` under `tmp/fmp7`, seven compile and two are rejected — the same seven and the
+same two as under wine. Five of the seven produce the object wine's `fmc.dll` does byte for byte;
+the other two are the two whose credits are written in kanji, and they differ only in how those
+bytes were mapped into the text chunk (and in the checksum over it), which is the code page again.
+
+Against the `.owi` their authors shipped in 2010, `deltaray` differs in six bytes and `Altair` in
+one: the compiler version stamp in the header and the checksum of the chunk it sits in. The rest
+differ by more, because the compiler has had nine versions of fixes since.

@@ -3,7 +3,7 @@
 
   <groupId>vavi</groupId>
   <artifactId>vavi-apps-mdplayer</artifactId>
-  <version>0.0.25</version>
+  <version>0.0.26</version>
 
   <profiles>
     <profile>
@@ -414,7 +414,7 @@
       <dependency>
         <groupId>org.junit</groupId>
         <artifactId>junit-bom</artifactId>
-        <version>6.0.3</version>
+        <version>6.1.1</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -425,12 +425,12 @@
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- com.github.umjammer / vavi -->
       <artifactId>vavi-commons</artifactId>
-      <version>1.1.19</version>
+      <version>1.1.20</version>
     </dependency>
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
       <artifactId>vavi-util-serdes</artifactId>
-      <version>1.0.13</version>
+      <version>1.0.14</version>
     </dependency>
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
@@ -451,12 +451,12 @@
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
       <artifactId>vavi-sound-mdsound</artifactId>
-      <version>0.0.26</version>
+      <version>0.0.27</version>
     </dependency>
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
       <artifactId>vavi-sound-mdi</artifactId>
-      <version>0.0.8</version>
+      <version>0.0.9</version>
     </dependency>
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
@@ -466,7 +466,7 @@
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
       <artifactId>vavi-sound-pmd</artifactId>
-      <version>0.0.12</version>
+      <version>0.0.13</version>
     </dependency>
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
@@ -511,12 +511,12 @@
     <dependency>
       <groupId>com.github.umjammer.vavi-apps-dosbox</groupId> <!-- com.acclash.jdosbox / com.github.umjammer.vavi-apps-dosbox -->
       <artifactId>jdosbox</artifactId>
-      <version>0.74.35v</version>
+      <version>0.74.36v</version>
     </dependency>
     <dependency>
       <groupId>com.github.umjammer.vavi-apps-dosbox</groupId> <!-- com.acclash.jdosbox / com.github.umjammer.vavi-apps-dosbox -->
       <artifactId>jdosbox-win</artifactId>
-      <version>0.74.35v</version>
+      <version>0.74.36v</version>
     </dependency>
 
     <dependency>

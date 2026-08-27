@@ -36,7 +36,7 @@ public class MFileFormat extends BaseFileFormat {
 
     @Override
     public MetaData getMetaData() {
-        return new PmdDriver().getMetaData(this.srcBuf, PmdDriver.PMDFileType.M);
+        return new PmdDriver().retrieveMetaData(this.srcBuf, PmdDriver.PMDFileType.M);
     }
 
     @Override

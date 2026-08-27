@@ -48,6 +48,11 @@ import static vavi.sound.visualizer.fmdsp.FmDspSprites.*;
  * {@link TrackDetailSource} instead, so that they are neither OPNA specific nor
  * the renderer's business to fetch.
  *
+ * <h2>Beyond the C source</h2>
+ * One section is drawn here that 98fmplayer's fmdsp never had: the frequency fluctuation display
+ * of the original PC-98 FMDSP, section 9 of its FMDSP.DOC, which lives in {@code FMDSP.COM} alone.
+ * See {@link #freqWave}.
+ *
  * <h2>Threading</h2>
  * VRAM is rebuilt on the EDT each repaint; guard cross-thread data-source
  * mutation on your side.
@@ -98,6 +103,28 @@ public class FmDspVisualizer extends JComponent {
     private static final int BAR_W = 2;
     private static final int BAR_H = 4;
     private static final int BAR_CNT = 64;
+    /**
+     * The frequency fluctuation display of FMDSP.DOC's "9", which shares the note bar's row and
+     * sits over the "M:" LFO field of the line below it, see {@link #freqWave}. Its strokes are
+     * the note bar's own: one pixel every {@link #BAR_W}, in the same two colours.
+     */
+    private static final int FREQ_X = TDETAIL_M_V_X;
+    /** slots the wave itself flows through */
+    private static final int FREQ_CNT = 8;
+    /** slots of the whole field, which runs out to the end of the LFO field below */
+    private static final int FREQ_FIELD = 20;
+    /** rows the wave swings above and below its centre line */
+    private static final int FREQ_AMP = 2;
+    /** the row the wave rests on, a full swing from the top of the note bar's band */
+    private static final int FREQ_MID_Y = BAR_Y + FREQ_AMP;
+    /**
+     * Pitch movement, in cents, that swings the wave to {@link #FREQ_AMP}. A third of a semitone:
+     * the depth a vibrato is usually written at, measured off a real PMD song, so that an ordinary
+     * one fills the display and a deeper one only pins it.
+     */
+    private static final int FREQ_FULL_CENTS = 30;
+    /** how far the wave travels each frame, one slot every other frame */
+    private static final double FREQ_SPEED = Math.PI / FREQ_CNT;
     private static final int COMMENT_Y = 340;
     private static final int COMMENT_H = 19;
     private static final int PLAYING_X = 0;
@@ -155,6 +182,23 @@ public class FmDspVisualizer extends JComponent {
     private static final int LOOPCNT_Y = TIMERB_Y + 19;
     private static final int VOLDOWN_Y = LOOPCNT_Y + 19;
     private static final int PGMNUM_Y = VOLDOWN_Y + 19;
+    /**
+     * The {@code VOLUME DOWN} counter, which shows one part's correction at a time: three digits
+     * on the counter lattice like every other counter, a sign place left of them and the part's
+     * name left of that. Measured off the PC-98 capture, whose whole row is offset four pixels
+     * from this layout's counters - the digits go where our counters are, the rest keeps the
+     * capture's spacing against them.
+     */
+    private static final int VOLDOWN_DIGITS = 3;
+    private static final int VOLDOWN_NUM_X = TIME_X + NUM_W * (8 - VOLDOWN_DIGITS);
+    /** the place the sign moves out to when the number itself fills the three digits */
+    private static final int VOLDOWN_SIGN_X = VOLDOWN_NUM_X - NUM_W;
+    private static final int VOLDOWN_PART_X = VOLDOWN_NUM_X - 27;
+    private static final int VOLDOWN_PART_Y = VOLDOWN_Y + 5;
+    /** the middle segment of a digit, which is the counter's minus: row 5, two pixels wide */
+    private static final int VOLDOWN_BAR_X = 3;
+    private static final int VOLDOWN_BAR_W = 2;
+    private static final int VOLDOWN_BAR_Y = 5;
     private static final int LOGO_Y = 1;
     private static final int LOGO_FM_W = 31;
     private static final int LOGO_DS_W = 32;
@@ -410,6 +454,14 @@ public class FmDspVisualizer extends JComponent {
     private final int[] levelCnt = new int[FMDSP_LEVEL_COUNT];
     private final int[] levelDropDiv = new int[FMDSP_LEVEL_COUNT];
 
+    /** the VOLUME DOWN counter's last reading of each part, and the part it is showing */
+    private final int[] volDown = new int[WorkStateSource.VolumePart.values().length];
+    private WorkStateSource.VolumePart volDownPart;
+
+    /** where each row's frequency fluctuation wave has flowed to, and how far it swings */
+    private final double[] freqPhase = new double[TrackId.COUNT];
+    private final double[] freqAmp = new double[TrackId.COUNT];
+
     private long framecnt;
     private int cpuusage;
     private int fps;
@@ -447,6 +499,9 @@ public class FmDspVisualizer extends JComponent {
     /** Set the data source. May be replaced at any time. */
     public void setDataSource(FmDspDataSource source) {
         this.source = source;
+        // the next song's corrections are not this one's changing, so the counter picks its part
+        // afresh rather than jumping to whichever one happens to differ
+        volDownPart = null;
     }
 
     /**
@@ -1121,6 +1176,7 @@ public class FmDspVisualizer extends JComponent {
             for (int j = 0; j < BAR_CNT; j++) {
                 vramblitColor(BAR_X + BAR_W * j, TRACK_H * i + BAR_Y, s_bar, 0, BAR_W, BAR_H, 3);
             }
+            freqField(TRACK_H * i);
         }
 
         // a short display list ({@link LeftMode#AUTO}) leaves rows over: draw their keyboard and
@@ -1135,6 +1191,7 @@ public class FmDspVisualizer extends JComponent {
             for (int j = 0; j < BAR_CNT; j++) {
                 vramblitColor(BAR_X + BAR_W * j, TRACK_H * i + BAR_Y, s_bar, 0, BAR_W, BAR_H, 3);
             }
+            freqField(TRACK_H * i);
         }
 
         if (rightMode == RightMode.DEFAULT) initDefault();
@@ -1404,6 +1461,99 @@ public class FmDspVisualizer extends JComponent {
             vramblitColor(BAR_X + BAR_W * i, y + BAR_Y, s_bar, 0, BAR_W, BAR_H, c);
         }
         vramblitColor(BAR_X + BAR_W * (track.ticks >> 2), y + BAR_Y, s_bar, 0, BAR_W, BAR_H, 7);
+
+        freqWave(t, track, masked, y);
+    }
+
+    /**
+     * The dim strokes the frequency fluctuation display rests on, drawn with the rest of the row's
+     * chrome so that a row nothing is playing on shows the field rather than a hole.
+     */
+    private void freqField(int y) {
+        for (int i = 0; i < FREQ_FIELD; i++) {
+            vramblitColor(FREQ_X + BAR_W * i, y + BAR_Y, s_bar, 0, BAR_W, BAR_H, 3);
+        }
+    }
+
+    /**
+     * FMDSP.DOC's "9", the frequency fluctuation display: a wave flows through the left of the
+     * field whenever an LFO or a pitch bend is moving the note off the pitch it was struck at, and
+     * the field lies flat while it is not.
+     * <p>
+     * The original is in FMDSP.COM alone - 98fmplayer's fmdsp never had it - so what is reproduced
+     * here is what the FMDSP screen does: eight strokes of the note bar's own kind over the "M:"
+     * LFO field, each drawn from the centre line out to the wave, so that no fluctuation is a flat
+     * line of single pixels and a deep one a row of tall strokes. Like the original it is an
+     * indicator and not a measurement - the doc says as much - the movement being a wave of a fixed
+     * shape and speed whose depth follows the pitch, rather than the pitch curve itself.
+     */
+    private void freqWave(TrackId t, TrackStatus track, boolean masked, int y) {
+        int row = t.ordinal();
+        double target = fluctuation(track);
+        // rises with the note and falls back slowly, so that a vibrato turning through zero twice
+        // a cycle does not blink the display off and on again
+        freqAmp[row] += (target - freqAmp[row]) * (target > freqAmp[row] ? 0.5 : 0.12);
+        if (!track.playing) {
+            freqAmp[row] = 0;
+            freqPhase[row] = 0;
+            return;
+        }
+        freqPhase[row] = (freqPhase[row] + FREQ_SPEED) % (2 * Math.PI);
+
+        // the note bar's colours, so the two read as the one row: 7 for a keyless or masked row
+        int color = (track.key == 0xff || masked) ? 7 : 2;
+        for (int i = 0; i < FREQ_CNT; i++) {
+            int x = FREQ_X + BAR_W * i;
+            // the wave takes the slot over from the field's dim stroke rather than sitting in it
+            for (int yi = 0; yi < BAR_H; yi++) {
+                vram[(y + BAR_Y + yi) * PC98_W + x] = 0;
+            }
+            // one period of the wave spans the slots, and every other frame moves it one along
+            double v = freqAmp[row] * FREQ_AMP
+                    * Math.sin(freqPhase[row] - i * (2 * Math.PI / FREQ_CNT));
+            int d = (int) Math.round(v);
+            for (int yi = Math.min(0, d); yi <= Math.max(0, d); yi++) {
+                vram[(y + FREQ_MID_Y + yi) * PC98_W + x] = (byte) color;
+            }
+        }
+    }
+
+    /**
+     * How far off the pitch it was struck at a row is sounding, 0 (steady) to 1
+     * ({@link #FREQ_FULL_CENTS} or more). A source that measures it says so in
+     * {@link TrackStatus#pitchDeviation}; one that does not leaves the semitone the keyboard
+     * already shows - {@link TrackStatus#actualKey} against {@link TrackStatus#key} - and its
+     * driver's own LFO flags, which is all the original had to go on for the FM drivers it was
+     * written for.
+     */
+    private static double fluctuation(TrackStatus track) {
+        if (!track.playing || track.key == 0xff || (track.key & 0xf) == 0xf) return 0;
+        int cents = Math.abs(track.pitchDeviation);
+        if (cents == 0 && track.actualKey != 0xff && (track.actualKey & 0xf) != 0xf) {
+            cents = Math.abs(noteOf(track.actualKey) - noteOf(track.key)) * 100;
+        }
+        double a = Math.min(1.0, cents / (double) FREQ_FULL_CENTS);
+        if (a == 0 && pitchFlagged(track.status)) a = 0.5;
+        return a;
+    }
+
+    /**
+     * Whether the "M:" field says something is moving this row's pitch. Every driver spells a
+     * pitch LFO or a portamento with P, and FMP its second and third with Q and R; A (volume), S
+     * (sync) and e (envelope) move the level instead, and H is the chip's own hardware LFO, which
+     * the original leaves out of this display and so does this.
+     */
+    private static boolean pitchFlagged(String status) {
+        for (int i = 0; i < status.length(); i++) {
+            char c = status.charAt(i);
+            if (c == 'P' || c == 'Q' || c == 'R') return true;
+        }
+        return false;
+    }
+
+    /** semitones above C0 of a packed {@code octave << 4 | note} key */
+    private static int noteOf(int key) {
+        return (key >> 4) * 12 + (key & 0xf);
     }
 
     // ==================================================================
@@ -1529,6 +1679,7 @@ public class FmDspVisualizer extends JComponent {
         s.volume = 0;
         s.gate = 0;
         s.detune = 0;
+        s.pitchDeviation = 0;
         s.status = "";
         Arrays.fill(s.fmSlotMask, false);
         s.ppz8Ch = 0;
@@ -1608,6 +1759,8 @@ public class FmDspVisualizer extends JComponent {
             lp /= 10;
         }
 
+        renderVolumeDown(w);
+
         // loop / duration progress bar
         long loopLen = w != null ? w.loopTimerBCount() : 0L;
         long loopPos = w != null ? w.timerBCountLoop() : 0L;
@@ -1656,6 +1809,77 @@ public class FmDspVisualizer extends JComponent {
         for (int i = 0; i < 3; i++) {
             blitNum(FPS_NUM_X + NUM_W * (2 - i), CPU_NUM_Y, fp % 10);
             fp /= 10;
+        }
+    }
+
+    /**
+     * The {@code VOLUME DOWN} counter of FMDSP.DOC's {@code ▽各種ステータス表示}: how far the player
+     * is turning a part down, for one part at a time - "表示は変更があったパートに自動的に切り替わり
+     * ます", so the counter follows whichever of FM, SSG, RHY and PCM moved last.
+     * <p>
+     * The row is drawn but never filled by 98fmplayer's fmdsp, which has no such number to show;
+     * here it comes through {@link WorkStateSource#volumeDown}, where mdplayer's generic source
+     * answers with the calibrated mixer balance of the chip playing that part and a driver-specific
+     * one with the driver's own correction. Laid out as the PC-98 capture has it: the part's name
+     * in the small font, then three counter digits with no leading zeros, the minus sitting in the
+     * blank place in front of the number.
+     */
+    private void renderVolumeDown(WorkStateSource w) {
+        WorkStateSource.VolumePart[] parts = WorkStateSource.VolumePart.values();
+        WorkStateSource.VolumePart changed = null;
+        for (int i = 0; i < parts.length; i++) {
+            int v = w != null ? w.volumeDown(parts[i]) : 0;
+            // several parts move together when a song starts; the one worth showing is a part that
+            // is actually turned down, not whichever of them is last in the enum
+            if (volDownPart != null && v != volDown[i] && (changed == null || v != 0)) {
+                changed = parts[i];
+            }
+            volDown[i] = v;
+        }
+        if (changed != null) {
+            volDownPart = changed;
+        } else if (volDownPart == null) {
+            // the first reading is not a change: open on a part that has a correction
+            volDownPart = parts[0];
+            for (int i = 0; i < parts.length; i++) {
+                if (volDown[i] != 0) {
+                    volDownPart = parts[i];
+                    break;
+                }
+            }
+        }
+
+        int v = volDown[volDownPart.ordinal()];
+        putSmall((volDownPart.name() + "   ").substring(0, 3), VOLDOWN_PART_X, VOLDOWN_PART_Y, 2, true);
+
+        int abs = Math.min(999, Math.abs(v));
+        int digits = abs >= 100 ? 3 : abs >= 10 ? 2 : 1;
+        boolean minus = v < 0;
+        // the sign is a digit place of its own, lit as the middle segment alone - the counter has
+        // no minus glyph, and the leading blank is exactly the shape one would be drawn on. Only a
+        // number that fills all three digits pushes it out to the place beside the field, which
+        // otherwise shows the bare segment unlit
+        blitMidBar(VOLDOWN_SIGN_X, VOLDOWN_Y, minus && digits == VOLDOWN_DIGITS ? 2 : 3);
+        for (int i = 0; i < VOLDOWN_DIGITS; i++) {
+            int x = VOLDOWN_NUM_X + NUM_W * i;
+            int place = VOLDOWN_DIGITS - 1 - i;
+            if (place < digits) {
+                int p = 1;
+                for (int d = 0; d < place; d++) p *= 10;
+                blitNum(x, VOLDOWN_Y, (abs / p) % 10);
+            } else {
+                // no leading zeros: the places the number does not reach are blank glyphs, and the
+                // first of them carries the sign
+                blitNum(x, VOLDOWN_Y, 10);
+                if (minus && place == digits) blitMidBar(x, VOLDOWN_Y, 2);
+            }
+        }
+    }
+
+    /** the middle segment of a digit cell on its own, which is what the counter's minus is */
+    private void blitMidBar(int x, int y, int color) {
+        for (int i = 0; i < VOLDOWN_BAR_W; i++) {
+            vram[(y + VOLDOWN_BAR_Y) * PC98_W + x + VOLDOWN_BAR_X + i] = (byte) color;
         }
     }
 

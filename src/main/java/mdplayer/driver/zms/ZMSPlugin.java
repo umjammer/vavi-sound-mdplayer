@@ -92,7 +92,7 @@ public class ZMSPlugin extends BasePlugin<ZmsDriver> implements Compilable {
             chip.option = new Object[] { 0, 1, 0 };
         } else {
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
-            chip.option = new Object[] {setting.getZMusic().pcm8ppsOption};
+            chip.option = new Object[] {setting.pcm8ppsOption(this)};
         }
         put(Pcm8Chip.class, chip);
 
@@ -215,7 +215,7 @@ logger.log(Level.INFO, "compilePriority: " + compilePriority);
                         break;
                 }
             } else {
-                driverVirtual.getMetaData(dataBuf, 0);
+                driverVirtual.retrieveMetaData(dataBuf, 0);
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);

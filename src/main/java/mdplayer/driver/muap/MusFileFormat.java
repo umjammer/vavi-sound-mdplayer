@@ -42,7 +42,7 @@ public class MusFileFormat extends BaseFileFormat {
 
     @Override
     public MetaData getMetaData() {
-        return new MuapDriver().getMetaData(this.srcBuf, 0);
+        return new MuapDriver().retrieveMetaData(this.srcBuf, 0);
     }
 
     @Override

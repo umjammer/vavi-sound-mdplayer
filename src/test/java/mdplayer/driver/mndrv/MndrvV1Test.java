@@ -168,7 +168,7 @@ class MndrvV1Test {
     @DisplayName("v1 metadata reads the title, not the tone data")
     void v1Title() throws Exception {
         byte[] buf = Files.readAllBytes(V1.resolve("SXP000.MND"));
-        assertEquals("-SORCERIAN X1-", new MnDriver().getMetaData(buf)
+        assertEquals("-SORCERIAN X1-", new MnDriver().retrieveMetaData(buf)
                 .getFirst(musicDriverInterface.MetaData.Tag.Title).substring(0, 14));
     }
 }

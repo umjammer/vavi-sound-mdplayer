@@ -37,7 +37,7 @@ public class ZMSFileFormat extends BaseFileFormat {
     @Override
     public MetaData getMetaData() {
         ZmsDriver zms = new ZmsDriver();
-        return zms.getMetaData(this.srcBuf, 8, filename);
+        return zms.retrieveMetaData(this.srcBuf, 8, filename);
     }
 
     @Override

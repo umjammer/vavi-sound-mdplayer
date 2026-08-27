@@ -38,7 +38,7 @@ class GenericDriverPcmLoadTest {
 
         @Override public void init(EnmModel model, int latency, int waitTime, Object... args) {}
         @Override public void processOneFrame() {}
-        @Override public musicDriverInterface.MetaData getMetaData(byte[] buf, Object... args) { return null; }
+        @Override public musicDriverInterface.MetaData retrieveMetaData(byte[] buf, Object... args) { return null; }
     }
 
     @Test

@@ -45,7 +45,7 @@ public class MusicaDriver extends BaseDriver {
     }
 
     @Override
-    public MetaData getMetaData(byte[] buf, Object... args) {
+    public MetaData retrieveMetaData(byte[] buf, Object... args) {
         MetaData md = new MetaData();
         if (buf != null && buf.length > 8) {
             try {

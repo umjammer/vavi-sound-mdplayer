@@ -37,7 +37,7 @@ public class NDPFileFormat extends BaseFileFormat {
 
     @Override
     public MetaData getMetaData() {
-        return new NdpDriver().getMetaData(this.srcBuf, 8);
+        return new NdpDriver().retrieveMetaData(this.srcBuf, 8);
     }
 
     @Override

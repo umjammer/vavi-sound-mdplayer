@@ -59,7 +59,7 @@ public class NrtDriver extends BaseDriver {
         this.latency = latency;
         this.waitTime = waitTime;
 
-        metaData = getMetaData(dataBuf, 42);
+        metaData = retrieveMetaData(dataBuf, 42);
         counter = 0;
         totalCounter = 0;
         loopCounter = 0;
@@ -94,7 +94,7 @@ public class NrtDriver extends BaseDriver {
      * @param args 0: index
      */
     @Override
-    public MetaData getMetaData(byte[] buf, Object... args) {
+    public MetaData retrieveMetaData(byte[] buf, Object... args) {
         int[] index = {(int) args[0]};
 
         MetaData md = new MetaData();

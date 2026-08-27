@@ -42,7 +42,7 @@ public class MNDFileFormat extends BaseFileFormat {
 
     @Override
     public MetaData getMetaData() {
-        return new MnDriver().getMetaData(this.srcBuf);
+        return new MnDriver().retrieveMetaData(this.srcBuf);
     }
 
     @Override

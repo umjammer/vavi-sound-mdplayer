@@ -20,6 +20,7 @@ import vavi.sound.visualizer.fmdsp.LevelDataSource.Pan;
 import vavi.sound.visualizer.fmdsp.TrackId;
 import vavi.sound.visualizer.fmdsp.TrackInfo;
 import vavi.sound.visualizer.fmdsp.TrackStatus;
+import vavi.sound.visualizer.fmdsp.WorkStateSource;
 import vavi.util.properties.annotation.PropsEntity;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -136,6 +137,65 @@ class ChipFmDspSourceTest {
         source.readStatus(TrackId.FM_2, status);
         assertFalse(status.playing);
         assertEquals(0xff, status.key);
+    }
+
+    @Test
+    @DisplayName("the frequency fluctuation display gets the cents a held note has been bent by")
+    void testPitchDeviation() {
+        opnaKeyOnFm1();
+        source.snapshot();
+        source.readStatus(TrackId.FM_1, status);
+        assertEquals(0, status.pitchDeviation, "a note sitting still has not moved");
+
+        // the same note bent up a sixth of a tone, which is a vibrato and not a new note: the
+        // f-number times 2^(30/1200)
+        opna.write(0, 0, 0xa4, (4 << 3) | (0x275 >> 8), EnmModel.VirtualModel);
+        opna.write(0, 0, 0xa0, 0x275 & 0xff, EnmModel.VirtualModel);
+        source.snapshot();
+        source.readStatus(TrackId.FM_1, status);
+        assertEquals(0x40, status.key, "still the note it was struck at");
+        assertTrue(Math.abs(status.pitchDeviation - 30) <= 6,
+                "about 30 cents up, was " + status.pitchDeviation);
+
+        // and it goes out with the key, rather than following the row to the next note
+        opna.write(0, 0, 0x28, 0x00, EnmModel.VirtualModel);
+        source.snapshot();
+        source.readStatus(TrackId.FM_1, status);
+        assertEquals(0, status.pitchDeviation);
+    }
+
+    @Test
+    @DisplayName("the VOLUME DOWN counter reads the calibrated balance of the chip playing the part")
+    void testVolumeDown() {
+        mdplayer.Setting.Balance balance = mdplayer.Setting.getInstance().getBalance();
+        int mainWas = balance.getVolume(mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Ym2608Chip.class);
+        int fmWas = balance.getVolume("FM", mdplayer.chips.Ym2608Chip.class);
+        try {
+            balance.setVolume(mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Ym2608Chip.class, -18);
+            balance.setVolume("FM", mdplayer.chips.Ym2608Chip.class, -4);
+
+            // nothing has claimed a row yet, so there is no chip to read a correction off
+            assertEquals(0, source.volumeDown(WorkStateSource.VolumePart.FM));
+
+            opnaKeyOnFm1();
+            source.snapshot();
+
+            // the chip's own correction plus the part's trim, both of which the mixer applies
+            assertEquals(-22, source.volumeDown(WorkStateSource.VolumePart.FM));
+            // a part nothing is playing has no chip to read one off yet
+            assertEquals(0, source.volumeDown(WorkStateSource.VolumePart.SSG));
+
+            // the same chip's SSG part, once it sounds: its own correction, trimmed by nothing
+            opna.write(0, 0, 0x00, 284 & 0xff, EnmModel.VirtualModel);
+            opna.write(0, 0, 0x01, 284 >> 8, EnmModel.VirtualModel);
+            opna.write(0, 0, 0x08, 15, EnmModel.VirtualModel);
+            opna.write(0, 0, 0x07, 0x3e, EnmModel.VirtualModel);
+            source.snapshot();
+            assertEquals(-18, source.volumeDown(WorkStateSource.VolumePart.SSG));
+        } finally {
+            balance.setVolume(mdsound.MDSound.Chip.MAIN_TAG, mdplayer.chips.Ym2608Chip.class, mainWas);
+            balance.setVolume("FM", mdplayer.chips.Ym2608Chip.class, fmWas);
+        }
     }
 
     @Test
@@ -432,7 +492,7 @@ class ChipFmDspSourceTest {
         BaseDriver driver = new BaseDriver(null) {
             @Override public void init(Common.EnmModel model, int latency, int waitTime, Object... args) {}
             @Override public void processOneFrame() {}
-            @Override public MetaData getMetaData(byte[] buf, Object... args) { return null; }
+            @Override public MetaData retrieveMetaData(byte[] buf, Object... args) { return null; }
         };
         source.bind(chipRegister, () -> driver); // the note clock only runs off a driver's counter
 
@@ -468,7 +528,7 @@ class ChipFmDspSourceTest {
         BaseDriver driver = new BaseDriver(null) {
             @Override public void init(Common.EnmModel model, int latency, int waitTime, Object... args) {}
             @Override public void processOneFrame() {}
-            @Override public MetaData getMetaData(byte[] buf, Object... args) { return null; }
+            @Override public MetaData retrieveMetaData(byte[] buf, Object... args) { return null; }
         };
         source.bind(chipRegister, () -> driver);
 
@@ -486,7 +546,7 @@ class ChipFmDspSourceTest {
         BaseDriver driver = new BaseDriver(null) {
             @Override public void init(Common.EnmModel model, int latency, int waitTime, Object... args) {}
             @Override public void processOneFrame() {}
-            @Override public MetaData getMetaData(byte[] buf, Object... args) { return null; }
+            @Override public MetaData retrieveMetaData(byte[] buf, Object... args) { return null; }
         };
         // what a .mds carrying a metadata chunk hands over
         driver.metaData.set(MetaData.Tag.Title, "JAZZY NYC'91");
@@ -508,7 +568,7 @@ class ChipFmDspSourceTest {
         BaseDriver driver = new BaseDriver(null) {
             @Override public void init(Common.EnmModel model, int latency, int waitTime, Object... args) {}
             @Override public void processOneFrame() {}
-            @Override public MetaData getMetaData(byte[] buf, Object... args) { return null; }
+            @Override public MetaData retrieveMetaData(byte[] buf, Object... args) { return null; }
         };
         driver.metaData.set(MetaData.Tag.Title, "JAZZY NYC'91");
         driver.metaData.set(MetaData.Tag.Artist, "ctr"); // #author, with no #composer anywhere

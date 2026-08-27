@@ -55,7 +55,7 @@ public class MsdFormat extends BaseFileFormat implements SampledFileFormat {
                 throw new UncheckedIOException(e);
             }
         }
-        return new MusicaK4Driver().getMetaData(this.srcBuf, vcdBuf);
+        return new MusicaK4Driver().retrieveMetaData(this.srcBuf, vcdBuf);
     }
 
     @Override

@@ -44,7 +44,7 @@ public class YmFormat extends BaseFileFormat {
 
     @Override
     public MetaData getMetaData() {
-        return new YmDriver().getMetaData(this.srcBuf);
+        return new YmDriver().retrieveMetaData(this.srcBuf);
     }
 
     @Override

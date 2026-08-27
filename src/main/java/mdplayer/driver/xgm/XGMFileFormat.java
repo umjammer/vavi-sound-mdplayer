@@ -42,9 +42,9 @@ public class XGMFileFormat extends BaseFileFormat {
     @Override
     public MetaData getMetaData() {
         if (!Xgm2.checkXGM2(this.srcBuf)) {
-            return new XgmDriver().getMetaData(this.srcBuf);
+            return new XgmDriver().retrieveMetaData(this.srcBuf);
         } else {
-            return new Xgm2Driver().getMetaData(this.srcBuf);
+            return new Xgm2Driver().retrieveMetaData(this.srcBuf);
         }
     }
 

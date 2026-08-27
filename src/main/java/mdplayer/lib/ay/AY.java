@@ -1,13 +1,17 @@
 package mdplayer.lib.ay;
 
 import java.util.ArrayList;
+import java.util.EventObject;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 
+import dotnet4j.util.compat.EventHandler;
 import konamiman.z80.Z80Processor;
 import konamiman.z80.Z80ProcessorImpl;
 import konamiman.z80.enums.MemoryAccessMode;
 import konamiman.z80.impls.PlainMemory;
+import konamiman.z80.interfaces.Z80InterruptSource;
 import vavi.util.ByteUtil;
 
 
@@ -59,6 +63,31 @@ public class AY {
         int offset;
     }
 
+    /**
+     * The 50Hz INT the ULA puts on the Z80's interrupt line, which is what a tune that installs its
+     * own IM1 or IM2 handler is waiting for. The value on the data bus is the #FF the floating bus
+     * reads back, so IM0 takes it as a #FF opcode (RST #38, as IM1 does) and IM2 as the low half of
+     * a vector.
+     */
+    private static class Interrupt implements Z80InterruptSource {
+
+        /** the ULA holds the line down for this many T states, and a tune that spends them all with interrupts disabled misses the frame */
+        static final int hold = 32;
+
+        private final EventHandler<EventObject> nmi = new EventHandler<>();
+
+        boolean active;
+
+        /** T states the line has been held down for */
+        double elapsed;
+
+        @Override public EventHandler<?> nmiInterruptPulse() { return nmi; }
+
+        @Override public boolean isIntLineIsActive() { return active; }
+
+        @Override public Optional<Byte> getValueOnDataBus() { return Optional.of((byte) 0xff); }
+    }
+
     private byte[] buf;
     public Information information;
     private Z80Processor z80;
@@ -72,6 +101,7 @@ public class AY {
     private double palElp = 0.0;
     private int clock = zxClock;
     private int sampleRate;
+    private final Interrupt interrupt = new Interrupt();
 
     public void run(byte[] buf) {
         this.buf = buf;
@@ -192,6 +222,8 @@ public class AY {
         port.ayWrite = ayWrite;
         port.zxWrite = zxWrite;
         port.cpu = this;
+        interrupt.active = false;
+        z80.registerInterruptSource(interrupt);
 
         // a) Fill #0000-#00FF range with #C9 value
         for (int i = 0x0000; i < 0x0100; i++) z80.getMemory().set(i, (byte) 0xc9);
@@ -295,12 +327,24 @@ public class AY {
                 brk = true;
             }
 
+            // the line is only held down for a moment: a handler that ends with EI must not walk
+            // straight back into the same interrupt
+            if (interrupt.active) {
+                interrupt.elapsed += step;
+                if (interrupt.elapsed >= Interrupt.hold) interrupt.active = false;
+            }
+
             palElp += step;
             if (clock / PAL <= palElp) {
                 palElp -= (clock / PAL);
                 frames++;
 
-                if (z80.isHalted()) {
+                interrupt.active = true;
+                interrupt.elapsed = 0;
+
+                if (z80.isHalted() && z80.getRegisters().getIFF1().intValue() == 0) {
+                    // HALT with interrupts disabled waits for something that is never coming, so
+                    // the player is nudged past it the way it was before the line was wired up
                     short pc = z80.getRegisters().getPC();
                     short sp = z80.getRegisters().getSP();
                     short af = z80.getRegisters().getAF();
@@ -315,16 +359,5 @@ public class AY {
                 // but you will not be able to reproduce the frame drops.
             }
         }
-
-//        if (ps && z80.isHalted()) {
-//            int pc = z80.getRegisters().getPC();
-//            int sp = z80.getRegisters().getSP();
-//            int af = z80.getRegisters().getAF();
-//            z80.reset();
-//            z80.getRegisters().setPC((short) pc);
-//            z80.getRegisters().setSP((short) sp);
-//            z80.getRegisters().setAF((short) af);
-////            logger.log(Level.TRACE, "PC:%04x".formatted(z80.getRegisters().getPC()));
-//        }
     }
 }

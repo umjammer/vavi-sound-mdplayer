@@ -153,7 +153,7 @@ public class MxDriver extends BaseDriver {
     }
 
     @Override
-    public MetaData getMetaData(byte[] buf, Object... args) {
+    public MetaData retrieveMetaData(byte[] buf, Object... args) {
         MetaData md = new MetaData();
 
         List<Byte> lst = new ArrayList<>();
@@ -179,6 +179,11 @@ public class MxDriver extends BaseDriver {
      * @param pdxFileName OUT
      */
     private static void makeMdxBuf(byte[] buf, byte[][] mdx, int[] mdxSize, String[] pdxFileName) {
+        // a song packed by LZX.X keeps its header and hides its sequence behind a 68000 stub, so
+        // it has to be expanded before any of the rest of this can read it (returns buf as it is
+        // for a song that is not packed)
+        buf = Lzx.expand(buf);
+
         // Skip title
         int p = 8;
         int c;
@@ -247,10 +252,10 @@ public class MxDriver extends BaseDriver {
      * else there sends it reading wherever those bytes happen to point, which is where the endless
      * {@code index is out of bounds} such a file used to play as comes from.
      * <p>
-     * Files like that are not rare: an MDX compressed by LZX keeps its title and its PDX name,
-     * both of which still read back fine, and has a 68000 stub where the sequence should be
-     * (Gradius III's {@code G3_ST7.MDX} is one of over a thousand). A song that cannot play should
-     * say so rather than sound like a broken driver.
+     * A song that cannot play should say so rather than sound like a broken driver. The one kind
+     * of file this used to be aimed at - an MDX packed by {@code LZX.X}, which keeps its title and
+     * its PDX name and has a 68000 stub where the sequence should be - plays now: {@link Lzx}
+     * expands it on the way in, well before this sees it.
      * <p>
      * Only what cannot be sequence data at all is refused. The offsets themselves are deliberately
      * not checked against the length of the body: plenty of MDXs that play perfectly well point a
@@ -267,9 +272,6 @@ public class MxDriver extends BaseDriver {
         int length = size - body;
         if (length < (1 + MDX_PARTS) * 2) {
             throw new IllegalArgumentException("Not MDX data: the body is only %d bytes.".formatted(length));
-        }
-        if (mdx[body + 4] == 'L' && mdx[body + 5] == 'Z' && mdx[body + 6] == 'X' && mdx[body + 7] == ' ') {
-            throw new IllegalArgumentException("The MDX data is LZX compressed.");
         }
     }
 
@@ -322,7 +324,7 @@ public class MxDriver extends BaseDriver {
         this.latency = latency;
         this.waitTime = waitTime;
 
-        metaData = getMetaData(dataBuf);
+        metaData = retrieveMetaData(dataBuf);
         counter = 0;
         totalCounter = 0;
         loopCounter = 0;
@@ -356,9 +358,9 @@ public class MxDriver extends BaseDriver {
         int[] mdxPtr = new int[1], pdxPtr = new int[1];
         mxdrv.initializeMemory(mdxSize[0], pdxSize[0], mdx[0], pdx[0], mdxPtr, pdxPtr);
 
+        // one call, whichever back end is behind it: writePcm already dispatches on the setting,
+        // so the second call this used to make when it was 1 only mounted PCM8PP's memory twice
         plugin.chipRegister.chip(Pcm8Chip.class).writePcm(0, 0, 0, mxdrv.getMemory().mm, model);
-        if (setting.getMxDrv().pcm8Type == 1)
-            plugin.chipRegister.chip(Pcm8Chip.class).writePcm(0, 0, 0, mxdrv.getMemory().mm, model);
 
         // a song that loops with a repeat around the whole part instead of a jump at its end has
         // no loop to count without this, and neither the measurement below nor the player's loop
