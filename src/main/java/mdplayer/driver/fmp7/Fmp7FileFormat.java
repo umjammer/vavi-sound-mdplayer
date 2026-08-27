@@ -8,6 +8,7 @@ package mdplayer.driver.fmp7;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import javax.sound.sampled.AudioFileFormat.Type;
@@ -20,10 +21,13 @@ import mdplayer.driver.BaseFileFormat;
 import mdplayer.driver.Plugin;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
+import vavi.sound.SoundUtil;
 import vavi.sound.sampled.md.MdEncoding;
 import vavi.sound.sampled.md.MdFileFormatType;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
+
+import static vavi.util.compat.Util.changeExtension;
 
 
 /**
@@ -36,7 +40,21 @@ public class Fmp7FileFormat extends BaseFileFormat {
 
     @Override
     public String[] getExtensions() {
-        return new String[] {".owi"};
+        return new String[] {".owi", ".mwi"};
+    }
+
+    /**
+     * A ".mwi" is the MML the ".owi" is compiled from, and the plugin compiles it on the way to
+     * playing it - see {@link mdplayer.lib.fmp7.Fmp7Compiler}.
+     */
+    @Override
+    public boolean isMml() {
+        return filename != null && filename.toLowerCase().endsWith(".mwi");
+    }
+
+    @Override
+    public String getCompiledFilename() {
+        return isMml() ? changeExtension(filename, ".owi") : filename;
     }
 
     @Override
@@ -86,12 +104,12 @@ public class Fmp7FileFormat extends BaseFileFormat {
 
     @Override
     public Encoding getEncoding() {
-        return new MdEncoding("FMP7", "owi");
+        return new MdEncoding("FMP7", "owi,mwi");
     }
 
     @Override
     public Type getType() {
-        return new MdFileFormatType("FMP7", "owi");
+        return new MdFileFormatType("FMP7", "owi,mwi");
     }
 
     @Override
@@ -99,9 +117,15 @@ public class Fmp7FileFormat extends BaseFileFormat {
         return 8;
     }
 
+    /**
+     * An ".owi" says so in its first four bytes; a ".mwi" is plain MML text with nothing at the
+     * front to recognise, so that one is taken on its name - which is all its own compiler has
+     * to go on either.
+     */
     @Override
     public boolean isSupported(InputStream is) throws IOException {
         if (isCompressedStream(is)) return false;
+        if (Path.of(SoundUtil.getSource(is)).toString().toLowerCase().endsWith(".mwi")) return true;
         byte[] header = new byte[4];
         int r = is.read(header);
         if (r < 4) return false;

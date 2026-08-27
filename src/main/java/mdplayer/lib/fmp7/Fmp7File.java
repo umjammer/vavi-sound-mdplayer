@@ -7,6 +7,7 @@
 package mdplayer.lib.fmp7;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 
@@ -100,6 +101,62 @@ public class Fmp7File {
                 break;
             }
             p += CHUNK_HEADER_SIZE + size;
+        }
+        return file;
+    }
+
+    /**
+     * The same four things, read out of the MML instead - a ".mwi" that has not been compiled yet.
+     * <p>
+     * They live in the information block the source opens with: a line that is an apostrophe and
+     * an open brace, then {@code Key=value} lines, then a line that is a close brace.
+     * <pre>
+     * '{
+     *  Title=Delta-Ray [FMP7 Edition]
+     *  DataCreator=Tody
+     *  Composer=Tody
+     *  Comment=Copyright ...
+     *  }
+     * </pre>
+     * It is what the compiler puts in the "TEXT" chunk, so a song shows the same title in the
+     * play list whether it has been compiled yet or not - which matters, because compiling it
+     * means booting an emulated PC and mdplayer wants the title of every file in a directory.
+     */
+    public static Fmp7File decodeMml(byte[] b) throws IOException {
+        if (b == null) {
+            throw new IOException("no mml");
+        }
+        Fmp7File file = new Fmp7File();
+        String source = new String(b, 0, Math.min(b.length, 8192), Charset.forName("MS932"));
+        boolean inside = false;
+        for (String line : source.split("\r\n|\n|\r")) {
+            String trimmed = line.trim();
+            if (!inside) {
+                if (trimmed.startsWith("'{")) {
+                    inside = true;
+                } else if (!trimmed.isEmpty() && !trimmed.startsWith(";")) {
+                    // the block is the first thing in the file when it is there at all; anything
+                    // else with something on it means this song has none
+                    break;
+                }
+                continue;
+            }
+            if (trimmed.startsWith("}")) {
+                break;
+            }
+            int equals = trimmed.indexOf('=');
+            if (equals < 0) {
+                continue;
+            }
+            String key = trimmed.substring(0, equals).trim();
+            String value = trimmed.substring(equals + 1).trim();
+            switch (key) {
+                case "Title" -> file.title = value;
+                case "DataCreator" -> file.creator = value;
+                case "Composer" -> file.composer = value;
+                case "Comment" -> file.comment = value;
+                default -> { /* the block carries other keys the player has no use for */ }
+            }
         }
         return file;
     }

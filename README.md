@@ -58,7 +58,7 @@ this is a fork of [MDPlayer](https://github.com/kuma4649/MDPlayer)
 | WMA                             |                  |       →        |    -     | spi                   | [vavi-sound-sandbox](https://github.com/umjammer/vavi-sound-sandbox)                           |                                                                                   |
 | FLAC                            |                  |       →        |    -     | spi                   | [vavi-sound-flac](https://github.com/umjammer/vavi-sound-flac)                                 |                                                                                   |
 | SMAF                            | YAMAHA           |       ✅️       |    -     | built-in*             | [jDOSBox](https://github.com/umjammer/jDOSBox), [mmftool](https://github.com/umjammer/mmftool) | ~~adapt fmdsp visualizer ... difficult~~                                          |
-| FMP7                            | Windows          |       ✅️       |    -     | built-in*             | [jDOSBox](https://github.com/umjammer/jDOSBox), [FMP7](http://fmpdoc.fmp.jp/fmp7/)             | `.owi` only; needs `-m 64` or it plays without publishing its work                |
+| OWI/MWI                         | Windows FMP7     |       ✅️       |    ✅️    | built-in*             | [jDOSBox](https://github.com/umjammer/jDOSBox), [FMP7](http://fmpdoc.fmp.jp/fmp7/)             |                                                                                   |
 
 <sub>* at type: driver uses emulator</sub>
 

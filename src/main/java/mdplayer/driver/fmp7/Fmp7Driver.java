@@ -92,7 +92,10 @@ public class Fmp7Driver extends BaseDriver {
     public MetaData retrieveMetaData(byte[] buf, Object... args) {
         Fmp7File fmp7;
         try {
-            fmp7 = Fmp7File.decode(buf);
+            // a song that has not been compiled yet says the same things in its own information
+            // block, and reading them there is what keeps a directory of mml from having to be
+            // compiled - an emulated PC per file - just to fill in a play list
+            fmp7 = Fmp7File.isFmp7(buf) ? Fmp7File.decode(buf) : Fmp7File.decodeMml(buf);
         } catch (IOException e) {
 logger.log(Level.DEBUG, "not an fmp7 song: " + e.getMessage());
             return null;
@@ -146,6 +149,11 @@ logger.log(Level.DEBUG, "not an fmp7 song: " + e.getMessage());
         hasWork = false;
 
         metaData = retrieveMetaData(dataBuf);
+        // a song compiled from mml says more about itself in the mml than in the object - see
+        // Fmp7Plugin#getSourceMetaData
+        if (plugin instanceof Fmp7Plugin fmp7 && fmp7.getSourceMetaData() != null) {
+            metaData = fmp7.getSourceMetaData();
+        }
 
         stopPlayer();
         // the song's own directory comes with it: a song that uses PCM names its sample bank
