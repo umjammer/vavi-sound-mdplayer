@@ -33,7 +33,8 @@ import static vavi.sound.SoundUtil.volume;
  * virtual device player
  * <p>
  * system property
- * <li>{@code mdplayer.volume} ... player volume, default {@code 0.2}</li>
+ * <li>{@code mdplayer.volume} ... player volume, default {@code 0.2}; applied to the output
+ * line and, through {@code Balance.midiVolume}, to the MIDI path that never reaches that line</li>
  */
 public final class Audio {
 
@@ -76,12 +77,44 @@ public final class Audio {
 logger.log(Level.DEBUG, format);
             line.addLineListener(Audio::lineListener);
             line.open(format);
-            volume(line, Double.parseDouble(System.getProperty("mdplayer.volume", "0.2")));
+            double gain = Double.parseDouble(System.getProperty("mdplayer.volume", "0.2"));
+            volume(line, gain);
+            attenuateMidi(gain);
             line.start();
         } catch (LineUnavailableException e) {
             throw new IllegalStateException(e);
         }
     }
+
+    /**
+     * Puts {@code mdplayer.volume} into the MIDI side of the mixer balance as well.
+     * <p>
+     * That property is a gain on this player's own {@code SourceDataLine}, and a song played
+     * through {@link MidiPlugin} never passes through it: the synthesizer at the other end has its
+     * own output, so a MIDI-driven song (a MIDI-only ZMS, RCP, RCS, MID) stays at full level
+     * however far down the line is turned. {@code Balance.midiVolume} is the one slot that does
+     * reach it -- {@code MidiPlugin} scales controller 7 by it.
+     * <p>
+     * Runs here rather than in the plugin because {@code setParams} replaces the balance wholesale
+     * with the driver's calibrated preset, and every caller sets the params before {@link #init}.
+     *
+     * @param gain linear, as the property is written; {@code 1} and above change nothing
+     */
+    private void attenuateMidi(double gain) {
+        if (gain <= 0 || gain >= 1) return;
+        Setting.Balance balance = setting.getBalance();
+        // setParams normally hands each song a fresh preset, but not when the auto balance is off
+        // or the driver has no preset: without this the attenuation compounds song after song
+        if (balance == attenuatedBalance) return;
+        attenuatedBalance = balance;
+        // the balance unit is 2 x dB, so a linear gain g is 40 * log10(g)
+        int attenuated = Math.clamp(balance.getMidiVolume() + (int) Math.round(40 * Math.log10(gain)), -192, 20);
+logger.log(Level.DEBUG, "midi volume: " + balance.getMidiVolume() + " -> " + attenuated);
+        balance.setMidiVolume(attenuated);
+    }
+
+    /** the balance {@link #attenuateMidi} has already been applied to */
+    private Setting.Balance attenuatedBalance;
 
     /** line listener */
     private static void lineListener(LineEvent e) {
