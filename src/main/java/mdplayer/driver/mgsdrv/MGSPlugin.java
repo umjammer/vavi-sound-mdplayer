@@ -1,5 +1,7 @@
 package mdplayer.driver.mgsdrv;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
@@ -8,6 +10,8 @@ import mdplayer.chips.Ay8910Chip;
 import mdplayer.chips.K051649Chip;
 import mdplayer.chips.Ym2413Chip;
 import mdplayer.driver.BasePlugin;
+import mdplayer.driver.BasePlugin.Compilable;
+import mdplayer.lib.mgsc.MgscCompiler;
 import mdplayer.lib.mgsdrv.MgsDrv;
 import mdsound.MDSound;
 import mdsound.instrument.MameAy8910Inst;
@@ -22,12 +26,33 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-08 nsano initial version <br>
  */
-public class MGSPlugin extends BasePlugin<MgsDriver> {
+public class MGSPlugin extends BasePlugin<MgsDriver> implements Compilable {
 
     private static final Logger logger = getLogger(MGSPlugin.class.getName());
 
+    /**
+     * Turns a ".mus" into the ".mgs" the driver plays, when that is what was opened.
+     * <p>
+     * Everything below here - the chip selection in {@link #initChips}, the driver, the tags -
+     * reads the compiled song, so this has to have happened before any of it looks.
+     */
+    @Override
+    public void compile() {
+        if (!fileFormat.isMml()) {
+            return;
+        }
+        try {
+            dataBuf = new MgscCompiler().compile(dataBuf);
+            playingFileName = fileFormat.getCompiledFilename();
+        } catch (IOException e) {
+            throw new UncheckedIOException("mgsc: " + fileFormat.getCompiledFilename(), e);
+        }
+    }
+
     @Override
     public void prepare() {
+        compile();
+
         driverVirtual = new MgsDriver(this);
 
         driverReal = null;

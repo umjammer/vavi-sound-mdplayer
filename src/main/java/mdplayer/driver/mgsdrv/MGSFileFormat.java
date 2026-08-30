@@ -2,16 +2,20 @@ package mdplayer.driver.mgsdrv;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
 import mdplayer.PlayList;
 import mdplayer.driver.BaseFileFormat;
 import mdplayer.driver.Plugin;
+import mdplayer.lib.mgsc.MgscCompiler;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 import vavi.sound.SoundUtil;
@@ -19,6 +23,8 @@ import vavi.sound.sampled.md.MdEncoding;
 import vavi.sound.sampled.md.MdFileFormatType;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
+
+import static vavi.util.compat.Util.changeExtension;
 
 
 /**
@@ -31,12 +37,61 @@ public class MGSFileFormat extends BaseFileFormat {
 
     @Override
     public String[] getExtensions() {
-        return new String[] {".mgs"};
+        return new String[] {".mgs", ".mus"};
+    }
+
+    /**
+     * A ".mus" is the MML the ".mgs" is compiled from, and the plugin compiles it on the way to
+     * playing it - see {@link mdplayer.lib.mgsc.MgscCompiler}.
+     */
+    @Override
+    public boolean isMml() {
+        return filename != null && filename.toLowerCase().endsWith(".mus");
+    }
+
+    @Override
+    public String getCompiledFilename() {
+        return isMml() ? changeExtension(filename, ".mgs") : filename;
+    }
+
+    /** ".mus" is MUAP98's MML as well, so a ".mus" is only ours when it is written in MGSC's */
+    @Override
+    public boolean accepts(String filename, byte[] head) {
+        return !filename.toLowerCase().endsWith(".mus") || MgscCompiler.isMgsMml(head);
     }
 
     @Override
     public MetaData getMetaData() {
-        return new MgsDriver().retrieveMetaData(this.srcBuf, 8);
+        return isMml() ? mmlMetaData() : new MgsDriver().retrieveMetaData(this.srcBuf, 8);
+    }
+
+    /**
+     * What the MML says about itself, which is its {@code #title} - the same text the compiler
+     * copies into the ".mgs" header, but readable before there is one.
+     */
+    private MetaData mmlMetaData() {
+        MetaData md = new MetaData();
+        if (this.srcBuf == null) {
+            return md;
+        }
+        String mml = new String(this.srcBuf, Charset.forName("MS932"));
+        Matcher matcher = Pattern.compile("^[ \\t]*#title[ \\t]*\\{([^}]*)}", Pattern.MULTILINE).matcher(mml);
+        if (matcher.find()) {
+            List<String> lines = Arrays.stream(matcher.group(1).split("\\R"))
+                    .map(l -> l.strip().replaceAll("^\"|\"$", "").strip())
+                    .filter(l -> !l.isEmpty())
+                    .toList();
+            if (!lines.isEmpty()) {
+                md.set(Tag.Title, lines.getFirst());
+                md.set(Tag.TitleJ, lines.getFirst());
+            }
+            if (lines.size() > 1) {
+                md.set(Tag.Composer, lines.get(1));
+                md.set(Tag.ComposerJ, lines.get(1));
+            }
+            md.setAll(Tag.Comments, lines);
+        }
+        return md;
     }
 
     @Override
@@ -86,12 +141,14 @@ public class MGSFileFormat extends BaseFileFormat {
 
     @Override
     public int getMarkSize() {
-        return 0;
+        return SNIFF_SIZE; // ".mus" is shared with MUAP98, so accepts() has to see inside the file
     }
 
     @Override
     public boolean isSupported(InputStream is) throws IOException {
         if (isCompressedStream(is)) return false;
-        return Arrays.stream(getExtensions()).anyMatch(e -> Path.of(SoundUtil.getSource(is)).toString().toLowerCase().endsWith(e));
+        String name = Path.of(SoundUtil.getSource(is)).toString().toLowerCase();
+        if (Arrays.stream(getExtensions()).noneMatch(name::endsWith)) return false;
+        return accepts(name, is.readNBytes(SNIFF_SIZE));
     }
 }

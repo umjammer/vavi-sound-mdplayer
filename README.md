@@ -29,7 +29,7 @@ this is a fork of [MDPlayer](https://github.com/kuma4649/MDPlayer)
 | ZMD/ZMS                         | X68k ZMusic      |       ✅️       |    ✅️    | built-in*             |                                                                                                |                                                                                   |
 | NRD                             | X1 NRTDRV        |       ✅️       |    -     | built-in              |                                                                                                |                                                                                   |
 | MDL/MDR                         | MSX MoonDriver   |       ✅️       |    ✅️    | ~~built-in~~, driver  | [vavi-sound-moon](https://github.com/umjammer/vavi-sound-moon)                                 | ~~🐛 \[compiler] same as c# but both wrong~~                                      |
-| MGS                             | MSX MGSDRV       |       ✅️       |    -     | built-in              |                                                                                                |                                                                                   |
+| MGS/MUS                         | MSX MGSDRV       |       ✅️       |    ✅️    | built-in              |                                                                                                |                                                                                   |
 | NDP                             | MSX NDP          |       ✅️       |    -     | built-in*             |                                                                                                |                                                                                   |
 | BGM/MSD                         | MSX MuSICA       |       ✅️       |    ✅️    | built-in*             |                                                                                                | ~~original also often fails~~                                                     |
 | SID                             | Commodore        |      ✅ ️️      |    -     | built-in, ~~library~~ | ~~[JSIDPlay2](https://github.com/umjammer/JSIDPlay2)~~                                         |                                                                                   |
@@ -88,6 +88,7 @@ get those binaries from the internet and put those at somewhere (set system prop
 .../dirver/fmp/FMP.COM
 .../dirver/fmp/FMC.EXE
 .../driver/mgsdrv/MGSDRV.COM
+.../driver/mgsdrv/MGSC.COM
 .../driver/musica/KINROU4.COM
 .../driver/musica/KINROU5.DRV
 .../driver/ndp/NDP.BIN
@@ -153,7 +154,7 @@ when using this project with vgm, gbs spi, apply the settings below to avoid con
 
 #### mgs
 
-- `mdplayer.mgs.dir` ... location for `mgsdrv.com` driver
+- `mdplayer.mgs.dir` ... location for `mgsdrv.com`, `mgsc.com` drivers
 
 #### ndp
 
