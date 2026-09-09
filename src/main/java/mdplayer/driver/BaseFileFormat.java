@@ -231,9 +231,11 @@ logger.log(Level.DEBUG, result);
             }
         }
 
-        // getMusic() reads the metadata through getMetaData(), which works off srcBuf, and nothing
-        // has called load() on this path
+        // getMusic() reads the metadata through getMetaData(), which works off srcBuf and, for a
+        // format that reads MML as well as what it compiles to, off the name; nothing has called
+        // load() on this path
         this.srcBuf = buf;
+        this.filename = mc.fileName;
 
         List<PlayList.Music> musics;
         if (entry == null) musics = getMusic(mc.fileName, buf, null, null, null);

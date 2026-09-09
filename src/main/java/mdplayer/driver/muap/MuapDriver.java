@@ -69,6 +69,12 @@ public class MuapDriver extends BaseDriver {
 
     @Override
     public void init(EnmModel model, int latency, int waitTime, Object... args) {
+        // A ".mus" is compiled into the plugin's own dataBuf, and that happens after this driver
+        // was constructed - the constructor only took a snapshot of the MML. Re-read the
+        // plugin's now-compiled data, or the driver is handed the MML text as if it were an
+        // object and plays nothing.
+        if (plugin != null) dataBuf = plugin.getData();
+
         metaData = retrieveMetaData(dataBuf);
 
         this.model = model;

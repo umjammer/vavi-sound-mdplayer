@@ -3,7 +3,7 @@
 
   <groupId>vavi</groupId>
   <artifactId>vavi-apps-mdplayer</artifactId>
-  <version>0.0.26</version>
+  <version>0.0.27</version>
 
   <profiles>
     <profile>
@@ -425,7 +425,7 @@
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- com.github.umjammer / vavi -->
       <artifactId>vavi-commons</artifactId>
-      <version>1.1.20</version>
+      <version>1.1.21</version>
     </dependency>
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
@@ -440,7 +440,7 @@
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
       <artifactId>vavi-sound</artifactId>
-      <version>1.0.28</version>
+      <version>1.0.31</version>
     </dependency>
     <dependency>
       <groupId>com.github.umjammer</groupId>
@@ -559,6 +559,12 @@
           <groupId>com.github.umjammer.vavi-net-auth</groupId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
+      <artifactId>vavi-sound-sandbox</artifactId>
+      <version>1.0.18</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>

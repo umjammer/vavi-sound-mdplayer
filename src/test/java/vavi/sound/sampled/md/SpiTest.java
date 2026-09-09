@@ -296,11 +296,11 @@ Debug.println(originalAudioFormat);
     @Test
     @DisplayName("when unsupported file coming")
     void test5() throws Exception {
-        InputStream is = SpiTest.class.getResourceAsStream("/test.wma");
+        InputStream is = SpiTest.class.getResourceAsStream("/test.caf");
         int available = is.available();
         UnsupportedAudioFileException e = assertThrows(UnsupportedAudioFileException.class, () -> {
-            Debug.println(is);
-            AudioSystem.getAudioInputStream(is);
+            AudioInputStream ais = AudioSystem.getAudioInputStream(is);
+Debug.println("encoding: " + ais.getFormat().getEncoding());
         });
 Debug.println(e.getMessage());
         assertEquals(available, is.available()); // spi must not consume input stream even one byte

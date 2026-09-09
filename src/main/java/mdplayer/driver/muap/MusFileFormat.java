@@ -18,6 +18,7 @@ import mdplayer.PlayList;
 import mdplayer.PlayList.Music;
 import mdplayer.driver.BaseFileFormat;
 import mdplayer.driver.Plugin;
+import mdplayer.lib.mgsc.MgscCompiler;
 import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 import vavi.sound.SoundUtil;
@@ -25,6 +26,8 @@ import vavi.sound.sampled.md.MdEncoding;
 import vavi.sound.sampled.md.MdFileFormatType;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
+
+import static vavi.util.compat.Util.changeExtension;
 
 
 /**
@@ -38,6 +41,26 @@ public class MusFileFormat extends BaseFileFormat {
     @Override
     public String[] getExtensions() {
         return new String[] {".mus"};
+    }
+
+    /**
+     * A ".mus" is the MML the ".o" is compiled from, and the plugin compiles it on the way to
+     * playing it - see {@link MuapDriver#compile}.
+     */
+    @Override
+    public boolean isMml() {
+        return true;
+    }
+
+    @Override
+    public String getCompiledFilename() {
+        return filename != null ? changeExtension(filename, ".o") : null;
+    }
+
+    /** MSX MGSDRV's MML is called ".mus" too, and it is the one with the "#" directives */
+    @Override
+    public boolean accepts(String filename, byte[] head) {
+        return !MgscCompiler.isMgsMml(head);
     }
 
     @Override
@@ -92,12 +115,14 @@ public class MusFileFormat extends BaseFileFormat {
 
     @Override
     public int getMarkSize() {
-        return 0;
+        return SNIFF_SIZE; // ".mus" is shared with MSX MGSDRV, so accepts() has to see inside the file
     }
 
     @Override
     public boolean isSupported(InputStream is) throws IOException {
         if (isCompressedStream(is)) return false;
-        return Arrays.stream(getExtensions()).anyMatch(e -> Path.of(SoundUtil.getSource(is)).toString().toLowerCase().endsWith(e));
+        String name = Path.of(SoundUtil.getSource(is)).toString().toLowerCase();
+        if (Arrays.stream(getExtensions()).noneMatch(name::endsWith)) return false;
+        return accepts(name, is.readNBytes(SNIFF_SIZE));
     }
 }

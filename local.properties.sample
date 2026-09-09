@@ -1,16 +1,39 @@
 vavi.test.volume=0.2
 
 dir=/Users/foo/data
-ext=.M
+ext=.M,.M2,.MZ,.OVI,.OPI,.OZI,.MVI,.MPI,.MZI,.VGZ,.VGM,.MGS,.MND,.PSF,.PSF2,.VGM,.VGZ,.MDR,.MGS,.MUS,.MUB,.MDS,.MSD,.ZMS
 
-fmpDir=bar/fmp/samples
-fmpPvi=bar/fmp/PVI
-zmsDir=bar/driver/zms
-muap.dir.dta=/Users/foo/MUAP/IV
-muap.dir.pcm=/Users/foo/MUAP/PCM
+#multi.source=local
+multi.source=dirext
 
+# 0 infinity loop
+vavi.test.loopTimes=1
+# 1 origin
+track=1
+
+# driver support settings
+mdplayer.fmp.dir=tmp/drivers/FMP/FMPDDISK
+mdplayer.fmp.pvi=tmp/PVI
+mdplayer.zms.dir=tmp/driver/zms
+mdplayer.mgs.dir=tmp/driver/mgsdrv
+mdplayer.ndp.dir=tmp/driver/ndp
+mdplayer.musica.dir=tmp/driver/musica
+muap.dir.dta=tmp/driver/MUAP/IV
+muap.dir.pcm=tmp/driver/MUAP/PCM
+
+# rom location
 mdsound.pcm.path=data/ym2608/
+fmdsp.fontRom=/Users/foo/.config/sdlnp21kai/font.rom
 
-mdplayer.variant.ymf262=2
+mdplayer.variant.ym2151=1
+mdplayer.variant.c140=0
+mdplayer.variant.pcm8=1
+mdplayer.variant.mpcm=0
+mdplayer.variant.ay8910=0
+mdplayer.variant.ym2413=0
+mdplayer.variant.ym2612=0
+mdplayer.variant.ymf262=0
+
+#effects=appl:mrev?Dry/Wet Mix=40,appl:dely?Dry/Wet Mix=15;Delay Time=0.15;Feedback=10
 
 file=data/sample.vgm

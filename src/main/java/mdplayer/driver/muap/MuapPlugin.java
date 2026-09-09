@@ -35,14 +35,35 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
  */
 public class MuapPlugin extends BasePlugin<MuapDriver> implements Compilable {
 
+    /**
+     * Turns a ".mus" into the ".o" the driver plays, when that is what was opened.
+     * <p>
+     * The compiler hands back the tone table and the label table along with the object, and it
+     * leaves them on the driver it ran on - so this has to be the driver that goes on to play,
+     * and it has to have happened before {@link #initChips} passes them around.
+     */
     @Override
     public void compile() {
-
+        if (!fileFormat.isMml()) {
+            return;
+        }
+        byte[] compiled = driverVirtual.compile(dataBuf);
+        if (compiled == null) {
+            throw new IllegalStateException("muap: " + playingFileName + ": the song did not compile");
+        }
+        dataBuf = compiled;
+        // a song out of an archive has no name of its own here, and the driver needs one to
+        // resolve what the MML includes - so keep the name it came in with
+        if (fileFormat.getCompiledFilename() != null) {
+            playingFileName = fileFormat.getCompiledFilename();
+        }
     }
 
     @Override
     public void prepare() {
         driverVirtual = new MuapDriver(this);
+
+        compile();
 
         driverReal = null;
 //        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
