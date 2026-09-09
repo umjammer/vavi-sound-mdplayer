@@ -146,6 +146,9 @@ class TestCase {
     @Property(name = "multi.2")
     String multi2;
 
+    @Property
+    String effects;
+
     static final boolean onIde = System.getProperty("vavi.test", "").equals("ide");
     static final long time = onIde ? 1000 * 1000 : 10 * 1000;
 
@@ -172,6 +175,12 @@ class TestCase {
             System.setProperty("mdsound.pcm.path", pcmPath);
 //            System.setProperty("muap.dir.udp", muapDirUdp);
 //            System.setProperty("muap.dir.sud", muapDirSud);
+        }
+
+        if (System.getProperty("os.name").startsWith("Mac") && effects != null) {
+Debug.println("on mac, use AudioUnit effects: " + effects);
+            System.setProperty("javax.sound.sampled.SourceDataLine", "#Rococoa Mixer"); // audio out is AudioUnit fixed
+            System.setProperty("vavi.sound.sampled.rococoa.RococoaSourceDataLine.effects", effects);
         }
 
         System.setProperty("mdplayer.variant.pcm8", String.valueOf(variantPcm8));
