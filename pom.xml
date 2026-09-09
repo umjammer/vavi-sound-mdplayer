@@ -565,6 +565,12 @@
       <artifactId>vavi-sound-sandbox</artifactId>
       <version>1.0.18</version>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.jogamp.jogl</groupId>
+          <artifactId>jogl-all-main</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
   </dependencies>
 </project>
