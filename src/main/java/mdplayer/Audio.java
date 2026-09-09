@@ -21,7 +21,6 @@ import mdplayer.chips.VstPlugin;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.BasePlugin;
 import mdplayer.driver.sampled.SampledPlugin;
-import vavi.sound.SoundUtil;
 import vavi.util.event.GenericEvent;
 import vavi.util.event.GenericListener;
 
@@ -72,8 +71,7 @@ public final class Audio {
         try {
             int sampleRate = setting.getOutputDevice().getSampleRate();
             AudioFormat format = new AudioFormat(sampleRate, 16, 2, true, false);
-            // for hijack datasource, we need to retrieve target SourceDataLine by name
-            line = SoundUtil.getLine("#Default Audio Device", SourceDataLine.class);
+            line = AudioSystem.getSourceDataLine(format);
 logger.log(Level.DEBUG, format);
             line.addLineListener(Audio::lineListener);
             line.open(format);
